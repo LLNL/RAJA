@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_cuda_nested_Lambda_HPP
-#define RAJA_policy_cuda_nested_Lambda_HPP
+#ifndef RAJA_policy_cuda_nested_Sync_HPP
+#define RAJA_policy_cuda_nested_Sync_HPP
 
 #include "RAJA/config.hpp"
 #include "camp/camp.hpp"
@@ -75,20 +75,26 @@ namespace RAJA
 namespace nested
 {
 
+/*!
+ * A nested::forall statement that performs a CUDA __syncthreads().
+ *
+ *
+ */
+struct CudaBlockSync : public internal::Statement<>{
+};
+
 namespace internal
 {
 
-template <camp::idx_t LoopIndex>
-struct CudaStatementExecutor<Lambda<LoopIndex>>{
+template <>
+struct CudaStatementExecutor<CudaBlockSync>{
 
   template <typename WrappedBody>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(Lambda<LoopIndex>, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void operator()(CudaBlockSync, WrappedBody const &wrap, CudaExecInfo &exec_info)
   {
-    //if(exec_info.threads_left == 1 || (exec_info.thread_id % exec_info.threads_left == 0)){
-      invoke_lambda<LoopIndex>(wrap.data);
-    //}
+    __syncthreads();
   }
 };
 

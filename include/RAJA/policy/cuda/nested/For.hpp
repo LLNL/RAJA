@@ -29,7 +29,7 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
   template <typename WrappedBody>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(ForType const &fp, WrappedBody const &wrap)
+  void operator()(ForType const &fp, WrappedBody const &wrap, CudaExecInfo &exec_info)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
@@ -44,7 +44,7 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
 
     for (decltype(len) i = 0; i < len; ++i) {
       wrap.data.template assign_index<ArgumentId>(i);
-      wrap();
+      wrap(exec_info);
     }
   }
 };
@@ -59,7 +59,7 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
   template <typename WrappedBody>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(ForType const &fp, WrappedBody const &wrap)
+  void operator()(ForType const &fp, WrappedBody const &wrap, CudaExecInfo &exec_info)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
@@ -72,11 +72,24 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
     auto len = end - begin;  // std::distance(begin, end);
 
 
-    // compute our index
-    int i = threadIdx.x;
+    // How many batches of threads do we need?
+    int num_batches = len / exec_info.threads_left;
+    if(num_batches*exec_info.threads_left < len){
+      num_batches++;
+    }
 
-    wrap.data.template assign_index<ArgumentId>(*(begin+i));
-    wrap();
+    // compute our starting index
+    int i = exec_info.thread_id;
+
+    for(int batch = 0;batch < num_batches;++ batch){
+
+      if(i < len){
+        wrap.data.template assign_index<ArgumentId>(*(begin+i));
+        wrap(exec_info);
+      }
+
+      i += exec_info.threads_left;
+    }
   }
 };
 

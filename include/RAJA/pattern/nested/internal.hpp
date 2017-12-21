@@ -16,7 +16,6 @@ namespace RAJA
 {
 namespace nested
 {
-
 namespace internal
 {
 
@@ -103,6 +102,8 @@ struct StatementExecutor{};
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
 struct LoopData {
 
+  using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
+
   using index_tuple_t = index_tuple_from_segments<
   typename SegmentTuple::TList>;
 
@@ -114,9 +115,9 @@ struct LoopData {
   const BodiesTuple bodies;
   index_tuple_t index_tuple;
 
-
+  RAJA_INLINE
   LoopData(PolicyType const &p, SegmentTuple const &s, Bodies const & ... b)
-      : policy(p), segment_tuple(s), bodies(b...)
+      : policy{p}, segment_tuple{s}, bodies{b...}
   {
   }
 
@@ -133,7 +134,7 @@ struct LoopData {
 template<camp::idx_t LoopIndex, typename Data>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-void invoke_lambda(Data && data){
+void invoke_lambda(Data &data){
   camp::invoke(data.index_tuple, camp::get<LoopIndex>(data.bodies));
 }
 
@@ -147,7 +148,7 @@ template<typename StmtList, typename Data>
 void execute_statement_list(StmtList && statement_list, Data && data){
   using statement_list_type = camp::decay<StmtList>;
   StatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-  launcher(statement_list, data);
+  launcher(statement_list, std::forward<Data>(data));
 }
 
 
@@ -189,13 +190,13 @@ struct StatementListExecutor{
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
-  void operator()(StmtList const &statement_list, Data &data) const {
+  void operator()(StmtList const &statement_list, Data &&data) const {
 
     // Get the statement we're going to execute
     auto const &statement = camp::get<statement_index>(statement_list);
 
     // Create a wrapper for enclosed statements
-    auto enclosed_wrapper = make_statement_list_wrapper(statement.enclosed_statements, data);
+    auto enclosed_wrapper = make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
 
     // Execute this statement
     StatementExecutor<remove_all_t<decltype(statement)>> e{};
@@ -203,7 +204,7 @@ struct StatementListExecutor{
 
     // call our next statement
     StatementListExecutor<statement_index+1, num_statements> next_sequential;
-    next_sequential(statement_list, data);
+    next_sequential(statement_list, std::forward<Data>(data));
   }
 };
 
@@ -217,7 +218,7 @@ struct StatementListExecutor<num_statements,num_statements> {
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
-  void operator()(StmtList const &, Data &) const {
+  void operator()(StmtList const &, Data &&) const {
 
   }
 

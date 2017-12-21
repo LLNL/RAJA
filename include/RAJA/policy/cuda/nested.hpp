@@ -81,27 +81,38 @@ namespace RAJA
 {
 namespace nested
 {
-
-
 namespace internal
 {
+
+
+struct CudaExecInfo {
+  int thread_id;
+  int threads_left;
+
+  RAJA_DEVICE
+  CudaExecInfo() :
+    thread_id(threadIdx.x),
+    threads_left(blockDim.x)
+  {}
+};
+
 
 template <typename Policy>
 struct CudaStatementExecutor{};
 
-
-
 template <camp::idx_t idx, camp::idx_t N>
 struct CudaStatementListExecutor;
 
+
+
 template<typename StmtList, typename Data>
 RAJA_DEVICE
-void cuda_execute_statement_list(StmtList && statement_list, Data && data){
-//  printf("cuda_execute_statement_list\n");
-
+void cuda_execute_statement_list(StmtList && statement_list, Data && data, CudaExecInfo &exec_info){
   using statement_list_type = camp::decay<StmtList>;
   CudaStatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-  launcher(statement_list, data);
+//  launcher(statement_list, data, exec_info);
+
+  launcher(std::forward<StmtList>(statement_list), std::forward<Data>(data), exec_info);
 }
 
 
@@ -115,13 +126,13 @@ struct CudaStatementListWrapper {
 
   RAJA_INLINE
   RAJA_DEVICE
-  CudaStatementListWrapper(StmtList const &s, Data &d) : statement_list{s}, data{d} {}
+  CudaStatementListWrapper(StmtList const &s, Data &d) : statement_list{s}, data{d}{}
 
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()() const
+  void operator()(CudaExecInfo &exec_info) const
   {
-    cuda_execute_statement_list(statement_list, data);
+    cuda_execute_statement_list(statement_list, data, exec_info);
   }
 };
 
@@ -144,22 +155,21 @@ struct CudaStatementListExecutor{
   template<typename StmtList, typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(StmtList const &statement_list, Data &data) const {
+  void operator()(StmtList &&statement_list, Data &&data, CudaExecInfo &exec_info) const {
 
     // Get the statement we're going to execute
-    auto const &statement = camp::get<statement_index>(statement_list);
+    auto const &statement = camp::get<statement_index>(std::forward<StmtList>(statement_list));
 
     // Create a wrapper for enclosed statements
-    auto enclosed_wrapper = cuda_make_statement_list_wrapper(statement.enclosed_statements, data);
+    auto enclosed_wrapper = cuda_make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
 
     // Execute this statement
     CudaStatementExecutor<remove_all_t<decltype(statement)>> e{};
-    e(statement, enclosed_wrapper);
-//    printf("execute %d of %d\n", (int)statement_index, (int)num_statements);
+    e(statement, enclosed_wrapper, exec_info);
 
     // call our next statement
     CudaStatementListExecutor<statement_index+1, num_statements> next_sequential;
-    next_sequential(statement_list, data);
+    next_sequential(std::forward<StmtList>(statement_list), data, exec_info);
   }
 };
 
@@ -174,7 +184,7 @@ struct CudaStatementListExecutor<num_statements,num_statements> {
   template<typename StmtList, typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(StmtList const &, Data &) const {
+  void operator()(StmtList const &, Data &, CudaExecInfo &) const {
   }
 
 };
@@ -182,212 +192,7 @@ struct CudaStatementListExecutor<num_statements,num_statements> {
 
 
 
-
-
-
-
-
-
-//template <template <camp::idx_t, typename...> class ForTypeIn,
-//          camp::idx_t Index,
-//          typename... Rest>
-//struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
-//  using ForType = ForTypeIn<Index, cuda_loop_exec, Rest...>;
-//  static_assert(std::is_base_of<internal::ForBase, ForType>::value,
-//                "Only For-based policies should get here");
-//
-//
-//  template <typename BaseWrapper>
-//  struct ForWrapper {
-//    // Explicitly unwrap the data from the wrapper
-//    RAJA_DEVICE ForWrapper(BaseWrapper const &w) : data(w.data) {}
-//    using data_type = typename BaseWrapper::data_type;
-//    data_type &data;
-//    template <typename InIndexType>
-//    RAJA_DEVICE void operator()(InIndexType i)
-//    {
-//      data.template assign_index<ForType::index_val>(i);
-//      camp::invoke(data.index_tuple, data.body);
-//    }
-//  };
-//  template <typename WrappedBody>
-//  void RAJA_DEVICE operator()(ForType const &fp, WrappedBody const &wrap)
-//  {
-//
-//    using ::RAJA::policy::cuda::forall_impl;
-//    forall_impl(fp.exec_policy,
-//                camp::get<ForType::index_val>(wrap.data.segment_tuple),
-//                ForWrapper<WrappedBody>{wrap});
-//  }
-//};
-
-
-
-
-
 }  // namespace internal
-
-
-//template <bool Async = false>
-//struct cuda_collapse_exec : public cuda_exec<0, Async> {
-//};
-//
-//
-//template <typename... FOR>
-//using CudaCollapse = Collapse<cuda_collapse_exec<false>, FOR...>;
-//
-//template <typename... FOR>
-//using CudaCollapseAsync = Collapse<cuda_collapse_exec<true>, FOR...>;
-
-
-// TODO, check that FT... are cuda policies
-//template <bool Async, typename... FOR_TYPES>
-//struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
-//
-//  using collapse_policy = Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>;
-//
-//
-//  template <typename BaseWrapper, typename BeginTuple, typename... LoopPol>
-//  struct ForWrapper {
-//
-//    using data_type = typename BaseWrapper::data_type;
-//    data_type data;
-//
-//    BeginTuple begin_tuple;
-//
-//    using CuWrap = internal::CudaWrapper<BaseWrapper::cur_policy,
-//                                         BaseWrapper::num_policies,
-//                                         typename BaseWrapper::data_type>;
-//
-//    camp::tuple<LoopPol...> loop_policies;
-//
-//    using ft_tuple = camp::list<FOR_TYPES...>;
-//
-//
-//    // Explicitly unwrap the data from the wrapper
-//    ForWrapper(BaseWrapper const &w,
-//               BeginTuple const &bt,
-//               LoopPol const &... pol)
-//        : data(w.data), begin_tuple(bt), loop_policies(camp::make_tuple(pol...))
-//    {
-//    }
-//
-//
-//    /*
-//     * Evaluates the loop index for the idx'th loop in the Collapse
-//     *
-//     * returns false if the loop is in bounds
-//     */
-//    template <size_t idx>
-//    RAJA_DEVICE bool evalLoopIndex()
-//    {
-//      // grab the loop policy
-//      auto &policy = camp::get<idx>(loop_policies);
-//
-//      // grab the For type from our type list
-//      using ft = typename camp::at_v<ft_tuple, idx>::type;
-//
-//
-//      // Get the offset for this policy, calculated by our thread/block index
-//      RAJA::Index_type offset = policy();
-//      if(offset == RAJA::operators::limits<RAJA::Index_type>::min()){
-//        // this index is out-of-bounds, so shortcut it here
-//        return true;
-//      }
-//
-//      // Increment the begin iterator by the offset
-//      auto &begin = camp::get<idx>(begin_tuple);
-//      RAJA::Index_type loop_value = *(begin + policy());
-//
-//      // Assign the For index value to the correct argument
-//      data.template assign_index<ft::index_val>(loop_value);
-//
-//      // we are in bounds
-//      return false;
-//    }
-//
-//    /*
-//     * Computes all of the loop indices, and returns true if the current
-//     * thread is valid (in-bounds)
-//     *
-//     * Since we use INT_MIN as a sentinel to mark out-of-bounds, the minimum
-//     * loop index must be > INT_MIN for this to be a valid thread.
-//     */
-//    template <camp::idx_t... idx_list>
-//    RAJA_DEVICE bool computeIndices(camp::idx_seq<idx_list...>)
-//    {
-//      // Compute each loop index, and return the minimum value
-//      // this sum is the number of indices that are out of bounds
-//      return 0 == VarOps::sum<int>((int)evalLoopIndex<idx_list>()...);
-//    }
-//
-//
-//    RAJA_DEVICE void operator()()
-//    {
-//      // Assign the indices, and compute minimum loop index
-//      using index_sequence =
-//          typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
-//      bool in_bounds = computeIndices(index_sequence{});
-//
-//      // Invoke the loop body, only if we are on a valid index
-//      // if any of the loops indices were out-of-bounds, then min_val will
-//      // be INT_MIN
-//      if (in_bounds) {
-//        CuWrap wrap(data);
-//        wrap();
-//      }
-//    }
-//  };
-//
-//
-//  template <typename WrappedBody>
-//  void operator()(collapse_policy const &, WrappedBody const &wrap)
-//  {
-//    CudaDim dims;
-//
-//    /* As we create a cuda wrapper, we construct all of the cuda loop policies,
-//     * like cuda_thread_x_exec, their associated segment from wrap.data.segment_tuple
-//     *
-//     * This construction modifies the CudaDim to specify the correct number
-//     * of threads and blocks for the kernel launch
-//     *
-//     * The wrapped body is the device function to be launched, and does all
-//     * of the block/thread idx unpacking and assignment
-//    */
-//    auto begin_tuple = camp::make_tuple(
-//        camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple).begin()...);
-//
-//    auto cuda_wrap =
-//        ForWrapper<WrappedBody,
-//                   decltype(begin_tuple),
-//                   typename FOR_TYPES::policy_type::cuda_exec_policy...>(
-//            wrap,
-//
-//            begin_tuple,
-//
-//            typename FOR_TYPES::policy_type::cuda_exec_policy(
-//                dims, camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple))...
-//
-//            );
-//
-//
-//    // Only launch a kernel if we have at least one thing to do
-//    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-//
-//      cudaStream_t stream = 0;
-//
-//      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-//          RAJA::cuda::make_launch_body(
-//              dims.num_blocks, dims.num_threads, 0, stream, cuda_wrap));
-//      RAJA::cuda::peekAtLastError();
-//
-//      RAJA::cuda::launch(stream);
-//      if (!Async) RAJA::cuda::synchronize(stream);
-//    }
-//  }
-//};
-
-
 }  // namespace nested
 }  // namespace RAJA
 

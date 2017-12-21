@@ -90,7 +90,7 @@ struct GenericWrapper {
 
 
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
-RAJA_INLINE void forall(const PolicyType &policy, const SegmentTuple &segments, const Bodies & ... bodies)
+RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && ... bodies)
 {
 //  detail::setChaiExecutionSpace<PolicyType>();
 
@@ -103,7 +103,13 @@ RAJA_INLINE void forall(const PolicyType &policy, const SegmentTuple &segments, 
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
   // and only copied to provide thread-private instances.
-  auto loop_data = internal::LoopData<PolicyType, SegmentTuple, Bodies...>(policy, segments, bodies...);
+  internal::LoopData<PolicyType, SegmentTuple, Bodies...>
+    loop_data(
+          std::forward<PolicyType>(policy),
+          std::forward<SegmentTuple>(segments),
+          std::forward<Bodies>(bodies)...);
+
+//  printf("sizeof(loop_data)=%ld bytes\n",(long)sizeof(loop_data));
 
   // Create a StatmentList wrapper to execute our policy (which is just
   // a StatementList)

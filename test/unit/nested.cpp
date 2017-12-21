@@ -564,10 +564,10 @@ TEST(Nested, Tile){
   using Pol = nested::Policy<
           nested::Tile<1, nested::tile_fixed<4>, seq_exec,
             For<0, seq_exec,
-              For<1, seq_exec>
+              For<1, seq_exec, Lambda<0>>
             >,
             For<0, seq_exec,
-              For<1, seq_exec>
+              For<1, seq_exec, Lambda<0>>
             >
           >,
           For<1, seq_exec, Lambda<1>>
@@ -607,7 +607,7 @@ TEST(Nested, CollapseSeq){
 
   // Loop Fusion
   using Pol = nested::Policy<
-          Collapse<seq_exec, CollapseList<For<0>, For<1>>,
+          Collapse<seq_exec, CollapseList<0, 1>,
             Lambda<0>
           >
         >;
@@ -643,33 +643,102 @@ CUDA_TEST(Nested, CudaExec){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1, 16,
+            CudaKernel<1, 1,
               For<0, cuda_thread_exec, Lambda<0>>
             >
         >;
 
 
-  constexpr int N = 16;
-  int *x = new int[N];
-  for(int i = 0;i < N;++ i){
-    x[i] = 0;
-  }
+  constexpr int N = 4;
 
+  RAJA::ReduceSum<cuda_reduce<1>, long> trip_count(0);
+
+//  printf("Calling RAJA::nested::forall\n");
   nested::forall(
       Pol{},
 
       camp::make_tuple(RangeSegment(0,N)),
 
       [=] __device__ (int i){
-        printf("hello %d\n", i);
+        //printf("hello %d (from theadIdx.x=%d)\n", i, (int)threadIdx.x);
+//        printf("LAM: trip_count=%p, parent=%p\n", &trip_count, trip_count.parent);
+        trip_count += 1;
       }
   );
   cudaDeviceSynchronize();
 
-  for(int i = 0;i < N;++ i){
-    ASSERT_EQ(x[i], 1);
-  }
-
-  delete[] x;
+  int result = (int)trip_count;
+  ASSERT_EQ(result, N);
 }
+
+
+CUDA_TEST(Nested, CudaExec2){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+
+  constexpr int N = 1;
+
+  RAJA::ReduceSum<cuda_reduce<1>, long> trip_count(0);
+
+//  printf("Calling RAJA::forall\n");
+  RAJA::forall<cuda_exec<1>>(
+      RangeSegment(0,N),
+      [=] __device__ (int i){
+//    printf("LAM: trip_count=%p, parent=%p\n", &trip_count, trip_count.parent);
+        trip_count += 1;
+      });
+  cudaDeviceSynchronize();
+
+  int result = (int)trip_count;
+  ASSERT_EQ(result, N);
+}
+
+
 #endif
+
+struct Foo {
+
+  inline Foo() {printf("Foo::Foo()\n");}
+
+  inline Foo(Foo const &c) {printf("Foo::Foo(const &c)\n");}
+
+  inline Foo(Foo &&c) {printf("Foo::Foo(&&c)\n");}
+
+  inline ~Foo() {printf("Foo::DTOR\n");}
+};
+
+
+TEST(Nested, TupleCtor){
+
+  printf("Creating a\n");
+  Foo a;
+
+  printf("Creating b\n");
+  Foo b = a;
+
+  printf("Creating tuple\n");
+  auto t = std::make_tuple(b);
+
+  printf("Copying tuple\n");
+  auto t2 = t;
+
+  printf("done!\n");
+}
+
+TEST(Nested, CampCtor){
+  printf("Creating a\n");
+  Foo a;
+
+  printf("Creating b\n");
+  Foo b(a);
+
+  printf("Creating tuple\n");
+  auto t = camp::make_tuple(b);
+
+  printf("Copying tuple\n");
+  auto t2 = t;
+
+  printf("done!\n");
+
+}
