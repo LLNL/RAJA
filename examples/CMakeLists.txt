@@ -47,10 +47,6 @@ raja_add_executable(
   SOURCES ex5-jacobi.cpp)
 
 raja_add_executable(
-  NAME ex6-indexset-segments
-  SOURCES ex6-indexset-segments.cpp)
-
-raja_add_executable(
   NAME ex7-red-black-gauss-seidel
   SOURCES ex7-red-black-gauss-seidel.cpp)
 
