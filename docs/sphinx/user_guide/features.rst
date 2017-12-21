@@ -31,4 +31,3 @@ recommendations for using them.
    feature/atomic
    feature/view
    feature/scan
-   feature/traits
