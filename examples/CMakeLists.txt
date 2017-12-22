@@ -35,8 +35,12 @@ raja_add_executable(
   SOURCES ex4-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex5-vertexsum-coloring
-  SOURCES ex5-vertexsum-coloring.cpp)
+  NAME ex5-nested-loop-reorder
+  SOURCES ex5-nested-loop-reorder.cpp)
+
+raja_add_executable(
+  NAME ex6-vertexsum-coloring
+  SOURCES ex6-vertexsum-coloring.cpp)
 
 raja_add_executable(
   NAME ex4-reductions
@@ -53,14 +57,6 @@ raja_add_executable(
 raja_add_executable(
   NAME ex8-wave-eqn
   SOURCES ex8-wave-eqn.cpp)
-
-raja_add_executable(
-  NAME ex10-nested-loop-reorder
-  SOURCES ex10-nested-loop-reorder.cpp)
-
-raja_add_executable(
-  NAME ex11-nested-loop-reorder-advanced
-  SOURCES ex11-nested-loop-reorder-advanced.cpp)
 
 raja_add_executable(
   NAME ex12-pi-atomic

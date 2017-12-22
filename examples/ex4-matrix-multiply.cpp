@@ -33,9 +33,9 @@
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    - Index range segment
- *    - view abstraction
- *    - 'nested' loop abstractions
- *    - nested loop reordering
+ *    - View abstraction
+ *    - 'RAJA::nested' loop abstractions
+ *    - Nested loop reordering
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
