@@ -7,9 +7,6 @@
 #include <cuda_runtime.h>
 #endif
 
-
-
-
 using RAJA::Index_type;
 using RAJA::View;
 using RAJA::Layout;
@@ -71,7 +68,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   using Idx1 = at_v<IndexTypes, 1>;
   RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
   RAJA::Real_type total{0.0};
-  auto ranges = camp::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
+  auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
   auto v = this->view;
   using namespace RAJA::nested;
@@ -185,7 +182,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -218,7 +215,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -250,7 +247,7 @@ CUDA_TEST(Nested, CudaCollapse1c)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -287,7 +284,7 @@ CUDA_TEST(Nested, CudaCollapse2)
 
   int N = 41;
   RAJA::nested::forall(Pol{},
-                       camp::make_tuple(RAJA::RangeSegment(1, N),
+                       RAJA::make_tuple(RAJA::RangeSegment(1, N),
                                         RAJA::RangeSegment(1, N)),
                        [=] RAJA_DEVICE (Index_type i, Index_type j) {
                          //printf("(%d, %d )\n", (int)i, (int) j );
@@ -322,7 +319,7 @@ CUDA_TEST(Nested, CudaReduceA)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -351,7 +348,7 @@ CUDA_TEST(Nested, CudaReduceB)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -381,7 +378,7 @@ CUDA_TEST(Nested, CudaReduceC)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, 3),
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -411,14 +408,14 @@ CUDA_TEST(Nested, SubRange_ThreadBlock)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
       [=] RAJA_HOST_DEVICE (Index_type i) {
         ptr[i] = 0.0;
        });
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(RAJA::RangeSegment(first, last)),
+      RAJA::make_tuple(RAJA::RangeSegment(first, last)),
       [=] RAJA_HOST_DEVICE (Index_type i) {
         ptr[i] = 1.0;
        });
@@ -464,14 +461,14 @@ CUDA_TEST(Nested, SubRange_Complex)
 
   RAJA::nested::forall(
       PolA{},
-      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
       [=] RAJA_HOST_DEVICE (Index_type i) {
         ptr[i] = 0.0;
        });
 
   RAJA::nested::forall(
       PolB{},
-      camp::make_tuple(RAJA::RangeSegment(first, last),
+      RAJA::make_tuple(RAJA::RangeSegment(first, last),
                        RAJA::RangeSegment(0, 16),
                        RAJA::RangeSegment(0, 32)),
       [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
@@ -523,7 +520,7 @@ TEST(Nested, FissionFusion){
   nested::forall(
       Pol_Fission{},
 
-      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
       [=](int i, int){
         x[i] += 1;
@@ -538,7 +535,7 @@ TEST(Nested, FissionFusion){
   nested::forall(
       Pol_Fusion{},
 
-      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
       [=](int i, int){
         y[i] += 1;
@@ -585,7 +582,7 @@ TEST(Nested, Tile){
   nested::forall(
       Pol{},
 
-      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
       [=](int i, int){
         x[i] += 1;
@@ -662,7 +659,7 @@ CUDA_TEST(Nested, CudaExec){
   nested::forall(
       Pol{},
 
-      camp::make_tuple(RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N)),
 
       [=] __device__ (int i){
 
@@ -696,7 +693,7 @@ CUDA_TEST(Nested, CudaExec1){
   nested::forall(
       Pol{},
 
-      camp::make_tuple(RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N)),
 
       [=] __device__ (ptrdiff_t i){
 
@@ -732,7 +729,7 @@ CUDA_TEST(Nested, CudaExec1a){
   nested::forall(
       Pol{},
 
-      camp::make_tuple(RangeSegment(0,N), RangeStrideSegment(0,N,2)),
+      RAJA::make_tuple(RangeSegment(0,N), RangeStrideSegment(0,N,2)),
 
       [=] __device__ (ptrdiff_t i, ptrdiff_t j){
         trip_count += 1;
@@ -767,7 +764,7 @@ CUDA_TEST(Nested, CudaExec1b){
   nested::forall(
       Pol{},
 
-      camp::make_tuple(RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N)),
 
       [=] __device__ (ptrdiff_t i){
 

@@ -87,7 +87,7 @@ CUDA_TEST(Chai, NestedSimple) {
   RAJA::nested::forall(
       POLICY{},
 
-      camp::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
+      RAJA::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
 
       [=] (int i, int j) {
         int index = j*X + i;
@@ -97,7 +97,7 @@ CUDA_TEST(Chai, NestedSimple) {
   RAJA::nested::forall(
       POLICY_GPU{},
 
-      camp::make_tuple(RangeSegment(0,Y), RangeSegment(0,X) ),
+      RAJA::make_tuple(RangeSegment(0,Y), RangeSegment(0,X) ),
 
       [=] __host__ __device__ (int i, int j) {
         int index = j*X + i;
@@ -109,7 +109,7 @@ CUDA_TEST(Chai, NestedSimple) {
   RAJA::nested::forall(
       POLICY{},
 
-      camp::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
+      RAJA::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
 
       [=] (int i, int j) {
         int index = j*X + i;

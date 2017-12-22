@@ -73,6 +73,8 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
 
 }  // end namespace nested
 
+  //usage will now be RAJA::make_tuple
+  using ::camp::make_tuple;
 
 }  // end namespace RAJA
 
