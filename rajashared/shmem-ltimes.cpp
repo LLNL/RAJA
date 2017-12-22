@@ -456,8 +456,7 @@ void runLTimesCudaShmem(bool debug,
 }
 
 
-// A POSSIBLE implementation
-#if 0
+
 void runLTimesRajaShmem(bool debug,
     Index_type num_moments,
                           Index_type num_directions,
@@ -545,70 +544,68 @@ void runLTimesRajaShmem(bool debug,
 
 
   // A possible implementation:
+  using namespace RAJA::nested;
+  using Pol = nested::Policy<
+        CudaKernel<1024,
+          // First, load Ell into shared memory in each block
+          Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
 
-  using LaunchPolicy = nested::Policy<
-        DistributeBlocks<2, 3>,    // distribute groups and zones over blocks
-        Loop<0>,                   // Launch loop 0, loading the L matrix once for the block
-        SyncThreads,               // __syncthreads()
+          // Distribute groups and zones across blocks
+          Collapse<cuda_block_seq_exec, ArgList<2, 3>,
 
-        Need to figure out how this works?!?!
-        ?!?!?!
+            // Load Psi for this g,z
+            For<1, cuda_thread_exec, Lambda<1>>,
+            CudaThreadSync,
+
+            // Compute phi for all m's and this g,z
+            For<0, cuda_thread_exec, Lambda<2>>
+
+          >
+        >
       >;
 
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, double>,
+  RAJA::Layout<2>, RAJA::ident_shmem, RAJA::ident_shmem> ell_shared(num_directions, num_moments);
 
-  using Loop_InitEll = nested::Policy<
-        CudaCollapse< For<0, cuda_thread, IMoment>,
-                      For<1, cuda_thread, IDirection> >
-      >;
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, double>,
+  RAJA::Layout<2>, RAJA::ident_shmem, RAJA::ident_shmem> psi_shared(num_directions, 1);
 
-  using Loop_LoadPsi = nested::Policy<
-        For<0, cuda_thread, IMoment>,
-        For<1, cuda_loop_exec, IDirection>
-      >;
+  nested::forall(
+      Pol{},
 
-  using Loop_ComputePhi = nested::Policy<
-        CudaCollapse< For<1, cuda_thread, IDirection>,
-                      For<2, cuda_thread, IGroup>,
-                      For<3, cuda_thread, IZone>>
-      >;
+    camp::make_tuple(TypedRangeSegment<IMoment>(0,num_moments),
+        TypedRangeSegment<IDirection>(0,num_directions),
+        TypedRangeSegment<IGroup>(0,num_groups),
+        TypedRangeSegment<IZone>(0,num_zones)),
 
-  nested::forall_multi(
-    LaunchPolicy{},
+     // Lambda<0>
+     // load L matrix into shmem
+     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
+       ell_shared(*d, *m) = ell(m, d);
+     },
 
-    camp::make_tuple(RangeSegment(0,num_moments),
-                     RangeSegment(0,num_directions),
-                     RangeSegment(0,num_groups),
-                     RangeSegment(0,num_zones)),
+     // Lambda<1>
+     // load slice of psi into shared
+     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
+       psi_shared(*d, 0) = psi(d,g,z);
+     },
 
-    // Loop 0
-    // load L matrix into shmem
-    makeLoop(Loop_InitEll{},
-             [=](IMoment m, IDirection d, IGroup, IZone){
-               ell_shared(*d, *m) = ell(m, d);
-             }),
-
-    // Loop 1
-    // load slice of psi into shared
-    makeLoop(Loop_LoadPsi{},
-             [=](IMoment, IDirection d, IGroup g, IZone z){
-               psi_shared(*d, *g, *z) = psi(d,g,z);
-             }),
-
-     // Loop 2
+     // Lambda<2>
      // Compute phi_m_g_z
-     makeLoop(Loop_ComputePhi{},
-              [=](IMoment m, IDirection d, IGroup g, IZone z){
-                 phi_shared(*m, *g, *z) += ell_shared(*d, *m) * psi_shared(*d, *g, *z);
-              }),
+     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
+       double phi_m_g_z = 0.0;
+       for(IDirection d(0);d < num_directions; ++ d){
+         phi_m_g_z += ell_shared(*d, *m) * psi_shared(*d, 0);
+       }
+       phi(m, g, z) = phi_m_g_z;
+     }
 
 
-     // Loop 3 (must have same thread mapping as Loop2)
-     // Write phi_m_g_z to global
-     makeLoop(Loop_WritePhi{},
-              [=](IMoment m, IDirection, IGroup g, IZone z){
-                 phi(m,g,z) = phi_shared(*m, *g, *z);
-                 phi_shared(*m, *g, *z) = 0.0; // zero in case of reuse
-              })
+//     // Lambda<3> (must have same thread mapping as Lambda<2>)
+//     // Write phi_m_g_z to global
+//     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
+//       phi(m,g,z)
+//     }
   );
 
 
@@ -661,7 +658,7 @@ void runLTimesRajaShmem(bool debug,
   cudaFree(d_phi);
   cudaFree(d_psi);
 }
-#endif
+
 
 
 
@@ -674,10 +671,11 @@ int main(){
   int g = 32;
   int z = 128*1024;
 
+  runLTimesRajaNested(debug, m, d, g, z); // warm up
+  runLTimesRajaShmem(debug, m, d, g, z);
   runLTimesRajaNested(debug, m, d, g, z);
   runLTimesCudaShmem(debug, m, d, g, z);
 
-  //runLTimesRajaShmem(debug, m, d, g, z);  //WIP
 
   return 0;
 }
