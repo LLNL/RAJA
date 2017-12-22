@@ -1,3 +1,18 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// 
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
@@ -61,7 +76,7 @@ RAJA_HOST_DEVICE constexpr Index_type get_val(T v) noexcept
 }
 CUDA_TYPED_TEST_P(Nested, Basic)
 {
-  using camp::at_v;
+  using RAJA::at_v;
   using Pol = at_v<TypeParam, 0>;
   using IndexTypes = at_v<TypeParam, 1>;
   using Idx0 = at_v<IndexTypes, 0>;
@@ -89,7 +104,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
 REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
 
 using namespace RAJA::nested;
-using camp::list;
+using RAJA::list;
 using s = RAJA::seq_exec;
 using TestTypes =
     ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
@@ -137,9 +152,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 
 TEST(Nested, TileDynamic)
 {
-  camp::idx_t count = 0;
-  camp::idx_t length = 5;
-  camp::idx_t tile_size = 3;
+  RAJA::idx_t count = 0;
+  RAJA::idx_t length = 5;
+  RAJA::idx_t tile_size = 3;
   RAJA::nested::forall(
       RAJA::make_tuple(Tile<1, tile<2>, RAJA::seq_exec>{tile_size},
                        For<0, RAJA::seq_exec>{},
