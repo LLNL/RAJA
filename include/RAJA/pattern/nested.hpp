@@ -1,3 +1,29 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file containing tiling policies and mechanics
+ *          for forallN templates.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_pattern_nested_HPP
 #define RAJA_pattern_nested_HPP
 
@@ -72,9 +98,6 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
 }
 
 }  // end namespace nested
-
-  //usage will now be RAJA::make_tuple
-  using ::camp::make_tuple;
 
 }  // end namespace RAJA
 

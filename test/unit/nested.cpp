@@ -61,7 +61,7 @@ RAJA_HOST_DEVICE constexpr Index_type get_val(T v) noexcept
 }
 CUDA_TYPED_TEST_P(Nested, Basic)
 {
-  using camp::at_v;
+  using RAJA::at_v;
   using Pol = at_v<TypeParam, 0>;
   using IndexTypes = at_v<TypeParam, 1>;
   using Idx0 = at_v<IndexTypes, 0>;
@@ -89,7 +89,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
 REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
 
 using namespace RAJA::nested;
-using camp::list;
+using RAJA::list;
 using s = RAJA::seq_exec;
 using TestTypes =
     ::testing::Types<list<Policy<For<1, s, For<0, s, Lambda<0>>>>,

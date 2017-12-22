@@ -44,6 +44,8 @@
 
 #include "RAJA/util/basic_mempool.hpp"
 
+#include "RAJA/util/camp_aliases.hpp"
+
 //
 // All platforms must support sequential execution.
 //
