@@ -37,7 +37,6 @@
 #include <cassert>
 #include <climits>
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
@@ -73,7 +72,7 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
     RAJA_DEVICE void operator()(InIndexType i)
     {
       data.template assign_index<ForType::index_val>(i);
-      camp::invoke(data.index_tuple, data.f);
+      camp::invoke(data.index_tuple, data.body);
     }
   };
   template <typename WrappedBody>
@@ -81,8 +80,8 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
   {
 
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.pol,
-                camp::get<ForType::index_val>(wrap.data.st),
+    forall_impl(fp.exec_policy,
+                camp::get<ForType::index_val>(wrap.data.segment_tuple),
                 ForWrapper<WrappedBody>{wrap});
   }
 };
@@ -107,7 +106,7 @@ struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
     RAJA_DEVICE void operator()(InIndexType i)
     {
       data.template assign_index<ForType::index_val>(i);
-      camp::invoke(data.index_tuple, data.f);
+      camp::invoke(data.index_tuple, data.body);
     }
   };
   template <typename WrappedBody>
@@ -115,8 +114,8 @@ struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
   {
 
     using ::RAJA::policy::cuda::forall_impl;
-    forall_impl(fp.pol,
-                camp::get<ForType::index_val>(wrap.data.st),
+    forall_impl(fp.exec_policy,
+                camp::get<ForType::index_val>(wrap.data.segment_tuple),
                 ForWrapper<WrappedBody>{wrap});
   }
 };
@@ -156,7 +155,7 @@ struct CudaWrapper {
 
   void RAJA_DEVICE operator()() const
   {
-    auto const &pol = camp::get<idx>(data.pt);
+    auto const &pol = camp::get<idx>(data.policy_tuple);
     Executor<internal::remove_all_t<decltype(pol)>> e{};
     Next next_wrapper{data};
     e(pol, next_wrapper);
@@ -176,7 +175,7 @@ struct CudaWrapper<n_policies, n_policies, Data> {
 
   void RAJA_DEVICE operator()() const
   {
-    camp::invoke(data.index_tuple, data.f);
+    camp::invoke(data.index_tuple, data.body);
   }
 };
 
@@ -302,7 +301,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
     CudaDim dims;
 
     /* As we create a cuda wrapper, we construct all of the cuda loop policies,
-     * like cuda_thread_x_exec, their associated segment from wrap.data.st
+     * like cuda_thread_x_exec, their associated segment from wrap.data.segment_tuple
      *
      * This construction modifies the CudaDim to specify the correct number
      * of threads and blocks for the kernel launch
@@ -311,7 +310,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
      * of the block/thread idx unpacking and assignment
     */
     auto begin_tuple = camp::make_tuple(
-        camp::get<FOR_TYPES::index_val>(wrap.data.st).begin()...);
+        camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple).begin()...);
 
     auto cuda_wrap =
         ForWrapper<WrappedBody,
@@ -322,7 +321,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
             begin_tuple,
 
             typename FOR_TYPES::policy_type::cuda_exec_policy(
-                dims, camp::get<FOR_TYPES::index_val>(wrap.data.st))...
+                dims, camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple))...
 
             );
 
