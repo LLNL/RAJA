@@ -41,7 +41,7 @@ struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 
   RAJA_HOST_DEVICE constexpr tile_fixed() {}
-  constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
+  RAJA_HOST_DEVICE constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
 ///! tag for a tiling loop
@@ -53,7 +53,7 @@ struct tile {
       : chunk_size{chunk_size_}
   {
   }
-  camp::idx_t get_chunk_size() const { return chunk_size; }
+  RAJA_HOST_DEVICE camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
 namespace internal{
@@ -97,64 +97,80 @@ struct IterableTiler {
     using reference = value_type &;
     using iterator_category = std::random_access_iterator_tag;
 
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
     constexpr iterator(IterableTiler const &itiler_, Index_type block_id_)
         : itiler{itiler_}, block_id{block_id_}
     {
     }
 
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
     value_type operator*()
     {
       auto start = block_id * itiler.block_size;
       return itiler.it.slice(start, itiler.block_size);
     }
 
-    inline difference_type operator-(const iterator &rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE difference_type operator-(const iterator &rhs) const
     {
       return static_cast<difference_type>(block_id)
              - static_cast<difference_type>(rhs.block_id);
     }
 
-    inline iterator operator-(const difference_type &rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE iterator operator-(const difference_type &rhs) const
     {
       return iterator(itiler, block_id - rhs);
     }
 
-    inline iterator operator+(const difference_type &rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE iterator operator+(const difference_type &rhs) const
     {
       return iterator(itiler,
                       block_id + rhs >= itiler.num_blocks ? itiler.num_blocks
                                                           : block_id + rhs);
     }
 
-    inline value_type operator[](difference_type rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE value_type operator[](difference_type rhs) const
     {
       return *((*this) + rhs);
     }
 
-    inline bool operator!=(const IterableTiler &rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE bool operator!=(const IterableTiler &rhs) const
     {
       return block_id != rhs.block_id;
     }
 
-    inline bool operator<(const IterableTiler &rhs) const
+    RAJA_HOST_DEVICE
+    RAJA_INLINE bool operator<(const IterableTiler &rhs) const
     {
       return block_id < rhs.block_id;
     }
   };
 
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   IterableTiler(const Iterable &it_, camp::idx_t block_size_)
       : it{it_}, block_size{block_size_}
   {
     using std::begin;
     using std::end;
     using std::distance;
-    dist = distance(begin(it), end(it));
+    dist = it.end() - it.begin(); //distance(begin(it), end(it));
     num_blocks = dist / block_size;
     if (dist % block_size) num_blocks += 1;
   }
 
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   iterator begin() { return iterator(*this, 0); }
 
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   iterator end() { return iterator(*this, num_blocks); }
 
   value_type it;
@@ -165,10 +181,10 @@ struct IterableTiler {
 
 
 
-template <camp::idx_t Index, typename TPol, typename EPol, typename ... InnerPolicies>
-struct StatementExecutor<Tile<Index, TPol, EPol, InnerPolicies...>> {
+template <camp::idx_t ArgumentId, typename TPol, typename EPol, typename ... InnerPolicies>
+struct StatementExecutor<Tile<ArgumentId, TPol, EPol, InnerPolicies...>> {
 
-  using TileType = Tile<Index, TPol, EPol, InnerPolicies...>;
+  using TileType = Tile<ArgumentId, TPol, EPol, InnerPolicies...>;
   using inner_policy_t = Policy<InnerPolicies...>;
 
   const inner_policy_t inner_policy;
@@ -176,7 +192,7 @@ struct StatementExecutor<Tile<Index, TPol, EPol, InnerPolicies...>> {
   template <typename WrappedBody>
   void operator()(TileType const &fp, WrappedBody const &wrap)
   {
-    auto const &st = camp::get<Index>(wrap.data.segment_tuple);
+    auto const &st = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
     IterableTiler<decltype(st)> tiled_iterable(st, fp.tile_policy.get_chunk_size());
 
@@ -184,10 +200,10 @@ struct StatementExecutor<Tile<Index, TPol, EPol, InnerPolicies...>> {
     auto inner_wrapper = internal::make_statement_list_wrapper(fp.enclosed_statements, wrap.data);
 
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<Index, WrappedBody>{inner_wrapper});
+    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<ArgumentId, WrappedBody>{inner_wrapper});
 
     // Set range back to original values
-    camp::get<Index>(wrap.data.segment_tuple) = tiled_iterable.it;
+    camp::get<ArgumentId>(wrap.data.segment_tuple) = tiled_iterable.it;
 
   }
 };

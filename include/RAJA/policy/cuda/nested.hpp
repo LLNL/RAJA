@@ -62,5 +62,6 @@
 #include "RAJA/policy/cuda/nested/For.hpp"
 #include "RAJA/policy/cuda/nested/Lambda.hpp"
 #include "RAJA/policy/cuda/nested/Sync.hpp"
+#include "RAJA/policy/cuda/nested/Tile.hpp"
 
 #endif  // closing endif for header file include guard

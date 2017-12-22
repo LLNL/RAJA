@@ -745,6 +745,45 @@ CUDA_TEST(Nested, CudaExec1a){
   ASSERT_EQ(result, N*N/2);
 }
 
+
+
+CUDA_TEST(Nested, CudaExec1b){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = 32; //(long)30000*1024*1024;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<1, 8,
+              nested::Tile<0, nested::tile_fixed<4>, seq_exec,
+                For<0, cuda_block_thread_exec, Lambda<0>>
+              >
+            >
+        >;
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N)),
+
+      [=] __device__ (ptrdiff_t i){
+
+        trip_count += 1;
+        printf("[%d] %d\n", (int)threadIdx.x, (int)i);
+      }
+  );
+  cudaDeviceSynchronize();
+
+  long result = (long)trip_count;
+  printf("result=%ld\n", result);
+
+  ASSERT_EQ(result, N);
+}
+
 CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA;
   using namespace RAJA::nested;

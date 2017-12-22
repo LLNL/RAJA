@@ -108,7 +108,7 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
 
 
     for (decltype(len) i = 0; i < len; ++i) {
-      wrap.data.template assign_index<ArgumentId>(i);
+      wrap.data.template assign_index<ArgumentId>(*(begin+i));
       wrap(exec_info);
     }
   }

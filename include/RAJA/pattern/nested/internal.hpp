@@ -232,7 +232,12 @@ struct GenericWrapper {
 
   BaseWrapper wrapper;
 
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   GenericWrapper(data_type &d) : wrapper{d} {}
 
 };
