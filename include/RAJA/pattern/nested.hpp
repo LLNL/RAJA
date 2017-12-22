@@ -274,6 +274,8 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 
 }  // end namespace nested
 
+  //usage will now be RAJA::make_tuple
+  using ::camp::make_tuple;
 
 }  // end namespace RAJA
 
