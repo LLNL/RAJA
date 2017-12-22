@@ -48,7 +48,6 @@
 
 namespace RAJA
 {
-
 namespace nested
 {
 
