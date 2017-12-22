@@ -50,10 +50,6 @@ raja_add_test(
   NAME nested
   SOURCES nested.cpp)
 
-#raja_add_test(
-#  NAME test-nested_multi
-#  SOURCES test-nested_multi.cpp)
-
 raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
