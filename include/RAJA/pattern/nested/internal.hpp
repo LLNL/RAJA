@@ -107,7 +107,7 @@ struct LoopData {
   void assign_index(IndexT const &i)
   {
     camp::get<Idx>(index_tuple) =
-        camp::tuple_element_t<Idx, decltype(index_tuple)>{i};
+        camp::tuple_element_t<Idx, index_tuple_t>{i};
   }
 };
 
@@ -218,7 +218,7 @@ struct NestedPrivatizer {
   data_type privatized_data;
   value_type privatized_wrapper;
 
-  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper{value_type{privatized_data}} {}
+  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{o.wrapper.statement_list, privatized_data}) {}
 
   reference_type get_priv() { return privatized_wrapper; }
 };
@@ -229,6 +229,7 @@ struct NestedPrivatizer {
 template <camp::idx_t Index, typename BaseWrapper>
 struct GenericWrapper {
   using data_type = camp::decay<typename BaseWrapper::data_type>;
+  using statement_list_type = camp::decay<typename BaseWrapper::statement_list_type>;
 
   BaseWrapper wrapper;
 
@@ -238,7 +239,7 @@ struct GenericWrapper {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  GenericWrapper(data_type &d) : wrapper{d} {}
+  GenericWrapper(statement_list_type const &s, data_type &d) : wrapper{s,d} {}
 
 };
 

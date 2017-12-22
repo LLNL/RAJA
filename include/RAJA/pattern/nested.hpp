@@ -50,7 +50,9 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
   // and only copied to provide thread-private instances.
-  internal::LoopData<PolicyType, SegmentTuple, Bodies...>
+  using policy_t = camp::decay<PolicyType>;
+  using segment_t = camp::decay<SegmentTuple>;
+  internal::LoopData<policy_t, segment_t, camp::decay<Bodies>...>
     loop_data(
           std::forward<PolicyType>(policy),
           std::forward<SegmentTuple>(segments),
@@ -60,7 +62,7 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
 
   // Create a StatmentList wrapper to execute our policy (which is just
   // a StatementList)
-  auto wrapper = internal::make_statement_list_wrapper(policy, loop_data);
+  auto wrapper = internal::make_statement_list_wrapper(std::forward<PolicyType>(policy), loop_data);
 
   // Execute!
   wrapper();

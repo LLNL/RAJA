@@ -8,7 +8,7 @@
 #endif
 
 
-#if 0
+
 
 using RAJA::Index_type;
 using RAJA::View;
@@ -95,83 +95,93 @@ using namespace RAJA::nested;
 using camp::list;
 using s = RAJA::seq_exec;
 using TestTypes =
-    ::testing::Types<list<Policy<For<1, s>, For<0, s>>,
+    ::testing::Types<list<Policy<For<1, s, For<0, s, Lambda<0>>>>,
                           list<TypedIndex, Index_type>,
                           RAJA::seq_reduce>,
-                     list<Policy<Tile<1, tile_fixed<2>, RAJA::loop_exec>,
-                                 Tile<0, tile<2>, RAJA::loop_exec>,
-                                 For<0, s>,
-                                 For<1, s>>,
+                     list<Policy<Tile<1, tile_fixed<2>, RAJA::loop_exec,
+                                   Tile<0, tile_fixed<2>, RAJA::loop_exec,
+                                     For<0, s,
+                                       For<1, s, Lambda<0>>
+                                     >
+                                   >
+                                 >>,
                           list<Index_type, Index_type>,
                           RAJA::seq_reduce>,
-                     list<Policy<Collapse<s, For<0>, For<1>>>,
+                     list<Policy<Collapse<s, ArgList<0,1>, Lambda<0>>>,
                           list<Index_type, Index_type>,
                           RAJA::seq_reduce>>;
+
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Nested, TestTypes);
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OMPTypes = ::testing::Types<
     list<
-        Policy<For<1, RAJA::omp_parallel_for_exec>, For<0, s>>,
+        Policy<For<1, RAJA::omp_parallel_for_exec, For<0, s, Lambda<0>>>>,
         list<TypedIndex, Index_type>,
         RAJA::omp_reduce>,
-    list<Policy<Tile<1, tile_fixed<2>, RAJA::omp_parallel_for_exec>,
-                For<1, RAJA::loop_exec>,
-                For<0, s>>,
+    list<Policy<Tile<1, tile_fixed<2>, RAJA::omp_parallel_for_exec,
+                For<1, RAJA::loop_exec,
+                  For<0, s, Lambda<0>>
+                >
+               >>,
          list<TypedIndex, Index_type>,
          RAJA::omp_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
 #endif
 #if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<
-    list<Policy<For<1, RAJA::tbb_for_exec>, For<0, s>>,
+    list<Policy<For<1, RAJA::tbb_for_exec, For<0, s, Lambda<0>>>>,
          list<TypedIndex, Index_type>,
          RAJA::tbb_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
-    list<Policy<For<1, s>, For<0, RAJA::cuda_exec<128>>>,
+    list<Policy<For<1, s, CudaKernel<128, For<0, RAJA::cuda_block_thread_exec, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce<128>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 #endif
 
-TEST(Nested, TileDynamic)
-{
-  camp::idx_t count = 0;
-  camp::idx_t length = 5;
-  camp::idx_t tile_size = 3;
-  RAJA::nested::forall(
-      camp::make_tuple(Tile<1, tile<2>, RAJA::seq_exec>{tile_size},
-                       For<0, RAJA::seq_exec>{},
-                       For<1, RAJA::seq_exec>{}),
-      camp::make_tuple(RAJA::RangeSegment(0, length),
-                       RAJA::RangeSegment(0, length)),
-      [=, &count](Index_type i, Index_type j) {
-        std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
-                  << std::endl;
+//TEST(Nested, TileDynamic)
+//{
+//  camp::idx_t count = 0;
+//  camp::idx_t length = 5;
+//  camp::idx_t tile_size = 3;
+//  RAJA::nested::forall(
+//      camp::make_tuple(Tile<1, tile<2>, RAJA::seq_exec>{tile_size},
+//                       For<0, RAJA::seq_exec>{},
+//                       For<1, RAJA::seq_exec>{}),
+//      camp::make_tuple(RAJA::RangeSegment(0, length),
+//                       RAJA::RangeSegment(0, length)),
+//      [=, &count](Index_type i, Index_type j) {
+//        std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
+//                  << std::endl;
+//
+//        ASSERT_EQ(count,
+//                  count < (length * tile_size)
+//                      ? (i * 3 + j)
+//                      : (length * tile_size)
+//                            + (i * (length - tile_size) + j - tile_size));
+//        count++;
+//      });
+//}
 
-        ASSERT_EQ(count,
-                  count < (length * tile_size)
-                      ? (i * 3 + j)
-                      : (length * tile_size)
-                            + (i * (length - tile_size) + j - tile_size));
-        count++;
-      });
-}
+
 
 
 #if defined(RAJA_ENABLE_CUDA)
-CUDA_TEST(Nested, CudaCollapse)
+CUDA_TEST(Nested, CudaCollapse1a)
 {
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
-        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>,
-        RAJA::nested::For<2, RAJA::cuda_thread_y_exec> > >;
+      CudaKernel<1024,
+        Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, 3*2*5*sizeof(int));
+
 
   RAJA::nested::forall(
       Pol{},
@@ -179,20 +189,32 @@ CUDA_TEST(Nested, CudaCollapse)
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
-          printf("(%d, %d, %d)\n", (int)i, (int)j, (int)k);
+        x[i + j*3 + k*3*2] = 1;
        });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  cudaFree(x);
 }
 
 
-CUDA_TEST(Nested, CudaCollapse2)
+
+CUDA_TEST(Nested, CudaCollapse1b)
 {
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
-        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
-      >,
-      RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+      CudaKernel<1024,
+        Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>,
+          For<2, RAJA::seq_exec, Lambda<0>>
+        >
+      >>;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, 3*2*5*sizeof(int));
 
   RAJA::nested::forall(
       Pol{},
@@ -200,17 +222,62 @@ CUDA_TEST(Nested, CudaCollapse2)
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
-          printf("(%d, %d, %d)\n", (int)i, (int)j, (int)k);
+        x[i + j*3 + k*3*2] = 1;
        });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  cudaFree(x);
 }
 
-CUDA_TEST(Nested, CudaCollapse3)
+
+CUDA_TEST(Nested, CudaCollapse1c)
 {
 
   using Pol = RAJA::nested::Policy<
-    RAJA::nested::CudaCollapse<
-    RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
-      RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+      CudaKernel<1024,
+        Collapse<RAJA::cuda_block_seq_exec, ArgList<0,1>,
+          For<2, RAJA::cuda_thread_exec, Lambda<0>>
+        >
+      >>;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, 3*2*5*sizeof(int));
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        x[i + j*3 + k*3*2] = 1;
+       });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  cudaFree(x);
+}
+
+
+
+
+
+CUDA_TEST(Nested, CudaCollapse2)
+{
+
+  using Pol = RAJA::nested::Policy<
+       CudaKernel<1024,
+         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
+       >>;
+
 
   Index_type *sum1;
   cudaMallocManaged(&sum1, 1*sizeof(Index_type));
@@ -245,11 +312,11 @@ CUDA_TEST(Nested, CudaReduceA)
 {
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
-        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
-      >,
-      RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+      CudaKernel<12,
+        Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>,
+          For<2, RAJA::seq_exec, Lambda<0>>
+        >
+      >>;
 
   RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
 
@@ -265,17 +332,20 @@ CUDA_TEST(Nested, CudaReduceA)
 
   ASSERT_EQ((int)reducer, 3*2*5);
 }
+
+
+
 
 
 CUDA_TEST(Nested, CudaReduceB)
 {
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::For<2, RAJA::loop_exec>,
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
-        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
-      > >;
+        For<2, RAJA::seq_exec,
+          CudaKernel<12,
+            Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
+          >
+        >>;
 
   RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
 
@@ -291,16 +361,21 @@ CUDA_TEST(Nested, CudaReduceB)
 
   ASSERT_EQ((int)reducer, 3*2*5);
 }
+
+
 
 
 CUDA_TEST(Nested, CudaReduceC)
 {
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::For<2, RAJA::loop_exec>,
-      RAJA::nested::For<0, RAJA::loop_exec>,
-      RAJA::nested::For<1, RAJA::cuda_exec<12>>
-      >;
+        For<2, RAJA::loop_exec,
+          For<0, RAJA::loop_exec,
+            CudaKernel<12,
+              For<1, RAJA::cuda_block_thread_exec, Lambda<0>>
+            >
+          >
+        >>;
 
   RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
 
@@ -317,52 +392,15 @@ CUDA_TEST(Nested, CudaReduceC)
   ASSERT_EQ((int)reducer, 3*2*5);
 }
 
+
+
+
 CUDA_TEST(Nested, SubRange_ThreadBlock)
 {
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<1024>>
-      > >;
-
-  size_t num_elem = 2048;
-  size_t first = 10;
-  size_t last = num_elem - 10;
-
-  double *ptr = nullptr;
-  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
-
-  RAJA::nested::forall(
-      Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
-      [=] RAJA_HOST_DEVICE (Index_type i) {
-        ptr[i] = 0.0;
-       });
-
-  RAJA::nested::forall(
-      Pol{},
-      camp::make_tuple(RAJA::RangeSegment(first, last)),
-      [=] RAJA_HOST_DEVICE (Index_type i) {
-        ptr[i] = 1.0;
-       });
-  cudaDeviceSynchronize();
-
-  size_t count = 0;
-  for(size_t i = 0;i < num_elem; ++ i){
-    count += ptr[i];
-  }
-  ASSERT_EQ(count, num_elem-20);
-  for(size_t i = 0;i < 10;++ i){
-    ASSERT_EQ(ptr[i], 0.0);
-    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
-  }
-}
-
-CUDA_TEST(Nested, SubRange_Block)
-{
-  using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_block_x_exec>
-      > >;
+        CudaKernel<1024,
+          For<0, RAJA::cuda_block_thread_exec, Lambda<0>>
+        >>;
 
   size_t num_elem = 2048;
   size_t first = 10;
@@ -398,60 +436,24 @@ CUDA_TEST(Nested, SubRange_Block)
 }
 
 
-CUDA_TEST(Nested, SubRange_Thread)
-{
-  using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>
-      > >;
 
-  size_t num_elem = 1024;
-  size_t first = 10;
-  size_t last = num_elem - 10;
 
-  double *ptr = nullptr;
-  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
-
-  RAJA::nested::forall(
-      Pol{},
-      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
-      [=] RAJA_HOST_DEVICE (Index_type i) {
-        ptr[i] = 0.0;
-       });
-
-  RAJA::nested::forall(
-      Pol{},
-      camp::make_tuple(RAJA::RangeSegment(first, last)),
-      [=] RAJA_HOST_DEVICE (Index_type i) {
-        ptr[i] = 1.0;
-       });
-  cudaDeviceSynchronize();
-
-  size_t count = 0;
-  for(size_t i = 0;i < num_elem; ++ i){
-    count += ptr[i];
-  }
-  ASSERT_EQ(count, num_elem-20);
-  for(size_t i = 0;i < 10;++ i){
-    ASSERT_EQ(ptr[i], 0.0);
-    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
-  }
-}
 
 
 CUDA_TEST(Nested, SubRange_Complex)
 {
-  using Pol = RAJA::nested::Policy<
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>
-      > >;
+  using PolA = RAJA::nested::Policy<
+          CudaKernel<128,
+            For<0, RAJA::cuda_block_thread_exec, Lambda<0>>
+          >>;
 
-  using ExecPolicy =
-      RAJA::nested::Policy<
-        RAJA::nested::CudaCollapse<
-          RAJA::nested::For<0, RAJA::cuda_block_x_exec>,
-          RAJA::nested::For<1, RAJA::cuda_thread_x_exec>>,
-        RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+  using PolB = RAJA::nested::Policy<
+          CudaKernel<128,
+            Collapse<RAJA::cuda_block_thread_exec, ArgList<0, 1>,
+              For<2, RAJA::seq_exec, Lambda<0>>
+            >
+          >>;
+
 
   size_t num_elem = 1024;
   size_t first = 10;
@@ -461,22 +463,22 @@ CUDA_TEST(Nested, SubRange_Complex)
   cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
 
   RAJA::nested::forall(
-      Pol{},
+      PolA{},
       camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
       [=] RAJA_HOST_DEVICE (Index_type i) {
         ptr[i] = 0.0;
        });
 
   RAJA::nested::forall(
-      ExecPolicy{},
+      PolB{},
       camp::make_tuple(RAJA::RangeSegment(first, last),
                        RAJA::RangeSegment(0, 16),
                        RAJA::RangeSegment(0, 32)),
       [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
-        //if(j == 0 && k == 0){
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
-        //}
+        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
        });
+
+
   cudaDeviceSynchronize();
 
   size_t count = 0;
@@ -490,7 +492,6 @@ CUDA_TEST(Nested, SubRange_Complex)
   }
 }
 
-#endif
 
 #endif
 
@@ -645,11 +646,11 @@ CUDA_TEST(Nested, CudaExec){
   using namespace RAJA::nested;
 
   constexpr long N = 1024;
-  static constexpr long B = 300*1024;
+
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<B, 1024,
-              For<0, cuda_thread_exec, Lambda<0>>
+            CudaKernel<1024,
+              For<0, cuda_block_thread_exec, Lambda<0>>
             >
         >;
 
@@ -671,9 +672,9 @@ CUDA_TEST(Nested, CudaExec){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
 
-  ASSERT_EQ(result, N*B);
+  ASSERT_EQ(result, N);
 }
 
 CUDA_TEST(Nested, CudaExec1){
@@ -684,7 +685,7 @@ CUDA_TEST(Nested, CudaExec1){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<0, 1024,
+            CudaKernel<1024,
               For<0, cuda_block_thread_exec, Lambda<0>>
             >
         >;
@@ -705,7 +706,7 @@ CUDA_TEST(Nested, CudaExec1){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -716,11 +717,11 @@ CUDA_TEST(Nested, CudaExec1a){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  constexpr long N = 4; //(long)30000*1024*1024;
+  constexpr long N = (long)128*1024;
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<2, 16,
+            CudaKernel<1024,
               nested::Collapse<cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
             >
         >;
@@ -740,7 +741,7 @@ CUDA_TEST(Nested, CudaExec1a){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N/2);
 }
@@ -751,15 +752,13 @@ CUDA_TEST(Nested, CudaExec1b){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  constexpr long N = 32; //(long)30000*1024*1024;
+  constexpr long N = (long)300*1024*1024;
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1, 8,
-              nested::Tile<0, nested::tile_fixed<4>, seq_exec,
-                For<0, cuda_block_thread_exec, Lambda<0>>
+            CudaKernel<1024,
+              For<0, cuda_block_thread_exec, Lambda<0>>
               >
-            >
         >;
 
 
@@ -773,13 +772,13 @@ CUDA_TEST(Nested, CudaExec1b){
       [=] __device__ (ptrdiff_t i){
 
         trip_count += 1;
-        printf("[%d] %d\n", (int)threadIdx.x, (int)i);
+        //printf("[%d] %d\n", (int)threadIdx.x, (int)i);
       }
   );
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -789,7 +788,7 @@ CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA::nested;
 
 
-  constexpr long N = (long)30000*1024*1024;
+  constexpr long N = (long)300*1024*1024;
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
@@ -801,7 +800,7 @@ CUDA_TEST(Nested, CudaExec2){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
   ASSERT_EQ(result, N);
 }
 

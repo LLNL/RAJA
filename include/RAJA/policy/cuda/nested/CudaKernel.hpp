@@ -84,14 +84,102 @@ namespace nested
 
 
 /*!
+ * CUDA kernel launch policy where the user specifies the number of thread
+ * blocks and threads per block.
+ */
+template <bool async0, int num_blocks, int num_threads>
+struct cuda_explicit_launch{
+
+  static constexpr bool async = async0;
+
+  static CudaDim compute_launch_dims(){
+    CudaDim d;
+
+    d.num_blocks.x = num_blocks;
+    d.num_blocks.y = 1;
+    d.num_blocks.z = 1;
+
+    d.num_threads.x = num_threads;
+    d.num_threads.y = 1;
+    d.num_threads.z = 1;
+
+
+    return d;
+  }
+};
+
+
+/*!
+ * CUDA kernel launch policy where the user specifies the number of threads
+ * per block, and the number of blocks per Streaming MultiProcessor.
+ *
+ * A value of 0 for num_blocks_per_sm (default) uses the device properties
+ * to compute how many blocks will will fit on each SM to maximize occupancy.
+ */
+template <bool async0, int num_threads, int num_blocks_per_sm=0>
+struct cuda_block_per_sm_launch{
+
+  static constexpr bool async = async0;
+
+  static CudaDim compute_launch_dims(){
+    CudaDim d;
+
+    // Get current device's properties
+    int cur_device = -1;
+    cudaGetDevice(&cur_device);
+    cudaDeviceProp dev_props;
+    cudaGetDeviceProperties(&dev_props, cur_device);
+
+    // Compute number of blocks
+    int num_sm = dev_props.multiProcessorCount;
+    int num_blocks = num_sm * num_blocks_per_sm;
+
+    if(num_blocks_per_sm == 0){
+      int num_threads_per_sm = dev_props.maxThreadsPerMultiProcessor;
+      int blocks_per_sm = num_threads_per_sm / num_threads;
+      num_blocks = blocks_per_sm * num_sm;
+
+      // limit it to 8 blocks/sm
+      // TODO: is there a way to compute max resident blocks/sm?!?!?
+      if(num_blocks > num_sm*8){
+        num_blocks = num_sm*8;
+      }
+    }
+
+    d.num_blocks.x = num_blocks;
+    d.num_blocks.y = 1;
+    d.num_blocks.z = 1;
+
+    d.num_threads.x = num_threads;
+    d.num_threads.y = 1;
+    d.num_threads.z = 1;
+
+
+    return d;
+  }
+};
+
+
+/*!
  * A nested::forall statement that launches a CUDA kernel.
  *
  *
  */
-template <int num_blocks, int num_threads, typename... EnclosedStmts>
-struct CudaKernel : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
-
+template <typename LaunchConfig, typename... EnclosedStmts>
+struct CudaKernelBase : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
 };
+
+
+/*!
+ * A nested::forall statement that launches a CUDA kernel.
+ *
+ *
+ */
+template <int num_threads, typename... EnclosedStmts>
+using CudaKernel = CudaKernelBase<cuda_block_per_sm_launch<false, num_threads>, EnclosedStmts...>;
+
+template <int num_threads, typename... EnclosedStmts>
+using CudaKernelAsync = CudaKernelBase<cuda_block_per_sm_launch<true, num_threads>, EnclosedStmts...>;
 
 
 namespace internal
@@ -110,22 +198,9 @@ __global__ void CudaKernelLauncher(StmtList st, Data data)
   CudaExecInfo exec_info;
 
   // Thread privatize the loop data
-//  using data_type = camp::decay<Data>;
-//#if 0
-//  // Use shared memory for privatized data (no chance of registers here)
-//  __shared__ char private_data_raw[sizeof(data_type)];
-//  data_type &private_data = *reinterpret_cast<data_type*>(&private_data_raw[0]);
-//  memcpy(&private_data, &data, sizeof(data_type));
-//#else
-//  // Use global memory (or possibly registers) for privatized data
-//  //data_type private_data{data};
-//#endif
-
-
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(data);
   auto &private_data = privatizer.get_priv();
-
 
   // Execute the statement list, using CUDA specific executors
   CudaStatementListWrapper<StmtList, Data> cuda_wrapper(st, private_data);
@@ -133,65 +208,42 @@ __global__ void CudaKernelLauncher(StmtList st, Data data)
 }
 
 
-template <int num_blocks, int num_threads, typename... EnclosedStmts>
-struct StatementExecutor<CudaKernel<num_blocks, num_threads, EnclosedStmts...>> {
 
-  using StatementType = CudaKernel<num_blocks, num_threads, EnclosedStmts...>;
+/*!
+ * Specialization that launches CUDA kernels for nested::forall from host code
+ */
+template <typename LaunchConfig, typename... EnclosedStmts>
+struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
+
+  using StatementType = CudaKernelBase<LaunchConfig, EnclosedStmts...>;
 
   template <typename StmtListWrapper>
   void operator()(StatementType const &fp, StmtListWrapper const &wrap)
   {
 
-
-
     using data_type = camp::decay<typename StmtListWrapper::data_type>;
-    //data_type private_data = wrap.data;
-
     using stmt_list_type = camp::decay<typename StmtListWrapper::statement_list_type>;
-    stmt_list_type private_stmt_list = wrap.statement_list;
 
-
-    int num_blocks_actual = num_blocks;
-
-    // 0 blocks means: use 1 per sm
-    if(num_blocks_actual == 0){
-
-      int cur_device = -1;
-      cudaGetDevice(&cur_device);
-      cudaDeviceProp dev_props;
-      cudaGetDeviceProperties(&dev_props, cur_device);
-      //int num_threads = dev_props.maxThreadsPerBlock;
-      //int num_sm = dev_props.multiProcessorCount;
-      num_blocks_actual = dev_props.multiProcessorCount;
-    }
-
-    printf("LAUNCH KERNEL with %d blocks and  %d threads\n", num_blocks_actual, num_threads);
+    // Use the LaunchConfig type to compute how many threads and blocks to use
+    CudaDim dims = LaunchConfig::compute_launch_dims();
 
     cudaStream_t stream = 0;
     int shmem = 0;
 
-    // setup reducers
-    //printf("creating private_data\n");
-    //using loop_data_t = decltype(wrap.data);
-    //data_type private_data = RAJA::cuda::make_launch_body(num_blocks, num_threads, shmem, stream, std::forward<loop_data_t>(wrap.data));
+    // Launch, using make_launch_body to correctly setup reductions
+    CudaKernelLauncher<<<dims.num_blocks, dims.num_threads, shmem, stream>>>(
+        wrap.statement_list,
+        RAJA::cuda::make_launch_body(dims.num_blocks.x, dims.num_threads.x, shmem, stream, wrap.data ));
 
-//    printf("launching kernel\n");
-    // Launch kernel
-//    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(private_stmt_list, std::move(private_data));
-
-    CudaKernelLauncher<<<num_blocks_actual, num_threads, shmem, stream>>>(
-        private_stmt_list,
-        RAJA::cuda::make_launch_body(num_blocks, num_threads, shmem, stream, wrap.data ));
-
-    //printf("kernel complete, private_data=%p\n", &private_data);
-//    printf("kernel complete\n");
 
     // Check for errors
     RAJA::cuda::peekAtLastError();
 
     RAJA::cuda::launch(stream);
-    //if (!Async)
-    RAJA::cuda::synchronize(stream);
+
+    if (!LaunchConfig::async){
+      RAJA::cuda::synchronize(stream);
+    }
   }
 };
 

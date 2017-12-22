@@ -100,11 +100,11 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
     // Pull out iterators
-    auto begin = iter.begin();  // std::begin(iter);
-    auto end = iter.end();      // std::end(iter);
+    auto begin = iter.begin();
+    auto end = iter.end();
 
     // compute trip count
-    auto len = end - begin;  // std::distance(begin, end);
+    auto len = end - begin;
 
 
     for (decltype(len) i = 0; i < len; ++i) {
@@ -137,11 +137,11 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
     // Pull out iterators
-    auto begin = iter.begin();  // std::begin(iter);
-    auto end = iter.end();      // std::end(iter);
+    auto begin = iter.begin();
+    auto end = iter.end();
 
     // compute trip count
-    auto len = end - begin;  // std::distance(begin, end);
+    auto len = end - begin;
 
     // How many batches of threads do we need?
     int num_batches = len / exec_info.threads_left;
@@ -186,11 +186,11 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
     // Pull out iterators
-    auto begin = iter.begin();  // std::begin(iter);
-    auto end = iter.end();      // std::end(iter);
+    auto begin = iter.begin();
+    auto end = iter.end();
 
     // compute trip count
-    ptrdiff_t total_len = end - begin;  // std::distance(begin, end);
+    ptrdiff_t total_len = end - begin;
 
     // compute our block's slice of work
     int num_blocks = gridDim.x;
@@ -213,12 +213,6 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
       if(num_batches*exec_info.threads_left < block_len){
         num_batches++;
       }
-
-//      if(threadIdx.x == 0){
-//            printf("block_len=%ld, block_begin=%ld, block_end=%ld, num_batches=%ld, num_threads=%ld\n",
-//                (long)block_len, (long)block_begin, (long)block_end,
-//                (long)num_batches, (long)exec_info.threads_left);
-//          }
 
       // compute our starting index
       ptrdiff_t i = exec_info.thread_id+block_begin;
@@ -259,11 +253,11 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_seq_exec, EnclosedStmts.
     auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
     // Pull out iterators
-    auto begin = iter.begin();  // std::begin(iter);
-    auto end = iter.end();      // std::end(iter);
+    auto begin = iter.begin();
+    auto end = iter.end();
 
     // compute trip count
-    ptrdiff_t total_len = end - begin;  // std::distance(begin, end);
+    ptrdiff_t total_len = end - begin;
 
     // compute our block's slice of work
     int num_blocks = gridDim.x;
