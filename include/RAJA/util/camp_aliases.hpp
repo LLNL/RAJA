@@ -3,9 +3,12 @@
  *
  * \file
  *
- * \brief   Header file for RAJA concept definitions.
+ * \brief   Header file with aliases to camp types.
  *
- *          Definitions in this file will propagate to all RAJA header files.
+ * The aliases included here are the ones that may be exposed through the
+ * RAJA API based on our unit tests and examples. As you build new tests
+ * and examples and you find that other camp types are exposed, please
+ * add them to this file.
  *
  ******************************************************************************
  */
@@ -25,26 +28,26 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
+#ifndef RAJA_CAMP_ALIASES_HPP
+#define RAJA_CAMP_ALIASES_HPP
 
-#include <iterator>
-#include <type_traits>
-#include "camp/concepts.hpp"
+#include "camp/defines.hpp"
+#include "camp/tuple.hpp"
+#include "camp/list/list.hpp"
 
 namespace RAJA
 {
 
-namespace concepts
-{
-using namespace camp::concepts;
-}
+  using ::camp::make_tuple;
 
-namespace type_traits
-{
-using namespace camp::type_traits;
-}
+  using ::camp::tuple;
+
+  using ::camp::list;
+
+  using ::camp::at_v;
+
+  using ::camp::idx_t;
 
 }  // end namespace RAJA
 
-#endif
+#endif /* RAJA_CAMP_ALIASES_HPP */

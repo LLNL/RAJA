@@ -55,7 +55,7 @@ TEST(TypedLayoutTest, 1D)
   /*
    * Construct a 2D view, 10x5
    */
-  const RAJA::TypedLayout<TIL, camp::tuple<TIX, TIY>> l(10, 5);
+  const RAJA::TypedLayout<TIL, RAJA::tuple<TIX, TIY>> l(10, 5);
 
   ASSERT_EQ(TIL{0}, l(TIX{0}, TIY{0}));
 
