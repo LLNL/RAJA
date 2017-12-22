@@ -33,42 +33,23 @@
  */
 
 //
-// Function to compare result to reference and print result P/F.
+// Functions for checking and printing results
 //
-void checkResult(double* v1, double* v2, int len) 
-{
-  bool match = true;
-  for (int i = 0; i < len; i++) {
-    if ( v1[i] != v2[i] ) { match = false; }
-  }
-  if ( match ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  } 
-}
-
-//
-// Function to print vector. 
-//
-void printResult(double* v, int len) 
-{
-  std::cout << std::endl;
-  for (int i = 0; i < len; i++) {
-    std::cout << "result[" << i << "] = " << v[i] << std::endl;
-  }
-  std::cout << std::endl;
-} 
+void checkResult(double* v1, double* v2, int len);
+void printResult(double* v, int len); 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA daxpy example...\n";
 
+//
+// Define vector length
+//
   const int N = 1000000;
 
 //
-// Allocate and initialize data.
+// Allocate and initialize vector data.
 //
   double* a0 = new double[N];
   double* aref = new double[N];
@@ -87,6 +68,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Declare and set pointers to array data. 
 // We reset them for each daxpy version so that 
 // they all look the same.
+//
 
   double* a = ta;
   double* b = tb;
@@ -196,3 +178,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+//
+// Function to compare result to reference and report P/F.
+//
+void checkResult(double* v1, double* v2, int len) 
+{
+  bool match = true;
+  for (int i = 0; i < len; i++) {
+    if ( v1[i] != v2[i] ) { match = false; }
+  }
+  if ( match ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  } 
+}
+
+//
+// Function to print result. 
+//
+void printResult(double* v, int len) 
+{
+  std::cout << std::endl;
+  for (int i = 0; i < len; i++) {
+    std::cout << "result[" << i << "] = " << v[i] << std::endl;
+  }
+  std::cout << std::endl;
+}

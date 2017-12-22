@@ -24,7 +24,7 @@
 /*
  *  Vector Dot Product Example
  *
- *  Computes dot = (A,B), where A, B are vectors of 
+ *  Computes dot = (a,b), where a, b are vectors of 
  *  doubles and dot is a scalar double. It illustrates how RAJA
  *  supports a portable parallel reduction opertion in a way that 
  *  the code looks like it does in a sequential implementation.
@@ -46,29 +46,29 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-//  Function to compare computed dot product to expected value
+//  Function to check dot product result.
 //
-void checkSolution(double compdot, double refdot)
-{
-  if ( compdot == refdot ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  }
-}
+void checkResult(double compdot, double refdot);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA vector dot product example...\n";
 
-  const int N = 1000;
-  int *A = memoryManager::allocate<int>(N);
-  int *B = memoryManager::allocate<int>(N);
+//
+// Define vector length
+//
+  const int N = 1000000;
+
+//
+// Allocate and initialize vector data
+//
+  int *a = memoryManager::allocate<int>(N);
+  int *b = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
-    A[i] = 1.0;
-    B[i] = 1.0;
+    a[i] = 1.0;
+    b[i] = 1.0;
   }
 
   double dot = 0.0;
@@ -79,10 +79,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-version of dot product...\n";
 
   for (int i = 0; i < N; ++i) {
-    dot += A[i] * B[i];
+    dot += a[i] * b[i];
   }
 
-  checkSolution(dot, N);
+  checkResult(dot, N);
 
 
 //
@@ -93,12 +93,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    seqdot+= A[i] * B[i]; 
+    seqdot += a[i] * b[i]; 
   });
 
   dot = seqdot.get();
 
-  checkSolution(dot, N);
+  checkResult(dot, N);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -110,12 +110,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    ompdot += A[i] * B[i]; 
+    ompdot += a[i] * b[i]; 
   });    
 
   dot = ompdot.get();
 
-  checkSolution(dot, N);
+  checkResult(dot, N);
 #endif
 
 
@@ -129,18 +129,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    cudot += A[i] * B[i]; 
+    cudot += a[i] * b[i]; 
   });    
 
   dot = cudot.get();
 
-  checkSolution(dot, N);
+  checkResult(dot, N);
 #endif
 
-  memoryManager::deallocate(A);
-  memoryManager::deallocate(B);
+  memoryManager::deallocate(a);
+  memoryManager::deallocate(b);
 
   std::cout << "\n DONE!...\n";
 
   return 0;
 }
+
+//
+//  Function to check computed dot product and report P/F.
+//
+void checkResult(double compdot, double refdot)
+{
+  if ( compdot == refdot ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  }
+}
+

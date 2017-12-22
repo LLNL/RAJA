@@ -24,7 +24,7 @@
 /*
  *  Vector Addition Example
  *
- *  Computes C = A + B, where A, B, C are vectors of ints.
+ *  Computes c = a + b, where a, b, c are vectors of ints.
  *  It illustrates similarities between a  C-style for-loop and a RAJA 
  *  forall loop.
  *
@@ -42,62 +42,58 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-//  Function to compare solution to reference and print result P/F.
+// Function for checking results
 //
-void checkSolution(int *C, int len) 
-{
-  bool correct = true;
-  for (int i = 0; i < len; i++) {
-    if ( C[i] != 0 ) { correct = false; }
-  }
-  if ( correct ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  }
-}
+void checkSolution(int* res, int len); 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA vector addition example...\n";
 
-  const int N = 1000;
-  int *A = memoryManager::allocate<int>(N);
-  int *B = memoryManager::allocate<int>(N);
-  int *C = memoryManager::allocate<int>(N);
+//
+// Define vector length
+//
+  const int N = 1000000;
+
+//
+// Allocate and initialize vector data
+//
+  int *a = memoryManager::allocate<int>(N);
+  int *b = memoryManager::allocate<int>(N);
+  int *c = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
-    A[i] = -i;
-    B[i] = i;
+    a[i] = -i;
+    b[i] = i;
   }
 
 
   std::cout << "\n Running C-version of vector addition...\n";
 
   for (int i = 0; i < N; ++i) {
-    C[i] = A[i] + B[i];
+    c[i] = a[i] + b[i];
   }
 
-  checkSolution(C, N);
+  checkSolution(c, N);
 
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
+    c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(C, N);
+  checkSolution(c, N);
 
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
   RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
+    c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(C, N);
+  checkSolution(c, N);
 
 
 
@@ -105,10 +101,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
+    c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(C, N);
+  checkSolution(c, N);
 #endif
 
 
@@ -117,17 +113,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    C[i] = A[i] + B[i]; 
+    c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(C, N);
+  checkSolution(c, N);
 #endif
 
-  memoryManager::deallocate(A);
-  memoryManager::deallocate(B);
-  memoryManager::deallocate(C);
+  memoryManager::deallocate(a);
+  memoryManager::deallocate(b);
+  memoryManager::deallocate(c);
 
   std::cout << "\n DONE!...\n";
 
   return 0;
+}
+
+//
+// Function to check result and report P/F.
+//
+void checkSolution(int* res, int len) 
+{
+  bool correct = true;
+  for (int i = 0; i < len; i++) {
+    if ( res[i] != 0 ) { correct = false; }
+  }
+  if ( correct ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  }
 }
