@@ -74,6 +74,7 @@ set (raja_sources
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
+	src/SharedMemory.cpp
   src/ThreadUtils_CPU.cpp)
 
 set (raja_depends)
@@ -143,6 +144,7 @@ endif()
 
 if(ENABLE_EXAMPLES)
   add_subdirectory(examples)
+  add_subdirectory(rajashared)
 endif()
 
 if (ENABLE_DOCUMENTATION)

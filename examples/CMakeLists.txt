@@ -41,3 +41,5 @@ raja_add_executable(
 raja_add_executable(
   NAME example-gauss-seidel
   SOURCES example-gauss-seidel.cpp)
+
+

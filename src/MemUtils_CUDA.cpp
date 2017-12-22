@@ -32,6 +32,8 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+
+
 namespace RAJA
 {
 
@@ -60,10 +62,15 @@ cudaInfo tl_status;
 //! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
 
+
 }  // closing brace for detail namespace
 
 }  // closing brace for cuda namespace
 
 }  // closing brace for RAJA namespace
 
+
 #endif  // if defined(RAJA_ENABLE_CUDA)
+
+
+

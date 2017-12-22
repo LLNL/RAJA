@@ -37,6 +37,8 @@
 
 #include "RAJA/util/chai_support.hpp"
 
+#include "RAJA/pattern/shared_memory.hpp"
+
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -72,6 +74,9 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   //       index_tuple
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
+  // Turn on shared memory setup
+  RAJA::detail::startSharedMemorySetup();
+
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
@@ -83,6 +88,12 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
           std::forward<PolicyType>(policy),
           std::forward<SegmentTuple>(segments),
           std::forward<Bodies>(bodies)...);
+
+  // Turn off shared memory setup
+  RAJA::detail::finishSharedMemorySetup();
+
+//  printf("SHARED MEMORY USED: %ld bytes\n",
+//      (long)RAJA::cuda::detail::shared_memory_total_bytes);
 
 //  printf("sizeof(loop_data)=%ld bytes\n",(long)sizeof(loop_data));
 

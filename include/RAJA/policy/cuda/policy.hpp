@@ -33,6 +33,7 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/Layout.hpp"
 
 namespace RAJA
 {
@@ -217,7 +218,7 @@ struct CudaDim {
   cuda_dim_t num_threads;
   cuda_dim_t num_blocks;
 
-  __host__ __device__ void print(void) const
+  RAJA_HOST_DEVICE void print(void) const
   {
     printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
            (int)num_blocks.x,
@@ -226,6 +227,33 @@ struct CudaDim {
            (int)num_threads.x,
            (int)num_threads.y,
            (int)num_threads.z);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaDim maximum(CudaDim const &c) const {
+    CudaDim m;
+
+    m.num_threads.x = num_threads.x > c.num_threads.x ? num_threads.x : c.num_threads.x;
+    m.num_threads.y = num_threads.y > c.num_threads.y ? num_threads.y : c.num_threads.y;
+    m.num_threads.z = num_threads.z > c.num_threads.z ? num_threads.z : c.num_threads.z;
+
+    m.num_blocks.x = num_blocks.x > c.num_blocks.x ? num_blocks.x : c.num_blocks.x;
+    m.num_blocks.y = num_blocks.y > c.num_blocks.y ? num_blocks.y : c.num_blocks.y;
+    m.num_blocks.z = num_blocks.z > c.num_blocks.z ? num_blocks.z : c.num_blocks.z;
+
+    return m;
+  }
+
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool threadIncluded() const {
+    return (threadIdx.x < num_threads.x) &&
+           (threadIdx.y < num_threads.y) &&
+           (threadIdx.z < num_threads.z) &&
+           (blockIdx.x < num_blocks.x) &&
+           (blockIdx.y < num_blocks.y) &&
+           (blockIdx.z < num_blocks.z);
   }
 };
 
@@ -380,6 +408,57 @@ using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
 using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
+
+
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+/*!
+ * CUDA shared memory
+ */
+
+struct cuda_shmem {};
+
+
+/*!
+ * CUDA shared memory that allows global indexing into a block's shmem
+ */
+template<typename DimView>
+struct block_map_shmem {
+
+  template<typename T>
+  RAJA_INLINE
+  RAJA_DEVICE
+  static T apply(ptrdiff_t dim_size, T idx){
+    DimView dim_view;
+    ptrdiff_t block_offset = dim_view(blockIdx) * dim_size;
+    return idx - block_offset;
+  }
+};
+
+using block_map_x_shmem = block_map_shmem<Dim3x>;
+using block_map_y_shmem = block_map_shmem<Dim3y>;
+using block_map_z_shmem = block_map_shmem<Dim3z>;
+
+
+/*!
+ * Provides a shared memory distributed over blocks.
+ *
+ * A convenience function when using RAJA::forall<RAJA::cuda_exec<N>>
+ *
+ */
+template<typename T>
+using CudaSharedMemoryBlocked =
+    RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, T>,
+    RAJA::Layout<1>, RAJA::block_map_x_shmem>;
+
 
 }  // closing brace for RAJA namespace
 

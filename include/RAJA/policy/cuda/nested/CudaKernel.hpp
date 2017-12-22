@@ -228,7 +228,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     CudaDim dims = LaunchConfig::compute_launch_dims();
 
     cudaStream_t stream = 0;
-    int shmem = 0;
+    int shmem = RAJA::detail::getSharedMemorySize();
 
     // Launch, using make_launch_body to correctly setup reductions
     CudaKernelLauncher<<<dims.num_blocks, dims.num_threads, shmem, stream>>>(

@@ -44,6 +44,7 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#include "RAJA/policy/cuda/shared_memory.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 
@@ -180,9 +181,13 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     cudaStream_t stream = 0;
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
+    // Get amount of dynamic shared memory requested by SharedMemory objects
+    size_t shmem = RAJA::detail::getSharedMemorySize();
+
+    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
         RAJA::cuda::make_launch_body(
-            gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+            gridSize, BlockSize, shmem, stream,
+            std::forward<LoopBody>(loop_body)),
         std::move(begin),
         len);
     RAJA::cuda::peekAtLastError();

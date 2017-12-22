@@ -47,6 +47,11 @@
 #include "RAJA/util/camp_aliases.hpp"
 
 //
+// Shared memory abstractions
+//
+#include "RAJA/pattern/shared_memory.hpp"
+
+//
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"

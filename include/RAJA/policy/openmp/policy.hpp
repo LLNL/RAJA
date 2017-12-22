@@ -203,6 +203,17 @@ using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 #endif
 
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+using omp_shmem = seq_shmem;
+
 }  // closing brace for RAJA namespace
 
 
