@@ -73,7 +73,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment Range1(0,1);
 
   RAJA::nested::forall(myPol{},
-                     camp::make_tuple(Range0, Range1),
+                     RAJA::make_tuple(Range0, Range1),
                      //[=] (RAJA::Index_type i1, RAJA::Index_type i0){
                      [=] (ID i0, IZ i1) {
                        printf("%ld, %ld \n",(long int)*i0, (long int)*i1);
@@ -109,7 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment IDRange(0,N3);
 
   RAJA::nested::forall(Pol{}, 
-                       camp::make_tuple(RangeN3, RangeN2, RangeN1, RangeN0),
+                       RAJA::make_tuple(RangeN3, RangeN2, RangeN1, RangeN0),
                        [=] (IZ i0, IG i1, IM i2, ID i3) { 
                          //RAJA::Index_type i3, RAJA::Index_type i2, RAJA::Index_type i1, RAJA::Index_type i0) {
                          Pout(i3,i2,i1,i0) =  5*Pout(i3,i2,i1,i0);                         

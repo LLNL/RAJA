@@ -228,7 +228,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           RAJA::nested::For<0, RAJA::seq_exec> >;  // col
 
   RAJA::nested::forall(NESTED_EXEC_POL{},
-                       camp::make_tuple(col_range, row_range),
+                       RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
     double dot = 0.0;
@@ -251,7 +251,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           RAJA::nested::For<0, RAJA::seq_exec> >;        // col
 
   RAJA::nested::forall(NESTED_EXEC_POL1{}, 
-                       camp::make_tuple(col_range, row_range),
+                       RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
       double dot = 0.0;
@@ -280,7 +280,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           RAJA::nested::For<1, RAJA::omp_parallel_for_exec> >;// row
 
   RAJA::nested::forall(NESTED_EXEC_POL2{},
-                       camp::make_tuple(col_range, row_range),
+                       RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
   
       double dot = 0.0;
@@ -311,7 +311,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X>>> >;
 
   RAJA::nested::forall(NESTED_EXEC_POL3{},
-                       camp::make_tuple(col_range, row_range), 
+                       RAJA::make_tuple(col_range, row_range), 
                        [=] RAJA_DEVICE (int col, int row) {
 
       double dot = 0.0;

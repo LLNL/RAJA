@@ -172,7 +172,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                               RAJA::nested::For<0, RAJA::seq_exec> >;  // i
 
   RAJA::nested::forall(EXEC_POL1{},
-                       camp::make_tuple(RAJA::RangeSegment(0, N_elem),
+                       RAJA::make_tuple(RAJA::RangeSegment(0, N_elem),
                                         RAJA::RangeSegment(0, N_elem)),
     [=](int i, int j) {
       int ie = i + j*jeoff ;
@@ -392,7 +392,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                               RAJA::nested::For<0, RAJA::seq_exec> >;  // i
 
   RAJA::nested::forall(EXEC_POL5{},
-                       camp::make_tuple(rows,
+                       RAJA::make_tuple(rows,
                                         RAJA::RangeSegment(0, N_elem)),
     [=](int i, int j) {
       int ie = i + j*jeoff ;

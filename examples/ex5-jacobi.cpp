@@ -220,7 +220,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    */  
   while (resI2 > tol * tol) {
 
-    RAJA::nested::forall(jacobiSeqNestedPolicy{}, camp::make_tuple(jacobiRange,jacobiRange),
+    RAJA::nested::forall(jacobiSeqNestedPolicy{}, RAJA::make_tuple(jacobiRange,jacobiRange),
                          [=] (RAJA::Index_type m, RAJA::Index_type n) {
                          
           double x = gridx.o + m * gridx.h;
@@ -279,7 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
     
-    RAJA::nested::forall(jacobiOmpNestedPolicy{}, camp::make_tuple(jacobiRange,jacobiRange),
+    RAJA::nested::forall(jacobiOmpNestedPolicy{}, RAJA::make_tuple(jacobiRange,jacobiRange),
                          [=] (RAJA::Index_type m, RAJA::Index_type n) {
 
                 
@@ -347,7 +347,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Jacobi Iteration 
     */
     RAJA::nested::forall(jacobiCUDANestedPolicy{},
-                         camp::make_tuple(jacobiRange,jacobiRange),
+                         RAJA::make_tuple(jacobiRange,jacobiRange),
                          [=] __host__ __device__  (RAJA::Index_type m, RAJA::Index_type n) {
                            
           double x = gridx.o + m * gridx.h;
@@ -414,7 +414,7 @@ void computeErr(double *I, grid_s grid)
   RAJA::nested::For<1, RAJA::seq_exec >,
     RAJA::nested::For<0, RAJA::seq_exec> >;
 
-  RAJA::nested::forall(jacobiSeqNestedPolicy{}, camp::make_tuple(gridRange,gridRange),
+  RAJA::nested::forall(jacobiSeqNestedPolicy{}, RAJA::make_tuple(gridRange,gridRange),
                        [=] (RAJA::Index_type ty, RAJA::Index_type tx ) {
 
       int id = tx + grid.n * ty;

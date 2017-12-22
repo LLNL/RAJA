@@ -245,7 +245,7 @@ void computeErr(double *I, grid_s grid)
     RAJA::nested::For<1, RAJA::loop_exec >,
     RAJA::nested::For<0, RAJA::loop_exec> >;
 
-  RAJA::nested::forall(errPolicy{}, camp::make_tuple(fdBounds,fdBounds),
+  RAJA::nested::forall(errPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
     
       int id = tx + grid.n * ty;
