@@ -43,26 +43,25 @@ raja_add_executable(
   SOURCES ex6-vertexsum-coloring.cpp)
 
 raja_add_executable(
-  NAME ex4-reductions
-  SOURCES ex4-reductions.cpp)
+  NAME ex7-reductions
+  SOURCES ex7-reductions.cpp)
   
 raja_add_executable(
-  NAME ex5-jacobi
-  SOURCES ex5-jacobi.cpp)
+  NAME ex8-pi-reduce_vs_atomic
+  SOURCES ex8-pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
-  NAME ex7-red-black-gauss-seidel
-  SOURCES ex7-red-black-gauss-seidel.cpp)
+  NAME ex9-scan
+  SOURCES ex9-scan.cpp)
 
 raja_add_executable(
-  NAME ex8-wave-eqn
-  SOURCES ex8-wave-eqn.cpp)
+  NAME ex10-jacobi
+  SOURCES ex10-jacobi.cpp)
 
 raja_add_executable(
-  NAME ex12-pi-atomic
-  SOURCES ex12-pi-atomic.cpp)
+  NAME ex11-red-black-gauss-seidel
+  SOURCES ex11-red-black-gauss-seidel.cpp)
 
 raja_add_executable(
-  NAME ex13-scan
-  SOURCES ex13-scan.cpp)
-
+  NAME ex12-wave-eqn
+  SOURCES ex12-wave-eqn.cpp)

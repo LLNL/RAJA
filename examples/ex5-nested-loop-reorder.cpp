@@ -45,15 +45,17 @@ RAJA_INDEX_VALUE(IIDX, "IIDX");
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
+    std::cout << "\n\nRAJA nested loop reorder example...\n";
+
 //
 // Typed index ranges
 // 
-  RAJA::TypedRangeSegment<KIDX> KRange(0, 3);
-  RAJA::TypedRangeSegment<JIDX> JRange(1, 4);
-  RAJA::TypedRangeSegment<IIDX> IRange(2, 5);
+  RAJA::TypedRangeSegment<KIDX> KRange(2, 4);
+  RAJA::TypedRangeSegment<JIDX> JRange(1, 3);
+  RAJA::TypedRangeSegment<IIDX> IRange(0, 2);
   
   std::cout << "\n Running loop reorder example (K-outer, J-middle, I-inner)"
-            << "...\n" << "(I, J, K)\n";
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::nested::Policy< 
                         RAJA::nested::TypedFor<2, RAJA::seq_exec, KIDX>,
@@ -63,12 +65,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::nested::forall(KJI_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
-       printf( "(%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
 
 
   std::cout << "\n Running loop reorder example (J-outer, I-middle, K-inner)"
-            << "...\n" << "(I, J, K)\n";
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using JIK_EXECPOL = RAJA::nested::Policy<
                         RAJA::nested::TypedFor<1, RAJA::seq_exec, JIDX>,
@@ -78,12 +80,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::nested::forall(JIK_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
-       printf( "(%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
 
 
   std::cout << "\n Running loop reorder example (I-outer, K-middle, J-inner)"
-            << "...\n" << "(I, J, K)\n";
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using IKJ_EXECPOL = RAJA::nested::Policy<
                         RAJA::nested::TypedFor<0, RAJA::seq_exec, IIDX>,
@@ -93,7 +95,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::nested::forall(IKJ_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) {
-       printf( "(%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
 
   std::cout << "\n DONE!...\n";

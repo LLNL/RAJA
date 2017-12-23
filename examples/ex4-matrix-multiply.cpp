@@ -14,11 +14,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
-//#include <cmath>
 #include <iostream>
 #include <cstring>
-//#include <algorithm>
-//#include <initializer_list>
 
 #include "memoryManager.hpp"
 

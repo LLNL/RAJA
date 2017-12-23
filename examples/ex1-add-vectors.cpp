@@ -32,6 +32,8 @@
  *    - `forall` loop iteration template method
  *    -  Index range segment
  *    -  Execution policies
+ *
+ * If CUDA is enabled, CUDA unified memory is used. 
  */
 
 /*
@@ -119,6 +121,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution(c, N);
 #endif
 
+//
+// Clean up.
+//
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
   memoryManager::deallocate(c);

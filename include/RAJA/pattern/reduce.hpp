@@ -96,7 +96,7 @@ class ReduceMin;
  * \verbatim
 
    Real_ptr data = ...;
-   ReduceMin<reduce_policy, Real_type> my_min(init_val, -1);
+   ReduceMinLoc<reduce_policy, Real_type> my_min(init_val, -1);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_min.minloc(data[i], i);
@@ -147,7 +147,7 @@ class ReduceMax;
  * \verbatim
 
    Real_ptr data = ...;
-   ReduceMax<reduce_policy, Real_type> my_max(init_val, -1);
+   ReduceMaxLoc<reduce_policy, Real_type> my_max(init_val, -1);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_max.maxloc(data[i], i);
