@@ -149,13 +149,13 @@ namespace nested
     void operator()(Collapse<omp_parallel_collapse_exec, FT0, FT1, FT2> const &, WrappedBody const &wrap)
     {
 
-      auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
-      auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
-      auto b2 = std::begin(camp::get<FT2::index_val>(wrap.data.st));
+      auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.segment_tuple));
+      auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.segment_tuple));
+      auto b2 = std::begin(camp::get<FT2::index_val>(wrap.data.segment_tuple));
       
-      auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
-      auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
-      auto e2 = std::end(camp::get<FT2::index_val>(wrap.data.st));
+      auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.segment_tuple));
+      auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.segment_tuple));
+      auto e2 = std::end(camp::get<FT2::index_val>(wrap.data.segment_tuple));
 
       auto l0 = std::distance(b0,e0);
       auto l1 = std::distance(b1,e1);
@@ -164,7 +164,7 @@ namespace nested
 #pragma omp parallel
       {
         auto privatizer = RAJA::nested::thread_privatize(wrap);
-        auto private_wrap = privatizer.get_priv();
+        auto &private_wrap = privatizer.get_priv();
         
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
