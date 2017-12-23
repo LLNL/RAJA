@@ -18,8 +18,8 @@ mkdir build-clang-3.9.0-debug_WARN && cd build-clang-3.9.0-debug_WARN
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/chaos/clang_3_9_0.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
+  -C ${RAJA_DIR}/host-configs/chaos/clang_3_9_0.cmake \
   -DENABLE_WARNINGS=On \
   -DENABLE_APPLICATIONS=On \
   -DENABLE_WARNINGS=On \

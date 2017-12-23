@@ -145,7 +145,7 @@ __launch_bounds__(BlockSize, 1) __global__
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
-  auto body = privatizer.get_priv();
+  auto &body = privatizer.get_priv();
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
     body(idx[ii]);

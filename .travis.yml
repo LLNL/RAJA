@@ -73,12 +73,10 @@ matrix:
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
-cache:
-  directories:
-  - $HOME/llvm
 before_install:
 - sudo apt-get update -qq
 - mkdir -p ${HOME}/download
+- mkdir -p ${HOME}/llvm
 - if [[ -n "${LLVM_VERSION}" ]]; then . ./scripts/install_llvm.sh ; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
 - curl -o ${HOME}/cmake-tarball.tar.gz ${CMAKE_URL} &&

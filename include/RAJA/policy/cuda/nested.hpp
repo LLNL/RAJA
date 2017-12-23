@@ -9,17 +9,9 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_cuda_nested_HPP
-#define RAJA_policy_cuda_nested_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/nested.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-//
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// 
 // Produced at the Lawrence Livermore National Laboratory
 //
 // LLNL-CODE-689114
@@ -28,41 +20,23 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+
+#ifndef RAJA_policy_cuda_nested_HPP
+#define RAJA_policy_cuda_nested_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
+#include "RAJA/pattern/nested.hpp"
 
 #include <cassert>
 #include <climits>
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
@@ -98,7 +72,7 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
     RAJA_DEVICE void operator()(InIndexType i)
     {
       data.template assign_index<ForType::index_val>(i);
-      camp::invoke(data.index_tuple, data.f);
+      camp::invoke(data.index_tuple, data.body);
     }
   };
   template <typename WrappedBody>
@@ -106,8 +80,8 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
   {
 
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.pol,
-                camp::get<ForType::index_val>(wrap.data.st),
+    forall_impl(fp.exec_policy,
+                camp::get<ForType::index_val>(wrap.data.segment_tuple),
                 ForWrapper<WrappedBody>{wrap});
   }
 };
@@ -132,7 +106,7 @@ struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
     RAJA_DEVICE void operator()(InIndexType i)
     {
       data.template assign_index<ForType::index_val>(i);
-      camp::invoke(data.index_tuple, data.f);
+      camp::invoke(data.index_tuple, data.body);
     }
   };
   template <typename WrappedBody>
@@ -140,8 +114,8 @@ struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
   {
 
     using ::RAJA::policy::cuda::forall_impl;
-    forall_impl(fp.pol,
-                camp::get<ForType::index_val>(wrap.data.st),
+    forall_impl(fp.exec_policy,
+                camp::get<ForType::index_val>(wrap.data.segment_tuple),
                 ForWrapper<WrappedBody>{wrap});
   }
 };
@@ -181,7 +155,7 @@ struct CudaWrapper {
 
   void RAJA_DEVICE operator()() const
   {
-    auto const &pol = camp::get<idx>(data.pt);
+    auto const &pol = camp::get<idx>(data.policy_tuple);
     Executor<internal::remove_all_t<decltype(pol)>> e{};
     Next next_wrapper{data};
     e(pol, next_wrapper);
@@ -201,7 +175,7 @@ struct CudaWrapper<n_policies, n_policies, Data> {
 
   void RAJA_DEVICE operator()() const
   {
-    camp::invoke(data.index_tuple, data.f);
+    camp::invoke(data.index_tuple, data.body);
   }
 };
 
@@ -327,7 +301,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
     CudaDim dims;
 
     /* As we create a cuda wrapper, we construct all of the cuda loop policies,
-     * like cuda_thread_x_exec, their associated segment from wrap.data.st
+     * like cuda_thread_x_exec, their associated segment from wrap.data.segment_tuple
      *
      * This construction modifies the CudaDim to specify the correct number
      * of threads and blocks for the kernel launch
@@ -336,7 +310,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
      * of the block/thread idx unpacking and assignment
     */
     auto begin_tuple = camp::make_tuple(
-        camp::get<FOR_TYPES::index_val>(wrap.data.st).begin()...);
+        camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple).begin()...);
 
     auto cuda_wrap =
         ForWrapper<WrappedBody,
@@ -347,7 +321,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
             begin_tuple,
 
             typename FOR_TYPES::policy_type::cuda_exec_policy(
-                dims, camp::get<FOR_TYPES::index_val>(wrap.data.st))...
+                dims, camp::get<FOR_TYPES::index_val>(wrap.data.segment_tuple))...
 
             );
 

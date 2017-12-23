@@ -112,7 +112,7 @@ namespace nested
 #pragma omp parallel
       {
         auto privatizer = RAJA::nested::thread_privatize(wrap);
-        auto private_wrap = privatizer.get_priv();
+        auto &private_wrap = privatizer.get_priv();
         
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
