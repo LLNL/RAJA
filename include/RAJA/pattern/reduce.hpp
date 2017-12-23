@@ -77,7 +77,7 @@ namespace RAJA
       my_min.min(data[i]);
    }
 
-   Real_type minval = my_min;
+   Real_type minval = my_min.get();
 
  * \endverbatim
  *
@@ -102,8 +102,8 @@ class ReduceMin;
       my_min.minloc(data[i], i);
    }
 
-   Real_type minval = my_min;
-   Index_type minloc = my_min.getMinLoc();
+   Real_type minval = my_min.get();
+   Index_type minloc = my_min.getLoc();
 
  * \endverbatim
  *
@@ -128,7 +128,7 @@ class ReduceMinLoc;
       my_max.max(data[i]);
    }
 
-   Real_type maxval = my_max;
+   Real_type maxval = my_max.get();
 
  * \endverbatim
  *
@@ -153,8 +153,8 @@ class ReduceMax;
       my_max.maxloc(data[i], i);
    }
 
-   Real_type maxval = my_max;
-   Index_type maxloc = my_max.getMaxLoc();
+   Real_type maxval = my_max.get();
+   Index_type maxloc = my_max.getLoc();
 
  * \endverbatim
  *
@@ -179,7 +179,7 @@ class ReduceMaxLoc;
       my_sum += data[i];
    }
 
-   Real_type sum = my_sum;
+   Real_type sum = my_sum.get();
 
  * \endverbatim
  *
