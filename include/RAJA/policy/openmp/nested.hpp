@@ -115,9 +115,9 @@ namespace nested
         auto &private_wrap = privatizer.get_priv();
         
 #if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for nowait collapse(2)
+#pragma omp for collapse(2)
 #else
-#pragma omp for nowait
+#pragma omp for
 #endif
         for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
           for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
@@ -167,9 +167,9 @@ namespace nested
         auto &private_wrap = privatizer.get_priv();
         
 #if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for nowait collapse(2)
+#pragma omp for collapse(3)
 #else
-#pragma omp for nowait
+#pragma omp for
 #endif
         for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
           for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
