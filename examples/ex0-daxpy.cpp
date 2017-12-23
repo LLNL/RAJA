@@ -74,6 +74,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* b = tb;
 
 
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running C-version of daxpy...\n";
    
   std::memcpy( a, a0, N * sizeof(double) );  
@@ -83,6 +85,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   std::memcpy( aref, a, N* sizeof(double) ); 
+
+//----------------------------------------------------------------------------//
 
 //
 // In the following, we show a RAJA version
@@ -97,6 +101,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // require unique changes for each.
 //
   
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA sequential daxpy...\n";
    
   std::memcpy( a, a0, N * sizeof(double) );  
@@ -108,6 +114,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N); 
 
+
+//----------------------------------------------------------------------------//
 
 //
 // RAJA SIMD version.
@@ -124,6 +132,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N); 
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP daxpy...\n";
    
@@ -136,6 +146,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N); 
 #endif
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 //
@@ -164,6 +176,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N); 
 #endif
+
+//----------------------------------------------------------------------------//
 
 //
 // Clean up. 

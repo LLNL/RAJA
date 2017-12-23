@@ -73,6 +73,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   double dot = 0.0;
 
+//----------------------------------------------------------------------------//
+
 //
 // C-style dot product operation.
 //
@@ -85,9 +87,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, N);
 
 
-//
-// RAJA version of sequential dot product.
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA sequential dot product...\n";
 
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
@@ -101,10 +102,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, N);
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_OPENMP)
-//
-// RAJA version of SIMD dot product.
-//
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
@@ -119,10 +119,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_CUDA)
-//
-// RAJA version of CUDA dot product.
-//
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
   RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> cudot(0.0);
@@ -136,6 +135,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(dot, N);
 #endif
+
+//----------------------------------------------------------------------------//
 
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);

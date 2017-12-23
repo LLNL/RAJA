@@ -52,36 +52,10 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-// Function to compare result to reference and print result P/F.
+// Functions to check and print result.
 //
-void checkResult(double* vol, double* volref, int n)
-{
-  bool match = true;
-  for (int i = 0; i < n*n; i++) {
-    if ( abs(vol[i] - volref[i]) > 10e-12 ) { match = false; }
-  }
-  if ( match ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  }
-}
-
-//
-// Function to print mesh data with mesh indices.
-//
-void printMeshData(double* v, int n, int joff)
-{
-  std::cout << std::endl;
-  for (int j = 0 ; j < n ; ++j) {
-    for (int i = 0 ; i < n ; ++i) {
-      int ii = i + j*joff ;
-      std::cout << "v(" << i << "," << j << ") = " 
-                << v[ii] << std::endl;
-    }
-  }
-  std::cout << std::endl;
-}
+void checkResult(double* vol, double* volref, int n);
+void printMeshData(double* v, int n, int joff);
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -138,9 +112,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //std::cout << "\n Element volumes...\n";
 //printMeshData(elemvol, N_elem, jeoff);
 
-//
-// C-style vertex volume calculation (sequential).
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running C-version of vertex sum...\n";
 
   std::memset(vertexvol_ref, 0, N_vert*N_vert * sizeof(double));
@@ -160,9 +133,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printMeshData(vertexvol_ref, N_vert, jvoff);
 
 
-//
-// RAJA vertex volume calculation - nested version (sequential).
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA nested sequential version...\n";
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
@@ -187,6 +159,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //std::cout << "\n Vertex volumes...\n";
 //printMeshData(vertexvol, N_vert, jvoff);
 
+//----------------------------------------------------------------------------//
 
 //
 // Note that the C-style and RAJA versions of the vertex sum calculation
@@ -256,6 +229,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   colorset.push_back( SegmentType(&idx2[0], idx2.size()) ); 
   colorset.push_back( SegmentType(&idx3[0], idx3.size()) ); 
 
+//----------------------------------------------------------------------------//
  
 //
 // RAJA vertex volume calculation - sequential IndexSet version 
@@ -284,6 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //std::cout << "\n Vertex volumes...\n";
 //printMeshData(vertexvol, N_vert, jvoff);
 
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 //
@@ -311,6 +286,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printMeshData(vertexvol, N_vert, jvoff); 
 #endif
 
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 //
@@ -337,6 +313,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //std::cout << "\n Vertex volumes...\n";
 //printMeshData(vertexvol, N_vert, jvoff);
 #endif
+
+//----------------------------------------------------------------------------//
 
 #if 0
 //
@@ -409,6 +387,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 #endif
 
+//----------------------------------------------------------------------------//
+
   // Clean up...
   memoryManager::deallocate(elemvol);
   memoryManager::deallocate(vertexvol);
@@ -418,4 +398,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n DONE!...\n";
 
   return 0;
+}
+
+//
+// Function to compare result to reference and print result P/F.
+//
+void checkResult(double* vol, double* volref, int n)
+{
+  bool match = true;
+  for (int i = 0; i < n*n; i++) {
+    if ( abs(vol[i] - volref[i]) > 10e-12 ) { match = false; }
+  }
+  if ( match ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  }
+}
+
+//
+// Function to print mesh data with mesh indices.
+//
+void printMeshData(double* v, int n, int joff)
+{
+  std::cout << std::endl;
+  for (int j = 0 ; j < n ; ++j) {
+    for (int i = 0 ; i < n ; ++i) {
+      int ii = i + j*joff ;
+      std::cout << "v(" << i << "," << j << ") = "
+                << v[ii] << std::endl;
+    }
+  }
+  std::cout << std::endl;
 }

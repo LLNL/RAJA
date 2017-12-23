@@ -71,6 +71,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
 
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running C-version of vector addition...\n";
 
   for (int i = 0; i < N; ++i) {
@@ -79,6 +81,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkSolution(c, N);
 
+
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
@@ -89,6 +93,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution(c, N);
 
 
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
   RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -98,6 +104,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution(c, N);
 
 
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
@@ -110,6 +118,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
@@ -120,6 +130,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkSolution(c, N);
 #endif
+
+//----------------------------------------------------------------------------//
 
 //
 // Clean up.

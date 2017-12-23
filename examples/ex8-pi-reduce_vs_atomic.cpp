@@ -47,7 +47,7 @@ const int CUDA_BLOCK_SIZE = 256;
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA vector addition example...\n";
+  std::cout << "\n\nRAJA pi example...\n";
 
 //
 // Define RangeSegment to enumerate "bins" used in pi approximation,
@@ -58,7 +58,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   double* atomic_pi = memoryManager::allocate<double>(1);
 
+// Set precision for printing pi
   int prec = 16;
+
+
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential pi approximation (reduction)...\n";
 
@@ -90,6 +94,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tpi = " << std::setprecision(prec) 
             << (*atomic_pi) / num_bins << std::endl;
 
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -126,6 +132,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running RAJA CUDA pi approximation (reduction)...\n";
@@ -159,6 +167,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
             << (*atomic_pi) / num_bins << std::endl;
 
 #endif
+
+//----------------------------------------------------------------------------//
 
 //
 // Clean up.

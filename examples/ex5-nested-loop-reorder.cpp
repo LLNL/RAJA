@@ -53,7 +53,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::TypedRangeSegment<KIDX> KRange(2, 4);
   RAJA::TypedRangeSegment<JIDX> JRange(1, 3);
   RAJA::TypedRangeSegment<IIDX> IRange(0, 2);
-  
+ 
+//----------------------------------------------------------------------------//
+ 
   std::cout << "\n Running loop reorder example (K-outer, J-middle, I-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
@@ -69,6 +71,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
 
+//----------------------------------------------------------------------------//
+ 
   std::cout << "\n Running loop reorder example (J-outer, I-middle, K-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
@@ -84,6 +88,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
 
+//----------------------------------------------------------------------------//
+ 
   std::cout << "\n Running loop reorder example (I-outer, K-middle, J-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 

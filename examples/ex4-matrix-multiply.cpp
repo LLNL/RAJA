@@ -101,6 +101,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   }
 
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running C-version of daxpy...\n";
 
@@ -121,6 +122,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult<double>(C, N);  
 
 
+//----------------------------------------------------------------------------//
+
 //
 // In the following RAJA implementations of matrix multiplication, we 
 // use RAJA 'View' objects to access the matrix data. A RAJA view
@@ -131,6 +134,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
   RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
 
+//----------------------------------------------------------------------------//
+
 //
 // Here, we define RAJA range segments to define the ranges of
 // row and column indices
@@ -139,11 +144,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment col_range(0, N);
 
 
+//----------------------------------------------------------------------------//
+
 //
 // In the first RAJA implementation, we replace the outer 'row' loop
 // with a RAJA::forall statement. The lambda loop body contains the
 // inner loops.
 //
+
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential mat-mult (RAJA-row)...\n";
 
@@ -166,6 +175,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);  
 
+
+//----------------------------------------------------------------------------//
 
 //
 // Next, we replace the outer 'row' loop and the inner 'col' loop 
@@ -193,6 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
+//----------------------------------------------------------------------------//
 
 //
 // Next, we use a RAJA nested::foral method to execute the calculation.
@@ -240,6 +252,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult<double>(Cview, N);
   
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested)...\n";
   
@@ -262,6 +276,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - swap loops)...\n";
 
@@ -293,6 +308,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running CUDA mat-mult (RAJA-nested)...\n";
 
@@ -322,6 +339,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif
+
+//----------------------------------------------------------------------------//
 
 //
 // Clean up.

@@ -80,6 +80,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
   RAJA::RangeSegment arange(0, N);
 
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential reductions...\n";
 
@@ -112,6 +113,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tmax, loc = " << seq_maxloc.get() << " , " 
                                << seq_maxloc.getLoc() << std::endl;
   
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP reductions...\n";
@@ -147,6 +150,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA reductions...\n";
 
@@ -180,6 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << cuda_maxloc.getLoc() << std::endl;
 #endif
 
+//----------------------------------------------------------------------------//
 
 //
 // Clean up.

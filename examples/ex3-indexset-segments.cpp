@@ -89,9 +89,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // see the file ex0-daxpy.cpp for other versions of the kernel.
 //
 
-//
-// std::cout << "\n Running RAJA daxpy to set reference result...\n";
-//
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA daxpy to set reference result...\n";
+ 
 
   std::memcpy( aref, a0, N * sizeof(double) );
 
@@ -99,6 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     aref[i] += b[i] * c;
   });
 
+//----------------------------------------------------------------------------//
 
 //
 // In the following, we show RAJA versions of the daxpy operation and 
@@ -107,6 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // the object passed to the 'forall' method that defines the iteration
 // space.
 //
+//----------------------------------------------------------------------------//
   
 //
 // RAJA list segment version.
@@ -132,6 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N);
 
+//----------------------------------------------------------------------------//
 
 //
 // Sequential index set execution policy used in several of the following
@@ -141,9 +145,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using SEQ_IS_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
                                           RAJA::seq_exec>;
 
-//
-// RAJA index set version (ListSegment).
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA index set (ListSegment) daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
@@ -160,9 +163,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 
-//
-// RAJA index set version (2 RangeSegments).
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA index set (2 RangeSegments) daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
@@ -179,9 +181,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 
-//
-// RAJA index set version (2 RangeSegments and one ListSegment).
-//
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
@@ -209,6 +210,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 
+//----------------------------------------------------------------------------//
+
 #if defined(RAJA_ENABLE_OPENMP)
 //
 // Run the previous version in parallel (2 different ways) just for fun...
@@ -231,6 +234,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 
+//----------------------------------------------------------------------------//
+
   std::cout << 
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
     " (OpenMP parallel iteration over segments, sequential segment execution)...\n";
@@ -247,6 +252,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N);
 #endif
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << 
@@ -265,6 +272,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N);
 #endif
+
+//----------------------------------------------------------------------------//
 
 //
 // Clean up. 
