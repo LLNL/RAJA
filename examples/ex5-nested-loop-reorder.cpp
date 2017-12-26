@@ -60,9 +60,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::nested::Policy< 
-                        RAJA::nested::TypedFor<2, RAJA::seq_exec, KIDX>,
-                        RAJA::nested::TypedFor<1, RAJA::seq_exec, JIDX>,
-                        RAJA::nested::TypedFor<0, RAJA::seq_exec, IIDX> >;
+                        RAJA::nested::For<2, RAJA::seq_exec, KIDX>,
+                        RAJA::nested::For<1, RAJA::seq_exec, JIDX>,
+                        RAJA::nested::For<0, RAJA::seq_exec, IIDX> >;
 
   RAJA::nested::forall(KJI_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
@@ -77,9 +77,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using JIK_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::TypedFor<1, RAJA::seq_exec, JIDX>,
-                        RAJA::nested::TypedFor<0, RAJA::seq_exec, IIDX>,
-                        RAJA::nested::TypedFor<2, RAJA::seq_exec, KIDX> >;
+                        RAJA::nested::For<1, RAJA::seq_exec, JIDX>,
+                        RAJA::nested::For<0, RAJA::seq_exec, IIDX>,
+                        RAJA::nested::For<2, RAJA::seq_exec, KIDX> >;
 
   RAJA::nested::forall(JIK_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
@@ -94,15 +94,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using IKJ_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::TypedFor<0, RAJA::seq_exec, IIDX>,
-                        RAJA::nested::TypedFor<2, RAJA::seq_exec, KIDX>,
-                        RAJA::nested::TypedFor<1, RAJA::seq_exec, JIDX> >;
+                        RAJA::nested::For<0, RAJA::seq_exec, IIDX>,
+                        RAJA::nested::For<2, RAJA::seq_exec, KIDX>,
+                        RAJA::nested::For<1, RAJA::seq_exec, JIDX> >;
 
   RAJA::nested::forall(IKJ_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) {
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
+
+
+#if 0
+//----------------------------------------------------------------------------//
+// The following demonstrates that code will not compile if lambda argument
+// types/order do not match the types/order of the strongly-typed nested::For.
+//----------------------------------------------------------------------------//
+
+  using IKJ_EXECPOL = RAJA::nested::Policy<
+                        RAJA::nested::For<0, RAJA::seq_exec, IIDX>,
+                        RAJA::nested::For<2, RAJA::seq_exec, KIDX>,
+                        RAJA::nested::For<1, RAJA::seq_exec, JIDX> >;
+
+  RAJA::nested::forall(IKJ_EXECPOL{},
+                       RAJA::make_tuple(IRange, JRange, KRange),
+    [=] (JIDX i, IIDX j, KIDX k) {
+       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+    });
+#endif
 
   std::cout << "\n DONE!...\n";
 
