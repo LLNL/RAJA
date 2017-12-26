@@ -15,7 +15,7 @@
 .. _forall-label:
 
 =========================
-Forall and nested::forall
+forall and nested::forall
 =========================
 
 The ``forall`` and ``nested::forall`` loop traversal template methods are 
@@ -64,7 +64,7 @@ may be written in a RAJA form as::
     RAJA::nested::forall< RAJA::nested::Policy<
                       RAJA::nested::For<N, exec_policyN>, ...
                       RAJA::nested::For<0, exec_policy0>,
-		      camp::make_tuple(iter_space IN, ..., iter_space I0),
+		      RAJA::make_tuple(iter_space IN, ..., iter_space I0),
                       [=] (index_type iN, ... , index_type i1) {
                       //loop body
     });

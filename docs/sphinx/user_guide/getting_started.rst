@@ -118,93 +118,97 @@ library will be installed in the ``lib`` directory.
 Basic RAJA Usage
 =================
 
-Let's take a quick tour through a few important RAJA features. A complete
-example based on the tour that you can compile and run is available here
-:ref:`fullexample-label`.
+Let's take a quick tour through a few key RAJA concepts. Where to find
+the complete working code for this first RAJA example is described
+:ref:`firstexample-label`.
 
 The central loop traversal concept in RAJA is a ``forall`` method, which
-encapsulates loop execution details allowing the loop to be run in many
-different ways without changing the loop code.
+encapsulates loop execution details allowing the loop to be run in 
+different ways without changing the loop code itself. We will use a simple 
+daxpy operation to walk you through how to write a RAJA loop kernel and how 
+it compares to a typical C-style for-loop.
 
-We will use a simple daxpy operation to walk through how to write a 
-RAJA kernel and execute it using different programming model back-ends. 
 A traditional C-style loop version of daxpy would look something like this:
 
 .. code-block:: cpp
 
-  double* a = new double[1000];
-  double* b = new double[1000];
+  const int N = 1000;
+
+  double* a = new double[N];
+  double* b = new double[N];
 
   // Initialize a and b...
 
   double c = 3.14159;
 
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < N; i++) {
     a[i] += b[i] * c;
   }
 
 This loop executes sequentially, iterating over the range of ``i``
-values [0, 999] one after the other.
+values [0, N) one after the other.
 
-The RAJA form of this sequential loop replaces the ``for`` loop 
+The RAJA form of this sequential loop replaces the ``for-loop``
 with a call to a RAJA ``forall`` method:
 
 .. code-block:: cpp
 
   // Initialize a, b, c as before...
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
     a[i] += b[i] * c;
   });
 
 The data allocation and loop body are exactly the same as the original code.
 The ``RAJA::forall`` method takes as arguments the loop bounds in a
-``RAJA::RangeSegment`` object and a lambda function containing the loop body. 
-The method is templated on an `execution policy`; the template specialization 
-selects how the loop will run. Here, we use ``RAJA::seq_exec`` to run the loop 
-iterations sequentially, in order, exactly like the original loop.
+``RAJA::RangeSegment`` object and a C++ lambda function containing the loop 
+body. The method is templated on an `execution policy` and the template 
+specialization determines how the loop will run. Here, we use the 
+``RAJA::seq_exec`` policy to run the loop iterations sequentially, in order, 
+exactly like the original loop.
 
-Of course, this isn't very exciting yet. You may be wondering why we are
-doing this: writing a simple loop in a more complicated way so it runs
-exactly the same as in its original form....
+Of course, this isn't very exciting. You may be wondering why we are
+doing this: writing a simple loop in a more complicated way using 
+C++-11 features so it runs exactly the same as in its original form....
 
-The reason is that for more complicated situations, RAJA provides mechanisms
-that make it easy to run the loop with different programming model backends
-and map loop iterations to different orderings and data layouts based on
-hardware resources without changing the code as it appears in an application.
+The reason is that RAJA provides mechanisms that make it easy to run the 
+loop with different programming model back-ends and map loop iterations to 
+different orderings and data layouts without changing the code as it appears 
+in an application.
 
 For example, since our example loop is data parallel (i.e., all
 iterations are independent), we can run it in parallel by replacing the
-execution policy. This version will run in parallel using OpenMP
-multithreading:
+execution policy. For example, to run the loop in parallel using OpenMP
+multithreading, one could use the following execution policy::
 
-.. code-block:: cpp
+  RAJA::omp_parallel_for_exec
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
-    a[i] += b[i] * c;
-  });
+Alternatively, to run the loop on an NVIDIA GPU using CUDA, use this
+execution policy instead::
 
-This version will run on an NVIDIA GPU using CUDA::
+  const int CUDA_BLOCK_SIZE = 512;
 
-  RAJA::forall<RAJA::cuda_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
-    a[i] += b[i] * c;
-  });
+  RAJA::cuda_exec<CUDA_BLOCK_SIZE>
+
+Here, we specify that the loop should run with 512 threads in a CUDA 
+`thread block`. If we omit the thread block size template parameter, this
+policy provides 256 threads as the default. 
 
 Note that we have assumed that the data arrays on the GPU device have been
-allocated and initialized properly.
+allocated and initialized properly. Also, to exercise different
+parallel programming model back-ends that RAJA supports, they must be
+enabled when RAJA is configured. For example, to enable OpenMP the 
+argument ``-DENABLE_OPENMP`` must be passed to CMake, to enable CUDA
+the argument ``-DENABLE_CUDA`` must be passed to CMake, etc.
 
-Also, these versions require RAJA to be built with OpenMP and CUDA
-enabled, respectively.
-
-
-.. _fullexample-label:
+.. _firstexample-label:
 
 --------------------
-Full example code
+First RAJA example
 --------------------
 
-If you want to run the example yourself, the complete code is located
+If you want to view and run the example yourself, the complete code is located
 in the file ``RAJA/examples/ex0-daxpy.cpp``. 
 
-After building RAJA, with the options you select, it can be run using
-the executable located at: ``<build-dir>/examples/binex0-daxpy``.
+After building RAJA, with the options you select, the executable for this 
+example, will reside in the file: ``<build-dir>/examples/bin/ex0-daxpy``.
