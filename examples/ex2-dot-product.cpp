@@ -71,14 +71,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     b[i] = 1.0;
   }
 
-  double dot = 0.0;
-
 //----------------------------------------------------------------------------//
 
 //
 // C-style dot product operation.
 //
   std::cout << "\n Running C-version of dot product...\n";
+
+  double dot = 0.0;
 
   for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];

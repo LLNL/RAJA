@@ -83,6 +83,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
+// RAJA::seq_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
@@ -94,6 +96,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
+// RAJA::simd_exec policy should force the compiler to generate SIMD
+// vectorization optimizations.... 
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
@@ -103,6 +108,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkSolution(c, N);
 
+
+//----------------------------------------------------------------------------//
+// RAJA::loop_exec policy means that the compiler is allowed to generate 
+// optimizations (e.g., SIMD) if it thinks it is safe to do so...
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA loop-exec vector addition...\n";
+
+  RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
+  });
+
+  checkSolution(c, N);
 
 
 //----------------------------------------------------------------------------//
