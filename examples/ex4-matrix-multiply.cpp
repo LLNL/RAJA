@@ -214,7 +214,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // 1) A range and lambda index argument are required for each level in
 //    the loop nest. Here, we have two of each since we have a doubly-nested
 //    loop.
-// 2) The ranges for the loop nest level are specified in a RAJA tuple object.
+// 2) A range for each loop nest level is specified in a RAJA tuple object.
 //    The order of ranges in the tuple must match the order of args to the
 //    lambda for this to be correct, in general. RAJA provides strongly-typed
 //    indices to help with this. However, this example does not use them.

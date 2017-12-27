@@ -35,7 +35,7 @@ C-style loop for the dot product is:
                     :lines: 81-85
 
 ^^^^^^^^^^^^^^^^^^^^^
-RAJA variants
+RAJA Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 Different programming models support parallel reduction operations differently.

@@ -32,7 +32,7 @@ store the result in vector 'c'. A typical C-style that does this is:
                     :lines: 78-80
 
 ^^^^^^^^^^^^^^^^^^^^^
-RAJA variants
+RAJA Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 The RAJA variants of the vector addition operation illustrate how the 
