@@ -17,6 +17,7 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "memoryManager.hpp"
 
@@ -78,30 +79,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   double c = 3.14159;
   
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < N; i++) {
     a0[i] = 1.0;
     b[i] = 2.0;
   }
 
 
-//
-// There is no C-version for the daxpy kernel in this file. Please
-// see the file ex0-daxpy.cpp for other versions of the kernel.
-//
-
 //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA daxpy to set reference result...\n";
- 
+//
+// C-version of the daxpy kernel to set the reference result.
+//
+  std::cout << "\n Running C-version of daxpy to set reference result...\n";
 
   std::memcpy( aref, a0, N * sizeof(double) );
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+  for (int i = 0; i < N; i++) {
     aref[i] += b[i] * c;
-  });
+  }
+
+//printResult(a, N);
 
 //----------------------------------------------------------------------------//
-
 //
 // In the following, we show RAJA versions of the daxpy operation and 
 // using different Segment constructs and IndexSets. These are all 
@@ -110,9 +108,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // space.
 //
 //----------------------------------------------------------------------------//
-  
+
+  std::cout << "\n Running RAJA range segment daxpy...\n";
+
+  std::memcpy( a, a0, N * sizeof(double) );
+
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    a[i] += b[i] * c;
+  });
+
+  checkResult(a, aref, N);
+//printResult(a, N);
+
+//----------------------------------------------------------------------------//
 //
-// RAJA list segment version.
+// RAJA list segment version #1
 //
   std::cout << "\n Running RAJA list segment daxpy...\n";
 
@@ -134,6 +144,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(a, aref, N);
 //printResult(a, N);
+
+//----------------------------------------------------------------------------//
+//
+// RAJA list segment version #2
+//
+  std::cout << "\n Running RAJA list segment daxpy with indices reversed...\n";
+
+  std::memcpy( a, a0, N * sizeof(double) );  
+
+//
+// Reverse the order of indices in the vector
+//
+  std::reverse( idx.begin(), idx.end() ); 
+
+  RAJA::TypedListSegment<int> idx_reverse_list( &idx[0], idx.size() );
+
+  RAJA::forall<RAJA::seq_exec>(idx_reverse_list, [=] (int i) {
+    a[i] += b[i] * c;
+  });
+
+  checkResult(a, aref, N);
+//printResult(a, N);
+
 
 //----------------------------------------------------------------------------//
 
@@ -171,7 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::StaticIndexSet<RAJA::RangeSegment> is2;
   is2.push_back( RAJA::RangeSegment(0, N/2) );
-  is2.push_back( RAJA::RangeSegment(N/2+1, N) );
+  is2.push_back( RAJA::RangeSegment(N/2, N) );
   
   RAJA::forall<SEQ_IS_EXECPOL>(is2, [=] (int i) {
     a[i] += b[i] * c;
@@ -191,7 +224,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Collect indices in a vector to create list segment
 //
   std::vector<int> idx1;
-  for (int i = N/3 + 1; i < 2*N/3; ++i) {
+  for (int i = N/3; i < 2*N/3; ++i) {
     idx1.push_back(i);
   }
 
@@ -200,7 +233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::TypedListSegment<int>> is3;
   is3.push_back( RAJA::RangeSegment(0, N/3) );
   is3.push_back( idx1_list );
-  is3.push_back( RAJA::RangeSegment(2*N/3 + 1, N) );
+  is3.push_back( RAJA::RangeSegment(2*N/3, N) );
  
   RAJA::forall<SEQ_IS_EXECPOL>(is3, [=] (int i) {
     a[i] += b[i] * c;
@@ -221,10 +254,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
     " (sequential iteration over segments, OpenMP parallel segment execution)...\n";
 
+  std::memcpy( a, a0, N * sizeof(double) );
+
   using OMP_IS_EXECPOL1 = RAJA::ExecPolicy<RAJA::seq_segit,
                                            RAJA::omp_parallel_for_exec>;
-
-  std::memcpy( a, a0, N * sizeof(double) );
 
   RAJA::forall<OMP_IS_EXECPOL1>(is3, [=] (int i) {
     a[i] += b[i] * c;
@@ -240,10 +273,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
     " (OpenMP parallel iteration over segments, sequential segment execution)...\n";
 
+  std::memcpy( a, a0, N * sizeof(double) );
+
   using OMP_IS_EXECPOL2 = RAJA::ExecPolicy<RAJA::omp_parallel_for_segit,
                                            RAJA::seq_exec>;
-
-  std::memcpy( a, a0, N * sizeof(double) );
 
   RAJA::forall<OMP_IS_EXECPOL2>(is3, [=] (int i) {
     a[i] += b[i] * c;
