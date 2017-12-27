@@ -27,7 +27,7 @@ Requirements
 
 The primary requirement for using RAJA is a C++11 compliant compiler.
 Accessing the full range of RAJA features, such as all available programming
-model backends, may require additional support. Available options and how
+model back-ends, may require additional support. Available options and how
 to enable or disable them are described in :ref:`configopt-label`. To
 build and use RAJA in its simplest form requires:
 
@@ -179,7 +179,7 @@ in an application.
 For example, since our example loop is data parallel (i.e., all
 iterations are independent), we can run it in parallel by replacing the
 execution policy. For example, to run the loop in parallel using OpenMP
-multithreading, one could use the following execution policy::
+multi-threading, one could use the following execution policy::
 
   RAJA::omp_parallel_for_exec
 

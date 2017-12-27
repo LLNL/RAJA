@@ -101,7 +101,7 @@ here :ref:`forall-label`. For the purposes of the discussion, we
 assume that any and all data used has been properly allocated and initialized.
 This is done in the code examples, but is not discussed further here.
 
-Also, the examples deomonstrate CPU execution (sequential, simd, openmp 
+Also, the examples demonstrate CPU execution (sequential, SIMD, openmp 
 multi-threading) and CUDA GPU execution only. RAJA also has support for
 Intel Threading Building Blocks (TBB) and OpenACC. These features are
 enabled with CMake options similar to other programming models. Also, they

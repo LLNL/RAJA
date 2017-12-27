@@ -41,8 +41,8 @@ developed to meet the performance portability challenge.
 
 RAJA provides portable abstractions for single and nested loops, reductions,
 scans, atomic operations, data layouts and views, iteration spaces, etc.
-Currently supported execution policies/programming model backends include:
-sequential, SIMD, CUDA, OpenMP multithreading and target offload, and Threading
+Currently supported execution policies/programming model back-ends include:
+sequential, SIMD, CUDA, OpenMP multi-threading and target offload, and Threading
 Building Blocks.
 
 RAJA uses standard C++11 -- C++ is the predominant programming language in
