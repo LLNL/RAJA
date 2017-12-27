@@ -39,7 +39,7 @@ matrix entries in the C-version:
 Then, a typical C-style sequential matrix multiplication operation looks like:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 110-118
+                    :lines: 110-120
 
 ^^^^^^^^^^^^^^^^^^^^^
 Initial RAJA Variants
@@ -83,7 +83,7 @@ For the second RAJA variant, we nest a ``RAJA::forall`` traversal method
 call for the 'column' loop inside the outer 'row' traversal:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 190-201
+                    :lines: 190-203
 
 Here, the lambda expression for the column loop body is contained within the 
 lambda expression for the outer row loop. When the code will not be run on a 
