@@ -95,28 +95,13 @@ the NVIDIA compiler team.
 Nested-loop RAJA
 ^^^^^^^^^^^^^^^^^
 
-In this section, we recast the matrix-multiplication operation using
-``RAJA::nested::forall`` nested-loop capabilities. Before we begin,
-there are some important differences worth noting between nested-loop RAJA 
-and the ``RAJA::forall`` loop construct we have been using to this point:
+In this section, we show how to recast the matrix-multiplication calculation 
+by using ``RAJA::nested::forall`` nested-loop capabilities. There are some 
+important differences worth noting between nested-loop RAJA and the 
+``RAJA::forall`` loop construct we have been using to this point. We
+describe these differences in detail in the example :ref:`nestedreorder-label`.
 
-  * A range and lambda index argument are required for each level in a 
-    loop nest. In this example, we focus on doubly-nested loops.
-
-  * A range for each loop nest level is specified in a RAJA tuple object.
-    The order of ranges in the tuple must match the order of arguments to the
-    lambda for this to be correct, in general. RAJA provides strongly-typed
-    indices to help with this. They are explained in a later example
-    :ref:`nestedreorder-label`.
-
-  * An execution policy is required for each level in the loop nest. These
-    are specified in the ``RAJA::nested::Policy`` type.
-
-  * The loop nest ordering is specified in the nested execution policy -- 
-    the first 'For' policy is the outermost loop, the second 'For' policy  
-    is the loop nested inside the outermost loop, and so on.  
-
-We first present the complete example, and then describe its key elements:
+We first present a complete example, and then describe its key elements:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 236-250
@@ -133,9 +118,10 @@ The execution policy for each level in the loop nest is defined by the
 ``RAJA::nested::For`` arguments in the nested policy type. Here, the row
 and column loops will both execute sequentially. The integer that appears
 as the first argument to each 'For' template corresponds to the index of a
-range in the tuple; i.e., '0' is the column range, '1' is the row range.
-The reason that the integer arguments are needed is that the levels in the
-loop nest can be permuted by reordering the policy arguments. Here, the row
+range in the tuple and also to the associated lambda index argument; 
+i.e., '0' is the column range, '1' is the row range.  The integer arguments 
+are needed so that the levels in the loop nest can be permuted by reordering 
+the policy arguments while the loop kernel remains the same. Here, the row
 policy is first (tuple index '0') so it is the outermost loop, and the row 
 policy is next (tuple index '1') so it is the next loop, etc. We will 
 demonstrate the reordering concept later in this example and discuss it in
@@ -148,7 +134,7 @@ and keep the column loop sequential, the policy we would use is:
                     :lines: 260-262
 
 To swap the loop nest ordering and keep the same execution policy on each loop,
-we would use this policy:
+we would use this policy which swaps the ``RAJA::nested::For`` arguments:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 290-292
