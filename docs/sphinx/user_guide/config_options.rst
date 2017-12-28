@@ -65,13 +65,14 @@ RAJA uses a variety of custom variables to control how it is compiled. Many
 of these are used internally to control how RAJA gets compiled and do 
 not need to be set by users. Others can be turned on or off by users to 
 enable or disable certain RAJA features. Most variables get translated to 
-compilation directives and definitions in the RAJA 'config.hpp' file that is 
+compiler directives and definitions in the RAJA 'config.hpp' file that is 
 generated when CMake runs. The 'config.hpp' header file is included in other 
-RAJA headers as needed so all options propagate through the build process 
-consistently. All RAJA variables have a special prefix to distinguish
-those that are specific to RAJA from variables in CMake and BLT.
+RAJA headers as needed so all options propagate consistently through the 
+build process for all of the code. Each RAJA variable has a special prefix 
+to distinguish it as being specific to RAJA; i.e., it is not a BLT variable
+or a standard CMake variable.
 
-The following list describes which variables are used to set RAJA options and
+The following tables describe which variables set RAJA options and 
 and their default settings:
 
 * **Examples, tests, warnings, etc.**
@@ -119,8 +120,8 @@ and their default settings:
       ======================   ======================
 
       Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
-      the native support in the Clang compiler. When using, 'ENABLE_CUDA'
-      must also be turned on.
+      the native support in the Clang compiler. When using it, the 
+      'ENABLE_CUDA' variable must also be turned on.
 
       The 'ENABLE_CUB' variable is used to enable NVIDIA cub library support
       for RAJA CUDA scans. When turned off, NVIDIA thrust is used by default.
@@ -130,9 +131,10 @@ and their default settings:
 
 * **Data types, sizes, alignment, etc.**
 
-     RAJA provides typedefs that can be used to parametrize floating 
-     point types in applications and easily switch between types. The
-     following variables are used to set the type for 'RAJA::Real_type':
+     RAJA provides type aliases that can be used to parametrize floating 
+     point types in applications, which makes it easy to switch between types. 
+
+     The following variables are used to set the type for 'RAJA::Real_type':
 
       ======================   ======================
       Variable                 Default
@@ -205,7 +207,6 @@ and their default settings:
       RAJA_RANGE_ALIGN                4
       RAJA_RANGE_MIN_LENGTH           32
       RAJA_DATA_ALIGN                 64
-      RAJA_COHERENCE_BLOCK_SIZE       64
       =============================   ======================
 
      What these variables mean:
@@ -234,9 +235,9 @@ and their default settings:
 
      RAJA provides a simple portable timer class that is used in RAJA
      example codes to determine execution timing and can be used in other apps
-     as well.  This timer can use any of three internal timers depending on
+     as well. This timer can use any of three internal timers depending on
      your preferences, and one should be selected by setting the `RAJA_TIMER`
-     variable.  If the `RAJA_CALIPER` variable is turned on (off by default), 
+     variable. If the `RAJA_CALIPER` variable is turned on (off by default), 
      the timer will also offer caliper-based region annotations.
 
       ======================   ======================
@@ -285,5 +286,5 @@ The `RAJA/host-configs` directory contains subdirectories with files that
 define configurations for various platforms and compilers at LLNL. These
 serve as examples of  *CMake cache files* that can be passed to CMake using 
 the '-C' option. This option initializes the CMake cache with the configuration 
-specified in each file. Examples of how they are used for specific CMake
-configurations, see the scripts in the `RAJA/scripts` directory.
+specified in each file. For examples of how they are used for specific CMake
+configurations, see the files in the `RAJA/scripts` directory.

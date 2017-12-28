@@ -19,31 +19,30 @@ Plugins
 *******
 
 RAJA provides a plugin mechanism to support optional components that provide
-additional functionality and hopefully make writing applications easier.
+additional functionality to make writing applications easier. Currently,
+there is only one RAJA plugin that we support, CHAI.
 
 =======
 CHAI
 =======
 
-RAJA provides abstractions for parallel execution, but does not contain
-support for managing data in heterogeneous memory spaces.
-`CHAI <https://github.com/LLNL/CHAI>`_ is an array abstraction that can use RAJA
-execution policies to perform data movement operations. The data can be accessed
-inside any RAJA kernel, and regardless of where that kernel executes, CHAI will
-make the data available.
+RAJA provides abstractions for parallel execution, but does not support 
+a memory model for managing data in heterogeneous memory spaces.
+CHAI is an array abstraction that can be used to copy data transparently from 
+one memory space to another as needed to run a RAJA-based kernel. 
+The data can be accessed inside any RAJA kernel, and regardless of where 
+that kernel executes, CHAI will make the data available.
 
-To build RAJA with CHAI integration, first download and install CHAI. Please
-see the CHAI documentation for details. After CHAI is installed, RAJA can be
-configured to use it with two additional arguments:
+To build RAJA with CHAI integration, you need to download and install CHAI. 
+Please see the `CHAI project <https://github.com/LLNL/CHAI>` for details. 
 
-.. code:: bash
+After CHAI is installed, RAJA can be configured to use it by passing two 
+additional arguments to CMake::
 
     $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
 
-After RAJA has been built with CHAI support, applications can use CHAI
-``ManangedArray`` objects to access data inside a RAJA kernel; e.g.,
-
-.. code:: cpp
+After RAJA has been built with CHAI support enabled, applications can use CHAI
+``ManangedArray`` objects to access data inside a RAJA kernel; for example,::
 
   chai::ManagedArray<float> array(1000);
 
@@ -55,6 +54,6 @@ After RAJA has been built with CHAI support, applications can use CHAI
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 
-Here, the data held by ``array`` is initialized on a CUDA GPU device.  Then, it
+Here, the data held by ``array`` is initialized on a CUDA GPU device. Then, it
 is copied to the host CPU and printed. All necessary data copies are done
 transparently on demand as needed for each kernel.

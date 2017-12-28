@@ -15,7 +15,7 @@
 .. _tutorial-label:
 
 **********************
-Tutorial
+RAJA Tutorial
 **********************
 
 This RAJA tutorial introduces the most commonly-used RAJA concepts and
