@@ -13,8 +13,7 @@ struct Collapse : public internal::ForList, public internal::CollapseBase,
                   public internal::Statement<EnclosedStmts...> {};
 
 
-template <camp::idx_t ... ArgumentId>
-struct ArgList{};
+
 
 
 template <typename ExecPolicy, camp::idx_t ... ArgumentId, typename... EnclosedStmts>

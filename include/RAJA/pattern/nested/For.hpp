@@ -82,7 +82,7 @@ auto thread_privatize(const nested::internal::ForWrapper<Index, BW> &item)
   return NestedPrivatizer<nested::internal::ForWrapper<Index, BW>>{item};
 }
 
-} // namespace internal
+}  // namespace internal
 }  // end namespace nested
 }  // end namespace RAJA
 

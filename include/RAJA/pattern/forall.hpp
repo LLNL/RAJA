@@ -106,7 +106,7 @@ struct Privatizer {
   value_type priv;
 
   RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {printf("Privatizer Default\n");}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE reference_type get_priv() { return priv; }

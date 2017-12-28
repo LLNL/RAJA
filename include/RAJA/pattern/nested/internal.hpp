@@ -220,23 +220,6 @@ struct StatementListExecutor<num_statements,num_statements> {
 };
 
 
-/*!
- * Convenience object used to create thread-private a LoopData object.
- */
-template <typename T>
-struct NestedPrivatizer {
-  using data_type = typename T::data_type;
-  using value_type = camp::decay<T>;
-  using reference_type = value_type &;
-
-  data_type privatized_data;
-  value_type privatized_wrapper;
-
-  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{o.wrapper.statement_list, privatized_data}) {}
-
-  reference_type get_priv() { return privatized_wrapper; }
-};
-
 
 
 
@@ -258,6 +241,54 @@ struct GenericWrapper {
 };
 
 
+/*!
+ * Convenience object used to create thread-private a LoopData object.
+ */
+template <typename T>
+struct NestedPrivatizer {
+  using data_type = typename T::data_type;
+  using value_type = camp::decay<T>;
+  using reference_type = value_type &;
+
+  data_type privatized_data;
+  value_type privatized_wrapper;
+
+  RAJA_INLINE
+  constexpr
+  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{o.wrapper.statement_list, privatized_data}) {}
+
+  RAJA_INLINE
+  constexpr
+  reference_type get_priv() { return privatized_wrapper; }
+};
+
+template <typename StmtList, typename Data>
+struct NestedPrivatizer<StatementListWrapper<StmtList, Data>> {
+  using data_type = Data;
+  using value_type = StatementListWrapper<StmtList, Data>;
+  using reference_type = value_type &;
+
+  data_type privatized_data;
+  value_type privatized_wrapper;
+
+  RAJA_INLINE
+  constexpr
+  NestedPrivatizer(const StatementListWrapper<StmtList, Data> &wrapper) : privatized_data{wrapper.data}, privatized_wrapper(value_type{wrapper.statement_list, privatized_data}) {}
+
+  RAJA_INLINE
+  constexpr
+  reference_type get_priv() { return privatized_wrapper; }
+};
+
+/**
+ * @brief specialization of internal::thread_privatize for nested
+ */
+template <typename StmtList, typename Data>
+auto thread_privatize(const nested::internal::StatementListWrapper<StmtList, Data> &item)
+    -> NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>
+{
+  return NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>{item};
+}
 
 }  // end namespace internal
 }  // end namespace nested

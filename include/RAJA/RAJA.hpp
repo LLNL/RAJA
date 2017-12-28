@@ -118,6 +118,7 @@
 #include "RAJA/pattern/nested/For.hpp"
 #include "RAJA/pattern/nested/Tile.hpp"
 #include "RAJA/pattern/nested/Collapse.hpp"
+#include "RAJA/pattern/nested/ShmemWindow.hpp"
 
 //
 // Reduction objects

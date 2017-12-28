@@ -49,6 +49,14 @@
  */
 static bool shared_memory_setup_enabled = false;
 
+
+/*!
+ * Pointer to a index tuple (for nested::forall) that contains the
+ * shared memory window offsets
+ */
+static void *shared_memory_window_tuple = nullptr;
+
+
 /*!
  * Tracks total number of bytes requested for shared memory.
  *
@@ -87,10 +95,16 @@ static std::map<void *, size_t> shared_memory_objects;
  * this function and finishSharedMemorySetup
  *
  */
-void RAJA::detail::startSharedMemorySetup(){
+void RAJA::detail::startSharedMemorySetup(void *window_tuple){
   shared_memory_setup_enabled = true;
+  shared_memory_window_tuple = window_tuple;
   shared_memory_total_bytes = 0;
   shared_memory_objects.clear();
+}
+
+
+void *RAJA::detail::getSharedMemoryWindow(){
+  return shared_memory_window_tuple;
 }
 
 /*!

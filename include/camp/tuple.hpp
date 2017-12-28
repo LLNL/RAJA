@@ -133,11 +133,13 @@ public:
   }
   CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
   {
-    Base::operator=(static_cast<Base const &>(rhs.base));
+    Base::operator=(static_cast<Base const &>(rhs));
+    return *this;
   }
   CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
   {
     Base::operator=(std::move(static_cast<Base>(rhs)));
+    return *this;
   }
 
   template <typename... OtherTypes>

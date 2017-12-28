@@ -45,20 +45,33 @@ namespace RAJA
  *
  * Data is accessible with const capture-by-value copies of this object.
  */
-template<typename T>
-struct SharedMemory<seq_shmem, T> {
-  using self = SharedMemory<seq_shmem, T>;
-  using element_type = T;
+template<typename T, size_t NumElem>
+struct SharedMemory<seq_shmem, T, NumElem> {
+  using self = SharedMemory<seq_shmem, T, NumElem>;
+  using element_t = T;
 
   std::shared_ptr<std::vector<T>> data;
-  size_t num_elements;
+  static constexpr size_t num_elements = NumElem;
+  static constexpr size_t num_bytes = NumElem*sizeof(T);
 
   RAJA_INLINE
-  explicit SharedMemory(size_t N) :
-    data(std::make_shared<std::vector<T>>(N)),
-    num_elements(N)
+  SharedMemory() :
+    data(std::make_shared<std::vector<T>>(num_elements))
   {}
 
+
+  RAJA_INLINE
+  SharedMemory(self const &c) : data(c.data)
+  {
+    // currently only used to get a tally of how much shmem is used
+    RAJA::detail::registerSharedMemoryObject(this, num_bytes);
+
+    // get our shared memory window location
+    //shmem_window = RAJA::detail::getSharedMemoryWindow();
+    printf("shmem copy this=%p\n", this);
+
+    // how do we pull out the right type?!?!
+  }
 
 
 

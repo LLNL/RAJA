@@ -493,6 +493,55 @@ CUDA_TEST(Nested, SubRange_Complex)
 #endif
 
 
+
+TEST(Nested, Shmem1){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr int TileSize = 3;
+  using Pol = nested::Policy<
+          nested::Tile<0, nested::tile_fixed<TileSize>, seq_exec,
+            SetShmemWindow<
+              For<0, seq_exec, Lambda<0>>,
+              For<0, seq_exec, Lambda<1>>
+            >
+          >
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+  }
+
+  auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
+
+  using shmem_t = SharedMemory<seq_shmem, int, TileSize>;
+  ShmemWindowView<shmem_t, ArgList<0>, SizeList<N>, decltype(loop_segments)> shmem;
+
+  nested::forall(
+      Pol{},
+
+      loop_segments,
+
+      [=](int i){
+        shmem(i) = i;
+      },
+      [=](int i){
+        x[i] = shmem(i) * 2;
+      }
+  );
+
+  for(int i = 0;i < N;++ i){
+    printf("x[%d]=%d\n", i, (int)x[i]);
+    //ASSERT_EQ(x[i], 3);
+  }
+
+  delete[] x;
+}
+
+
 TEST(Nested, FissionFusion){
   using namespace RAJA;
   using namespace RAJA::nested;

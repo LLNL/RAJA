@@ -60,7 +60,11 @@ template <typename... Stmts>
 using Policy = internal::StatementList<Stmts...>;
 
 
-
+///
+/// Template list of argument indices
+///
+template <camp::idx_t ... ArgumentId>
+struct ArgList{};
 
 
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
@@ -73,17 +77,23 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   //       index_tuple
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
+  using policy_t = camp::decay<PolicyType>;
+  using segment_t = camp::decay<SegmentTuple>;
+  using loop_data_t = internal::LoopData<policy_t, segment_t, camp::decay<Bodies>...>;
+
+  // Setup a shared memory window tuple
+  using index_tuple_t = typename loop_data_t::index_tuple_t;
+  index_tuple_t shmem_window;
+
   // Turn on shared memory setup
-  RAJA::detail::startSharedMemorySetup();
+  RAJA::detail::startSharedMemorySetup(&shmem_window);
 
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
   // and only copied to provide thread-private instances.
-  using policy_t = camp::decay<PolicyType>;
-  using segment_t = camp::decay<SegmentTuple>;
-  internal::LoopData<policy_t, segment_t, camp::decay<Bodies>...>
-    loop_data(
+
+  loop_data_t loop_data(
           std::forward<PolicyType>(policy),
           std::forward<SegmentTuple>(segments),
           std::forward<Bodies>(bodies)...);
@@ -91,8 +101,8 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   // Turn off shared memory setup
   RAJA::detail::finishSharedMemorySetup();
 
-//  printf("SHARED MEMORY USED: %ld bytes\n",
-//      (long)RAJA::cuda::detail::shared_memory_total_bytes);
+  printf("SHARED MEMORY USED: %ld bytes\n",
+      (long)RAJA::detail::getSharedMemorySize());
 
 //  printf("sizeof(loop_data)=%ld bytes\n",(long)sizeof(loop_data));
 
