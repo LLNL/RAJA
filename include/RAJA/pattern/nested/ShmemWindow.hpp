@@ -73,20 +73,8 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     RAJA_INLINE
     ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem), layout(c.layout), window(c.window) {
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
-      printf("copy this=%p, shmem_window=%p\n", this, shmem_window_ptr);
+//      printf("copy this=%p, shmem_window=%p\n", this, shmem_window_ptr);
       if(shmem_window_ptr != nullptr){
-        printf("Setting window\n");
-        index_tuple_t &shmem_window = *shmem_window_ptr;
-        window = shmem_window;
-      }
-    }
-
-    RAJA_INLINE
-    ShmemWindowView(ShmemWindowView  &&c) : shmem(c.shmem), layout(c.layout), window(c.window) {
-      auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
-      printf("move this=%p, shmem_window=%p\n", this, shmem_window_ptr);
-      if(shmem_window_ptr != nullptr){
-        printf("Setting window\n");
         index_tuple_t &shmem_window = *shmem_window_ptr;
         window = shmem_window;
       }
@@ -95,8 +83,8 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 
     RAJA_INLINE
     element_t &operator()(camp::at_v<index_tuple_t, Args> const... idx) const {
-      VarOps::ignore_args(printf("operator() idx=%d window=%d\n", (int)idx, (int)camp::get<Args>(window))...);
-      printf("operator() -> idx=%d\n", (int)layout((idx - camp::get<Args>(window))...));
+//      VarOps::ignore_args(printf("operator() idx=%d window=%d\n", (int)idx, (int)camp::get<Args>(window))...);
+//      printf("operator() -> idx=%d\n", (int)layout((idx - camp::get<Args>(window))...));
       return shmem[layout((idx - camp::get<Args>(window))...)];
     }
 };
@@ -114,8 +102,8 @@ void set_shmem_window_tuple_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes
       (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
       );
 
-  VarOps::ignore_args(
-      (printf("Arg %d: begin=%d\n", (int)Seq, (int)camp::get<Seq>(window)))... );
+//  VarOps::ignore_args(
+//      (printf("Arg %d: begin=%d\n", (int)Seq, (int)camp::get<Seq>(window)))... );
 }
 
 template<typename ... IdxTypes, typename ... Segments>

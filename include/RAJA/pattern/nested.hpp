@@ -101,8 +101,8 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   // Turn off shared memory setup
   RAJA::detail::finishSharedMemorySetup();
 
-  printf("SHARED MEMORY USED: %ld bytes\n",
-      (long)RAJA::detail::getSharedMemorySize());
+//  printf("SHARED MEMORY USED: %ld bytes\n",
+//      (long)RAJA::detail::getSharedMemorySize());
 
 //  printf("sizeof(loop_data)=%ld bytes\n",(long)sizeof(loop_data));
 

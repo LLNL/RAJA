@@ -65,12 +65,6 @@ struct SharedMemory<seq_shmem, T, NumElem> {
   {
     // currently only used to get a tally of how much shmem is used
     RAJA::detail::registerSharedMemoryObject(this, num_bytes);
-
-    // get our shared memory window location
-    //shmem_window = RAJA::detail::getSharedMemoryWindow();
-    printf("shmem copy this=%p\n", this);
-
-    // how do we pull out the right type?!?!
   }
 
 

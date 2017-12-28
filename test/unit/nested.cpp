@@ -534,8 +534,7 @@ TEST(Nested, Shmem1){
   );
 
   for(int i = 0;i < N;++ i){
-    printf("x[%d]=%d\n", i, (int)x[i]);
-    //ASSERT_EQ(x[i], 3);
+    ASSERT_EQ(x[i], i*2);
   }
 
   delete[] x;
