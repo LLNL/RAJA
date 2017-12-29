@@ -37,8 +37,6 @@ namespace RAJA
 {
 
 
-
-
 /*!
  * Shared memory, ensures a single copy of data even with thread-private
  * copies of this object.
@@ -50,13 +48,15 @@ struct SharedMemory<seq_shmem, T, NumElem> {
   using self = SharedMemory<seq_shmem, T, NumElem>;
   using element_t = T;
 
-  std::shared_ptr<std::vector<T>> data;
-  static constexpr size_t num_elements = NumElem;
+  static constexpr size_t size = NumElem;
   static constexpr size_t num_bytes = NumElem*sizeof(T);
 
+  std::shared_ptr<std::array<T, size>> data;
+
   RAJA_INLINE
+  constexpr
   SharedMemory() :
-    data(std::make_shared<std::vector<T>>(num_elements))
+    data(std::make_shared<std::array<T, size>>())
   {}
 
 
@@ -71,6 +71,7 @@ struct SharedMemory<seq_shmem, T, NumElem> {
 
   template<typename IDX>
   RAJA_INLINE
+  constexpr
   T &operator[](IDX i) const {
     return (*data)[i];
   }

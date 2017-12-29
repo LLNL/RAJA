@@ -111,9 +111,12 @@ struct LoopData {
   index_tuple_t index_tuple;
 
   RAJA_INLINE
+  constexpr
   LoopData(PolicyType const &p, SegmentTuple const &s, Bodies const & ... b)
       : policy{p}, segment_tuple{s}, bodies{b...}
   {
+//    printf("LoopData: policy=%d, segment_tuple=%d, bodies=%d\n",
+//        (int)sizeof(policy), (int)sizeof(segment_tuple), (int)sizeof(bodies));
   }
 
   template <camp::idx_t Idx, typename IndexT>
@@ -158,9 +161,11 @@ struct StatementListWrapper {
   Data &data;
 
   RAJA_INLINE
+  constexpr
   StatementListWrapper(StmtList const &pt, Data &d) : statement_list(pt), data{d} {}
 
   RAJA_INLINE
+  constexpr
   void operator()() const
   {
     execute_statement_list(statement_list, data);
@@ -172,6 +177,7 @@ struct StatementListWrapper {
 // Create a wrapper for this policy
 template<typename PolicyT, typename Data>
 RAJA_INLINE
+constexpr
 auto make_statement_list_wrapper(PolicyT && policy, Data && data) ->
   StatementListWrapper<decltype(policy), camp::decay<Data>>
 {
@@ -185,6 +191,7 @@ struct StatementListExecutor{
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
+  constexpr
   void operator()(StmtList const &statement_list, Data &&data) const {
 
     // Get the statement we're going to execute
@@ -213,6 +220,7 @@ struct StatementListExecutor<num_statements,num_statements> {
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
+  constexpr
   void operator()(StmtList const &, Data &&) const {
 
   }
@@ -232,10 +240,12 @@ struct GenericWrapper {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
+  constexpr
   GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
+  constexpr
   GenericWrapper(statement_list_type const &s, data_type &d) : wrapper{s,d} {}
 
 };
@@ -284,6 +294,7 @@ struct NestedPrivatizer<StatementListWrapper<StmtList, Data>> {
  * @brief specialization of internal::thread_privatize for nested
  */
 template <typename StmtList, typename Data>
+constexpr
 auto thread_privatize(const nested::internal::StatementListWrapper<StmtList, Data> &item)
     -> NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>
 {

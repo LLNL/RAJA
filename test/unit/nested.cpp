@@ -518,7 +518,8 @@ TEST(Nested, Shmem1){
   auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
 
   using shmem_t = SharedMemory<seq_shmem, int, TileSize>;
-  ShmemWindowView<shmem_t, ArgList<0>, SizeList<N>, decltype(loop_segments)> shmem;
+  ShmemWindowView<shmem_t, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)> shmem;
+
 
   nested::forall(
       Pol{},

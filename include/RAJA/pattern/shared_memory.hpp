@@ -45,8 +45,7 @@ namespace RAJA
  * The Policy determines
  */
 template<typename SharedPolicy, typename T, size_t NumElem>
-struct SharedMemory {
-};
+struct SharedMemory;
 
 
 

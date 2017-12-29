@@ -3,6 +3,7 @@
 
 
 #include "RAJA/config.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -37,9 +38,6 @@ struct SetShmemWindow : public internal::Statement<camp::nil, EnclosedStmts...>
  * The dimension sizes specified are the block-local sizes, and define the
  * amount of shared memory to be requested.
  */
-
-
-
 template<typename ShmemT, typename Args, typename Sizes, typename Segments>
 struct ShmemWindowView {
 };
@@ -47,6 +45,8 @@ struct ShmemWindowView {
 template<typename ShmemT, camp::idx_t ... Args, RAJA::Index_type ... Sizes, typename ... Segments>
 struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple<Segments...>>
 {
+    static_assert(sizeof...(Args) == sizeof...(Sizes), "ArgList and SizeList must be same length");
+
     using self_t = ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple<Segments...>>;
     // compute the index tuple that nested::forall is going to use
     using segment_tuple_t = camp::tuple<Segments...>;
@@ -61,17 +61,17 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     shmem_t shmem;
 
     // typed layout to map indices to shmem space
-    using layout_t = RAJA::TypedLayout<RAJA::Index_type, arg_tuple_t>;
-    layout_t layout;
+    using layout_t = RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
+    static_assert(layout_t::s_size <= ShmemT::size, "Layout cannot span a larger size than the shared memory");
 
     index_tuple_t window;
 
     RAJA_INLINE
     constexpr
-    ShmemWindowView() : shmem(), layout(Sizes...), window() {}
+    ShmemWindowView() : shmem(), window() {}
 
     RAJA_INLINE
-    ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem), layout(c.layout), window(c.window) {
+    ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem), window(c.window) {
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
 //      printf("copy this=%p, shmem_window=%p\n", this, shmem_window_ptr);
       if(shmem_window_ptr != nullptr){
@@ -82,10 +82,9 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 
 
     RAJA_INLINE
+    constexpr
     element_t &operator()(camp::at_v<index_tuple_t, Args> const... idx) const {
-//      VarOps::ignore_args(printf("operator() idx=%d window=%d\n", (int)idx, (int)camp::get<Args>(window))...);
-//      printf("operator() -> idx=%d\n", (int)layout((idx - camp::get<Args>(window))...));
-      return shmem[layout((idx - camp::get<Args>(window))...)];
+      return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
     }
 };
 
@@ -101,9 +100,6 @@ void set_shmem_window_tuple_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes
   VarOps::ignore_args(
       (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
       );
-
-//  VarOps::ignore_args(
-//      (printf("Arg %d: begin=%d\n", (int)Seq, (int)camp::get<Seq>(window)))... );
 }
 
 template<typename ... IdxTypes, typename ... Segments>
