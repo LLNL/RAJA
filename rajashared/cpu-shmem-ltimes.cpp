@@ -45,11 +45,15 @@ void runLTimesRajaNested(bool debug,
 
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
-    ell_data[i] = drand48();
+    ell_data[i] = i; //drand48();
   }
 
   for (size_t i = 0; i < psi_data.size(); ++i) {
-    psi_data[i] = drand48();
+    psi_data[i] = 2*i; //drand48();
+  }
+
+  for (size_t i = 0; i < phi_data.size(); ++i) {
+    phi_data[i] = 0; //drand48();
   }
 
 
@@ -76,8 +80,8 @@ void runLTimesRajaNested(bool debug,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
 
-  constexpr size_t tile_moments = 32;
-  constexpr size_t tile_directions = 128;
+  constexpr size_t tile_moments = 25;
+  constexpr size_t tile_directions = 32;
   constexpr size_t tile_zones = 32;
   constexpr size_t tile_groups = 0;
 
@@ -147,7 +151,7 @@ void runLTimesRajaNested(bool debug,
       },
 
       [=] (IMoment m, IDirection, IGroup g, IZone z) {
-        shmem_phi(m, g, z) = 0.0;
+        shmem_phi(m, g, z) = phi(m,g,z);
       },
 
       [=] (IMoment m, IDirection d, IGroup g, IZone z) {
@@ -165,10 +169,12 @@ void runLTimesRajaNested(bool debug,
       timer.elapsed());
 
 
+
   // Check correctness
   if(debug){
 
     size_t errors = 0;
+    double total_error = 0.;
     for (IZone z(0); z < num_zones; ++z) {
       for (IGroup g(0); g < num_groups; ++g) {
         for (IMoment m(0); m < num_moments; ++m) {
@@ -180,16 +186,18 @@ void runLTimesRajaNested(bool debug,
           if(std::abs(total-phi(m,g,z)) > 1e-9){
             ++ errors;
           }
+          total_error += std::abs(total-phi(m,g,z));
         }
       }
     }
     if(errors == 0){
-      printf("  -- no errors\n");
+      printf("  -- no errors (%e)\n", total_error);
     }
     else{
       printf("  -- failed : %ld errors\n", (long)errors);
     }
   }
+  printf("%e, %e, %e\n", ell_data[1], phi_data[0], psi_data[1]);
 
 }
 
