@@ -144,7 +144,7 @@ endif()
 
 if(ENABLE_EXAMPLES)
   add_subdirectory(examples)
-  #add_subdirectory(rajashared)
+  add_subdirectory(rajashared)
 endif()
 
 if (ENABLE_DOCUMENTATION)

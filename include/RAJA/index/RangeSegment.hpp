@@ -32,6 +32,8 @@
 
 #include "RAJA/util/concepts.hpp"
 
+#include "RAJA/index/IndexValue.hpp"
+
 #include <iostream>
 
 namespace RAJA
@@ -164,7 +166,7 @@ struct TypedRangeSegment {
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
-    return TypedRangeSegment{start, end};
+    return TypedRangeSegment{convertIndex<Index_type>(start), convertIndex<Index_type>(end)};
   }
 
   //! equality comparison

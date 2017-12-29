@@ -53,7 +53,7 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     using index_tuple_t = RAJA::nested::internal::index_tuple_from_segments<typename segment_tuple_t::TList>;
 
     // compute the indices that we are going to use
-    using arg_tuple_t = camp::tuple<camp::at_v<index_tuple_t, Args>...>;
+    using arg_tuple_t = camp::tuple<camp::at_v<typename index_tuple_t::TList, Args>...>;
 
     // shared memory object type
     using shmem_t = ShmemT;
@@ -83,7 +83,7 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 
     RAJA_INLINE
     constexpr
-    element_t &operator()(camp::at_v<index_tuple_t, Args> const... idx) const {
+    element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> const... idx) const {
       return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
     }
 };

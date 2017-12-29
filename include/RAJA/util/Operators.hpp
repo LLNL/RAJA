@@ -331,7 +331,8 @@ struct minus : public detail::binary_function<Arg1, Arg2, Ret> {
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
                     detail::associative_tag {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return Ret{lhs} * rhs;
   }

@@ -14,12 +14,17 @@
 #
 ###############################################################################
 
-raja_add_executable(
-  NAME waveShared2
-  SOURCES waveShared2.cpp)
+#raja_add_executable(
+#  NAME waveShared2
+#  SOURCES waveShared2.cpp)
 
-if(ENABLE_CUDA)
+#if(ENABLE_CUDA)
+#raja_add_executable(
+#  NAME cuda-shmem-ltimes
+#  SOURCES cuda-shmem-ltimes.cpp)
+#endif()
+
 raja_add_executable(
-  NAME shmem-ltimes
-  SOURCES shmem-ltimes.cpp)
-endif()
+  NAME cpu-shmem-ltimes
+  SOURCES cpu-shmem-ltimes.cpp)
+  
