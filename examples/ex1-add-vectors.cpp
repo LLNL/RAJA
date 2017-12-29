@@ -44,9 +44,11 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-// Function for checking results
+// Functions for checking and printing results
 //
-void checkSolution(int* res, int len); 
+void checkResult(int* res, int len); 
+void printResult(int* res, int len);
+
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -79,7 +81,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i];
   }
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -92,7 +95,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -106,7 +110,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -120,7 +125,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i];
   });
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -132,7 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 #endif
 
 
@@ -146,7 +153,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i]; 
   });    
 
-  checkSolution(c, N);
+  checkResult(c, N);
+//printResult(c, N);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -166,7 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
-void checkSolution(int* res, int len) 
+void checkResult(int* res, int len) 
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
@@ -178,3 +186,16 @@ void checkSolution(int* res, int len)
     std::cout << "\n\t result -- FAIL\n";
   }
 }
+
+//
+// Function to print result.
+//
+void printResult(int* res, int len)
+{
+  std::cout << std::endl;
+  for (int i = 0; i < len; i++) {
+    std::cout << "result[" << i << "] = " << res[i] << std::endl;
+  }
+  std::cout << std::endl;
+}
+
