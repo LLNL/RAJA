@@ -21,7 +21,7 @@ RAJA_INDEX_VALUE(IZone, "IZone");
 
 
 
-void runLTimesRajaNested(bool debug,
+void runLTimesRajaCudaNested(bool debug,
     Index_type num_moments,
                           Index_type num_directions,
                           Index_type num_groups,
@@ -457,7 +457,7 @@ void runLTimesCudaShmem(bool debug,
 
 
 
-void runLTimesRajaShmem(bool debug,
+void runLTimesRajaCudaShmem(bool debug,
     Index_type num_moments,
                           Index_type num_directions,
                           Index_type num_groups,
@@ -671,9 +671,9 @@ int main(){
   int g = 32;
   int z = 128*1024;
 
-  runLTimesRajaNested(debug, m, d, g, z); // warm up
-  runLTimesRajaShmem(debug, m, d, g, z);
-  runLTimesRajaNested(debug, m, d, g, z);
+  runLTimesRajaCudaNested(debug, m, d, g, z); // warm up
+  runLTimesRajaCudaShmem(debug, m, d, g, z);
+  runLTimesRajaCudaNested(debug, m, d, g, z);
   runLTimesCudaShmem(debug, m, d, g, z);
 
 
