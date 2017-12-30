@@ -69,11 +69,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Set min and max loc values
 //
-  const int minloc_ref = N / 3;
+  const int minloc_ref = N / 2;
   a[minloc_ref] = -100;
 
-  const int maxloc_ref = 2 * N / 3;
+  const int maxloc_ref = N / 2 + 1;
   a[maxloc_ref] = 100;
+
+//
+// Note: with this data initialization scheme, the following results will
+//       be observed for all reduction kernels below:
+//
+//  - the sum will be zero
+//  - the min will be -100
+//  - the max will be 100
+//  - the min loc will be N/2
+//  - the max loc will be N/2 + 1
+//
+//
 
 //
 // Define index range for iterating over a elements in all examples

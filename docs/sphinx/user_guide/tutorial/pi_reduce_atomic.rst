@@ -77,5 +77,14 @@ for the reduction version and:
 
 for the atomic variant.
 
+It it worth noting that RAJA provides an ``auto_atomic`` policy for easier
+usage and improved portability. This policy should do the right thing in
+most circumstances. Specifically, if it is encountered in a CUDA execution
+context, the CUDA atomic policy will be applied. If OpenMP is enabled, the 
+OpenMP atomic policy will be used, which should be correct in a sequential
+execution context. Otherwise, the sequential atomic policy will be applied.
+For information about the full range of RAJA atomic support, see
+:ref:`atomics-label`.
+
 The file ``RAJA/examples/ex8-pi-reduce_vs_atomic.cpp`` contains the complete 
 working example code.

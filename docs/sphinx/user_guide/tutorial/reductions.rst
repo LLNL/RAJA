@@ -46,6 +46,15 @@ We also define a range segment that defines the iteration space over the array:
 .. literalinclude:: ../../../../examples/ex2-dot-product.cpp
                     :lines: 81-81
 
+With these parameters and data initialization, all the code examples 
+presented below will generate the following results:
+
+ * the sum will be zero
+ * the min will be -100
+ * the max will be 100
+ * the min loc will be N/2
+ * the max loc will be N/2 + 1
+
 .. note:: Each RAJA reduction type requires a reduction policy that must 
           be compatible with the execution policy for the kernel in which 
           it is used.

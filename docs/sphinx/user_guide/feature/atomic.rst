@@ -158,5 +158,5 @@ context and does the right thing. Similarly, if the 'forall' method used
 an OpenMP execution policy, the OpenMP version of the atomic operation 
 would be used.
 
-Another simple example of atomic usage can be found in 
-``RAJA/examples/example-atomic-pi.cpp``. 
+A complete working code that shows RAJA atomic usage can be found in 
+``RAJA/examples/ex8-pi-reduce_vs_atomic.cpp``. 
