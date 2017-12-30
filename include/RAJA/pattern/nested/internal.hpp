@@ -191,7 +191,6 @@ struct StatementListExecutor{
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
-  constexpr
   void operator()(StmtList const &statement_list, Data &&data) const {
 
     // Get the statement we're going to execute
@@ -201,7 +200,7 @@ struct StatementListExecutor{
     auto enclosed_wrapper = make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
 
     // Execute this statement
-    StatementExecutor<remove_all_t<decltype(statement)>> e{};
+    StatementExecutor<remove_all_t<decltype(statement)>> e;
     e(statement, enclosed_wrapper);
 
     // call our next statement
@@ -268,7 +267,6 @@ struct NestedPrivatizer {
   NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{o.wrapper.statement_list, privatized_data}) {}
 
   RAJA_INLINE
-  constexpr
   reference_type get_priv() { return privatized_wrapper; }
 };
 
@@ -286,7 +284,6 @@ struct NestedPrivatizer<StatementListWrapper<StmtList, Data>> {
   NestedPrivatizer(const StatementListWrapper<StmtList, Data> &wrapper) : privatized_data{wrapper.data}, privatized_wrapper(value_type{wrapper.statement_list, privatized_data}) {}
 
   RAJA_INLINE
-  constexpr
   reference_type get_priv() { return privatized_wrapper; }
 };
 

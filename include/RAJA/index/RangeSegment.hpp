@@ -93,8 +93,8 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE TypedRangeSegment(Index_type begin, Index_type end)
-      : m_begin(iterator{begin}), m_end(iterator{end}), m_size(end - begin)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Index_type begin, Index_type end)
+      : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
 
@@ -102,66 +102,63 @@ struct TypedRangeSegment {
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
   //! move constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment&& o)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment&& o)
       : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end)),
-        m_size(std::move(o.m_size))
+        m_end(std::move(o.m_end))
   {
   }
 
   //! copy constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end)
   {
   }
 
   //! copy assignment
-  RAJA_HOST_DEVICE TypedRangeSegment& operator=(TypedRangeSegment const& o)
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const& o)
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
-    m_size = o.m_size;
     return *this;
   }
 
   //! destructor
-  RAJA_HOST_DEVICE ~TypedRangeSegment() {}
+  RAJA_HOST_DEVICE RAJA_INLINE ~TypedRangeSegment() {}
 
   //! swap one TypedRangeSegment with another
   /*!
    * \param[in] other another TypedRangeSegment instance
    */
-  RAJA_HOST_DEVICE void swap(TypedRangeSegment& other)
+  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
   {
     camp::safe_swap(m_begin, other.m_begin);
     camp::safe_swap(m_end, other.m_end);
-    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeSegment
   /*!
    * \return an iterator corresponding to the beginning of the Segment
    */
-  RAJA_HOST_DEVICE iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return m_begin; }
 
   //! obtain an iterator to the end of this TypedRangeSegment
   /*!
    * \return an iterator corresponding to the end of the Segment
    */
-  RAJA_HOST_DEVICE iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return m_end; }
 
   //! obtain the size of this TypedRangeSegment
   /*!
    * \return the range (end - begin) of this Segment
    */
-  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+  RAJA_HOST_DEVICE RAJA_INLINE StorageT size() const { return m_end - m_begin; }
 
   //! Create a slice of this instance as a new instance
   /*!
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE TypedRangeSegment slice(Index_type begin,
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(Index_type begin,
                                            Index_type length) const
   {
     auto start = m_begin[0] + begin;
@@ -174,10 +171,10 @@ struct TypedRangeSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+    return m_begin == o.m_begin && m_end == o.m_end;
   }
 
 private:
@@ -186,9 +183,6 @@ private:
 
   //! member variable for end iterator
   iterator m_end;
-
-  //! member variable for size of segment
-  DiffT m_size;
 };
 
 

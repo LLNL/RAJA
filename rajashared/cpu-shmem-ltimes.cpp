@@ -86,14 +86,13 @@ void runLTimesRajaNested(bool debug,
   constexpr size_t tile_groups = 0;
 
 
-  using Lambda_LoadEll = Lambda<0>;
   using Pol = RAJA::nested::Policy<
     nested::Tile<0, nested::tile_fixed<tile_moments>, seq_exec,
       nested::Tile<1, nested::tile_fixed<tile_directions>, seq_exec,
         SetShmemWindow<
 
           // Load shmem L
-          For<0, loop_exec, For<1, loop_exec, Lambda_LoadEll>>,
+          For<0, loop_exec, For<1, loop_exec, Lambda<0>>>,
 
           For<2, loop_exec,
             nested::Tile<3, nested::tile_fixed<tile_zones>, seq_exec,

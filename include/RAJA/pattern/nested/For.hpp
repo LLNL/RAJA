@@ -44,6 +44,7 @@ struct ForWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
   using Base::Base;
 
   template <typename InIndexType>
+  RAJA_INLINE
   void operator()(InIndexType i)
   {
     Base::wrapper.data.template assign_index<ArgumentId>(i);

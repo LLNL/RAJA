@@ -77,7 +77,9 @@ template <camp::idx_t Index, typename BaseWrapper>
 struct TileWrapper : GenericWrapper<Index, BaseWrapper> {
   using Base = GenericWrapper<Index, BaseWrapper>;
   using Base::Base;
+
   template <typename InSegmentType>
+  RAJA_INLINE
   void operator()(InSegmentType s)
   {
     camp::get<Index>(Base::wrapper.data.segment_tuple) = s;
@@ -205,6 +207,7 @@ struct StatementExecutor<Tile<ArgumentId, TPol, EPol, InnerPolicies...>> {
   const inner_policy_t inner_policy;
 
   template <typename WrappedBody>
+  RAJA_INLINE
   void operator()(TileType const &fp, WrappedBody const &wrap)
   {
     auto const &st = camp::get<ArgumentId>(wrap.data.segment_tuple);
