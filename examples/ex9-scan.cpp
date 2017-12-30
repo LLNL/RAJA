@@ -77,10 +77,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in+N, -1);
 
-//std::cout << "\n non-shuffled in values...\n";
-//printArray(in, N);  
-//std::cout << "\n";
-
   std::shuffle(in, in + N, std::mt19937{std::random_device{}()});
   std::cout << "\n in values...\n";
   printArray(in, N);  
@@ -89,13 +85,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 // Perform various sequential scans to illustrate inclusive/exclusive,
-// in-place scans with different operators
+// in-place, default scans with different operators
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running sequential inclusive_scan (default)...\n";
+
+  RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N, out);
+
+  checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
+  printArray(out, N);  
+  std::cout << "\n";
+
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential inclusive_scan (plus)...\n";
 
-  RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N,
-                                       out,
+  RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N, out,
                                        RAJA::operators::plus<int>{});
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
@@ -106,8 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential exclusive_scan (plus)...\n";
 
-  RAJA::exclusive_scan<RAJA::seq_exec>(in, in + N,
-                                       out,
+  RAJA::exclusive_scan<RAJA::seq_exec>(in, in + N, out,
                                        RAJA::operators::plus<int>{});
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
@@ -149,8 +153,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP inclusive_scan (plus)...\n";
 
-  RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(in, in + N,
-                                       out,
+  RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(in, in + N, out,
                                        RAJA::operators::plus<int>{});
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
@@ -159,7 +162,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running OpenMP exclusive_scan_inplace (plu)...\n";
+  std::cout << "\n Running OpenMP exclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
@@ -187,18 +190,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        RAJA::operators::plus<int>{});
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
-  printArray(in, N);
+  printArray(out, N);
   std::cout << "\n";
 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA exclusive_scan (plus)...\n";
-  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(in, in + N,
-                                       out,
+  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(in, in + N, out,
                                        RAJA::operators::plus<int>{});
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
-  printArray(in, N);
+  printArray(out, N);
   std::cout << "\n";
 
 #endif
