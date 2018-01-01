@@ -61,7 +61,7 @@ This generates the following sequence of values in the 'in' array::
 Inclusive Scans
 ^^^^^^^^^^^^^^^^
 
-A sequential inclusive scan operation is performed by::
+A sequential inclusive scan operation is performed by:
 
 .. literalinclude:: ../../../../examples/ex9-scan.cpp
                     :lines: 93-93
