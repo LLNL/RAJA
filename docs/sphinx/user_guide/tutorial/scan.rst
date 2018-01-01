@@ -39,8 +39,8 @@ useful can be found here `Va Tech Scan Lecture <http://people.cs.vt.edu/yongcao/
 .. note:: For scans using the CUDA back-end, RAJA uses the implementations
           provided by the NVIDIA Thrust library. For better performance, one
           can enable the NVIDIA cub library for scans by setting the CMake
-          variable ``CUD_DIR`` to the location of the cub library on your
-          system.
+          variable ``CUB_DIR`` to the location of the cub library on your
+          system when CUDA is enabled.
 
 In the following discussion, we present examples of RAJA sequential, OpenMP,
 and CUDA scan operations. All examples use the same integer arrays for input
