@@ -68,7 +68,7 @@ If you have some familiarity with RAJA, and want to get up and running quickly,
 check out :ref:`getting_started-label`. This guide contains information 
 about accessing the RAJA code, building it, and basic RAJA usage.
 
-If you are completely new to RAJA, please check out the :ref:`RAJA Tutorial`.
+If you are completely new to RAJA, please check out the :ref:`tutorial-label`.
 It contains some discussion of essential C++ concepts and will walk you 
 through a sequence of code examples that illustrate many of the key RAJA
 features.
@@ -87,7 +87,7 @@ interested in improving RAJA and exploring new ways to use it. A brief
 description of how the RAJA team operates can be found in 
 :ref:`contributing-label`.
 
-.. doctrine::
+.. toctree::
    :maxdepth: 2
 
    getting_started
