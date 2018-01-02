@@ -244,10 +244,10 @@ CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
 CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
                                                   Fn&& f,
-                                                  camp::idx_seq<Sequence...>)
-    -> decltype(f(get<Sequence>(t)...))
+                                                  camp::idx_seq<Sequence...> const &)
+    -> decltype(f(get<Sequence>(forward<TupleLike>(t))...))
 {
-  return f(get<Sequence>(t)...);
+  return f(get<Sequence>(forward<TupleLike>(t))...);
 }
 
 CAMP_SUPPRESS_HD_WARN

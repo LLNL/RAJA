@@ -146,7 +146,7 @@ template<typename StmtList, typename Data>
 void execute_statement_list(StmtList && statement_list, Data && data){
   using statement_list_type = camp::decay<StmtList>;
   StatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-  launcher(statement_list, std::forward<Data>(data));
+  launcher(std::forward<StmtList>(statement_list), std::forward<Data>(data));
 }
 
 
@@ -179,10 +179,10 @@ template<typename PolicyT, typename Data>
 RAJA_INLINE
 constexpr
 auto make_statement_list_wrapper(PolicyT && policy, Data && data) ->
-  StatementListWrapper<decltype(policy), camp::decay<Data>>
+  StatementListWrapper<camp::decay<PolicyT>, camp::decay<Data>>
 {
-  return StatementListWrapper<decltype(policy), camp::decay<Data>>(
-      policy, std::forward<Data>(data));
+  return StatementListWrapper<camp::decay<PolicyT>, camp::decay<Data>>(
+      std::forward<PolicyT>(policy), std::forward<Data>(data));
 }
 
 
@@ -240,7 +240,7 @@ struct GenericWrapper {
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
+  GenericWrapper(BaseWrapper const &w) :  wrapper{w} {}
 
   RAJA_HOST_DEVICE
   RAJA_INLINE

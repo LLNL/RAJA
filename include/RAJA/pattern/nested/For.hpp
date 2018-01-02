@@ -63,7 +63,6 @@ struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
   RAJA_INLINE
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
-    using ::RAJA::policy::sequential::forall_impl;
     forall_impl(fp.execution_policy,
                 camp::get<ArgumentId>(wrap.data.segment_tuple),
                 ForWrapper<ArgumentId, WrappedBody>{wrap});

@@ -66,7 +66,7 @@ struct View {
   template <typename... Args>
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
-    return data[(int)convertIndex<Index_type>(layout(args...))];
+    return data[convertIndex<Index_type>(layout(args...))];
   }
 };
 

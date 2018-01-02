@@ -98,6 +98,7 @@
 // Multidimensional layouts and views
 //
 #include "RAJA/util/Layout.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
