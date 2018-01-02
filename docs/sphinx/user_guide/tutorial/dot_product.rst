@@ -32,7 +32,7 @@ In the example, we compute a vector dot product, 'dot = (a,b)', where
 C-style loop for the dot product is: 
 
 .. literalinclude:: ../../../../examples/ex2-dot-product.cpp
-                    :lines: 81-85
+                    :lines: 81-87
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA Variants
@@ -55,7 +55,7 @@ in which it will be used. Here is the RAJA sequential variant of the dot
 product computation:
 
 .. literalinclude:: ../../../../examples/ex2-dot-product.cpp
-                    :lines: 94-100
+                    :lines: 95-102
 
 Note that the sum reduction object is defined by specifying the sequential
 reduction policy ``RAJA::seq_reduce``, which matches the loop execution policy,
@@ -66,7 +66,7 @@ we use the 'get' method.
 The OpenMP multi-threaded variant of the loop is implemented similarly:
 
 .. literalinclude:: ../../../../examples/ex2-dot-product.cpp
-                    :lines: 110-116
+                    :lines: 112-119
 
 Here, we use the ``RAJA::omp_reduce`` reduce policy to match the OpenMP
 loop execution policy.
@@ -74,7 +74,7 @@ loop execution policy.
 Finally, the RAJA CUDA variant:
 
 .. literalinclude:: ../../../../examples/ex2-dot-product.cpp
-                    :lines: 127-134
+                    :lines: 130-138
 
 Here, the CUDA reduce policy ``RAJA::cuda_reduce`` is used to match the CUDA 
 loop execution policy, including the number of threads per CUDA thread block.

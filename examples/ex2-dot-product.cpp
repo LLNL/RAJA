@@ -84,8 +84,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     dot += a[i] * b[i];
   }
 
-  checkResult(dot, N);
+  std::cout << "\t (a, b) = " << dot << std::endl;
 
+  double dot_ref = dot;
 
 //----------------------------------------------------------------------------//
 
@@ -98,8 +99,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
 
   dot = seqdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
 
-  checkResult(dot, N);
+  checkResult(dot, dot_ref);
 
 
 //----------------------------------------------------------------------------//
@@ -114,8 +116,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = ompdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
 
-  checkResult(dot, N);
+  checkResult(dot, dot_ref);
 #endif
 
 
@@ -132,8 +135,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = cudot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
 
-  checkResult(dot, N);
+  checkResult(dot, dot_ref);
 #endif
 
 //----------------------------------------------------------------------------//
