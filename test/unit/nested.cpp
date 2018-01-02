@@ -710,5 +710,99 @@ TEST(Nested, Collapse6)
   delete[] data;
 }
 
+TEST(Nested, Collapse7)
+{
+
+  int N  = 3;
+  int M  = 3;
+  int K  = 4;
+  int P  = 8;
+
+  int *data = new int[N*M*K*P];
+  for(int i = 0; i< N*M*K*P; ++i){
+    data[i] = 0;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::For<0, RAJA::seq_exec>, 
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2>,
+       RAJA::nested::For<3> > >;
+
+  RAJA::nested::forall(
+        Pol{},
+        camp::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N),
+        RAJA::RangeSegment(0, P)
+                         ),
+        [=] (Index_type k, Index_type j, Index_type i, Index_type r) {
+          Index_type id = r + P*(i + N*(j + M*k));
+          data[id] += id;
+        });
+
+  for(int k=0; k<K; ++k){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        for(int r=0; r<P; ++r){
+          Index_type id = r + P*(i + N*(j + M*k));
+          ASSERT_EQ(data[id], id);
+        }
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+
+TEST(Nested, Collapse8)
+{
+
+  int N  = 3;
+  int M  = 3;
+  int K  = 4;
+  int P  = 8;
+
+  int *data = new int[N*M*K*P];
+  for(int i = 0; i< N*M*K*P; ++i){
+    data[i] = 0;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<0>,
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2> >,
+       RAJA::nested::For<3, RAJA::seq_exec> >;
+
+  RAJA::nested::forall(
+        Pol{},
+        camp::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N),
+        RAJA::RangeSegment(0, P)
+                         ),
+        [=] (Index_type k, Index_type j, Index_type i, Index_type r) {
+          Index_type id = r + P*(i + N*(j + M*k));
+          data[id] += id;
+        });
+
+  for(int k=0; k<K; ++k){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        for(int r=0; r<P; ++r){
+          Index_type id = r + P*(i + N*(j + M*k));
+          ASSERT_EQ(data[id], id);
+        }
+      }
+    }
+  }
+
+  delete[] data;
+}
 
 #endif //RAJA_ENABLE_OPENMP
