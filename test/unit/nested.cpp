@@ -481,12 +481,12 @@ CUDA_TEST(Nested, SubRange_Complex)
 
   RAJA::nested::forall(
       ExecPolicy{},
-      RAJA::make_tuple(RAJA::RangeSegment(first, last),
-                       RAJA::RangeSegment(0, 16),
-                       RAJA::RangeSegment(0, 32)),
-      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+      RAJA::make_tuple(RAJA::TypedRangeSegment<TypedIndex>(first, last),
+                       RAJA::TypedRangeSegment<TypedIndex>(0, 16),
+                       RAJA::TypedRangeSegment<TypedIndex>(0, 32)),
+      [=] RAJA_HOST_DEVICE (TypedIndex i, TypedIndex j, TypedIndex k) {
         //if(j == 0 && k == 0){
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
+          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+(*i), 1.0);
         //}
        });
   cudaDeviceSynchronize();
