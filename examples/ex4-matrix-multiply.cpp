@@ -32,6 +32,7 @@
  *    - Index range segment
  *    - View abstraction
  *    - 'RAJA::nested' loop abstractions
+ *    - Collapsing loops under OpenMP and CUDA policies
  *    - Nested loop reordering
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -207,7 +208,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// Next, we use a RAJA nested::foral method to execute the calculation.
+// Next, we use a RAJA nested::forall method to execute the calculation.
 // This is different than RAJA 'forall' and so a few points of exmplanation
 // are in order:
 //
@@ -305,8 +306,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
-#endif
 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running OpenMP mat-mult (RAJA-Collapse)...\n";
+
+  //This policy collapses the col and row loops into a single
+  //OpenMP loop. RAJA is currently able to collapse up to three loops.
+  
+  using NESTED_EXEC_POL3 =
+    RAJA::nested::Policy<RAJA::nested::OmpParallelCollapse<
+      RAJA::nested::For<1>,RAJA::nested::For<0>>>;
+  
+  RAJA::nested::forall(NESTED_EXEC_POL3{},
+                       RAJA::make_tuple(col_range, row_range),
+                       [=](int col, int row) {
+			 
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+	dot += Aview(row, k) * Bview(k, col);
+      }
+
+      Cview(row, col) = dot;
+
+  });
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+#endif
 
 //----------------------------------------------------------------------------//
 
