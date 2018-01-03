@@ -346,12 +346,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // by the CUDA_BLOCK_SIZE_X and CUDA_BLOCK_SIZE_Y template arguments,
   // respectively. 
   // 
-  using NESTED_EXEC_POL3 = 
+  using NESTED_EXEC_POL4 = 
     RAJA::nested::Policy< RAJA::nested::CudaCollapse<
       RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y>>,
       RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X>>> >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL3{},
+  RAJA::nested::forall(NESTED_EXEC_POL4{},
                        RAJA::make_tuple(col_range, row_range), 
                        [=] RAJA_DEVICE (int col, int row) {
 
@@ -390,7 +390,7 @@ void checkResult(T* C, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
+      if ( std::abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
     }
   }
   if ( match ) {
@@ -406,7 +406,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
+      if ( std::abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
     }
   }
   if ( match ) {
