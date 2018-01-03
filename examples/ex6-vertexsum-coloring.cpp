@@ -13,6 +13,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -407,7 +408,7 @@ void checkResult(double* vol, double* volref, int n)
 {
   bool match = true;
   for (int i = 0; i < n*n; i++) {
-    if ( std::abs(vol[i] - volref[i]) > 10e-12 ) { match = false; }
+    if ( abs(vol[i] - volref[i]) > 10e-12 ) { match = false; }
   }
   if ( match ) {
     std::cout << "\n\t result -- PASS\n";

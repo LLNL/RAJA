@@ -13,6 +13,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <cstring>
@@ -389,7 +390,7 @@ void checkResult(T* C, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( std::abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
+      if ( abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
     }
   }
   if ( match ) {
@@ -405,7 +406,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( std::abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
+      if ( abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
     }
   }
   if ( match ) {
