@@ -19,7 +19,7 @@ Scan
 ====
 
 The scan operation (or prefix sum) is an operation such that provided a one-dimensional array :math:`x`,
-the resulting array :math:`y` is given as
+the resulting array :math:`y` is given as:
 
 .. math::
 

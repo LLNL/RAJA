@@ -141,16 +141,17 @@ we would use this policy which swaps the ``RAJA::nested::For`` arguments:
 
 
 The RAJA framework can also collapse double (or tripple) loops into a single loop. 
-For example, the following policy will create a single OpenMP parallel region:
+For example, the following policy will create a single OpenMP parallel region and distribute
+loop iterations to each thread:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 318-320
+                    :lines: 318-321
 
 Lastly, the following policy will collapse the loop nest into a single CUDA
 kernel and launch it with a particular thread block decomposition:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 349-352
+                    :lines: 350-353
 
 Here, the loop iterations are distributed over two-dimensional thread blocks
 with x and y dimensions defined by the CUDA_BLOCK_SIZE_X and CUDA_BLOCK_SIZE_Y 

@@ -317,7 +317,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   using NESTED_EXEC_POL3 =
     RAJA::nested::Policy<RAJA::nested::OmpParallelCollapse<
-    RAJA::nested::For<1>,RAJA::nested::For<0>>>;
+    RAJA::nested::For<1>,
+    RAJA::nested::For<0> > >;
   
   RAJA::nested::forall(NESTED_EXEC_POL3{},
                        RAJA::make_tuple(col_range, row_range),
@@ -325,7 +326,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 			 
       double dot = 0.0;
       for (int k = 0; k < N; ++k) {
-	dot += Aview(row, k) * Bview(k, col);
+        dot += Aview(row, k) * Bview(k, col);
       }
 
       Cview(row, col) = dot;

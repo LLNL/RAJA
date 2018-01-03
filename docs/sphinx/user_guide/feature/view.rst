@@ -20,12 +20,12 @@ View and Layout
 
 Many scientific applications use multi-dimensional arrays to encapsulate
 data, i.e. matrices and tensors. In practice large arrays are typically allocated 
-on the heap by: ::
+on the heap by::
 
    double *A = new double [M*N]
 
 Where A is a pointer to a contigous array of data. In the scenario that we would like to treat
-the data as a matrix of size :math:`M \times N`, one may use macros to simplify indexing: ::
+the data as a matrix of size :math:`M \times N`, one may use macros to simplify indexing::
   
    #define A(r, c) A[c + N * r]
 
@@ -36,7 +36,7 @@ RAJA View
 ---------
 To bypass the need for macros and simplify multi-dimensional indexing, RAJA introduces the ``RAJA::View``. 
 The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. Initializing a ``RAJA::View`` may be 
-done as follows: ::
+done as follows::
 
    RAJA::View<dataType T, RAJA::Layout<DIM>> Aview(A, N1, ..., Nn);
 
@@ -49,7 +49,7 @@ RAJA Layout
 
 The ``RAJA::Layout<DIM>`` is particularly useful for creating multi-dimensional arrays with the ``RAJA::View`` class, additionaly
 it may be used for mapping multi-dimensional indecies to a one-dimensional indecies and vice versa. In the following example we consider 
-creating a three-dimensional layout with dimension sizes 5, 7, and 11 :: 
+creating a three-dimensional layout with dimension sizes 5, 7, and 11:: 
 
    // Create a layout object
    Layout<3> layout(5,7,11);
