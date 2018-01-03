@@ -16,7 +16,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <cstring>
-#include <cmath>
 
 #include "memoryManager.hpp"
 
@@ -113,7 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int col = 0; col < N; ++col) {
 
       double dot = 0.0;
-      for (int k = 0; k < N; ++k) {s
+      for (int k = 0; k < N; ++k) {
         dot += A(row, k) * B(k, col);
       }
 
@@ -390,7 +389,7 @@ void checkResult(T* C, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
+      if ( std::abs( C(row, col) - row * col * N ) > 10e-12 ) { match = false; } 
     }
   }
   if ( match ) {
@@ -406,7 +405,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
+      if ( std::abs( Cview(row, col) - row * col * N ) > 10e-12 ) { match = false; }
     }
   }
   if ( match ) {
