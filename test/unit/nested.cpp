@@ -524,7 +524,7 @@ TEST(Nested, Collapse2)
 
   RAJA::nested::forall(
       Pol{},
-      camp::make_tuple(
+      RAJA::make_tuple(
           RAJA::RangeSegment(0, N),
           RAJA::RangeSegment(0, M)),
 
@@ -563,7 +563,7 @@ TEST(Nested, Collapse3)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
@@ -605,7 +605,7 @@ TEST(Nested, Collapse4)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
@@ -649,7 +649,7 @@ TEST(Nested, Collapse5)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
@@ -692,7 +692,7 @@ TEST(Nested, Collapse6)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
@@ -732,7 +732,7 @@ TEST(Nested, Collapse7)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N),
@@ -780,7 +780,7 @@ TEST(Nested, Collapse8)
 
   RAJA::nested::forall(
         Pol{},
-        camp::make_tuple(
+        RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N),
