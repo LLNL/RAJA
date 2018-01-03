@@ -57,7 +57,7 @@ create a list segment from it, and then pass the list segment to the
 forall template:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-		    :lines: 133-142
+		    :lines: 134-143
 
 Any container that properly defines the methods 'begin()', 'end()', and
 'size()' can be used to create a list segment object.
@@ -82,7 +82,7 @@ The ``RAJA::StaticIndexSet`` template is a container that holds segment
 types specified as template arguments. An index set object can be passed
 to the RAJA 'forall' method just like a segment. When the loop is run,
 the segments will be iterated over and each segment will be executed. Here,
-we create an index set and add the firs index set from above to it and
+we create an index set and add the first index set from above to it and
 run the loop:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp

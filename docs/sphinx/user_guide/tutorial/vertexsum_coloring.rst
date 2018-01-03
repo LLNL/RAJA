@@ -83,19 +83,19 @@ First, we define four vectors to gather the mesh element indices for each
 color:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 193-215
+                    :lines: 194-216
 
 Then, we create a RAJA index set with four list segments, one for each color:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 223-230
+                    :lines: 224-231
 
 Now, we can define an index set execution policy that iterates over the 
 segments sequentially and traverses each segment in parallel using OpenMP
 multi-threading:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 273-282
+                    :lines: 274-283
 
 Note that we no longer need to use the offset variable to compute the 
 element index in terms of 'i' and 'j' since the loop is no longer nested
@@ -106,7 +106,7 @@ segments sequentially, and execute each segment in parallel via a CUDA
 kernel launch on a GPU:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 301-310
+                    :lines: 302-311
 
 Note that we've marked the lambda loop body with the 'RAJA_DEVICE' macro
 and specified the number of threads in a CUDA thread block in the segment

@@ -34,12 +34,12 @@ N x N and store the result in matrix 'C'. To motivate the use of the
 matrix entries in the C-version:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 58-60
+                    :lines: 59-61
 
 Then, a typical C-style sequential matrix multiplication operation looks like:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 111-121
+                    :lines: 112-122
 
 ^^^^^^^^^^^^^^^^^^^^^
 Initial RAJA Variants
@@ -50,7 +50,7 @@ In the RAJA variants of the matrix multiple example, we use two
 spaces:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 144-145
+                    :lines: 145-146
 
 We also use ``RAJA::View`` objects, which allow us to access matrix 
 entries in a multi-dimensional manner similar to the C-style version but 
@@ -58,7 +58,7 @@ without the need for macros. Here, we create a two-dimensional N x N 'view'
 for each of the three matrices: 
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 134-136
+                    :lines: 135-137
 
 Although we do not show such things here, RAJA Views can be used to encapsulate
 a variety of different data properties and access patterns, including 
@@ -69,7 +69,7 @@ In the first RAJA variant, we convert the outermost C-style 'row' loop to
 use the ``RAJA::forall`` traversal method with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 162-175
+                    :lines: 163-176
 
 Here, the lambda expression for the loop body contains the 'col' and 'k'
 loops.
@@ -83,7 +83,7 @@ For the second RAJA variant, we nest a ``RAJA::forall`` traversal method
 call for the 'column' loop inside the outer 'row' traversal:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 191-204
+                    :lines: 192-205
 
 Here, the lambda expression for the column loop body is contained within the 
 lambda expression for the outer row loop. When the code will not be run on a 
@@ -104,7 +104,7 @@ describe these differences in detail in the example :ref:`nestedreorder-label`.
 We first present a complete example, and then describe its key elements:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 236-251
+                    :lines: 237-252
 
 The ``RAJA::nested::forall`` template takes three arguments: a nested policy,
 a tuple of ranges, one for each level in the loop nest, and the lambda 
@@ -131,26 +131,26 @@ If we wanted to execute the row loop using OpenMP multi-threaded parallelism
 and keep the column loop sequential, the policy we would use is:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 261-263
+                    :lines: 262-264
 
 To swap the loop nest ordering and keep the same execution policy on each loop,
 we would use this policy which swaps the ``RAJA::nested::For`` arguments:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-		    :lines: 291-293
+		    :lines: 292-294
 
 
 The RAJA framework can also collapse double (or tripple) loops into a single loop. 
 For example, the following policy will create a single OpenMP parallel region:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 317-319
+                    :lines: 318-320
 
 Lastly, the following policy will collapse the loop nest into a single CUDA
 kernel and launch it with a particular thread block decomposition:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 348-351
+                    :lines: 349-352
 
 Here, the loop iterations are distributed over two-dimensional thread blocks
 with x and y dimensions defined by the CUDA_BLOCK_SIZE_X and CUDA_BLOCK_SIZE_Y 

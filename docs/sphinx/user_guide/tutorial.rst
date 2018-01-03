@@ -51,7 +51,7 @@ are just like arguments for a standard C++ method. RAJA template methods pass
 arguments to lambdas based on usage and context. Values in the capture list 
 are initialized when the lambda is created, while values in the parameter list 
 are set when the lambda function is called. The body of a lambda function is
-similarly to the body of an ordinary C++ method.
+similar to the body of an ordinary C++ method.
 
 A C++ lambda can capture values in the capture list by value or by reference.
 This is similar to how arguments to C++ methods are passed; e.g., 

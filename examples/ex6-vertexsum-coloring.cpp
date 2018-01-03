@@ -194,8 +194,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::vector<int> idx0;
   std::vector<int> idx1;
   std::vector<int> idx2;
-  std::vector<int> idx3
-;
+  std::vector<int> idx3;
+
   for (int j = 0 ; j < N_elem ; ++j) {
     for (int i = 0 ; i < N_elem ; ++i) {
       int ie = i + j*jeoff ;
