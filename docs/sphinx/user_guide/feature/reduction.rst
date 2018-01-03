@@ -129,4 +129,4 @@ Reduction Policies
 * ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value and which may use CUDA atomic operations in the reduction.
 
 A working example of basic RAJA reduction usage can be found in
-``RAJA/examples/example-reduction.cpp``.
+``<build-dir>/examples/ex7-example-reductions.cpp``.

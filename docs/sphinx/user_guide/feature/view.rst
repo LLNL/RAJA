@@ -18,16 +18,16 @@
 View and Layout
 ===============
 
-In machine learning and matrix algebra, multi-dimensional arrays are the workhorse data structure.
-In practice large arrays are typically allocated by ::
+Many scientific applications use multi-dimensional arrays to encapsulate
+data, i.e. matrices and tensors. In practice large arrays are typically allocated 
+on the heap by: ::
 
-   double *A = new double [N1*N2]
+   double *A = new double [M*N]
 
-Where A points to a contigous array of data. In this example we would like to treat the data
-as a rank two tensor of size :math:`N_1 \times N_2`. In standard C/C++ we may simplify multi-dimensional
-indexing through the use of macros ::
+Where A is a pointer to a contigous array of data. In the scenario that we would like to treat
+the data as a matrix of size :math:`M \times N`, one may use macros to simplify indexing: ::
   
-   #define A(x2, x1) A[x1 + N1 * x2]
+   #define A(r, c) A[c + N * r]
 
 In a more broader sense we are introducing a new **view** into the data's **layout**.
 
@@ -35,15 +35,13 @@ In a more broader sense we are introducing a new **view** into the data's **layo
 RAJA View
 ---------
 To bypass the need for macros and simplify multi-dimensional indexing, RAJA introduces the ``RAJA::View``. 
-The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. The basic usage is as follows ::
+The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. Initializing a ``RAJA::View`` may be 
+done as follows: ::
 
    RAJA::View<dataType T, RAJA::Layout<DIM>> Aview(A, N1, ..., Nn);
 
-The ``RAJA::View`` is templated on data type and layout (``RAJA::Layout``). The arguments for the instantization
-of the view are the pointer to the data and the stride of each dimension (i.e. ``N1, N2, ..., Nn``). 
-Accessing the entries may then be done through the following accessor ::
-
-   Aview(x2,x1)
+The ``RAJA::View`` is templated on data type and layout (``RAJA::Layout``). The arguments of the ``RAJA::View``
+are used to wrap the pointer and encapsulate the stride of each dimenion  (i.e. ``N1, N2, ..., Nn``). 
 
 -----------
 RAJA Layout
@@ -103,7 +101,7 @@ An example of a "projected" Layout::
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
 
-An application of the ``RAJA::View`` and ``RAJA::Layout<DIM>`` may be found in ``examples-matrix-multiply.cpp``.
+An application of the ``RAJA::View`` and ``RAJA::Layout<DIM>`` may be found in ``<build-dir>/examples/ex4-matrix-multiply.cpp``.
 
 
 

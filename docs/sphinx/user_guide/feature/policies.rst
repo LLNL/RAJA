@@ -18,27 +18,25 @@
 Execution Policies
 ==================
 
-The following serves as reference to the various policies which ``RAJA`` supports.
-
+The following serves as quick reference guide to the various policies which ``RAJA`` supports. 
 
 .. note:: * All RAJA execution policies are in the namespace ``RAJA``.
-
 
 --------------------
 Serial/SIMD Policies
 --------------------
 
 * ``seq_exec``  - Enforces sequential loop iterations.
-* ``loop_exec`` - Allows the compiler to vectorize.
-* ``simd_exec`` - Introduces vectorization hints to loop iterations.
+* ``loop_exec`` - Allows the compiler to generate optimizations.
+* ``simd_exec`` - Introduces vectorization hints for SIMD instructions.
 
 ---------------
 OpenMP Policies
 ---------------
 
-* ``omp_for_exec`` - Distributes loop iterations within threads (static scheduling by default).
+* ``omp_for_exec`` - Distributes loop iterations within threads.
 * ``omp_for_nowait_exec`` - Removes synchronization within threaded regions.
-* ``omp_for_static`` - Distributes loop iterations within threads using a static schedule.
+* ``omp_for_static`` - Distributes loop iterations within threads using a static scheduler.
 * ``omp_parallel_exec`` - Creates a parallel region.
 * ``omp_parallel_for_exec`` - Creates a parallel region and divides loop iterations between threads.
 * ``omp_parallel_segit`` - Creates a parallel region for index segments.
@@ -49,16 +47,17 @@ OpenMP Policies
 OpenMP Target Policies
 ----------------------
 
-* ``omp_target_parallel_for_exec`` - Variables are mapped to a device environment and a parallel region is created in which loop iterations are divided among threads.
+* ``omp_target_parallel_for_exec`` - Maps the loop body and variables to a device environment. A parallel region within the context
+of the device and loop iterations are devided among threads.
 
 ------------
 TBB Policies
 ------------
 
-* ``tbb_for_exec`` - Schedules tasks to operate in parallel using the static scheduler.
-* ``tbb_for_static`` - Implements the parallel_for method and uses a static scheduler.
+* ``tbb_for_exec`` - Schedules tasks to operate in parallel.
+* ``tbb_for_static`` - Implements the parallel_for method using a static scheduler.
 * ``tbb_for_dynamic`` - Implements the parallel_for method and uses a dynamic scheduler.
-* ``tbb_segit`` - Implements the parallel_for for indexset segments.
+* ``tbb_segit`` - Implements the parallel_for for a RAJA indexset segment. 
 
 -------------
 CUDA Policies
@@ -80,13 +79,13 @@ execution policies
 * ``cuda_threadblock_y_exec<int Y_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Y_STRIDE_SIZE`` threads in the y-component.
 * ``cuda_threadblock_z_exec<int Z_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Z_STRIDE_SIZE`` threads in the z-component.
 
-Lastly, under the ``RAJA::nested::forall`` method, the user also map loop nest to blocks and threads
+Lastly, under the ``RAJA::nested::forall`` method, the user may also map loop nest to blocks and to block local threads
 using through following policies
 
-* ``cuda_block_x_exec`` - Maps a loop nest to blocks in the x-component.
-* ``cuda_block_y_exec`` - Maps a loop nest to blocks in the y-component.
-* ``cuda_block_z_exec`` - Maps a loop nest to blocks in the z-component.
+* ``cuda_block_x_exec`` - Maps a loop nest to the x-component of a CUDA thread block.
+* ``cuda_block_y_exec`` - Maps a loop nest to the y-component of a CUDA thread block.
+* ``cuda_block_z_exec`` - Maps a loop nest to the z-component of a CUDA thread block.
 
-* ``cuda_thread_x_exec`` - Maps a loop nest to threads in the x-component.
-* ``cuda_thread_y_exec`` - Maps a loop nest to threads in the y-component.
-* ``cuda_thread_z_exec`` - Maps a loop nest to threads in the z-component.
+* ``cuda_thread_x_exec`` - Maps a loop nest to the x-component of a block local CUDA thread. 
+* ``cuda_thread_y_exec`` - Maps a loop nest to the y-component of a block local CUDA thread. 
+* ``cuda_thread_z_exec`` - Maps a loop nest to the z-component of a block local CUDA thread. 

@@ -159,4 +159,4 @@ an OpenMP execution policy, the OpenMP version of the atomic operation
 would be used.
 
 A complete working code that shows RAJA atomic usage can be found in 
-``RAJA/examples/ex8-pi-reduce_vs_atomic.cpp``. 
+``<build-dir>/examples/ex8-pi-reduce_vs_atomic.cpp``. 

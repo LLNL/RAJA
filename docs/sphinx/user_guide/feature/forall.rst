@@ -91,5 +91,5 @@ specify several items:
 
   #. The loop iteration variables and their types, which are arguments to the lambda loop body.
 
-Common usage of ``RAJA::forall`` may be found in the examples in 
+Common usage of ``RAJA::forall`` and ``RAJA::nested::forall`` may be found in the examples in 
 :ref:`tutorial-label`.

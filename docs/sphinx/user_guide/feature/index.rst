@@ -65,5 +65,6 @@ A more general purpose container is the ``RAJA::ListSegment`` and typed ``RAJA::
     RAJA::ListSegment(RAJA::Index_type *Aptr,size_t Alen)
 
 
-Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments. The utility of the ``RAJA::StaticIndexSet<T>`` is demonstrated in the Red-Black Gauss-Sidel algorithm wherein parallism may be exposed by decomposing the algorithm into two sweeps.
-We refer the reader to the example ``example-gauss-sidel.cpp`` for further detail. 
+Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments, i.e. a collection of ``RAJA::RangeSegments``.
+The utilty of the RAJA containers is illustrated in the tutorial, in particular we refer the reader to :ref:`indexset-label` 
+for further detail.
