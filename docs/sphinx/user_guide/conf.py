@@ -58,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'RAJA'
-copyright = u'2016, Rich Hornung and Jeff Keasler'
+copyright = u'2017'
 author = u'LLNS'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -309,7 +309,3 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 #
-# TODO: Add breathe support to include generated doxygen.
-#
-# breathe_projects = { "RAJA": "../doxygen/xml/" }
-# breathe_default_project = "RAJA"

@@ -26,7 +26,7 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 3: Jacobi Method
+  Example 5: Jacobi Method
 
   ----[Details]--------------------
   This code uses a five point finite difference stencil
@@ -47,8 +47,8 @@
   The scheme is implemented by allocating two arrays
   (I, Iold) and initialized to zero. The first set of
   nested for loops apply an iteration of the Jacobi
-  scheme. As boundary values are already known the
-  scheme is only applied to the interior nodes.
+  scheme. The scheme is only applied to the interior
+  nodes. 
 
   The second set of nested for loops is used to
   update Iold and compute the l_2 norm of the
@@ -61,14 +61,12 @@
   ----[RAJA Concepts]---------------
   1. ForallN loop
   2. RAJA Reduction
-  3. RAJA::omp_collapse_nowait_exec
 
   ----[Kernel Variants and RAJA Features]---
   a. C++ style nested for loops
   b. RAJA style nested for loops with sequential iterations
      i. Introduces RAJA reducers for sequential policies
   c. RAJA style nested for loops with omp parallelism
-     i.  Introduces collapsing loops using RAJA omp policies
      ii. Introduces RAJA reducers for omp policies
   d. RAJA style for loop with CUDA parallelism
      i. Introduces RAJA reducers for cuda policies
@@ -86,8 +84,8 @@
   CUDA_BLOCK_SIZE   - Number of threads per threads block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_DIM_X = 16;
-const int CUDA_BLOCK_DIM_Y = 16;
+const int CUDA_BLOCK_SIZE_X = 16;
+const int CUDA_BLOCK_SIZE_Y = 16;
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
@@ -171,8 +169,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                    * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
         int id = n * (N + 2) + m;
-        I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                         - Iold[id + 1]);
+        I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                           + Iold[id + 1]);
       }
     }
 
@@ -201,8 +199,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
-  using jacobiSeqNestedPolicy =
-      RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+
+  using jacobiSeqNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::seq_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
 
   printf("RAJA: Sequential Policy - Nested ForallN \n");
   resI2 = 1;
@@ -210,14 +210,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(I, 0, NN * sizeof(double));
   memset(Iold, 0, NN * sizeof(double));
 
+  /*
+   *  Sequential Jacobi Iteration. 
+   *
+   *  Note that a RAJA ReduceSum object is used to accumulate the sum
+   *  for the residual. Since the loop is run sequentially, this is 
+   *  not strictly necessary. It is done here for consistency and 
+   *  comparison with other RAJA variants in this example.
+   */  
   while (resI2 > tol * tol) {
 
-    /*
-      Jacobi Iteration
-    */
-    RAJA::forallN<jacobiSeqNestedPolicy>(
-      jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {      
-
+    RAJA::nested::forall(jacobiSeqNestedPolicy{}, RAJA::make_tuple(jacobiRange,jacobiRange),
+                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
+                         
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
@@ -226,15 +231,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int id = n * (N + 2) + m;
           I[id] =
-              -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                       - Iold[id + 1]);
+               0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                          + Iold[id + 1]);
         });
 
-    /*
-      ----[Reduction step]---------
-      The RAJA API introduces a thread-safe accumulation variable
-      "ReduceSum" in order to perform reductions
-    */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::seq_exec>(
       gridRange, [=](RAJA::Index_type k) {
@@ -246,7 +246,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2;
     if (iteration > maxIter) {
-      printf("RAJA: Sequential - Maxed out on iterations! \n");
+      printf("Jacobi: Sequential - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -263,50 +263,51 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(Iold, 0, NN * sizeof(double));
   
   /*
-    ----[RAJA Policies]-----------
-    RAJA::omp_collapse_nowait_exec -
-    parallizes nested loops without introducing nested parallism
-
-    RAJA::OMP_Parallel<> - Creates a parallel region,
-    must be the last argument of the nested policy list
-  */
-  using jacobiompNestedPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
-    RAJA::omp_collapse_nowait_exec>, RAJA::OMP_Parallel<>>;
+   *  OpenMP parallel Jacobi Iteration. 
+   *
+   *  ----[RAJA Policies]-----------
+   *  RAJA::omp_collapse_for_exec -
+   *  introduced a nested region
+   *
+   *  Note that OpenMP RAJA ReduceSum object performs the reduction
+   *  operation for the residual in a thread-safe manner.
+   */
+  
+  using jacobiOmpNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::omp_parallel_for_exec >,
+  RAJA::nested::For<0, RAJA::seq_exec> >;
 
   while (resI2 > tol * tol) {
+    
+    RAJA::nested::forall(jacobiOmpNestedPolicy{}, RAJA::make_tuple(jacobiRange,jacobiRange),
+                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
 
-    /*
-      Jacobi Iteration
-    */
-    RAJA::forallN<jacobiompNestedPolicy>(
-        jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {
                 
-          double x = gridx.o + m * gridx.h;
-          double y = gridx.o + n * gridx.h;
+      double x = gridx.o + m * gridx.h;
+      double y = gridx.o + n * gridx.h;
 
-          double f = gridx.h * gridx.h
-                     * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
+      double f = gridx.h * gridx.h * 
+                 (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
-          int id = n * (N + 2) + m;
-          I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);              
-        });
-    /*
-      Compute residual and update Iold
-    */
+      int id = n * (N + 2) + m;
+      I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + 
+                           Iold[id - 1] + Iold[id + 1]);              
+    });
+
+
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::omp_parallel_for_exec>(
-      gridRange, [=](RAJA::Index_type k) {
+
+    RAJA::forall<RAJA::omp_parallel_for_exec>( gridRange, 
+      [=](RAJA::Index_type k) {
       
-        RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);                    
-        Iold[k] = I[k];
+      RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);                    
+      Iold[k] = I[k];
         
-      });
+    });
     
     resI2 = RAJA_resI2;
     if (iteration > maxIter) {
-      printf("RAJA: OpenMP - Maxed out on iterations! \n");
+      printf("Jacobi: OpenMP - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -317,12 +318,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_CUDA)
+  /*
+   *  CUDA Jacobi Iteration. 
+   *
+   *  ----[RAJA Policies]-----------
+   *  RAJA::cuda_threadblock_y_exec, RAJA::cuda_threadblock_x_exec -
+   *  define the mapping of loop iterations to GPU thread blocks
+   *
+   *  Note that CUDA RAJA ReduceSum object performs the reduction
+   *  operation for the residual in a thread-safe manner on the GPU.
+   */
+
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
-  using jacobiCUDANestedPolicy = RAJA::NestedPolicy<RAJA::    
-    ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
-    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_DIM_Y>>>;    
-
+  using jacobiCUDANestedPolicy = RAJA::nested::Policy<
+    RAJA::nested::CudaCollapse<
+    RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X> >,
+    RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y> > > >;
+  
   resI2 = 1;
   iteration = 0;
   memset(I, 0, NN * sizeof(double));
@@ -331,11 +344,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   while (resI2 > tol * tol) {
 
     /*
-      Jacobi Iteration
+      Jacobi Iteration 
     */
-    RAJA::forallN<jacobiCUDANestedPolicy>(
-        jacobiRange, jacobiRange, [=] __device__(RAJA::Index_type m, RAJA::Index_type n) {
-        
+    RAJA::nested::forall(jacobiCUDANestedPolicy{},
+                         RAJA::make_tuple(jacobiRange,jacobiRange),
+                         [=] __host__ __device__  (RAJA::Index_type m, RAJA::Index_type n) {
+                           
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
@@ -343,8 +357,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
           int id = n * (N + 2) + m;
-          I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);                            
+          I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                             + Iold[id + 1]);                            
         });
 
     /*
@@ -393,13 +407,15 @@ double solution(double x, double y)
 void computeErr(double *I, grid_s grid)
 {
 
-  RAJA::RangeSegment fdBounds(0, grid.n);
+  RAJA::RangeSegment gridRange(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
-  using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
+  using jacobiSeqNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::seq_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
+
+  RAJA::nested::forall(jacobiSeqNestedPolicy{}, RAJA::make_tuple(gridRange,gridRange),
+                       [=] (RAJA::Index_type ty, RAJA::Index_type tx ) {
 
       int id = tx + grid.n * ty;
       double x = grid.o + tx * grid.h;
