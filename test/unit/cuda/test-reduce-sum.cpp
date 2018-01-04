@@ -129,7 +129,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
-  TempSet iset;
+  SimpleSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
 
@@ -177,7 +177,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
 
-  TempSet iset;
+  SimpleSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);

@@ -746,9 +746,9 @@ private:
   Index_type m_len;
 };
 
-using TempSet = IndexSet<RAJA::RangeSegment,
-                               RAJA::ListSegment,
-                               RAJA::RangeStrideSegment>;
+using SimpleSet = IndexSet<RAJA::RangeSegment,
+                           RAJA::ListSegment,
+                           RAJA::RangeStrideSegment>;
 
 namespace type_traits
 {

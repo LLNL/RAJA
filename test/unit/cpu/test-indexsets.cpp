@@ -36,7 +36,7 @@ protected:
   }
 
   RAJA::RAJAVec<RAJA::Index_type> is_indices;
-  RAJA::TempSet index_sets_[NumBuildMethods];
+  RAJA::SimpleSet index_sets_[NumBuildMethods];
 };
 
 TEST_F(IndexSetTest, IndexSetEquality)
@@ -117,13 +117,13 @@ TEST(IndexSet, compare)
 
 TEST(IndexSet, swap)
 {
-  RAJA::TempSet iset1;
+  RAJA::SimpleSet iset1;
   RAJA::RangeSegment range(0, 10);
   iset1.push_back(range);
   iset1.push_back_nocopy(&range);
   iset1.push_front(range);
   iset1.push_front_nocopy(&range);
-  RAJA::TempSet iset2;
+  RAJA::SimpleSet iset2;
 
   ASSERT_EQ(4l, iset1.size());
   ASSERT_EQ(40lu, iset1.getLength());

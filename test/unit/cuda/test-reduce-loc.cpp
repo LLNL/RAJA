@@ -202,7 +202,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
     RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
-    TempSet iset;
+    SimpleSet iset;
     iset.push_back(seg0);
     iset.push_back(seg1);
 
@@ -246,7 +246,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
   RangeSegment seg2(860, 1110);
   RangeSegment seg3(2490, 4003);
 
-  TempSet iset;
+  SimpleSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);

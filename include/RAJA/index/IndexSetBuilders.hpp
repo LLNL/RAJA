@@ -1,7 +1,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \File
  *
  * \brief   Header file for various index set builder methods.
  *
@@ -52,7 +52,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildIndexSetAligned(TempSet& hiset,
+void buildIndexSetAligned(SimpleSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length);
 
@@ -81,7 +81,7 @@ void buildIndexSetAligned(TempSet& hiset,
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(TempSet& iset,
+void buildLockFreeBlockIndexset(SimpleSet& iset,
                                 int fastDim,
                                 int midDim,
                                 int slowDim);
@@ -97,7 +97,7 @@ void buildLockFreeBlockIndexset(TempSet& iset,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(TempSet& iset,
+void buildLockFreeColorIndexset(SimpleSet& iset,
                                 Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,
