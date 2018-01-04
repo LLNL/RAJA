@@ -165,7 +165,6 @@ struct StatementListWrapper {
   StatementListWrapper(StmtList const &pt, Data &d) : statement_list(pt), data{d} {}
 
   RAJA_INLINE
-  constexpr
   void operator()() const
   {
     execute_statement_list(statement_list, data);
@@ -219,7 +218,6 @@ struct StatementListExecutor<num_statements,num_statements> {
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
-  constexpr
   void operator()(StmtList const &, Data &&) const {
 
   }

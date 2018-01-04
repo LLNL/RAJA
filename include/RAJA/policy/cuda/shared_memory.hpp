@@ -51,28 +51,31 @@ namespace RAJA
  *
  * The data is always in CUDA shared memory, so it's block-local.
  */
-template<typename T>
-struct SharedMemory<cuda_shmem, T> {
-  using self = SharedMemory<cuda_shmem, T>;
-  using element_type = T;
+template<typename T, size_t NumElem>
+struct SharedMemory<cuda_shmem, T, NumElem> {
+  using self = SharedMemory<cuda_shmem, T, NumElem>;
+  using element_t = T;
+
+  static constexpr size_t size = NumElem;
+  static constexpr size_t num_bytes = NumElem*sizeof(T);
 
   ptrdiff_t offset; // offset into dynamic shared memory, in bytes
   void *parent;     // pointer to original object
-  size_t num_elements; // number of element in this object
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  explicit SharedMemory(size_t N) :
-  offset(-1), parent((void*)this), num_elements(N) {}
+  SharedMemory() :
+  offset(-1), parent((void*)this) {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
    SharedMemory(self const &c) :
-  offset(c.offset), parent(c.parent), num_elements(c.num_elements)
+  offset(c.offset), parent(c.parent)
   {
     // only implement the registration on the HOST
 #ifndef __CUDA_ARCH__
-    offset = RAJA::detail::registerSharedMemoryObject(parent, num_elements*sizeof(T));
+    offset = RAJA::detail::registerSharedMemoryObject(parent, NumElem*sizeof(T));
+//    printf("SharedMemory<cuda_shmem>: offset=%d\n", (int)offset);
 #endif
   }
 
@@ -93,81 +96,6 @@ struct SharedMemory<cuda_shmem, T> {
 
 };
 
-
-
-
-
-
-
-
-template<typename T, typename LayoutType, typename ... IndexPolicies>
-struct SharedMemoryView<SharedMemory<cuda_shmem, T>, LayoutType, IndexPolicies...> {
-  using self = SharedMemoryView<SharedMemory<cuda_shmem, T>, LayoutType, IndexPolicies...>;
-  using shmem_type = SharedMemory<cuda_shmem, T>;
-  using layout_type = LayoutType;
-  using index_policies = camp::list<IndexPolicies...>;
-
-  using element_type = T;
-
-  static constexpr size_t n_dims = sizeof...(IndexPolicies);
-
-  layout_type layout;
-  shmem_type shared_memory;
-
-
-  static_assert(n_dims == LayoutType::n_dims,
-      "Number of index policies must match layout dimensions");
-
-
-  /*!
-   * Constructs from an existing Layout object
-   * @param layout0
-   */
-  RAJA_INLINE
-  explicit SharedMemoryView(LayoutType const &layout0) :
-    layout(layout0),
-    shared_memory(layout.size())
-  {}
-
-  /*!
-   * Constructs from a list of index sizes
-   */
-  template<typename ... SizeTypes>
-  RAJA_INLINE
-  SharedMemoryView(SizeTypes ... sizes) :
-    layout(sizes...),
-    shared_memory(layout.size())
-  {}
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  SharedMemoryView(self const &c) :
-    layout(c.layout),
-    shared_memory(c.shared_memory)
-  {}
-
-  template<camp::idx_t ... Seq, typename ... IdxTypes>
-  RAJA_INLINE
-  RAJA_DEVICE
-  ptrdiff_t computeIndex(camp::idx_seq<Seq...> const &, IdxTypes ... idx) const {
-    return layout( IndexPolicies::apply(layout.sizes[Seq], idx)... );
-  }
-
-
-  template<typename ... IdxTypes>
-  RAJA_INLINE
-  RAJA_DEVICE
-  element_type &operator()(IdxTypes ... idx) const {
-
-    // compute the indices with the layout and return our shared memory data
-    using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
-
-
-    return shared_memory[computeIndex(loop_idx{}, idx ...)];
-  }
-
-};
 
 
 

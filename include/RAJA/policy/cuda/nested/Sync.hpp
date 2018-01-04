@@ -67,8 +67,6 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/nested/Lambda.hpp"
-
 
 namespace RAJA
 {

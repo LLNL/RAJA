@@ -49,14 +49,21 @@ struct StaticLayoutBase_impl;
 
 
 
-template <camp::idx_t... RangeInts, camp::idx_t... Sizes, camp::idx_t... Strides>
+template <camp::idx_t... RangeInts, RAJA::Index_type... Sizes, RAJA::Index_type... Strides>
 struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>, camp::idx_seq<Strides...>> {
+
+  using sizes = camp::idx_seq<Sizes...>;
+  using strides = camp::idx_seq<Strides...>;
 
   /*!
    * Default constructor.
    */
   RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticLayoutBase_impl()
   {
+  }
+
+  RAJA_INLINE static void print() {
+    VarOps::ignore_args(printf("SL: arg%d: size=%d, stride=%d\n", (int)RangeInts, (int)Sizes, (int)Strides)...);
   }
 
 
@@ -114,6 +121,7 @@ struct StrideCalculatorIdx {
     static constexpr camp::idx_t size = camp::seq_at<Idx, sizes_seq>::value;
     static constexpr camp::idx_t size_last = StrideCalculatorIdx<N, Idx+1, Sizes...>::size;
     static constexpr camp::idx_t value = (size_last > 0 ? size_last : 1) * StrideCalculatorIdx<N, Idx+1, Sizes...>::value;
+    static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
 template <camp::idx_t N, camp::idx_t... Sizes>
@@ -122,6 +130,7 @@ struct StrideCalculatorIdx<N, N, Sizes...> {
 
     static constexpr camp::idx_t size = 1;
     static constexpr camp::idx_t value = 1;
+    static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
 template<typename Range, typename Sizes>
@@ -133,7 +142,7 @@ struct StrideCalculator<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>> {
 
     using sizes = camp::idx_seq<Sizes...>;
     static constexpr camp::idx_t N = sizeof...(Sizes);
-    using strides = camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::value...>;
+    using strides = camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::stride...>;
 };
 
 
@@ -160,6 +169,8 @@ struct TypedLayoutImpl<Layout, camp::list<DimTypes...>>
 
   static constexpr RAJA::Index_type s_size = Layout::s_size;
 
+  RAJA_INLINE
+  static void print(){Layout::print();}
 };
 
 

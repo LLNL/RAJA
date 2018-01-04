@@ -448,16 +448,6 @@ using block_map_y_shmem = block_map_shmem<Dim3y>;
 using block_map_z_shmem = block_map_shmem<Dim3z>;
 
 
-/*!
- * Provides a shared memory distributed over blocks.
- *
- * A convenience function when using RAJA::forall<RAJA::cuda_exec<N>>
- *
- */
-template<typename T>
-using CudaSharedMemoryBlocked =
-    RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, T>,
-    RAJA::Layout<1>, RAJA::block_map_x_shmem>;
 
 
 }  // closing brace for RAJA namespace

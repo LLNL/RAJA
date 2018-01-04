@@ -66,14 +66,24 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 
     index_tuple_t window;
 
+    RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
+    RAJA_HOST_DEVICE
     constexpr
     ShmemWindowView() : shmem(), window() {}
 
+    RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
+    RAJA_HOST_DEVICE
     ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem), window(c.window) {
+#ifdef __CUDA_ARCH__
+      // Grab a pointer to the shmem window tuple.  We are assuming that this
+      // is the first thing in the dynamic shared memory
+      extern __shared__ char my_ptr[];
+      index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
+#else
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
-//      printf("copy this=%p, shmem_window=%p\n", this, shmem_window_ptr);
+#endif
       if(shmem_window_ptr != nullptr){
         index_tuple_t &shmem_window = *shmem_window_ptr;
         window = shmem_window;
@@ -81,9 +91,11 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     }
 
 
+    RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
+    RAJA_HOST_DEVICE
     constexpr
-    element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> const... idx) const {
+    element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> ... idx) const {
       return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
     }
 };
@@ -96,7 +108,11 @@ namespace internal{
 
 template<camp::idx_t ... Seq, typename ... IdxTypes, typename ... Segments>
 RAJA_INLINE
+RAJA_HOST_DEVICE
 void set_shmem_window_tuple_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
+//  VarOps::ignore_args(
+//        (printf("set_shmem_window_tuple: window[%d]=%d\n", (int)Seq, (int)**camp::get<Seq>(segment_tuple).begin()))...
+//        );
   VarOps::ignore_args(
       (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
       );
@@ -104,6 +120,7 @@ void set_shmem_window_tuple_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes
 
 template<typename ... IdxTypes, typename ... Segments>
 RAJA_INLINE
+RAJA_HOST_DEVICE
 void set_shmem_window_tuple(camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
   using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
 

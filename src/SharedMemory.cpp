@@ -95,10 +95,10 @@ static std::map<void *, size_t> shared_memory_objects;
  * this function and finishSharedMemorySetup
  *
  */
-void RAJA::detail::startSharedMemorySetup(void *window_tuple){
+void RAJA::detail::startSharedMemorySetup(void *window_tuple, size_t tuple_size){
   shared_memory_setup_enabled = true;
   shared_memory_window_tuple = window_tuple;
-  shared_memory_total_bytes = 0;
+  shared_memory_total_bytes = 0; //tuple_size;
   shared_memory_objects.clear();
 }
 

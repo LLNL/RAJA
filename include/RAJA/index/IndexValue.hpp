@@ -65,7 +65,7 @@ struct IndexValue {
   RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() { return value; }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE const Index_type &operator*() const
+  RAJA_HOST_DEVICE RAJA_INLINE  constexpr const Index_type &operator*() const
   {
     return value;
   }
@@ -101,49 +101,49 @@ struct IndexValue {
   }
 
   //! addition to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator+(Index_type a) const
   {
     return TYPE(value + a);
   }
 
   //! addition to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator+(TYPE a) const
   {
     return TYPE(value + a.value);
   }
 
   //! subtraction to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator-(Index_type a) const
   {
     return TYPE(value - a);
   }
 
   //! subtraction to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator-(TYPE a) const
   {
     return TYPE(value - a.value);
   }
 
   //! multiplication to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator*(Index_type a) const
   {
     return TYPE(value * a);
   }
 
   //! multiplication to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator*(TYPE a) const
   {
     return TYPE(value * a.value);
   }
 
   //! division to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator/(Index_type a) const
   {
     return TYPE(value / a);
   }
 
   //! division to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator/(TYPE a) const
   {
     return TYPE(value / a.value);
   }
@@ -268,13 +268,15 @@ namespace impl
 {
 
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
+constexpr
+RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM const val)
 {
   return TO(val);
 }
 template <typename TO, typename FROM>
+constexpr
 RAJA_HOST_DEVICE RAJA_INLINE TO
-convertIndex_helper(typename FROM::IndexValueType val)
+convertIndex_helper(typename FROM::IndexValueType const val)
 {
   return static_cast<TO>(*val);
 }
@@ -287,7 +289,8 @@ convertIndex_helper(typename FROM::IndexValueType val)
  *
  */
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
+constexpr
+RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
 {
   return impl::convertIndex_helper<TO, FROM>(val);
 }

@@ -57,14 +57,13 @@ struct SharedMemory<seq_shmem, T, NumElem> {
   constexpr
   SharedMemory() :
     data(std::make_shared<std::array<T, size>>())
-  {}
+  {
+  }
 
 
   RAJA_INLINE
   SharedMemory(self const &c) : data(c.data)
   {
-    // currently only used to get a tally of how much shmem is used
-    RAJA::detail::registerSharedMemoryObject(this, num_bytes);
   }
 
 

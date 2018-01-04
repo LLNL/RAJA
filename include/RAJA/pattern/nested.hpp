@@ -86,7 +86,7 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   index_tuple_t shmem_window;
 
   // Turn on shared memory setup
-  RAJA::detail::startSharedMemorySetup(&shmem_window);
+  RAJA::detail::startSharedMemorySetup(&shmem_window, sizeof(index_tuple_t));
 
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
