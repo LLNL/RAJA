@@ -81,30 +81,74 @@ a tuple of ranges, one for each level in the loop nest, and the lambda
 loop body. The lambda has an index argument for each level in the
 loop nest.
 
+.. note :: The number and order of lambda arguments must match the number and
+           order of ranges in the tuple for this to be correct.
+
 The execution policy for each level in the loop nest is defined by the
-``RAJA::nested::For`` arguments in the nested policy type. Here, the 'k'
-index corresponds to the outermost loop, the 'j' index corresponds to the
-middle loop, and the 'i' index is for the innermost loop. The integer that 
+``RAJA::nested::For`` arguments in the nested policy type. The integer that 
 appears as the first argument to each 'For' template corresponds to the index 
 of a range in the tuple and also to the associated lambda index argument; 
 i.e., '0' is for 'i', '1' is for 'j', and '2' is for 'k'. The reason that 
 the integer arguments are needed is that the levels in the loop nest can be 
-permuted by reordering the policy arguments and the kernel remains the same. 
+permuted by reordering the policy arguments and the kernel remains the same.
 
-.. note :: The number and order of lambda arguments must match the number and
-           order of ranges in the tuple for this to be correct.
+**In particular, the ordering of the 'For' statements determines the loop nest 
+ordering.** 
 
-The loop nest is permuted so that the 'j' loop is the outermost, the 'i' loop
-is in the middle, and the 'k' loop is the innermost with the following form:
+In this case, the 'k' index corresponds to the outermost loop (slowest index), 
+the 'j' index corresponds to the middle loop, and the 'i' index is for the 
+innermost loop (fastest index). Thus, the loop generates the following output::
+
+ (I, J, K)
+ ---------
+ (0, 1, 2)
+ (1, 1, 2)
+ (0, 2, 2)
+ (1, 2, 2)
+ (0, 1, 3)
+ (1, 1, 3)
+ (0, 2, 3)
+ (1, 2, 3)
+
+Next we permute the loop nest ordering so that the 'j' loop is the outermost, 
+the 'i' loop is in the middle, and the 'k' loop is the innermost with the 
+following form:
 
 .. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
                     :lines: 79-88
 
-The loop nest is permuted so that the 'i' loop is the outermost, the 'k' loop
-is in the middle, and the 'j' loop is the innermost with the following form:
+This generates the output::
+
+ (I, J, K)
+ ---------
+ (0, 1, 2) 
+ (0, 1, 3) 
+ (1, 1, 2) 
+ (1, 1, 3) 
+ (0, 2, 2) 
+ (0, 2, 3) 
+ (1, 2, 2) 
+ (1, 2, 3) 
+
+Finally, we permute the loops again so that the 'i' loop is the outermost, 
+the 'k' loop is in the middle, and the 'j' loop is the innermost with the 
+following form:
 
 .. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
                     :lines: 96-105
+
+This generates the output::
+
+ (I, J, K)
+ ---------
+ (0, 1, 2) 
+ (0, 2, 2) 
+ (0, 1, 3) 
+ (0, 2, 3) 
+ (1, 1, 2) 
+ (1, 2, 2) 
+ (1, 1, 3) 
+ (1, 2, 3)
 
 Hopefully, it is clear how this works. If it seems clear as mud, the typed
 indices and range segments can help by indicating errors at compile-time.
@@ -116,6 +160,8 @@ For example, this version of the loop will not compile:
 
 Hopefully, if you carefully compare the range ordering in the tuple to the
 lambda argument types, you will see what's wrong.
+
+Do you see the issue?
 
 The file ``RAJA/examples/ex5-nested-loop-reorder.CPU`` contains the complete 
 working example code.

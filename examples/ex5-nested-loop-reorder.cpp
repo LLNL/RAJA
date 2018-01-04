@@ -60,9 +60,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::nested::Policy< 
-                        RAJA::nested::For<2, RAJA::seq_exec, KIDX>,
-                        RAJA::nested::For<1, RAJA::seq_exec, JIDX>,
-                        RAJA::nested::For<0, RAJA::seq_exec, IIDX> >;
+                        RAJA::nested::For<2, RAJA::seq_exec>,
+                        RAJA::nested::For<1, RAJA::seq_exec>,
+                        RAJA::nested::For<0, RAJA::seq_exec> >;
 
   RAJA::nested::forall(KJI_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
@@ -77,9 +77,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using JIK_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::For<1, RAJA::seq_exec, JIDX>,
-                        RAJA::nested::For<0, RAJA::seq_exec, IIDX>,
-                        RAJA::nested::For<2, RAJA::seq_exec, KIDX> >;
+                        RAJA::nested::For<1, RAJA::seq_exec>,
+                        RAJA::nested::For<0, RAJA::seq_exec>,
+                        RAJA::nested::For<2, RAJA::seq_exec> >;
 
   RAJA::nested::forall(JIK_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
@@ -94,9 +94,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using IKJ_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::For<0, RAJA::seq_exec, IIDX>,
-                        RAJA::nested::For<2, RAJA::seq_exec, KIDX>,
-                        RAJA::nested::For<1, RAJA::seq_exec, JIDX> >;
+                        RAJA::nested::For<0, RAJA::seq_exec>,
+                        RAJA::nested::For<2, RAJA::seq_exec>,
+                        RAJA::nested::For<1, RAJA::seq_exec> >;
 
   RAJA::nested::forall(IKJ_EXECPOL{},
                        RAJA::make_tuple(IRange, JRange, KRange),
