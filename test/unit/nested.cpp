@@ -481,12 +481,12 @@ CUDA_TEST(Nested, SubRange_Complex)
 
   RAJA::nested::forall(
       ExecPolicy{},
-      RAJA::make_tuple(RAJA::RangeSegment(first, last),
-                       RAJA::RangeSegment(0, 16),
-                       RAJA::RangeSegment(0, 32)),
-      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+      RAJA::make_tuple(RAJA::TypedRangeSegment<TypedIndex>(first, last),
+                       RAJA::TypedRangeSegment<TypedIndex>(0, 16),
+                       RAJA::TypedRangeSegment<TypedIndex>(0, 32)),
+      [=] RAJA_HOST_DEVICE (TypedIndex i, TypedIndex j, TypedIndex k) {
         //if(j == 0 && k == 0){
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
+          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+(*i), 1.0);
         //}
        });
   cudaDeviceSynchronize();
@@ -504,4 +504,305 @@ CUDA_TEST(Nested, SubRange_Complex)
 
 #endif
 
+#ifdef RAJA_ENABLE_OPENMP
+TEST(Nested, Collapse2)
+{
+  int N = 16;
+  int M = 7;
 
+
+  int *data = new int[N*M];
+  for(int i = 0;i < M*N;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::OmpParallelCollapse<
+        RAJA::nested::For<0>,
+        RAJA::nested::For<1>
+      > >;
+
+  RAJA::nested::forall(
+      Pol{},
+      RAJA::make_tuple(
+          RAJA::RangeSegment(0, N),
+          RAJA::RangeSegment(0, M)),
+
+      [=] (Index_type i, Index_type j) {
+        data[i + j*N] = i;
+       });
+
+  for(int i = 0;i < N;++ i){
+    for(int j = 0;j < M;++ j){
+      ASSERT_EQ(data[i + j*N], i);
+    }
+  }
+
+
+  delete[] data;
+}
+
+
+TEST(Nested, Collapse3)
+{
+  int N = 1;
+  int M = 2;
+  int K = 3;
+
+  int *data = new int[N*M*K];
+  for(int i = 0;i < M*N*K;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<0>,
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2>
+        > >;
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N) ),
+        [=] (Index_type k, Index_type j, Index_type i) {
+          data[i + N*(j + M*k)] = i + N*(j+M*k);
+        });
+  
+
+  for(int k=0; k<K; k++){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        
+        int id = i + N*(j + M*k);
+        ASSERT_EQ(data[id], id);        
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+TEST(Nested, Collapse4)
+{
+  int N = 1;
+  int M = 2;
+  int K = 3;
+
+  int *data = new int[N*M*K];
+  for(int i = 0;i < M*N*K;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<0>,
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2>
+        > >;
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N) ),
+        [=] (Index_type k, Index_type j, Index_type i) {          
+          Index_type  id = i + N * (j + M*k); 
+          data[id] = id; 
+
+        }); 
+
+  for(int k=0; k<K; k++){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        
+        int id = i + N*(j + M*k);
+        ASSERT_EQ(data[id], id);        
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+
+TEST(Nested, Collapse5)
+{
+
+  int N = 4;
+  int M = 4;
+  int K = 4;
+
+  int *data = new int[N*M*K];
+  for(int i = 0;i < M*N*K;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<0>,
+       RAJA::nested::For<1> >,
+       RAJA::nested::For<2, RAJA::seq_exec> >; 
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N) ),
+        [=] (Index_type k, Index_type j, Index_type i) {
+
+          data[i + N*(j + M*k)] = i + N*(j+M*k);
+        });
+
+  for(int k=0; k<K; ++k){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        
+        int id = i + N*(j+M*k);
+        ASSERT_EQ(data[id], id);
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+
+TEST(Nested, Collapse6)
+{
+
+  int N = 3;
+  int M = 3;
+  int K = 4;
+
+  int *data = new int[N*M];
+  for(int i = 0; i< M*N; ++i){
+    data[i] = 0;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::For<0, RAJA::seq_exec>, 
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2> > >;
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N) ),
+        [=] (Index_type k, Index_type j, Index_type i) {
+          data[i + N*j] += k;
+        });
+  
+  for(int j=0; j<M; ++j){
+    for(int i=0; i<N; ++i){ 
+      ASSERT_EQ(data[i +N*j], 6);
+    }
+  }
+
+
+  delete[] data;
+}
+
+TEST(Nested, Collapse7)
+{
+
+  int N  = 3;
+  int M  = 3;
+  int K  = 4;
+  int P  = 8;
+
+  int *data = new int[N*M*K*P];
+  for(int i = 0; i< N*M*K*P; ++i){
+    data[i] = 0;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::For<0, RAJA::seq_exec>, 
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2>,
+       RAJA::nested::For<3> > >;
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N),
+        RAJA::RangeSegment(0, P)
+                         ),
+        [=] (Index_type k, Index_type j, Index_type i, Index_type r) {
+          Index_type id = r + P*(i + N*(j + M*k));
+          data[id] += id;
+        });
+
+  for(int k=0; k<K; ++k){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        for(int r=0; r<P; ++r){
+          Index_type id = r + P*(i + N*(j + M*k));
+          ASSERT_EQ(data[id], id);
+        }
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+
+TEST(Nested, Collapse8)
+{
+
+  int N  = 3;
+  int M  = 3;
+  int K  = 4;
+  int P  = 8;
+
+  int *data = new int[N*M*K*P];
+  for(int i = 0; i< N*M*K*P; ++i){
+    data[i] = 0;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+       RAJA::nested::For<0>,
+       RAJA::nested::For<1>,
+       RAJA::nested::For<2> >,
+       RAJA::nested::For<3, RAJA::seq_exec> >;
+
+  RAJA::nested::forall(
+        Pol{},
+        RAJA::make_tuple(
+        RAJA::RangeSegment(0, K),
+        RAJA::RangeSegment(0, M),
+        RAJA::RangeSegment(0, N),
+        RAJA::RangeSegment(0, P)
+                         ),
+        [=] (Index_type k, Index_type j, Index_type i, Index_type r) {
+          Index_type id = r + P*(i + N*(j + M*k));
+          data[id] += id;
+        });
+
+  for(int k=0; k<K; ++k){
+    for(int j=0; j<M; ++j){
+      for(int i=0; i<N; ++i){
+        for(int r=0; r<P; ++r){
+          Index_type id = r + P*(i + N*(j + M*k));
+          ASSERT_EQ(data[id], id);
+        }
+      }
+    }
+  }
+
+  delete[] data;
+}
+
+#endif //RAJA_ENABLE_OPENMP

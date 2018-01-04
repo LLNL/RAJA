@@ -252,7 +252,7 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
 
       // Increment the begin iterator by the offset
       auto &begin = camp::get<idx>(begin_tuple);
-      RAJA::Index_type loop_value = *(begin + policy());
+      auto loop_value = *(begin + policy());
 
       // Assign the For index value to the correct argument
       data.template assign_index<ft::index_val>(loop_value);
