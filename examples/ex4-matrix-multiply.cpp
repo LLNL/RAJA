@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 
 #include "memoryManager.hpp"
 
