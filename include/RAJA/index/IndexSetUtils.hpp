@@ -45,7 +45,7 @@ namespace RAJA
  */
 template <typename CONTAINER_T, typename... SEG_TYPES>
 RAJA_INLINE void getIndices(CONTAINER_T& con,
-                            const StaticIndexSet<SEG_TYPES...>& iset)
+                            const IndexSet<SEG_TYPES...>& iset)
 {
   CONTAINER_T tcon;
   forall<ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
@@ -83,7 +83,7 @@ RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& iset)
  */
 template <typename CONTAINER_T, typename... SEG_TYPES, typename CONDITIONAL>
 RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
-                                       const StaticIndexSet<SEG_TYPES...>& iset,
+                                       const IndexSet<SEG_TYPES...>& iset,
                                        CONDITIONAL conditional)
 {
   CONTAINER_T tcon;

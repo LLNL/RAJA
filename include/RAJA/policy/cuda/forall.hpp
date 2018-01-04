@@ -244,7 +244,7 @@ template <typename LoopBody,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                             const StaticIndexSet<SegmentTypes...>& iset,
+                             const IndexSet<SegmentTypes...>& iset,
                              LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();

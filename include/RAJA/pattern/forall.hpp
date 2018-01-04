@@ -259,7 +259,7 @@ template <typename SegmentIterPolicy,
           typename... SegmentTypes,
           typename LoopBody>
 RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                               const StaticIndexSet<SegmentTypes...>& iset,
+                               const IndexSet<SegmentTypes...>& iset,
                                LoopBody loop_body)
 {
 
@@ -280,7 +280,7 @@ template <typename SegmentIterPolicy,
           typename LoopBody,
           typename... SegmentTypes>
 RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                        const StaticIndexSet<SegmentTypes...>& iset,
+                        const IndexSet<SegmentTypes...>& iset,
                         LoopBody loop_body)
 {
 

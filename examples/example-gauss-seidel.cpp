@@ -52,7 +52,7 @@
   2. RAJA Reduction
   3. RAJA::omp_collapse_nowait_exec
   4. RAJA::ListSegment
-  5. RAJA::StaticIndexSet
+  5. RAJA::IndexSet
 */
 
 /*
@@ -74,7 +74,7 @@ struct grid_s {
 */
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
-RAJA::StaticIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
+RAJA::IndexSet<RAJA::ListSegment> gsColorPolicy(int N);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -110,7 +110,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   memset(I, 0, NN * sizeof(double));
 
-  RAJA::StaticIndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N);
+  RAJA::IndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N);
 
   memset(I, 0, NN * sizeof(double));
   printf("Gauss-Seidel with Red and Black Ordering \n");
@@ -182,10 +182,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   to generate RAJA ListSegments and populate a RAJA Static Index
   Set.
 */
-RAJA::StaticIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
+RAJA::IndexSet<RAJA::ListSegment> gsColorPolicy(int N)
 {
 
-  RAJA::StaticIndexSet<RAJA::ListSegment> colorSet;
+  RAJA::IndexSet<RAJA::ListSegment> colorSet;
 
   int redN = ceil(N * N / 2);
   int blkN = floor(N * N / 2);
