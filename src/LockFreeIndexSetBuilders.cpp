@@ -53,7 +53,7 @@ namespace RAJA
  */
 #define PROFITABLE_ENTITY_THRESHOLD_BLOCK 100
 
-void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
+void buildLockFreeBlockIndexset(RAJA::TempSet& iset,
                                 Index_type fastDim,
                                 Index_type midDim,
                                 Index_type slowDim)
@@ -212,7 +212,7 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
+void buildLockFreeColorIndexset(RAJA::TempSet& iset,
                                 Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,

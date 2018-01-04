@@ -30,7 +30,7 @@
 
 const size_t block_size = 256;
 
-static RAJA::IndexSet iset;
+static RAJA::TempSet iset;
 static RAJA::Index_type array_length;
 static RAJA::RAJAVec<RAJA::Index_type> is_indices;
 static RAJA::Real_ptr parent, ref_array, test_array;
@@ -168,7 +168,7 @@ struct ForallCUDA : ::testing::Test {
     cudaFree(::test_array);
     cudaFree(::ref_array);
     cudaFree(::parent);
-    ::iset = RAJA::IndexSet();
+    ::iset = RAJA::TempSet();
     ::is_indices = RAJA::RAJAVec<RAJA::Index_type>();
   }
 };

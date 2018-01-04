@@ -55,7 +55,7 @@ template <typename Tuple>
 class IndexSetReduce : public ::testing::Test
 {
 public:
-  IndexSet iset;
+  TempSet iset;
   Index_type alen;
   RAJAVec<Index_type> is_indices;
   Real_ptr in_array;
