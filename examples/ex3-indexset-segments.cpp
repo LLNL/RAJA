@@ -175,8 +175,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // example implementations.
 //
 
-  using SEQ_IS_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
-                                          RAJA::seq_exec>;
+  using SEQ_ISET_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
+                                            RAJA::seq_exec>;
 
 //----------------------------------------------------------------------------//
 
@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   is1.push_back( idx_list );  // use list segment created earlier.
   
-  RAJA::forall<SEQ_IS_EXECPOL>(is1, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is1, [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -206,7 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   is2.push_back( RAJA::RangeSegment(0, N/2) );
   is2.push_back( RAJA::RangeSegment(N/2, N) );
   
-  RAJA::forall<SEQ_IS_EXECPOL>(is2, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is2, [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -235,7 +235,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   is3.push_back( idx1_list );
   is3.push_back( RAJA::RangeSegment(2*N/3, N) );
  
-  RAJA::forall<SEQ_IS_EXECPOL>(is3, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is3, [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -256,10 +256,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  using OMP_IS_EXECPOL1 = RAJA::ExecPolicy<RAJA::seq_segit,
-                                           RAJA::omp_parallel_for_exec>;
+  using OMP_ISET_EXECPOL1 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                             RAJA::omp_parallel_for_exec>;
 
-  RAJA::forall<OMP_IS_EXECPOL1>(is3, [=] (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL1>(is3, [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -275,10 +275,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  using OMP_IS_EXECPOL2 = RAJA::ExecPolicy<RAJA::omp_parallel_for_segit,
-                                           RAJA::seq_exec>;
+  using OMP_ISET_EXECPOL2 = RAJA::ExecPolicy<RAJA::omp_parallel_for_segit,
+                                               RAJA::seq_exec>;
 
-  RAJA::forall<OMP_IS_EXECPOL2>(is3, [=] (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL2>(is3, [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -293,12 +293,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
     " (sequential iteration over segments, CUDA parallel segment execution)...\n";
 
-  using OMP_IS_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
-                                           RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
+  using OMP_ISET_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                             RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::forall<OMP_IS_EXECPOL3>(is3, [=] RAJA_DEVICE (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
 

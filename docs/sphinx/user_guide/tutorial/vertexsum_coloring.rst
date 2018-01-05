@@ -40,7 +40,7 @@ and an array that indicates the mapping between an element and its four
 surrounding vertices, the C-style version of the vertex sum calculation is:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 121-130
+                    :lines: 122-131
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Sequential Variant
@@ -49,7 +49,7 @@ RAJA Sequential Variant
 The nested loop RAJA variant of this kernel is:
 
 .. literalinclude:: ../../../../examples/ex6-vertexsum-coloring.cpp
-                    :lines: 142-156
+                    :lines: 143-157
 
 Note that this version cannot be guaranteed to run correctly in parallel
 by simply changing the loop execution policies as we have done in other

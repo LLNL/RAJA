@@ -125,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   RAJA::inclusive_scan_inplace<RAJA::seq_exec>(out, out + N,
-                                       RAJA::operators::minimum<int>{});
+                                               RAJA::operators::minimum<int>{});
 
   checkInclusiveScanResult<RAJA::operators::minimum<int>>(in, out, N);
   printArray(out, N);
@@ -154,7 +154,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running OpenMP inclusive_scan (plus)...\n";
 
   RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(in, in + N, out,
-                                       RAJA::operators::plus<int>{});
+                                                    RAJA::operators::plus<int>{});
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
   printArray(out, N);
@@ -167,7 +167,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(out, out + N,
-                                       RAJA::operators::plus<int>{});
+                                                            RAJA::operators::plus<int>{});
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
   printArray(out, N);
