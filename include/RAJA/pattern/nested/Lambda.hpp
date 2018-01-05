@@ -49,7 +49,7 @@ struct StatementExecutor<Lambda<LoopIndex>>{
 
   template <typename WrappedBody>
   RAJA_INLINE
-  void operator()(Lambda<LoopIndex> const &, WrappedBody const &wrap)
+  void operator()(WrappedBody const &wrap)
   {
     invoke_lambda<LoopIndex>(wrap.data);
   }

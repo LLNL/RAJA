@@ -7,6 +7,8 @@
 #include <cuda_runtime.h>
 #endif
 
+
+
 using RAJA::Index_type;
 using RAJA::View;
 using RAJA::Layout;
@@ -173,7 +175,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<1024,
+      CudaKernel<128,
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
 
   int *x = nullptr;
@@ -204,7 +206,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<1024,
+      CudaKernel<128,
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>,
           For<2, RAJA::seq_exec, Lambda<0>>
         >
@@ -236,7 +238,7 @@ CUDA_TEST(Nested, CudaCollapse1c)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<1024,
+      CudaKernel<128,
         Collapse<RAJA::cuda_block_seq_exec, ArgList<0,1>,
           For<2, RAJA::cuda_thread_exec, Lambda<0>>
         >
@@ -271,7 +273,7 @@ CUDA_TEST(Nested, CudaCollapse2)
 {
 
   using Pol = RAJA::nested::Policy<
-       CudaKernel<1024,
+       CudaKernel<128,
          Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
        >>;
 
@@ -395,7 +397,7 @@ CUDA_TEST(Nested, CudaReduceC)
 CUDA_TEST(Nested, SubRange_ThreadBlock)
 {
   using Pol = RAJA::nested::Policy<
-        CudaKernel<1024,
+        CudaKernel<128,
           For<0, RAJA::cuda_block_thread_exec, Lambda<0>>
         >>;
 
@@ -687,6 +689,12 @@ TEST(Nested, CollapseSeq){
 
 
 #ifdef RAJA_ENABLE_CUDA
+
+//__global__ void myFoobar()
+//{
+//  int i =
+//}
+
 CUDA_TEST(Nested, CudaExec){
   using namespace RAJA;
   using namespace RAJA::nested;
@@ -700,8 +708,8 @@ CUDA_TEST(Nested, CudaExec){
             >
         >;
 
-  double *d_ptr;
-  cudaErrchk(cudaMalloc(&d_ptr, sizeof(double) * N));
+//  double *d_ptr;
+//  cudaErrchk(cudaMalloc(&d_ptr, sizeof(double) * N));
 
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
@@ -711,35 +719,35 @@ CUDA_TEST(Nested, CudaExec){
 
       RAJA::make_tuple(RangeSegment(0,N)),
 
-      [=] __device__ (int i){
+      [=] __device__ (RAJA::Index_type i){
 
-        //trip_count += 1;
-        d_ptr[i] = 1;
+        trip_count += 1;
+        //d_ptr[i] = 1;
+        //d_ptr2[i] = 2;
       }
   );
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
-  //ASSERT_EQ(result, N);
+  ASSERT_EQ(result, N);
 }
 
 CUDA_TEST(Nested, CudaExec1){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  constexpr long N = (long)30000*1024*1024;
+  constexpr long N = (long)3*1024*1024;
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<128,
               For<0, cuda_block_thread_exec, Lambda<0>>
             >
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
 
   nested::forall(
       Pol{},
@@ -765,11 +773,11 @@ CUDA_TEST(Nested, CudaExec1a){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  constexpr long N = (long)128*1024;
+  constexpr long N = (long)128;
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<128,
               nested::Collapse<cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
             >
         >;
@@ -800,11 +808,11 @@ CUDA_TEST(Nested, CudaExec1b){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  constexpr long N = (long)300*1024*1024;
+  constexpr long N = (long)3*1024*1024;
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<128,
               For<0, cuda_block_thread_exec, Lambda<0>>
               >
         >;
@@ -836,7 +844,7 @@ CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA::nested;
 
 
-  constexpr long N = (long)300*1024*1024;
+  constexpr long N = (long)3*1024*1024;
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
@@ -861,7 +869,7 @@ CUDA_TEST(Nested, CudaShmemWindow){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<128,
               For<0, cuda_block_thread_exec, Lambda<0>>
               >
         >;

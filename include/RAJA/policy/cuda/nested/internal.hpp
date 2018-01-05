@@ -86,10 +86,11 @@ namespace internal
 
 
 struct CudaExecInfo {
-  int thread_id;
-  int threads_left;
+  short thread_id;
+  short threads_left;
 
   RAJA_DEVICE
+  constexpr
   CudaExecInfo() :
     thread_id(threadIdx.x),
     threads_left(blockDim.x)
@@ -100,40 +101,29 @@ struct CudaExecInfo {
 template <typename Policy>
 struct CudaStatementExecutor{};
 
-template <camp::idx_t idx, camp::idx_t N>
+template <camp::idx_t idx, camp::idx_t N, typename StmtList>
 struct CudaStatementListExecutor;
 
 
 
 template<typename StmtList, typename Data>
 RAJA_DEVICE
-void cuda_execute_statement_list(StmtList && statement_list, Data && data, CudaExecInfo &exec_info){
-  using statement_list_type = camp::decay<StmtList>;
-  CudaStatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-//  launcher(statement_list, data, exec_info);
+RAJA_INLINE
+void cuda_execute_statement_list(Data &data, CudaExecInfo &exec_info){
 
-  launcher(std::forward<StmtList>(statement_list), std::forward<Data>(data), exec_info);
+  CudaStatementListExecutor<0, StmtList::size, StmtList>::exec(data, exec_info);
+
 }
 
 
 template <typename StmtList, typename Data>
 struct CudaStatementListWrapper {
 
-  using data_type = typename std::remove_reference<Data>::type;
-
-  StmtList const &statement_list;
-  Data &data;
-
   RAJA_INLINE
   RAJA_DEVICE
-  constexpr
-  CudaStatementListWrapper(StmtList const &s, Data &d) : statement_list{s}, data{d}{}
-
-  RAJA_INLINE
-  RAJA_DEVICE
-  void operator()(CudaExecInfo &exec_info) const
+  void operator()(Data &data, CudaExecInfo &exec_info) const
   {
-    cuda_execute_statement_list(statement_list, data, exec_info);
+    cuda_execute_statement_list<StmtList>(data, exec_info);
   }
 };
 
@@ -143,35 +133,33 @@ template<typename PolicyT, typename Data>
 RAJA_INLINE
 RAJA_DEVICE
 constexpr
-auto cuda_make_statement_list_wrapper(PolicyT && policy, Data && data) ->
-  CudaStatementListWrapper<decltype(policy), camp::decay<Data>>
+auto cuda_make_statement_list_wrapper(Data & data) ->
+  CudaStatementListWrapper<PolicyT, camp::decay<Data>>
 {
-  return CudaStatementListWrapper<decltype(policy), camp::decay<Data>>(
-      policy, std::forward<Data>(data));
+  return CudaStatementListWrapper<PolicyT, camp::decay<Data>>();
 }
 
 
-template <camp::idx_t statement_index, camp::idx_t num_statements>
+template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList>
 struct CudaStatementListExecutor{
 
-  template<typename StmtList, typename Data>
-  RAJA_INLINE
+  template<typename Data>
+  static
   RAJA_DEVICE
-  void operator()(StmtList &&statement_list, Data &&data, CudaExecInfo &exec_info) const {
+  void exec(Data &data, CudaExecInfo &exec_info){
 
     // Get the statement we're going to execute
-    auto const &statement = camp::get<statement_index>(std::forward<StmtList>(statement_list));
+    using statement = camp::at_v<StmtList, statement_index>;
 
-    // Create a wrapper for enclosed statements
-    auto enclosed_wrapper = cuda_make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
+    // Create a wrapper for enclosed statements within statement
+    using eclosed_statements_t = typename statement::enclosed_statements_t;
+    auto enclosed_wrapper = cuda_make_statement_list_wrapper<eclosed_statements_t>(data);
 
     // Execute this statement
-    CudaStatementExecutor<remove_all_t<decltype(statement)>> e{};
-    e(statement, enclosed_wrapper, exec_info);
+    CudaStatementExecutor<statement>::exec(enclosed_wrapper, data, exec_info);
 
     // call our next statement
-    CudaStatementListExecutor<statement_index+1, num_statements> next_sequential;
-    next_sequential(std::forward<StmtList>(statement_list), data, exec_info);
+    CudaStatementListExecutor<statement_index+1, num_statements, StmtList>::exec(data, exec_info);
   }
 };
 
@@ -180,14 +168,14 @@ struct CudaStatementListExecutor{
  * termination case, a NOP.
  */
 
-template <camp::idx_t num_statements>
-struct CudaStatementListExecutor<num_statements,num_statements> {
+template <camp::idx_t num_statements, typename StmtList>
+struct CudaStatementListExecutor<num_statements,num_statements, StmtList> {
 
-  template<typename StmtList, typename Data>
+  template<typename Data>
+  static
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(StmtList const &, Data &, CudaExecInfo &) const {
-  }
+  void exec(Data &, CudaExecInfo &) {}
 
 };
 

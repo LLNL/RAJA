@@ -67,9 +67,10 @@ template <camp::idx_t ... ArgumentId>
 struct ArgList{};
 
 
-template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
-RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && ... bodies)
+template <typename Pol, typename SegmentTuple, typename ... Bodies>
+RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodies)
 {
+  using PolicyType = camp::decay<Pol>;
   detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept
@@ -77,9 +78,8 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   //       index_tuple
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
-  using policy_t = camp::decay<PolicyType>;
   using segment_t = camp::decay<SegmentTuple>;
-  using loop_data_t = internal::LoopData<policy_t, segment_t, camp::decay<Bodies>...>;
+  using loop_data_t = internal::LoopData<PolicyType, segment_t, camp::decay<Bodies>...>;
 
   // Setup a shared memory window tuple
   using index_tuple_t = typename loop_data_t::index_tuple_t;
@@ -94,7 +94,6 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
   // and only copied to provide thread-private instances.
 
   loop_data_t loop_data(
-          std::forward<PolicyType>(policy),
           std::forward<SegmentTuple>(segments),
           std::forward<Bodies>(bodies)...);
 
@@ -108,7 +107,7 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
 
   // Create a StatmentList wrapper to execute our policy (which is just
   // a StatementList)
-  auto wrapper = internal::make_statement_list_wrapper(std::forward<PolicyType>(policy), loop_data);
+  auto wrapper = internal::make_statement_list_wrapper<PolicyType>(loop_data);
 
   // Execute!
   wrapper();
@@ -121,6 +120,12 @@ RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && 
 
 }  // end namespace RAJA
 
+
+#include "RAJA/pattern/nested/Lambda.hpp"
+#include "RAJA/pattern/nested/For.hpp"
+#include "RAJA/pattern/nested/Tile.hpp"
+#include "RAJA/pattern/nested/Collapse.hpp"
+#include "RAJA/pattern/nested/ShmemWindow.hpp"
 
 
 #endif /* RAJA_pattern_nested_HPP */

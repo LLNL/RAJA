@@ -131,11 +131,10 @@ void set_shmem_window_tuple(camp::tuple<IdxTypes...> &window, camp::tuple<Segmen
 template <typename... EnclosedStmts>
 struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 
-  using StatementType = SetShmemWindow<EnclosedStmts...>;
 
   template <typename WrappedBody>
   RAJA_INLINE
-  void operator()(StatementType const &, WrappedBody const &wrap)
+  void operator()(WrappedBody const &wrap)
   {
     // Grab pointer to shared shmem window
     using loop_data_t = camp::decay<decltype(wrap.data)>;

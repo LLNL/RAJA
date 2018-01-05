@@ -74,20 +74,20 @@ namespace RAJA
 {
 namespace nested
 {
-
 namespace internal
 {
 
 template <camp::idx_t LoopIndex>
 struct CudaStatementExecutor<Lambda<LoopIndex>>{
 
-  template <typename WrappedBody>
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(Lambda<LoopIndex>, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &, Data &data, CudaExecInfo &)
   {
     //if(exec_info.threads_left == 1 || (exec_info.thread_id % exec_info.threads_left == 0)){
-      invoke_lambda<LoopIndex>(wrap.data);
+      invoke_lambda<LoopIndex>(data);
     //}
   }
 };

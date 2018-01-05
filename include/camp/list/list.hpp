@@ -8,6 +8,7 @@ namespace camp
 template <typename... Ts>
 struct list {
   using type = list;
+  static constexpr size_t size = sizeof...(Ts);
 };
 }
 

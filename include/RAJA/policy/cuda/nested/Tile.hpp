@@ -29,24 +29,18 @@ namespace internal{
 template <camp::idx_t ArgumentId, typename TPol, typename ... InnerPolicies>
 struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>> {
 
-  using TileType = Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>;
-  using inner_policy_t = Policy<InnerPolicies...>;
 
-  const inner_policy_t inner_policy;
-
-  template <typename WrappedBody>
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_DEVICE
-  void operator()(TileType const &fp, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
   {
     // Get the segment referenced by this Tile statement
-    auto const &iter = camp::get<ArgumentId>(wrap.data.segment_tuple);
+    auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
 
-    //using segment_type = typename std::remove_reference<decltype(iter)>::type;
+    auto chunk_size = TPol::chunk_size;
     using segment_type = RAJA::TypedRangeSegment<RAJA::Index_type, RAJA::Index_type>;
-    IterableTiler<segment_type> tiled_iterable(iter, fp.tile_policy.get_chunk_size());
-
-    // Create a wrapper for inside this policy
-    auto inner_wrapper = internal::cuda_make_statement_list_wrapper(fp.enclosed_statements, wrap.data);
+    IterableTiler<segment_type> tiled_iterable(iter, chunk_size);
 
     // Pull out iterators
     auto begin = tiled_iterable.begin();
@@ -59,15 +53,15 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>>
     for (decltype(len) i = 0;i < len;++ i) {
 
       // Assign our new tiled segment
-      camp::get<ArgumentId>(wrap.data.segment_tuple) = *(begin+i);
+      camp::get<ArgumentId>(data.segment_tuple) = *(begin+i);
 
       // Execute our enclosed statement list
-      inner_wrapper(exec_info);
+      wrap(data, exec_info);
     }
 
 
     // Set range back to original values
-    camp::get<ArgumentId>(wrap.data.segment_tuple) = tiled_iterable.it;
+    camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
 
   }
 };

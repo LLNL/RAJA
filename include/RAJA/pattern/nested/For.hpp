@@ -25,10 +25,8 @@ struct For : public internal::ForList,
              public internal::Statement<ExecPolicy, EnclosedStmts...>{
 
   // TODO: add static_assert for valid policy in Pol
-  const ExecPolicy execution_policy;
+  using execution_policy_t = ExecPolicy;
 
-  RAJA_HOST_DEVICE constexpr For() : execution_policy{} {}
-  RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : execution_policy{p} {}
 };
 
 
@@ -57,13 +55,12 @@ struct ForWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
 template <camp::idx_t ArgumentId, typename ExecPolicy, typename... EnclosedStmts>
 struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
 
-  using ForType = For<ArgumentId, ExecPolicy, EnclosedStmts...>;
 
   template <typename WrappedBody>
   RAJA_INLINE
-  void operator()(ForType const &fp, WrappedBody const &wrap)
+  void operator()(WrappedBody const &wrap)
   {
-    forall_impl(fp.execution_policy,
+    forall_impl(ExecPolicy{},
                 camp::get<ArgumentId>(wrap.data.segment_tuple),
                 ForWrapper<ArgumentId, WrappedBody>{wrap});
   }

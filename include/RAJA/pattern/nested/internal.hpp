@@ -35,14 +35,12 @@ namespace internal
 
 
 template <typename... Stmts>
-using StatementList = camp::tuple<Stmts...>;
+using StatementList = camp::list<Stmts...>;
 
 
 template <typename ExecPolicy, typename... EnclosedStmts>
 struct Statement {
   using enclosed_statements_t = StatementList<EnclosedStmts...>;
-  enclosed_statements_t enclosed_statements;
-
   using execution_policy_t = ExecPolicy;
 };
 
@@ -103,7 +101,8 @@ struct LoopData {
 
   using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
 
-  const PolicyType policy;
+  using policy_t = PolicyType;
+
   SegmentTuple segment_tuple;
 
   using BodiesTuple = camp::tuple<typename std::remove_reference<Bodies>::type...> ;
@@ -112,11 +111,11 @@ struct LoopData {
 
   RAJA_INLINE
   constexpr
-  LoopData(PolicyType const &p, SegmentTuple const &s, Bodies const & ... b)
-      : policy{p}, segment_tuple{s}, bodies{b...}
+  LoopData(SegmentTuple const &s, Bodies const & ... b)
+      : segment_tuple{s}, bodies{b...}
   {
-//    printf("LoopData: policy=%d, segment_tuple=%d, bodies=%d\n",
-//        (int)sizeof(policy), (int)sizeof(segment_tuple), (int)sizeof(bodies));
+//    printf("LoopData: segment_tuple=%d, bodies=%d\n",
+//        (int)sizeof(segment_tuple), (int)sizeof(bodies));
   }
 
   template <camp::idx_t Idx, typename IndexT>
@@ -138,15 +137,14 @@ void invoke_lambda(Data &data){
 
 
 
-template <camp::idx_t idx, camp::idx_t N>
+template <camp::idx_t idx, camp::idx_t N, typename StmtList>
 struct StatementListExecutor;
 
 
 template<typename StmtList, typename Data>
-void execute_statement_list(StmtList && statement_list, Data && data){
-  using statement_list_type = camp::decay<StmtList>;
-  StatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-  launcher(std::forward<StmtList>(statement_list), std::forward<Data>(data));
+void execute_statement_list(Data && data){
+  StatementListExecutor<0, StmtList::size, StmtList> launcher;
+  launcher(std::forward<Data>(data));
 }
 
 
@@ -155,19 +153,16 @@ template <typename StmtList, typename Data>
 struct StatementListWrapper {
 
   using data_type = typename std::remove_reference<Data>::type;
-  using statement_list_type = typename std::remove_reference<StmtList>::type;
 
-  StmtList const &statement_list;
   Data &data;
 
-  RAJA_INLINE
   constexpr
-  StatementListWrapper(StmtList const &pt, Data &d) : statement_list(pt), data{d} {}
+  explicit StatementListWrapper(Data &d) : data{d} {}
 
   RAJA_INLINE
   void operator()() const
   {
-    execute_statement_list(statement_list, data);
+    execute_statement_list<StmtList>(data);
   }
 };
 
@@ -177,34 +172,34 @@ struct StatementListWrapper {
 template<typename PolicyT, typename Data>
 RAJA_INLINE
 constexpr
-auto make_statement_list_wrapper(PolicyT && policy, Data && data) ->
-  StatementListWrapper<camp::decay<PolicyT>, camp::decay<Data>>
+auto make_statement_list_wrapper(Data & data) ->
+  StatementListWrapper<PolicyT, camp::decay<Data>>
 {
-  return StatementListWrapper<camp::decay<PolicyT>, camp::decay<Data>>(
-      std::forward<PolicyT>(policy), std::forward<Data>(data));
+  return StatementListWrapper<PolicyT, camp::decay<Data>>(data);
 }
 
 
-template <camp::idx_t statement_index, camp::idx_t num_statements>
+template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList>
 struct StatementListExecutor{
 
-  template<typename StmtList, typename Data>
+  template<typename Data>
   RAJA_INLINE
-  void operator()(StmtList const &statement_list, Data &&data) const {
+  void operator()(Data &data) const {
 
     // Get the statement we're going to execute
-    auto const &statement = camp::get<statement_index>(statement_list);
+    using statement = camp::at_v<StmtList, statement_index>;
 
-    // Create a wrapper for enclosed statements
-    auto enclosed_wrapper = make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
+    // Create a wrapper for enclosed statements within statement
+    using eclosed_statements_t = typename statement::enclosed_statements_t;
+    auto enclosed_wrapper = make_statement_list_wrapper<eclosed_statements_t>(data);
 
     // Execute this statement
-    StatementExecutor<remove_all_t<decltype(statement)>> e;
-    e(statement, enclosed_wrapper);
+    StatementExecutor<statement> e;
+    e(enclosed_wrapper);
 
     // call our next statement
-    StatementListExecutor<statement_index+1, num_statements> next_sequential;
-    next_sequential(statement_list, std::forward<Data>(data));
+    StatementListExecutor<statement_index+1, num_statements, StmtList> next;
+    next(data);
   }
 };
 
@@ -213,14 +208,12 @@ struct StatementListExecutor{
  * termination case, a NOP.
  */
 
-template <camp::idx_t num_statements>
-struct StatementListExecutor<num_statements,num_statements> {
+template <camp::idx_t num_statements, typename StmtList>
+struct StatementListExecutor<num_statements,num_statements,StmtList> {
 
-  template<typename StmtList, typename Data>
+  template<typename Data>
   RAJA_INLINE
-  void operator()(StmtList const &, Data &&) const {
-
-  }
+  void operator()(Data &) const {}
 
 };
 
@@ -231,7 +224,6 @@ struct StatementListExecutor<num_statements,num_statements> {
 template <camp::idx_t Index, typename BaseWrapper>
 struct GenericWrapper {
   using data_type = camp::decay<typename BaseWrapper::data_type>;
-  using statement_list_type = camp::decay<typename BaseWrapper::statement_list_type>;
 
   BaseWrapper wrapper;
 
@@ -243,7 +235,7 @@ struct GenericWrapper {
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  GenericWrapper(statement_list_type const &s, data_type &d) : wrapper{s,d} {}
+  explicit GenericWrapper(data_type &d) : wrapper{d} {}
 
 };
 
@@ -262,7 +254,7 @@ struct NestedPrivatizer {
 
   RAJA_INLINE
   constexpr
-  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{o.wrapper.statement_list, privatized_data}) {}
+  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{privatized_data}) {}
 
   RAJA_INLINE
   reference_type get_priv() { return privatized_wrapper; }
@@ -279,7 +271,7 @@ struct NestedPrivatizer<StatementListWrapper<StmtList, Data>> {
 
   RAJA_INLINE
   constexpr
-  NestedPrivatizer(const StatementListWrapper<StmtList, Data> &wrapper) : privatized_data{wrapper.data}, privatized_wrapper(value_type{wrapper.statement_list, privatized_data}) {}
+  NestedPrivatizer(const StatementListWrapper<StmtList, Data> &wrapper) : privatized_data{wrapper.data}, privatized_wrapper(value_type{privatized_data}) {}
 
   RAJA_INLINE
   reference_type get_priv() { return privatized_wrapper; }

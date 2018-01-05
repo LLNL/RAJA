@@ -39,37 +39,16 @@ namespace nested
  */
 template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
 struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
-
-  const TilePolicy tile_policy;
-  const ExecPolicy exec_policy;
-
-  RAJA_HOST_DEVICE constexpr Tile(TilePolicy const &tp = TilePolicy{},
-                                  ExecPolicy const &ep = ExecPolicy{})
-      : tile_policy{tp}, exec_policy{ep}
-  {
-  }
+  using tile_policy_t = TilePolicy;
+  using exec_policy_t = ExecPolicy;
 };
 
 ///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
 struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
-
-  RAJA_HOST_DEVICE constexpr tile_fixed() {}
-  RAJA_HOST_DEVICE constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
-///! tag for a tiling loop
-template <camp::idx_t default_chunk_size>
-struct tile {
-  camp::idx_t chunk_size;
-
-  RAJA_HOST_DEVICE constexpr tile(camp::idx_t chunk_size_ = default_chunk_size)
-      : chunk_size{chunk_size_}
-  {
-  }
-  RAJA_HOST_DEVICE camp::idx_t get_chunk_size() const { return chunk_size; }
-};
 
 namespace internal{
 
@@ -198,27 +177,25 @@ struct IterableTiler {
 
 
 
-template <camp::idx_t ArgumentId, typename TPol, typename EPol, typename ... InnerPolicies>
-struct StatementExecutor<Tile<ArgumentId, TPol, EPol, InnerPolicies...>> {
+template <camp::idx_t ArgumentId, typename TPol, typename EPol, typename ... EnclosedStmts>
+struct StatementExecutor<Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
-  using TileType = Tile<ArgumentId, TPol, EPol, InnerPolicies...>;
-  using inner_policy_t = Policy<InnerPolicies...>;
-
-  const inner_policy_t inner_policy;
 
   template <typename WrappedBody>
   RAJA_INLINE
-  void operator()(TileType const &fp, WrappedBody const &wrap)
+  void operator()(WrappedBody const &wrap)
   {
-    auto const &st = camp::get<ArgumentId>(wrap.data.segment_tuple);
+    // Get the segment we are going to tile
+    auto const &segment = camp::get<ArgumentId>(wrap.data.segment_tuple);
 
-    IterableTiler<decltype(st)> tiled_iterable(st, fp.tile_policy.get_chunk_size());
+    // Get the tiling policies chunk size
+    auto chunk_size = TPol::chunk_size;
 
-    // Create a wrapper for inside this policy
-    auto inner_wrapper = internal::make_statement_list_wrapper(fp.enclosed_statements, wrap.data);
+    // Create a tile iterator
+    IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
-    using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<ArgumentId, WrappedBody>{inner_wrapper});
+    // Loop over tiles, executing enclosed statement list
+    forall_impl(EPol{}, tiled_iterable, TileWrapper<ArgumentId, WrappedBody>{wrap});
 
     // Set range back to original values
     camp::get<ArgumentId>(wrap.data.segment_tuple) = tiled_iterable.it;

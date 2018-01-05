@@ -126,16 +126,14 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_thread_exec, ArgList<Args...>, EnclosedStmts...>;
-
-  template <typename WrappedBody>
-  RAJA_INLINE
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_DEVICE
-  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
-        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
+        camp::get<Args>(data.segment_tuple).begin()) ...);
 
     // get total iteration size
     ptrdiff_t len = layout.size();
@@ -153,12 +151,12 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
       if(i < len){
         // Compute indices from layout, and assign them to our index tuple
-        //layout.toIndices(i, camp::get<Args>(wrap.data.index_tuple)...);
-        layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+        //layout.toIndices(i, camp::get<Args>(data.index_tuple)...);
+        layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
 
 
         // invoke our enclosed statement list
-        wrap(exec_info);
+        wrap(data, exec_info);
       }
 
       i += exec_info.threads_left;
@@ -180,16 +178,14 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_block_thread_exec, ArgList<Args...>, EnclosedStmts...>;
-
-  template <typename WrappedBody>
-  RAJA_INLINE
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_DEVICE
-  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
-        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
+        camp::get<Args>(data.segment_tuple).begin()) ...);
 
     // get total iteration size
     ptrdiff_t total_len = layout.size();
@@ -222,10 +218,10 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
 
         if(i < block_end){
           // Compute indices from layout, and assign them to our index tuple
-          layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+          layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
 
           // invoke our enclosed statement list
-          wrap(exec_info);
+          wrap(data, exec_info);
         }
 
         i += exec_info.threads_left;
@@ -248,16 +244,14 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_block_seq_exec, ArgList<Args...>, EnclosedStmts...>;
-
-  template <typename WrappedBody>
-  RAJA_INLINE
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_DEVICE
-  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
-        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
+        camp::get<Args>(data.segment_tuple).begin()) ...);
 
     // get total iteration size
     ptrdiff_t total_len = layout.size();
@@ -280,10 +274,10 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
       // loop sequentially over our block
       for(ptrdiff_t i = block_begin;i < block_end;++ i){
         // Compute indices from layout, and assign them to our index tuple
-        layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+        layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
 
         // invoke our enclosed statement list
-        wrap(exec_info);
+        wrap(data, exec_info);
       }
 
     }

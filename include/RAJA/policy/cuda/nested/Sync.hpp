@@ -87,10 +87,11 @@ namespace internal
 template <>
 struct CudaStatementExecutor<CudaThreadSync>{
 
-  template <typename WrappedBody>
+  template <typename WrappedBody, typename Data>
+  static
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(CudaThreadSync, WrappedBody const &, CudaExecInfo &)
+  void exec(WrappedBody const &, Data &data, CudaExecInfo &)
   {
     __syncthreads();
   }

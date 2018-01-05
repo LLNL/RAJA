@@ -10,27 +10,17 @@ namespace nested
 
 template <typename ExecPolicy, typename ForList, typename... EnclosedStmts>
 struct Collapse : public internal::ForList, public internal::CollapseBase,
-                  public internal::Statement<EnclosedStmts...> {};
-
-
-
-
-
-template <typename ExecPolicy, camp::idx_t ... ArgumentId, typename... EnclosedStmts>
-struct Collapse<ExecPolicy, ArgList<ArgumentId...>, EnclosedStmts...> :
-                  public internal::ForList, public internal::CollapseBase,
                   public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
-  const ExecPolicy exec_policy;
-  RAJA_HOST_DEVICE constexpr Collapse() : exec_policy{} {}
-  RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : exec_policy{ep} {}
 };
 
 
 
 
-namespace internal{
 
+
+
+namespace internal{
 
 
 //
@@ -40,7 +30,7 @@ template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
 struct StatementExecutor<Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts...>> {
 
   template <typename WrappedBody>
-  void operator()(Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts...> const &, WrappedBody const &wrap)
+  void operator()(WrappedBody const &wrap)
   {
     auto b0 = std::begin(camp::get<Arg0>(wrap.data.segment_tuple));
     auto b1 = std::begin(camp::get<Arg1>(wrap.data.segment_tuple));

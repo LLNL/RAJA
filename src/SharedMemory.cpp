@@ -63,6 +63,7 @@ static void *shared_memory_window_tuple = nullptr;
  * This is currently used to tell CUDA how much dynamic shared memory we need
  */
 static size_t shared_memory_total_bytes = 0;
+static size_t shared_memory_window_bytes = 0;
 
 /*! Tracks shared memory objects and their offsets into shared memory
  *
@@ -98,7 +99,8 @@ static std::map<void *, size_t> shared_memory_objects;
 void RAJA::detail::startSharedMemorySetup(void *window_tuple, size_t tuple_size){
   shared_memory_setup_enabled = true;
   shared_memory_window_tuple = window_tuple;
-  shared_memory_total_bytes = 0; //tuple_size;
+  shared_memory_total_bytes = tuple_size;
+  shared_memory_window_bytes = tuple_size;
   shared_memory_objects.clear();
 }
 
@@ -157,6 +159,11 @@ void RAJA::detail::finishSharedMemorySetup(){
  *
  */
 size_t RAJA::detail::getSharedMemorySize(){
+  if(shared_memory_window_bytes == shared_memory_total_bytes){
+    // no shared memory was requested, so don't allocate space for the
+    // shmem window
+    return 0;
+  }
   return shared_memory_total_bytes;
 }
 

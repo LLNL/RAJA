@@ -190,7 +190,7 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
-__global__ void CudaKernelLauncher(StmtList st, Data data)
+__global__ void CudaKernelLauncher(Data data)
 {
   // Create a struct that hold our current thread allocation
   // this is passed through the meat grinder to properly allocate GPU
@@ -203,8 +203,7 @@ __global__ void CudaKernelLauncher(StmtList st, Data data)
   auto &private_data = privatizer.get_priv();
 
   // Execute the statement list, using CUDA specific executors
-  CudaStatementListWrapper<StmtList, Data> cuda_wrapper(st, private_data);
-  cuda_wrapper(exec_info);
+  cuda_execute_statement_list<StmtList>(private_data, exec_info);
 }
 
 
@@ -218,23 +217,22 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   using StatementType = CudaKernelBase<LaunchConfig, EnclosedStmts...>;
 
   template <typename StmtListWrapper>
-  void operator()(StatementType const &fp, StmtListWrapper const &wrap)
+  void operator()(StmtListWrapper const &wrap)
   {
-
-    using data_type = camp::decay<typename StmtListWrapper::data_type>;
-    using stmt_list_type = camp::decay<typename StmtListWrapper::statement_list_type>;
+    using statement_list_t = camp::list<EnclosedStmts...>;
 
     // Use the LaunchConfig type to compute how many threads and blocks to use
     CudaDim dims = LaunchConfig::compute_launch_dims();
 
     cudaStream_t stream = 0;
     int shmem = RAJA::detail::getSharedMemorySize();
-    printf("Shared memory size=%d\n", shmem);
-    dims.print();
+//    printf("Shared memory size=%d\n", shmem);
+//    dims.print();
+//    printf("Data size=%d\n", (int)sizeof(wrap.data));
 
     // Launch, using make_launch_body to correctly setup reductions
-    CudaKernelLauncher<<<dims.num_blocks, dims.num_threads, shmem, stream>>>(
-        wrap.statement_list,
+    CudaKernelLauncher<statement_list_t>
+    <<<dims.num_blocks, dims.num_threads, shmem, stream>>>(
         RAJA::cuda::make_launch_body(dims.num_blocks.x, dims.num_threads.x, shmem, stream, wrap.data ));
 
 
