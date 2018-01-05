@@ -153,7 +153,8 @@ This generates the output::
 Hopefully, it is clear how this works. If it seems clear as mud, the typed
 indices and range segments can help by indicating errors at compile-time.
 
-For example, this version of the loop will not compile: 
+For example, this version of the loop will not compile (execution policy
+is the same as in the previous version): 
 
 .. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
                     :lines: 114-118

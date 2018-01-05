@@ -37,6 +37,10 @@ Applying these concepts judiciously can increase performance by allowing
 compilers to optimize for specific segment types (e.g., SIMD for range 
 segments) while providing the flexibility of indirection arrays.
 
+.. note:: Any iterable type that provides the methods 'begin', 'end', and
+          'size' and an 'iterator' type and 'value_type' type can be used
+          as a *segment* with RAJA traversal templates.
+
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA RangeSegments
 ^^^^^^^^^^^^^^^^^^^^^
@@ -45,7 +49,7 @@ In earlier examples, we have seen how to specify a contiguous range of loop
 indices [0, N) using a ``RAJA::RangeSegment`` object. For example:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 115-117
+                    :lines: 116-118
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA ListSegments
@@ -88,7 +92,7 @@ run the loop:
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
                     :lines: 187-193
 
-What is the 'SEQ_IS_EXECPOL' type passed for the execution policy? 
+What is the 'SEQ_ISET_EXECPOL' type used for the execution policy? 
 
 Well, it is like the execution policy types we have seen up to this point, 
 except that it specifies a two-level policy -- one for iterating over the 
