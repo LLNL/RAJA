@@ -149,7 +149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   });
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << omp_pi.get() / num_bins << std::endl;
+            << cuda_pi.get() / num_bins << std::endl;
 
 
   std::cout << "\n Running RAJA CUDA pi approximation (atomic)...\n";
