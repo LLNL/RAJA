@@ -80,41 +80,7 @@ namespace internal
 {
 
 
-/*
- * This allows us to pass our segment and index tuple from LoopData into
- * the Layout::toIndices() function, and do the proper index calculations
- */
-template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
-struct IndexAssigner{
 
-  using Self = IndexAssigner<idx, segment_tuple_t, index_tuple_t>;
-
-  segment_tuple_t &segments;
-  index_tuple_t   &indices;
-
-  template<typename T>
-  RAJA_INLINE
-  RAJA_DEVICE Self const &operator=(T value) const{
-    // Compute actual offset using begin() iterator of segment
-    auto offset = *(camp::get<idx>(segments).begin() + value);
-
-    // Assign offset into index tuple
-    camp::get<idx>(indices) = offset;
-
-    // nobody wants this
-    return *this;
-  }
-};
-
-
-template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
-RAJA_INLINE
-RAJA_DEVICE
-auto make_index_assigner(segment_tuple_t &s, index_tuple_t &i) ->
-IndexAssigner<idx, segment_tuple_t, index_tuple_t>
-{
-  return IndexAssigner<idx, segment_tuple_t, index_tuple_t>{s, i};
-}
 
 /*
  * Collapses multiple segments iteration space, and distributes them over threads.
@@ -126,41 +92,21 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
     RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
         camp::get<Args>(data.segment_tuple).begin()) ...);
 
-    // get total iteration size
-    ptrdiff_t len = layout.size();
-
-    // How many batches of threads do we need?
-    int num_batches = len / exec_info.threads_left;
-    if(num_batches*exec_info.threads_left < len){
-      num_batches++;
-    }
-
-    // compute our starting index
-    int i = exec_info.thread_id;
-
-    for(int batch = 0;batch < num_batches;++ batch){
-
-      if(i < len){
-        // Compute indices from layout, and assign them to our index tuple
-        //layout.toIndices(i, camp::get<Args>(data.index_tuple)...);
-        layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
+    CudaIndexCalc_Layout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
+      index_calc(layout, parent_index_calc);
 
 
-        // invoke our enclosed statement list
-        wrap(data, exec_info);
-      }
-
-      i += exec_info.threads_left;
-    }
+    //invoke our enclosed statement list
+    wrap(data, index_calc);
 
   }
 };
@@ -178,10 +124,10 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
     RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
@@ -203,32 +149,13 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
     }
 
 
-    if(block_begin < total_len){
+    // Create a Layout of all of our loop dimensions that we're collapsing
+    CudaIndexCalc_Layout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
+      index_calc(layout, block_end-block_begin, block_begin,  parent_index_calc);
 
-      // How many batches of threads do we need?
-      ptrdiff_t num_batches = block_len / exec_info.threads_left;
-      if(num_batches*exec_info.threads_left < block_len){
-        num_batches++;
-      }
 
-      // compute our starting index
-      ptrdiff_t i = exec_info.thread_id+block_begin;
-
-      for(ptrdiff_t batch = 0;batch < num_batches;++ batch){
-
-        if(i < block_end){
-          // Compute indices from layout, and assign them to our index tuple
-          layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
-
-          // invoke our enclosed statement list
-          wrap(data, exec_info);
-        }
-
-        i += exec_info.threads_left;
-      }
-
-    }
-
+    //invoke our enclosed statement list
+    wrap(data, index_calc);
 
   }
 };
@@ -244,10 +171,10 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
     RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
@@ -268,18 +195,13 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
       block_end = total_len;
     }
 
+    // loop sequentially over our block
+    for(ptrdiff_t i = block_begin;i < block_end;++ i){
+      // Compute indices from layout, and assign them to our index tuple
+      layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
 
-    if(block_begin < total_len){
-
-      // loop sequentially over our block
-      for(ptrdiff_t i = block_begin;i < block_end;++ i){
-        // Compute indices from layout, and assign them to our index tuple
-        layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
-
-        // invoke our enclosed statement list
-        wrap(data, exec_info);
-      }
-
+      // invoke our enclosed statement list
+      wrap(data, index_calc);
     }
 
 

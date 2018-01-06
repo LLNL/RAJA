@@ -89,10 +89,11 @@ namespace internal{
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
+  inline
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
@@ -104,10 +105,12 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
     // compute trip count
     auto len = end - begin;
 
-
+    // sequentially step through indices
+    // since we aren't assinging threads, we pass thru the index_calc, and
+    // directly assign to the index_tuple
     for (decltype(len) i = 0; i < len; ++i) {
       data.template assign_index<ArgumentId>(*(begin+i));
-      wrap(data, exec_info);
+      wrap(data, index_calc);
     }
   }
 };
@@ -124,40 +127,20 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>> {
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc_parent)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
 
-    // Pull out iterators
-    auto begin = iter.begin();
-    auto end = iter.end();
+    // Assign all of our iterations to threads in this block
+    auto len = iter.end() - iter.begin();
+    CudaIndexCalc_Simple<ArgumentId, IndexCalc> index_calc(len, index_calc_parent);
 
-    // compute trip count
-    auto len = end - begin;
-
-    // How many batches of threads do we need?
-    int num_batches = len / exec_info.threads_left;
-    if(num_batches*exec_info.threads_left < len){
-      num_batches++;
-    }
-
-    // compute our starting index
-    int i = exec_info.thread_id;
-
-    for(int batch = 0;batch < num_batches;++ batch){
-
-      if(i < len){
-        data.template assign_index<ArgumentId>(*(begin+i));
-        wrap(data, exec_info);
-      }
-
-      i += exec_info.threads_left;
-    }
-
+    // invoke our enclosed statement list
+    wrap(data, index_calc);
   }
 };
 
@@ -171,10 +154,11 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStmts...>> {
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
+  inline
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc_parent)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
@@ -197,19 +181,11 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
       block_end = total_len;
     }
 
+    // Create index calculator for our blocks offset chunk of work
+    CudaIndexCalc_Offset<ArgumentId, IndexCalc> index_calc(block_end-block_begin, block_begin, index_calc_parent);
 
-
-    if(block_begin < total_len){
-
-      auto i = block_begin+exec_info.thread_id;
-      while(i < block_end){
-        data.template assign_index<ArgumentId>(*(begin+i));
-        wrap(data, exec_info);
-
-        i += exec_info.threads_left;
-      }
-
-    }
+    // invoke our enclosed statement list
+    wrap(data, index_calc);
   }
 };
 
@@ -224,10 +200,10 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_block_seq_exec, EnclosedStmts...>> {
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Get the segment referenced by this For statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
@@ -258,7 +234,7 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_seq_exec, EnclosedStmts.
       // loop sequentially over our block
       for(ptrdiff_t i = block_begin;i < block_end;++ i){
         data.template assign_index<ArgumentId>(*(begin+i));
-        wrap(data, exec_info);
+        wrap(data, index_calc);
       }
 
     }

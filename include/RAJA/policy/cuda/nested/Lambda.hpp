@@ -80,15 +80,25 @@ namespace internal
 template <camp::idx_t LoopIndex>
 struct CudaStatementExecutor<Lambda<LoopIndex>>{
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_INLINE
   RAJA_DEVICE
-  void exec(WrappedBody const &, Data &data, CudaExecInfo &)
+  void exec(WrappedBody const &, Data &data, IndexCalc const &index_calc)
   {
-    //if(exec_info.threads_left == 1 || (exec_info.thread_id % exec_info.threads_left == 0)){
+    // loop over block-stride
+    long num_iter = index_calc.numThreads();
+    long i = threadIdx.x;
+    while(i < num_iter){
+      // Compute and assign indices
+      index_calc.calcIndex(data, i);
+
+      // invoke lambda
       invoke_lambda<LoopIndex>(data);
-    //}
+
+      // increment to next chunk
+      i += blockDim.x;
+    }
   }
 };
 

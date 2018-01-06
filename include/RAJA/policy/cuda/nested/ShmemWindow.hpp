@@ -25,10 +25,10 @@ namespace internal
 template <typename... EnclosedStmts>
 struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
@@ -51,7 +51,7 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     auto &private_data = privatizer.get_priv();
 
     // Execute enclosed statements
-    wrap(private_data, exec_info);
+    wrap(private_data, index_calc);
   }
 };
 

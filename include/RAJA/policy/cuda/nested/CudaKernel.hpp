@@ -83,6 +83,9 @@ namespace nested
 {
 
 
+
+
+
 /*!
  * CUDA kernel launch policy where the user specifies the number of thread
  * blocks and threads per block.
@@ -195,7 +198,8 @@ __global__ void CudaKernelLauncher(Data data)
   // Create a struct that hold our current thread allocation
   // this is passed through the meat grinder to properly allocate GPU
   // resources to each executor
-  CudaExecInfo exec_info;
+  //CudaExecInfo exec_info;
+  CudaIndexCalc_Terminator index_calc;
 
   // Thread privatize the loop data
   using RAJA::internal::thread_privatize;
@@ -203,7 +207,7 @@ __global__ void CudaKernelLauncher(Data data)
   auto &private_data = privatizer.get_priv();
 
   // Execute the statement list, using CUDA specific executors
-  cuda_execute_statement_list<StmtList>(private_data, exec_info);
+  cuda_execute_statement_list<StmtList>(private_data, index_calc);
 }
 
 
@@ -226,9 +230,9 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
     cudaStream_t stream = 0;
     int shmem = RAJA::detail::getSharedMemorySize();
-//    printf("Shared memory size=%d\n", shmem);
-//    dims.print();
-//    printf("Data size=%d\n", (int)sizeof(wrap.data));
+    printf("Shared memory size=%d\n", shmem);
+    dims.print();
+    printf("Data size=%d\n", (int)sizeof(wrap.data));
 
     // Launch, using make_launch_body to correctly setup reductions
     CudaKernelLauncher<statement_list_t>

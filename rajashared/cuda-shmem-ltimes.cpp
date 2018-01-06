@@ -106,12 +106,11 @@ void runLTimesRajaCudaNested(bool debug,
 
 
 
+
   using Pol = RAJA::nested::Policy<
       CudaKernel<512,
-        Collapse<RAJA::cuda_block_seq_exec, ArgList<0,2>,
-          For<3, RAJA::cuda_block_thread_exec,
-            For<1, RAJA::seq_exec, Lambda<0>>
-          >
+        Collapse<RAJA::cuda_block_thread_exec, ArgList<0,2,3>,
+          For<1, RAJA::seq_exec, Lambda<0>>
         >
       >>;
 
@@ -125,7 +124,7 @@ void runLTimesRajaCudaNested(bool debug,
           TypedRangeSegment<IZone>(0, num_zones)),
 
       [=] __device__ (IMoment m, IDirection d, IGroup g, IZone z) {
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
+          phi(m, g, z) += ell(m, d) * psi(d, g, z);
       });
 
 
@@ -271,10 +270,12 @@ void runLTimesRajaCudaShmem(bool debug,
   // A possible implementation:
   using namespace RAJA::nested;
   using Pol = nested::Policy<
-        CudaKernel<128,
+        CudaKernel<512,
           SetShmemWindow<
             // First, load Ell into shared memory in each block
             Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
+
+            CudaThreadSync,
 
             // Distribute groups and zones across blocks
             Collapse<cuda_block_seq_exec, ArgList<2, 3>,
@@ -282,6 +283,7 @@ void runLTimesRajaCudaShmem(bool debug,
               // Load Psi for this g,z
               For<1, cuda_thread_exec, Lambda<1>>,
               CudaThreadSync,
+
 
               // Compute phi for all m's and this g,z
               For<0, cuda_thread_exec, Lambda<2>>
@@ -299,7 +301,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
   using shmem_ell_t = SharedMemory<cuda_shmem, double, 25*80>;
-  ShmemWindowView<shmem_ell_t, ArgList<0,1>, SizeList<25, 80>, decltype(segments)> shmem_ell;
+  ShmemWindowView<shmem_ell_t, ArgList<1,0>, SizeList<80, 25>, decltype(segments)> shmem_ell;
 
   using shmem_psi_t = SharedMemory<cuda_shmem, double, 80>;
   ShmemWindowView<shmem_psi_t, ArgList<1>, SizeList<80>, decltype(segments)> shmem_psi;
@@ -313,32 +315,27 @@ void runLTimesRajaCudaShmem(bool debug,
      // Lambda<0>
      // load L matrix into shmem
      [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-        //shmem_ell(m, d) = ell(m, d);
+        shmem_ell(d, m) = ell(m, d);
      },
 
      // Lambda<1>
      // load slice of psi into shared
      [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-        //shmem_psi(d) = psi(d,g,z);
+        shmem_psi(d) = psi(d,g,z);
      },
 
      // Lambda<2>
      // Compute phi_m_g_z
      [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
+
        double phi_m_g_z = 0.0;
        for(IDirection d(0);d < num_directions; ++ d){
-         //phi_m_g_z += shmem_ell(m, d) * shmem_psi(d);
-         phi_m_g_z += ell(m, d) * psi(d,g,z);
+         phi_m_g_z += shmem_ell(d, m) * shmem_psi(d);
        }
        phi(m, g, z) = phi_m_g_z;
+
      }
 
-
-//     // Lambda<3> (must have same thread mapping as Lambda<2>)
-//     // Write phi_m_g_z to global
-//     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-//       phi(m,g,z)
-//     }
   );
 
 
@@ -397,17 +394,17 @@ void runLTimesRajaCudaShmem(bool debug,
 
 int main(){
 
-  bool debug = false;
+  bool debug = true;
 #if 1
   int m = 25;
   int d = 80;
   int g = 32;
-  int z = 1*1024;
+  int z = 2*1024;
 #else
-  int m = 1;
-  int d = 1;
-  int g = 1;
-  int z = 1;
+  int m = 4;
+  int d = 4;
+  int g = 4;
+  int z = 4;
 #endif
 
   runLTimesRajaCudaNested(debug, m, d, g, z); // warm up

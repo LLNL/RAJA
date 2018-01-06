@@ -30,10 +30,10 @@ template <camp::idx_t ArgumentId, typename TPol, typename ... InnerPolicies>
 struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>> {
 
 
-  template <typename WrappedBody, typename Data>
+  template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, CudaExecInfo &exec_info)
+  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Get the segment referenced by this Tile statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
@@ -56,7 +56,7 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>>
       camp::get<ArgumentId>(data.segment_tuple) = *(begin+i);
 
       // Execute our enclosed statement list
-      wrap(data, exec_info);
+      wrap(data, index_calc);
     }
 
 

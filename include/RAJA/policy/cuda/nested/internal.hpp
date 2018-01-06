@@ -85,33 +85,188 @@ namespace internal
 {
 
 
-struct CudaExecInfo {
-  short thread_id;
-  short threads_left;
+struct CudaIndexCalc_Terminator {
 
-  RAJA_DEVICE
+  template<typename Data>
+  inline
+  __device__
+  void calcIndex(Data &, long ) const {}
+
+
   constexpr
-  CudaExecInfo() :
-    thread_id(threadIdx.x),
-    threads_left(blockDim.x)
-  {}
+  inline
+  __device__
+  long numThreads() const {
+    return 1;
+  }
 };
+
+template<camp::idx_t ArgumentId, typename Parent>
+struct CudaIndexCalc_Simple {
+  long num_threads;
+  Parent const &parent;
+
+  constexpr
+  __device__
+  CudaIndexCalc_Simple(long nthreads, Parent const &p) : num_threads(nthreads), parent{p} {}
+
+  template<typename Data>
+  inline
+  __device__
+  void calcIndex(Data &data, long remainder) const {
+    // Compute and assign our index
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    long i = remainder % num_threads;
+    data.template assign_index<ArgumentId>(*(begin+i));
+
+    // Pass on remainder to parent
+    parent.calcIndex(data, remainder / num_threads);
+  }
+
+
+  constexpr
+  __device__
+  long numThreads() const {
+    return num_threads * parent.numThreads();
+  }
+
+};
+
+
+template<camp::idx_t ArgumentId, typename Parent>
+struct CudaIndexCalc_Offset {
+  long num_threads;
+  long offset;
+  Parent const &parent;
+
+  constexpr
+  __device__
+  CudaIndexCalc_Offset(long nthreads, long off, Parent const &p) : num_threads(nthreads), offset(off), parent{p} {}
+
+  template<typename Data>
+  inline
+  __device__
+  void calcIndex(Data &data, long remainder) const {
+    // Compute and assign our index
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    long i = remainder % num_threads;
+    data.template assign_index<ArgumentId>(*(begin+i+offset));
+
+    // Pass on remainder to parent
+    parent.calcIndex(data, remainder / num_threads);
+  }
+
+
+  constexpr
+  __device__
+  long numThreads() const {
+    return num_threads * parent.numThreads();
+  }
+
+};
+
+
+
+/*
+ * This allows us to pass our segment and index tuple from LoopData into
+ * the Layout::toIndices() function, and do the proper index calculations
+ */
+template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
+struct IndexAssigner{
+
+  using Self = IndexAssigner<idx, segment_tuple_t, index_tuple_t>;
+
+  segment_tuple_t &segments;
+  index_tuple_t   &indices;
+
+  template<typename T>
+  RAJA_INLINE
+  RAJA_DEVICE Self const &operator=(T value) const{
+    // Compute actual offset using begin() iterator of segment
+    auto offset = *(camp::get<idx>(segments).begin() + value);
+
+    // Assign offset into index tuple
+    camp::get<idx>(indices) = offset;
+
+    // nobody wants this
+    return *this;
+  }
+};
+
+
+template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
+RAJA_INLINE
+RAJA_DEVICE
+auto make_index_assigner(segment_tuple_t &s, index_tuple_t &i) ->
+IndexAssigner<idx, segment_tuple_t, index_tuple_t>
+{
+  return IndexAssigner<idx, segment_tuple_t, index_tuple_t>{s, i};
+}
+
+
+
+
+template<typename Args, typename Layout, typename Parent>
+struct CudaIndexCalc_Layout;
+
+template<camp::idx_t ... Args, typename Layout, typename Parent>
+struct CudaIndexCalc_Layout<ArgList<Args...>, Layout, Parent> {
+
+  static_assert(sizeof...(Args) == Layout::n_dims, "");
+
+  Layout const &layout;
+  long num_threads;
+  long offset;
+  Parent const &parent;
+
+  constexpr
+  __device__
+  CudaIndexCalc_Layout(Layout const &l, Parent const &p) : layout(l), num_threads(l.size()), offset(0), parent{p} {}
+
+  constexpr
+  __device__
+  CudaIndexCalc_Layout(Layout const &l, long nt, long off, Parent const &p) : layout(l), num_threads(nt), offset(off), parent{p} {}
+
+
+  template<typename Data>
+  inline
+  __device__
+  void calcIndex(Data &data, long remainder) const {
+
+    // Compute and assign our index
+    layout.toIndices((remainder%num_threads)+offset, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
+
+
+    // Pass on remainder to parent
+    parent.calcIndex(data, remainder / num_threads);
+  }
+
+
+  constexpr
+  __device__
+  long numThreads() const {
+    return num_threads * parent.numThreads();
+  }
+
+};
+
+
 
 
 template <typename Policy>
 struct CudaStatementExecutor{};
 
-template <camp::idx_t idx, camp::idx_t N, typename StmtList>
+template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename IndexCalc>
 struct CudaStatementListExecutor;
 
 
 
-template<typename StmtList, typename Data>
+template<typename StmtList, typename Data, typename IndexCalc>
 RAJA_DEVICE
 RAJA_INLINE
-void cuda_execute_statement_list(Data &data, CudaExecInfo &exec_info){
+void cuda_execute_statement_list(Data &data, IndexCalc const &index_calc){
 
-  CudaStatementListExecutor<0, StmtList::size, StmtList>::exec(data, exec_info);
+  CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, index_calc);
 
 }
 
@@ -119,11 +274,12 @@ void cuda_execute_statement_list(Data &data, CudaExecInfo &exec_info){
 template <typename StmtList, typename Data>
 struct CudaStatementListWrapper {
 
-  RAJA_INLINE
-  RAJA_DEVICE
-  void operator()(Data &data, CudaExecInfo &exec_info) const
+  template<typename IndexCalc>
+  inline
+  __device__
+  void operator()(Data &data, IndexCalc const &index_calc) const
   {
-    cuda_execute_statement_list<StmtList>(data, exec_info);
+    cuda_execute_statement_list<StmtList>(data, index_calc);
   }
 };
 
@@ -140,13 +296,14 @@ auto cuda_make_statement_list_wrapper(Data & data) ->
 }
 
 
-template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList>
+template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList, typename IndexCalc>
 struct CudaStatementListExecutor{
 
   template<typename Data>
   static
-  RAJA_DEVICE
-  void exec(Data &data, CudaExecInfo &exec_info){
+  inline
+  __device__
+  void exec(Data &data, IndexCalc const &index_calc){
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
@@ -156,10 +313,10 @@ struct CudaStatementListExecutor{
     auto enclosed_wrapper = cuda_make_statement_list_wrapper<eclosed_statements_t>(data);
 
     // Execute this statement
-    CudaStatementExecutor<statement>::exec(enclosed_wrapper, data, exec_info);
+    CudaStatementExecutor<statement>::exec(enclosed_wrapper, data, index_calc);
 
     // call our next statement
-    CudaStatementListExecutor<statement_index+1, num_statements, StmtList>::exec(data, exec_info);
+    CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, index_calc);
   }
 };
 
@@ -168,14 +325,14 @@ struct CudaStatementListExecutor{
  * termination case, a NOP.
  */
 
-template <camp::idx_t num_statements, typename StmtList>
-struct CudaStatementListExecutor<num_statements,num_statements, StmtList> {
+template <camp::idx_t num_statements, typename StmtList, typename IndexCalc>
+struct CudaStatementListExecutor<num_statements,num_statements, StmtList, IndexCalc> {
 
   template<typename Data>
   static
-  RAJA_INLINE
-  RAJA_DEVICE
-  void exec(Data &, CudaExecInfo &) {}
+  inline
+  __device__
+  void exec(Data &, IndexCalc const &) {}
 
 };
 
