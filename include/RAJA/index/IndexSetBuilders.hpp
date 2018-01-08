@@ -48,11 +48,11 @@ namespace RAJA
  *        Routine does no error-checking on argements and assumes Index_type
  *        array contains valid indices.
  *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * Note: Method assumes TypedIndexSet reference refers to an empty index set.
  *
  ******************************************************************************
  */
-void buildIndexSetAligned(SimpleSet& hiset,
+void buildTypedIndexSetAligned(SimpleSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length);
 
@@ -77,7 +77,7 @@ void buildIndexSetAligned(SimpleSet& hiset,
  * The method chunks a fastDim x midDim x slowDim mesh into blocks that can
  * be dependency-scheduled, removing need for lock constructs.
  *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * Note: Method assumes TypedIndexSet reference refers to an empty index set.
  *
  ******************************************************************************
  */
@@ -93,7 +93,7 @@ void buildLockFreeBlockIndexset(SimpleSet& iset,
  * connectivity to the range-set. All elements in each segment are
  * independent, and no two segments can be executed in parallel.
  *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * Note: Method assumes TypedIndexSet reference refers to an empty index set.
  *
  ******************************************************************************
  */

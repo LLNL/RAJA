@@ -46,7 +46,7 @@ enum PushEnd { PUSH_FRONT, PUSH_BACK };
 enum PushCopy { PUSH_COPY, PUSH_NOCOPY };
 
 template <typename... TALL>
-class IndexSet;
+class TypedIndexSet;
 
 namespace policy
 {
@@ -83,18 +83,18 @@ using policy::indexset::ExecPolicy;
  ******************************************************************************
  */
 template <typename T0, typename... TREST>
-class IndexSet<T0, TREST...> : public IndexSet<TREST...>
+class TypedIndexSet<T0, TREST...> : public TypedIndexSet<TREST...>
 {
-  using PARENT = IndexSet<TREST...>;
+  using PARENT = TypedIndexSet<TREST...>;
   const int T0_TypeId = sizeof...(TREST);
 
 public:
   //! Construct empty index set
-  RAJA_INLINE constexpr IndexSet() : PARENT() {}
+  RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
 
   //! Copy-constructor for index set
   RAJA_INLINE
-  IndexSet(IndexSet<T0, TREST...> const &c)
+  TypedIndexSet(TypedIndexSet<T0, TREST...> const &c)
       : PARENT((PARENT const &)c)
   {
     size_t num = c.data.size();
@@ -107,18 +107,18 @@ public:
   }
 
   //! Copy-assignment operator for index set
-  IndexSet<T0, TREST...> &operator=(
-      const IndexSet<T0, TREST...> &rhs)
+  TypedIndexSet<T0, TREST...> &operator=(
+      const TypedIndexSet<T0, TREST...> &rhs)
   {
     if (&rhs != this) {
-      IndexSet<T0, TREST...> copy(rhs);
+      TypedIndexSet<T0, TREST...> copy(rhs);
       this->swap(copy);
     }
     return *this;
   }
 
   //! Destroy index set including all index set segments.
-  RAJA_INLINE ~IndexSet()
+  RAJA_INLINE ~TypedIndexSet()
   {
     size_t num_seg = data.size();
     for (size_t i = 0; i < num_seg; ++i) {
@@ -130,7 +130,7 @@ public:
   }
 
   //! Swap function for copy-and-swap idiom.
-  void swap(IndexSet<T0, TREST...> &other)
+  void swap(TypedIndexSet<T0, TREST...> &other)
   {
     // Swap parents data
     PARENT::swap((PARENT &)other);
@@ -148,7 +148,7 @@ public:
   template <typename P0, typename... PREST>
   RAJA_INLINE bool compareSegmentById(
       size_t segid,
-      const IndexSet<P0, PREST...> &other) const
+      const TypedIndexSet<P0, PREST...> &other) const
   {
     // drill down our types until we have the right type
     if (getSegmentTypes()[segid] != T0_TypeId) {
@@ -199,7 +199,7 @@ public:
     return PARENT::template getSegment<P0>(segid);
   }
 
-  //! Returns the number of types this IndexSet can store.
+  //! Returns the number of types this TypedIndexSet can store.
   RAJA_INLINE
   constexpr size_t getNumTypes() const { return 1 + PARENT::getNumTypes(); }
 
@@ -217,9 +217,9 @@ public:
    */
 
   ///
-  /// Append an IndexSet of another type to this one.
+  /// Append an TypedIndexSet of another type to this one.
   ///
-  /// This requires the set of types supported by this IndexSet to be a
+  /// This requires the set of types supported by this TypedIndexSet to be a
   /// superset of the one copied in.
   ///
   /// Order is preserved, and all segments are appended to the end of this one
@@ -227,7 +227,7 @@ public:
 
 private:
   template <typename... CALL>
-  RAJA_INLINE void push_into(IndexSet<CALL...> &c,
+  RAJA_INLINE void push_into(TypedIndexSet<CALL...> &c,
                              PushEnd pend = PUSH_BACK,
                              PushCopy pcopy = PUSH_COPY)
   {
@@ -250,7 +250,7 @@ private:
 public:
   template <typename... CALL>
   RAJA_INLINE void segment_push_into(size_t segid,
-                                     IndexSet<CALL...> &c,
+                                     TypedIndexSet<CALL...> &c,
                                      PushEnd pend = PUSH_BACK,
                                      PushCopy pcopy = PUSH_COPY)
   {
@@ -352,7 +352,7 @@ protected:
                                  PushEnd pend = PUSH_BACK,
                                  PushCopy pcopy = PUSH_COPY)
   {
-    static_assert(sizeof...(TREST) > 0, "Invalid type for this IndexSet");
+    static_assert(sizeof...(TREST) > 0, "Invalid type for this TypedIndexSet");
     PARENT::push_internal(val, pend, pcopy);
   }
 
@@ -417,17 +417,17 @@ public:
   //! Return the number of elements in the range.
   Index_type size() const { return getNumSegments(); }
 
-  //!  @name IndexSet segment subsetting methods (slices ranges)
+  //!  @name TypedIndexSet segment subsetting methods (slices ranges)
   ///
-  /// Return a new IndexSet object that contains the subset of
-  /// segments in this IndexSet with ids in the interval [begin, end).
+  /// Return a new TypedIndexSet object that contains the subset of
+  /// segments in this TypedIndexSet with ids in the interval [begin, end).
   ///
-  /// This IndexSet will not change and the created "slice" into it
+  /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  IndexSet<T0, TREST...> *createSlice(int begin, int end)
+  TypedIndexSet<T0, TREST...> *createSlice(int begin, int end)
   {
-    IndexSet<T0, TREST...> *retVal = new IndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
 
     int minSeg = RAJA::operators::maximum<int>{}(0, begin);
     int maxSeg = RAJA::operators::minimum<int>{}(end, getNumSegments());
@@ -438,15 +438,15 @@ public:
   }
 
   ///
-  /// Return a new IndexSet object that contains the subset of
-  /// segments in this IndexSet with ids in the given int array.
+  /// Return a new TypedIndexSet object that contains the subset of
+  /// segments in this TypedIndexSet with ids in the given int array.
   ///
-  /// This IndexSet will not change and the created "slice" into it
+  /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  IndexSet<T0, TREST...> *createSlice(const int *segIds, int len)
+  TypedIndexSet<T0, TREST...> *createSlice(const int *segIds, int len)
   {
-    IndexSet<T0, TREST...> *retVal = new IndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
 
     int numSeg = getNumSegments();
     for (int i = 0; i < len; ++i) {
@@ -458,19 +458,19 @@ public:
   }
 
   ///
-  /// Return a new IndexSet object that contains the subset of
-  /// segments in this IndexSet with ids in the argument object.
+  /// Return a new TypedIndexSet object that contains the subset of
+  /// segments in this TypedIndexSet with ids in the argument object.
   ///
-  /// This IndexSet will not change and the created "slice" into it
+  /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
   /// The object must provide methods begin(), end(), and its
   /// iterator type must de-reference to an integral value.
   ///
   template <typename T>
-  IndexSet<T0, TREST...> *createSlice(const T &segIds)
+  TypedIndexSet<T0, TREST...> *createSlice(const T &segIds)
   {
-    IndexSet<T0, TREST...> *retVal = new IndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
     int numSeg = getNumSegments();
     for (auto &seg : segIds) {
       if (seg >= 0 && seg < numSeg) {
@@ -544,7 +544,7 @@ public:
   ///       types and indices; e.g., dependency info not checked.
   ///
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool operator==(const IndexSet<P0, PREST...> &other) const
+  RAJA_INLINE bool operator==(const TypedIndexSet<P0, PREST...> &other) const
   {
     size_t num_seg = getNumSegments();
     if (num_seg != other.getNumSegments()) return false;
@@ -559,16 +559,16 @@ public:
 
   //! Inequality operator returns true if any segment is not equal, else false.
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool operator!=(const IndexSet<P0, PREST...> &other) const
+  RAJA_INLINE bool operator!=(const TypedIndexSet<P0, PREST...> &other) const
   {
     return (!(*this == other));
   }
 
 private:
-  //! vector of IndexSet data objects of type T0
+  //! vector of TypedIndexSet data objects of type T0
   RAJA::RAJAVec<T0 *> data;
 
-  //! vector indicating which segments are owned by the IndexSet
+  //! vector indicating which segments are owned by the TypedIndexSet
   RAJA::RAJAVec<Index_type> owner;
 
   //! vector holding user defined begin segment intervals
@@ -580,19 +580,19 @@ private:
 
 
 template <>
-class IndexSet<>
+class TypedIndexSet<>
 {
 public:
-  //! create empty IndexSet
-  RAJA_INLINE IndexSet() : m_len(0) {}
+  //! create empty TypedIndexSet
+  RAJA_INLINE TypedIndexSet() : m_len(0) {}
 
   //! dtor cleans up segements that we own (none)
   RAJA_INLINE
-  ~IndexSet() {}
+  ~TypedIndexSet() {}
 
   //! Copy-constructor.
   RAJA_INLINE
-  IndexSet(IndexSet const &c)
+  TypedIndexSet(TypedIndexSet const &c)
   {
     segment_types = c.segment_types;
     segment_offsets = c.segment_offsets;
@@ -601,7 +601,7 @@ public:
   }
 
   //! Swap function for copy-and-swap idiom (deep copy).
-  void swap(IndexSet &other)
+  void swap(TypedIndexSet &other)
   {
     using std::swap;
     swap(segment_types, other.segment_types);
@@ -668,7 +668,7 @@ protected:
   template <typename P0, typename... PREST>
   RAJA_INLINE bool compareSegmentById(
       size_t,
-      const IndexSet<P0, PREST...> &) const
+      const TypedIndexSet<P0, PREST...> &) const
   {
     return false;
   }
@@ -692,13 +692,13 @@ protected:
   }
 
   template <typename... CALL>
-  RAJA_INLINE void push_into(IndexSet<CALL...> &, PushEnd, PushCopy) const
+  RAJA_INLINE void push_into(TypedIndexSet<CALL...> &, PushEnd, PushCopy) const
   {
   }
 
   template <typename... CALL>
   RAJA_INLINE void segment_push_into(size_t,
-                                     IndexSet<CALL...> &,
+                                     TypedIndexSet<CALL...> &,
                                      PushEnd,
                                      PushCopy) const
   {
@@ -742,11 +742,11 @@ private:
   //! the icount of each segment
   RAJA::RAJAVec<Index_type> segment_icounts;
 
-  //! Total length of all IndexSet segments.
+  //! Total length of all TypedIndexSet segments.
   Index_type m_len;
 };
 
-using SimpleSet = IndexSet<RAJA::RangeSegment,
+using SimpleSet = TypedIndexSet<RAJA::RangeSegment,
                            RAJA::ListSegment,
                            RAJA::RangeStrideSegment>;
 
@@ -755,7 +755,7 @@ namespace type_traits
 
 template <typename T>
 struct is_index_set
-    : SpecializationOf<RAJA::IndexSet, typename std::decay<T>::type> {
+    : SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
 };
 
 template <typename T>

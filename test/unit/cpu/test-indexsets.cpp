@@ -93,10 +93,10 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
 
 TEST(IndexSet, empty)
 {
-  RAJA::IndexSet<> is;
+  RAJA::TypedIndexSet<> is;
   ASSERT_EQ(0, is.size());
   ASSERT_EQ(is.begin(), is.end());
-  RAJA::IndexSet<> is2;
+  RAJA::TypedIndexSet<> is2;
   ASSERT_EQ(is2.size(), is.size());
   is.swap(is2);
   ASSERT_EQ(is2.size(), is.size());
@@ -104,7 +104,7 @@ TEST(IndexSet, empty)
 
 TEST(IndexSet, compare)
 {
-  using RangeIndexSet = RAJA::IndexSet<RAJA::RangeSegment>;
+  using RangeIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment>;
   RangeIndexSet is1, is2;
   is1.push_back(RAJA::RangeSegment(0, 10));
   is2.push_back(RAJA::RangeSegment(0, 5));

@@ -45,12 +45,12 @@ const int DIM = 2;
   indices {0,2,8,10} corresponding to the location of values equal to 1.
 
   --------[RAJA Concepts]---------
-  1. Constructing custom IndexSets
+  1. Constructing custom TypedIndexSets
   2. RAJA::View              - RAJA's wrapper for multidimensional indexing
   3. RAJA::ListSegment       - Container for an arbitrary collection of indices
   4. RAJA::TypedListSegment  - Container for an arbitrary collection of typed
   indices
-  5. RAJA::IndexSet    - Container for an index set which is a collection
+  5. RAJA::TypedIndexSet    - Container for an index set which is a collection
   of
                                ListSegments
 */
@@ -66,11 +66,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::copy(init.begin(), init.end(), A);
 
   /*
-    The template arguments for IndexSet enables the user to indicate
+    The template arguments for TypedIndexSet enables the user to indicate
     the required storage types of various segments. In this example,
     we only need to store TypedListSegment<Index_type> (aka ListSegment)
   */
-  RAJA::IndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
+  RAJA::TypedIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
 
   /*
     RAJA::View - RAJA's wrapper for multidimensional indexing
