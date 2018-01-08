@@ -52,7 +52,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildTypedIndexSetAligned(SimpleSet& hiset,
+void buildTypedIndexSetAligned(IndexSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length);
 
@@ -81,7 +81,7 @@ void buildTypedIndexSetAligned(SimpleSet& hiset,
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(SimpleSet& iset,
+void buildLockFreeBlockIndexset(IndexSet& iset,
                                 int fastDim,
                                 int midDim,
                                 int slowDim);
@@ -97,7 +97,7 @@ void buildLockFreeBlockIndexset(SimpleSet& iset,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(SimpleSet& iset,
+void buildLockFreeColorIndexset(IndexSet& iset,
                                 Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,

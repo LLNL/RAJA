@@ -32,7 +32,7 @@ class ForallTest : public ::testing::Test
 protected:
   Real_ptr in_array;
   Index_type alen;
-  RAJA::SimpleSet iset;
+  RAJA::IndexSet iset;
   RAJAVec<Index_type> is_indices;
   Real_ptr test_array;
   Real_ptr ref_icount_array;

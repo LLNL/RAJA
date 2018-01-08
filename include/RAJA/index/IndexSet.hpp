@@ -746,9 +746,9 @@ private:
   Index_type m_len;
 };
 
-using SimpleSet = TypedIndexSet<RAJA::RangeSegment,
-                           RAJA::ListSegment,
-                           RAJA::RangeStrideSegment>;
+using IndexSet RAJA_DEPRECATE_ALIAS("Real_ptr will be removed in 2018 (JK)")  = TypedIndexSet<RAJA::RangeSegment,
+                                                                                              RAJA::ListSegment,
+                                                                                              RAJA::RangeStrideSegment>;
 
 namespace type_traits
 {

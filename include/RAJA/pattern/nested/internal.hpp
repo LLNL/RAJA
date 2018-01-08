@@ -83,7 +83,7 @@ struct iterable_value_type_getter {
   using type = typename Iterator::iterator::value_type;
 };
 template <>
-struct iterable_value_type_getter<SimpleSet> {
+struct iterable_value_type_getter<IndexSet> {
   // TODO: when static indexset drops, specialize properly
   using type = Index_type;
 };
