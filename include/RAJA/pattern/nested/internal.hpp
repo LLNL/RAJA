@@ -288,6 +288,30 @@ auto thread_privatize(const nested::internal::StatementListWrapper<StmtList, Dat
   return NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>{item};
 }
 
+
+
+
+template<camp::idx_t ... Seq, typename ... IdxTypes, typename ... Segments>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+void set_shmem_window_to_begin_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
+  VarOps::ignore_args(
+      (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
+      );
+}
+
+template<typename ... IdxTypes, typename ... Segments>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+void set_shmem_window_to_begin(camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
+  using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
+
+  set_shmem_window_to_begin_expanded(loop_idx{}, window, segment_tuple);
+}
+
+
+
+
 }  // end namespace internal
 }  // end namespace nested
 

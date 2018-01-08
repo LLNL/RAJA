@@ -149,7 +149,7 @@ struct cuda_block_per_sm_launch{
       }
     }
 
-    d.num_blocks.x = num_blocks;
+    d.num_blocks.x = 1; //num_blocks;
     d.num_blocks.y = 1;
     d.num_blocks.z = 1;
 

@@ -21,7 +21,6 @@ namespace internal
 
 
 
-
 template <typename... EnclosedStmts>
 struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 
@@ -40,7 +39,7 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     index_tuple_t *shmem_window = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
 
     // Set the shared memory tuple with the beginning of our segments
-    set_shmem_window_tuple(*shmem_window, data.segment_tuple);
+    *shmem_window = data.index_tuple;
 
     // make sure we're all synchronized
     __syncthreads();

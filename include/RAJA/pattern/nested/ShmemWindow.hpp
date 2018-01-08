@@ -106,26 +106,6 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 namespace internal{
 
 
-template<camp::idx_t ... Seq, typename ... IdxTypes, typename ... Segments>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void set_shmem_window_tuple_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
-//  VarOps::ignore_args(
-//        (printf("set_shmem_window_tuple: window[%d]=%d\n", (int)Seq, (int)**camp::get<Seq>(segment_tuple).begin()))...
-//        );
-  VarOps::ignore_args(
-      (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
-      );
-}
-
-template<typename ... IdxTypes, typename ... Segments>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void set_shmem_window_tuple(camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
-  using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
-
-  set_shmem_window_tuple_expanded(loop_idx{}, window, segment_tuple);
-}
 
 
 template <typename... EnclosedStmts>
@@ -144,7 +124,7 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     if(shmem_window != nullptr){
 
       // Set the window by copying the current index_tuple to the shared location
-      set_shmem_window_tuple(*shmem_window, wrap.data.segment_tuple);
+      *shmem_window = wrap.data.index_tuple;
 
       // Privatize to invoke copy ctors
       auto privatizer = thread_privatize(wrap);

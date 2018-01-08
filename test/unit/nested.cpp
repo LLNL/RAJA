@@ -901,7 +901,7 @@ CUDA_TEST(Nested, CudaComplexNested){
 
 
 
-CUDA_TEST(Nested, CudaShmemWindow){
+CUDA_TEST(Nested, CudaShmemWindow1d){
   using namespace RAJA;
   using namespace RAJA::nested;
 
@@ -962,10 +962,8 @@ CUDA_TEST(Nested, CudaShmemWindow){
   cudaDeviceSynchronize();
 
   for(long i = 0;i < N;++ i){
-    printf("%d ", ptr[i]);
-    //ASSERT_EQ(ptr[i], (int)(N));
+    ASSERT_EQ(ptr[i], (int)(i));
   }
-  printf("\n");
 
   // check trip count
   long result = (long)trip_count;
@@ -974,6 +972,87 @@ CUDA_TEST(Nested, CudaShmemWindow){
 
   cudaFree(ptr);
 }
+
+
+
+CUDA_TEST(Nested, CudaShmemWindow2d){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)1024;
+  constexpr long M = (long)1024;
+
+  using Pol = nested::Policy<
+            CudaKernel<512,
+              nested::Tile<0, nested::tile_fixed<2>, seq_exec,
+                nested::Tile<1, nested::tile_fixed<2>, seq_exec,
+                  SetShmemWindow<
+                    For<0, cuda_thread_exec,
+
+                      For<1, cuda_thread_exec, Lambda<0>>,
+
+                      CudaThreadSync,
+
+                      For<1, cuda_thread_exec, Lambda<1>>
+                    >
+                  >
+                >
+              >
+            >
+          >;
+
+  int *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N * M) );
+
+  for(long i = 0;i < N*M;++ i){
+    ptr[i] = 0;
+  }
+
+
+  auto segments = RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,M));
+
+
+  RAJA::ReduceSum<cuda_reduce<512>, long> trip_count(0);
+
+
+  using shmem_t = SharedMemory<cuda_shmem, double, 4>;
+  ShmemWindowView<shmem_t, ArgList<0,1>, SizeList<2,2>, decltype(segments)> shmem;
+
+
+  nested::forall(
+      Pol{},
+
+      segments,
+
+      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j){
+        trip_count += 1;
+        shmem(i,j) = i*j;
+
+      },
+
+      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j){
+
+        trip_count += 1;
+        ptr[i*M + j] = shmem(i,j);
+
+      }
+  );
+  cudaDeviceSynchronize();
+
+  for(long i = 0;i < N;++ i){
+    for(long j = 0;j < M;++ j){
+      ASSERT_EQ(ptr[i*M+j], (int)(i*j));
+    }
+  }
+
+  // check trip count
+  long result = (long)trip_count;
+  ASSERT_EQ(result, 2*N*M);
+
+
+  cudaFree(ptr);
+}
+
 
 
 

@@ -55,6 +55,10 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>>
       // Assign our new tiled segment
       camp::get<ArgumentId>(data.segment_tuple) = *(begin+i);
 
+      // Assign the beginning index to the index_tuple for proper use
+      // in shmem windows
+      camp::get<ArgumentId>(data.index_tuple) = *camp::get<ArgumentId>(data.segment_tuple).begin();
+
       // Execute our enclosed statement list
       wrap(data, index_calc);
     }

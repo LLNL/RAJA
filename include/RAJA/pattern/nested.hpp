@@ -92,13 +92,15 @@ RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodi
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
   // and only copied to provide thread-private instances.
-
   loop_data_t loop_data(
           std::forward<SegmentTuple>(segments),
           std::forward<Bodies>(bodies)...);
 
   // Turn off shared memory setup
   RAJA::detail::finishSharedMemorySetup();
+
+  // initialize the shmem tuple to the beginning of each loop iteration
+  internal::set_shmem_window_to_begin(shmem_window, loop_data.segment_tuple);
 
 //  printf("SHARED MEMORY USED: %ld bytes\n",
 //      (long)RAJA::detail::getSharedMemorySize());

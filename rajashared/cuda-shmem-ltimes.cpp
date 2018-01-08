@@ -274,8 +274,8 @@ void runLTimesRajaCudaShmem(bool debug,
           SetShmemWindow<
             // First, load Ell into shared memory in each block
             Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
-
             CudaThreadSync,
+
 
             // Distribute groups and zones across blocks
             Collapse<cuda_block_seq_exec, ArgList<2, 3>,
@@ -286,8 +286,8 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
               // Compute phi for all m's and this g,z
-              For<0, cuda_thread_exec, Lambda<2>>
-
+              For<0, cuda_thread_exec, Lambda<2>>,
+              CudaThreadSync
             >
           >
         >
@@ -328,7 +328,7 @@ void runLTimesRajaCudaShmem(bool debug,
      // Compute phi_m_g_z
      [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
 
-       double phi_m_g_z = 0.0;
+       double phi_m_g_z = phi(m, g, z);
        for(IDirection d(0);d < num_directions; ++ d){
          phi_m_g_z += shmem_ell(d, m) * shmem_psi(d);
        }
