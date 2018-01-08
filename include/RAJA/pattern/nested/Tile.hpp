@@ -37,7 +37,7 @@ namespace nested
  * A nested::forall statement that implements a tiling (or blocking) loop.
  *
  */
-template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
+template <camp::idx_t ArgumentId, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
 struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using tile_policy_t = TilePolicy;
   using exec_policy_t = ExecPolicy;
@@ -52,16 +52,23 @@ struct tile_fixed {
 
 namespace internal{
 
-template <camp::idx_t Index, typename BaseWrapper>
-struct TileWrapper : GenericWrapper<Index, BaseWrapper> {
-  using Base = GenericWrapper<Index, BaseWrapper>;
+template <camp::idx_t ArgumentId, typename BaseWrapper>
+struct TileWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
+  using Base = GenericWrapper<ArgumentId, BaseWrapper>;
   using Base::Base;
 
   template <typename InSegmentType>
   RAJA_INLINE
   void operator()(InSegmentType s)
   {
-    camp::get<Index>(Base::wrapper.data.segment_tuple) = s;
+    // Assign the tile's segment to the tuple
+    camp::get<ArgumentId>(Base::wrapper.data.segment_tuple) = s;
+
+    // Assign the beginning index to the index_tuple for proper use
+    // in shmem windows
+    camp::get<ArgumentId>(Base::wrapper.data.index_tuple) =
+        *camp::get<ArgumentId>(Base::wrapper.data.segment_tuple).begin();
+
     Base::wrapper();
   }
 };

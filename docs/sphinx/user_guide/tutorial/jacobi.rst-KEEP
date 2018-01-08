@@ -1,0 +1,129 @@
+.. ##
+.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-689114
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of RAJA.
+.. ##
+.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ##
+
+.. _jacobi-label:
+
+-----------------
+Jacobi Iteration
+-----------------
+
+Main RAJA features discussed:
+
+  * ``RAJA::View`` multi-dimensional data access
+  * ``RAJA::nested::forall`` nested-loop traversal template
+  * RAJA nested-loop policies
+  * RAJA reduction type
+
+
+In this example, we solve the following boundary value problem using the
+Jacobi iteration method.
+
+.. math::
+   
+  u_{xx} + u_{yy} &= f, \quad u \in (0,1) \times (0,1), \\
+  u(0,y) = u(1,y) &= 0, \\
+  u(x,0) = u(x,1) &= 0,
+
+where
+
+.. math::
+
+  f = 2x(y-1)(y-2x+xy+2) e^{(x-y)} .
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The discrete problem
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The problem domain in the example is the unit square :math:`[-1,1] \times [-1, 1]`.
+On the domain, we define grid with uniform grid spacing :math:`h` in x and y.
+The discrete solution values will be computed at the grid points that lie
+at the intersection of the grid lines. Then, the approximate derivatives
+are defined using finite differences as follows:
+
+.. math::
+   
+   u_{xx} \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2}, \\
+   u_{yy} \approx \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{h^2},
+
+where :math:`(i,j)` corresponds to grid point coordinate. After substituting 
+the finite difference derivatives into the equation and some rearranging, 
+the Jacobi method iteration update is: 
+
+.. math::
+
+   u^{k+1}_{ij} = \frac{1}{4} \left( -h^2 f_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} \right)
+
+Here, the superscript :math:`k` denotes the :math:`k-th` iterate and the 
+subscripts :math:`ij` is the grid point index. 
+
+We start with an initial guess :math:`\mathcal{u_{ij}^0} = 0` for all grid 
+points :math:`ij`. Since the Dirichlet boundary condition is zero at every 
+point on the domain boundary, we iterate the solution on the interior grid 
+points only. At each iteration, the solution at each grid point is replaced by 
+a weighted sum of the solution at four neighboring points (black point and 
+blue neighboring points in the figure below).
+
+We iterate until the residual is less than some tolerance; then, we consider 
+the solution 'converged':
+
+.. math::
+
+   \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } < tol
+
+.. image:: ../figures/jacobi.png
+   :scale: 10 %
+   :align: center
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RAJA nested-loop implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here, we show a parallel implementation of the jacobi iteration using OpenMP
+and nested-loop RAJA capabilities:
+
+.. literalinclude:: ../../../../examples/example-jacobi.cpp
+                    :lines: 282-306
+
+The iteration spaces for the loops are defined using RAJA RangeSegment objects:
+
+.. literalinclude:: ../../../../examples/example-jacobi.cpp
+                    :lines: 200-201
+ 
+Here, the ``RAJA::nested::forall`` loop updates the solution variable at each grid
+point.
+
+The ``jacobiompNestedPolicy`` type is defined as
+
+.. literalinclude:: ../../../../examples/example-jacobi.cpp
+                    :lines: 276-278
+
+The template parameter after the nested policy specifies that an OpenMP 
+parallel region is created on the outer loop.
+
+.. #The template parameter after the nested policy specifies that an OpenMP 
+.. #parallel region is created around the loop nest. 
+.. # The nested policy indicates
+.. # that the loops are collapsed into one using the OpenMP *collapse* pragma and
+.. # a *nowait* pragma.
+
+The ``RAJA::forall`` loop computes the residual :math:`\mathcal{E}`. Note that 
+doing this in parallel involves multiple threads writing to the same location 
+in memory, which is inherently not thread-safe. Thus, we use a 
+``RAJA::ReduceSum`` object here, which is templated on an OpenMP reduction
+policy.  RAJA provides thread-safe reduction types for all programming model 
+back-ends.
+
+The file ``RAJA/examples/ex5-jacobi.cpp``
+contains the complete working example code.

@@ -84,6 +84,7 @@ RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodi
   // Setup a shared memory window tuple
   using index_tuple_t = typename loop_data_t::index_tuple_t;
   index_tuple_t shmem_window;
+//  printf("shmem_window = %p, %d bytes\n", &shmem_window, (int)sizeof(shmem_window));
 
   // Turn on shared memory setup
   RAJA::detail::startSharedMemorySetup(&shmem_window, sizeof(index_tuple_t));

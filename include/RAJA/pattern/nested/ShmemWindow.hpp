@@ -87,7 +87,16 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
       if(shmem_window_ptr != nullptr){
         index_tuple_t &shmem_window = *shmem_window_ptr;
         window = shmem_window;
+
+//        printf("Window (%p): ", shmem_window_ptr);
+//        VarOps::ignore_args(
+//            printf("%d ", convertIndex<int>(camp::get<Args>(window)))...
+//        );
+//        printf("\n");
       }
+//      else{
+//        printf("No shmem window ptr\n");
+//      }
     }
 
 
@@ -122,6 +131,7 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     index_tuple_t *shmem_window = static_cast<index_tuple_t*>(detail::getSharedMemoryWindow());
 
     if(shmem_window != nullptr){
+//      printf("Setting shmem window %p\n", shmem_window);
 
       // Set the window by copying the current index_tuple to the shared location
       *shmem_window = wrap.data.index_tuple;
@@ -135,6 +145,7 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     }
     else{
       // No shared memory setup, so this becomes a NOP
+//      printf("SetShmemWindow, but no window configured\n");
       wrap();
     }
   }
