@@ -26,7 +26,7 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 6: Gauss-Seidel with Red-Black Ordering
+  Example 7: Gauss-Seidel with Red-Black Ordering
 
   ----[Details]--------------------
   This example is an extension of Example 3.
@@ -135,29 +135,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     /*
       Gauss-Seidel Iteration
     */
-    RAJA::forall<colorPolicy>(
-        colorSet, [=](RAJA::Index_type id) {
+    RAJA::forall<colorPolicy>(colorSet, 
+      [=](RAJA::Index_type id) {
         
-          /*
-            Compute x,y grid index
-          */
-          int m = id % (N + 2);
-          int n = id / (N + 2);
+      /*
+         Compute x,y grid index
+       */
+      int m = id % (N + 2);
+      int n = id / (N + 2);
 
-          double x = gridx.o + m * gridx.h;
-          double y = gridx.o + n * gridx.h;
+      double x = gridx.o + m * gridx.h;
+      double y = gridx.o + n * gridx.h;
 
-          double f = gridx.h * gridx.h
-                     * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
+      double f = gridx.h * gridx.h * 
+                 (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
-          double newI = -0.25 * (f - I[id - N - 2] - I[id + N + 2] - I[id - 1]
-                                 - I[id + 1]);
+      double newI = -0.25 * (f - I[id - N - 2] - I[id + N + 2] -
+                                 I[id - 1] - I[id + 1]);
 
-          double oldI = I[id];
-          RAJA_resI2 += (newI - oldI) * (newI - oldI);
-          I[id] = newI;
+      double oldI = I[id];
+      RAJA_resI2 += (newI - oldI) * (newI - oldI);
+      I[id] = newI;
 
-        });
+    });
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter) {
@@ -192,14 +192,15 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
   RAJA::Index_type *Red = new RAJA::Index_type[redN];
   RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
 
-
   int ib = 0;
   int ir = 0;
 
   bool isRed = true;
-  for (int n = 1; n <= N; ++n) {
-    for (int m = 1; m <= N; ++m) {
 
+  for (int n = 1; n <= N; ++n) {
+    
+    for (int m = 1; m <= N; ++m) {
+      
       RAJA::Index_type id = n * (N + 2) + m;
       if (isRed) {
         Red[ib] = id;
@@ -210,7 +211,9 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
       }
       isRed = !isRed;
     }
+
   }
+
   // Create Index
   colorSet.push_back(RAJA::ListSegment(Blk, blkN));
   colorSet.push_back(RAJA::ListSegment(Red, redN));
@@ -237,11 +240,13 @@ void computeErr(double *I, grid_s grid)
 
   RAJA::RangeSegment fdBounds(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
-  using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+  using errPolicy = RAJA::nested::Policy<
+    RAJA::nested::For<1, RAJA::loop_exec >,
+    RAJA::nested::For<0, RAJA::loop_exec> >;
+
+  RAJA::nested::forall(errPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
     
       int id = tx + grid.n * ty;
       double x = grid.o + tx * grid.h;
