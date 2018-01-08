@@ -184,7 +184,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::StaticIndexSet<RAJA::TypedListSegment<int>> is1;
+  RAJA::TypedIndexSet<RAJA::TypedListSegment<int>> is1;
 
   is1.push_back( idx_list );  // use list segment created earlier.
   
@@ -202,7 +202,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::StaticIndexSet<RAJA::RangeSegment> is2;
+  RAJA::TypedIndexSet<RAJA::RangeSegment> is2;
   is2.push_back( RAJA::RangeSegment(0, N/2) );
   is2.push_back( RAJA::RangeSegment(N/2, N) );
   
@@ -230,7 +230,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::TypedListSegment<int> idx1_list( &idx1[0], idx1.size() );
 
-  RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::TypedListSegment<int>> is3;
+  RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::TypedListSegment<int>> is3;
   is3.push_back( RAJA::RangeSegment(0, N/3) );
   is3.push_back( idx1_list );
   is3.push_back( RAJA::RangeSegment(2*N/3, N) );
