@@ -1,7 +1,7 @@
 /*!
  ******************************************************************************
  *
- * \File
+ * \file
  *
  * \brief   Header file for various index set builder methods.
  *
