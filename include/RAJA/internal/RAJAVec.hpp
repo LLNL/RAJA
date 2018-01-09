@@ -44,7 +44,7 @@ namespace RAJA
  *         sufficient to insulate RAJA entities from the STL.
  *
  *         Note: This class has limited functionality sufficient to
- *               support its usage for RAJA IndexSet operations. However,
+ *               support its usage for RAJA TypedIndexSet operations. However,
  *               it does provide a push_front method that is not found
  *               in the STL vector container.
  *
