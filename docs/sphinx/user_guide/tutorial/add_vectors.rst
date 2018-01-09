@@ -14,9 +14,9 @@
 
 .. _addvectors-label:
 
-----------------
-Vector Addition
-----------------
+--------------------------------------
+Vector Addition (Basic Loop Execution)
+--------------------------------------
 
 Key RAJA features shown in this example:
 
