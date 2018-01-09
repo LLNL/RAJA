@@ -746,9 +746,8 @@ private:
   Index_type m_len;
 };
 
-using IndexSet RAJA_DEPRECATE_ALIAS("IndexSet will be deprecated with next release")  = TypedIndexSet<RAJA::RangeSegment,
-                                                                                                      RAJA::ListSegment,
-                                                                                                      RAJA::RangeStrideSegment>;
+using IndexSet RAJA_DEPRECATE_ALIAS("IndexSet will be deprecated soon. Please transition to TypedIndexSet")  =
+    TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
 
 namespace type_traits
 {
