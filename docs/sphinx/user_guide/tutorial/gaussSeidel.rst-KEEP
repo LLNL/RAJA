@@ -22,7 +22,7 @@ Main RAJA features discussed:
 
   * ``RAJA::forall`` loop traversal template
   * ``RAJA::ListSegment`` iteration space segment type
-  * ``RAJA::StaticIndexSet`` segment container
+  * ``RAJA::TypedIndexSet`` segment container
   * RAJA index set execution policies
   * RAJA reduction type
 
@@ -48,7 +48,7 @@ for the current color must be updated.
 RAJA index set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A ``RAJA::StaticIndexSet`` object can be used to partition the grid point
+A ``RAJA::TypedIndexSet`` object can be used to partition the grid point
 indices into two non-overlapping sets, one for the red points and one for
 the black points. A RAJA index set can be used to partition an iteration space
 into any number of *segments* of any type, even user-defined segments. RAJA

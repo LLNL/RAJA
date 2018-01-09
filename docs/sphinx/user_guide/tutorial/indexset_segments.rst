@@ -82,7 +82,7 @@ the loop is `data-parallel`:
 RAJA IndexSets
 ^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA::StaticIndexSet`` template is a container that holds segment
+The ``RAJA::TypedIndexSet`` template is a container that holds segment
 types specified as template arguments. An index set object can be passed
 to the RAJA 'forall' method just like a segment. When the loop is run,
 the segments will be iterated over and each segment will be executed. Here,
