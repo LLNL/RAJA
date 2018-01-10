@@ -24,8 +24,8 @@
 /*
  *  Binning Example
  *
- *  Given an array of length N containing M integers such that M < N.
- *  This example uses RAJA atomics to count the number of instances a 
+ *  Given an array of length N containing integers ranging from [0, M),
+ *  this example uses RAJA atomics to count the number of instances a 
  *  number between 0 and M appear. 
  *
  *  RAJA features shown:
@@ -108,8 +108,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   });
   
   printBins(bins,M);
-  std::cout << "\n\nRAJA Binning...\n";
-
 #endif
   //----------------------------------------------------------------------------//  
 
