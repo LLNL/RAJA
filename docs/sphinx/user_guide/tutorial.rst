@@ -118,5 +118,5 @@ for reference.
    tutorial/nested_loop_reorder.rst
    tutorial/vertexsum_coloring.rst
    tutorial/reductions.rst
-   tutorial/pi_reduce_atomic.rst
+   tutorial/atomic_binning.rst
    tutorial/scan.rst
