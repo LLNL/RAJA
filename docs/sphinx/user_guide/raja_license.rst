@@ -17,7 +17,7 @@
 RAJA License
 ===================================
 
-RAJA version 0.4.1
+RAJA version 0.5.0
 
 Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 
