@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 #include "memoryManager.hpp"
 
@@ -66,7 +67,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;
-  memset(bins, 0, M * sizeof(int));
+  std::memset(bins, 0, M * sizeof(int));
   using EXEC_POL1 = RAJA::seq_exec;
   using ATOMIC_POL1 = RAJA::atomic::seq_atomic;
   RAJA::forall<EXEC_POL1>(array_range, [=](int i) {
@@ -81,7 +82,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n\n Running RAJA OMP binning" << std::endl;
-  memset(bins, 0, M * sizeof(int));
+  std::memset(bins, 0, M * sizeof(int));
   using EXEC_POL2 = RAJA::omp_parallel_for_exec;
   using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
   RAJA::forall<EXEC_POL2>(array_range, [=](int i) {
@@ -98,7 +99,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n\nRunning RAJA CUDA binning" << std::endl;
-  memset(bins, 0, M * sizeof(int));
+  std::memset(bins, 0, M * sizeof(int));
   using EXEC_POL3 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
   using ATOMIC_POL3 = RAJA::atomic::cuda_atomic;
   RAJA::forall<EXEC_POL3>(array_range, [=] RAJA_DEVICE(int i) {
