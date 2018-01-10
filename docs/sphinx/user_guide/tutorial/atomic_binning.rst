@@ -32,7 +32,7 @@ used similarly for different programming model back-ends. For a complete
 description of supported RAJA atomic operations, please see 
 :ref:`atomics-label`.
 
-All code snippets described below use the loop range::
+All code snippets described below use the loop range:
 
 .. literalinclude:: ../../../../examples/ex10-binning.cpp
                     :lines: 57-57
@@ -40,7 +40,7 @@ All code snippets described below use the loop range::
 and the integer array 'bins' of length 'M' to accumulate the number of 
 occurrences of each value in the array.
 
-Here is the OpenMP version::
+Here is the OpenMP version:
 
 .. literalinclude:: ../../../../examples/ex10-binning.cpp
                     :lines: 90-97
@@ -50,7 +50,7 @@ with that slot is encountered. Note that the ``RAJA::atomic::atomicAdd``
 operation uses an OpenMP atomic policy, which is compatible with the OpenMP 
 loop execution policy.
 
-The CUDA version is similar::
+The CUDA version is similar:
 
 .. literalinclude:: ../../../../examples/ex10-binning.cpp
                     :lines: 126-133
@@ -66,7 +66,7 @@ OpenMP atomic policy will be used, which should be correct in a sequential
 execution context as well. Otherwise, the sequential atomic policy will be 
 applied. 
 
-For example, here is the CUDA version that uses the 'auto' atomic policy::
+For example, here is the CUDA version that uses the 'auto' atomic policy:
 
 .. literalinclude:: ../../../../examples/ex10-binning.cpp
                     :lines: 142-148
