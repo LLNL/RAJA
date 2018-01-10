@@ -14,9 +14,9 @@
 
 .. _indexset-label:
 
-----------------------
-IndexSets and Segments
-----------------------
+-----------------------------------------
+Iteration Spaces: IndexSets and Segments
+-----------------------------------------
 
 Key RAJA features shown in this example:
 
