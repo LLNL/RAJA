@@ -15,7 +15,7 @@
 .. _scan-label:
 
 --------------------------------------------------
-Scan Operations
+Parallel Scan Operations
 --------------------------------------------------
 
 Key RAJA features shown in this example:

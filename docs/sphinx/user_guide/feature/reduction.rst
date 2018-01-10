@@ -47,9 +47,8 @@ Reduction Types
           execution context, the loop iteration index given for the min or max
           is not guaranteed to be the first in the iteration sequence. The
           index is determined by the ordering in which the reduction is
-          finalized in parallel. In other words, the 'index' part of a "loc"
-          reduction is guaranteed to be reproducible for sequential execution
-          only.
+          finalized in parallel. The 'index' part of a "loc" reduction is 
+          guaranteed to be reproducible for sequential execution only.
 
 Here's a simple usage example::
 
@@ -128,5 +127,5 @@ Reduction Policies
 
 * ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value and which may use CUDA atomic operations in the reduction.
 
-A working example of basic RAJA reduction usage can be found in
-``<build-dir>/examples/ex7-example-reductions.cpp``.
+More details on using RAJA reductions can be found in the 
+:ref:`dotproduct-label` and :ref:`reductions-label` tutorial sections. 

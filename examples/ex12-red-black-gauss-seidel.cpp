@@ -26,40 +26,40 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 7: Gauss-Seidel with Red-Black Ordering
-
-  ----[Details]--------------------
-  This example is an extension of Example 3.
-  In particular we maintain the five point stencil
-  to discretize the boundary value problem
-
-  U_xx + U_yy = f on [0,1] x [0,1]
-
-  on a structured grid. The right-hand side is
-  chosen to be f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
-
-  Rather than computing values inside the domain with
-  the Jacobi method, a Gauss-Seidel method with red-black
-  ordering is now used.
-
-  The scheme is implemented by treating the grid as
-  a checker board and storing the indices of red and
-  black cells in RAJA list segments. The segments are
-  then stored in a RAJA static index set.
-
-  ----[RAJA Concepts]---------------
-  1. Forall loop
-  2. RAJA Reduction
-  3. RAJA::omp_collapse_nowait_exec
-  4. RAJA::ListSegment
-  5. RAJA::TypedIndexSet
-*/
+ * Gauss-Seidel with Red-Black Ordering Example
+ *
+ * ----[Details]--------------------
+ * This example is an extension of Example 3.
+ * In particular we maintain the five point stencil
+ * to discretize the boundary value problem
+ *
+ * U_xx + U_yy = f on [0,1] x [0,1]
+ *
+ * on a structured grid. The right-hand side is
+ * chosen to be f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
+ *
+ * Rather than computing values inside the domain with
+ * the Jacobi method, a Gauss-Seidel method with red-black
+ * ordering is now used.
+ *
+ * The scheme is implemented by treating the grid as
+ * a checker board and storing the indices of red and
+ * black cells in RAJA list segments. The segments are
+ * then stored in a RAJA typed index set.
+ *
+ * ----[RAJA Concepts]---------------
+ * - Forall loop
+ * - RAJA Reduction
+ * - RAJA::omp_collapse_nowait_exec
+ * - RAJA::ListSegment
+ * - RAJA::TypedIndexSet
+ */
 
 /*
-  Struct to hold grid info
-  o - Origin in a cartesian dimension
-  h - Spacing between grid points
-  n - Number of grid points
+ * Struct to hold grid info
+ * o - Origin in a cartesian dimension
+ * h - Spacing between grid points
+ * n - Number of grid points
  */
 struct grid_s {
   double o, h;
@@ -67,10 +67,10 @@ struct grid_s {
 };
 
 /*
-  ----[Functions]---------
-  solution      - Function for the analytic solution
-  computeErr    - Displays the maximum error in the solution
-  gsColorPolicy - Generates the custom index set for this example
+ * ----[Functions]---------
+ * solution      - Function for the analytic solution
+ * computeErr    - Displays the maximum error in the solution
+ * gsColorPolicy - Generates the custom index set for this example
 */
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
@@ -79,19 +79,19 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  printf("Example 6: Red-Black Gauss-Seidel \n");
+  std::cout<<"Red-Black Gauss-Seidel Example"<<std::endl;
 
   /*
-    ----[Solver Parameters]------------
-    tol       - Method terminates once the norm is less than tol
-    N         - Number of unknown gridpoints per cartesian dimension
-    NN        - Total number of gridpoints on the grid
-    maxIter   - Maximum number of iterations to be taken
-
-    resI2     - Residual
-    iteration - Iteration number
-    grid_s    - Struct with grid information for a cartesian dimension
-  */
+   * ----[Solver Parameters]------------
+   * tol       - Method terminates once the norm is less than tol
+   * N         - Number of unknown gridpoints per cartesian dimension
+   * NN        - Total number of gridpoints on the grid
+   * maxIter   - Maximum number of iterations to be taken
+   *
+   * resI2     - Residual
+   * iteration - Iteration number
+   * grid_s    - Struct with grid information for a cartesian dimension
+   */
   double tol = 1e-10;
 
   int N = 100;
@@ -113,7 +113,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N);
 
   memset(I, 0, NN * sizeof(double));
-  printf("Gauss-Seidel with Red and Black Ordering \n");
 
 #if defined(RAJA_ENABLE_OPENMP)
   using colorPolicy =
@@ -132,15 +131,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
 #endif
 
-    /*
-      Gauss-Seidel Iteration
-    */
+    //
+    // Gauss-Seidel Iteration
+    //
     RAJA::forall<colorPolicy>(colorSet, 
       [=](RAJA::Index_type id) {
         
-      /*
-         Compute x,y grid index
-       */
+      //
+      // Compute x,y grid index
+      //
       int m = id % (N + 2);
       int n = id / (N + 2);
 
@@ -161,7 +160,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter) {
-      printf("Gauss-Seidel Maxed out on iterations \n");
+      std::cout<<"Gauss-Seidel maxed out on iterations"<<std::endl;
       break;
     }
 
@@ -176,12 +175,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-/*
-  This function will loop over the red and black cells of a grid
-  and store the index in a buffer. The buffers will then be used
-  to generate RAJA ListSegments and populate a RAJA Static Index
-  Set.
-*/
+//
+//  This function will loop over the red and black cells of a grid
+//  and store the index in a buffer. The buffers will then be used
+//  to generate RAJA ListSegments and populate a RAJA Static Index
+//  Set.
+
 RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
 {
 
@@ -224,17 +223,17 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
 }
 
 
-/*
-  Function for the anlytic solution
-*/
+//
+//  Function for the anlytic solution
+//
 double solution(double x, double y)
 {
   return x * y * exp(x - y) * (1 - x) * (1 - y);
 }
 
-/*
-  Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
-*/
+//
+// Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
+//
 void computeErr(double *I, grid_s grid)
 {
 

@@ -22,59 +22,57 @@
 #include "RAJA/util/defines.hpp"
 
 /*
-  Example 8: Time-Domain Finite Difference 
-             Acoustic Wave Equation Solver
-
-  ------[Details]----------------------
-  This example highlights how to construct a single
-  kernel capable of being executed with different RAJA policies.
-
-  Here we solve the acoustic wave equation
-
-  P_tt = cc*(P_xx + P_yy) via finite differences.
-
-  The scheme uses a second order central difference discretization
-  for time and a fourth order central difference discretization for space.
-  Periodic boundary conditions are assumed on the grid [-1,1] x [-1, 1].
-
-  NOTE: The x and y dimensions are discretized identically.
-
-  ----[RAJA Concepts]-------------------
-  1. RAJA kernels are portable and a single implemenation can run
-     on various platforms
-
-  2. RAJA MaxReduction - RAJA's implementation for computing a maximum value
-     (MinReduction computes the min)
+ *   Time-Domain Finite Difference 
+ *   Acoustic Wave Equation Solver
+ *
+ * ------[Details]----------------------
+ * This example highlights how to construct a single
+ * kernel capable of being executed with different RAJA policies.
+ *
+ * Here we solve the acoustic wave equation
+ * P_tt = cc*(P_xx + P_yy) via finite differences.
+ *
+ * The scheme uses a second order central difference discretization
+ * for time and a fourth order central difference discretization for space.
+ * Periodic boundary conditions are assumed on the grid [-1,1] x [-1, 1].
+ * 
+ * NOTE: The x and y dimensions are discretized identically.
+ * ----[RAJA Concepts]-------------------
+ * - RAJA kernels are portable and a single implemenation can run
+ * on various platforms
+ *
+ * RAJA MaxReduction - RAJA's implementation for computing a maximum value
+ *    (MinReduction computes the min)
 */
 
-/*
-  ---[Constant Values]-------
-  sr - Radius of the finite difference stencil
-  PI - Value of pi
-*/
+//
+//  ---[Constant Values]-------
+//  sr - Radius of the finite difference stencil
+//  PI - Value of pi
+//
 
 const int sr = 2;
 const double PI = 3.14159265359;
 
-/*
-  ----[Struct to hold grid info]-----
-  o - Origin in a cartesian dimension
-  h - Spacing between grid points
-  n - Number of grid points
- */
+//
+//  ----[Struct to hold grid info]-----
+//  o - Origin in a cartesian dimension
+//  h - Spacing between grid points
+//  n - Number of grid points
+//
 struct grid_s {
   double ox, dx;
   int nx;
 };
 
 
-/*
-  ----[Functions]------
-  wave       - Templated wave propagator
-  waveSol    - Function for the analytic solution of the equation
-  setIC      - Sets the intial value at two time levels (t0,t1)
-  computeErr - Displays the maximum error in the approximation
- */
+//
+//  ----[Functions]------
+//  wave       - Templated wave propagator
+//  waveSol    - Function for the analytic solution of the equation
+//  setIC      - Sets the intial value at two time levels (t0,t1)
+//  computeErr - Displays the maximum error in the approximation
+//
 
 template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx);
@@ -85,31 +83,31 @@ void computeErr(double *P, double tf, grid_s grid);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  printf("Example 4. Time-Domain Finite Difference Acoustic Wave Equation Solver \n");          
+  std::cout<<"Time-Domain Finite Difference Acoustic Wave Equation Solver"<<std::endl;
          
-  /*
-    Wave speed squared
-   */
+  //
+  // Wave speed squared
+  //
   double cc = 1. / 2.0;
 
-  /*
-    Multiplier for spatial refinement
-   */
+  //
+  //  Multiplier for spatial refinement
+  //
   int factor = 8;
 
-  /*
-    Discretization of the domain.
-    The same discretization of the x-dimension wil be used for the y-dimension
-  */
+  //
+  // Discretization of the domain.
+  // The same discretization of the x-dimension wil be used for the y-dimension
+  //
   grid_s grid;
   grid.ox = -1;
   grid.dx = 0.1250 / factor;
   grid.nx = 16 * factor;
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
-  /*
-    Solution is propagated until time T
-  */
+  //
+  //Solution is propagated until time T
+  //
   double T = 0.82;
 
 
@@ -117,21 +115,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *P1 = memoryManager::allocate<double>(entries);
   double *P2 = memoryManager::allocate<double>(entries);
 
-  /*
-    ----[Time stepping parameters]----
-    dt - Step size
-    nt - Total number of time steps
-    ct - Merged coefficents
-  */
+  //
+  //----[Time stepping parameters]----
+  // dt - Step size
+  // nt - Total number of time steps
+  // ct - Merged coefficents
+  //
   double dt, nt, time, ct;
   dt = 0.01 * (grid.dx / sqrt(cc));
   nt = ceil(T / dt);
   dt = T / nt;
   ct = (cc * dt * dt) / (grid.dx * grid.dx);
 
-  /*
-    Predefined Nested Policies
-  */
+  //
+  // Predefined policies
+  //
 
   // Sequential policy
   using fdPolicy = RAJA::nested::Policy<
@@ -139,15 +137,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::nested::For<0, RAJA::seq_exec> >;
 
   // OpenMP policy
-  //using fdPolicy = RAJA::nested::Policy<
-  //RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
-  //RAJA::nested::For<1, RAJA::seq_exec > >;
+  // using fdPolicy = RAJA::nested::Policy<
+  // RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
+  // RAJA::nested::For<1, RAJA::seq_exec > >;
 
   // CUDA policy
-  //using fdPolicy = RAJA::nested::Policy<
-  //RAJA::nested::CudaCollapse<
-  //RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
-  //RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+  // using fdPolicy = RAJA::nested::Policy<
+  // RAJA::nested::CudaCollapse<
+  // RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+  // RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
 
 
   time = 0;
@@ -175,17 +173,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 
-/*
-  Function for the analytic solution
-*/
+//
+//  Function for the analytic solution
+//
 double waveSol(double t, double x, double y)
 {
   return cos(2. * PI * t) * sin(2. * PI * x) * sin(2. * PI * y);
 }
 
-/*
-  Error is computed via ||P_{approx}(:) - P_{analytic}(:)||_{inf}
-*/
+//
+//  Error is computed via ||P_{approx}(:) - P_{analytic}(:)||_{inf}
+//
 void computeErr(double *P, double tf, grid_s grid)
 {
 
@@ -204,9 +202,9 @@ void computeErr(double *P, double tf, grid_s grid)
       double y = grid.ox + ty * grid.dx;
       double myErr = std::abs(P[id] - waveSol(tf, x, y));
 
-      /*
-        tMax.max() is used to store the maximum value
-      */
+      //
+      // tMax.max() is used to store the maximum value
+      //
       tMax.max(myErr);
     });
 
@@ -215,9 +213,9 @@ void computeErr(double *P, double tf, grid_s grid)
 }
 
 
-/*
- Function to set intial condition
-*/
+//
+// Function to set intial condition
+//
 void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 {
 
@@ -247,18 +245,18 @@ void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 
   RAJA::nested::forall(fdNestedPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
                        [=] RAJA_HOST_DEVICE (RAJA::Index_type tx, RAJA::Index_type ty) {
-     /*
-        Coefficients for fourth order stencil
-      */
+      //                  
+      //Coefficients for fourth order stencil
+      //
      double coeff[5] = { -1.0/12.0, 4.0/3.0, -5.0/2.0, 4.0/3.0, -1.0/12.0};
 
      const int id = tx + ty * nx;
      double P_old = P1[id];
      double P_curr = P2[id];
 
-     /*
-       Compute Laplacian
-     */
+     //
+     // Compute Laplacian
+     //
      double lap = 0.0;
 
      for (auto r : RAJA::RangeSegment(-sr, sr + 1)) {
@@ -271,9 +269,9 @@ void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
        lap += coeff[r + sr] * P2[idy];
      }
 
-     /*
-       Store result
-     */
+     //
+     // Store result
+     //
      P1[id] = 2 * P_curr - P_old + ct * lap;
 
   });

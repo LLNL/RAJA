@@ -14,9 +14,9 @@
 
 .. _matrixmultiply-label:
 
------------------------
-Matrix Multiplication
------------------------
+------------------------------------
+Matrix Multiplication (Nested Loops)
+------------------------------------
 
 Key RAJA features shown in this example:
 

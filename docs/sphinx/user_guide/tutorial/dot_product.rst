@@ -14,9 +14,9 @@
 
 .. _dotproduct-label:
 
-------------------
-Vector Dot Product
-------------------
+-----------------------------------
+Vector Dot Product (Sum Reduction)
+-----------------------------------
 
 Key RAJA features shown in this example:
 

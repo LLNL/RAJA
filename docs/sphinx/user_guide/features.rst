@@ -18,8 +18,7 @@
 RAJA Features
 ************************
 
-This section summarizes important RAJA features and provides guidance and
-recommendations for using them.
+This section provides a high-level description of all the main RAJA features. 
 
 .. toctree::
    :maxdepth: 2

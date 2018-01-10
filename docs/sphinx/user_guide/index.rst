@@ -25,6 +25,10 @@ abstractions enable architecture portability for High Performance Computing
 #. To make C++ applications portable with minimal disruption to existing algorithms and data structures while maintaining single source computational kernels.
 #. To provide a systematic programming model for new applications so that they are portable from inception.
 
+=============================
+Background and Motivation
+=============================
+
 Many HPC applications must execute with high performance across a diverse 
 range of computer architectures including: Mac and Windows laptops,
 sizable clusters comprised of multicore commodity processors, and large-scale 
@@ -64,17 +68,9 @@ patterns rather than individual loops, and makes it relatively straightforward
 to parametrize execution policy types so that a large application can be 
 compiled in a specific configuration suitable to a given architecture. 
 
-If you have some familiarity with RAJA, and want to get up and running quickly, 
-check out :ref:`getting_started-label`. This guide contains information 
-about accessing the RAJA code, building it, and basic RAJA usage.
-
-If you are completely new to RAJA, please check out the :ref:`tutorial-label`.
-It contains some discussion of essential C++ concepts and will walk you 
-through a sequence of code examples that illustrate many of the key RAJA
-features.
-
-See :ref:`features-label` for a complete, high-level description of RAJA 
-features (akin to a reference guide).
+================================
+Interacting with the RAJA Team
+================================
 
 If you are interested in keeping up with RAJA development and communicating
 with developers and users, please join our `Google Group
@@ -86,6 +82,22 @@ to its development, please do not hesitate to contact us. We are always
 interested in improving RAJA and exploring new ways to use it. A brief 
 description of how the RAJA team operates can be found in 
 :ref:`contributing-label`.
+
+=============================
+What's In This Guide
+=============================
+
+If you have some familiarity with RAJA, and want to get up and running quickly, 
+check out :ref:`getting_started-label`. This guide contains information 
+about accessing the RAJA code, building it, and basic RAJA usage.
+
+If you are completely new to RAJA, please check out the :ref:`tutorial-label`.
+It contains some discussion of essential C++ concepts and will walk you 
+through a sequence of code examples that illustrate many of the key RAJA
+features.
+
+See :ref:`features-label` for a complete, high-level description of RAJA 
+features (akin to a reference guide).
 
 .. toctree::
    :maxdepth: 2
