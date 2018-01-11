@@ -33,6 +33,7 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/util/chai_support.hpp"
 #include "RAJA/util/concepts.hpp"
 
 namespace RAJA
@@ -91,8 +92,8 @@ template <typename Iterable,
           typename Selector,
           typename... Policies>
 RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&iter,
-                        Body &&body)
+                             Iterable &&iter,
+                             Body &&body)
 {
   p.invoke(iter, body);
 }
@@ -148,6 +149,17 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace detail
 {
 
+#ifdef RAJA_ENABLE_CHAI
+// Top level MultiPolicy shouldn't select a CHAI execution space
+// Once a specific policy is selected, that policy will select the correct
+// policy... see policy_invoker in MultiPolicy.hpp
+template <typename SELECTOR, typename... POLICIES>
+struct get_space<RAJA::MultiPolicy<SELECTOR, POLICIES...>>
+    : public get_space_impl<Platform::undefined> {
+};
+#endif
+
+
 template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   static_assert(index < size, "index must be in the range of possibilities");
@@ -176,8 +188,18 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
+
+      // Now we know what policy is going to be invoked, so we can tell
+      // CHAI what execution space to use
+      detail::setChaiExecutionSpace<Policy>();
+
+
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
+
+
+      detail::clearChaiExecutionSpace();
+
     } else {
       throw std::runtime_error("unknown offset invoked");
     }

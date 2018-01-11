@@ -42,7 +42,10 @@
 namespace RAJA
 {
 
-namespace impl
+namespace policy
+{
+
+namespace omp
 {
 
 ///
@@ -50,9 +53,10 @@ namespace impl
 ///
 
 template <size_t Teams, typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
-                        Iterable&& iter,
-                        Func&& loop_body)
+// RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
@@ -67,7 +71,28 @@ RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
   }
 }
 
-}  // closing brace for impl namespace
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
+                             Iterable&& iter,
+                             Func&& loop_body)
+{
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+#pragma omp target teams distribute parallel for schedule(static, \
+                                                          1) map(to : body)
+  for (Index_type i = 0; i < distance; ++i) {
+    Body ib = body;
+    ib(begin[i]);
+  }
+}
+
+
+}  // closing brace for omp namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

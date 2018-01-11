@@ -1,7 +1,21 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_pattern_nested_tile_HPP
 #define RAJA_pattern_nested_tile_HPP
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
@@ -21,20 +35,21 @@ namespace nested
 
 template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy>
 struct Tile {
-  const TilePolicy tpol;
-  const ExecPolicy epol;
-  Tile(TilePolicy const &tp = TilePolicy{}, ExecPolicy const &ep = ExecPolicy{})
-      : tpol{tp}, epol{ep}
+  const TilePolicy tile_policy;
+  const ExecPolicy exec_policy;
+  RAJA_HOST_DEVICE constexpr Tile(TilePolicy const &tp = TilePolicy{},
+                                  ExecPolicy const &ep = ExecPolicy{})
+      : tile_policy{tp}, exec_policy{ep}
   {
   }
 };
 
-///! tag for a tiling loop, tile_static renamed to avoid MSVC keyword
+///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
-struct tile_s {
+struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 
-  tile_s() {}
+  RAJA_HOST_DEVICE constexpr tile_fixed() {}
   constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
@@ -43,7 +58,8 @@ template <camp::idx_t default_chunk_size>
 struct tile {
   camp::idx_t chunk_size;
 
-  tile(camp::idx_t chunk_size_ = default_chunk_size) : chunk_size{chunk_size_}
+  RAJA_HOST_DEVICE constexpr tile(camp::idx_t chunk_size_ = default_chunk_size)
+      : chunk_size{chunk_size_}
   {
   }
   camp::idx_t get_chunk_size() const { return chunk_size; }
@@ -56,8 +72,8 @@ struct TileWrapper : GenericWrapper<Index, BaseWrapper> {
   template <typename InSegmentType>
   void operator()(InSegmentType s)
   {
-    camp::get<Index>(Base::bw.data.st) = s;
-    Base::bw();
+    camp::get<Index>(Base::wrapper.data.segment_tuple) = s;
+    Base::wrapper();
   }
 };
 
@@ -160,12 +176,15 @@ struct Executor<Tile<Index, TPol, EPol>> {
   template <typename WrappedBody>
   void operator()(TileType const &fp, WrappedBody const &wrap)
   {
-    auto const &st = camp::get<Index>(wrap.data.st);
-    IterableTiler<decltype(st)> tiled_iterable(st, fp.tpol.get_chunk_size());
+    auto const &st = camp::get<Index>(wrap.data.segment_tuple);
+
+    IterableTiler<decltype(st)> tiled_iterable(st, fp.tile_policy.get_chunk_size());
+
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.epol, tiled_iterable, TileWrapper<Index, WrappedBody>{wrap});
+    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<Index, WrappedBody>{wrap});
+
     // Set range back to original values
-    camp::get<Index>(wrap.data.st) = tiled_iterable.it;
+    camp::get<Index>(wrap.data.segment_tuple) = tiled_iterable.it;
   }
 };
 

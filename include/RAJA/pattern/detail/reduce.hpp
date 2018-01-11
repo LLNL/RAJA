@@ -62,9 +62,11 @@ namespace detail
 template <typename T, template <typename...> class Op>
 struct op_adapter : private Op<T, T, T> {
   using operator_type = Op<T, T, T>;
-  RAJA_HOST_DEVICE static constexpr T identity() {
+  RAJA_HOST_DEVICE static constexpr T identity()
+  {
     return operator_type::identity();
   }
+
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
   {
     val = operator_type::operator()(val, v);
@@ -98,9 +100,14 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
-  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &) = default;
+  //
+  // Note: marking these defaulted methods as host-device introduces
+  //       a bunch of warning spew as of CUDA 9.
+  //
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &) = default;
+
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, Index_type const &loc)
       : val{val}, loc{loc}
@@ -157,19 +164,25 @@ public:
   BaseReduce &operator=(const BaseReduce &) = delete;
 
   //! compiler-generated copy constructor
-  BaseReduce(const BaseReduce &) = default;
+  RAJA_HOST_DEVICE
+  constexpr BaseReduce(const BaseReduce &copy) : c(copy.c) {}
 
   //! compiler-generated move constructor
-  BaseReduce(BaseReduce &&) = default;
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  BaseReduce(BaseReduce &&copy) : c(std::move(copy.c)) {}
 
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
   constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
       : c{init_val, identity_}
   {
   }
 
+  RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
@@ -193,11 +206,13 @@ public:
   //! prohibit compiler-generated default ctor
   BaseCombinable() = delete;
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
       : identity{identity_}, my_data{init_val}
   {
   }
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const &other)
       : parent{other.parent ? other.parent : &other},
         identity{other.identity},
@@ -205,6 +220,7 @@ public:
   {
   }
 
+  RAJA_HOST_DEVICE
   ~BaseCombinable()
   {
     if (parent && my_data != identity) {
@@ -212,6 +228,7 @@ public:
     }
   }
 
+  RAJA_HOST_DEVICE
   void combine(T const &other) { Reduce{}(my_data, other); }
 
   /*!
@@ -228,7 +245,10 @@ public:
 
 private:
   // Convenience method for CRTP
-  const Derived &derived() const { return *(static_cast<const Derived *>(this)); }
+  const Derived &derived() const
+  {
+    return *(static_cast<const Derived *>(this));
+  }
   Derived &derived() { return *(static_cast<Derived *>(this)); }
 };
 
@@ -273,7 +293,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit BaseReduceMinLoc(T init_val, Index_type init_idx)
+  BaseReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
@@ -329,6 +349,8 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
   const BaseReduceSum &operator+=(T rhs) const
   {
     this->combine(rhs);
@@ -353,7 +375,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit BaseReduceMaxLoc(T init_val, Index_type init_idx)
+  BaseReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }

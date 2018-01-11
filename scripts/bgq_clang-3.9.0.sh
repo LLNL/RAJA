@@ -19,17 +19,8 @@ mkdir build-bgq_clang-3.9.0 && cd build-bgq_clang-3.9.0
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
   -DCMAKE_BUILD_TYPE=Release \
+  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-bgq_clang-3.9.0 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-bgq_clang-3.9.0 \
-#  -DCMAKE_BUILD_TYPE=Release \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}

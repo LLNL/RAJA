@@ -19,15 +19,8 @@ mkdir build-icpc-17.0.174 && cd build-icpc-17.0.174
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-icpc-1cpc-17.0.174 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-icpc-1cpc-17.0.174 \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}

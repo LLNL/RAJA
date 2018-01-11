@@ -55,7 +55,7 @@ TEST(TypedLayoutTest, 1D)
   /*
    * Construct a 2D view, 10x5
    */
-  const RAJA::TypedLayout<TIL, TIX, TIY> l(10, 5);
+  const RAJA::TypedLayout<TIL, RAJA::tuple<TIX, TIY>> l(10, 5);
 
   ASSERT_EQ(TIL{0}, l(TIX{0}, TIY{0}));
 
@@ -158,7 +158,9 @@ TEST(OffsetLayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({{1}}, {{10}}));
+  std::array<RAJA::Index_type, 1> lower{{1}};
+  std::array<RAJA::Index_type, 1> upper{{10}};
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;
@@ -362,5 +364,40 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
 
     // check projection of j
     ASSERT_EQ(j, 0);
+  }
+}
+
+
+TEST(LayoutTest, 2D_StrideOne)
+{
+  typedef RAJA::Layout<2> my_layout;
+  typedef RAJA::Layout<2, ptrdiff_t, 0> my_layout_s1; // first index is stride-1
+
+  /*
+   * Construct a 2D layout:
+   *
+   * I is stride 1
+   * J is stride 3
+   *
+   * Linear indices range from [0, 15)
+   *
+   */
+  const my_layout layout =
+      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+
+
+  /*
+   * Construct another 2D layout that forces J to be stride-1
+   */
+  const my_layout_s1 layout_s1 = layout;
+
+
+
+  // Check that we get the same layout
+  for (int i = 0;i < 3;++ i){
+    for (int j = 0; j < 15; ++j) {
+
+      ASSERT_EQ(layout(i,j), layout_s1(i,j));
+    }
   }
 }

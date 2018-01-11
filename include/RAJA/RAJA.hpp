@@ -44,6 +44,8 @@
 
 #include "RAJA/util/basic_mempool.hpp"
 
+#include "RAJA/util/camp_aliases.hpp"
+
 //
 // All platforms must support sequential execution.
 //
@@ -107,15 +109,13 @@
 //
 #include "RAJA/pattern/forallN.hpp"
 #include "RAJA/pattern/nested.hpp"
-
+#include "RAJA/pattern/nested/tile.hpp"
 
 
 //
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
-
-
 
 
 //

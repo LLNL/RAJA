@@ -36,18 +36,20 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
 
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(0.0);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(0.0);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(0.0);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(0.0, 1);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(0.0, 1);
+  NumericType initVal = 5;
 
-  ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(0.0));
-  ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(0.0));
-  ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(0.0));
-  ASSERT_EQ((NumericType)reduce_minloc.get(), (NumericType)(0.0));
+  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
+
+  ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(initVal));
+  ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(initVal));
+  ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(initVal));
+  ASSERT_EQ((NumericType)reduce_minloc.get(), (NumericType)(initVal));
   ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)1);
-  ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(0.0));
+  ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(initVal));
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
 }
 
@@ -64,10 +66,10 @@ using constructor_types =
                      std::tuple<RAJA::omp_target_reduce<256>, float>,
                      std::tuple<RAJA::omp_target_reduce<256>, double>>;
 
+
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
                               ReductionConstructorTestTargetOMP,
                               constructor_types);
-
 
 template <typename TUPLE>
 class ReductionCorrectnessTestTargetOMP : public ::testing::Test
@@ -117,7 +119,7 @@ protected:
   }
 
   RAJA::Real_ptr array;
-
+  
   RAJA::Real_type max;
   RAJA::Real_type min;
   RAJA::Real_type sum;
@@ -237,7 +239,6 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceMax,
                            ReduceMinLoc,
                            ReduceMaxLoc);
-
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
                                 RAJA::omp_target_reduce<16>>,

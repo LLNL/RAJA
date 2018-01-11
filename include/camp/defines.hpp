@@ -33,9 +33,17 @@ namespace camp
 #if defined(__CUDACC__)
 #define CAMP_DEVICE __device__
 #define CAMP_HOST_DEVICE __host__ __device__
+
+#if defined(_WIN32)  // windows is non-compliant, yay
+#define CAMP_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
+#else
+#define CAMP_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#endif
+
 #else
 #define CAMP_DEVICE
 #define CAMP_HOST_DEVICE
+#define CAMP_SUPPRESS_HD_WARN
 #endif
 
 #if defined(__has_builtin)
@@ -78,7 +86,6 @@ struct AssertValue {
 #define CHECK_IEQ(X, Y) \
   static_assert(AssertValue<UNQUOTE X, UNQUOTE Y>::value, #X "::value == " #Y)
 #endif
-
 }
 
 #endif /*  */

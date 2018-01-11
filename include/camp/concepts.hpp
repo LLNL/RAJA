@@ -25,7 +25,7 @@ namespace concepts
     };
 
 #if defined(CAMP_COMPILER_MSVC)
-    template <typename...Ts>
+    template <typename... Ts>
     using is_same = typename is_same_s<Ts...>::type;
 #else
     template <typename T, typename U>
@@ -176,8 +176,7 @@ namespace concepts
   };
 
   template <typename T>
-  struct Swappable
-      : DefineConcept(swap(val<T>(), val<T>())) {
+  struct Swappable : DefineConcept(swap(val<T>(), val<T>())) {
   };
 
   template <typename T>
@@ -282,13 +281,12 @@ namespace concepts
   };
 
   template <typename T>
-  struct Range
-      : DefineConcept(HasBeginEnd<T>(), Iterator<iterator_from<T>>()) {
+  struct Range : DefineConcept(HasBeginEnd<T>(), Iterator<iterator_from<T>>()) {
   };
 
   template <typename T>
-  struct ForwardRange : DefineConcept(HasBeginEnd<T>(),
-                                      ForwardIterator<iterator_from<T>>()) {
+  struct ForwardRange
+      : DefineConcept(HasBeginEnd<T>(), ForwardIterator<iterator_from<T>>()) {
   };
 
   template <typename T>
