@@ -86,7 +86,7 @@ struct CudaStatementExecutor<Lambda<LoopIndex>>{
   RAJA_DEVICE
   void exec(WrappedBody const &, Data &data, IndexCalc const &index_calc)
   {
-    // loop over block-stride
+    // loop over chunks of threads in this block
     long num_iter = index_calc.numThreads();
     long i = threadIdx.x;
     while(i < num_iter){
@@ -99,6 +99,13 @@ struct CudaStatementExecutor<Lambda<LoopIndex>>{
       // increment to next chunk
       i += blockDim.x;
     }
+
+  }
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &, long , LaunchDim const &used){
+    return used;
   }
 };
 

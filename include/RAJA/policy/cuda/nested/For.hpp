@@ -56,21 +56,114 @@ namespace RAJA
  * Policy for For<>, executes loop iteration by distributing them over threads.
  * This does no (additional) work-sharing between thread blocks.
  */
-struct cuda_thread_exec {};
+struct cuda_thread_exec {
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static
+  nested::internal::LaunchDim calcBlocksThreads(long max_physical_blocks, long used_blocks, long loop_len){
+    nested::internal::LaunchDim dims;
+
+    // We assign all iterations to threads, so we leave blocks at 1.
+
+    // Assign remaining iterations to threads
+    dims.threads = loop_len;
+
+    printf("calcBlockThreads: T: used=(%d,-), max=%d,  len=%d,  dims=(%d,%d)\n",
+                (int)used_blocks,
+                (int)max_physical_blocks,
+                (int)loop_len,
+                (int)dims.blocks, (int)dims.threads);
+
+    return dims;
+  }
+
+
+};
 
 
 /*!
  * Policy for For<>, executes loop iteration by distributing them over all
  * blocks and threads.
  */
-struct cuda_block_thread_exec {};
+struct cuda_block_thread_exec {
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static
+  nested::internal::LaunchDim calcBlocksThreads(long max_physical_blocks, long used_blocks, long loop_len){
+    nested::internal::LaunchDim dims;
+
+    // Are there block left to assign?
+    if(used_blocks < max_physical_blocks){
+
+      // Compute how many block we need to fill up the physical blocks
+      long nblocks = max_physical_blocks / used_blocks;
+      if(nblocks * used_blocks < max_physical_blocks){
+        nblocks ++;
+      }
+
+      // Assign up to nblocks
+      dims.blocks = nblocks < loop_len ? nblocks : loop_len;
+    }
+
+    // Assign remaining iterations to threads
+    dims.threads = loop_len / dims.blocks;
+    if(dims.threads*dims.blocks < loop_len){
+      dims.threads ++;
+    }
+
+    printf("calcBlockThreads: BT: used=(%d,-), max=%d,  len=%d,  dims=(%d,%d)=%d\n",
+                   (int)used_blocks,
+                   (int)max_physical_blocks,
+                   (int)loop_len,
+                   (int)dims.blocks, (int)dims.threads,
+                   (int)dims.blocks*(int)dims.threads);
+
+    return dims;
+  }
+};
 
 
 /*!
  * Policy for For<>, executes loop iteration by distributing them over all
  * blocks and then executing sequentially on each thread.
  */
-struct cuda_block_seq_exec {};
+struct cuda_block_seq_exec {
+
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static
+  nested::internal::LaunchDim calcBlocksThreads(long max_physical_blocks, long used_blocks, long loop_len){
+    nested::internal::LaunchDim dims;
+
+    // Are there block left to assign?
+    if(used_blocks < max_physical_blocks){
+
+      // Compute how many block we need to fill up the physical blocks
+      long nblocks = max_physical_blocks / used_blocks;
+      if(nblocks * used_blocks < max_physical_blocks){
+        nblocks ++;
+      }
+
+      // Assign up to nblocks
+      dims.blocks = nblocks < loop_len ? nblocks : loop_len;
+    }
+
+    // Remaining iterations are sequential, so we leave it at 1-thread
+    printf("calcBlockThreads: BS: used=(%d,-), max=%d, len=%d,  dims=(%d,%d)=%d\n",
+                   (int)used_blocks,
+                   (int)max_physical_blocks,
+                   (int)loop_len,
+                   (int)dims.blocks, (int)dims.threads,
+                   (int)dims.blocks*(int)dims.threads);
+
+    return dims;
+  }
+
+
+};
 
 namespace nested
 {
@@ -113,9 +206,16 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
       wrap(data, index_calc);
     }
   }
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, used);
+
+  }
+
 };
-
-
 
 
 
@@ -127,22 +227,54 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>> {
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>> {
 
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static long getLength(SegmentTuple const &segments){
+
+    // Get the segment referenced by this For statement
+    auto const &iter = camp::get<ArgumentId>(segments);
+
+    // Pull out iterators
+    auto begin = iter.begin();
+    auto end = iter.end();
+
+    // compute trip count
+    return end - begin;
+  }
+
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
   void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc_parent)
   {
-    // Get the segment referenced by this For statement
-    auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
+    // compute trip count
+    auto len = getLength(data.segment_tuple);
 
     // Assign all of our iterations to threads in this block
-    auto len = iter.end() - iter.begin();
     CudaIndexCalc_Simple<ArgumentId, IndexCalc> index_calc(len, index_calc_parent);
 
     // invoke our enclosed statement list
     wrap(data, index_calc);
   }
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // compute trip count
+    long total_len = getLength(segments);
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
+  }
+
 };
+
+
 
 
 
@@ -154,20 +286,33 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStmts...>> {
 
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static long getLength(SegmentTuple const &segments){
+
+    // Get the segment referenced by this For statement
+    auto const &iter = camp::get<ArgumentId>(segments);
+
+    // Pull out iterators
+    auto begin = iter.begin();
+    auto end = iter.end();
+
+    // compute trip count
+    return end - begin;
+  }
+
+
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   inline
   RAJA_DEVICE
   void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc_parent)
   {
-    // Get the segment referenced by this For statement
-    auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Pull out iterators
-    auto begin = iter.begin();
-
     // compute trip count
-    auto total_len = iter.end() - begin;
+    auto total_len = getLength(data.segment_tuple);
 
     // compute our block's slice of work
     int num_blocks = gridDim.x;
@@ -187,7 +332,24 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
     // invoke our enclosed statement list
     wrap(data, index_calc);
   }
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // compute trip count
+    long total_len = getLength(segments);
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_block_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
+  }
+
 };
+
 
 
 
@@ -199,6 +361,22 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_thread_exec, EnclosedStm
  */
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct CudaStatementExecutor<For<ArgumentId, cuda_block_seq_exec, EnclosedStmts...>> {
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static long getLength(SegmentTuple const &segments){
+
+    // Get the segment referenced by this For statement
+    auto const &iter = camp::get<ArgumentId>(segments);
+
+    // Pull out iterators
+    auto begin = iter.begin();
+    auto end = iter.end();
+
+    // compute trip count
+    return end - begin;
+  }
 
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
@@ -239,7 +417,30 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_seq_exec, EnclosedStmts.
 
     }
   }
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // Get the segment referenced by this For statement
+    auto const &iter = camp::get<ArgumentId>(segments);
+
+    // Pull out iterators
+    auto begin = iter.begin();
+    auto end = iter.end();
+
+    // compute trip count
+    long total_len = end - begin;
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_block_seq_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
+  }
 };
+
 
 
 } // namespace internal

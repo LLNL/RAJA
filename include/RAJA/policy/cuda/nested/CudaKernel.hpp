@@ -193,21 +193,33 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
-__global__ void CudaKernelLauncher(Data data)
+__global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
 {
   // Create a struct that hold our current thread allocation
   // this is passed through the meat grinder to properly allocate GPU
   // resources to each executor
-  //CudaExecInfo exec_info;
   CudaIndexCalc_Terminator index_calc;
+  index_calc.num_blocks = num_logical_blocks;
+  index_calc.block = blockIdx.x;
 
   // Thread privatize the loop data
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(data);
   auto &private_data = privatizer.get_priv();
 
-  // Execute the statement list, using CUDA specific executors
-  cuda_execute_statement_list<StmtList>(private_data, index_calc);
+  // Iterate through blocks
+  while(index_calc.block < index_calc.num_blocks){
+
+    if(index_calc.block != blockIdx.x){
+      __syncthreads();
+    }
+
+    // Execute the statement list, using CUDA specific executors
+    cuda_execute_statement_list<StmtList>(private_data, index_calc);
+
+    // Increment to the next block
+    index_calc.block += gridDim.x;
+  }
 }
 
 
@@ -223,7 +235,24 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   template <typename StmtListWrapper>
   void operator()(StmtListWrapper const &wrap)
   {
-    using statement_list_t = camp::list<EnclosedStmts...>;
+    CudaLaunchLimits limits;
+    limits.max_dims = LaunchDim(112, -1);
+    limits.physical_dims = LaunchDim(112, 1024);
+
+    printf("Logical limits:  %ld blocks, %ld threads\n",
+        limits.max_dims.blocks, limits.max_dims.threads);
+    printf("Physical limits: %ld blocks, %ld threads\n",
+            limits.physical_dims.blocks, limits.physical_dims.threads);
+
+    // Use the kernel policy, combined with segment tuple, to figure out how
+    // many block and threads this kernel could possibly utilize
+    using SegmentTuple = decltype(wrap.data.segment_tuple);
+    LaunchDim requested_dims =
+        cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(wrap.data.segment_tuple, 112, LaunchDim());
+
+
+    printf("Requested dims: %ld blocks, %ld threads\n",
+        requested_dims.blocks, requested_dims.threads);
 
     // Use the LaunchConfig type to compute how many threads and blocks to use
     CudaDim dims = LaunchConfig::compute_launch_dims();
@@ -235,9 +264,9 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     printf("Data size=%d\n", (int)sizeof(wrap.data));
 
     // Launch, using make_launch_body to correctly setup reductions
-    CudaKernelLauncher<statement_list_t>
+    CudaKernelLauncher<StatementList<EnclosedStmts...>>
     <<<dims.num_blocks, dims.num_threads, shmem, stream>>>(
-        RAJA::cuda::make_launch_body(dims.num_blocks.x, dims.num_threads.x, shmem, stream, wrap.data ));
+        RAJA::cuda::make_launch_body(dims.num_blocks.x, dims.num_threads.x, shmem, stream, wrap.data), (long)dims.num_blocks.x);
 
 
     // Check for errors

@@ -26,8 +26,8 @@ namespace internal{
 
 
 
-template <camp::idx_t ArgumentId, typename TPol, typename ... InnerPolicies>
-struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>> {
+template <camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts>
+struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>> {
 
 
   template <typename WrappedBody, typename Data, typename IndexCalc>
@@ -66,8 +66,35 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, InnerPolicies...>>
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
-
   }
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // Pull out iterators
+    auto const &seg = camp::get<ArgumentId>(segments);
+    auto begin = seg.begin();
+    auto end = seg.end();
+
+    // compute trip count
+    auto len = end - begin;
+
+    // Make a local copy of segments
+    using SegType = camp::decay<SegmentTuple>;
+    SegType seg_copy = segments;
+
+    // Restrict the size of the segment based on tiling chunk size
+    auto chunk_size = TPol::chunk_size;
+    if(chunk_size < len){
+      camp::get<ArgumentId>(seg_copy) = seg.slice(0, chunk_size);
+    }
+
+    // Pass restricted segment to enclosed statements
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(seg_copy, max_physical_blocks, used);
+  }
+
 };
 
 

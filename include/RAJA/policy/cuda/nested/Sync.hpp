@@ -95,7 +95,17 @@ struct CudaStatementExecutor<CudaThreadSync>{
   {
     __syncthreads();
   }
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &, long , LaunchDim const &used){
+    return used;
+  }
+
 };
+
+
 
 
 }  // namespace internal

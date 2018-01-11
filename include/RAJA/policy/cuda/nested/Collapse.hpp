@@ -92,14 +92,23 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
   static constexpr size_t num_dims = sizeof...(Args);
 
+
+  template<typename SegmentTuple>
+  static
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
+    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
+        camp::get<Args>(segments).begin()) ...);
+  }
+
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
   void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
-        camp::get<Args>(data.segment_tuple).begin()) ...);
+    auto layout = getLayout(data.segment_tuple);
 
     CudaIndexCalc_Layout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
       index_calc(layout, parent_index_calc);
@@ -107,10 +116,25 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
     //invoke our enclosed statement list
     wrap(data, index_calc);
-
   }
-};
 
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // compute trip count
+    auto layout = getLayout(segments);
+    auto total_len = layout.size();
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
+  }
+
+};
 
 
 
@@ -124,14 +148,23 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
 
   static constexpr size_t num_dims = sizeof...(Args);
 
+  template<typename SegmentTuple>
+  static
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
+    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
+        camp::get<Args>(segments).begin()) ...);
+  }
+
+
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
   void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
-        camp::get<Args>(data.segment_tuple).begin()) ...);
+    auto layout = getLayout(data.segment_tuple);
 
     // get total iteration size
     ptrdiff_t total_len = layout.size();
@@ -156,7 +189,22 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
 
     //invoke our enclosed statement list
     wrap(data, index_calc);
+  }
 
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // compute trip count
+    auto layout = getLayout(segments);
+    auto total_len = layout.size();
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_block_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
   }
 };
 
@@ -171,14 +219,22 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
 
   static constexpr size_t num_dims = sizeof...(Args);
 
+  template<typename SegmentTuple>
+  static
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
+    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
+        camp::get<Args>(segments).begin()) ...);
+  }
+
   template <typename WrappedBody, typename Data, typename IndexCalc>
   static
   RAJA_DEVICE
   void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
   {
     // Create a Layout of all of our loop dimensions that we're collapsing
-    RAJA::Layout<num_dims> layout( (camp::get<Args>(data.segment_tuple).end() -
-        camp::get<Args>(data.segment_tuple).begin()) ...);
+    auto layout = getLayout(data.segment_tuple);
 
     // get total iteration size
     ptrdiff_t total_len = layout.size();
@@ -203,8 +259,23 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
       // invoke our enclosed statement list
       wrap(data, index_calc);
     }
+  }
 
 
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    // compute trip count
+    auto layout = getLayout(segments);
+    auto total_len = layout.size();
+
+    // compute dimensions we need
+    LaunchDim our_used = used * cuda_block_seq_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+
+    // recurse
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
   }
 };
 

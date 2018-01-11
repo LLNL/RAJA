@@ -52,6 +52,15 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     // Execute enclosed statements
     wrap(private_data, index_calc);
   }
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, used);
+
+  }
 };
 
 

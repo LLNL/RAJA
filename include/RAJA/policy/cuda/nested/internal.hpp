@@ -85,7 +85,60 @@ namespace internal
 {
 
 
+
+struct LaunchDim {
+
+  long blocks;
+  long threads;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LaunchDim() : blocks(1), threads(1) {}
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LaunchDim(long b, long t) : blocks(b), threads(t){}
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LaunchDim(LaunchDim const &c) : blocks(c.blocks), threads(c.threads) {}
+
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LaunchDim maximum(LaunchDim const & c) const {
+    return LaunchDim{
+      blocks > c.blocks ? blocks : c.blocks,
+      threads > c.threads ? threads : c.threads};
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LaunchDim operator*(LaunchDim const & c) const {
+    return LaunchDim{blocks*c.blocks, threads*c.threads};
+  }
+
+};
+
+struct CudaLaunchLimits {
+  LaunchDim max_dims;
+  LaunchDim physical_dims;
+};
+
+
+
 struct CudaIndexCalc_Terminator {
+
+  long num_blocks;
+  long block;
 
   template<typename Data>
   inline
@@ -98,6 +151,20 @@ struct CudaIndexCalc_Terminator {
   __device__
   long numThreads() const {
     return 1;
+  }
+
+  constexpr
+  inline
+  __device__
+  long numBlocks() const {
+    return num_blocks;
+  }
+
+  constexpr
+  inline
+  __device__
+  long getBlock() const {
+    return block;
   }
 };
 
@@ -128,6 +195,20 @@ struct CudaIndexCalc_Simple {
   __device__
   long numThreads() const {
     return num_threads * parent.numThreads();
+  }
+
+  constexpr
+  inline
+  __device__
+  long numBlocks() const {
+    return parent.numBlocks();
+  }
+
+  constexpr
+  inline
+  __device__
+  long getBlock() const {
+    return parent.getBlock();
   }
 
 };
@@ -161,6 +242,21 @@ struct CudaIndexCalc_Offset {
   __device__
   long numThreads() const {
     return num_threads * parent.numThreads();
+  }
+
+
+  constexpr
+  inline
+  __device__
+  long numBlocks() const {
+    return parent.numBlocks();
+  }
+
+  constexpr
+  inline
+  __device__
+  long getBlock() const {
+    return parent.getBlock();
   }
 
 };
@@ -271,6 +367,9 @@ void cuda_execute_statement_list(Data &data, IndexCalc const &index_calc){
 }
 
 
+
+
+
 template <typename StmtList, typename Data>
 struct CudaStatementListWrapper {
 
@@ -318,6 +417,8 @@ struct CudaStatementListExecutor{
     // call our next statement
     CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, index_calc);
   }
+
+
 };
 
 
@@ -325,8 +426,8 @@ struct CudaStatementListExecutor{
  * termination case, a NOP.
  */
 
-template <camp::idx_t num_statements, typename StmtList, typename IndexCalc>
-struct CudaStatementListExecutor<num_statements,num_statements, StmtList, IndexCalc> {
+template <camp::idx_t num_statements, typename ... Stmts, typename IndexCalc>
+struct CudaStatementListExecutor<num_statements,num_statements, StatementList<Stmts...>, IndexCalc> {
 
   template<typename Data>
   static
@@ -334,7 +435,36 @@ struct CudaStatementListExecutor<num_statements,num_statements, StmtList, IndexC
   __device__
   void exec(Data &, IndexCalc const &) {}
 
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+    LaunchDim dims;
+    VarOps::ignore_args(
+      (dims = dims.maximum(
+          CudaStatementExecutor<Stmts>::getRequested(segments, max_physical_blocks, used))
+      )...
+    );
+    return dims;
+  }
 };
+
+
+
+
+
+
+template<typename SegmentTuple, typename ... EnclosedStmts>
+RAJA_INLINE
+LaunchDim cuda_get_statement_list_requested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+
+  using StmtList = StatementList<EnclosedStmts...>;
+  using IndexCalc = CudaIndexCalc_Terminator;
+
+  using StmtListExec = CudaStatementListExecutor<StmtList::size, StmtList::size, StmtList, IndexCalc>;
+
+  return StmtListExec::getRequested(segments, max_physical_blocks, used);
+}
 
 
 
