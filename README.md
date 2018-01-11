@@ -60,17 +60,14 @@ Documentation.
 Example Applications
 --------------------
 
-The [RAJA-examples](https://github.com/LLNL/RAJA-examples) repository contains three proxy applications that use the RAJA
-programming model. These applications can be built along with the rest of the
-RAJA framework by setting `-DENABLE_APPLICATIONS=On` when running CMake.
-
-When this option is passed to CMake, the RAJA-examples repository is cloned using `git` to the directory `extra/llnl-raja-proxies` in the project root. The example applications will be built using the same configuration that the RAJA library uses.
+The RAJA proxy example repository is currently being reworked. It will be 
+available soon. **Stay tuned!!**
 
 User Documentation
 -------------------
 
-The [**Documentation**](http://software.llnl.gov/RAJA/) is the best place
-to start learning about RAJA.
+The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
+is the best place to start learning about RAJA and how to use it.
 
 Other references that may be of interest include:
 
@@ -84,8 +81,8 @@ To cite RAJA, please use the following reference:
 Mailing List
 -----------------
 
-Interested in keep up with RAJA or communicating with its developers and
-users? Please join our mailing list over at Google Groups:
+Interested in keeping up with RAJA or communicating with its developers and
+users? Please join our mailing list at Google Groups:
 - [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users)
 
 If you have questions, find a bug, or have ideas about expanding the
