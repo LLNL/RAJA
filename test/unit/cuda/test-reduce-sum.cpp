@@ -27,6 +27,8 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+
 constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;
 
 using namespace RAJA;
@@ -129,7 +131,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
-  IndexSet iset;
+  UnitIndexSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
 
