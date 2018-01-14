@@ -249,7 +249,7 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = StorageT>
+template <typename StorageT, typename DiffT = Index_type>
 struct TypedRangeStrideSegment {
 
   //! the underlying iterator type
@@ -267,10 +267,9 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  template <typename T0, typename T1, typename T2>
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(T0 begin, T1 end, T2 stride)
-      : m_begin(iterator(value_type{begin}, DiffT{stride})),
-        m_end(iterator(value_type{end}, DiffT{stride})),
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+      : m_begin(iterator(DiffT{begin}, DiffT{stride})),
+        m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
         m_size((value_type{end} - value_type{begin} + value_type{stride}
