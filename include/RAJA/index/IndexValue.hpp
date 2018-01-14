@@ -145,13 +145,13 @@ struct IndexValue {
     return TYPE(value / a);
   }
 
-  //! division to underlying index from another strong type
+  //! modulus to underlying index from another strong type
   RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(TYPE a) const
   {
     return TYPE(value / a.value);
   }
 
-  //! division to underlying index from an Index_type
+  //! modulus to underlying index from an Index_type
   RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(Index_type a) const
   {
     return TYPE(value % a);
