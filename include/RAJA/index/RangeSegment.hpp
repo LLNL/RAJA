@@ -249,7 +249,7 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = Index_type>
+template <typename StorageT, typename DiffT = StorageT>
 struct TypedRangeStrideSegment {
 
   //! the underlying iterator type
@@ -267,18 +267,19 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(StorageT begin,
-                                           StorageT end,
-                                           StorageT stride)
-      : m_begin(iterator(begin, stride)),
-        m_end(iterator(end, stride)),
+  template <typename T0, typename T1, typename T2>
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(T0 begin, T1 end, T2 stride)
+      : m_begin(iterator(value_type{begin}, DiffT{stride})),
+        m_end(iterator(value_type{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
+        m_size((value_type{end} - value_type{begin} + value_type{stride}
+                - (stride > 0 ? value_type{1} : value_type{-1}))
+               / value_type{stride})
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
-    m_size = m_size < 0 ? 0 : m_size;
+    m_size = m_size < value_type{0} ? value_type{0} : m_size;
   }
 
   //! disable compiler generated constructor
