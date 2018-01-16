@@ -121,6 +121,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 //----------------------------------------------------------------------------//
+
+  // Define types for ListSegments and indices;
+  using IdxType = RAJA::Index_type;
+  using ListSegType = RAJA::TypedListSegment<IdxType>;
+
+//----------------------------------------------------------------------------//
 //
 // RAJA list segment version #1
 //
@@ -131,12 +137,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Collect indices in a vector to create list segment
 //
-  std::vector<int> idx;
+  std::vector<IdxType> idx;
   for (int i = 0; i < N; ++i) {
     idx.push_back(i); 
   } 
 
-  RAJA::TypedListSegment<int> idx_list( &idx[0], idx.size() );
+  ListSegType idx_list( &idx[0], idx.size() );
 
   RAJA::forall<RAJA::seq_exec>(idx_list, [=] (int i) {
     a[i] += b[i] * c;
@@ -158,7 +164,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::reverse( idx.begin(), idx.end() ); 
 
-  RAJA::TypedListSegment<int> idx_reverse_list( &idx[0], idx.size() );
+  ListSegType idx_reverse_list( &idx[0], idx.size() );
 
   RAJA::forall<RAJA::seq_exec>(idx_reverse_list, [=] (int i) {
     a[i] += b[i] * c;
@@ -184,7 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::TypedIndexSet<RAJA::TypedListSegment<int>> is1;
+  RAJA::TypedIndexSet<ListSegType> is1;
 
   is1.push_back( idx_list );  // use list segment created earlier.
   
@@ -223,14 +229,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Collect indices in a vector to create list segment
 //
-  std::vector<int> idx1;
+  std::vector<IdxType> idx1;
   for (int i = N/3; i < 2*N/3; ++i) {
     idx1.push_back(i);
   }
 
-  RAJA::TypedListSegment<int> idx1_list( &idx1[0], idx1.size() );
+  ListSegType idx1_list( &idx1[0], idx1.size() );
 
-  RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::TypedListSegment<int>> is3;
+  RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3;
   is3.push_back( RAJA::RangeSegment(0, N/3) );
   is3.push_back( idx1_list );
   is3.push_back( RAJA::RangeSegment(2*N/3, N) );
