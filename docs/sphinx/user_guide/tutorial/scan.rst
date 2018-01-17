@@ -34,7 +34,8 @@ type, where the template argument is the type of the values it operates on.
 This discussion assumes the reader is familiar with parallel scan operations
 and how they are applied. If you are unfamiliar with scan operations or need
 a refresher, a good explanation of what scan operations are why they are
-useful can be found here `Va Tech Scan Lecture <http://people.cs.vt.edu/yongcao/teaching/cs5234/spring2013/slides/Lecture10.pdf>`_
+useful can be found here `Blelloch Scan Lecture Notes <https://www.cs.cmu.edu/~blelloch/papers/Ble93.pdf>`. A nice presentation that describes how scans are
+parallelized is `Va Tech Scan Lecture <http://people.cs.vt.edu/yongcao/teaching/cs5234/spring2013/slides/Lecture10.pdf>`_ 
 
 .. note:: For scans using the CUDA back-end, RAJA uses the implementations
           provided by the NVIDIA Thrust library. For better performance, one
