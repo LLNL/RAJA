@@ -86,9 +86,17 @@ template <typename T0, typename... TREST>
 class TypedIndexSet<T0, TREST...> : public TypedIndexSet<TREST...>
 {
   using PARENT = TypedIndexSet<TREST...>;
-  const int T0_TypeId = sizeof...(TREST);
+  static const int T0_TypeId = sizeof...(TREST);
 
 public:
+  // Adopt the value type of the first segment type
+  using value_type = typename T0::value_type;
+
+  // Ensure that all value types in all segments are the same
+  static_assert(std::is_same<value_type, 
+                typename PARENT::value_type>::value || T0_TypeId == 0,
+                "All segments must have the same value_type");
+
   //! Construct empty index set
   RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
 
@@ -583,6 +591,9 @@ template <>
 class TypedIndexSet<>
 {
 public:
+  // termination case, just to make static_assert work
+  using value_type = RAJA::Index_type;
+
   //! create empty TypedIndexSet
   RAJA_INLINE TypedIndexSet() : m_len(0) {}
 
