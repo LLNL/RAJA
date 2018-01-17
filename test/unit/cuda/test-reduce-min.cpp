@@ -28,6 +28,8 @@
 
 using namespace RAJA;
 
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
 static const int test_repeat = 10;
@@ -123,7 +125,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
     RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
-    IndexSet iset;
+    UnitIndexSet iset;
     iset.push_back(seg0);
     iset.push_back(seg1);
 
@@ -166,7 +168,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
 
-  IndexSet iset;
+  UnitIndexSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);

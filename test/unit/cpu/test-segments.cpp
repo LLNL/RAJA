@@ -87,11 +87,39 @@ TEST(RangeStrideSegmentTest, sizes_primes)
   RAJA::RangeStrideSegment segment1(0, 7, 3);  // should produce 0,3,6
   ASSERT_EQ(segment1.size(), 3);
 
-  RAJA::RangeStrideSegment segment2(0, 13, 3); // shoudl produce 0,3,6,9,12
+  RAJA::RangeStrideSegment segment2(0, 13, 3); // should produce 0,3,6,9,12
   ASSERT_EQ(segment2.size(), 5);
 
-  RAJA::RangeStrideSegment segment3(0, 17, 5); // shoudl produce 0,5,10,15
+  RAJA::RangeStrideSegment segment3(0, 17, 5); // should produce 0,5,10,15
   ASSERT_EQ(segment3.size(), 4);
+}
+
+RAJA_INDEX_VALUE(StrongType, "StrongType");
+
+TEST(RangeStrideSegmentTest, strongly_typed)
+{
+  RAJA::TypedRangeStrideSegment<StrongType> segment1(0, 7, 3);  // should produce 0,3,6
+  ASSERT_EQ(segment1.size(), 3);
+
+  RAJA::TypedRangeStrideSegment<StrongType> segment2(0, 13, 3); // should produce 0,3,6,9,12
+  ASSERT_EQ(segment2.size(), 5);
+
+  RAJA::TypedRangeStrideSegment<StrongType> segment3(0, 17, 5); // should produce 0,5,10,15
+  ASSERT_EQ(segment3.size(), 4);
+
+  std::vector<int> values(7, 0);
+  RAJA::forall<RAJA::seq_exec>(segment1,
+      [&](StrongType i){
+      values[*i] = 1;
+  });
+
+  ASSERT_EQ(values[0], 1);
+  ASSERT_EQ(values[1], 0);
+  ASSERT_EQ(values[2], 0);
+  ASSERT_EQ(values[3], 1);
+  ASSERT_EQ(values[4], 0);
+  ASSERT_EQ(values[5], 0);
+  ASSERT_EQ(values[6], 1);
 }
 
 

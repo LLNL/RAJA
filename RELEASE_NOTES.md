@@ -1,3 +1,13 @@
+RAJA v0.5.1 Release Notes
+=========================
+
+This release contains fixes for compiler warnings with newer GCC and Clang
+compilers, and allows strongly-typed indices to work with RangeStrideSegment.
+
+Additionally, the index type for all segments in an IndexSet needs to be the
+same. This requirement is enforced with a static_assert.
+
+
 RAJA v0.5.0 Release Notes
 =========================
 
