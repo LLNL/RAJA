@@ -1,3 +1,10 @@
+RAJA v0.5.1 Release Notes
+=========================
+
+This release contains fixes for compiler warnings with newer GCC and Clang
+compilers.
+
+
 RAJA v0.5.0 Release Notes
 =========================
 
