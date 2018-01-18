@@ -137,129 +137,140 @@ struct CudaLaunchLimits {
 
 struct CudaIndexCalc_Terminator {
 
-  long num_blocks;
-  long block;
+  long num_logical_blocks;
+  long logical_block;
 
   template<typename Data>
   inline
   __device__
-  void calcIndex(Data &, long ) const {}
+  void calcIndex(Data &, long, long) const {}
 
 
   constexpr
   inline
   __device__
-  long numThreads() const {
+  long numLogicalThreads() const {
     return 1;
   }
 
   constexpr
   inline
   __device__
-  long numBlocks() const {
-    return num_blocks;
+  long numLogicalBlocks() const {
+    return num_logical_blocks;
   }
 
   constexpr
   inline
   __device__
-  long getBlock() const {
-    return block;
+  long getLogicalBlock() const {
+    return logical_block;
   }
 };
 
-template<camp::idx_t ArgumentId, typename Parent>
-struct CudaIndexCalc_Simple {
-  long num_threads;
-  Parent const &parent;
-
-  constexpr
-  __device__
-  CudaIndexCalc_Simple(long nthreads, Parent const &p) : num_threads(nthreads), parent{p} {}
-
-  template<typename Data>
-  inline
-  __device__
-  void calcIndex(Data &data, long remainder) const {
-    // Compute and assign our index
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    long i = remainder % num_threads;
-    data.template assign_index<ArgumentId>(*(begin+i));
-
-    // Pass on remainder to parent
-    parent.calcIndex(data, remainder / num_threads);
-  }
 
 
-  constexpr
-  __device__
-  long numThreads() const {
-    return num_threads * parent.numThreads();
-  }
 
-  constexpr
-  inline
-  __device__
-  long numBlocks() const {
-    return parent.numBlocks();
-  }
-
-  constexpr
-  inline
-  __device__
-  long getBlock() const {
-    return parent.getBlock();
-  }
-
-};
 
 
 template<camp::idx_t ArgumentId, typename Parent>
-struct CudaIndexCalc_Offset {
+struct CudaIndexCalc_Thread {
   long num_threads;
   long offset;
   Parent const &parent;
 
   constexpr
   __device__
-  CudaIndexCalc_Offset(long nthreads, long off, Parent const &p) : num_threads(nthreads), offset(off), parent{p} {}
+  CudaIndexCalc_Thread(long nthreads, long off, Parent const &p) : num_threads(nthreads), offset(off), parent{p} {}
 
   template<typename Data>
   inline
   __device__
-  void calcIndex(Data &data, long remainder) const {
+  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
     // Compute and assign our index
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    long i = remainder % num_threads;
+    long i = rem_threads % num_threads;
     data.template assign_index<ArgumentId>(*(begin+i+offset));
 
     // Pass on remainder to parent
-    parent.calcIndex(data, remainder / num_threads);
+    parent.calcIndex(data, rem_blocks, rem_threads / num_threads);
   }
 
 
   constexpr
   __device__
-  long numThreads() const {
-    return num_threads * parent.numThreads();
+  long numLogicalThreads() const {
+    return num_threads * parent.numLogicalThreads();
   }
 
 
   constexpr
   inline
   __device__
-  long numBlocks() const {
-    return parent.numBlocks();
+  long numLogicalBlocks() const {
+    return parent.numLogicalBlocks();
   }
 
   constexpr
   inline
   __device__
-  long getBlock() const {
-    return parent.getBlock();
+  long getLogicalBlock() const {
+    return parent.getLogicalBlock();
   }
 
 };
+
+
+
+
+template<camp::idx_t ArgumentId, typename Parent>
+struct CudaIndexCalc_Block {
+  long num_blocks;
+  long offset;
+  Parent const &parent;
+
+  constexpr
+  __device__
+  CudaIndexCalc_Block(long nblocks, long off, Parent const &p) : num_blocks(nblocks), offset(off), parent{p} {}
+
+  template<typename Data>
+  inline
+  __device__
+  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
+    // Compute and assign our index
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    long i = rem_blocks % num_blocks;
+    data.template assign_index<ArgumentId>(*(begin+i+offset));
+
+    // Pass on remainder to parent
+    parent.calcIndex(data, rem_blocks / num_blocks, rem_threads);
+  }
+
+
+  constexpr
+  __device__
+  long numLogicalThreads() const {
+    return parent.numLogicalThreads();
+  }
+
+
+  constexpr
+  inline
+  __device__
+  long numLogicalBlocks() const {
+    return parent.numLogicalBlocks();
+  }
+
+  constexpr
+  inline
+  __device__
+  long getLogicalBlock() const {
+    return parent.getLogicalBlock();
+  }
+
+};
+
+
 
 
 
@@ -303,10 +314,10 @@ IndexAssigner<idx, segment_tuple_t, index_tuple_t>
 
 
 template<typename Args, typename Layout, typename Parent>
-struct CudaIndexCalc_Layout;
+struct CudaIndexCalc_ThreadLayout;
 
 template<camp::idx_t ... Args, typename Layout, typename Parent>
-struct CudaIndexCalc_Layout<ArgList<Args...>, Layout, Parent> {
+struct CudaIndexCalc_ThreadLayout<ArgList<Args...>, Layout, Parent> {
 
   static_assert(sizeof...(Args) == Layout::n_dims, "");
 
@@ -317,31 +328,45 @@ struct CudaIndexCalc_Layout<ArgList<Args...>, Layout, Parent> {
 
   constexpr
   __device__
-  CudaIndexCalc_Layout(Layout const &l, Parent const &p) : layout(l), num_threads(l.size()), offset(0), parent{p} {}
+  CudaIndexCalc_ThreadLayout(Layout const &l, Parent const &p) : layout(l), num_threads(l.size()), offset(0), parent{p} {}
 
   constexpr
   __device__
-  CudaIndexCalc_Layout(Layout const &l, long nt, long off, Parent const &p) : layout(l), num_threads(nt), offset(off), parent{p} {}
+  CudaIndexCalc_ThreadLayout(Layout const &l, long nt, long off, Parent const &p) : layout(l), num_threads(nt), offset(off), parent{p} {}
 
 
   template<typename Data>
   inline
   __device__
-  void calcIndex(Data &data, long remainder) const {
+  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
 
     // Compute and assign our index
-    layout.toIndices((remainder%num_threads)+offset, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
+    layout.toIndices((rem_threads%num_threads)+offset, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
 
 
     // Pass on remainder to parent
-    parent.calcIndex(data, remainder / num_threads);
+    parent.calcIndex(data, rem_blocks, rem_threads / num_threads);
   }
 
 
   constexpr
   __device__
-  long numThreads() const {
-    return num_threads * parent.numThreads();
+  long numLogicalThreads() const {
+    return num_threads * parent.numLogicalThreads();
+  }
+
+  constexpr
+  inline
+  __device__
+  long numLogicalBlocks() const {
+    return parent.numLogicalBlocks();
+  }
+
+  constexpr
+  inline
+  __device__
+  long getLogicalBlock() const {
+    return parent.getLogicalBlock();
   }
 
 };
@@ -350,7 +375,7 @@ struct CudaIndexCalc_Layout<ArgList<Args...>, Layout, Parent> {
 
 
 template <typename Policy>
-struct CudaStatementExecutor{};
+struct CudaStatementExecutor;
 
 template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename IndexCalc>
 struct CudaStatementListExecutor;

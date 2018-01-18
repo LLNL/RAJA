@@ -370,7 +370,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 
   using NESTED_EXEC_POL4 =
     RAJA::nested::Policy< 
-      RAJA::nested::CudaKernel<512,
+      RAJA::nested::CudaKernel<
         RAJA::nested::For<1, RAJA::cuda_block_thread_exec,
           RAJA::nested::For<0, RAJA::cuda_thread_exec,
             RAJA::nested::Lambda<0>
@@ -407,7 +407,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 
   using NESTED_EXEC_POL5 =
     RAJA::nested::Policy< 
-      RAJA::nested::CudaKernel<512,
+      RAJA::nested::CudaKernel<
         RAJA::nested::Collapse<RAJA::cuda_block_thread_exec, RAJA::nested::ArgList<1, 0>,
           RAJA::nested::Lambda<0>
         >

@@ -75,7 +75,7 @@ CUDA_TEST(Chai, NestedSimple) {
         RAJA::nested::For<1, RAJA::seq_exec> > > POLICY;
   typedef RAJA::nested::Policy<
       RAJA::nested::For<0, RAJA::seq_exec,
-        RAJA::nested::CudaKernel<256,
+        RAJA::nested::CudaKernel<
           RAJA::nested::For<1, RAJA::cuda_block_thread_exec > > > >POLICY_GPU;
 
   const int X = 16;

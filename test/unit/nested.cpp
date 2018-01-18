@@ -151,7 +151,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
-    list<Policy<For<1, s, CudaKernel<1024, For<0, RAJA::cuda_block_thread_exec, Lambda<0>>>>>,
+    list<Policy<For<1, s, CudaKernel<For<0, RAJA::cuda_block_thread_exec, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce<1024>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
@@ -170,7 +170,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<128,
+      CudaKernel<
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
 
   int *x = nullptr;
@@ -199,7 +199,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<128,
+      CudaKernel<
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>,
           For<2, RAJA::seq_exec, Lambda<0>>
         >
@@ -231,7 +231,7 @@ CUDA_TEST(Nested, CudaCollapse1c)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<128,
+      CudaKernel<
         Collapse<RAJA::cuda_block_seq_exec, ArgList<0,1>,
           For<2, RAJA::cuda_thread_exec, Lambda<0>>
         >
@@ -266,7 +266,7 @@ CUDA_TEST(Nested, CudaCollapse2)
 {
 
   using Pol = RAJA::nested::Policy<
-       CudaKernel<128,
+       CudaKernel<
          Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
        >>;
 
@@ -303,13 +303,13 @@ CUDA_TEST(Nested, CudaReduceA)
 {
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<12,
+      CudaKernel<
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>,
           For<2, RAJA::seq_exec, Lambda<0>>
         >
       >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 
   RAJA::nested::forall(
       Pol{},
@@ -333,12 +333,12 @@ CUDA_TEST(Nested, CudaReduceB)
 
   using Pol = RAJA::nested::Policy<
         For<2, RAJA::seq_exec,
-          CudaKernel<12,
+          CudaKernel<
             Collapse<RAJA::cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
           >
         >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 
   RAJA::nested::forall(
       Pol{},
@@ -362,13 +362,13 @@ CUDA_TEST(Nested, CudaReduceC)
   using Pol = RAJA::nested::Policy<
         For<2, RAJA::loop_exec,
           For<0, RAJA::loop_exec,
-            CudaKernel<12,
+            CudaKernel<
               For<1, RAJA::cuda_block_thread_exec, Lambda<0>>
             >
           >
         >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 
   RAJA::nested::forall(
       Pol{},
@@ -389,7 +389,7 @@ CUDA_TEST(Nested, CudaReduceC)
 CUDA_TEST(Nested, SubRange_ThreadBlock)
 {
   using Pol = RAJA::nested::Policy<
-        CudaKernel<128,
+        CudaKernel<
           For<0, RAJA::cuda_block_thread_exec, Lambda<0>>
         >>;
 
@@ -434,12 +434,12 @@ CUDA_TEST(Nested, SubRange_ThreadBlock)
 CUDA_TEST(Nested, SubRange_Complex)
 {
   using PolA = RAJA::nested::Policy<
-          CudaKernel<128,
+          CudaKernel<
             For<0, RAJA::cuda_block_thread_exec, Lambda<0>>
           >>;
 
   using PolB = RAJA::nested::Policy<
-          CudaKernel<128,
+          CudaKernel<
             Collapse<RAJA::cuda_block_thread_exec, ArgList<0, 1>,
               For<2, RAJA::seq_exec, Lambda<0>>
             >
@@ -992,7 +992,7 @@ CUDA_TEST(Nested, CudaExec){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<
               For<0, cuda_block_thread_exec, Lambda<0>>
             >
         >;
@@ -1030,7 +1030,7 @@ CUDA_TEST(Nested, CudaExec1){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<128,
+            CudaKernel<
               For<0, cuda_block_thread_exec, Lambda<0>>
             >
         >;
@@ -1066,7 +1066,7 @@ CUDA_TEST(Nested, CudaExec1a){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<128,
+            CudaKernel<
               nested::Collapse<cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
             >
         >;
@@ -1101,7 +1101,7 @@ CUDA_TEST(Nested, CudaExec1b){
 
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<128,
+            CudaKernel<
               For<0, cuda_block_thread_exec, Lambda<0>>
               >
         >;
@@ -1128,26 +1128,50 @@ CUDA_TEST(Nested, CudaExec1b){
   ASSERT_EQ(result, N);
 }
 
-CUDA_TEST(Nested, CudaExec2){
+
+
+
+CUDA_TEST(Nested, CudaExec1c){
   using namespace RAJA;
   using namespace RAJA::nested;
 
+  constexpr long N = (long)3*1024;
 
-  constexpr long N = (long)3*1024*1024;
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<
+              For<0, cuda_block_exec,
+                For<1, cuda_block_exec,
+                  For<2, cuda_block_thread_exec, Lambda<0>>
+                >
+              >
+            >
+        >;
+
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  RAJA::forall<cuda_exec<1024>>(
-      RangeSegment(0,N),
-      [=] __device__ (ptrdiff_t i){
+  nested::forall(
+      Pol{},
+
+      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0,N)),
+
+      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k){
+
         trip_count += 1;
-      });
+        //printf("[%d] %d\n", (int)threadIdx.x, (int)i);
+      }
+  );
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
   //printf("result=%ld\n", result);
-  ASSERT_EQ(result, N);
+
+  ASSERT_EQ(result, N*N*N);
 }
+
+
+
 
 
 
@@ -1160,7 +1184,7 @@ CUDA_TEST(Nested, CudaComplexNested){
   constexpr long N = (long)739;
 
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<
               For<0, cuda_block_thread_exec,
                 For<1, cuda_thread_exec,
                   For<2, cuda_thread_exec, Lambda<0>>
@@ -1219,7 +1243,7 @@ CUDA_TEST(Nested, CudaShmemWindow1d){
   constexpr long N = (long)256;
 
   using Pol = nested::Policy<
-            CudaKernel<1024,
+            CudaKernel<
               nested::Tile<0, nested::tile_fixed<16>, seq_exec,
                 SetShmemWindow<
 
@@ -1294,7 +1318,7 @@ CUDA_TEST(Nested, CudaShmemWindow2d){
   constexpr long M = (long)1024;
 
   using Pol = nested::Policy<
-            CudaKernel<512,
+            CudaKernel<
               nested::Tile<0, nested::tile_fixed<2>, seq_exec,
                 nested::Tile<1, nested::tile_fixed<2>, seq_exec,
                   SetShmemWindow<

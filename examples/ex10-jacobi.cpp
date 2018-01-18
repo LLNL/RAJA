@@ -332,7 +332,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
   using jacobiCUDANestedPolicy = RAJA::nested::Policy<
-    RAJA::nested::CudaKernel<512,
+    RAJA::nested::CudaKernel<
       RAJA::nested::Collapse<RAJA::cuda_block_thread_exec, RAJA::nested::ArgList<1, 0>,
         RAJA::nested::Lambda<0>
       >

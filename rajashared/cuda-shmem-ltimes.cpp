@@ -108,7 +108,7 @@ void runLTimesRajaCudaNested(bool debug,
 
 
   using Pol = RAJA::nested::Policy<
-      CudaKernel<512,
+      CudaKernel<
         Collapse<RAJA::cuda_block_thread_exec, ArgList<0,2,3>,
           For<1, RAJA::seq_exec, Lambda<0>>
         >
@@ -270,7 +270,7 @@ void runLTimesRajaCudaShmem(bool debug,
   // A possible implementation:
   using namespace RAJA::nested;
   using Pol = nested::Policy<
-        CudaKernel<512,
+        CudaKernel<
           SetShmemWindow<
             // First, load Ell into shared memory in each block
             Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,

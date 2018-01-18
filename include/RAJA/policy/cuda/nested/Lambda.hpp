@@ -86,18 +86,21 @@ struct CudaStatementExecutor<Lambda<LoopIndex>>{
   RAJA_DEVICE
   void exec(WrappedBody const &, Data &data, IndexCalc const &index_calc)
   {
-    // loop over chunks of threads in this block
-    long num_iter = index_calc.numThreads();
-    long i = threadIdx.x;
-    while(i < num_iter){
+    // loop over chunks of logical threads in this block
+    long logical_block = index_calc.getLogicalBlock();
+
+    long logical_thread = threadIdx.x;
+    long num_logical_threads = index_calc.numLogicalThreads();
+
+    while(logical_thread < num_logical_threads){
       // Compute and assign indices
-      index_calc.calcIndex(data, i);
+      index_calc.calcIndex(data, logical_block, logical_thread);
 
       // invoke lambda
       invoke_lambda<LoopIndex>(data);
 
-      // increment to next chunk
-      i += blockDim.x;
+      // increment to the next block-stride logical thread
+      logical_thread += blockDim.x;
     }
 
   }
