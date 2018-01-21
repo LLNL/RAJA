@@ -18,9 +18,5 @@
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
 
 raja_add_executable(
-  NAME example1
-  SOURCES example1.cpp)
-
-raja_add_executable(
-  NAME example2
-  SOURCES example2.cpp)
+  NAME main
+  SOURCES main.cpp vec_fun.hpp)
