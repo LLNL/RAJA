@@ -124,7 +124,7 @@ Other usages can be found under:
 
 # Deprecating older features in RAJA
 
-As the RAJA codebase evolves, there may come a point where features onced used have been replaced with more viable options. To aid users in transitioning from an older API call to a prefered API, we introduce deprecation macros which should *cautiously* and *effectively* be used by RAJA developers.
+As the RAJA codebase evolves, there may come a point where features once used have been replaced with more viable options. To aid users in transitioning from an older API call to a preferred API, we introduce deprecation macros which should *cautiously* and *effectively* be used by RAJA developers.
 
 The following macros are defined by RAJA that assist with defining deprecation attributes for Functions, Types (structs/classes), `typedefs`, and type aliases:
 

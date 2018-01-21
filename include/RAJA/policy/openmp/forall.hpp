@@ -63,8 +63,8 @@ namespace omp
 
 template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
-                        Iterable&& iter,
-                        Func&& loop_body)
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
 #pragma omp parallel
   {
@@ -80,8 +80,8 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
 
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
-                        Iterable&& iter,
-                        Func&& loop_body)
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
@@ -95,7 +95,9 @@ RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
+RAJA_INLINE void forall_impl(const omp_for_exec&,
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
@@ -110,8 +112,8 @@ RAJA_INLINE void forall_impl(const omp_for_exec&, Iterable&& iter, Func&& loop_b
 
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
-                        Iterable&& iter,
-                        Func&& loop_body)
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)

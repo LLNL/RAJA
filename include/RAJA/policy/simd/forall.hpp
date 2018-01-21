@@ -54,8 +54,9 @@ namespace simd
 
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall_impl(const simd_exec &, Iterable &&iter, Func &&loop_body)
+RAJA_INLINE void forall_impl(const simd_exec &,
+                             Iterable &&iter,
+                             Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);

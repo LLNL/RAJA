@@ -24,10 +24,11 @@
 using namespace RAJA;
 using namespace std;
 
+  
 //
 //  Initialize hybrid index set by adding segments as index set objects.
 //
-Index_type buildIndexSet(RAJA::IndexSet* hindex,
+Index_type buildIndexSet(UnitIndexSet* hindex,
                          IndexSetBuildMethod build_method)
 {
   //
@@ -62,7 +63,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
   //
 
   const int seg_chunk_size = 5;
-  IndexSet iset_master;
+  UnitIndexSet iset_master;
 
   for (int i = 0; i < seg_chunk_size; ++i) {
     Index_type rbeg;
@@ -104,12 +105,12 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
   }
 
 #if 0  // print index set for debugging
-  cout << "\n\nIndexSet( master ) " << endl;
+  cout << "\n\nUnitIndexSet( master ) " << endl;
   iset_master.print(cout);
 #endif
 
   //
-  // Generate IndexSet from segments using specified build method.
+  // Generate UnitIndexSet from segments using specified build method.
   //
   switch (build_method) {
 
@@ -126,7 +127,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
     }
 
     case AddSegmentsReverse: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       for (int i = iset_master.getNumSegments()-1; i >= 0; --i) {
         iset_master.segment_push_into(i,
                                       hindex[build_method],
@@ -138,7 +139,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
     }
 
     case AddSegmentsNoCopy: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       for (size_t i = 0; i < iset_master.getNumSegments(); ++i) {
         iset_master.segment_push_into(i,
                                       hindex[build_method],
@@ -150,7 +151,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
     }
 
     case AddSegmentsNoCopyReverse: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       for ( int i = iset_master.getNumSegments() - 1; i >= 0 ; --i ) {
         iset_master.segment_push_into(i,
                                       hindex[build_method],
@@ -162,9 +163,9 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
     }
 
     case MakeSliceRange: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
-      RAJA::IndexSet* iset_slice
+      UnitIndexSet* iset_slice
         = iset_master.createSlice(0, num_segs);
 
       for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
@@ -178,7 +179,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
     }
 
     case MakeSliceArray: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       int* segIds = new int[num_segs];
 
@@ -186,7 +187,7 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
         segIds[i] = i;
       }
 
-      RAJA::IndexSet* iset_slice
+      UnitIndexSet* iset_slice
         = iset_master.createSlice(segIds, num_segs);
 
       for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
@@ -203,14 +204,14 @@ Index_type buildIndexSet(RAJA::IndexSet* hindex,
 
 #if defined(RAJA_USE_STL)
     case MakeSliceVector: {
-      RAJA::IndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       std::vector<int> segIds(num_segs);
       for (int i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
-      RAJA::IndexSet* iset_slice
+      UnitIndexSet* iset_slice
         = iset_master.createSlice(segIds);
 
       for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {

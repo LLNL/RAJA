@@ -18,15 +18,8 @@ mkdir build-gcc-4.9.3 && cd build-gcc-4.9.3
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-gcc-4.9.3 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-gcc-4.9.3 \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}

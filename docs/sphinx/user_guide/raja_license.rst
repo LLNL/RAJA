@@ -1,11 +1,15 @@
 .. ##
-.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-689114
 .. ##
 .. ## All rights reserved.
 .. ##
-.. ## For release details and restrictions, please see raja/README-license.txt
+.. ## This file is part of RAJA.
+.. ##
+.. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
 
@@ -13,9 +17,9 @@
 RAJA License
 ===================================
 
-RAJA version 0.4.1
+RAJA version 0.5.1
 
-Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 

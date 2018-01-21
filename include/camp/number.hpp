@@ -44,10 +44,11 @@ namespace detail
   struct gen_seq
       : concat<T,
                typename gen_seq<T, integral_constant<T, N_t::value / 2>>::type,
-               typename gen_seq<
-                   T,
-                   integral_constant<T, N_t::value - N_t::value / 2>>::type>::
-            type {
+               typename gen_seq<T,
+                                integral_constant<T,
+                                                  N_t::value
+                                                      - N_t::value / 2>>::
+                   type>::type {
   };
 
   template <typename T>

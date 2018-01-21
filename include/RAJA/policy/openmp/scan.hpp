@@ -65,10 +65,11 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
-  const int p = std::min(n, omp_get_max_threads());
-  ::std::vector<Value> sums(p, Value());
-#pragma omp parallel num_threads(p)
+  const int p0 = std::min(n, omp_get_max_threads());
+  ::std::vector<Value> sums(p0, Value());
+#pragma omp parallel num_threads(p0)
   {
+    const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
@@ -98,10 +99,11 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
-  const int p = std::min(n, omp_get_max_threads());
-  ::std::vector<Value> sums(p, v);
-#pragma omp parallel num_threads(p)
+  const int p0 = std::min(n, omp_get_max_threads());
+  ::std::vector<Value> sums(p0, v);
+#pragma omp parallel num_threads(p0)
   {
+    const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);

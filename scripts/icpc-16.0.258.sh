@@ -19,15 +19,8 @@ mkdir build-icpc-16.0.258 && cd build-icpc-16.0.258
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/chaos/icpc_16_0_258.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-icpc-16.0.258 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/chaos/icpc_16_0_258.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-icpc-16.0.258 \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}

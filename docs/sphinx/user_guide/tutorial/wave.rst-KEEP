@@ -1,0 +1,82 @@
+.. ##
+.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-689114
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of RAJA.
+.. ##
+.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ##
+
+.. _waveeq-label:
+
+---------------
+Wave Equation
+---------------
+
+Main RAJA features discussed:
+
+  * ``RAJA::nested::forall`` nested-loop traversal template
+  * RAJA nested-loop policies
+
+
+In this example, we solve the acoustic wave equation
+
+.. math::  
+   p_{tt} = c^{2} \left( p_{xx} + p_{yy} \right), \\
+   (x,y) \in [-1,1] \times [-1,1]. 
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The discrete problem
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Similar to the :ref:`jacobi-label` example, we choose the problem domain to
+be the unit square :math:`[-1,1] x [-1, 1]` with a uniform grid spacing 
+:math:`h` in x and y.
+
+The finite difference discretization of the equations is:
+
+.. math::
+   p^{n+1}_{i,j} = 2 p^{n}_{i,j} - p^{n-1}_{i,j} + \Delta t^2 \left( D_{xx}p^{n} + D_{yy}p^{n} \right)
+
+where 
+
+.. math::
+   
+  D_{xx} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
+  D_{yy} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
+
+The superscript :math:`n` denotes the :math:`n-th` timestep and the subscripts 
+:math:`i,j` are grid point indices.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RAJA nested-loop implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the example, we use a fourth-order spatial discretization (stencil width 
+:math:`N=2`). The kernel for the acoustic wave equation is:
+
+.. literalinclude:: ../../../../examples/ex8-wave-eqn.cpp
+                    :lines: 248-279
+
+Here, 'fdBounds' is a RAJA RangeSegment:
+ 
+.. literalinclude:: ../../../../examples/ex8-wave-eqn.cpp
+                    :lines: 108
+
+Also, note that we use the ``RAJA_HOST_DEVICE`` macro for the lambda. This 
+creates a portable kernel that may be executed on either the CPU or GPU, 
+depending on the chosen execution policy. For example, the CPU sequential 
+execution policy in the example is:
+
+.. literalinclude:: ../../../../examples/ex8-wave-eqn.cpp
+                    :lines: 137-139
+
+Other policies are included in the example source code.
+
+The file ``RAJA/examples/ex8-wave-eqn.cpp``
+contains the complete working example code.

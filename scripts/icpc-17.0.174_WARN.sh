@@ -19,10 +19,9 @@ mkdir build-icpc-17.0.174-debug_WARN && cd build-icpc-17.0.174-debug_WARN
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
+  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
   -DENABLE_WARNINGS=On \
   -DENABLE_APPLICATIONS=On \
-  -DENABLE_PERFSUITE=On \
   "$@" \
   ${RAJA_DIR}
