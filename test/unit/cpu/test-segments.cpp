@@ -96,19 +96,19 @@ TEST(RangeStrideSegmentTest, sizes_primes)
 
 TEST(RangeStrideSegmentTest, basic_types)
 {
-  RAJA::TypedRangeStrideSegment<signed char> segment1(0, 21, 3);
+  RAJA::TypedRangeStrideSegment<signed char> segment1(0, 31, 3);
   ASSERT_EQ(segment1.size(), 11);
 
-  RAJA::TypedRangeStrideSegment<short> segment2(0, 21, 3);
+  RAJA::TypedRangeStrideSegment<short> segment2(0, 31, 3);
   ASSERT_EQ(segment2.size(), 11);
 
-  RAJA::TypedRangeStrideSegment<int> segment3(0, 21, 5);
+  RAJA::TypedRangeStrideSegment<int> segment3(0, 31, 3);
   ASSERT_EQ(segment3.size(), 11);
 
-  RAJA::TypedRangeStrideSegment<long> segment4(0, 21, 5);
+  RAJA::TypedRangeStrideSegment<long> segment4(0, 31, 3);
   ASSERT_EQ(segment3.size(), 11);
 
-  RAJA::TypedRangeStrideSegment<long long> segment5(0, 21, 5);
+  RAJA::TypedRangeStrideSegment<long long> segment5(0, 31, 3);
   ASSERT_EQ(segment3.size(), 11);
 }
 
