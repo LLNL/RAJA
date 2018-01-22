@@ -837,15 +837,11 @@ TEST(Nested, ListSegments1)
     RAJA::nested::For<1,RAJA::seq_exec>,
     RAJA::nested::For<0,RAJA::loop_exec> >;
   
-  RAJA::TypedListSegment<Index_type> myRange(arr1,N);
-  //RAJA::RangeSegment myRange(0,N);
+  RAJA::ListSegment range1(arr1,N);
+  RAJA::ListSegment range0(arr0,M);
 
-  RAJA::forall<RAJA::loop_exec>(myRange, [=] (int i){
-      int test = i; 
-    });
   
-  RAJA::nested::forall(Pol{},
-                       RAJA::make_tuple(myRange, myRange),
+  RAJA::nested::forall(Pol{}, RAJA::make_tuple(range1, range0),
                        [=] (Index_type i, Index_type r) {
                          int id = i + r;
                          data[id] = id; 
@@ -855,7 +851,7 @@ TEST(Nested, ListSegments1)
     for(int r=0; r<M; ++r){
 
       Index_type id = arr1[i] + arr0[r]; 
-      //ASSERT_EQ(data[id], id);
+      ASSERT_EQ(data[id], id);
     }
   }
   
