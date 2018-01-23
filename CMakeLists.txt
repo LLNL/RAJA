@@ -12,9 +12,17 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
+# Set version number
+set(RAJA_VERSION_MAJOR 0)
+set(RAJA_VERSION_MINOR 5)
+set(RAJA_VERSION_PATCHLEVEL 1)
+
+if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
+  message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
+endif()
 
 if (NOT RAJA_LOADED)
-  set (RAJA_LOADED True)
+  set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
   mark_as_advanced(RAJA_LOADED)
 
   cmake_minimum_required (VERSION 3.3)
@@ -22,10 +30,6 @@ if (NOT RAJA_LOADED)
   # C is required for googletest to find Threads
   project(RAJA LANGUAGES CXX C)
 
-  # Set version number
-  set(RAJA_VERSION_MAJOR 0)
-  set(RAJA_VERSION_MINOR 5)
-  set(RAJA_VERSION_PATCHLEVEL 1)
 
   set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
