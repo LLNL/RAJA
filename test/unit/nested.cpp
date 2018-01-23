@@ -908,7 +908,6 @@ TEST(Nested, ListSegments2)
   delete[] data;
 }
 
-//OMP Version
 TEST(Nested, ListSegments3)
 {
 
@@ -969,17 +968,9 @@ CUDA_TEST(Nested, ListSegments4)
   int N  = 10;
   int M  = 11;
 
-#if 0
-  Index_type *arr1, *arr0, *data;
-  cudaMallocManaged(&arr1,N*sizeof(Index_type));
-  cudaMallocManaged(&arr0,M*sizeof(Index_type));
-  cudaMallocManaged(&data,(N+M)*sizeof(Index_type));
-#else
   Index_type *arr1 = new Index_type[N];
   Index_type *arr0 = new Index_type[M];
   Index_type *data = new Index_type[(N+M)];
-#endif
-
     
   for(int i=0; i<N; ++i){
     arr1[i] = rand() % 10;
@@ -994,29 +985,20 @@ CUDA_TEST(Nested, ListSegments4)
   }
 
   using Pol = RAJA::nested::Policy<
-    RAJA::nested::CudaCollapse<
-      RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<10>>,
-      RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<10>> > >;
+  RAJA::nested::CudaCollapse<
+  RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+  RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
   
   RAJA::ListSegment range1(arr1,N);
   RAJA::ListSegment range0(arr0,M);
-
-#if 0  
-  RAJA::forall<RAJA::cuda_exec<256>>
-    (range1, [=] RAJA_DEVICE (int i) {    
-      int cat=1;
-    });
-#endif
 
   RAJA::nested::forall(Pol{}, RAJA::make_tuple(range1,range0), 
                        [=] RAJA_DEVICE (Index_type i, Index_type r) {
                          int id = i + r;
                          data[id] = id;
                        });
-
-
   cudaDeviceSynchronize;
-
+  
   for(int i=0; i<N; ++i){
     for(int r=0; r<M; ++r){
 
