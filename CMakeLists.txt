@@ -25,13 +25,11 @@ if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
   mark_as_advanced(RAJA_LOADED)
 
-  # Don't let project command wipe out version variables
-  cmake_policy(SET CMP0048 OLD)
-
   cmake_minimum_required (VERSION 3.3)
 
   # C is required for googletest to find Threads
-  project(RAJA LANGUAGES CXX C)
+  project(RAJA LANGUAGES CXX C
+    VERSION ${RAJA_LOADED})
 
   set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
