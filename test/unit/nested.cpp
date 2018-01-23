@@ -815,7 +815,7 @@ TEST(Nested, ListSegments1)
 {
 
   int N  = 10;
-  int M  = 10;
+  int M  = 11;
 
   Index_type *arr1 = new Index_type[N];
   Index_type *arr0 = new Index_type[M];
