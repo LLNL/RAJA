@@ -157,8 +157,14 @@ public:
   using value_type = T;
   using reduce_type = Reduce;
 
-  //! prohibit compiler-generated default ctor
-  BaseReduce() = delete;
+  //Use the types default constructor
+  //BaseReduce() = delete;
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  constexpr BaseReduce()
+    : c{T(), Reduce::identity()}
+  {
+  }
 
   //! prohibit compiler-generated copy assignment
   BaseReduce &operator=(const BaseReduce &) = delete;
@@ -185,6 +191,12 @@ public:
   RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
 
+  RAJA_HOST_DEVICE
+  void reset() {
+    c.reset(T(), Reduce::identity());
+  }
+
+
   T &local() const { return c.local(); }
 
   //! Get the calculated reduced value
@@ -210,6 +222,12 @@ public:
   constexpr BaseCombinable(T init_val, T identity_ = T())
       : identity{identity_}, my_data{init_val}
   {
+  }
+
+  RAJA_HOST_DEVICE
+  void reset(T init_val, T identity_){
+    identity = identity_;
+    my_data = init_val;
   }
 
   RAJA_HOST_DEVICE

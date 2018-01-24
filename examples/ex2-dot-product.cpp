@@ -92,18 +92,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
-  RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
+  RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot;
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    seqdot += a[i] * b[i]; 
+      seqdot += a[i] * b[i]; 
   });
-
+  
   dot = seqdot.get();
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
 
+  std::cout<<"reset the data "<<std::endl;
+  seqdot.reset();
+  dot = seqdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
 
+
+
+#if 0
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -141,7 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
-
+#endif
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
 

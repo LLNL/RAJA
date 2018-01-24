@@ -50,8 +50,8 @@ class ReduceSeq
 
 public:
   //! prohibit compiler-generated default ctor
-  ReduceSeq() = delete;
-
+  //ReduceSeq() = delete;
+  
   using Base::Base;
 };
 
