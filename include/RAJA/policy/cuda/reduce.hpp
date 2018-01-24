@@ -753,7 +753,14 @@ template <bool Async, typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-  Reduce() = delete;
+  
+  Reduce()
+      : parent{this},
+        tally_or_val_ptr{new PinnedTally<T>},
+        val(T(), Combiner::identity())
+  {
+  }
+  
 
   //! create a reduce object
   //  the original object's parent is itself
