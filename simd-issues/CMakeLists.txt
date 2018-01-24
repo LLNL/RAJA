@@ -14,9 +14,6 @@
 #
 ###############################################################################
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -c -S -qopt-report=5 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
-
 raja_add_executable(
   NAME main
-  SOURCES main.cpp vec_fun.hpp)
+  SOURCES main.cpp)
