@@ -166,25 +166,9 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, 
     // Create a Layout of all of our loop dimensions that we're collapsing
     auto layout = getLayout(data.segment_tuple);
 
-    // get total iteration size
-    ptrdiff_t total_len = layout.size();
-
     // compute our block's slice of work
-    int num_blocks = parent_index_calc.numLogicalBlocks();
-    auto block_len = total_len / num_blocks;
-    if(block_len*num_blocks < total_len){
-      block_len ++;
-    }
-    auto block_begin = block_len * parent_index_calc.getLogicalBlock();
-    auto block_end = block_begin + block_len;
-    if(block_end > total_len){
-      block_end = total_len;
-    }
-
-
-    // Create a Layout of all of our loop dimensions that we're collapsing
-    CudaIndexCalc_ThreadLayout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
-      index_calc(layout, block_end-block_begin, block_begin,  parent_index_calc);
+    CudaIndexCalc_ThreadBlockLayout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
+          index_calc(layout, parent_index_calc);
 
 
     //invoke our enclosed statement list
@@ -240,12 +224,12 @@ struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, Enc
     ptrdiff_t total_len = layout.size();
 
     // compute our block's slice of work
-    long num_blocks = index_calc.numLogicalBlocks();
+    long num_blocks = gridDim.x;
     auto block_len = total_len / num_blocks;
     if(block_len*num_blocks < total_len){
       block_len ++;
     }
-    auto block_begin = block_len * index_calc.getLogicalBlock();
+    auto block_begin = block_len * logical_block;
     auto block_end = block_begin + block_len;
     if(block_end > total_len){
       block_end = total_len;

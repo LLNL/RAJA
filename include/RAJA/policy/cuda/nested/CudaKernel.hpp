@@ -155,41 +155,43 @@ namespace internal
 {
 
 
+
 /*!
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
 __global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
 {
-  // Create a struct that hold our current thread allocation
-  // this is passed through the meat grinder to properly allocate GPU
-  // resources to each executor
-  CudaIndexCalc_Terminator index_calc;
-  index_calc.num_logical_blocks = num_logical_blocks;
-  // use physical block as initial logical block
-  index_calc.logical_block = blockIdx.x;
+
+  using index_calc_t = CudaIndexCalc_Terminator;
 
   // Thread privatize the loop data
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(data);
   auto &private_data = privatizer.get_priv();
 
+  using index_calc_t = CudaIndexCalc_Terminator;
+
   // Iterate through logical blocks
-  while(index_calc.logical_block < index_calc.num_logical_blocks){
+  long logical_block = blockIdx.x;
+  while(logical_block < num_logical_blocks){
+
+//    printf("KERN [%d,%d] lb=%d of %d\n", (int)blockIdx.x, (int)threadIdx.x, (int)index_calc.logical_block, (int)index_calc.num_logical_blocks);
 
     // Ensure previous logical block is complete
     // But we don't need to sync on the first logical block
-    if(index_calc.logical_block != blockIdx.x){
+    if(logical_block != blockIdx.x){
       __syncthreads();
     }
 
     // Execute the statement list, using CUDA specific executors
-    cuda_execute_statement_list<StmtList>(private_data, index_calc);
+    cuda_execute_statement_list<StmtList, index_calc_t>(private_data, logical_block);
 
     // Increment to the next logical block (grid stride)
-    index_calc.logical_block += gridDim.x;
+    logical_block += gridDim.x;
   }
 }
+
 
 
 
@@ -218,7 +220,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
     using data_t = camp::decay<decltype(wrap.data)>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
-
+//    max_physical.blocks = 5;
 
     printf("Physical limits: %ld blocks, %ld threads\n",
         max_physical.blocks, max_physical.threads);
@@ -241,7 +243,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     // Compute logical dimensions
     using SegmentTuple = decltype(wrap.data.segment_tuple);
     LaunchDim logical_dims =
-        cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(wrap.data.segment_tuple, max_physical.blocks, LaunchDim());
+        cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(wrap.data, max_physical);
 
 
     printf("Logical dims: %ld blocks, %ld threads\n",
@@ -269,9 +271,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     //
     // Launch the kernels
     //
-
     CudaKernelLauncher<StatementList<EnclosedStmts...>>
-    <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(cuda_data, launch_dims.blocks);
+    <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(cuda_data, logical_dims.blocks);
 
 
     // Check for errors

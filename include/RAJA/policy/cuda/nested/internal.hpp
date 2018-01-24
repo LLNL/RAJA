@@ -79,11 +79,54 @@
 
 namespace RAJA
 {
+
+
+/*!
+ * Policy for For<>, executes loop iteration by distributing them over threads.
+ * This does no (additional) work-sharing between thread blocks.
+ */
+
+struct cuda_thread_exec{};
+
+
+
+
+/*!
+ * Policy for For<>, executes loop iteration by distributing iterations
+ * exclusively over blocks.
+ */
+
+struct cuda_block_exec{};
+
+
+
+
+/*!
+ * Policy for For<>, executes loop iteration by distributing them over all
+ * blocks and threads.
+ */
+
+template<size_t num_blocks>
+struct cuda_block_seq_exec{};
+
+
+
+
+
+/*!
+ * Policy for For<>, executes loop iteration by distributing them over all
+ * blocks and then executing sequentially on each thread.
+ */
+template<size_t num_blocks>
+struct cuda_block_thread_exec{};
+
+
 namespace nested
 {
+
+
 namespace internal
 {
-
 
 
 struct LaunchDim {
@@ -135,289 +178,201 @@ struct CudaLaunchLimits {
 
 
 
-struct CudaIndexCalc_Terminator {
-
-  long num_logical_blocks;
-  long logical_block;
-
-  template<typename Data>
-  inline
-  __device__
-  void calcIndex(Data &, long, long) const {}
-
-
-  constexpr
-  inline
-  __device__
-  long numLogicalThreads() const {
-    return 1;
-  }
-
-  constexpr
-  inline
-  __device__
-  long numLogicalBlocks() const {
-    return num_logical_blocks;
-  }
-
-  constexpr
-  inline
-  __device__
-  long getLogicalBlock() const {
-    return logical_block;
-  }
-};
 
 
 
 
 
-
-template<camp::idx_t ArgumentId, typename Parent>
-struct CudaIndexCalc_Thread {
-  long num_threads;
-  long offset;
-  Parent const &parent;
-
-  constexpr
-  __device__
-  CudaIndexCalc_Thread(long nthreads, long off, Parent const &p) : num_threads(nthreads), offset(off), parent{p} {}
-
-  template<typename Data>
-  inline
-  __device__
-  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
-    // Compute and assign our index
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    long i = rem_threads % num_threads;
-    data.template assign_index<ArgumentId>(*(begin+i+offset));
-
-    // Pass on remainder to parent
-    parent.calcIndex(data, rem_blocks, rem_threads / num_threads);
-  }
+template<typename SegmentType>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr LaunchDim cudaCalcDims(cuda_block_exec const &, SegmentType const &segment, LaunchDim const &){
+  return LaunchDim{(long)segment.size(), 1};
+}
 
 
-  constexpr
-  __device__
-  long numLogicalThreads() const {
-    return num_threads * parent.numLogicalThreads();
-  }
-
-
-  constexpr
-  inline
-  __device__
-  long numLogicalBlocks() const {
-    return parent.numLogicalBlocks();
-  }
-
-  constexpr
-  inline
-  __device__
-  long getLogicalBlock() const {
-    return parent.getLogicalBlock();
-  }
-
-};
-
-
-
-
-template<camp::idx_t ArgumentId, typename Parent>
-struct CudaIndexCalc_Block {
-  long num_blocks;
-  long offset;
-  Parent const &parent;
-
-  constexpr
-  __device__
-  CudaIndexCalc_Block(long nblocks, long off, Parent const &p) : num_blocks(nblocks), offset(off), parent{p} {}
-
-  template<typename Data>
-  inline
-  __device__
-  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
-    // Compute and assign our index
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    long i = rem_blocks % num_blocks;
-    data.template assign_index<ArgumentId>(*(begin+i+offset));
-
-    // Pass on remainder to parent
-    parent.calcIndex(data, rem_blocks / num_blocks, rem_threads);
-  }
-
-
-  constexpr
-  __device__
-  long numLogicalThreads() const {
-    return parent.numLogicalThreads();
-  }
-
-
-  constexpr
-  inline
-  __device__
-  long numLogicalBlocks() const {
-    return parent.numLogicalBlocks();
-  }
-
-  constexpr
-  inline
-  __device__
-  long getLogicalBlock() const {
-    return parent.getLogicalBlock();
-  }
-
-};
-
-
-
-
-
-/*
- * This allows us to pass our segment and index tuple from LoopData into
- * the Layout::toIndices() function, and do the proper index calculations
- */
-template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
-struct IndexAssigner{
-
-  using Self = IndexAssigner<idx, segment_tuple_t, index_tuple_t>;
-
-  segment_tuple_t &segments;
-  index_tuple_t   &indices;
-
-  template<typename T>
-  RAJA_INLINE
-  RAJA_DEVICE Self const &operator=(T value) const{
-    // Compute actual offset using begin() iterator of segment
-    auto offset = *(camp::get<idx>(segments).begin() + value);
-
-    // Assign offset into index tuple
-    camp::get<idx>(indices) = offset;
-
-    // nobody wants this
-    return *this;
-  }
-};
-
-
-template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
+template<camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE
 RAJA_DEVICE
-auto make_index_assigner(segment_tuple_t &s, index_tuple_t &i) ->
-IndexAssigner<idx, segment_tuple_t, index_tuple_t>
-{
-  return IndexAssigner<idx, segment_tuple_t, index_tuple_t>{s, i};
+bool cudaAssignIndex(cuda_block_exec const &, Data &data, LaunchDim &block_thread, LaunchDim const &){
+
+  // get the segment, and compute it's length
+  auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
+  auto begin = segment.begin();
+  auto end = segment.end();
+  auto len = end - begin;
+
+  // Compute our index, and strip off the block index
+  long i = block_thread.blocks % len;
+  block_thread.blocks /= len;
+
+  // Assign our computed index to the tuple
+  data.template assign_index<ArgumentId>(*(begin+i));
+
+  return true;
 }
 
 
 
 
-template<typename Args, typename Layout, typename Parent>
-struct CudaIndexCalc_ThreadLayout;
 
-template<camp::idx_t ... Args, typename Layout, typename Parent>
-struct CudaIndexCalc_ThreadLayout<ArgList<Args...>, Layout, Parent> {
 
-  static_assert(sizeof...(Args) == Layout::n_dims, "");
 
-  Layout const &layout;
-  long num_threads;
-  long offset;
-  Parent const &parent;
 
-  constexpr
-  __device__
-  CudaIndexCalc_ThreadLayout(Layout const &l, Parent const &p) : layout(l), num_threads(l.size()), offset(0), parent{p} {}
+template<typename SegmentType>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr LaunchDim cudaCalcDims(cuda_thread_exec const &, SegmentType const &segment, LaunchDim const &){
+  return LaunchDim{1, (long)segment.size()};
+}
 
-  constexpr
-  __device__
-  CudaIndexCalc_ThreadLayout(Layout const &l, long nt, long off, Parent const &p) : layout(l), num_threads(nt), offset(off), parent{p} {}
 
+template<camp::idx_t ArgumentId, typename Data>
+RAJA_DEVICE
+__inline__
+bool cudaAssignIndex(cuda_thread_exec const &, Data &data, LaunchDim &block_thread, LaunchDim const &){
+
+  // get the segment, and compute it's length
+  auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
+  auto begin = segment.begin();
+  auto end = segment.end();
+  auto len = end - begin;
+
+  // Compute our index, and strip off the thread index
+  long i = block_thread.threads % len;
+  block_thread.threads /= len;
+
+  // Assign our computed index to the tuple
+  data.template assign_index<ArgumentId>(*(begin+i));
+
+  return true;
+}
+
+
+
+
+
+
+template<size_t num_blocks_max, typename SegmentType>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+LaunchDim cudaCalcDims(cuda_block_thread_exec<num_blocks_max> const &, SegmentType const &segment, LaunchDim const &){
+  long len = segment.end() - segment.begin();
+  long num_blocks = num_blocks_max < len ? num_blocks_max : len;
+  long num_threads = len / num_blocks;
+  if(num_threads*num_blocks < len){
+    num_threads ++;
+  }
+  return LaunchDim{num_blocks, num_threads};
+}
+
+
+template<camp::idx_t ArgumentId, size_t num_blocks_max, typename Data>
+RAJA_DEVICE
+__inline__
+bool cudaAssignIndex(cuda_block_thread_exec<num_blocks_max> const &, Data &data, LaunchDim &block_thread, LaunchDim const &){
+
+  // compute number of blocks and threads
+  auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
+  auto begin = segment.begin();
+  auto end = segment.end();
+  auto len = end - begin;
+  long num_blocks = num_blocks_max < len ? num_blocks_max : len;
+  long num_threads = len / num_blocks;
+  if(num_threads*num_blocks < len){
+    num_threads ++;
+  }
+
+  // Compute our index, and strip off the thread index
+  long block_i = block_thread.blocks % num_blocks;
+  block_thread.blocks /= num_blocks;
+
+  long thread_i = block_thread.threads % num_threads;
+  block_thread.threads /= num_threads;
+
+  long i = block_i*num_threads + thread_i;
+
+  // Assign our computed index to the tuple
+  if(i < len){
+    data.template assign_index<ArgumentId>(*(begin+i));
+    return true;
+  }
+  // our i is out of bounds
+  return false;
+}
+
+
+
+
+template<size_t num_blocks, typename SegmentType>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+LaunchDim cudaCalcDims(cuda_block_seq_exec<num_blocks> const &, SegmentType const &segment, LaunchDim const &){
+  return LaunchDim{num_blocks < (segment.end() - segment.begin()) ? (long)num_blocks : (long)(segment.end() - segment.begin()), 1};
+}
+
+
+template<typename ArgList, typename CalcList, typename RangeList>
+struct CudaIndexCalc;
+
+
+template<camp::idx_t ... Args, typename ... CalcTypes, camp::idx_t ... RangeInts>
+struct CudaIndexCalc<ArgList<Args...>, camp::list<CalcTypes...>, camp::idx_seq<RangeInts...>>{
+
+  using CalcList = camp::list<CalcTypes...>;
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static LaunchDim computeLogicalDims(SegmentTuple const &segments, LaunchDim const &max_physical){
+
+    // evaluate product of each Calculator's block and thread requirements
+    return VarOps::foldl(RAJA::operators::multiplies<LaunchDim>(),
+        cudaCalcDims(camp::at_v<CalcList, RangeInts>{}, camp::get<RangeInts>(segments), max_physical)...);
+
+  }
 
   template<typename Data>
-  inline
-  __device__
-  void calcIndex(Data &data, long rem_blocks, long rem_threads) const {
+  RAJA_INLINE
+  RAJA_DEVICE
+  static bool assignIndices(Data &data, LaunchDim block_thread, LaunchDim const &max_physical){
 
-    // Compute and assign our index
-    layout.toIndices((rem_threads%num_threads)+offset, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
-
-
-    // Pass on remainder to parent
-    parent.calcIndex(data, rem_blocks, rem_threads / num_threads);
-  }
-
-
-  constexpr
-  __device__
-  long numLogicalThreads() const {
-    return num_threads * parent.numLogicalThreads();
-  }
-
-  constexpr
-  inline
-  __device__
-  long numLogicalBlocks() const {
-    return parent.numLogicalBlocks();
-  }
-
-  constexpr
-  inline
-  __device__
-  long getLogicalBlock() const {
-    return parent.getLogicalBlock();
+    // evaluate each index, passing block_thread through
+    // each calculator will trim block_thread appropriately
+    return VarOps::foldl(RAJA::operators::logical_and<bool>(),
+        cudaAssignIndex<RangeInts>(camp::at_v<CalcList, RangeInts>{}, data, block_thread, max_physical)...);
   }
 
 };
 
+using CudaIndexCalc_Terminator = CudaIndexCalc<ArgList<>, camp::list<>, camp::idx_seq<>>;
+
+
+template<typename IndexCalcBase, camp::idx_t ArgN, typename CalcN>
+struct CudaIndexCalc_Extender;
+
+
+template<camp::idx_t ... Args, typename ... CalcTypes, camp::idx_t ... RangeInts, camp::idx_t ArgN, typename CalcN>
+struct CudaIndexCalc_Extender<CudaIndexCalc<ArgList<Args...>, camp::list<CalcTypes...>, camp::idx_seq<RangeInts...>>, ArgN, CalcN>{
+  using type = CudaIndexCalc<ArgList<Args..., ArgN>, camp::list<CalcTypes..., CalcN>, camp::idx_seq<RangeInts..., sizeof...(RangeInts)>>;
+};
+
+template<typename IndexCalcBase, camp::idx_t ArgN, typename CalcN>
+using ExtendCudaIndexCalc = typename CudaIndexCalc_Extender<IndexCalcBase, ArgN, CalcN>::type;
 
 
 
-template <typename Policy>
+
+
+
+
+
+template <typename Policy, typename IndexCalc>
 struct CudaStatementExecutor;
 
 template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename IndexCalc>
 struct CudaStatementListExecutor;
-
-
-
-template<typename StmtList, typename Data, typename IndexCalc>
-RAJA_DEVICE
-RAJA_INLINE
-void cuda_execute_statement_list(Data &data, IndexCalc const &index_calc){
-
-  CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, index_calc);
-
-}
-
-
-
-
-
-template <typename StmtList, typename Data>
-struct CudaStatementListWrapper {
-
-  template<typename IndexCalc>
-  inline
-  __device__
-  void operator()(Data &data, IndexCalc const &index_calc) const
-  {
-    cuda_execute_statement_list<StmtList>(data, index_calc);
-  }
-};
-
-
-// Create a wrapper for this policy
-template<typename PolicyT, typename Data>
-RAJA_INLINE
-RAJA_DEVICE
-constexpr
-auto cuda_make_statement_list_wrapper(Data & data) ->
-  CudaStatementListWrapper<PolicyT, camp::decay<Data>>
-{
-  return CudaStatementListWrapper<PolicyT, camp::decay<Data>>();
-}
 
 
 template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList, typename IndexCalc>
@@ -427,20 +382,33 @@ struct CudaStatementListExecutor{
   static
   inline
   __device__
-  void exec(Data &data, IndexCalc const &index_calc){
+  void exec(Data &data, long logical_block){
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
 
-    // Create a wrapper for enclosed statements within statement
-    using eclosed_statements_t = typename statement::enclosed_statements_t;
-    auto enclosed_wrapper = cuda_make_statement_list_wrapper<eclosed_statements_t>(data);
-
     // Execute this statement
-    CudaStatementExecutor<statement>::exec(enclosed_wrapper, data, index_calc);
+    CudaStatementExecutor<statement, IndexCalc>::exec(data, logical_block);
 
-    // call our next statement
-    CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, index_calc);
+    // call the next statement in the list
+    CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, logical_block);
+  }
+
+
+  template<typename Data>
+  static
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    // Compute this statements launch dimensions
+    using statement = camp::at_v<StmtList, statement_index>;
+    LaunchDim statement_dims = CudaStatementExecutor<statement, IndexCalc>::calculateDimensions(data, max_physical);
+
+    // call the next statement in the list
+    LaunchDim next_dims = CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::calculateDimensions(data, max_physical);
+
+    // Return the maximum of the two
+    return statement_dims.maximum(next_dims);
   }
 
 
@@ -458,39 +426,52 @@ struct CudaStatementListExecutor<num_statements,num_statements, StatementList<St
   static
   inline
   __device__
-  void exec(Data &, IndexCalc const &) {}
+  void exec(Data &, long) {}
 
 
-  template<typename SegmentTuple>
+  template<typename Data>
+  static
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
-    LaunchDim dims;
-    VarOps::ignore_args(
-      (dims = dims.maximum(
-          CudaStatementExecutor<Stmts>::getRequested(segments, max_physical_blocks, used))
-      )...
-    );
-    return dims;
+  LaunchDim calculateDimensions(Data const &, LaunchDim const &){
+
+    return LaunchDim();
   }
 };
 
 
 
-
-
-
-template<typename SegmentTuple, typename ... EnclosedStmts>
+template<typename StmtList, typename IndexCalc, typename Data>
+RAJA_DEVICE
 RAJA_INLINE
-LaunchDim cuda_get_statement_list_requested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+void cuda_execute_statement_list(Data &data, long logical_block){
 
-  using StmtList = StatementList<EnclosedStmts...>;
-  using IndexCalc = CudaIndexCalc_Terminator;
+  CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, logical_block);
 
-  using StmtListExec = CudaStatementListExecutor<StmtList::size, StmtList::size, StmtList, IndexCalc>;
-
-  return StmtListExec::getRequested(segments, max_physical_blocks, used);
 }
 
+
+
+
+template<typename StmtList, typename IndexCalc, typename Data>
+RAJA_INLINE
+LaunchDim cuda_calcdims_statement_list(Data const &data, LaunchDim const &max_physical){
+
+  using StmtListExec = CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>;
+
+  return StmtListExec::calculateDimensions(data, max_physical);
+}
+
+
+template<typename Data, typename ... EnclosedStmts>
+RAJA_INLINE
+LaunchDim cuda_calculate_logical_dimensions(Data const &data, LaunchDim const &max_physical){
+
+  using index_calc_t = CudaIndexCalc_Terminator;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  return cuda_calcdims_statement_list<stmt_list_t, index_calc_t>(data, max_physical);
+
+}
 
 
 

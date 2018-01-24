@@ -77,39 +77,49 @@ namespace nested
 namespace internal
 {
 
-template <camp::idx_t LoopIndex>
-struct CudaStatementExecutor<Lambda<LoopIndex>>{
+template <camp::idx_t LoopIndex, typename IndexCalc>
+struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
+  template <typename Data>
   static
-  RAJA_INLINE
-  RAJA_DEVICE
-  void exec(WrappedBody const &, Data &data, IndexCalc const &index_calc)
+  inline
+  __device__
+  void exec(Data &data, long logical_block)
   {
-    // loop over chunks of logical threads in this block
-    long logical_block = index_calc.getLogicalBlock();
+    // Get physical parameters
+    LaunchDim max_physical(gridDim.x, blockDim.x);
 
-    long logical_thread = threadIdx.x;
-    long num_logical_threads = index_calc.numLogicalThreads();
+    // Compute logical dimensions
+    LaunchDim logical_dims = IndexCalc::computeLogicalDims(data.segment_tuple, max_physical);
 
-    while(logical_thread < num_logical_threads){
-      // Compute and assign indices
-      index_calc.calcIndex(data, logical_block, logical_thread);
+    // Loop over logical threads in this block
+    LaunchDim block_thread(logical_block, threadIdx.x);
+    while(block_thread.threads < logical_dims.threads){
 
-      // invoke lambda
-      invoke_lambda<LoopIndex>(data);
+      // compute indices
+      bool in_bounds = IndexCalc::assignIndices(data, block_thread, max_physical);
 
-      // increment to the next block-stride logical thread
-      logical_thread += blockDim.x;
+      // call the user defined function, if the computed index in in bounds
+      if(in_bounds){
+        invoke_lambda<LoopIndex>(data);
+      }
+
+      // increment to next block-stride logical thread
+      block_thread.threads += blockDim.x;
     }
 
   }
 
-  template<typename SegmentTuple>
+
+  template<typename Data>
+  static
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &, long , LaunchDim const &used){
-    return used;
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    return IndexCalc::computeLogicalDims(data.segment_tuple, max_physical);
+
   }
+
 };
 
 
