@@ -771,6 +771,13 @@ public:
   {
   }
 
+  RAJA_HOST_DEVICE
+  void reset()
+  {
+    val.value = T();
+    val.identity = Combiner::identity();
+  }
+
   //! copy and on host attempt to setup for device
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
