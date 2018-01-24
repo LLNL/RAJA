@@ -92,23 +92,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
-  RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot;
+  RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-      seqdot += a[i] * b[i]; 
+    seqdot += a[i] * b[i]; 
   });
-  
+
   dot = seqdot.get();
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
-
-  std::cout<<"reset the data "<<std::endl;
-  seqdot.reset();
-  dot = seqdot.get();
-  std::cout << "\t (a, b) = " << dot << std::endl;
-
-
 
 
 //----------------------------------------------------------------------------//
@@ -116,7 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
-  RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot;
+  RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     ompdot += a[i] * b[i]; 
@@ -124,11 +117,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   dot = ompdot.get();
   std::cout << "\t (a, b) = " << dot << std::endl;
-  checkResult(dot, dot_ref);
 
-  ompdot.reset();
-  dot = ompdot.get();
-  std::cout << "\t (a, b) = " << dot << std::endl;
+  checkResult(dot, dot_ref);
 #endif
 
 
@@ -137,7 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> cudot;
+  RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> cudot(0.0);
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
@@ -151,6 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
+
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
 
