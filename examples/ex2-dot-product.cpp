@@ -110,13 +110,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-#if 0
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
-  RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
+  RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot;
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     ompdot += a[i] * b[i]; 
@@ -124,8 +124,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   dot = ompdot.get();
   std::cout << "\t (a, b) = " << dot << std::endl;
-
   checkResult(dot, dot_ref);
+
+  ompdot.reset();
+  dot = ompdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
 #endif
 
 
@@ -148,7 +151,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
-#endif
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
 
