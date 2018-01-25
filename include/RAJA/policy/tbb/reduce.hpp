@@ -66,6 +66,16 @@ public:
     data->local() = init_val;
   }
 
+  //There should be a better way to reset data
+  void reset(T init_val, T initializer)
+  {
+
+    data = std::shared_ptr<tbb::combinable<T>>(
+           std::make_shared<tbb::combinable<T>>([=]() { return initializer; }));
+
+    data->local() = init_val;
+  };
+
   /*!
    *  \return the calculated reduced value
    */
