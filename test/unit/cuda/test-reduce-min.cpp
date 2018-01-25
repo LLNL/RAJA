@@ -104,6 +104,48 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
   }
 }
 
+CUDA_TEST_F(ReduceMinCUDA, generic2)
+{
+
+  double* dvalue = ReduceMinCUDA::dvalue;
+  reset(dvalue, TEST_VEC_LEN);
+
+  double dcurrentMin = DEFAULT_VAL;
+
+  for (int tcount = 0; tcount < test_repeat; ++tcount) {
+
+
+    ReduceMin<cuda_reduce<block_size>, double> dmin0;
+    ReduceMin<cuda_reduce<block_size>, double> dmin1;
+    ReduceMin<cuda_reduce<block_size>, double> dmin2;
+
+    dmin0.reset(DEFAULT_VAL);
+    dmin1.reset(DEFAULT_VAL);
+    dmin2.reset(BIG_VAL);
+
+    int loops = 16;
+    for (int k = 0; k < loops; k++) {
+
+      double droll = dist(mt);
+      int index = int(dist2(mt));
+      if (dvalue[index] > droll) {
+        dvalue[index] = droll;
+        dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+      }
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        dmin0.min(dvalue[i]);
+        dmin1.min(2 * dvalue[i]);
+        dmin2.min(dvalue[i]);
+      });
+
+      ASSERT_FLOAT_EQ(dcurrentMin, dmin0.get());
+      ASSERT_FLOAT_EQ(dcurrentMin * 2, dmin1.get());
+      ASSERT_FLOAT_EQ(BIG_VAL, dmin2.get());
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 //

@@ -772,9 +772,9 @@ public:
   }
 
   RAJA_HOST_DEVICE
-  void reset()
+  void reset(T in_val)
   {
-    val.value = T();
+    val.value = in_val;
     val.identity = Combiner::identity();
   }
 
@@ -954,7 +954,11 @@ public:
       Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
+  explicit ReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   explicit ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
@@ -992,7 +996,11 @@ public:
       Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
+  explicit ReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   explicit ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {

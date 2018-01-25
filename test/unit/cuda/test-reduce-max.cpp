@@ -104,6 +104,48 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
   }
 }
 
+CUDA_TEST_F(ReduceMaxCUDA, generic2)
+{
+
+  double* dvalue = ReduceMaxCUDA::dvalue;
+  reset(dvalue, TEST_VEC_LEN);
+
+  double dcurrentMax = DEFAULT_VAL;
+
+  for (int tcount = 0; tcount < test_repeat; ++tcount) {
+
+
+    ReduceMax<cuda_reduce<block_size>, double> dmax0;
+    ReduceMax<cuda_reduce<block_size>, double> dmax1;
+    ReduceMax<cuda_reduce<block_size>, double> dmax2;
+
+    dmax0.reset(DEFAULT_VAL);
+    dmax1.reset(DEFAULT_VAL);
+    dmax2.reset(BIG_VAL);
+
+    int loops = 16;
+    for (int k = 0; k < loops; k++) {
+
+      double droll = dist(mt);
+      int index = int(dist2(mt));
+      if (droll > dvalue[index]) {
+        dvalue[index] = droll;
+        dcurrentMax = RAJA_MAX(dcurrentMax, droll);
+      }
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        dmax0.max(dvalue[i]);
+        dmax1.max(2 * dvalue[i]);
+        dmax2.max(dvalue[i]);
+      });
+
+      ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
+      ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
+      ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 //
