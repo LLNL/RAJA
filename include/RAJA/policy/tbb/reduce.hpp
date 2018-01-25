@@ -61,12 +61,12 @@ public:
   //! constructor requires a default value for the reducer
   explicit ReduceTBB(T init_val, T initializer)
       : data(
-             std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
+            std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
   {
     data->local() = init_val;
   }
 
-  //reset method, should only be used master thread
+  //reset method should only be used by master thread
   void reset(T init_val, T initializer)
   {
     //removes all elements;
