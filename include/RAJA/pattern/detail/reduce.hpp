@@ -192,8 +192,8 @@ public:
   void combine(T const &other) const { c.combine(other); }
 
   RAJA_HOST_DEVICE
-  void reset() {
-    c.reset(T(), Reduce::identity());
+  void reset(T val, T identity_ = Reduce::identity()) {
+    c.reset(val, identity_);
   }
 
 
@@ -310,6 +310,11 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
+  BaseReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   //! constructor requires a default value for the reducer
   BaseReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
@@ -391,6 +396,11 @@ public:
   using Base = BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
   using Base::Base;
+
+  BaseReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
 
   //! constructor requires a default value for the reducer
   BaseReduceMaxLoc(T init_val, Index_type init_idx)
