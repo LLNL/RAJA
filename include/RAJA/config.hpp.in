@@ -174,7 +174,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_SIMD  _Pragma("omp simd")
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
-#define RAJA_SIMD _Pragma("simd")
+#define RAJA_SIMD _Pragma("vector")
 #define RAJA_NO_SIMD  _Pragma("novector")
 #endif
 
