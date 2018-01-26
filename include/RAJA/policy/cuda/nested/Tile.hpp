@@ -26,14 +26,16 @@ namespace internal{
 
 
 
-template <camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts>
-struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>> {
+template <camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, IndexCalc> {
 
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
+  template <typename Data>
   static
-  RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
+  inline
+  __device__
+  void exec(Data &data, long logical_block)
   {
     // Get the segment referenced by this Tile statement
     auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
@@ -59,8 +61,8 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>
       // in shmem windows
       camp::get<ArgumentId>(data.index_tuple) = *camp::get<ArgumentId>(data.segment_tuple).begin();
 
-      // Execute our enclosed statement list
-      wrap(data, index_calc);
+      // execute enclosed statements
+      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
     }
 
 
@@ -69,30 +71,34 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>
   }
 
 
-  template<typename SegmentTuple>
+
+  template<typename Data>
+  static
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
 
     // Pull out iterators
-    auto const &seg = camp::get<ArgumentId>(segments);
+    auto const &seg = camp::get<ArgumentId>(data.segment_tuple);
     auto begin = seg.begin();
     auto end = seg.end();
 
     // compute trip count
     auto len = end - begin;
 
-    // Make a local copy of segments
-    using SegType = camp::decay<SegmentTuple>;
-    SegType seg_copy = segments;
+    // privatize data
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
 
     // Restrict the size of the segment based on tiling chunk size
     auto chunk_size = TPol::chunk_size;
     if(chunk_size < len){
-      camp::get<ArgumentId>(seg_copy) = seg.slice(0, chunk_size);
+      camp::get<ArgumentId>(private_data.segment_tuple) = seg.slice(0, chunk_size);
     }
 
-    // Pass restricted segment to enclosed statements
-    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(seg_copy, max_physical_blocks, used);
+
+    // Return launch dimensions of enclosed statements
+    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(private_data, max_physical);
   }
 
 };

@@ -1241,77 +1241,77 @@ CUDA_TEST(Nested, CudaComplexNested){
 
 
 
-//CUDA_TEST(Nested, CudaShmemWindow1d){
-//  using namespace RAJA;
-//  using namespace RAJA::nested;
-//
-//  constexpr long N = (long)256;
-//
-//  using Pol = nested::Policy<
-//            CudaKernel<
-//              nested::Tile<0, nested::tile_fixed<16>, seq_exec,
-//                SetShmemWindow<
-//
-//                  For<0, cuda_thread_exec, Lambda<0>>,
-//
-//                  CudaThreadSync,
-//
-//                  For<0, cuda_thread_exec, Lambda<1>>
-//                > // SetShmemWindow
-//              >
-//            >
-//          >;
-//
-//  int *ptr = nullptr;
-//  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N) );
-//
-//  for(long i = 0;i < N;++ i){
-//    ptr[i] = 0;
-//  }
-//
-//
-//  auto segments = RAJA::make_tuple(RangeSegment(0,N));
-//
-//
-//  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-//
-//
-//  using shmem_t = SharedMemory<cuda_shmem, double, 16>;
-//  ShmemWindowView<shmem_t, ArgList<0>, SizeList<16>, decltype(segments)> shmem;
-//
-//
-//  nested::forall(
-//      Pol{},
-//
-//      segments,
-//
-//      [=] __device__ (RAJA::Index_type i){
-//
-//        trip_count += 1;
-//        shmem(i) = i;
-//
-//      },
-//
-//      [=] __device__ (RAJA::Index_type i){
-//
-//        trip_count += 1;
-//        ptr[i] = shmem(i);
-//
-//      }
-//  );
-//  cudaDeviceSynchronize();
-//
-//  for(long i = 0;i < N;++ i){
-//    ASSERT_EQ(ptr[i], (int)(i));
-//  }
-//
-//  // check trip count
-//  long result = (long)trip_count;
-//  ASSERT_EQ(result, 2*N);
-//
-//
-//  cudaFree(ptr);
-//}
+CUDA_TEST(Nested, CudaShmemWindow1d){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)256;
+
+  using Pol = nested::Policy<
+            CudaKernel<
+              nested::Tile<0, nested::tile_fixed<16>, seq_exec,
+                SetShmemWindow<
+
+                  For<0, cuda_thread_exec, Lambda<0>>,
+
+                  CudaThreadSync,
+
+                  For<0, cuda_thread_exec, Lambda<1>>
+                > // SetShmemWindow
+              >
+            >
+          >;
+
+  int *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N) );
+
+  for(long i = 0;i < N;++ i){
+    ptr[i] = 0;
+  }
+
+
+  auto segments = RAJA::make_tuple(RangeSegment(0,N));
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+
+  using shmem_t = SharedMemory<cuda_shmem, double, 16>;
+  ShmemWindowView<shmem_t, ArgList<0>, SizeList<16>, decltype(segments)> shmem;
+
+
+  nested::forall(
+      Pol{},
+
+      segments,
+
+      [=] __device__ (RAJA::Index_type i){
+
+        trip_count += 1;
+        shmem(i) = i;
+
+      },
+
+      [=] __device__ (RAJA::Index_type i){
+
+        trip_count += 1;
+        ptr[i] = shmem(i);
+
+      }
+  );
+  cudaDeviceSynchronize();
+
+  for(long i = 0;i < N;++ i){
+    ASSERT_EQ(ptr[i], (int)(i));
+  }
+
+  // check trip count
+  long result = (long)trip_count;
+  ASSERT_EQ(result, 2*N);
+
+
+  cudaFree(ptr);
+}
 
 
 //
@@ -1628,4 +1628,44 @@ CUDA_TEST(Nested, CudaExec_3threadexec){
 
   ASSERT_EQ(result, N);
 }
+
+
+CUDA_TEST(Nested, CudaExec_tile1threadexec){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)1024*1024;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<
+              nested::Tile<0, nested::tile_fixed<128>, seq_exec,
+                For<0, cuda_thread_exec, Lambda<0>>
+              >
+            >
+        >;
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  nested::forall(
+      Pol{},
+
+      RAJA::make_tuple(RangeSegment(0,N)),
+
+      [=] __device__ (ptrdiff_t i){
+
+          trip_count += 1;
+
+      }
+  );
+  cudaDeviceSynchronize();
+
+
+  long result = (long)trip_count;
+  //printf("result=%ld\n", result);
+
+  ASSERT_EQ(result, N);
+}
+
 #endif // CUDA

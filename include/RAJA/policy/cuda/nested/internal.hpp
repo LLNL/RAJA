@@ -330,14 +330,6 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>, 
 
 
 
-template<size_t num_blocks, typename SegmentType>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-LaunchDim cudaCalcDims(cuda_block_seq_exec<num_blocks> const &, SegmentType const &segment, LaunchDim const &){
-  return LaunchDim{num_blocks < (segment.end() - segment.begin()) ? (long)num_blocks : (long)(segment.end() - segment.begin()), 1};
-}
-
-
 template<typename SegmentTuple, typename ArgList, typename ExecPolicies, typename RangeList>
 struct CudaIndexCalc;
 
@@ -345,7 +337,6 @@ struct CudaIndexCalc;
 template<typename SegmentTuple, camp::idx_t ... Args, typename ... ExecPolicies, camp::idx_t ... RangeInts>
 struct CudaIndexCalc<SegmentTuple, ArgList<Args...>, camp::list<ExecPolicies...>, camp::idx_seq<RangeInts...>>{
 
-  //using CalcList = camp::list<ExecPolicies...>;
   using CalcList = camp::tuple<CudaIndexCalc_Policy<Args, ExecPolicies, camp::at_v<typename SegmentTuple::TList, Args>>...>;
 
   CalcList calc_list;

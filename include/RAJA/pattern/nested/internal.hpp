@@ -197,13 +197,10 @@ struct GenericWrapper : public GenericWrapperBase {
 
   data_t &data;
 
-  RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
   explicit GenericWrapper(data_t &d) : data{d} {}
 
-
-  RAJA_HOST_DEVICE
   RAJA_INLINE
   void exec(){
     execute_statement_list<camp::list<EnclosedStmts...>>(data);

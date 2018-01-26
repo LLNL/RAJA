@@ -84,23 +84,26 @@ struct CudaThreadSync : public internal::Statement<camp::nil>{
 namespace internal
 {
 
-template <>
-struct CudaStatementExecutor<CudaThreadSync>{
+template <typename IndexCalc>
+struct CudaStatementExecutor<CudaThreadSync, IndexCalc>{
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
+  template <typename Data>
   static
-  RAJA_INLINE
-  RAJA_DEVICE
-  void exec(WrappedBody const &, Data &data, IndexCalc const &)
+  inline
+  __device__
+  void exec(Data &, long logical_block)
   {
     __syncthreads();
   }
 
 
-  template<typename SegmentTuple>
+  template<typename Data>
+  static
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &, long , LaunchDim const &used){
-    return used;
+  LaunchDim calculateDimensions(Data const &, LaunchDim const &){
+
+    // Return launch dimensions of enclosed statements
+    return LaunchDim();
   }
 
 };

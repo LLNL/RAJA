@@ -21,13 +21,15 @@ namespace internal
 
 
 
-template <typename... EnclosedStmts>
-struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
+template <typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  template <typename Data>
   static
   RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
+  void exec(Data &data, long logical_block)
   {
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
@@ -45,21 +47,20 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     __syncthreads();
 
     // Thread privatize, triggering Shmem objects to grab updated window info
-    using RAJA::internal::thread_privatize;
-    auto privatizer = thread_privatize(data);
-    auto &private_data = privatizer.get_priv();
+    loop_data_t private_data = data;
 
-    // Execute enclosed statements
-    wrap(private_data, index_calc);
+    // execute enclosed statements
+    cuda_execute_statement_list<stmt_list_t, IndexCalc>(private_data, logical_block);
   }
 
 
-  template<typename SegmentTuple>
+  template<typename Data>
+  static
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, used);
-
+    // Return launch dimensions of enclosed statements
+    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
   }
 };
 
