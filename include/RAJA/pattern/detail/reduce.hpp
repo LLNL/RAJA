@@ -157,13 +157,12 @@ public:
   using value_type = T;
   using reduce_type = Reduce;
 
-  //Use the types default constructor
-  //BaseReduce() = delete;
+
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce()
-    : c{T(), Reduce::identity()}
+  BaseReduce()
   {
+    reset(T(),Reduce::identity());
   }
 
   //! prohibit compiler-generated copy assignment
@@ -183,9 +182,9 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
-      : c{init_val, identity_}
+   BaseReduce(T init_val, T identity_ = Reduce::identity())
   {
+    reset(init_val, identity_);
   }
 
   RAJA_HOST_DEVICE
@@ -215,13 +214,17 @@ protected:
   T mutable my_data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  BaseCombinable() = delete;
+  
+  RAJA_HOST_DEVICE
+  BaseCombinable()
+  {
+    reset(T(), T());
+  }
 
   RAJA_HOST_DEVICE
-  constexpr BaseCombinable(T init_val, T identity_ = T())
-      : identity{identity_}, my_data{init_val}
+  BaseCombinable(T init_val, T identity_ = T())
   {
+    reset(init_val,identity_);
   }
 
   RAJA_HOST_DEVICE
