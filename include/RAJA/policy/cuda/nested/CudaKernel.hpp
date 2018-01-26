@@ -163,14 +163,12 @@ template <typename StmtList, typename Data>
 __global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
 {
 
-  using index_calc_t = CudaIndexCalc_Terminator;
-
   // Thread privatize the loop data
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(data);
   auto &private_data = privatizer.get_priv();
 
-  using index_calc_t = CudaIndexCalc_Terminator;
+  using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
 
   // Iterate through logical blocks
   long logical_block = blockIdx.x;

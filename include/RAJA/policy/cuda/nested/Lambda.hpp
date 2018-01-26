@@ -90,14 +90,15 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
     LaunchDim max_physical(gridDim.x, blockDim.x);
 
     // Compute logical dimensions
-    LaunchDim logical_dims = IndexCalc::computeLogicalDims(data.segment_tuple, max_physical);
+    IndexCalc index_calc(data.segment_tuple, max_physical);
+    LaunchDim logical_dims = index_calc.computeLogicalDims();
 
     // Loop over logical threads in this block
     LaunchDim block_thread(logical_block, threadIdx.x);
     while(block_thread.threads < logical_dims.threads){
 
       // compute indices
-      bool in_bounds = IndexCalc::assignIndices(data, block_thread, max_physical);
+      bool in_bounds = index_calc.assignIndices(data, block_thread);
 
       // call the user defined function, if the computed index in in bounds
       if(in_bounds){
@@ -116,7 +117,8 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    return IndexCalc::computeLogicalDims(data.segment_tuple, max_physical);
+    IndexCalc index_calc(data.segment_tuple, max_physical);
+    return index_calc.computeLogicalDims();
 
   }
 

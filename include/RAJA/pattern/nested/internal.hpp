@@ -104,6 +104,7 @@ struct LoopData {
 
   using policy_t = PolicyType;
 
+  using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
   using BodiesTuple = camp::tuple<typename std::remove_reference<Bodies>::type...> ;
@@ -141,26 +142,6 @@ void invoke_lambda(Data &data){
 template <camp::idx_t idx, camp::idx_t N, typename StmtList>
 struct StatementListExecutor;
 
-
-
-
-
-//template <typename StmtList, typename Data>
-//struct StatementListWrapper {
-//
-//  using data_type = typename std::remove_reference<Data>::type;
-//
-//  Data &data;
-//
-//  constexpr
-//  explicit StatementListWrapper(Data &d) : data{d} {}
-//
-//  RAJA_INLINE
-//  void operator()() const
-//  {
-//    execute_statement_list<StmtList>(data);
-//  }
-//};
 
 
 
