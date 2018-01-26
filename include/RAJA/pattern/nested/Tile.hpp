@@ -52,9 +52,11 @@ struct tile_fixed {
 
 namespace internal{
 
-template <camp::idx_t ArgumentId, typename BaseWrapper>
-struct TileWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
-  using Base = GenericWrapper<ArgumentId, BaseWrapper>;
+
+template <camp::idx_t ArgumentId, typename Data, typename ... EnclosedStmts>
+struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+
+  using Base = GenericWrapper<Data, EnclosedStmts...>;
   using Base::Base;
 
   template <typename InSegmentType>
@@ -62,26 +64,20 @@ struct TileWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
   void operator()(InSegmentType s)
   {
     // Assign the tile's segment to the tuple
-    camp::get<ArgumentId>(Base::wrapper.data.segment_tuple) = s;
+    camp::get<ArgumentId>(Base::data.segment_tuple) = s;
 
     // Assign the beginning index to the index_tuple for proper use
     // in shmem windows
-    camp::get<ArgumentId>(Base::wrapper.data.index_tuple) =
-        *camp::get<ArgumentId>(Base::wrapper.data.segment_tuple).begin();
+    camp::get<ArgumentId>(Base::data.index_tuple) =
+        *camp::get<ArgumentId>(Base::data.segment_tuple).begin();
 
-    Base::wrapper();
+    // Execute enclosed statements
+    Base::exec();
   }
 };
 
-/**
- * @brief specialization of internal::thread_privatize for tile
- */
-template <camp::idx_t Index, typename BW>
-auto thread_privatize(const nested::internal::TileWrapper<Index, BW> &item)
-    -> NestedPrivatizer<nested::internal::TileWrapper<Index, BW>>
-{
-  return NestedPrivatizer<nested::internal::TileWrapper<Index, BW>>{item};
-}
+
+
 
 template <typename Iterable>
 struct IterableTiler {
@@ -188,12 +184,13 @@ template <camp::idx_t ArgumentId, typename TPol, typename EPol, typename ... Enc
 struct StatementExecutor<Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
 
-  template <typename WrappedBody>
+  template <typename Data>
+  static
   RAJA_INLINE
-  void operator()(WrappedBody const &wrap)
+  void exec(Data &data)
   {
     // Get the segment we are going to tile
-    auto const &segment = camp::get<ArgumentId>(wrap.data.segment_tuple);
+    auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
@@ -201,11 +198,14 @@ struct StatementExecutor<Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
     // Create a tile iterator
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
+    // Wrap in case forall_impl needs to thread_privatize
+    TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);
+
     // Loop over tiles, executing enclosed statement list
-    forall_impl(EPol{}, tiled_iterable, TileWrapper<ArgumentId, WrappedBody>{wrap});
+    forall_impl(EPol{}, tiled_iterable, tile_wrapper);
 
     // Set range back to original values
-    camp::get<ArgumentId>(wrap.data.segment_tuple) = tiled_iterable.it;
+    camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
 
   }
 };

@@ -432,7 +432,7 @@ void runLTimesRajaNestedShmem(bool debug,
               // Load Psi into shmem
               For<1, loop_exec, For<3, simd_exec, Lambda_LoadPsi >>,
 
-              // Zero shmem phi
+              // Load shmem phi
               For<0, loop_exec, For<3, simd_exec, Lambda_LoadPhi >>,
 
               // Compute L*Psi

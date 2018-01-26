@@ -203,8 +203,10 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
   using StatementType = CudaKernelBase<LaunchConfig, EnclosedStmts...>;
 
-  template <typename StmtListWrapper>
-  void operator()(StmtListWrapper const &wrap)
+  template <typename Data>
+  static
+  RAJA_INLINE
+  void exec(Data &&data)
   {
 
     int shmem = RAJA::detail::getSharedMemorySize();
@@ -218,7 +220,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     // Compute the MAX physical kernel dimensions
     //
 
-    using data_t = camp::decay<decltype(wrap.data)>;
+    using data_t = camp::decay<Data>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 //    max_physical.blocks = 5;
 
@@ -236,14 +238,14 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     //
 
     // Privatize the LoopData, using make_launch_body to setup reductions
-    auto cuda_data = RAJA::cuda::make_launch_body(max_physical.blocks, max_physical.threads, shmem, stream, wrap.data);
+    auto cuda_data = RAJA::cuda::make_launch_body(max_physical.blocks, max_physical.threads, shmem, stream, data);
     printf("Data size=%d\n", (int)sizeof(cuda_data));
 
 
     // Compute logical dimensions
-    using SegmentTuple = decltype(wrap.data.segment_tuple);
+    using SegmentTuple = decltype(data.segment_tuple);
     LaunchDim logical_dims =
-        cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(wrap.data, max_physical);
+        cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(data, max_physical);
 
 
     printf("Logical dims: %ld blocks, %ld threads\n",

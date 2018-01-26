@@ -36,19 +36,21 @@ struct For : public internal::ForList,
 namespace internal{
 
 
-template <camp::idx_t ArgumentId, typename BaseWrapper>
-struct ForWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
-  using Base = GenericWrapper<ArgumentId, BaseWrapper>;
+template <camp::idx_t ArgumentId, typename Data, typename ... EnclosedStmts>
+struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+
+  using Base = GenericWrapper<Data, EnclosedStmts...>;
   using Base::Base;
 
   template <typename InIndexType>
   RAJA_INLINE
   void operator()(InIndexType i)
   {
-    Base::wrapper.data.template assign_index<ArgumentId>(i);
-    Base::wrapper();
+    Base::data.template assign_index<ArgumentId>(i);
+    Base::exec();
   }
 };
+
 
 
 
@@ -56,28 +58,24 @@ template <camp::idx_t ArgumentId, typename ExecPolicy, typename... EnclosedStmts
 struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
 
 
-  template <typename WrappedBody>
+  template <typename Data>
+  static
   RAJA_INLINE
-  void operator()(WrappedBody const &wrap)
+  void exec(Data &&data)
   {
+
+    // Create a wrapper, just in case forall_impl needs to thread_privatize
+    ForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
+
     forall_impl(ExecPolicy{},
-                camp::get<ArgumentId>(wrap.data.segment_tuple),
-                ForWrapper<ArgumentId, WrappedBody>{wrap});
+                camp::get<ArgumentId>(data.segment_tuple),
+                for_wrapper);
+
   }
 };
 
 
 
-
-/**
- * @brief specialization of internal::thread_privatize for nested
- */
-template <camp::idx_t Index, typename BW>
-auto thread_privatize(const nested::internal::ForWrapper<Index, BW> &item)
-    -> NestedPrivatizer<nested::internal::ForWrapper<Index, BW>>
-{
-  return NestedPrivatizer<nested::internal::ForWrapper<Index, BW>>{item};
-}
 
 }  // namespace internal
 }  // end namespace nested

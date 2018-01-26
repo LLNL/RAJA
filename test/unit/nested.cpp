@@ -492,52 +492,52 @@ CUDA_TEST(Nested, SubRange_ThreadBlock)
 
 
 
-//TEST(Nested, Shmem1){
-//  using namespace RAJA;
-//  using namespace RAJA::nested;
-//
-//  constexpr int TileSize = 3;
-//  using Pol = nested::Policy<
-//          nested::Tile<0, nested::tile_fixed<TileSize>, seq_exec,
-//            SetShmemWindow<
-//              For<0, seq_exec, Lambda<0>>,
-//              For<0, seq_exec, Lambda<1>>
-//            >
-//          >
-//        >;
-//
-//
-//  constexpr int N = 16;
-//  int *x = new int[N];
-//  for(int i = 0;i < N;++ i){
-//    x[i] = 0;
-//  }
-//
-//  auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
-//
-//  using shmem_t = SharedMemory<seq_shmem, int, TileSize>;
-//  ShmemWindowView<shmem_t, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)> shmem;
-//
-//
-//  nested::forall(
-//      Pol{},
-//
-//      loop_segments,
-//
-//      [=](int i){
-//        shmem(i) = i;
-//      },
-//      [=](int i){
-//        x[i] = shmem(i) * 2;
-//      }
-//  );
-//
-//  for(int i = 0;i < N;++ i){
-//    ASSERT_EQ(x[i], i*2);
-//  }
-//
-//  delete[] x;
-//}
+TEST(Nested, Shmem1){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr int TileSize = 3;
+  using Pol = nested::Policy<
+          nested::Tile<0, nested::tile_fixed<TileSize>, seq_exec,
+            SetShmemWindow<
+              For<0, seq_exec, Lambda<0>>,
+              For<0, seq_exec, Lambda<1>>
+            >
+          >
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+  }
+
+  auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
+
+  using shmem_t = SharedMemory<seq_shmem, int, TileSize>;
+  ShmemWindowView<shmem_t, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)> shmem;
+
+
+  nested::forall(
+      Pol{},
+
+      loop_segments,
+
+      [=](int i){
+        shmem(i) = i;
+      },
+      [=](int i){
+        x[i] = shmem(i) * 2;
+      }
+  );
+
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(x[i], i*2);
+  }
+
+  delete[] x;
+}
 
 
 TEST(Nested, FissionFusion){
@@ -631,10 +631,10 @@ TEST(Nested, Tile){
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
-      [=](int i, int){
+      [=](RAJA::Index_type i, RAJA::Index_type){
         x[i] += 1;
       },
-      [=](int, int j){
+      [=](RAJA::Index_type, RAJA::Index_type j){
         x[j] *= 10;
       }
   );
@@ -670,7 +670,7 @@ TEST(Nested, CollapseSeq){
 
       camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
-      [=](int i, int j){
+      [=](RAJA::Index_type i, RAJA::Index_type j){
         x[i*N + j] += 1;
       }
   );
@@ -1400,6 +1400,7 @@ CUDA_TEST(Nested, CudaComplexNested){
 
 
 
+#ifdef RAJA_ENABLE_CUDA
 
 CUDA_TEST(Nested, CudaExec_1threadexec){
   using namespace RAJA;
@@ -1627,3 +1628,4 @@ CUDA_TEST(Nested, CudaExec_3threadexec){
 
   ASSERT_EQ(result, N);
 }
+#endif // CUDA

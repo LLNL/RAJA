@@ -142,65 +142,44 @@ template <camp::idx_t idx, camp::idx_t N, typename StmtList>
 struct StatementListExecutor;
 
 
-template<typename StmtList, typename Data>
-void execute_statement_list(Data && data){
-  StatementListExecutor<0, StmtList::size, StmtList> launcher;
-  launcher(std::forward<Data>(data));
-}
 
 
 
-template <typename StmtList, typename Data>
-struct StatementListWrapper {
+//template <typename StmtList, typename Data>
+//struct StatementListWrapper {
+//
+//  using data_type = typename std::remove_reference<Data>::type;
+//
+//  Data &data;
+//
+//  constexpr
+//  explicit StatementListWrapper(Data &d) : data{d} {}
+//
+//  RAJA_INLINE
+//  void operator()() const
+//  {
+//    execute_statement_list<StmtList>(data);
+//  }
+//};
 
-  using data_type = typename std::remove_reference<Data>::type;
-
-  Data &data;
-
-  constexpr
-  explicit StatementListWrapper(Data &d) : data{d} {}
-
-  RAJA_INLINE
-  void operator()() const
-  {
-    execute_statement_list<StmtList>(data);
-  }
-};
-
-
-
-// Create a wrapper for this policy
-template<typename PolicyT, typename Data>
-RAJA_INLINE
-constexpr
-auto make_statement_list_wrapper(Data & data) ->
-  StatementListWrapper<PolicyT, camp::decay<Data>>
-{
-  return StatementListWrapper<PolicyT, camp::decay<Data>>(data);
-}
 
 
 template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList>
 struct StatementListExecutor{
 
   template<typename Data>
+  static
   RAJA_INLINE
-  void operator()(Data &data) const {
+  void exec(Data &&data) {
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
 
-    // Create a wrapper for enclosed statements within statement
-    using eclosed_statements_t = typename statement::enclosed_statements_t;
-    auto enclosed_wrapper = make_statement_list_wrapper<eclosed_statements_t>(data);
-
     // Execute this statement
-    StatementExecutor<statement> e;
-    e(enclosed_wrapper);
+    StatementExecutor<statement>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index+1, num_statements, StmtList> next;
-    next(data);
+    StatementListExecutor<statement_index+1, num_statements, StmtList>::exec(std::forward<Data>(data));
   }
 };
 
@@ -213,31 +192,41 @@ template <camp::idx_t num_statements, typename StmtList>
 struct StatementListExecutor<num_statements,num_statements,StmtList> {
 
   template<typename Data>
+  static
   RAJA_INLINE
-  void operator()(Data &) const {}
+  void exec(Data &&) {}
 
 };
 
 
 
 
+template<typename StmtList, typename Data>
+void execute_statement_list(Data && data){
+  StatementListExecutor<0, StmtList::size, StmtList>::exec(std::forward<Data>(data));
+}
 
-template <camp::idx_t Index, typename BaseWrapper>
-struct GenericWrapper {
-  using data_type = camp::decay<typename BaseWrapper::data_type>;
+// Gives all GenericWrapper derived types something to enable_if on
+// in our thread_privatizer
+struct GenericWrapperBase {};
 
-  BaseWrapper wrapper;
+template <typename Data, typename ... EnclosedStmts>
+struct GenericWrapper : public GenericWrapperBase {
+  using data_t = camp::decay<Data>;
+
+  data_t &data;
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  GenericWrapper(BaseWrapper const &w) :  wrapper{w} {}
+  explicit GenericWrapper(data_t &d) : data{d} {}
+
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  constexpr
-  explicit GenericWrapper(data_type &d) : wrapper{d} {}
-
+  void exec(){
+    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+  }
 };
 
 
@@ -246,47 +235,32 @@ struct GenericWrapper {
  */
 template <typename T>
 struct NestedPrivatizer {
-  using data_type = typename T::data_type;
+  using data_t = typename T::data_t;
   using value_type = camp::decay<T>;
   using reference_type = value_type &;
 
-  data_type privatized_data;
+  data_t privatized_data;
   value_type privatized_wrapper;
 
   RAJA_INLINE
   constexpr
-  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper(value_type{privatized_data}) {}
+  NestedPrivatizer(const T &o) : privatized_data{o.data}, privatized_wrapper(privatized_data) {}
 
   RAJA_INLINE
   reference_type get_priv() { return privatized_wrapper; }
 };
 
-template <typename StmtList, typename Data>
-struct NestedPrivatizer<StatementListWrapper<StmtList, Data>> {
-  using data_type = Data;
-  using value_type = StatementListWrapper<StmtList, Data>;
-  using reference_type = value_type &;
 
-  data_type privatized_data;
-  value_type privatized_wrapper;
-
-  RAJA_INLINE
-  constexpr
-  NestedPrivatizer(const StatementListWrapper<StmtList, Data> &wrapper) : privatized_data{wrapper.data}, privatized_wrapper(value_type{privatized_data}) {}
-
-  RAJA_INLINE
-  reference_type get_priv() { return privatized_wrapper; }
-};
 
 /**
- * @brief specialization of internal::thread_privatize for nested
+ * @brief specialization of internal::thread_privatize for any wrappers derived
+ * from GenericWrapper
  */
-template <typename StmtList, typename Data>
+template <typename T>
 constexpr
-auto thread_privatize(const nested::internal::StatementListWrapper<StmtList, Data> &item)
-    -> NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>
+typename std::enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value, NestedPrivatizer<T>>::type thread_privatize(T &wrapper)
 {
-  return NestedPrivatizer<nested::internal::StatementListWrapper<StmtList, Data>>{item};
+  return NestedPrivatizer<T>{wrapper};
 }
 
 

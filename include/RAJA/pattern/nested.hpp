@@ -108,12 +108,10 @@ RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodi
 
 //  printf("sizeof(loop_data)=%ld bytes\n",(long)sizeof(loop_data));
 
-  // Create a StatmentList wrapper to execute our policy (which is just
-  // a StatementList)
-  auto wrapper = internal::make_statement_list_wrapper<PolicyType>(loop_data);
 
   // Execute!
-  wrapper();
+  internal::execute_statement_list<PolicyType>(loop_data);
+
 
 
   detail::clearChaiExecutionSpace();

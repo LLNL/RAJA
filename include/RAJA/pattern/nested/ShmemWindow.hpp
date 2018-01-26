@@ -121,12 +121,13 @@ template <typename... EnclosedStmts>
 struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 
 
-  template <typename WrappedBody>
+  template <typename Data>
+  static
   RAJA_INLINE
-  void operator()(WrappedBody const &wrap)
+  void exec(Data && data)
   {
     // Grab pointer to shared shmem window
-    using loop_data_t = camp::decay<decltype(wrap.data)>;
+    using loop_data_t = camp::decay<Data>;
     using index_tuple_t = typename loop_data_t::index_tuple_t;
     index_tuple_t *shmem_window = static_cast<index_tuple_t*>(detail::getSharedMemoryWindow());
 
@@ -134,19 +135,18 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 //      printf("Setting shmem window %p\n", shmem_window);
 
       // Set the window by copying the current index_tuple to the shared location
-      *shmem_window = wrap.data.index_tuple;
+      *shmem_window = data.index_tuple;
 
       // Privatize to invoke copy ctors
-      auto privatizer = thread_privatize(wrap);
-      auto &private_wrap = privatizer.get_priv();
+      loop_data_t private_data = data;
 
       // Invoke the enclosed statements
-      private_wrap();
+      execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
     }
     else{
       // No shared memory setup, so this becomes a NOP
 //      printf("SetShmemWindow, but no window configured\n");
-      wrap();
+      execute_statement_list<camp::list<EnclosedStmts...>>(std::forward<Data>(data));
     }
   }
 };

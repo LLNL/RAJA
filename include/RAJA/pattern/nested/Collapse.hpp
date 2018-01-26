@@ -29,21 +29,24 @@ namespace internal{
 template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
 struct StatementExecutor<Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts...>> {
 
-  template <typename WrappedBody>
-  void operator()(WrappedBody const &wrap)
+  template <typename Data>
+  static
+  RAJA_INLINE
+  void exec(Data &data)
   {
-    auto b0 = std::begin(camp::get<Arg0>(wrap.data.segment_tuple));
-    auto b1 = std::begin(camp::get<Arg1>(wrap.data.segment_tuple));
+    auto b0 = std::begin(camp::get<Arg0>(data.segment_tuple));
+    auto b1 = std::begin(camp::get<Arg1>(data.segment_tuple));
 
-    auto e0 = std::end(camp::get<Arg0>(wrap.data.segment_tuple));
-    auto e1 = std::end(camp::get<Arg1>(wrap.data.segment_tuple));
+    auto e0 = std::end(camp::get<Arg0>(data.segment_tuple));
+    auto e1 = std::end(camp::get<Arg1>(data.segment_tuple));
 
     // Skip a level
     for (auto i0 = b0; i0 < e0; ++i0) {
-      wrap.data.template assign_index<Arg0>(*i0);
+      data.template assign_index<Arg0>(*i0);
       for (auto i1 = b1; i1 < e1; ++i1) {
-        wrap.data.template assign_index<Arg1>(*i1);
-        wrap();
+        data.template assign_index<Arg1>(*i1);
+
+        execute_statement_list<camp::list<EnclosedStmts...>>(data);
       }
     }
   }

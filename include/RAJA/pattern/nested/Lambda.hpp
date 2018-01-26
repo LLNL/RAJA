@@ -47,11 +47,12 @@ namespace internal{
 template <camp::idx_t LoopIndex>
 struct StatementExecutor<Lambda<LoopIndex>>{
 
-  template <typename WrappedBody>
+  template <typename Data>
+  static
   RAJA_INLINE
-  void operator()(WrappedBody const &wrap)
+  void exec(Data &&data)
   {
-    invoke_lambda<LoopIndex>(wrap.data);
+    invoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
 
