@@ -114,6 +114,42 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
 }
 
 
+TYPED_TEST(IndexSetReduce, ReduceMinTest2)
+{
+  using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
+  using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
+
+  for (Index_type i = 0; i < this->alen; ++i) {
+    this->test_array[i] = fabs(this->in_array[i]);
+  }
+
+  const RAJA::Index_type ref_min_indx =
+      this->is_indices[this->is_indices.size() / 2];
+  const Real_type ref_min_val = -100.0;
+
+  this->test_array[ref_min_indx] = ref_min_val;
+
+  RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin0;
+  RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin1;
+
+  tmin0.reset(1.0e+20);
+  tmin1.reset(-200);
+
+  tmin1.min(-100.0);
+
+  int loops = 2;
+
+  for (int k = 1; k <= loops; ++k) {
+    RAJA::forall<ISET_POLICY_T>(this->iset, [=](RAJA::Index_type idx) {
+      tmin0.min(k * this->test_array[idx]);
+      tmin1.min(this->test_array[idx]);
+    });
+    ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
+    ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+  }
+}
+
+
 TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
@@ -131,6 +167,48 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20, -1);
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
+  tmin1.minloc(-100.0, -1);
+
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+      this->iset, [=](Index_type idx) {
+        tmin0.minloc(1 * this->test_array[idx], idx);
+        tmin1.minloc(this->test_array[idx], idx);
+      });
+
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+      this->iset, [=](Index_type idx) {
+        tmin0.minloc(2 * this->test_array[idx], idx);
+        tmin1.minloc(this->test_array[idx], idx);
+      });
+
+  ASSERT_EQ(Real_type(tmin0), Real_type(2 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
+}
+
+TYPED_TEST(IndexSetReduce, ReduceMinLocTest2)
+{
+  using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
+  using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
+
+  for (Index_type i = 0; i < this->alen; ++i) {
+    this->test_array[i] = fabs(this->in_array[i]);
+  }
+
+  const Index_type ref_min_indx =
+      Index_type(this->is_indices[this->is_indices.size() / 2]);
+  const Real_type ref_min_val = -100.0;
+
+  this->test_array[ref_min_indx] = ref_min_val;
+
+  ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin0; tmin0.reset(1.0e+20, -1);
+  ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1; tmin1.reset(-200.0, -1);
   tmin1.minloc(-100.0, -1);
 
   forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
@@ -189,6 +267,39 @@ TYPED_TEST(IndexSetReduce, ReduceMaxTest)
   }
 }
 
+TYPED_TEST(IndexSetReduce, ReduceMaxTest2)
+{
+  using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
+  using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
+
+  for (Index_type i = 0; i < this->alen; ++i) {
+    this->test_array[i] = -fabs(this->in_array[i]);
+  }
+
+  const Index_type ref_max_indx =
+      Index_type(this->is_indices[this->is_indices.size() / 2]);
+  const Real_type ref_max_val = 100.0;
+
+  this->test_array[ref_max_indx] = ref_max_val;
+
+  ReduceMax<REDUCE_POLICY_T, Real_type> tmax0; tmax0.reset(-1.0e+20);
+  ReduceMax<REDUCE_POLICY_T, Real_type> tmax1; tmax1.reset(200.0);
+  tmax1.max(100);
+
+  int loops = 2;
+
+  for (int k = 1; k <= loops; ++k) {
+
+    forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+      tmax0.max(k * this->test_array[idx]);
+      tmax1.max(this->test_array[idx]);
+    });
+
+    ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
+    ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  }
+}
+
 TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
@@ -206,6 +317,46 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
 
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
+  tmax1.maxloc(100.0, -1);
+
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(1 * this->test_array[idx], idx);
+    tmax1.maxloc(this->test_array[idx], idx);
+  });
+
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmax0), Real_type(1 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(2 * this->test_array[idx], idx);
+    tmax1.maxloc(this->test_array[idx], idx);
+  });
+
+  ASSERT_EQ(Real_type(tmax0), Real_type(2 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
+}
+
+TYPED_TEST(IndexSetReduce, ReduceMaxLocTest2)
+{
+  using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
+  using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
+
+  for (Index_type i = 0; i < this->alen; ++i) {
+    this->test_array[i] = -fabs(this->in_array[i]);
+  }
+
+  const Index_type ref_max_indx =
+      Index_type(this->is_indices[this->is_indices.size() / 2]);
+  const Real_type ref_max_val = 100.0;
+
+  this->test_array[ref_max_indx] = ref_max_val;
+
+  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0; tmax0.reset(-1.0e+20, -1);
+  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1; tmax1.reset(200.0, -1);
   tmax1.maxloc(100.0, -1);
 
   forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {

@@ -753,7 +753,14 @@ template <bool Async, typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-  Reduce() = delete;
+  
+  Reduce()
+      : parent{this},
+        tally_or_val_ptr{new PinnedTally<T>},
+        val(T(), Combiner::identity())
+  {
+  }
+  
 
   //! create a reduce object
   //  the original object's parent is itself
@@ -762,6 +769,13 @@ public:
         tally_or_val_ptr{new PinnedTally<T>},
         val(init_val, identity_)
   {
+  }
+
+  RAJA_HOST_DEVICE
+  void reset(T in_val)
+  {
+    val.value = in_val;
+    val.identity = Combiner::identity();
   }
 
   //! copy and on host attempt to setup for device
@@ -940,7 +954,11 @@ public:
       Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
+  explicit ReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   explicit ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
@@ -978,7 +996,11 @@ public:
       Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
+  explicit ReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   explicit ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {

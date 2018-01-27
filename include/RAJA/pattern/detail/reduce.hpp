@@ -157,8 +157,13 @@ public:
   using value_type = T;
   using reduce_type = Reduce;
 
-  //! prohibit compiler-generated default ctor
-  BaseReduce() = delete;
+
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  BaseReduce()
+  {
+    reset(T(),Reduce::identity());
+  }
 
   //! prohibit compiler-generated copy assignment
   BaseReduce &operator=(const BaseReduce &) = delete;
@@ -177,13 +182,19 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
-      : c{init_val, identity_}
+   BaseReduce(T init_val, T identity_ = Reduce::identity())
   {
+    reset(init_val, identity_);
   }
 
   RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
+
+  RAJA_HOST_DEVICE
+  void reset(T val, T identity_ = Reduce::identity()) {
+    c.reset(val, identity_);
+  }
+
 
   T &local() const { return c.local(); }
 
@@ -203,13 +214,23 @@ protected:
   T mutable my_data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  BaseCombinable() = delete;
+  
+  RAJA_HOST_DEVICE
+  BaseCombinable()
+  {
+    reset(T(), T());
+  }
 
   RAJA_HOST_DEVICE
-  constexpr BaseCombinable(T init_val, T identity_ = T())
-      : identity{identity_}, my_data{init_val}
+  BaseCombinable(T init_val, T identity_ = T())
   {
+    reset(init_val,identity_);
+  }
+
+  RAJA_HOST_DEVICE
+  void reset(T init_val, T identity_){
+    identity = identity_;
+    my_data = init_val;
   }
 
   RAJA_HOST_DEVICE
@@ -292,6 +313,11 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
+  BaseReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
   //! constructor requires a default value for the reducer
   BaseReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
@@ -373,6 +399,11 @@ public:
   using Base = BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
   using Base::Base;
+
+  BaseReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
 
   //! constructor requires a default value for the reducer
   BaseReduceMaxLoc(T init_val, Index_type init_idx)

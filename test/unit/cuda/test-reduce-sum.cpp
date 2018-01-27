@@ -123,6 +123,57 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   }
 }
 
+CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
+{
+  double* dvalue = ReduceSumCUDA::dvalue;
+
+  double dtinit = 5.0;
+
+  ReduceSum<cuda_reduce<block_size>, double> dsum0(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum1;
+  ReduceSum<cuda_reduce<block_size>, double> dsum2(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum3;
+  ReduceSum<cuda_reduce<block_size>, double> dsum4(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum5;
+  ReduceSum<cuda_reduce<block_size>, double> dsum6(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum7;
+  
+  dsum0.reset(0.0);
+  dsum1.reset(dtinit * 1.0);
+  dsum2.reset(0.0);
+  dsum3.reset(dtinit * 3.0);
+  dsum4.reset(0.0);
+  dsum5.reset(dtinit * 5.0);
+  dsum6.reset(0.0);
+  dsum7.reset(dtinit * 7.0);
+  
+  int loops = 2;
+  for (int k = 0; k < loops; k++) {
+
+    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+      dsum0 += dvalue[i];
+      dsum1 += dvalue[i] * 2.0;
+      dsum2 += dvalue[i] * 3.0;
+      dsum3 += dvalue[i] * 4.0;
+      dsum4 += dvalue[i] * 5.0;
+      dsum5 += dvalue[i] * 6.0;
+      dsum6 += dvalue[i] * 7.0;
+      dsum7 += dvalue[i] * 8.0;
+    });
+
+    double base_chk_val = dinit_val * double(TEST_VEC_LEN) * (k + 1);
+
+    ASSERT_FLOAT_EQ(1 * base_chk_val, dsum0.get());
+    ASSERT_FLOAT_EQ(2 * base_chk_val + (dtinit * 1.0), dsum1.get());
+    ASSERT_FLOAT_EQ(3 * base_chk_val, dsum2.get());
+    ASSERT_FLOAT_EQ(4 * base_chk_val + (dtinit * 3.0), dsum3.get());
+    ASSERT_FLOAT_EQ(5 * base_chk_val, dsum4.get());
+    ASSERT_FLOAT_EQ(6 * base_chk_val + (dtinit * 5.0), dsum5.get());
+    ASSERT_FLOAT_EQ(7 * base_chk_val, dsum6.get());
+    ASSERT_FLOAT_EQ(8 * base_chk_val + (dtinit * 7.0), dsum7.get());
+  }
+}
+
 CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
