@@ -55,8 +55,9 @@ class ReduceTBB
   std::shared_ptr<tbb::combinable<T>> data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceTBB() = delete;
+  ReduceTBB(){
+    reset(T(), T());
+  }
 
   //! constructor requires a default value for the reducer
   explicit ReduceTBB(T init_val, T initializer)
@@ -64,7 +65,6 @@ public:
     reset(init_val, initializer);
   }
 
-  //reset method should only be used by master thread
   void reset(T init_val, T initializer)
   {
     data = std::shared_ptr<tbb::combinable<T>>(
