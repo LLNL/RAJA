@@ -79,10 +79,11 @@ RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodi
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
   using segment_t = camp::decay<SegmentTuple>;
-  using loop_data_t = internal::LoopData<PolicyType, segment_t, camp::decay<Bodies>...>;
+  using index_tuple_t = internal::index_tuple_from_segments<typename segment_t::TList>;
+  using loop_data_t = internal::LoopData<PolicyType, segment_t, index_tuple_t, camp::decay<Bodies>...>;
 
   // Setup a shared memory window tuple
-  using index_tuple_t = typename loop_data_t::index_tuple_t;
+  //using index_tuple_t = typename loop_data_t::index_tuple_t;
   index_tuple_t shmem_window;
 //  printf("shmem_window = %p, %d bytes\n", &shmem_window, (int)sizeof(shmem_window));
 

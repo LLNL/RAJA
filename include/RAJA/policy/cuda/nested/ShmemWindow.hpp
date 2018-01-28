@@ -33,7 +33,7 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
   {
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
-    using index_tuple_t = typename loop_data_t::index_tuple_t;
+    using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
 
     // Grab a pointer to the shmem window tuple.  We are assuming that this
     // is the first thing in the dynamic shared memory
@@ -47,7 +47,9 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
     __syncthreads();
 
     // Thread privatize, triggering Shmem objects to grab updated window info
-    loop_data_t private_data = data;
+    //loop_data_t private_data = data;
+
+    auto private_data = privatize_bodies(data);
 
     // execute enclosed statements
     cuda_execute_statement_list<stmt_list_t, IndexCalc>(private_data, logical_block);

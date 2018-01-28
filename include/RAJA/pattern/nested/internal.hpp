@@ -95,19 +95,20 @@ template <typename Policy>
 struct StatementExecutor{};
 
 
-template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
+template <typename PolicyType, typename SegmentTuple, typename IndexTuple, typename ... Bodies>
 struct LoopData {
 
   using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
 
-  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
+  //using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
+  using index_tuple_t = IndexTuple;
 
   using policy_t = PolicyType;
 
   using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
-  using BodiesTuple = camp::tuple<typename std::remove_reference<Bodies>::type...> ;
+  using BodiesTuple = camp::tuple<Bodies...> ;
   const BodiesTuple bodies;
   index_tuple_t index_tuple;
 
@@ -116,18 +117,46 @@ struct LoopData {
   LoopData(SegmentTuple const &s, Bodies const & ... b)
       : segment_tuple{s}, bodies{b...}
   {
-//    printf("LoopData: segment_tuple=%d, bodies=%d\n",
-//        (int)sizeof(segment_tuple), (int)sizeof(bodies));
+  }
+
+  template <typename PolicyType0, typename SegmentTuple0, typename IndexTuple0, typename ... Bodies0>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  LoopData(LoopData<PolicyType0, SegmentTuple0, IndexTuple0, Bodies0...> &c)
+      : segment_tuple{c.segment_tuple}, bodies{c.bodies}, index_tuple{c.index_tuple}
+  {
   }
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE
   void assign_index(IndexT const &i)
   {
-    camp::get<Idx>(index_tuple) =
-        camp::tuple_element_t<Idx, index_tuple_t>{i};
+    camp::get<Idx>(index_tuple) = i;
+       // camp::tuple_element_t<Idx, index_tuple_t>{i};
   }
 };
+
+
+template<typename Data>
+struct LoopData_Privatizer_Bodies;
+
+template <typename PolicyType, typename SegmentTuple, typename IndexTuple, typename ... Bodies>
+struct LoopData_Privatizer_Bodies<LoopData<PolicyType, SegmentTuple, IndexTuple, Bodies...>>{
+
+  using type = LoopData<PolicyType, camp::decay<SegmentTuple> &, camp::decay<IndexTuple> &, camp::decay<Bodies>...>;
+
+};
+
+
+template<typename Data>
+RAJA_HOST_DEVICE
+auto privatize_bodies(Data &data) ->
+  typename LoopData_Privatizer_Bodies<Data>::type
+{
+  return LoopData_Privatizer_Bodies<Data>::type(data);
+}
+
 
 
 template<camp::idx_t LoopIndex, typename Data>

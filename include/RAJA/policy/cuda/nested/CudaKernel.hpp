@@ -164,9 +164,10 @@ __global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
 {
 
   // Thread privatize the loop data
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(data);
-  auto &private_data = privatizer.get_priv();
+//  using RAJA::internal::thread_privatize;
+//  auto privatizer = thread_privatize(data);
+//  auto &private_data = privatizer.get_priv();
+  auto private_data = privatize_bodies(data);
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
 
