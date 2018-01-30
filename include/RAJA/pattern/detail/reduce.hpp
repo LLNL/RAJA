@@ -159,16 +159,16 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  BaseReduce()
+  constexpr BaseReduce()
+    : c{T(), Reduce::identity()}
   {
-    reset(T(), Reduce::identity());
   }
-
+  
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  BaseReduce(T init_val, T identity_ = Reduce::identity())
+  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
+    : c{init_val, identity_}
   {
-    reset(init_val, identity_);
   }
 
   RAJA_SUPPRESS_HD_WARN
@@ -215,15 +215,15 @@ protected:
 public:
 
   RAJA_HOST_DEVICE
-  BaseCombinable()
+  constexpr BaseCombinable()
+    : identity{T()}, my_data{T()}
   {
-    reset(T(), T());
   }
-
+  
   RAJA_HOST_DEVICE
-  BaseCombinable(T init_val, T identity_ = T())
+  constexpr BaseCombinable(T init_val, T identity_ = T())
+    : identity{identity_}, my_data{init_val}
   {
-    reset(init_val, identity_);
   }
   
   RAJA_HOST_DEVICE
@@ -312,14 +312,14 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  BaseReduceMinLoc()
+  constexpr BaseReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
   {
-    Base::reset(value_type(T(),Index_type()));
   }
 
-  BaseReduceMinLoc(T init_val, Index_type init_idx)
-  {
-    Base::reset(value_type(init_val, init_idx));
+  constexpr BaseReduceMinLoc(T init_val, Index_type init_idx)
+    : Base(value_type(init_val,init_idx))
+  {    
   }
 
   /// \brief reducer function; updates the current instance's state
@@ -398,14 +398,14 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  BaseReduceMaxLoc()
+  constexpr BaseReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
   {
-    Base::reset(value_type(T(),Index_type()));
   }
 
-  BaseReduceMaxLoc(T init_val, Index_type init_idx)
+  constexpr BaseReduceMaxLoc(T init_val, Index_type init_idx)
+    : Base(value_type(init_val,init_idx))
   {
-    Base::reset(value_type(init_val,init_idx));
   }
 
   //! reducer function; updates the current instance's state

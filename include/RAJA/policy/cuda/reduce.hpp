@@ -603,26 +603,20 @@ struct Reduce_Data {
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
-  Reduce_Data()
-  {
-    reset(T(), T());
-  }
+  //! disallow default constructor
+  Reduce_Data() = delete;
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
-  Reduce_Data(T initValue, T identity_)
+  explicit Reduce_Data(T initValue, T identity_)
+      : value{initValue},
+        identity{identity_},
+        device_count{nullptr},
+        device{},
+        own_device_ptr{false}
   {
-    reset(initValue, identity_);
-  }
-
-  void reset(T initValue, T identity_ = T()){
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    device = device;
-    own_device_ptr = false;
   }
 
   RAJA_HOST_DEVICE
@@ -687,29 +681,22 @@ struct ReduceAtomic_Data {
   T* device;
   bool own_device_ptr;
 
-  ReduceAtomic_Data()
-  {
-    reset(T(), T());
-  }
-
-  ReduceAtomic_Data(T initValue, T identity_)
-  {
-    reset(initValue, identity_);
-  }
+  //! disallow default constructor
+  ReduceAtomic_Data() = delete;
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
-  void reset(T initValue, T identity_ = Combiner::identity())
+  explicit ReduceAtomic_Data(T initValue, T identity_)
+      : value{initValue},
+        identity{identity_},
+        device_count{nullptr},
+        device{nullptr},
+        own_device_ptr{false}
   {
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    device = nullptr;
-    own_device_ptr = false;
   }
-  
+
   RAJA_HOST_DEVICE
   ReduceAtomic_Data(const ReduceAtomic_Data& other)
       : value{other.identity},
@@ -766,26 +753,15 @@ template <bool Async, typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-
-  Reduce()
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(T(), Combiner::identity());
-  }
+  Reduce() = delete;
 
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
+      : parent{this},
+        tally_or_val_ptr{new PinnedTally<T>},
+        val(init_val, identity_)
   {
-    reset(init_val, identity_);
-  }
-  
-  void reset(T in_val, T identity_ = Combiner::identity())
-  {
-    val = reduce_data_type(in_val, identity_);
   }
 
   //! copy and on host attempt to setup for device
