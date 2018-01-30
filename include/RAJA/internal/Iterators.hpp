@@ -212,6 +212,11 @@ public:
   {
   }
 
+  RAJA_HOST_DEVICE inline DifferenceType get_stride() const
+  {
+    return stride;
+  }
+
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator++()
   {
     val += stride;
