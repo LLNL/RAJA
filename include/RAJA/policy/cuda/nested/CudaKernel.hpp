@@ -160,19 +160,16 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
-__global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
+__global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 {
 
   // Thread privatize the loop data
-//  using RAJA::internal::thread_privatize;
-//  auto privatizer = thread_privatize(data);
-//  auto &private_data = privatizer.get_priv();
   auto private_data = privatize_bodies(data);
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
 
   // Iterate through logical blocks
-  long logical_block = blockIdx.x;
+  int logical_block = blockIdx.x;
   while(logical_block < num_logical_blocks){
 
 //    printf("KERN [%d,%d] lb=%d of %d\n", (int)blockIdx.x, (int)threadIdx.x, (int)index_calc.logical_block, (int)index_calc.num_logical_blocks);
@@ -221,10 +218,9 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
     using data_t = camp::decay<Data>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
-//    max_physical.blocks = 5;
 
     printf("Physical limits: %ld blocks, %ld threads\n",
-        max_physical.blocks, max_physical.threads);
+        (long)max_physical.blocks, (long)max_physical.threads);
 
 
 
@@ -248,7 +244,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
 
     printf("Logical dims: %ld blocks, %ld threads\n",
-        logical_dims.blocks, logical_dims.threads);
+        (long)logical_dims.blocks, (long)logical_dims.threads);
 
 
 

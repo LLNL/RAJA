@@ -91,7 +91,7 @@ struct CudaStatementExecutor<CudaThreadSync, IndexCalc>{
   static
   inline
   __device__
-  void exec(Data &, long logical_block)
+  void exec(Data &, int)
   {
     __syncthreads();
   }

@@ -131,8 +131,8 @@ namespace internal
 
 struct LaunchDim {
 
-  long blocks;
-  long threads;
+  int blocks;
+  int threads;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -143,7 +143,7 @@ struct LaunchDim {
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  LaunchDim(long b, long t) : blocks(b), threads(t){}
+  LaunchDim(int b, int t) : blocks(b), threads(t){}
 
 
   RAJA_INLINE
@@ -180,43 +180,46 @@ struct CudaLaunchLimits {
 
 
 
-template<camp::idx_t ArgumentId, typename ExecPolicy, typename SegmentType>
+template<camp::idx_t ArgumentId, typename ExecPolicy>
 struct CudaIndexCalc_Policy;
 
 
-template<camp::idx_t ArgumentId, typename SegmentType>
-struct CudaIndexCalc_Policy<ArgumentId, cuda_block_exec, SegmentType>{
+template<camp::idx_t ArgumentId>
+struct CudaIndexCalc_Policy<ArgumentId, cuda_block_exec>{
 
-  using iterator_t = typename SegmentType::iterator;
-  using difference_t = typename iterator_t::difference_type;
+  int len;
 
-  iterator_t begin;
-  difference_t len;
-
+  template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  CudaIndexCalc_Policy(SegmentType const &s, LaunchDim const &) :
-  begin(s.begin()), len(s.end()-s.begin())
+  CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
+  len((int)(camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin()))
   {
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDim cudaCalcDims(){
-    return LaunchDim{(long)len, 1};
+  int numLogicalBlocks() const {
+    return (int)len;
   }
-
+  
+	RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return 1;
+  }
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool cudaAssignIndex(Data &data, LaunchDim &block_thread){
+  bool assignIndex(Data &data, int &block, int &thread){
 
     // Compute our index, and strip off the block index
-    long i = block_thread.blocks % len;
-    block_thread.blocks /= len;
+    int i = block % len;
+    block /= len;
 
     // Assign our computed index to the tuple
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
     data.template assign_index<ArgumentId>(*(begin+i));
 
     return true;
@@ -228,39 +231,43 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_block_exec, SegmentType>{
 
 
 
-template<camp::idx_t ArgumentId, typename SegmentType>
-struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec, SegmentType>{
+template<camp::idx_t ArgumentId>
+struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec>{
 
-  using iterator_t = typename SegmentType::iterator;
-  using difference_t = typename iterator_t::difference_type;
+  int len;
 
-  iterator_t begin;
-  difference_t len;
-
+  template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  CudaIndexCalc_Policy(SegmentType const &s, LaunchDim const &) :
-  begin(s.begin()), len(s.end()-s.begin())
+  CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
+  len((int)(camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin()))
   {
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDim cudaCalcDims(){
-    return LaunchDim{1, (long)len};
+  int numLogicalBlocks() const {
+    return 1;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return (int)len;
   }
 
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool cudaAssignIndex(Data &data, LaunchDim &block_thread){
+  bool assignIndex(Data &data, int &block, int &thread){
 
     // Compute our index, and strip off the block index
-    long i = block_thread.threads % len;
-    block_thread.threads /= len;
+    int i = thread % len;
+    thread /= len;
 
     // Assign our computed index to the tuple
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
     data.template assign_index<ArgumentId>(*(begin+i));
 
     return true;
@@ -270,22 +277,18 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec, SegmentType>{
 
 
 
-template<camp::idx_t ArgumentId, size_t num_blocks_max, typename SegmentType>
-struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>, SegmentType>{
+template<camp::idx_t ArgumentId, size_t num_blocks_max>
+struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>>{
 
-  using iterator_t = typename SegmentType::iterator;
-  using difference_t = typename iterator_t::difference_type;
+  int len;
+  int num_blocks;
+  int num_threads;
 
-  iterator_t begin;
-  difference_t len;
-  long num_blocks;
-  long num_threads;
-
+  template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  CudaIndexCalc_Policy(SegmentType const &s, LaunchDim const &) :
-    begin(s.begin()),
-    len(s.end()-s.begin()),
+  CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
+    len(camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin()),
     num_blocks(num_blocks_max < len ? num_blocks_max : len),
     num_threads(len/num_blocks)
   {
@@ -296,27 +299,34 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>, 
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDim cudaCalcDims(){
-    return LaunchDim{num_blocks, num_threads};
+  int numLogicalBlocks() const {
+    return num_blocks;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return num_threads;
   }
 
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool cudaAssignIndex(Data &data, LaunchDim &block_thread){
+  bool assignIndex(Data &data, int &block, int &thread){
 
     // Compute our index, and strip off the thread index
-    long block_i = block_thread.blocks % num_blocks;
-    block_thread.blocks /= num_blocks;
+    int block_i = block % num_blocks;
+    block /= num_blocks;
 
-    long thread_i = block_thread.threads % num_threads;
-    block_thread.threads /= num_threads;
+    int thread_i = thread % num_threads;
+    thread /= num_threads;
 
-    long i = block_i*num_threads + thread_i;
+    int i = block_i*num_threads + thread_i;
 
     // Assign our computed index to the tuple
     if(i < len){
+      auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
       data.template assign_index<ArgumentId>(*(begin+i));
       return true;
     }
@@ -330,21 +340,21 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>, 
 
 
 
-template<typename SegmentTuple, typename ArgList, typename ExecPolicies, typename RangeList>
+template<typename SegmentTuple, typename ExecPolicies, typename RangeList>
 struct CudaIndexCalc;
 
 
-template<typename SegmentTuple, camp::idx_t ... Args, typename ... ExecPolicies, camp::idx_t ... RangeInts>
-struct CudaIndexCalc<SegmentTuple, ArgList<Args...>, camp::list<ExecPolicies...>, camp::idx_seq<RangeInts...>>{
+template<typename SegmentTuple, typename ... IndexPolicies, camp::idx_t ... RangeInts>
+struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<RangeInts...>>{
 
-  using CalcList = camp::tuple<CudaIndexCalc_Policy<Args, ExecPolicies, camp::at_v<typename SegmentTuple::TList, Args>>...>;
+  using CalcList = camp::tuple<IndexPolicies...>;
 
   CalcList calc_list;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc(SegmentTuple const &segment_tuple, LaunchDim const &max_physical) :
-    calc_list( camp::make_tuple( (camp::at_v<typename CalcList::TList, RangeInts>(camp::get<Args>(segment_tuple), max_physical) )...) )
+    calc_list( camp::make_tuple( (IndexPolicies(segment_tuple, max_physical) )...) )
   {
   }
 
@@ -353,39 +363,52 @@ struct CudaIndexCalc<SegmentTuple, ArgList<Args...>, camp::list<ExecPolicies...>
   LaunchDim computeLogicalDims(){
 
     // evaluate product of each Calculator's block and thread requirements
-    return VarOps::foldl(RAJA::operators::multiplies<LaunchDim>(),
-        camp::get<RangeInts>(calc_list).cudaCalcDims()...);
+    return LaunchDim(numLogicalBlocks(), numLogicalThreads());
+  }
 
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalBlocks() const {
+    return VarOps::foldl(RAJA::operators::multiplies<int>(),
+        camp::get<RangeInts>(calc_list).numLogicalBlocks()...);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return VarOps::foldl(RAJA::operators::multiplies<int>(),
+        camp::get<RangeInts>(calc_list).numLogicalThreads()...);
   }
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndices(Data &data, LaunchDim block_thread){
+  bool assignIndices(Data &data, int block, int thread){
 
     // evaluate each index, passing block_thread through
     // each calculator will trim block_thread appropriately
     return VarOps::foldl(RAJA::operators::logical_and<bool>(),
-        camp::get<RangeInts>(calc_list).cudaAssignIndex(data, block_thread)...);
+        camp::get<RangeInts>(calc_list).assignIndex(data, block, thread)...);
   }
 
 };
 
 template<typename SegmentTuple>
-using CudaIndexCalc_Terminator = CudaIndexCalc<SegmentTuple, ArgList<>, camp::list<>, camp::idx_seq<>>;
+using CudaIndexCalc_Terminator = CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>>;
 
 
-template<typename IndexCalcBase, camp::idx_t ArgN, typename CalcN>
+template<typename IndexCalcBase, typename CalcN>
 struct CudaIndexCalc_Extender;
 
 
-template<typename SegmentTuple, camp::idx_t ... Args, typename ... CalcTypes, camp::idx_t ... RangeInts, camp::idx_t ArgN, typename CalcN>
-struct CudaIndexCalc_Extender<CudaIndexCalc<SegmentTuple, ArgList<Args...>, camp::list<CalcTypes...>, camp::idx_seq<RangeInts...>>, ArgN, CalcN>{
-  using type = CudaIndexCalc<SegmentTuple, ArgList<Args..., ArgN>, camp::list<CalcTypes..., CalcN>, camp::idx_seq<RangeInts..., sizeof...(RangeInts)>>;
+template<typename SegmentTuple, typename ... CalcPolicies, camp::idx_t ... RangeInts, typename CalcN>
+struct CudaIndexCalc_Extender<CudaIndexCalc<SegmentTuple, camp::list<CalcPolicies...>, camp::idx_seq<RangeInts...>>, CalcN>{
+  using type = CudaIndexCalc<SegmentTuple, camp::list<CalcPolicies..., CalcN>, camp::idx_seq<RangeInts..., sizeof...(RangeInts)>>;
 };
 
-template<typename IndexCalcBase, camp::idx_t ArgN, typename CalcN>
-using ExtendCudaIndexCalc = typename CudaIndexCalc_Extender<IndexCalcBase, ArgN, CalcN>::type;
+template<typename IndexCalcBase, typename CalcN>
+using ExtendCudaIndexCalc = typename CudaIndexCalc_Extender<IndexCalcBase, CalcN>::type;
 
 
 

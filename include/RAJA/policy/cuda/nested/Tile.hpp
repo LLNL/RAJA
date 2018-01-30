@@ -35,31 +35,29 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
   static
   inline
   __device__
-  void exec(Data &data, long logical_block)
+  void exec(Data &data, int logical_block)
   {
     // Get the segment referenced by this Tile statement
-    auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
+    auto &iter = camp::get<ArgumentId>(data.segment_tuple);
 
-    auto chunk_size = TPol::chunk_size;
-    using segment_type = RAJA::TypedRangeSegment<RAJA::Index_type, RAJA::Index_type>;
-    IterableTiler<segment_type> tiled_iterable(iter, chunk_size);
+    // Keep copy of original segment, so we can restore it
+    using segment_type = camp::decay<decltype(iter)>;
+    segment_type orig_iter = iter;
 
-    // Pull out iterators
-    auto begin = tiled_iterable.begin();
-    auto end = tiled_iterable.end();
+    int chunk_size = TPol::chunk_size;
 
     // compute trip count
-    auto len = end - begin;
+    int len = iter.end() - iter.begin();
 
     // Iterate through tiles
-    for (decltype(len) i = 0;i < len;++ i) {
+    for (int i = 0;i < len;i += chunk_size) {
 
       // Assign our new tiled segment
-      camp::get<ArgumentId>(data.segment_tuple) = *(begin+i);
+      iter = orig_iter.slice(i, chunk_size);
 
       // Assign the beginning index to the index_tuple for proper use
       // in shmem windows
-      camp::get<ArgumentId>(data.index_tuple) = *camp::get<ArgumentId>(data.segment_tuple).begin();
+      camp::get<ArgumentId>(data.index_tuple) = *iter.begin();
 
       // execute enclosed statements
       cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
@@ -67,7 +65,7 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
 
 
     // Set range back to original values
-    camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
+    iter = orig_iter;
   }
 
 

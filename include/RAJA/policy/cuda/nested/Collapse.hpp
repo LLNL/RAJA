@@ -82,56 +82,276 @@ namespace internal
 
 
 
-/*
- * Collapses multiple segments iteration space, and distributes them over threads.
- *
- * No work sharing between blocks is performed
- */
-template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, EnclosedStmts...>> {
 
+template<typename Iter, typename Value>
+struct IndexAssigner{
+  using Self = IndexAssigner<Iter, Value>;
+
+  Iter iter;
+  Value &value;
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr
+  IndexAssigner(Iter const &i, Value &v) : iter(i), value(v){}
+
+
+  template<typename T>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  Self &operator=(T v){
+    value = iter[v];
+    return *this;
+  }
+
+};
+
+template<typename Iter, typename Value>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+auto make_index_assigner(Iter && i, Value && v) ->
+  IndexAssigner<Iter, Value>
+{
+  return IndexAssigner<Iter, Value>(std::forward<Iter>(i), std::forward<Value>(v));
+}
+
+
+
+template<camp::idx_t ... Args>
+struct CudaIndexCalc_CollapsePolicyBase {
   static constexpr size_t num_dims = sizeof...(Args);
-
+  using layout_t = RAJA::Layout<num_dims, int, num_dims-1>;
+  layout_t layout;
 
   template<typename SegmentTuple>
   static
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
-    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
+  layout_t createLayout(SegmentTuple const &segments){
+    return layout_t( (camp::get<Args>(segments).end() -
         camp::get<Args>(segments).begin()) ...);
   }
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
-  static
-  RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaIndexCalc_CollapsePolicyBase(SegmentTuple const &segments) :
+    layout(createLayout(segments))
   {
-    // Create a Layout of all of our loop dimensions that we're collapsing
-    auto layout = getLayout(data.segment_tuple);
-
-    CudaIndexCalc_ThreadLayout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
-      index_calc(layout, parent_index_calc);
-
-
-    //invoke our enclosed statement list
-    wrap(data, index_calc);
   }
+
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void assignIndex(Data &data, int i){
+    layout.toIndices(i,
+          make_index_assigner(camp::get<Args>(data.segment_tuple).begin(), camp::get<Args>(data.index_tuple))...
+      );
+  }
+};
+
+
+
+
+template<typename Args, typename ExecPolicy>
+struct CudaIndexCalc_CollapsePolicy;
+
+
+template<camp::idx_t ... Args>
+struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_thread_exec> :
+public CudaIndexCalc_CollapsePolicyBase<Args...>
+{
+
+  using Base = CudaIndexCalc_CollapsePolicyBase<Args...>;
 
 
   template<typename SegmentTuple>
   RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
+  RAJA_HOST_DEVICE
+  CudaIndexCalc_CollapsePolicy(SegmentTuple const &segments, LaunchDim const &) :
+    Base(segments)
+  {
+  }
 
-    // compute trip count
-    auto layout = getLayout(segments);
-    auto total_len = layout.size();
 
-    // compute dimensions we need
-    LaunchDim our_used = used * cuda_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalBlocks() const {
+    return 1;
+  }
 
-    // recurse
-    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return (int)Base::layout.size();
+  }
+
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool assignIndex(Data &data, int &, int &thread){
+
+    // Compute our linear index, and strip off the thread index
+    int len = Base::layout.size();
+    int i = thread % len;
+    thread /= len;
+
+    // Compute and assign our loop indices
+    Base::assignIndex(data, i);
+
+    return true;
+  }
+};
+
+
+
+
+template<camp::idx_t ... Args>
+struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_block_exec> :
+public CudaIndexCalc_CollapsePolicyBase<Args...>
+{
+
+  using Base = CudaIndexCalc_CollapsePolicyBase<Args...>;
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaIndexCalc_CollapsePolicy(SegmentTuple const &segments, LaunchDim const &) :
+    Base(segments)
+  {
+  }
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalBlocks() const {
+    return (int)Base::layout.size();
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return 1;
+  }
+
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool assignIndex(Data &data, int &block, int &){
+
+    // Compute our linear index, and strip off the thread index
+    int len = Base::layout.size();
+    int i = block % len;
+    block /= len;
+
+    // Compute and assign our loop indices
+    Base::assignIndex(data, i);
+
+    return true;
+  }
+};
+
+
+
+template<camp::idx_t ... Args, size_t num_blocks_max>
+struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_block_thread_exec<num_blocks_max>> :
+public CudaIndexCalc_CollapsePolicyBase<Args...>
+{
+
+  using Base = CudaIndexCalc_CollapsePolicyBase<Args...>;
+
+  int num_blocks;
+  int num_threads;
+
+
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaIndexCalc_CollapsePolicy(SegmentTuple const &segments, LaunchDim const &) :
+    Base(segments),
+    num_blocks(num_blocks_max < Base::layout.size() ? num_blocks_max : Base::layout.size()),
+    num_threads(Base::layout.size()/num_blocks)
+  {
+    if(num_threads*num_blocks < Base::layout.size()){
+      num_threads ++;
+    }
+  }
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalBlocks() const {
+    return num_blocks;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return num_threads;
+  }
+
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool assignIndex(Data &data, int &block, int &thread){
+
+    // Compute our linear index, and strip off the block and thread indices
+    int block_i = block % num_blocks;
+    block /= num_blocks;
+
+    int thread_i = thread % num_threads;
+    thread /= num_threads;
+
+    int i = block_i*num_threads + thread_i;
+
+
+    // Compute and assign our loop indices
+    int len = Base::layout.size();
+    if(i < len){
+      Base::assignIndex(data, i);
+      return true;
+    }
+
+    return false;
+  }
+};
+
+
+
+/*
+ * Collapses multiple segments iteration space, and provides work sharing
+ * according to the collapsing execution policy.
+ */
+template <typename ExecPolicy, camp::idx_t ... Args, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Collapse<ExecPolicy, ArgList<Args...>, EnclosedStmts...>, IndexCalc> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_CollapsePolicy<ArgList<Args...>, ExecPolicy>>;
+
+
+  template <typename Data>
+  static
+  inline
+  __device__
+  void exec(Data &data, int logical_block)
+  {
+    // execute enclosed statements
+    cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
+  }
+
+
+  template<typename Data>
+  static
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    // Return launch dimensions of enclosed statements
+    return cuda_calcdims_statement_list<stmt_list_t, index_calc_t>(data, max_physical);
   }
 
 };
@@ -139,129 +359,8 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, Enclos
 
 
 
-/*
- * Collapses multiple segments iteration space, and distributes them over
- * all of the blocks and threads.
- */
-template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, EnclosedStmts...>> {
-
-  static constexpr size_t num_dims = sizeof...(Args);
-
-  template<typename SegmentTuple>
-  static
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
-    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
-        camp::get<Args>(segments).begin()) ...);
-  }
 
 
-  template <typename WrappedBody, typename Data, typename IndexCalc>
-  static
-  RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &parent_index_calc)
-  {
-    // Create a Layout of all of our loop dimensions that we're collapsing
-    auto layout = getLayout(data.segment_tuple);
-
-    // compute our block's slice of work
-    CudaIndexCalc_ThreadBlockLayout<ArgList<Args...>, RAJA::Layout<num_dims>, IndexCalc>
-          index_calc(layout, parent_index_calc);
-
-
-    //invoke our enclosed statement list
-    wrap(data, index_calc);
-  }
-
-
-  template<typename SegmentTuple>
-  RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
-
-    // compute trip count
-    auto layout = getLayout(segments);
-    auto total_len = layout.size();
-
-    // compute dimensions we need
-    LaunchDim our_used = used * cuda_block_thread_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
-
-    // recurse
-    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
-  }
-};
-
-
-
-/*
- * Collapses multiple segments iteration space, and distributes them over
- * all of the blocks and threads.
- */
-template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, EnclosedStmts...>> {
-
-  static constexpr size_t num_dims = sizeof...(Args);
-
-  template<typename SegmentTuple>
-  static
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  RAJA::Layout<num_dims> getLayout(SegmentTuple const &segments){
-    return RAJA::Layout<num_dims>( (camp::get<Args>(segments).end() -
-        camp::get<Args>(segments).begin()) ...);
-  }
-
-  template <typename WrappedBody, typename Data, typename IndexCalc>
-  static
-  RAJA_DEVICE
-  void exec(WrappedBody const &wrap, Data &data, IndexCalc const &index_calc)
-  {
-    // Create a Layout of all of our loop dimensions that we're collapsing
-    auto layout = getLayout(data.segment_tuple);
-
-    // get total iteration size
-    ptrdiff_t total_len = layout.size();
-
-    // compute our block's slice of work
-    long num_blocks = gridDim.x;
-    auto block_len = total_len / num_blocks;
-    if(block_len*num_blocks < total_len){
-      block_len ++;
-    }
-    auto block_begin = block_len * logical_block;
-    auto block_end = block_begin + block_len;
-    if(block_end > total_len){
-      block_end = total_len;
-    }
-
-    // loop sequentially over our block
-    for(ptrdiff_t i = block_begin;i < block_end;++ i){
-      // Compute indices from layout, and assign them to our index tuple
-      layout.toIndices(i, make_index_assigner<Args>(data.segment_tuple, data.index_tuple)...);
-
-      // invoke our enclosed statement list
-      wrap(data, index_calc);
-    }
-  }
-
-
-
-  template<typename SegmentTuple>
-  RAJA_INLINE
-  static LaunchDim getRequested(SegmentTuple const &segments, long max_physical_blocks, LaunchDim const &used){
-
-    // compute trip count
-    auto layout = getLayout(segments);
-    auto total_len = layout.size();
-
-    // compute dimensions we need
-    LaunchDim our_used = used * cuda_block_seq_exec::calcBlocksThreads(max_physical_blocks, used.blocks, total_len);
-
-    // recurse
-    return cuda_get_statement_list_requested<SegmentTuple, EnclosedStmts...>(segments, max_physical_blocks, our_used);
-  }
-};
 
 
 

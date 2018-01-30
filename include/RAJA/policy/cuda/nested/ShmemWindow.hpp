@@ -29,7 +29,8 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
   template <typename Data>
   static
   RAJA_DEVICE
-  void exec(Data &data, long logical_block)
+  inline
+  void exec(Data &data, int logical_block)
   {
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;

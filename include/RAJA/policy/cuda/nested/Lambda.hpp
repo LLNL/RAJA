@@ -84,21 +84,21 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
   static
   inline
   __device__
-  void exec(Data &data, long logical_block)
+  void exec(Data &data, int logical_block)
   {
     // Get physical parameters
     LaunchDim max_physical(gridDim.x, blockDim.x);
 
     // Compute logical dimensions
     IndexCalc index_calc(data.segment_tuple, max_physical);
-    LaunchDim logical_dims = index_calc.computeLogicalDims();
+    int num_logical_threads = index_calc.numLogicalThreads();
 
     // Loop over logical threads in this block
-    LaunchDim block_thread(logical_block, threadIdx.x);
-    while(block_thread.threads < logical_dims.threads){
+    int logical_thread = threadIdx.x;
+    while(logical_thread < num_logical_threads){
 
       // compute indices
-      bool in_bounds = index_calc.assignIndices(data, block_thread);
+      bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
 
       // call the user defined function, if the computed index in in bounds
       if(in_bounds){
@@ -106,7 +106,7 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
       }
 
       // increment to next block-stride logical thread
-      block_thread.threads += blockDim.x;
+      logical_thread += blockDim.x;
     }
 
   }

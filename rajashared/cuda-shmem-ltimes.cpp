@@ -109,7 +109,7 @@ void runLTimesRajaCudaNested(bool debug,
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_block_thread_exec, ArgList<0,2,3>,
+        Collapse<RAJA::cuda_block_thread_exec<56>, ArgList<0,2,3>,
           For<1, RAJA::seq_exec, Lambda<0>>
         >
       >>;
@@ -272,13 +272,15 @@ void runLTimesRajaCudaShmem(bool debug,
   using Pol = nested::Policy<
         CudaKernel<
           SetShmemWindow<
-            // First, load Ell into shared memory in each block
-            Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
-            CudaThreadSync,
-
-
             // Distribute groups and zones across blocks
-            Collapse<cuda_block_seq_exec, ArgList<2, 3>,
+            Collapse<cuda_block_exec, ArgList<2, 3>,
+
+              // First, load Ell into shared memory in each block
+              Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
+              CudaThreadSync,
+
+
+
 
               // Load Psi for this g,z
               For<1, cuda_thread_exec, Lambda<1>>,

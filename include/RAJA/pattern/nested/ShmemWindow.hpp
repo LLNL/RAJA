@@ -64,18 +64,22 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     using layout_t = RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
     static_assert(layout_t::s_size <= ShmemT::size, "Layout cannot span a larger size than the shared memory");
 
-    index_tuple_t window;
+    //index_tuple_t window;
 
     RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    ShmemWindowView() : shmem(), window() {}
+    ShmemWindowView() : shmem()
+    //, window()
+    {}
 
     RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem), window(c.window) {
+    ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem)
+    //, window(c.window)
+    {
 #ifdef __CUDA_ARCH__
       // Grab a pointer to the shmem window tuple.  We are assuming that this
       // is the first thing in the dynamic shared memory
@@ -85,8 +89,8 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
 #endif
       if(shmem_window_ptr != nullptr){
-        index_tuple_t &shmem_window = *shmem_window_ptr;
-        window = shmem_window;
+        //index_tuple_t &shmem_window = *shmem_window_ptr;
+        //window = shmem_window;
 
 //        printf("Window (%p): ", shmem_window_ptr);
 //        VarOps::ignore_args(
@@ -103,9 +107,18 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    constexpr
+    //constexpr
     element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> ... idx) const {
-      return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
+#ifdef __CUDA_ARCH__
+      extern __shared__ char my_ptr[];
+      index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
+      return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
+#else
+      auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
+      return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
+
+      //return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
+#endif
     }
 };
 
