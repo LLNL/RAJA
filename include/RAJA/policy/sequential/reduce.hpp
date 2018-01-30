@@ -49,8 +49,6 @@ class ReduceSeq
   using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceSeq() = delete;
 
   using Base::Base;
 };

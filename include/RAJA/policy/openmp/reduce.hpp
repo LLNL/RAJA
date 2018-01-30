@@ -57,8 +57,6 @@ class ReduceOMP
   using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceOMP>;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceOMP() = delete;
 
   using Base::Base;
 
@@ -93,14 +91,20 @@ class ReduceOMPOrdered
   std::shared_ptr<std::vector<T>> data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceOMPOrdered() = delete;
+  ReduceOMPOrdered()
+    { 
+      reset(T(), T());
+    }
 
   //! constructor requires a default value for the reducer
   explicit ReduceOMPOrdered(T init_val, T identity_)
-      : Base(init_val, identity_),
-        data(std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_))
   {
+    reset(init_val, identity_);
+  }
+
+  void reset(T init_val, T identity_){
+    Base::reset(init_val,identity_);
+    data = std::shared_ptr<std::vector<T>>(std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_));
   }
 
   ~ReduceOMPOrdered()
