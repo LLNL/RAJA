@@ -272,9 +272,9 @@ struct TypedRangeStrideSegment {
         m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((value_type{end} - value_type{begin} + value_type{stride}
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) + static_cast<value_type>(stride)
                 - (stride > 0 ? value_type{1} : value_type{-1}))
-               / value_type{stride})
+               / static_cast<value_type>(stride))
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
@@ -296,6 +296,15 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
       : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
   {
+  }
+
+  //! copy assignment
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o)
+  {
+    m_begin = o.m_begin;
+    m_end = o.m_end;
+    m_size = o.m_size;
+    return *this;
   }
 
   //! destructor
@@ -341,9 +350,12 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
                                                  Index_type length) const
   {
-    return TypedRangeStrideSegment{*(this->begin() + begin),
-                                   *(this->begin() + begin + length),
-                                   m_begin.stride};
+    auto start = m_begin[0] + begin;
+    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+
+    return TypedRangeStrideSegment{start,
+                                   end,
+                                   m_begin.get_stride()};
   }
 
   //! equality comparison

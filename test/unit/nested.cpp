@@ -84,7 +84,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
-                                 RAJA::TypedRangeSegment<Idx1>(0, y_len));
+                                 RAJA::TypedRangeStrideSegment<Idx1>(0, y_len, 1));
   auto v = this->view;
   using namespace RAJA::nested;
   RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
@@ -160,10 +160,10 @@ TEST(Nested, TileDynamic)
                        For<0, RAJA::seq_exec>{},
                        For<1, RAJA::seq_exec>{}),
       RAJA::make_tuple(RAJA::RangeSegment(0, length),
-                       RAJA::RangeSegment(0, length)),
+                       RAJA::RangeStrideSegment(0, length, 1)),
       [=, &count](Index_type i, Index_type j) {
-        std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
-                  << std::endl;
+//        std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
+//                  << std::endl;
 
         ASSERT_EQ(count,
                   count < (length * tile_size)

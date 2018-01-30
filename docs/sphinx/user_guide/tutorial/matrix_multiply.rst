@@ -88,7 +88,7 @@ call for the 'column' loop inside the outer 'row' traversal:
                     :lines: 204-217
 
 Here, the lambda expression for the column loop body is contained within the 
-lambda expression for the outer row loop. Here, the outer loop execution policy
+lambda expression for the outer row loop. The outer loop execution policy
 can be replaced with an OpenMP policy and the result will be the same as using 
 an OpenMP policy in the previous version. 
 
@@ -128,17 +128,20 @@ The execution policy for each level in the loop nest is defined by the
 ``RAJA::nested::For`` arguments in the nested policy type. Here, the row
 and column loops will both execute sequentially. The integer that appears
 as the first argument to each 'For' template corresponds to the index of a
-range in the tuple and also to the associated lambda index argument; 
-i.e., '0' is the column range, '1' is the row range.  The integer arguments 
-are needed so that the levels in the loop nest can be permuted by reordering 
-the policy arguments while the loop kernel remains the same. Here, the row
-policy is first (tuple index '0') so it is the outermost loop, and the row 
-policy is next (tuple index '1') so it is the next loop, etc. We will 
-demonstrate the reordering concept later in this example and discuss it in
+range '(0, 1, 2, ...)' in the tuple and also to the associated lambda index 
+argument; i.e., '0' is the column range, '1' is the row range.  The integer 
+arguments are needed so that the levels in the loop nest can be permuted by 
+reordering the policy arguments while the loop kernel remains the same. 
+This is akin to how you would reorder C-style nested loops; i.e., reorder
+the for-statements that loop over the indices for each loop nest level.
+
+Here, the row policy is first (tuple index '1') so it is the outermost loop, 
+and the col policy is next (tuple index '0') so it is the next loop, etc. We 
+will demonstrate the reordering concept later in this example and discuss it in
 more detail in the example :ref:`nestedreorder-label`.
 
 If we wanted to execute the row loop using OpenMP multi-threaded parallelism 
-and keep the column loop sequential as we discussed earlier, the policy we 
+and keep the column loop sequential as in earlier examples, the policy we 
 would use is:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
@@ -165,7 +168,8 @@ The result of using this policy is essentially the same as using an OpenMP
 'parallel for' directive on the outer loop with a 'collapse(2) clause. This
 may or may not improve performance. This depends on how the compiler creates
 collapsed-loop indices using divide/mod operations and how well it can 
-apply optimizations, such as dead-code-elimination.
+apply optimizations, such as dead-code-elimination. Note that there are no 
+policies for the individual loop levels inside the OpenMP collapse policy. 
 
 Lastly, we describe how to use a ``RAJA::nested::CudaCollapse`` policy to 
 collapse a loop nest into a single CUDA kernel and launch it with a particular 
