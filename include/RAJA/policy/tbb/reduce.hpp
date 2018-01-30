@@ -55,8 +55,9 @@ class ReduceTBB
   std::shared_ptr<tbb::combinable<T>> data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceTBB() 
+
+  //! default constructor calls the reset method
+  ReduceTBB()
   {
     reset(T(), T());
   }
@@ -72,7 +73,7 @@ public:
     data = std::shared_ptr<tbb::combinable<T>>(
     std::make_shared<tbb::combinable<T>>([=]() { return initializer; }));
     data->local() = init_val;
-  };
+  }
 
   /*!
    *  \return the calculated reduced value
