@@ -298,6 +298,15 @@ struct TypedRangeStrideSegment {
   {
   }
 
+  //! copy assignment
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o)
+  {
+    m_begin = o.m_begin;
+    m_end = o.m_end;
+    m_size = o.m_size;
+    return *this;
+  }
+
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
 
@@ -341,9 +350,12 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
                                                  Index_type length) const
   {
-    return TypedRangeStrideSegment{*(this->begin() + begin),
-                                   *(this->begin() + begin + length),
-                                   m_begin.stride};
+    auto start = m_begin[0] + begin;
+    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+
+    return TypedRangeStrideSegment{start,
+                                   end,
+                                   m_begin.get_stride()};
   }
 
   //! equality comparison
