@@ -94,7 +94,7 @@ a integral sum on a CUDA GPU device::
   cudaDeviceSynchronize();
   sum = 0;
 
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
+  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
@@ -140,7 +140,7 @@ Atomic Policies
 
 * ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code.
 
-* ``buildin_atomic`` - Policy to use compiler "builtin" atomic operations.
+* ``builtin_atomic`` - Policy to use compiler "builtin" atomic operations.
 
 * ``auto_atomic``    - Policy that will attempt to do the "correct thing". For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
 

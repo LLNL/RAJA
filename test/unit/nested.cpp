@@ -1230,7 +1230,7 @@ CUDA_TEST(Nested, CudaExec1c){
       [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k){
 
         trip_count += 1;
-        printf("[%d,%d] %d,%d,%d\n", (int)blockIdx.x, (int)threadIdx.x, (int)i, (int)j, (int)k);
+        //printf("[%d,%d] %d,%d,%d\n", (int)blockIdx.x, (int)threadIdx.x, (int)i, (int)j, (int)k);
       }
   );
   cudaDeviceSynchronize();

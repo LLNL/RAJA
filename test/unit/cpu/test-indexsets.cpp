@@ -36,7 +36,7 @@ protected:
   }
 
   RAJA::RAJAVec<RAJA::Index_type> is_indices;
-  RAJA::IndexSet index_sets_[NumBuildMethods];
+  UnitIndexSet index_sets_[NumBuildMethods];
 };
 
 TEST_F(IndexSetTest, IndexSetEquality)
@@ -93,10 +93,10 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
 
 TEST(IndexSet, empty)
 {
-  RAJA::StaticIndexSet<> is;
+  RAJA::TypedIndexSet<> is;
   ASSERT_EQ(0, is.size());
   ASSERT_EQ(is.begin(), is.end());
-  RAJA::StaticIndexSet<> is2;
+  RAJA::TypedIndexSet<> is2;
   ASSERT_EQ(is2.size(), is.size());
   is.swap(is2);
   ASSERT_EQ(is2.size(), is.size());
@@ -104,7 +104,7 @@ TEST(IndexSet, empty)
 
 TEST(IndexSet, compare)
 {
-  using RangeIndexSet = RAJA::StaticIndexSet<RAJA::RangeSegment>;
+  using RangeIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment>;
   RangeIndexSet is1, is2;
   is1.push_back(RAJA::RangeSegment(0, 10));
   is2.push_back(RAJA::RangeSegment(0, 5));
@@ -117,13 +117,13 @@ TEST(IndexSet, compare)
 
 TEST(IndexSet, swap)
 {
-  RAJA::IndexSet iset1;
+  UnitIndexSet iset1;
   RAJA::RangeSegment range(0, 10);
   iset1.push_back(range);
   iset1.push_back_nocopy(&range);
   iset1.push_front(range);
   iset1.push_front_nocopy(&range);
-  RAJA::IndexSet iset2;
+  UnitIndexSet iset2;
 
   ASSERT_EQ(4l, iset1.size());
   ASSERT_EQ(40lu, iset1.getLength());

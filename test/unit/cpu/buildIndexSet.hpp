@@ -20,6 +20,8 @@
 
 #include "RAJA/RAJA.hpp"
 
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+
 //
 // Enum for different hybrid initialization procedures.
 //
@@ -41,5 +43,5 @@ enum IndexSetBuildMethod {
 //  Initialize index set by adding segments as indicated by enum value.
 //  Return last index in IndexSet.
 //
-RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex,
+RAJA::Index_type buildIndexSet(UnitIndexSet* hindex,
                                IndexSetBuildMethod use_vector);

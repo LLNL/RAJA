@@ -26,62 +26,54 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 5: Jacobi Method
-
-  ----[Details]--------------------
-  This code uses a five point finite difference stencil
-  to discretize the following boundary value problem
-
-  U_xx + U_yy = f on [0,1] x [0,1].
-
-  The right-hand side is chosen to be
-  f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
-
-  A structured grid is used to discretize the domain
-  [0,1] x [0,1]. Values inside the domain are computed
-  using the Jacobi method to solve the associated
-  linear system. The scheme is invoked until the l_2
-  difference of subsequent iterations is below a
-  tolerance.
-
-  The scheme is implemented by allocating two arrays
-  (I, Iold) and initialized to zero. The first set of
-  nested for loops apply an iteration of the Jacobi
-  scheme. The scheme is only applied to the interior
-  nodes. 
-
-  The second set of nested for loops is used to
-  update Iold and compute the l_2 norm of the
-  difference of the iterates.
-
-  Computing the l_2 norm requires a reduction operation.
-  To simplify the reduction procedure, the RAJA API
-  introduces thread safe variables.
-
-  ----[RAJA Concepts]---------------
-  1. ForallN loop
-  2. RAJA Reduction
-
-  ----[Kernel Variants and RAJA Features]---
-  a. C++ style nested for loops
-  b. RAJA style nested for loops with sequential iterations
-     i. Introduces RAJA reducers for sequential policies
-  c. RAJA style nested for loops with omp parallelism
-     ii. Introduces RAJA reducers for omp policies
-  d. RAJA style for loop with CUDA parallelism
-     i. Introduces RAJA reducers for cuda policies
-*/
+ * Jacobi Example
+ *
+ * ----[Details]--------------------
+ * This code uses a five point finite difference stencil
+ * to discretize the following boundary value problem
+ *
+ * U_xx + U_yy = f on [0,1] x [0,1].
+ *
+ * The right-hand side is chosen to be
+ * f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
+ *
+ * A structured grid is used to discretize the domain
+ * [0,1] x [0,1]. Values inside the domain are computed
+ * using the Jacobi method to solve the associated
+ * linear system. The scheme is invoked until the l_2
+ * difference of subsequent iterations is below a
+ * tolerance.
+ *
+ * The scheme is implemented by allocating two arrays
+ * (I, Iold) and initialized to zero. The first set of
+ * nested for loops apply an iteration of the Jacobi
+ * scheme. The scheme is only applied to the interior
+ * nodes. 
+ *
+ * The second set of nested for loops is used to
+ * update Iold and compute the l_2 norm of the
+ * difference of the iterates.
+ *
+ * Computing the l_2 norm requires a reduction operation.
+ * To simplify the reduction procedure, the RAJA API
+ * introduces thread safe variables.
+ *
+ * ----[RAJA Concepts]---------------
+ * - Forall::nested loop
+ * - RAJA Reduction
+ * 
+ */
 
 
 /*
-  ----[Constant Values]-----
-  CUDA_BLOCK_SIZE_X - Number of threads in the
-                      x-dimension of a cuda thread block
-
-  CUDA_BLOCK_SIZE_Y - Number of threads in the
-                      y-dimension of a cuda thread block
-
-  CUDA_BLOCK_SIZE   - Number of threads per threads block
+ *  ----[Constant Values]-----
+ * CUDA_BLOCK_SIZE_X - Number of threads in the
+ *                     x-dimension of a cuda thread block
+ *
+ * CUDA_BLOCK_SIZE_Y - Number of threads in the
+ *                     y-dimension of a cuda thread block
+ * 
+ * CUDA_BLOCK_SIZE   - Number of threads per threads block
 */
 #if defined(RAJA_ENABLE_CUDA)
 //const int CUDA_BLOCK_SIZE_X = 16;
@@ -90,40 +82,40 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 
-/*
-  Struct to hold grid info
-  o - Origin in a cartesian dimension
-  h - Spacing between grid points
-  n - Number of grid points
- */
+//
+//  Struct to hold grid info
+//  o - Origin in a cartesian dimension
+//  h - Spacing between grid points
+//  n - Number of grid points
+//
 struct grid_s {
   double o, h;
   int n;
 };
 
-/*
-  ----[Functions]---------
-  solution   - Function for the analytic solution
-  computeErr - Displays the maximum error in the solution
-*/
+// 
+// ----[Functions]---------
+// solution   - Function for the analytic solution
+// computeErr - Displays the maximum error in the solution
+//
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  printf("Example 3: Jacobi Method \n");
+  std::cout<<"Jacobi Example"<<std::endl;
 
   /*
-    ----[Solver Parameters]------------
-    tol       - Method terminates once the norm is less than tol
-    N         - Number of unknown gridpoints per cartesian dimension
-    NN        - Total number of gridpoints on the grid
-    maxIter   - Maximum number of iterations to be taken
-
-    resI2     - Residual
-    iteration - Iteration number
-    grid_s    - Struct with grid information for a cartesian dimension
+   * ----[Solver Parameters]------------
+   * tol       - Method terminates once the norm is less than tol
+   * N         - Number of unknown gridpoints per cartesian dimension
+   * NN        - Total number of gridpoints on the grid
+   * maxIter   - Maximum number of iterations to be taken
+   *
+   * resI2     - Residual
+   * iteration - Iteration number
+   * grid_s    - Struct with grid information for a cartesian dimension
   */
   double tol = 1e-10;
 
@@ -139,9 +131,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   gridx.h = 1.0 / (N + 1.0);
   gridx.n = N + 2;
 
-  /*
-    I, Iold - Holds iterates of Jacobi method
-  */
+  //
+  //I, Iold - Holds iterates of Jacobi method
+  //
   double *I = memoryManager::allocate<double>(NN);
   double *Iold = memoryManager::allocate<double>(NN);
 
@@ -156,9 +148,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
 
-    /*
-      Jacobi Iteration
-    */
+    //
+    // Jacobi Iteration
+    //
     for (int n = 1; n <= N; ++n) {
       for (int m = 1; m <= N; ++m) {
 
@@ -174,9 +166,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
 
-    /*
-      Compute residual and update Iold
-    */
+    //
+    // Compute residual and update Iold
+    //
     resI2 = 0.0;
     for (int k = 0; k < NN; k++) {
       resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);
@@ -194,9 +186,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n", iteration);
 
 
-  /*
-    RAJA loop calls may be shortened by predefining policies
-  */
+  //
+  // RAJA loop calls may be shortened by predefining policies
+  //
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
 
@@ -333,7 +325,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::nested::Policy<
     RAJA::nested::CudaKernel<
-      RAJA::nested::Collapse<RAJA::cuda_block_thread_exec, RAJA::nested::ArgList<1, 0>,
+      RAJA::nested::Collapse<RAJA::cuda_block_thread_exec<56>, RAJA::nested::ArgList<1, 0>,
         RAJA::nested::Lambda<0>
       >
     > >;
@@ -345,9 +337,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
 
-    /*
-      Jacobi Iteration 
-    */
+    //
+    // Jacobi Iteration 
+    //
     RAJA::nested::forall(jacobiCUDANestedPolicy{},
                          RAJA::make_tuple(jacobiRange,jacobiRange),
                          [=] __device__  (RAJA::Index_type m, RAJA::Index_type n) {
@@ -363,9 +355,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                              + Iold[id + 1]);                            
         });
 
-    /*
-      Compute residual and update Iold
-    */
+    //
+    // Compute residual and update Iold
+    //
     RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       gridRange, [=] __device__(RAJA::Index_type k) {
@@ -395,17 +387,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-/*
-  Function for the anlytic solution
-*/
+//
+// Function for the anlytic solution
+//
 double solution(double x, double y)
 {
   return x * y * exp(x - y) * (1 - x) * (1 - y);
 }
 
-/*
-  Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
-*/
+//
+// Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
+//
 void computeErr(double *I, grid_s grid)
 {
 

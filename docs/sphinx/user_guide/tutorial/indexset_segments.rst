@@ -14,15 +14,15 @@
 
 .. _indexset-label:
 
-----------------------
-IndexSets and Segments
-----------------------
+-----------------------------------------
+Iteration Spaces: IndexSets and Segments
+-----------------------------------------
 
 Key RAJA features shown in this example:
 
   * ``RAJA::forall`` loop traversal template
-  * ``RAJA::RangeSegment`` iteration space construct
-  * ``RAJA::ListSegment`` iteration space construct
+  * ``RAJA::RangeSegment`` (i.e., ``RAJA::TypedRangeSegment``) iteration space construct
+  * ``RAJA::TypedListSegment`` iteration space construct
   * ``RAJA::IndexSet`` iteration construct and associated execution policies
 
 The example re-uses the daxpy kernel from an earlier example. It focuses 
@@ -49,22 +49,35 @@ In earlier examples, we have seen how to specify a contiguous range of loop
 indices [0, N) using a ``RAJA::RangeSegment`` object. For example:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 116-118
+                    :lines: 121-123
+
+.. note:: All RAJA Segment types are templated on the type of their index 
+          values.
+
+For example, ``RAJA::RangeSegment`` is actually a type alias to 
+``RAJA::TypedRangeSegment<RAJA::Index_type>``. The ``RAJA::Index_type`` is 
+defined to be ``std::ptrdiff_t`` by default, which seems to be best for most 
+compilers to generate loop optimizations, such as SIMD. 
+
+Users can change the type of ``RAJA::Index_type`` by editing the RAJA 
+``types.hpp`` header file.
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA ListSegments
 ^^^^^^^^^^^^^^^^^^^^^
 
 We can accomplish the same result by enumerating the indices in a 
-``RAJA::ListSegment`` object. Here, we add the indices to a standard vector, 
-create a list segment from it, and then pass the list segment to the 
+``RAJA::TypedListSegment`` object. Here, we add the indices to a standard 
+vector, create a list segment from it, and then pass the list segment to the 
 forall template:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-		    :lines: 134-143
+		    :lines: 139-148
 
-Any container that properly defines the methods 'begin()', 'end()', and
-'size()' can be used to create a list segment object.
+Note that we are using the following type aliases:
+
+.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+		    :lines: 57-58
 
 It is important to note what is really going on here. During the loop
 execution, the indices stored in the list segment are passed to the loop
@@ -76,21 +89,21 @@ run the loop with a new list segment object, and get the same result since
 the loop is `data-parallel`:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 159-165
+                    :lines: 166-170
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA IndexSets
 ^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA::StaticIndexSet`` template is a container that holds segment
+The ``RAJA::TypedIndexSet`` template is a container that holds segment
 types specified as template arguments. An index set object can be passed
 to the RAJA 'forall' method just like a segment. When the loop is run,
-the segments will be iterated over and each segment will be executed. Here,
-we create an index set and add the first index set from above to it and
-run the loop:
+the traversal will iterate over the segments and each segment will be 
+executed. Here, we create an index set, add the first list segment from 
+above to it, and run the loop:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 187-193
+                    :lines: 192-198
 
 What is the 'SEQ_ISET_EXECPOL' type used for the execution policy? 
 
@@ -101,13 +114,13 @@ that we should do each of these operations sequentially by defining the
 policy as follows:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 178-179
+                    :lines: 183-184
 
 Next, we perform the daxpy operation by partitioning the iteration space into
 two range segments:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 205-211
+                    :lines: 210-216
 
 The first range segment is used to run the index range [0, N/2) and the
 second is used to run the range [N/2, N).
@@ -116,7 +129,7 @@ We could also break up the iteration space into three segments, 2 ranges
 and 1 list:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 226-240
+                    :lines: 231-245
 
 The first range segment runs the index range [0, N/3), the list segment
 enumerates the indices in the interval [N/3, 2*N/3), and the second range
@@ -129,20 +142,20 @@ by iterating over the segments sequentially and execute each segment in
 parallel using OpenMP multi-threading, we would use this policy definition:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 259-260
+                    :lines: 264-265
 
 If we wanted to iterate over the segements in parallel using OpenMP 
 multi-threading and execute each segment sequentially, this is the policy
 we would define:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 278-279
+                    :lines: 283-284
 
 Finally, to iterate over the segments sequentially and execute each segment in
 parallel on a GPU by launching a CUDA kernel, we would define this policy:
  
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
-                    :lines: 296-297
+                    :lines: 301-302
 
 The file ``RAJA/examples/ex3-indexset-segments.cpp`` contains the complete 
 working example code.

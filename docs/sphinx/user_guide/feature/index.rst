@@ -14,57 +14,85 @@
 
 .. _index-label:
 
-====================
-Indices and Segments
-====================
+================================
+Indices, Segments, and IndexSets
+================================
 
-Loop counters and iteration spaces are fundamental to C/C++ loops. In this section we introduce RAJA specific index types 
-and iteration space which are designed to encapsulate common programming patterns.
+Loop variables and iteration spaces are fundamental to C/C++ loops. In this 
+section, we introduce RAJA specific index types and iteration spaces which 
+are designed to encapsulate common programming patterns.
 
-.. note:: * All segment objects and the ``Index_type`` are found in the namespace RAJA
+.. note:: All types described here are located in the RAJA namespace.
 
 -------
 Indices
 -------
 
-Although RAJA may utilize any loop counter type, the recommended loop counter is the ``RAJA::Index_type``. The ``RAJA::Index_type`` 
-is a 64-bit loop counter which makes it easy for the compiler to carryout optimizations.
+All RAJA index segments may use any loop variable type. The 'Typed' segments 
+that RAJA provides are templated on a loop variable type. RAJA also provides
+a ``RAJA::Index_type`` type that is an alias to a 64-bit integer variable,
+which is appropriate for most compilers to generate optimizations. RAJA also
+provides (non-typed) aliases for segments that use ``RAJA::Index_type`` by 
+default.
 
 -------------
 RAJA Segments
 -------------
 
-RAJA introduces a family of segments which serve as containers for iterations spaces. 
-The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRangeSegment``; the former is constructed is 
-an alias for a ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Basic usage is as follows::
+In RAJA, a 'Segment' is a portion of a loop iteration space that you would
+want to execute as a unit. RAJA provides a few important Segment types for
+contiguous index ranges, strided ranges, and arbitrary lists of indices.
+For example,::
 
-   //  Generates a contiguous sequence of numbers by the [start, stop) interval specified 
+   // A contiguous index range [start, stop) 
    RAJA::TypedRangeSegment<T>(T start, T stop)  
-   //or                                                           
+
+   // A contiguous index range using the default index type
    RAJA::RangeSegment loopBounds(RAJA::Index_type start, RAJA::Index_type stop)
-    
 
-Under the RAJA programming model, the purpose of these containers is to generate a contiguous sequence of numbers and more fundamentally,
-to serve as the iteration space for loops::
-
-   RAJA::forall<exec_policy>(TypedRangeSegment<T>(T begin,T end), [=] (RAJA::Index_type i)) {
-     //loop boody
-   }
+   // A strided index range
+   RAJA::TypedRangeStrideSegment<T>(T start, T stop, T stride)
 
 .. note:: * TypedRangeStrideSegment::iterator is a random access iterator
           * TypedRangeStrideSegment allows for positive or negative strides, but a stride of zero is undefined
           * For positive strides, begin() > end() implies size()==0
           * For negative strides, begin() < end() implies size()==0
 
-A more general purpose container is the ``RAJA::ListSegment`` and typed ``RAJA::TypedListSegment<T>``; as before the ``RAJA::ListSegment`` is an alias for a 
-``RAJA::TypedRangeSegment<RAJA::Index_type>``. Both of these containers store non-contiguous indices. Basic usage of the ``RAJA::ListSegment``::
+A RAJA list segment can be used to iterate over any index sequence. For 
+example::
 
-    //*Aptr points to an array of values to traverse and Alen is number of elements.
-    RAJA::TypedListSegment<T>(T *Aptr, size_t Alen)  
-    //or
+    // Aptr points to an array of values and Alen is number of values
+    RAJA::TypedListSegment<T>(T *Aptr, size_t Alen)
+
+    // A list segment using the default index type
     RAJA::ListSegment(RAJA::Index_type *Aptr,size_t Alen)
 
+.. note:: Any iterable type that defines methods 'begin()', 'end()', and 
+          'size()' and 'iterator' and 'value_type' types can be used as a 
+          segment with RAJA traversal templates.
 
-Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments, i.e. a collection of ``RAJA::RangeSegments``.
-The utilty of the RAJA containers is illustrated in the tutorial, in particular we refer the reader to :ref:`indexset-label` 
-for further detail.
+-------------
+RAJA Segments
+-------------
+
+A ``RAJA::TypedIndexSet`` is a segment variadic template container templated 
+on the types of segments it may hold. It may hold any number of segments of
+each specified type. An IndexSet object can be passed to a RAJA traversal 
+template to execute all of its segments. For example,::
+
+  RAJA::TypedIndexSet< RAJA::RangeSegment, RAJA::TypedListSegment<int> > iset;
+
+  iset.push_back( RAJA::RangeSegment( ... ) );
+  iset.push_back( RAJA::TypedListSegment<int>(...) );
+  iset.push_back( RAJA::RangeSegment( ... ) );
+
+  using ISET_EXECPOL = RAJA::ExecPolicy< RAJA::omp_parallel_segit, 
+                                         RAJA::seq_exec >;
+
+  RAJA::forall<ISET_EXECPOL>(iset, [=] (int i) { ... });
+
+will execute iterations for a given loop in three chunks defined by the two
+range segments and one list segment. The segments will be iterated over in
+parallel using OpenMP, and each segment will execute sequentially.
+
+For more information, please see the :ref:`indexset-label` tutorial section.

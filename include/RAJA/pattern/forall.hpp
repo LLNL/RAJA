@@ -22,7 +22,7 @@
  *          The forall() and forall_Icount() methods that take an index set
  *          take an execution policy of the form:
  *
- *          IndexSet::ExecPolicy< seg_it_policy, seg_exec_policy >
+ *          TypedIndexSet::ExecPolicy< seg_it_policy, seg_exec_policy >
  *
  *          Here, the first template parameter determines the scheme for
  *          iteratiing over the index set segments and the second determines
@@ -265,7 +265,7 @@ template <typename SegmentIterPolicy,
           typename... SegmentTypes,
           typename LoopBody>
 RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                               const StaticIndexSet<SegmentTypes...>& iset,
+                               const TypedIndexSet<SegmentTypes...>& iset,
                                LoopBody loop_body)
 {
 
@@ -288,7 +288,7 @@ template <typename SegmentIterPolicy,
           typename LoopBody,
           typename... SegmentTypes>
 RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                        const StaticIndexSet<SegmentTypes...>& iset,
+                        const TypedIndexSet<SegmentTypes...>& iset,
                         LoopBody loop_body)
 {
 
@@ -317,8 +317,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an IndexSet but did not get one. Are you using an "
-                "IndexSet policy by mistake?");
+                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "TypedIndexSet policy by mistake?");
 
 
 
@@ -342,8 +342,8 @@ RAJA_INLINE concepts::
     forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an IndexSet but did not get one. Are you using an "
-                "IndexSet policy by mistake?");
+                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
 

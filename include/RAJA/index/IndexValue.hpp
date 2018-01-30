@@ -27,6 +27,9 @@
 #define RAJA_INDEXVALUE_HPP
 
 #include "RAJA/config.hpp"
+
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -65,7 +68,7 @@ struct IndexValue {
   RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() { return value; }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE  constexpr const Index_type &operator*() const
+  RAJA_HOST_DEVICE RAJA_INLINE const Index_type &operator*() const
   {
     return value;
   }
@@ -101,51 +104,63 @@ struct IndexValue {
   }
 
   //! addition to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator+(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(Index_type a) const
   {
     return TYPE(value + a);
   }
 
   //! addition to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator+(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(TYPE a) const
   {
     return TYPE(value + a.value);
   }
 
   //! subtraction to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator-(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(Index_type a) const
   {
     return TYPE(value - a);
   }
 
   //! subtraction to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator-(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(TYPE a) const
   {
     return TYPE(value - a.value);
   }
 
   //! multiplication to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator*(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(Index_type a) const
   {
     return TYPE(value * a);
   }
 
   //! multiplication to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr TYPE operator*(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(TYPE a) const
   {
     return TYPE(value * a.value);
   }
 
   //! division to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator/(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(Index_type a) const
   {
     return TYPE(value / a);
   }
 
   //! division to underlying index from another strong type
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr  TYPE operator/(TYPE a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(TYPE a) const
   {
     return TYPE(value / a.value);
+  }
+
+  //! modulus to underlying index from an Index_type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(Index_type a) const
+  {
+    return TYPE(value % a);
+  }
+
+  //! modulus to underlying index from another strong type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(TYPE a) const
+  {
+    return TYPE(value % a.value);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(Index_type x)

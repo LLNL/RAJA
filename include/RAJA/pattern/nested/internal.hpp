@@ -74,11 +74,6 @@ template <typename Iterator>
 struct iterable_value_type_getter {
   using type = typename Iterator::iterator::value_type;
 };
-template <>
-struct iterable_value_type_getter<IndexSet> {
-  // TODO: when static indexset drops, specialize properly
-  using type = Index_type;
-};
 
 template <typename Segments>
 using value_type_list_from_segments =

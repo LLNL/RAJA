@@ -51,13 +51,18 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+//----------------------------------------------------------------------------//
+// Define types for ListSegments and indices used in examples
+//----------------------------------------------------------------------------//
+using IdxType = RAJA::Index_type;
+using ListSegType = RAJA::TypedListSegment<IdxType>;
+
 //
 // Functions to check and print results
 //
-void checkResult(double* v1, double* v2, int len);
+void checkResult(double* v1, double* v2, IdxType len);
 void printResult(double* v, int len);
  
-
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -66,7 +71,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Define vector length
 //
-  const int N = 1000000;
+  const IdxType N = 1000000;
 
 //
 // Allocate and initialize vector data
@@ -79,7 +84,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   double c = 3.14159;
   
-  for (int i = 0; i < N; i++) {
+  for (IdxType i = 0; i < N; i++) {
     a0[i] = 1.0;
     b[i] = 2.0;
   }
@@ -93,7 +98,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( aref, a0, N * sizeof(double) );
 
-  for (int i = 0; i < N; i++) {
+  for (IdxType i = 0; i < N; i++) {
     aref[i] += b[i] * c;
   }
 
@@ -113,7 +118,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -131,14 +136,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Collect indices in a vector to create list segment
 //
-  std::vector<int> idx;
-  for (int i = 0; i < N; ++i) {
+  std::vector<IdxType> idx;
+  for (IdxType i = 0; i < N; ++i) {
     idx.push_back(i); 
   } 
 
-  RAJA::TypedListSegment<int> idx_list( &idx[0], idx.size() );
+  ListSegType idx_list( &idx[0], idx.size() );
 
-  RAJA::forall<RAJA::seq_exec>(idx_list, [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(idx_list, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -158,9 +163,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::reverse( idx.begin(), idx.end() ); 
 
-  RAJA::TypedListSegment<int> idx_reverse_list( &idx[0], idx.size() );
+  ListSegType idx_reverse_list( &idx[0], idx.size() );
 
-  RAJA::forall<RAJA::seq_exec>(idx_reverse_list, [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(idx_reverse_list, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -184,11 +189,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::StaticIndexSet<RAJA::TypedListSegment<int>> is1;
+  RAJA::TypedIndexSet<ListSegType> is1;
 
   is1.push_back( idx_list );  // use list segment created earlier.
   
-  RAJA::forall<SEQ_ISET_EXECPOL>(is1, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is1, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -202,11 +207,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::StaticIndexSet<RAJA::RangeSegment> is2;
+  RAJA::TypedIndexSet<RAJA::RangeSegment> is2;
   is2.push_back( RAJA::RangeSegment(0, N/2) );
   is2.push_back( RAJA::RangeSegment(N/2, N) );
   
-  RAJA::forall<SEQ_ISET_EXECPOL>(is2, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is2, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -223,19 +228,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Collect indices in a vector to create list segment
 //
-  std::vector<int> idx1;
-  for (int i = N/3; i < 2*N/3; ++i) {
+  std::vector<IdxType> idx1;
+  for (IdxType i = N/3; i < 2*N/3; ++i) {
     idx1.push_back(i);
   }
 
-  RAJA::TypedListSegment<int> idx1_list( &idx1[0], idx1.size() );
+  ListSegType idx1_list( &idx1[0], idx1.size() );
 
-  RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::TypedListSegment<int>> is3;
+  RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3;
   is3.push_back( RAJA::RangeSegment(0, N/3) );
   is3.push_back( idx1_list );
   is3.push_back( RAJA::RangeSegment(2*N/3, N) );
  
-  RAJA::forall<SEQ_ISET_EXECPOL>(is3, [=] (int i) {
+  RAJA::forall<SEQ_ISET_EXECPOL>(is3, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -259,7 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using OMP_ISET_EXECPOL1 = RAJA::ExecPolicy<RAJA::seq_segit,
                                              RAJA::omp_parallel_for_exec>;
 
-  RAJA::forall<OMP_ISET_EXECPOL1>(is3, [=] (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL1>(is3, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -278,7 +283,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using OMP_ISET_EXECPOL2 = RAJA::ExecPolicy<RAJA::omp_parallel_for_segit,
                                                RAJA::seq_exec>;
 
-  RAJA::forall<OMP_ISET_EXECPOL2>(is3, [=] (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL2>(is3, [=] (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -298,7 +303,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (int i) {
+  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -324,10 +329,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
-void checkResult(double* v1, double* v2, int len) 
+void checkResult(double* v1, double* v2, IdxType len) 
 {
   bool match = true;
-  for (int i = 0; i < len; i++) {
+  for (IdxType i = 0; i < len; i++) {
     if ( v1[i] != v2[i] ) { match = false; }
   }
   if ( match ) {
@@ -340,10 +345,10 @@ void checkResult(double* v1, double* v2, int len)
 //
 // Function to print result. 
 //
-void printResult(double* v, int len) 
+void printResult(double* v, IdxType len) 
 {
   std::cout << std::endl;
-  for (int i = 0; i < len; i++) {
+  for (IdxType i = 0; i < len; i++) {
     std::cout << "result[" << i << "] = " << v[i] << std::endl;
   }
   std::cout << std::endl;

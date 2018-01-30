@@ -55,13 +55,17 @@ raja_add_executable(
   SOURCES ex9-scan.cpp)
 
 raja_add_executable(
-  NAME ex10-jacobi
-  SOURCES ex10-jacobi.cpp)
+  NAME ex10-binning.cpp
+  SOURCES ex10-binning.cpp)
 
 raja_add_executable(
-  NAME ex11-red-black-gauss-seidel
-  SOURCES ex11-red-black-gauss-seidel.cpp)
+  NAME ex11-jacobi
+  SOURCES ex11-jacobi.cpp)
 
 raja_add_executable(
-  NAME ex12-wave-eqn
-  SOURCES ex12-wave-eqn.cpp)
+  NAME ex12-red-black-gauss-seidel
+  SOURCES ex12-red-black-gauss-seidel.cpp)
+
+raja_add_executable(
+  NAME ex13-wave-eqn
+  SOURCES ex13-wave-eqn.cpp)

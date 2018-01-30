@@ -1,4 +1,4 @@
-RAJA v0.4.1
+RAJA v0.5.1
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -57,20 +57,11 @@ are not allowed!):
 More details about RAJA configuration options are located in the User 
 Documentation.
 
-Example Applications
---------------------
-
-The [RAJA-examples](https://github.com/LLNL/RAJA-examples) repository contains three proxy applications that use the RAJA
-programming model. These applications can be built along with the rest of the
-RAJA framework by setting `-DENABLE_APPLICATIONS=On` when running CMake.
-
-When this option is passed to CMake, the RAJA-examples repository is cloned using `git` to the directory `extra/llnl-raja-proxies` in the project root. The example applications will be built using the same configuration that the RAJA library uses.
-
 User Documentation
 -------------------
 
-The [**Documentation**](http://software.llnl.gov/RAJA/) is the best place
-to start learning about RAJA.
+The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
+is the best place to start learning about RAJA and how to use it.
 
 Other references that may be of interest include:
 
@@ -81,11 +72,26 @@ To cite RAJA, please use the following reference:
 
 * R. D. Hornung and J. A. Keasler, [The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf), Tech Report, LLNL-TR-661403, Sep. 2014.
 
+Related Software
+--------------------
+
+The [**RAJA Performance Suite**](https://github.com/LLNL/RAJAPerf) contains
+a collection of loop kernels implemented in multiple RAJA and non-RAJA
+variants. We use it to monitor and assess RAJA performance on different
+platforms using a variety of compilers.
+
+The [**RAJA Proxies**](https://github.com/LLNL/RAJAProxies) repository 
+contains RAJA versions of several important HPC proxy applications.
+
+[**CHAI**](https://github.com/LLNL/CHAI) provides a managed array abstraction
+that works with RAJA to automatically copy data used in RAJA kernels to the
+appropriate space for execution. It was developed as a complement to RAJA.
+
 Mailing List
 -----------------
 
-Interested in keep up with RAJA or communicating with its developers and
-users? Please join our mailing list over at Google Groups:
+Interested in keeping up with RAJA or communicating with its developers and
+users? Please join our mailing list at Google Groups:
 - [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users)
 
 If you have questions, find a bug, or have ideas about expanding the

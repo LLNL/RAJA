@@ -263,18 +263,18 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(StorageT begin,
-                                           StorageT end,
-                                           StorageT stride)
-      : m_begin(iterator(begin, stride)),
-        m_end(iterator(end, stride)),
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+      : m_begin(iterator(DiffT{begin}, DiffT{stride})),
+        m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) + static_cast<value_type>(stride)
+                - (stride > 0 ? value_type{1} : value_type{-1}))
+               / static_cast<value_type>(stride))
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
-    m_size = m_size < 0 ? 0 : m_size;
+    m_size = m_size < value_type{0} ? value_type{0} : m_size;
   }
 
   //! disable compiler generated constructor
@@ -292,6 +292,15 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
       : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
   {
+  }
+
+  //! copy assignment
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o)
+  {
+    m_begin = o.m_begin;
+    m_end = o.m_end;
+    m_size = o.m_size;
+    return *this;
   }
 
   //! destructor
@@ -337,9 +346,12 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
                                                  Index_type length) const
   {
-    return TypedRangeStrideSegment{*(this->begin() + begin),
-                                   *(this->begin() + begin + length),
-                                   m_begin.stride};
+    auto start = m_begin[0] + begin;
+    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+
+    return TypedRangeStrideSegment{start,
+                                   end,
+                                   m_begin.get_stride()};
   }
 
   //! equality comparison

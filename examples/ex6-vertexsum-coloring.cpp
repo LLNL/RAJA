@@ -223,7 +223,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // 
   using SegmentType = RAJA::TypedListSegment<int>;
 
-  RAJA::StaticIndexSet<SegmentType> colorset;
+  RAJA::TypedIndexSet<SegmentType> colorset;
 
   colorset.push_back( SegmentType(&idx0[0], idx0.size()) ); 
   colorset.push_back( SegmentType(&idx1[0], idx1.size()) ); 
