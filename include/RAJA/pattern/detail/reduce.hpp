@@ -100,10 +100,6 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-  //
-  // Note: marking these defaulted methods as host-device introduces
-  //       a bunch of warning spew as of CUDA 9.
-  //
   RAJA_HOST_DEVICE constexpr ValueLoc() = default;
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
   ValueLoc &operator=(ValueLoc const &) = default;
