@@ -168,33 +168,6 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
   ASSERT_EQ(tmin1.getLoc(), -1);
 
-  //Reset the data and run again
-  tmin0.reset(1.0e+20, -1);
-  tmin1.reset(-200.0, -1);
-  tmin1.minloc(-100.0, -1);
-
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
-     this->iset, [=](Index_type idx) {
-       tmin0.minloc(1 * this->test_array[idx], idx);
-       tmin1.minloc(this->test_array[idx], idx);
-      });
-
-  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-  ASSERT_EQ(tmin1.getLoc(), -1);
-  ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
-  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
-
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
-      this->iset, [=](Index_type idx) {
-        tmin0.minloc(2 * this->test_array[idx], idx);
-        tmin1.minloc(this->test_array[idx], idx);
-      });
-
-  ASSERT_EQ(Real_type(tmin0), Real_type(2 * ref_min_val));
-  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
-  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-  ASSERT_EQ(tmin1.getLoc(), -1);
-
 }
 
 TYPED_TEST(IndexSetReduce, ReduceMaxTest)
