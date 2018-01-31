@@ -1,3 +1,20 @@
+RAJA v0.5.3 Release Notes
+=========================
+
+This is a bugfix release that fixes bugs in the IndexSetBuilder methods. These
+methods now work correctly with the strongly-typed IndexSet.
+
+RAJA v0.5.2 Release Notes
+=========================
+
+This release fixes some small bugs, including compiler warnings issued for
+deprecated features, type narrowing, and the slice method for the
+RangeStrideSegment class.
+
+It also adds a new CMake variable, RAJA_LOADED, that is used to determine
+whether RAJA's CMakeLists file has already been processed. This is useful when
+including RAJA as part of another CMake project.
+
 RAJA v0.5.1 Release Notes
 =========================
 
