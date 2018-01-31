@@ -214,7 +214,7 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                RAJA::ListSegment>& iset,
+                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                 Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,
