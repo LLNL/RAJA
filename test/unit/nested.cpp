@@ -117,7 +117,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
 #endif
 
   for(int i=0; i<arr_len; ++i){
-    arr[0] = i;
+    arr[i] = i;
   }
   
   //set the min and max of the array
@@ -144,6 +144,20 @@ CUDA_TYPED_TEST_P(Nested, Basic)
       tMaxLoc.maxloc(arr[id], id);
   });      
 
+  tMin.reset(0.0);
+  tMax.reset(0.0);
+  tMinLoc.reset(0.0,1);
+  tMaxLoc.reset(0.0,1);
+  
+  RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+      // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
+      RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
+      tMin.min(arr[id]);
+      tMinLoc.minloc( arr[id], id);
+      
+      tMax.max(arr[id]);
+      tMaxLoc.maxloc(arr[id], id);
+  });      
 
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
@@ -152,7 +166,10 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   ASSERT_FLOAT_EQ(4, tMinLoc.getLoc());
 
   ASSERT_FLOAT_EQ(50, tMaxLoc.get());
-  ASSERT_FLOAT_EQ(8, tMaxLoc.getLoc());  
+  ASSERT_FLOAT_EQ(8, tMaxLoc.getLoc());
+
+
+  
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
