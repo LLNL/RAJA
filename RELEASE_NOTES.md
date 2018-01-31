@@ -1,3 +1,9 @@
+RAJA v0.5.3 Release Notes
+=========================
+
+This is a bugfix release that fixes bugs in the IndexSetBuilder methods. These
+methods now work correctly with the strongly-typed IndexSet.
+
 RAJA v0.5.2 Release Notes
 =========================
 
