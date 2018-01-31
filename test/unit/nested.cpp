@@ -108,8 +108,14 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   //Check reduction
   int stride1 = 5;
   int arr_len = stride1*stride1; 
+
   double *arr;
+#if defined(RAJA_ENABLE_CUDA)
   cudaMallocManaged(&arr, arr_len*sizeof(double));
+#else
+  arr = new double[arr_len];
+#endif
+
   for(int i=0; i<arr_len; ++i){
     arr[0] = i;
   }
@@ -147,6 +153,13 @@ CUDA_TYPED_TEST_P(Nested, Basic)
 
   ASSERT_FLOAT_EQ(50, tMaxLoc.get());
   ASSERT_FLOAT_EQ(8, tMaxLoc.getLoc());  
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaFree(arr);
+#else
+  delete[] arr;
+#endif
+
 }
 
 REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
