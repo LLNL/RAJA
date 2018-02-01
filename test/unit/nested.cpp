@@ -84,8 +84,6 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
   RAJA::ReduceMin<at_v<TypeParam, 2>, RAJA::Real_type> tMin(0.0);
   RAJA::ReduceMax<at_v<TypeParam, 2>, RAJA::Real_type> tMax(0.0);
-  RAJA::ReduceMinLoc<at_v<TypeParam, 2>, RAJA::Real_type> tMinLoc(0,1);
-  RAJA::ReduceMaxLoc<at_v<TypeParam, 2>, RAJA::Real_type> tMaxLoc(0,1);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeStrideSegment<Idx1>(0, y_len, 1));
@@ -138,37 +136,23 @@ CUDA_TYPED_TEST_P(Nested, Basic)
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(arr[id]);
-      tMinLoc.minloc( arr[id], id);
-
       tMax.max(arr[id]);
-      tMaxLoc.maxloc(arr[id], id);
   });      
 
   tMin.reset(0.0);
   tMax.reset(0.0);
-  tMinLoc.reset(0.0,1);
-  tMaxLoc.reset(0.0,1);
   
   RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(arr[id]);
-      tMinLoc.minloc( arr[id], id);
       
       tMax.max(arr[id]);
-      tMaxLoc.maxloc(arr[id], id);
   });      
 
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
-  ASSERT_FLOAT_EQ(-1, tMinLoc.get());
-  ASSERT_FLOAT_EQ(4, tMinLoc.getLoc());
-
-  ASSERT_FLOAT_EQ(50, tMaxLoc.get());
-  ASSERT_FLOAT_EQ(8, tMaxLoc.getLoc());
-
-
   
 
 #if defined(RAJA_ENABLE_CUDA)
