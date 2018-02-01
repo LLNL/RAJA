@@ -237,30 +237,9 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
 
   this->test_array[ref_max_indx] = ref_max_val;
 
-  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
-  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
-  tmax1.maxloc(100.0, -1);
-
-  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
-    tmax0.maxloc(1 * this->test_array[idx], idx);
-    tmax1.maxloc(this->test_array[idx], idx);
-  });
-
-  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-  ASSERT_EQ(tmax1.getLoc(), -1);
-  ASSERT_EQ(Real_type(tmax0), Real_type(1 * ref_max_val));
-  ASSERT_EQ(tmax1.get(), Real_type(200.0));
-
-  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
-    tmax0.maxloc(2 * this->test_array[idx], idx);
-    tmax1.maxloc(this->test_array[idx], idx);
-  });
-
-  ASSERT_EQ(Real_type(tmax0), Real_type(2 * ref_max_val));
-  ASSERT_EQ(tmax1.get(), Real_type(200.0));
-  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-  ASSERT_EQ(tmax1.getLoc(), -1);
-
+  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0;
+  ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1;
+  
   //Reset data 
   tmax0.reset(-1.0e+20, -1);
   tmax1.reset(200.0, -1);
