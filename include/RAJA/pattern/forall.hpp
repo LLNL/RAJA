@@ -17,7 +17,7 @@
  *
  *          The former is slightly more concise. Here, the execution policy
  *          type is associated with a tag struct defined in the exec_poilicy
- *          hearder file. Usage of the forall_Icount() is similar.
+ *          header file. Usage of the forall_Icount() is similar.
  *
  *          The forall() and forall_Icount() methods that take an index set
  *          take an execution policy of the form:

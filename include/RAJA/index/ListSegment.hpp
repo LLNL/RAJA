@@ -35,7 +35,11 @@
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #else
+#if defined(RAJA_ENABLE_ROCM)
+#include "RAJA/policy/rocm/MemUtils_ROCm.hpp"
+#else
 #define cudaErrchk(...)
+#endif
 #endif
 
 #include <memory>
@@ -62,10 +66,10 @@ template <typename T>
 class TypedListSegment
 {
 
-#if defined(RAJA_ENABLE_CUDA)
-  static constexpr bool Has_CUDA = true;
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_ROCM)
+  static constexpr bool Has_GPU = true;
 #else
-  static constexpr bool Has_CUDA = false;
+  static constexpr bool Has_GPU = false;
 #endif
 
   //! tag for trivial per-element copy
@@ -80,6 +84,11 @@ class TypedListSegment
   //! alias for CPU memory tag
   using CPU_memory = std::integral_constant<bool, false>;
 
+#if defined(RAJA_ENABLE_CUDA)
+#endif
+#if defined(RAJA_ENABLE_ROCM)
+#endif
+#if defined(RAJA_ENABLE_CUDA)
   //! specialization for deallocation of GPU_memory
   void deallocate(GPU_memory) { cudaErrchk(cudaFree(m_data)); }
 
@@ -90,6 +99,18 @@ class TypedListSegment
                                  m_size * sizeof(value_type),
                                  cudaMemAttachGlobal));
   }
+#endif
+#if defined(RAJA_ENABLE_ROCM)
+  //! specialization for deallocation of GPU_memory
+  void deallocate(GPU_memory) { rocmErrchk(rocmDeviceFree(m_data)); }
+
+  //! specialization for allocation of GPU_memory
+  void allocate(GPU_memory)
+  {
+    rocmErrchk(rocmMallocManaged((void**)&m_data,
+                                 m_size * sizeof(value_type)));
+  }
+#endif
 
   //! specialization for deallocation of CPU_memory
   void deallocate(CPU_memory) { delete[] m_data; }
@@ -104,6 +125,15 @@ class TypedListSegment
   {
     cudaErrchk(cudaMemcpy(
         m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
+  }
+#endif
+#if defined(RAJA_ENABLE_ROCM)
+  //! copy data from container using BlockCopy
+  template <typename Container>
+  void copy(Container&& src, BlockCopy)
+  {
+    rocmMemcpy(
+        m_data, &(*src.begin()), m_size * sizeof(T));
   }
 #endif
 
@@ -126,12 +156,12 @@ class TypedListSegment
   void allocate_and_copy(Container&& src)
   {
     allocate(std::integral_constant<bool, GPU>());
-    static constexpr bool use_cuda =
+    static constexpr bool use_gpu =
         GPU && std::is_pointer<decltype(src.begin())>::value
         && std::is_same<type_traits::IterableValue<Container>,
                         value_type>::value;
     using TagType =
-        typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
+        typename std::conditional<use_gpu, BlockCopy, TrivialCopy>::type;
     copy(src, TagType());
   }
 
@@ -172,7 +202,7 @@ public:
       : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
   {
     if (m_size <= 0) return;
-    allocate_and_copy<Has_CUDA>(container);
+    allocate_and_copy<Has_GPU>(container);
     m_owned = Owned;
   }
 
@@ -201,7 +231,7 @@ public:
   ~TypedListSegment()
   {
     if (m_data == nullptr || m_owned != Owned) return;
-    deallocate(std::integral_constant<bool, Has_CUDA>());
+    deallocate(std::integral_constant<bool, Has_GPU>());
   }
 
 
@@ -275,7 +305,7 @@ private:
     m_size = len;
     m_owned = container_own;
     if (m_owned == Owned) {
-      allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
+      allocate_and_copy<Has_GPU>(RAJA::impl::make_span(container, len));
       return;
     }
     // Uh-oh. Using evil const_cast....

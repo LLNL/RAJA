@@ -19,6 +19,8 @@ namespace camp
 #define CAMP_COMPILER_MSVC
 #elif defined(__GNUC__)
 #define RAJA_COMPILER_GNU
+#elif defined(__HCC__)
+#define RAJA_COMPILER_HCC
 #else
 #pragma warn("Unknown compiler!")
 #endif
@@ -41,10 +43,18 @@ namespace camp
 #endif
 
 #else
-#define CAMP_DEVICE
-#define CAMP_HOST_DEVICE
-#define CAMP_SUPPRESS_HD_WARN
+ #if defined(__HCC__)
+  #define CAMP_DEVICE [[hc]]
+  #define CAMP_HOST_DEVICE [[cpu]][[hc]]
+  #define CAMP_SUPPRESS_HD_WARN
+ #else
+  #define CAMP_DEVICE
+  #define CAMP_HOST_DEVICE
+  #define CAMP_SUPPRESS_HD_WARN
+ #endif
 #endif
+
+
 
 #if defined(__has_builtin)
 #if __has_builtin(__make_integer_seq)

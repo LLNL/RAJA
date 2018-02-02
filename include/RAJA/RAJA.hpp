@@ -69,6 +69,10 @@
 #include "RAJA/policy/cuda.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_ROCM)
+#include "RAJA/policy/rocm.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
 #endif
