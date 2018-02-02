@@ -28,6 +28,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 # Build options
 set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
 set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
+set(ENABLE_ROCM Off CACHE Bool "Build ROCm support")
 set(ENABLE_COPY_HEADERS Off CACHE Bool "")
 set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
@@ -37,6 +38,7 @@ option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+set(ROCM_ARCH "gfx900" CACHE STRING "gfx architecture to pass to ROCm builds")
 option(ENABLE_CUB "Use cub for scans using CUDA" On)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_EXAMPLES "Build simple examples" On)
@@ -74,6 +76,7 @@ set (raja_sources
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
+  src/MemUtils_ROCM.cpp
   src/ThreadUtils_CPU.cpp)
 
 set (raja_depends)
@@ -95,6 +98,12 @@ if (ENABLE_CUDA)
       ${raja_depends}
       cub)
   endif ()
+endif ()
+
+if (ENABLE_ROCM)
+  set (raja_depends
+    ${raja_depends}
+    rocm)
 endif ()
 
 if (ENABLE_CHAI)
