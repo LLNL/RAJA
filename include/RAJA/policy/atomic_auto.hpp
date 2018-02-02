@@ -37,6 +37,9 @@
  * If we are in a CUDA __device__ function, then it always uses the cuda_atomic
  * policy.
  *
+ * If we are in a ROCm [[hc]] function, then it always uses the rocm_atomic
+ * policy.
+ *
  * Next, if OpenMP is enabled we always use the omp_atomic, which should
  * generally work everywhere.
  *
@@ -44,16 +47,21 @@
  * because we assume there is no thread safety issues (no parallel model)
  */
 #ifdef __CUDA_ARCH__
-#define RAJA_AUTO_ATOMIC \
+ #define RAJA_AUTO_ATOMIC \
   RAJA::atomic::cuda_atomic {}
 #else
-#ifdef RAJA_ENABLE_OPENMP
-#define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::omp_atomic {}
-#else
-#define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::seq_atomic {}
-#endif
+ #ifdef RAJA_ENABLE_ROCM
+ #define RAJA_AUTO_ATOMIC \
+   RAJA::atomic::rocm_atomic {}
+ #else
+  #ifdef RAJA_ENABLE_OPENMP
+   #define RAJA_AUTO_ATOMIC \
+     RAJA::atomic::omp_atomic {}
+  #else
+   #define RAJA_AUTO_ATOMIC \
+     RAJA::atomic::seq_atomic {}
+  #endif
+ #endif
 #endif
 
 
