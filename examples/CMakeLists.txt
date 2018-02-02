@@ -15,6 +15,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME ex-layout
+  SOURCES ex-layout.cpp)
+
+raja_add_executable(
   NAME ex0-daxpy
   SOURCES ex0-daxpy.cpp)
 
