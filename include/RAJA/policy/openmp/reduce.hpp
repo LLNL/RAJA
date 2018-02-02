@@ -59,6 +59,8 @@ class ReduceOMP
 public:
 
   using Base::Base;
+  //! prohibit compiler-generated default ctor
+  ReduceOMP() = delete;
 
   ~ReduceOMP()
   {

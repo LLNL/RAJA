@@ -55,7 +55,6 @@ class ReduceTBB
   std::shared_ptr<tbb::combinable<T>> data;
 
 public:
-
   //! default constructor calls the reset method
   ReduceTBB()
   {
