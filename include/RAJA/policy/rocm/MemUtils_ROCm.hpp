@@ -58,34 +58,30 @@ rocmError_t rocmDeviceSynchronize()
   return rocmPeekAtLastError();
 }
 
+#if __KALMAR_ACCELERATOR__ == 1
 RAJA_DEVICE RAJA_INLINE
 void __syncthreads() [[hc]]
 {
-#if __KALMAR_ACCELERATOR__ == 1
    amp_barrier(CLK_LOCAL_MEM_FENCE);
-#else
-#endif
 }
+
 RAJA_DEVICE RAJA_INLINE
 void __threadfence() [[hc]]
 {
-#if __KALMAR_ACCELERATOR__ == 1
-   amp_barrier(CLK_GLOBAL_MEM_FENCE);
-#else
-#endif
+   amp_barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
 }
 
 #define LT0 ((threadIdx_x+threadIdx_y+threadIdx_z)?0:1)
 
-#if defined(__HCC_ACCELERATOR__ )
 
 // returns non-zero if and only if predicate is non-zero for all threads
+RAJA_DEVICE RAJA_INLINE
 int __syncthreads_or(int predicate) [[hc]]
 {
   int *shared_var = (int *)hc::get_dynamic_group_segment_base_pointer();;
   if(LT0) *shared_var = 0;
   hc_barrier(CLK_LOCAL_MEM_FENCE);
-  if (predicate) RAJA::atomic::atomicOr(shared_var,1);
+  if (predicate) RAJA::atomic::atomicOr(RAJA::atomic::rocm_atomic{},shared_var,1);
   hc_barrier(CLK_LOCAL_MEM_FENCE);
   return (*shared_var);
 }

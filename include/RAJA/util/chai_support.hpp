@@ -72,6 +72,13 @@ struct get_space_impl<Platform::cuda> {
 };
 #endif
 
+#if defined(RAJA_ENABLE_ROCM)
+template <>
+struct get_space_impl<Platform::rocm> {
+  static constexpr chai::ExecutionSpace value = chai::GPU;
+};
+#endif
+
 template <>
 struct get_space_impl<Platform::undefined> {
   static constexpr chai::ExecutionSpace value = chai::NONE;

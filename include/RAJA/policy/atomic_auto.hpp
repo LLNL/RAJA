@@ -50,7 +50,7 @@
  #define RAJA_AUTO_ATOMIC \
   RAJA::atomic::cuda_atomic {}
 #else
- #ifdef RAJA_ENABLE_ROCM
+ #if defined(RAJA_ENABLE_ROCM) && (__KALMAR_ACCELERATOR__ == 1)
  #define RAJA_AUTO_ATOMIC \
    RAJA::atomic::rocm_atomic {}
  #else

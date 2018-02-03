@@ -83,7 +83,8 @@ template <typename T>
 struct atomic<min<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomic::atomicMin<T>(RAJA::atomic::rocm_atomic{}, &val, v);
+//    RAJA::atomic::atomicMin<T>(RAJA::atomic::rocm_atomic{}, &val, v);
+    RAJA::atomic::atomicMin<T>(&val, v);
   }
 };
 
@@ -91,7 +92,8 @@ template <typename T>
 struct atomic<max<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomic::atomicMax<T>(RAJA::atomic::rocm_atomic{}, &val, v);
+//    RAJA::atomic::atomicMax<T>(RAJA::atomic::rocm_atomic{}, &val, v);
+    RAJA::atomic::atomicMax<T>(&val, v);
   }
 };
 
@@ -198,6 +200,7 @@ constexpr const size_t max_shfl_int_type_size = sizeof(int);
  *
  ******************************************************************************
  */
+#if __KALMAR_ACCELERATOR__ == 1
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
@@ -341,7 +344,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    unsigned int old_count = RAJA::atomic::atomicInc(RAJA::atomic::rocm_atomic{},device_count, wrap_around);
     lastBlock = (old_count == wrap_around);
   }
 
@@ -385,11 +388,11 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
 
   // one thread in first block initializes device_mem
   if (threadId == 0) {
-    unsigned int old_val = ::atomicCAS(device_count, 0u, 1u);
+    unsigned int old_val = RAJA::atomic::atomicCAS(RAJA::atomic::rocm_atomic{},device_count, 0u, 1u);
     if (old_val == 0u) {
       device_mem[0] = identity;
       __threadfence();
-      ::atomicAdd(device_count, 1u);
+      RAJA::atomic::atomicAdd(RAJA::atomic::rocm_atomic{},device_count, 1u);
     }
   }
 
@@ -405,7 +408,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
     RAJA::reduce::rocm::atomic<Combiner>{}(device_mem[0], temp);
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    unsigned int old_count = RAJA::atomic::atomicInc(RAJA::atomic::rocm_atomic{},device_count, wrap_around);
     lastBlock = (old_count == wrap_around);
 
     // last block gets value from device_mem
@@ -416,6 +419,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
 
   return lastBlock;
 }
+#endif
 
 }  // namespace impl
 
@@ -642,6 +646,7 @@ struct Reduce_Data {
   {
   }
 
+#if __KALMAR_ACCELERATOR__ == 1
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -651,6 +656,7 @@ struct Reduce_Data {
       *output = temp;
     }
   }
+#endif
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
@@ -720,6 +726,7 @@ struct ReduceAtomic_Data {
   {
   }
 
+#if __KALMAR_ACCELERATOR__ == 1
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -730,6 +737,7 @@ struct ReduceAtomic_Data {
       *output = temp;
     }
   }
+#endif
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally

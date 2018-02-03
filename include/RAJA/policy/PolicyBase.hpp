@@ -40,6 +40,7 @@ enum class Policy {
   openmp,
   target_openmp,
   cuda,
+  rocm,
   tbb
 };
 
@@ -47,7 +48,7 @@ enum class Pattern { undefined, forall, reduce, taskgraph };
 
 enum class Launch { undefined, sync, async };
 
-enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4 };
+enum class Platform { undefined = 0, host = 1, cuda = 2, rocm = 3, omp_target = 4 };
 
 struct PolicyBase {
 };
@@ -170,6 +171,9 @@ struct is_target_openmp_policy
 };
 template <typename Pol>
 struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
+};
+template <typename Pol>
+struct is_rocm_policy : RAJA::policy_is<Pol, RAJA::Policy::rocm> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,

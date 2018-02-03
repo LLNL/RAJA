@@ -139,10 +139,9 @@ struct rocm_atomic {
  * Specialization below can adapt for some unsupported types.
  */
 template <typename T>
-//RAJA_INLINE T atomicAdd(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicAdd(T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicAdd(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
-  return rocm_atomic_CAS_oper(acc, [=] (T a) {
+  return detail::rocm_atomic_CAS_oper(acc, [=] (T a) [[hc]] {
     return a + value;
   });
 }
@@ -150,7 +149,7 @@ RAJA_INLINE T atomicAdd(T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicAdd support by ROCM
 template <>
-RAJA_INLINE int atomicAdd<int>( int volatile *acc,
+RAJA_INLINE int atomicAdd<int>(rocm_atomic, int volatile *acc,
                                 int value) [[hc]]
 {
   return hc::atomic_add_int((int *)acc, value);
@@ -159,8 +158,7 @@ RAJA_INLINE int atomicAdd<int>( int volatile *acc,
 
 // 32-bit unsigned atomicAdd support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicAdd<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicAdd<unsigned>(
+RAJA_INLINE unsigned atomicAdd<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -170,7 +168,7 @@ RAJA_INLINE unsigned atomicAdd<unsigned>(
 // 64-bit unsigned atomicAdd support by ROCM
 template <>
 RAJA_INLINE unsigned long long atomicAdd<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -180,8 +178,7 @@ RAJA_INLINE unsigned long long atomicAdd<unsigned long long>(
 
 // 32-bit float atomicAdd support by ROCM
 template <>
-//RAJA_INLINE float atomicAdd<float>(rocm_atomic,
-RAJA_INLINE float atomicAdd<float>(
+RAJA_INLINE float atomicAdd<float>(rocm_atomic,
                                               float volatile *acc,
                                               float value) [[hc]]
 {
@@ -189,11 +186,9 @@ RAJA_INLINE float atomicAdd<float>(
 }
 
 
-// 64-bit double atomicAdd support added for tbd
-//#if __ROCM_ARCH__ >= 1000
+// 64-bit double atomicAdd 
 template <>
-//RAJA_INLINE double atomicAdd<double>(rocm_atomic,
-RAJA_INLINE double atomicAdd<double>(
+RAJA_INLINE double atomicAdd<double>(rocm_atomic,
                                                 double volatile *acc,
                                                 double value) [[hc]]
 {
@@ -212,12 +207,10 @@ RAJA_INLINE double atomicAdd<double>(
     } while ( readback.i != oldval.i );
     return oldval.t ;
 }
-//#endif
 
 
 template <typename T>
-//RAJA_INLINE T atomicSub(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicSub(T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicSub(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a - value;
@@ -226,8 +219,7 @@ RAJA_INLINE T atomicSub(T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicSub support by ROCM
 template <>
-//RAJA_INLINE int atomicSub<int>(rocm_atomic,
-RAJA_INLINE int atomicSub<int>(
+RAJA_INLINE int atomicSub<int>(rocm_atomic,
                                           int volatile *acc,
                                           int value) [[hc]]
 {
@@ -237,8 +229,7 @@ RAJA_INLINE int atomicSub<int>(
 
 // 32-bit unsigned atomicSub support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicSub<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicSub<unsigned>(
+RAJA_INLINE unsigned atomicSub<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -247,8 +238,7 @@ RAJA_INLINE unsigned atomicSub<unsigned>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicMin(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicMin(T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicMin(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a < value ? a : value;
@@ -258,8 +248,7 @@ RAJA_INLINE T atomicMin(T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicMin support by ROCM
 template <>
-//RAJA_INLINE int atomicMin<int>(rocm_atomic,
-RAJA_INLINE int atomicMin<int>(
+RAJA_INLINE int atomicMin<int>(rocm_atomic,
                                           int volatile *acc,
                                           int value) [[hc]]
 {
@@ -269,8 +258,7 @@ RAJA_INLINE int atomicMin<int>(
 
 // 32-bit unsigned atomicMin support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicMin<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicMin<unsigned>(
+RAJA_INLINE unsigned atomicMin<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -280,7 +268,7 @@ RAJA_INLINE unsigned atomicMin<unsigned>(
 // 64-bit unsigned atomicMin support by ROCM 
 template <>
 RAJA_INLINE unsigned long long atomicMin<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -289,8 +277,7 @@ RAJA_INLINE unsigned long long atomicMin<unsigned long long>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicMax(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicMax(T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicMax(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a > value ? a : value;
@@ -299,8 +286,7 @@ RAJA_INLINE T atomicMax(T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicMax support by ROCM
 template <>
-//RAJA_INLINE int atomicMax<int>(rocm_atomic,
-RAJA_INLINE int atomicMax<int>(
+RAJA_INLINE int atomicMax<int>(rocm_atomic,
                                           int volatile *acc,
                                           int value) [[hc]]
 {
@@ -310,8 +296,7 @@ RAJA_INLINE int atomicMax<int>(
 
 // 32-bit unsigned atomicMax support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicMax<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicMax<unsigned>(
+RAJA_INLINE unsigned atomicMax<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -319,10 +304,9 @@ RAJA_INLINE unsigned atomicMax<unsigned>(
 }
 
 // 64-bit unsigned atomicMax support by ROCM
-//#if __ROCM_ARCH__ >= 350
 template <>
 RAJA_INLINE unsigned long long atomicMax<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -331,8 +315,7 @@ RAJA_INLINE unsigned long long atomicMax<unsigned long long>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicInc(rocm_atomic, T volatile *acc, T val) [[hc]]
-RAJA_INLINE T atomicInc(T volatile *acc, T val) [[hc]]
+RAJA_INLINE T atomicInc(rocm_atomic, T volatile *acc, T val) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T old) {
     return ((old >= val) ? 0 : (old + 1));
@@ -342,8 +325,7 @@ RAJA_INLINE T atomicInc(T volatile *acc, T val) [[hc]]
 /*
 // 32-bit unsigned atomicInc support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicInc<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicInc<unsigned>(
+RAJA_INLINE unsigned atomicInc<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -353,8 +335,7 @@ RAJA_INLINE unsigned atomicInc<unsigned>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicInc(rocm_atomic, T volatile *acc) [[hc]]
-RAJA_INLINE T atomicInc( T volatile *acc) [[hc]]
+RAJA_INLINE T atomicInc(rocm_atomic, T volatile *acc) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc,
                                       [=] (T a) { return a + 1; });
@@ -362,8 +343,7 @@ RAJA_INLINE T atomicInc( T volatile *acc) [[hc]]
 
 
 template <typename T>
-//RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc, T val) [[hc]]
-RAJA_INLINE T atomicDec( T volatile *acc, T val) [[hc]]
+RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc, T val) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T old) {
     return (((old == 0) | (old > val)) ? val : (old - 1));
@@ -373,8 +353,7 @@ RAJA_INLINE T atomicDec( T volatile *acc, T val) [[hc]]
 /*
 // 32-bit unsigned atomicDec support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicDec<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicDec<unsigned>(
+RAJA_INLINE unsigned atomicDec<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -383,8 +362,7 @@ RAJA_INLINE unsigned atomicDec<unsigned>(
 */
 
 template <typename T>
-//RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc) [[hc]]
-RAJA_INLINE T atomicDec( T volatile *acc) [[hc]]
+RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc,
                                       [=] (T a) { return a - 1; });
@@ -392,8 +370,7 @@ RAJA_INLINE T atomicDec( T volatile *acc) [[hc]]
 
 
 template <typename T>
-//RAJA_INLINE T atomicAnd(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicAnd( T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicAnd(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a & value;
@@ -402,8 +379,7 @@ RAJA_INLINE T atomicAnd( T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicAnd support by ROCM
 template <>
-//RAJA_INLINE int atomicAnd<int>(rocm_atomic,
-RAJA_INLINE int atomicAnd<int>(
+RAJA_INLINE int atomicAnd<int>(rocm_atomic,
                                           int volatile *acc,
                                           int value) [[hc]]
 {
@@ -413,8 +389,7 @@ RAJA_INLINE int atomicAnd<int>(
 
 // 32-bit unsigned atomicAnd support by ROCM
 template <>
-//RAJA_INLINE unsigned atomicAnd<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicAnd<unsigned>(
+RAJA_INLINE unsigned atomicAnd<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -424,7 +399,7 @@ RAJA_INLINE unsigned atomicAnd<unsigned>(
 // 64-bit unsigned atomicAnd support by ROCM
 template <>
 RAJA_INLINE unsigned long long atomicAnd<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -433,8 +408,7 @@ RAJA_INLINE unsigned long long atomicAnd<unsigned long long>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicOr(rocm_atomic, T volatile *acc, T value)
-RAJA_INLINE T atomicOr(T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicOr(rocm_atomic, T volatile *acc, T value)  [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a | value;
@@ -443,8 +417,7 @@ RAJA_INLINE T atomicOr(T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicOr 
 template <>
-//RAJA_INLINE int atomicOr<int>(rocm_atomic,
-RAJA_INLINE int atomicOr<int>(
+RAJA_INLINE int atomicOr<int>(rocm_atomic,
                                          int volatile *acc,
                                          int value) [[hc]]
 {
@@ -454,8 +427,7 @@ RAJA_INLINE int atomicOr<int>(
 
 // 32-bit unsigned atomicOr 
 template <>
-//RAJA_INLINE unsigned atomicOr<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicOr<unsigned>(
+RAJA_INLINE unsigned atomicOr<unsigned>(rocm_atomic,
                                                    unsigned volatile *acc,
                                                    unsigned value) [[hc]]
 {
@@ -464,7 +436,7 @@ RAJA_INLINE unsigned atomicOr<unsigned>(
 
 template <>
 RAJA_INLINE unsigned long long atomicOr<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -473,8 +445,7 @@ RAJA_INLINE unsigned long long atomicOr<unsigned long long>(
 
 
 template <typename T>
-//RAJA_INLINE T atomicXor(rocm_atomic, T volatile *acc, T value) [[hc]]
-RAJA_INLINE T atomicXor( T volatile *acc, T value) [[hc]]
+RAJA_INLINE T atomicXor(rocm_atomic, T volatile *acc, T value) [[hc]]
 {
   return detail::rocm_atomic_CAS_oper(acc, [=] (T a) {
     return a ^ value;
@@ -483,8 +454,7 @@ RAJA_INLINE T atomicXor( T volatile *acc, T value) [[hc]]
 
 // 32-bit signed atomicXor
 template <>
-//RAJA_INLINE int atomicXor<int>(rocm_atomic,
-RAJA_INLINE int atomicXor<int>(
+RAJA_INLINE int atomicXor<int>(rocm_atomic,
                                           int volatile *acc,
                                           int value) [[hc]]
 {
@@ -494,8 +464,7 @@ RAJA_INLINE int atomicXor<int>(
 
 // 32-bit unsigned atomicXor
 template <>
-//RAJA_INLINE unsigned atomicXor<unsigned>(rocm_atomic,
-RAJA_INLINE unsigned atomicXor<unsigned>(
+RAJA_INLINE unsigned atomicXor<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
@@ -504,7 +473,7 @@ RAJA_INLINE unsigned atomicXor<unsigned>(
 
 template <>
 RAJA_INLINE unsigned long long atomicXor<unsigned long long>(
-//    rocm_atomic,
+    rocm_atomic,
     unsigned long long volatile *acc,
     unsigned long long value) [[hc]]
 {
@@ -515,8 +484,9 @@ RAJA_INLINE unsigned long long atomicXor<unsigned long long>(
 
 template <typename T>
 RAJA_INLINE T
-//atomicCAS(rocm_atomic, T volatile *acc, T compare, T value) [[hc]]
-atomicExchange(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==sizeof(unsigned), T>::type value) [[hc]]
+atomicExchange(rocm_atomic, T volatile *acc, T compare,
+          typename std::enable_if<sizeof(T)==sizeof(unsigned), T>::type value)
+          [[hc]]
 {
   // attempt to use the ROCm builtin atomic, if it exists for T
   return hc::atomic_exchange_unsigned((unsigned *)acc, compare, value);
@@ -524,8 +494,9 @@ atomicExchange(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==si
 
 template <typename T>
 RAJA_INLINE T
-//atomicCAS(rocm_atomic, T volatile *acc, T compare, T value) [[hc]]
-atomicExchange(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==sizeof(uint64_t), T>::type value) [[hc]]
+atomicExchange(rocm_atomic, T volatile *acc, T compare,
+          typename std::enable_if<sizeof(T)==sizeof(uint64_t), T>::type value)
+          [[hc]]
 {
   // attempt to use the ROCm builtin atomic, if it exists for T
   return hc::atomic_exchange_uint64((uint64_t*)acc, compare, value);
@@ -533,8 +504,9 @@ atomicExchange(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==si
 
 template <typename T>
 RAJA_INLINE T
-//atomicCAS(rocm_atomic, T volatile *acc, T compare, T value) [[hc]]
-atomicCAS(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==sizeof(unsigned), T>::type value) [[hc]]
+atomicCAS(rocm_atomic, T volatile *acc, T compare, 
+          typename std::enable_if<sizeof(T)==sizeof(unsigned), T>::type value)
+          [[hc]]
 {
   // attempt to use the ROCm builtin atomic, if it exists for T
   return hc::atomic_compare_exchange_unsigned((unsigned *)acc, compare, value);
@@ -542,8 +514,9 @@ atomicCAS(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==sizeof(
 
 template <typename T>
 RAJA_INLINE T
-//atomicCAS(rocm_atomic, T volatile *acc, T compare, T value) [[hc]]
-atomicCAS(T volatile *acc, T compare, typename std::enable_if<sizeof(T)==sizeof(uint64_t), T>::type value) [[hc]]
+atomicCAS(rocm_atomic, T volatile *acc, T compare, 
+          typename std::enable_if<sizeof(T)==sizeof(uint64_t), T>::type value)
+          [[hc]]
 {
   // attempt to use the ROCm builtin atomic, if it exists for T
   return hc::atomic_compare_exchange_uint64((uint64_t*)acc, compare, value);
