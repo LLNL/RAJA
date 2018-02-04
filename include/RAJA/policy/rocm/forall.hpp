@@ -92,13 +92,15 @@ dim3 getGridDim(size_t len, dim3 blockDim)
  *
  ******************************************************************************
  */
-__forceinline__ unsigned int getGlobalIdx_1D_1D() [[hc]]
+RAJA_INLINE
+unsigned int getGlobalIdx_1D_1D() [[hc]]
 {
   unsigned int blockId = blockIdx_x;
   unsigned int threadId = blockId * blockDim_x + threadIdx_x;
   return threadId;
 }
-__forceinline__ unsigned int getGlobalNumThreads_1D_1D() [[hc]]
+RAJA_INLINE
+unsigned int getGlobalNumThreads_1D_1D() [[hc]]
 {
   unsigned int numThreads = blockDim_x * gridDim_x;
   return numThreads;

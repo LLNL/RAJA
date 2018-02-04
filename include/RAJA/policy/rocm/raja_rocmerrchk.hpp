@@ -78,27 +78,27 @@ typedef hipStream_t rocmStream_t;
 typedef hipError_t rocmError_t;
 
 
-rocmError_t rocmGetLastError()
+inline rocmError_t rocmGetLastError()
 {
    return(hipGetLastError());
 }
 
-rocmError_t rocmPeekAtLastError()
+inline rocmError_t rocmPeekAtLastError()
 {
    return(hipPeekAtLastError());
 }
 
-const char *rocmGetErrorName(rocmError_t rocmError)
+inline const char *rocmGetErrorName(rocmError_t rocmError)
 {
    return(hipGetErrorName(rocmError));
 }
 
-const char *rocmGetErrorString(rocmError_t rocmError)
+inline const char *rocmGetErrorString(rocmError_t rocmError)
 {
    return(hipGetErrorString(rocmError));
 }
 
-void rocmErrorCheck()
+inline void rocmErrorCheck()
 {
    if(rocmPeekAtLastError() != hipSuccess)
    {

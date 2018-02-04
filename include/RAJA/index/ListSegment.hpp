@@ -108,7 +108,7 @@ class TypedListSegment
   void allocate(GPU_memory)
   {
     rocmErrchk(rocmMallocManaged((void**)&m_data,
-                                 m_size * sizeof(value_type)));
+                                 m_size * sizeof(value_type),0));
   }
 #endif
 

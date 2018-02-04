@@ -65,8 +65,8 @@ void inclusive_inplace(const ::RAJA::rocm_exec<BLOCK_SIZE, Async>&,
                        InputIter end,
                        Function binary_op)
 {
-  rocmStream_t stream = 0;
 #if 0
+rocmStream_t stream = 0;
 // need to implement scan, cant use CUB or thrust
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
@@ -118,8 +118,8 @@ void exclusive_inplace(const ::RAJA::rocm_exec<BLOCK_SIZE, Async>&,
                        Function binary_op,
                        T init)
 {
-  rocmStream_t stream = 0;
 #if 0
+  rocmStream_t stream = 0;
 // need to implement scan, cant use CUB or thrust
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
@@ -215,8 +215,8 @@ void exclusive(const ::RAJA::rocm_exec<BLOCK_SIZE, Async>&,
                Function binary_op,
                T init)
 {
-  rocmStream_t stream = 0;
 #if 0
+  rocmStream_t stream = 0;
 // need to implement scan, cant use CUB or thrust
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
