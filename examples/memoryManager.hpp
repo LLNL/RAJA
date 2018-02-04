@@ -34,7 +34,12 @@ namespace memoryManager{
 #if defined(RAJA_ENABLE_CUDA)
     cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal);
 #else
+#if defined(RAJA_ENABLE_ROCM)
+//    rocmMallocManaged((void **)&ptr, sizeof(T) * size, 0);
+    ptr = (T *) rocmDeviceAlloc(sizeof(T) * size, 0);
+#else
     ptr = new T[size];
+#endif
 #endif
     return ptr;
   }
@@ -46,7 +51,11 @@ namespace memoryManager{
 #if defined(RAJA_ENABLE_CUDA)
       cudaFree(ptr);
 #else
+#if defined(RAJA_ENABLE_ROCM)
+      rocmDeviceFree(ptr);
+#else
       delete[] ptr;
+#endif
 #endif
       ptr = nullptr;
     }    

@@ -47,6 +47,22 @@
 #include <type_traits>
 #include <unordered_map>
 
+/*
+**  These moved outside of RAJA namespace because the cuda equivalents
+**  are also outside.
+*/
+rocmError_t rocmHostAlloc(void ** ptr , size_t nbytes, int device = 0);
+rocmError_t rocmFreeHost(void * ptr);
+
+void * rocmDeviceAlloc(size_t nbytes, int device = 0);
+rocmError_t rocmMalloc(void ** ptr, size_t nbytes, int device = 0);
+rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device = 0);
+rocmError_t rocmDeviceFree(void * ptr);
+rocmError_t rocmFree(void * ptr);
+rocmError_t rocmMemset(void * ptr, unsigned char value, size_t nbytes);
+rocmError_t rocmMemcpy(void * src, void * dst, size_t size);
+
+
 namespace RAJA
 {
 
@@ -88,14 +104,6 @@ int __syncthreads_or(int predicate) [[hc]]
 }
 #endif
 
-rocmError_t rocmHostAlloc(void ** ptr , size_t nbytes, int device);
-rocmError_t rocmFreeHost(void * ptr);
-
-void * rocmDeviceAlloc(size_t nbytes, int device);
-rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device);
-rocmError_t rocmDeviceFree(void * ptr);
-rocmError_t rocmMemset(void * ptr, unsigned char value, size_t nbytes);
-bool rocmMemcpy(void * src, void * dst, size_t size, int device);
 ////////////////////////////////////////////////////////////////////
 namespace rocm
 {

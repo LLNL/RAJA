@@ -176,6 +176,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N); 
 #endif
+#if defined(RAJA_ENABLE_ROCM)
+//
+// RAJA ROCM parallel GPU version (256 threads per thread block).
+//
+  std::cout << "\n Running RAJA ROCM daxpy...\n";
+
+  a = 0; b = 0;
+  rocmErrchk(rocmMalloc( (void**)&a, N * sizeof(double) ));
+  rocmErrchk(rocmMalloc( (void**)&b, N * sizeof(double) ));
+ 
+  rocmErrchk(rocmMemcpy( a, a0, N * sizeof(double))); 
+  rocmErrchk(rocmMemcpy( b, tb, N * sizeof(double))); 
+
+  RAJA::forall<RAJA::rocm_exec<256>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) {
+    a[i] += b[i] * c;
+  });
+
+  rocmErrchk(rocmMemcpy( ta, a, N * sizeof(double)));
+
+  rocmErrchk(rocmFree(a));
+  rocmErrchk(rocmFree(b));
+
+  a = ta;
+  checkResult(a, aref, N);
+//printResult(a, N); 
+#endif
 
 //----------------------------------------------------------------------------//
 

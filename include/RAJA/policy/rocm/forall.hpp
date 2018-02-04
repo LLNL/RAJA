@@ -210,7 +210,8 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
                                          [=](const hc::index<3> & idx) [[hc]]{ 
         impl::forall_rocm_kernel<BlockSize>(
            RAJA::rocm::make_launch_body(
-             gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+//             gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+             gridSize, block, 0, stream, loop_body),
              std::move(begin),
              len);
       }).wait();

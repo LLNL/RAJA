@@ -60,6 +60,10 @@ if(ENABLE_CUDA)
   add_subdirectory(cuda)
 endif(ENABLE_CUDA)
 
+if(ENABLE_ROCM)
+  add_subdirectory(rocm)
+endif(ENABLE_ROCM)
+
 if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
 endif(ENABLE_TARGET_OPENMP)

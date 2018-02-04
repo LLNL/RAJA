@@ -31,11 +31,12 @@
 #include "RAJA/policy/rocm/MemUtils_ROCm.hpp"
 
 
-namespace RAJA
-{
+//namespace RAJA
+//{
 
 // basic device memory allocation
-rocmError_t rocmHostAlloc(void ** ptr , size_t nbytes, int device = 0)
+using namespace RAJA;
+rocmError_t rocmHostAlloc(void ** ptr, size_t nbytes, int device)
 {
   hc::accelerator acc;  // default device for now
   *ptr = hc::am_alloc(nbytes,acc,2);
@@ -48,7 +49,7 @@ rocmError_t rocmFreeHost(void * ptr)
 }
 
 // basic device memory allocation
-void * rocmDeviceAlloc(size_t nbytes, int device = 0)
+void * rocmDeviceAlloc(size_t nbytes, int device)
 {
     void* ptr;
     hc::accelerator acc;  // default device for now
@@ -56,7 +57,14 @@ void * rocmDeviceAlloc(size_t nbytes, int device = 0)
     rocmErrchk(rocmPeekAtLastError());
     return ptr;
 }
-rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device = 0)
+rocmError_t rocmMalloc(void ** ptr, size_t nbytes, int device)
+{
+    hc::accelerator acc;  // default device for now
+    *ptr = hc::am_alloc(nbytes,acc,0);
+    return rocmPeekAtLastError();
+}
+
+rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device)
 {
 // not really UM allocation
 // RAJA seems to only use the MemAttachGlobal(=1) flag (memory can be accessed
@@ -71,6 +79,11 @@ rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device = 0)
 }
 
 rocmError_t  rocmDeviceFree(void * ptr)
+{
+  hc::am_free(ptr);
+  return rocmPeekAtLastError();
+}
+rocmError_t  rocmFree(void * ptr)
 {
   hc::am_free(ptr);
   return rocmPeekAtLastError();
@@ -104,14 +117,15 @@ rocmError_t rocmMemset(void * ptr, unsigned char value, size_t nbytes)
 }
 
 // host-to-device and device-to-host copy
-bool rocmMemcpy(void * src, void * dst, size_t size, int device = 0)
+rocmError_t rocmMemcpy(void * src, void * dst, size_t size)
 {
   hc::accelerator acc;
   hc::accelerator_view av = acc.get_default_view();
   av.copy( src , dst , size);
-  rocmErrchk(rocmPeekAtLastError());
-  return true;
+  return rocmPeekAtLastError();
 }
+namespace RAJA
+{
 namespace rocm
 {
 

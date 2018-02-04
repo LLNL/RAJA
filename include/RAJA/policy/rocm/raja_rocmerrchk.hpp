@@ -42,8 +42,6 @@
 #include "RAJA/util/defines.hpp"
 
 
-namespace RAJA
-{
 typedef hipError_t rocmError_t;
 typedef hipStream_t rocmStream_t;
 
@@ -63,6 +61,8 @@ typedef hipStream_t rocmStream_t;
 #define gridDim_y   (hc_get_num_groups(1))
 #define gridDim_z   (hc_get_num_groups(2))
 
+namespace RAJA
+{
 
 //namespace rocm
 //{
@@ -75,7 +75,6 @@ typedef hipStream_t rocmStream_t;
 ** we leverage the utilites in hip_runtime_api.h
 */
 
-typedef hipError_t rocmError_t;
 
 
 inline rocmError_t rocmGetLastError()
