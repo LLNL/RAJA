@@ -154,12 +154,12 @@ template <size_t BlockSize,
                             const Iterator idx,
                             IndexType length) [[hc]]
 {
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto &body = privatizer.get_priv();
+//  using RAJA::internal::thread_privatize;
+//  auto privatizer = thread_privatize(loop_body);
+//  auto &body = privatizer.get_priv();
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
-    body(idx[ii]);
+    loop_body(idx[ii]);
   }
 }
 
@@ -188,16 +188,16 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
 
   if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = impl::getGridDim(len, BlockSize);
+//    auto gridSize = impl::getGridDim(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     rocmStream_t stream = 0;
-    dim3 block(BlockSize,1,1);
-    dim3 grid(len,1,1);
+//    dim3 block(BlockSize,1,1);
+//    dim3 grid(len,1,1);
 
 //    hc::parallel_for_each(ext.tile_with_dynamic(block.x,block.y,block.z,shmem), [=](const hc::index<3> & idx) [[hc]] [[hc]]
-    if ( grid.x && ( block.x * block.y * block.z ) ) {
+//    if ( grid.x && ( block.x * block.y * block.z ) ) {
 //         LoopBody * rocm_device_buffer = (LoopBody *)
 //                                 rocmDeviceAlloc(sizeof(LoopBody));
 
@@ -205,18 +205,25 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
       // Copy functor to constant memory on the device
 //      rocm_device_copy(loop_body,rocm_device_buffer,sizeof(LoopBody));
 
-	auto ext = hc::extent<3>(grid.x,grid.y,grid.z);
-        auto fut = hc::parallel_for_each(ext.tile(block.x,block.y,block.z), 
-                                         [=](const hc::index<3> & idx) [[hc]]{ 
-        impl::forall_rocm_kernel<BlockSize>(
-           RAJA::rocm::make_launch_body(
-//             gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
-             gridSize, block, 0, stream, loop_body),
-             std::move(begin),
-             len);
-      }).wait();
+//	auto ext = hc::extent<3>(grid.x,grid.y,grid.z);
+//        auto fut = hc::parallel_for_each(ext.tile(block.x,block.y,block.z), 
+//                                         [=](const hc::index<3> & idx) [[hc]]{
+	auto ext = hc::extent<1>(len);
+//        auto fut = hc::parallel_for_each(ext.tile(BlockSize), 
+        hc::parallel_for_each(ext.tile(BlockSize), 
+                                         [=](const hc::tiled_index<1> & idx) [[hc]]{
+           const auto global = idx.global[0];
+           loop_body(global);  
+//        impl::forall_rocm_kernel<BlockSize>(
+//           RAJA::rocm::make_launch_body(
+////             gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+//             gridSize, block, 0, stream, loop_body),
+//             std::move(begin),
+//             len);
+//      }).wait();
+      });
 //      rocmDeviceFree(rocm_device_buffer);
-    }
+//    }
 
 
     RAJA::rocm::launch(stream);
