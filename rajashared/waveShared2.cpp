@@ -200,7 +200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using pol =
     RAJA::nested::Policy<
     RAJA::nested::CudaKernel<1024,
-      RAJA::nested::Collapse<RAJA::cuda_block_thread_exec, RAJA::nested::ArgList<0,1>,
+      RAJA::nested::Collapse<RAJA::cuda_threadblock_exec, RAJA::nested::ArgList<0,1>,
         RAJA::nested::Lambda<0>
       >
     >>;

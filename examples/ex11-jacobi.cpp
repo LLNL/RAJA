@@ -325,7 +325,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::nested::Policy<
     RAJA::nested::CudaKernel<
-      RAJA::nested::Collapse<RAJA::cuda_block_thread_exec<56>, RAJA::nested::ArgList<1, 0>,
+      RAJA::nested::Collapse<RAJA::cuda_threadblock_exec<56>, RAJA::nested::ArgList<1, 0>,
         RAJA::nested::Lambda<0>
       >
     > >;

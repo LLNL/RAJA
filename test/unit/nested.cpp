@@ -152,7 +152,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
-    list<Policy<For<1, s, CudaKernel<For<0, RAJA::cuda_block_thread_exec<128>, Lambda<0>>>>>,
+    list<Policy<For<1, s, CudaKernel<For<0, RAJA::cuda_threadblock_exec<128>, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce<1024>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
@@ -172,7 +172,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_block_thread_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
+        Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
 
   int *x = nullptr;
   cudaMallocManaged(&x, 3*2*5*sizeof(int));
@@ -201,7 +201,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_block_thread_exec<5>, ArgList<0,1>,
+        Collapse<RAJA::cuda_threadblock_exec<5>, ArgList<0,1>,
           For<2, RAJA::seq_exec, Lambda<0>>
         >
       >>;
@@ -268,7 +268,7 @@ CUDA_TEST(Nested, CudaCollapse2)
 
   using Pol = RAJA::nested::Policy<
        CudaKernel<
-         Collapse<RAJA::cuda_block_thread_exec<7>, ArgList<0,1>, Lambda<0>>
+         Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>, Lambda<0>>
        >>;
 
 
@@ -305,7 +305,7 @@ CUDA_TEST(Nested, CudaReduceA)
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_block_thread_exec<7>, ArgList<0,1>,
+        Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>,
           For<2, RAJA::seq_exec, Lambda<0>>
         >
       >>;
@@ -338,7 +338,7 @@ CUDA_TEST(Nested, CudaReduceB)
   using Pol = RAJA::nested::Policy<
         For<2, RAJA::seq_exec,
           CudaKernel<
-            Collapse<RAJA::cuda_block_thread_exec<7>, ArgList<0,1>, Lambda<0>>
+            Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>, Lambda<0>>
           >
         >>;
 
@@ -367,7 +367,7 @@ CUDA_TEST(Nested, CudaReduceC)
         For<2, RAJA::loop_exec,
           For<0, RAJA::loop_exec,
             CudaKernel<
-              For<1, RAJA::cuda_block_thread_exec<45>, Lambda<0>>
+              For<1, RAJA::cuda_threadblock_exec<45>, Lambda<0>>
             >
           >
         >>;
@@ -394,7 +394,7 @@ CUDA_TEST(Nested, SubRange_ThreadBlock)
 {
   using Pol = RAJA::nested::Policy<
         CudaKernel<
-          For<0, RAJA::cuda_block_thread_exec<57>, Lambda<0>>
+          For<0, RAJA::cuda_threadblock_exec<57>, Lambda<0>>
         >>;
 
   size_t num_elem = 2048;
@@ -997,7 +997,7 @@ CUDA_TEST(Nested, CudaExec){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<
-              For<0, cuda_block_thread_exec<32>, Lambda<0>>
+              For<0, cuda_threadblock_exec<32>, Lambda<0>>
             >
         >;
 
@@ -1035,7 +1035,7 @@ CUDA_TEST(Nested, CudaExec1){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<
-              For<0, cuda_block_thread_exec<32>, Lambda<0>>
+              For<0, cuda_threadblock_exec<32>, Lambda<0>>
             >
         >;
 
@@ -1138,7 +1138,7 @@ CUDA_TEST(Nested, CudaExec1ac){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<
-              nested::Collapse<cuda_block_thread_exec<1024>, ArgList<0,1,2>, Lambda<0>>
+              nested::Collapse<cuda_threadblock_exec<1024>, ArgList<0,1,2>, Lambda<0>>
             >
         >;
 
@@ -1172,7 +1172,7 @@ CUDA_TEST(Nested, CudaExec1b){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<
-              For<0, cuda_block_thread_exec<128>, Lambda<0>>
+              For<0, cuda_threadblock_exec<128>, Lambda<0>>
               >
         >;
 
@@ -1213,7 +1213,7 @@ CUDA_TEST(Nested, CudaExec1c){
             //CudaKernel<
               For<0, cuda_block_exec,
                 For<1, cuda_block_exec,
-                  For<2, cuda_block_thread_exec<2>, Lambda<0>>
+                  For<2, cuda_threadblock_exec<2>, Lambda<0>>
                 >
               >
             >
@@ -1256,7 +1256,7 @@ CUDA_TEST(Nested, CudaComplexNested){
 
   using Pol = nested::Policy<
             CudaKernel<
-              For<0, cuda_block_thread_exec<15>,
+              For<0, cuda_threadblock_exec<15>,
                 For<1, cuda_thread_exec,
                   For<2, cuda_thread_exec, Lambda<0>>
                 >,
@@ -1558,7 +1558,7 @@ CUDA_TEST(Nested, CudaExec_1threadblockexec){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<
-              For<0, cuda_block_thread_exec<73>, Lambda<0>>
+              For<0, cuda_threadblock_exec<73>, Lambda<0>>
             >
         >;
 

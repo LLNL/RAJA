@@ -82,7 +82,13 @@ namespace internal
 
 
 
-
+/*
+ * Helper class allows using RAJA::Layout to assign indices directly in to the
+ * LoopData::index_tuple.
+ *
+ * It takes an iterator and reference to a value in the index_tuple, and upon
+ * assignment it sets the index_tuple value to iter[v].
+ */
 template<typename Iter, typename Value>
 struct IndexAssigner{
   using Self = IndexAssigner<Iter, Value>;
@@ -106,6 +112,9 @@ struct IndexAssigner{
 
 };
 
+/*
+ * Helper function to make creating IndexAssigner objects.
+ */
 template<typename Iter, typename Value>
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -117,6 +126,12 @@ auto make_index_assigner(Iter && i, Value && v) ->
 
 
 
+/*
+ * Collapse policy base class.
+ *
+ * Provides functionality to create Layout objects, and perform the
+ * linear-to-indices conversion and setting of the index_tuple
+ */
 template<camp::idx_t ... Args>
 struct CudaIndexCalc_CollapsePolicyBase {
   static constexpr size_t num_dims = sizeof...(Args);
@@ -158,6 +173,9 @@ template<typename Args, typename ExecPolicy>
 struct CudaIndexCalc_CollapsePolicy;
 
 
+/*!
+ *  Collapsing policy index calculator that maps all indices to threads.
+ */
 template<camp::idx_t ... Args>
 struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_thread_exec> :
 public CudaIndexCalc_CollapsePolicyBase<Args...>
@@ -208,6 +226,9 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
 
 
 
+/*!
+ *  Collapsing policy index calculator that maps all indices to blocks.
+ */
 template<camp::idx_t ... Args>
 struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_block_exec> :
 public CudaIndexCalc_CollapsePolicyBase<Args...>
@@ -257,8 +278,11 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
 
 
 
+/*!
+ *  Collapsing policy index calculator that maps all indices to threads and blocks.
+ */
 template<camp::idx_t ... Args, size_t num_blocks_max>
-struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_block_thread_exec<num_blocks_max>> :
+struct CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_threadblock_exec<num_blocks_max>> :
 public CudaIndexCalc_CollapsePolicyBase<Args...>
 {
 
@@ -324,8 +348,8 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
 
 
 /*
- * Collapses multiple segments iteration space, and provides work sharing
- * according to the collapsing execution policy.
+ * Statement Executor for collapsing multiple segments iteration space,
+ * and provides work sharing according to the collapsing execution policy.
  */
 template <typename ExecPolicy, camp::idx_t ... Args, typename... EnclosedStmts, typename IndexCalc>
 struct CudaStatementExecutor<Collapse<ExecPolicy, ArgList<Args...>, EnclosedStmts...>, IndexCalc> {

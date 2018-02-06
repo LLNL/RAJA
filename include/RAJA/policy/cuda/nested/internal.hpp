@@ -102,8 +102,8 @@ struct cuda_block_exec{};
 
 
 /*!
- * Policy for For<>, executes loop iteration by distributing them over all
- * blocks and threads.
+ * Policy for For<>, executes loop iteration by distributing work over
+ * physical blocks and executing sequentially within blocks.
  */
 
 template<size_t num_blocks>
@@ -114,11 +114,11 @@ struct cuda_block_seq_exec{};
 
 
 /*!
- * Policy for For<>, executes loop iteration by distributing them over all
- * blocks and then executing sequentially on each thread.
+ * Policy for For<>, executes loop iteration by distributing them over threads
+ * and blocks, but limiting the number of threads to num_threads.
  */
-template<size_t num_blocks>
-struct cuda_block_thread_exec{};
+template<size_t num_threads>
+struct cuda_threadblock_exec{};
 
 
 namespace nested
@@ -277,23 +277,23 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec>{
 
 
 
-template<camp::idx_t ArgumentId, size_t num_blocks_max>
-struct CudaIndexCalc_Policy<ArgumentId, cuda_block_thread_exec<num_blocks_max>>{
+template<camp::idx_t ArgumentId, size_t num_threads_max>
+struct CudaIndexCalc_Policy<ArgumentId, cuda_threadblock_exec<num_threads_max>>{
 
   int len;
-  int num_blocks;
   int num_threads;
+  int num_blocks;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
     len(camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin()),
-    num_blocks(num_blocks_max < len ? num_blocks_max : len),
-    num_threads(len/num_blocks)
+    num_threads(num_threads_max < len ? num_threads_max : len),
+    num_blocks(len/num_threads)
   {
     if(num_threads*num_blocks < len){
-      num_threads ++;
+      num_blocks ++;
     }
   }
 
@@ -388,8 +388,13 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
 
     // evaluate each index, passing block_thread through
     // each calculator will trim block_thread appropriately
-    return VarOps::foldl(RAJA::operators::logical_and<bool>(),
+    bool in_bounds = VarOps::foldl(RAJA::operators::logical_and<bool>(),
         camp::get<RangeInts>(calc_list).assignIndex(data, block, thread)...);
+
+    if(block > 0 || thread > 0){
+      return false;
+    }
+    return in_bounds;
   }
 
 };

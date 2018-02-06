@@ -109,7 +109,7 @@ void runLTimesRajaCudaNested(bool debug,
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_block_thread_exec<56>, ArgList<0,2,3>,
+        Collapse<RAJA::cuda_threadblock_exec<56>, ArgList<0,2,3>,
           For<1, RAJA::seq_exec, Lambda<0>>
         >
       >>;
@@ -271,27 +271,31 @@ void runLTimesRajaCudaShmem(bool debug,
   using namespace RAJA::nested;
   using Pol = nested::Policy<
         CudaKernel<
-          SetShmemWindow<
-            // Distribute groups and zones across blocks
-            Collapse<cuda_block_exec, ArgList<2, 3>,
+          // Distribute groups and zones across blocks
+          Collapse<cuda_block_exec, ArgList<2, 3>,
+          //For<2, cuda_block_exec, For<3, cuda_block_exec,
+
+           // SetShmemWindow<
 
               // First, load Ell into shared memory in each block
-              Collapse<cuda_thread_exec, ArgList<0, 1>, Lambda<0>>,
-              CudaThreadSync,
 
-
-
+            OncePerRealBlock<
+             Collapse<cuda_thread_exec, ArgList<0, 1>, ShmemLambda<0>>,
+             // For<0, cuda_thread_exec,
+             //   For<1, cuda_thread_exec, ShmemLambda<0> > >,
+              //CudaThreadSync,
+            >,
 
               // Load Psi for this g,z
-              For<1, cuda_thread_exec, Lambda<1>>,
-              CudaThreadSync,
+              For<1, cuda_thread_exec, ShmemLambda<1>>,
+              //CudaThreadSync,
 
 
               // Compute phi for all m's and this g,z
-              For<0, cuda_thread_exec, Lambda<2>>,
-              CudaThreadSync
+              For<0, cuda_thread_exec, ShmemLambda<2>>,
+              //CudaThreadSync
             >
-          >
+          //>
         >
       >;
 
@@ -332,7 +336,9 @@ void runLTimesRajaCudaShmem(bool debug,
 
        double phi_m_g_z = phi(m, g, z);
        for(IDirection d(0);d < num_directions; ++ d){
-         phi_m_g_z += shmem_ell(d, m) * shmem_psi(d);
+         //phi_m_g_z += shmem_ell(d, m) * shmem_psi(d);
+         phi_m_g_z += ell(m, d) * psi(d,g,z);
+         //phi_m_g_z += shmem_ell(d, m) * psi(d,g,z);
        }
        phi(m, g, z) = phi_m_g_z;
 
@@ -396,17 +402,17 @@ void runLTimesRajaCudaShmem(bool debug,
 
 int main(){
 
-  bool debug = true;
+  bool debug = false;
 #if 1
   int m = 25;
   int d = 80;
   int g = 32;
-  int z = 2*1024;
+  int z = 128*1024;
 #else
-  int m = 4;
-  int d = 4;
-  int g = 4;
-  int z = 4;
+  int m = 25;
+  int d = 80;
+  int g = 32;
+  int z = 32;
 #endif
 
   runLTimesRajaCudaNested(debug, m, d, g, z); // warm up

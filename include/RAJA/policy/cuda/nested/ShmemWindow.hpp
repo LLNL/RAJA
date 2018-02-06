@@ -16,8 +16,44 @@ namespace RAJA
 {
 namespace nested
 {
+
+template <typename... EnclosedStmts>
+struct OncePerRealBlock : public internal::Statement<EnclosedStmts...>{
+};
+
+
 namespace internal
 {
+
+
+template <typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<OncePerRealBlock<EnclosedStmts...>, IndexCalc> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  template <typename Data>
+  static
+  RAJA_DEVICE
+  inline
+  void exec(Data &data, int logical_block)
+  {
+    // execute enclosed statements, but only if this is the first logical block
+    if(logical_block == blockIdx.x){
+      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
+    }
+  }
+
+
+  template<typename Data>
+  static
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    // Return launch dimensions of enclosed statements
+    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+  }
+};
+
 
 
 
@@ -32,6 +68,8 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
   inline
   void exec(Data &data, int logical_block)
   {
+
+
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
     using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
@@ -48,8 +86,6 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
     __syncthreads();
 
     // Thread privatize, triggering Shmem objects to grab updated window info
-    //loop_data_t private_data = data;
-
     auto private_data = privatize_bodies(data);
 
     // execute enclosed statements
