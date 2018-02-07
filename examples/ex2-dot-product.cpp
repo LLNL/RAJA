@@ -44,6 +44,9 @@
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
+#if defined(RAJA_ENABLE_ROCM)
+const int ROCM_BLOCK_SIZE = 256;
+#endif
 
 //
 //  Function to check dot product result.
@@ -135,6 +138,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = cudot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_ROCM)
+  std::cout << "\n Running RAJA ROCM dot product...\n";
+
+  RAJA::ReduceSum<RAJA::rocm_reduce<ROCM_BLOCK_SIZE>, double> rcdot(0.0);
+
+  RAJA::forall<RAJA::rocm_exec<ROCM_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    rcdot += a[i] * b[i]; 
+  });    
+
+  dot = rcdot.get();
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);

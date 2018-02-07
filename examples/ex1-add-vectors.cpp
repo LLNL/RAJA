@@ -42,6 +42,9 @@
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
+#if defined(RAJA_ENABLE_ROCM)
+const int ROCM_BLOCK_SIZE = 1024;
+#endif
 
 //
 // Functions for checking and printing results
@@ -149,6 +152,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    c[i] = a[i] + b[i]; 
+  });    
+
+  checkResult(c, N);
+//printResult(c, N);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_ROCM)
+  std::cout << "\n Running RAJA ROCM vector addition...\n";
+
+  RAJA::forall<RAJA::rocm_exec<ROCM_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });    

@@ -123,8 +123,6 @@ RAJA_INLINE T rocm_atomic_CAS_oper(T volatile *acc, OPER &&oper) [[hc]]
   ROCmAtomicCAS<sizeof(T)> cas;
   return cas(acc, std::forward<OPER>(oper));
 }
-
-
 }  // namespace detail
 
 
@@ -322,16 +320,27 @@ RAJA_INLINE T atomicInc(rocm_atomic, T volatile *acc, T val) [[hc]]
   });
 }
 
-/*
 // 32-bit unsigned atomicInc support by ROCM
 template <>
 RAJA_INLINE unsigned atomicInc<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
-  return hc::atomic_inc_unsigned((unsigned *)acc);
+    unsigned readback, old , newval ;
+
+    old = *acc ;
+
+    do {
+      readback = old ;
+      newval = (old >= value) ? 0 : (old + 1);
+      old = hc::atomic_compare_exchange_unsigned((unsigned *)acc, readback , newval );
+    } while ( readback != old );
+    return old ;
+//  return detail::rocm_atomic_CAS_oper(acc, [=] (T old) {
+//    return ((old >= value) ? 0 : (old + 1));
+//  });
+//  return atomicInc((unsigned *)acc, value);
 }
-*/
 
 
 template <typename T>
@@ -350,16 +359,27 @@ RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc, T val) [[hc]]
   });
 }
 
-/*
 // 32-bit unsigned atomicDec support by ROCM
 template <>
 RAJA_INLINE unsigned atomicDec<unsigned>(rocm_atomic,
                                                     unsigned volatile *acc,
                                                     unsigned value) [[hc]]
 {
-  return hc::atomic_dec_unsigned((unsigned *)acc);
+    unsigned readback, old , newval ;
+
+    old = *acc ;
+
+    do {
+      readback = old ;
+      newval = ((old == 0) | (old > value)) ? value : (old - 1) ;
+      old = hc::atomic_compare_exchange_unsigned((unsigned *)acc, readback , newval );
+    } while ( readback != old );
+    return old ;
+//  return detail::rocm_atomic_CAS_oper(acc, [=] (T old) {
+//    return (((old == 0) | (old > value)) ? value : (old - 1));
+//  });
+//  return atomicDec((unsigned *)acc, value);
 }
-*/
 
 template <typename T>
 RAJA_INLINE T atomicDec(rocm_atomic, T volatile *acc) [[hc]]
