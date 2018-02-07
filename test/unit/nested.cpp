@@ -17,6 +17,7 @@
 #include "RAJA_gtest.hpp"
 
 #include <cstdio>
+#include <stdlib.h>
 
 #if defined(RAJA_ENABLE_CUDA)
 #include <cuda_runtime.h>
@@ -806,3 +807,205 @@ TEST(Nested, Collapse8)
 }
 
 #endif //RAJA_ENABLE_OPENMP
+
+
+//-------
+//Test with listsegments
+TEST(Nested, ListSegments1)
+{
+
+  int N  = 10;
+  int M  = 11;
+
+  Index_type *arr1 = new Index_type[N];
+  Index_type *arr0 = new Index_type[M];
+  Index_type *data = new Index_type[(N+M)];
+  
+  for(int i=0; i<N; ++i){
+    arr1[i] = rand() % 10;
+  }
+
+  for(int i=0; i<M; ++i){
+    arr0[i] = rand() % 10; 
+  }   
+  
+  for(int i=0; i<(N+M); ++i){
+    data[i] = 0; 
+  }
+
+  using Pol = RAJA::nested::Policy<
+    RAJA::nested::For<1,RAJA::seq_exec>,
+    RAJA::nested::For<0,RAJA::loop_exec> >;
+  
+  RAJA::ListSegment range1(arr1,N);
+  RAJA::ListSegment range0(arr0,M);
+
+  
+  RAJA::nested::forall(Pol{}, RAJA::make_tuple(range1, range0),
+                       [=] (Index_type i, Index_type r) {
+                         int id = i + r;
+                         data[id] = id; 
+                       });
+
+  for(int i=0; i<N; ++i){
+    for(int r=0; r<M; ++r){
+
+      Index_type id = arr1[i] + arr0[r]; 
+      ASSERT_EQ(data[id], id);
+    }
+  }
+  
+  delete[] arr0;
+  delete[] arr1;  
+  delete[] data;
+}
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+TEST(Nested, ListSegments2)
+{
+
+  int N  = 10;
+  int M  = 11;
+
+  Index_type *arr1 = new Index_type[N];
+  Index_type *arr0 = new Index_type[M];
+  Index_type *data = new Index_type[(N+M)];
+  
+  for(int i=0; i<N; ++i){
+    arr1[i] = rand() % 10;
+  }
+
+  for(int i=0; i<M; ++i){
+    arr0[i] = rand() % 10; 
+  }   
+  
+  for(int i=0; i<(N+M); ++i){
+    data[i] = 0; 
+  }
+
+  using Pol = RAJA::nested::Policy<
+    RAJA::nested::For<1,RAJA::omp_parallel_for_exec>,
+    RAJA::nested::For<0,RAJA::loop_exec> >;
+  
+  RAJA::nested::forall(Pol{}, RAJA::make_tuple(RAJA::ListSegment(arr1,N),
+                                               RAJA::ListSegment(arr0,M)),
+                       [=] (Index_type i, Index_type r) {
+                         int id = i + r;
+                         data[id] = id; 
+                       });
+
+  for(int i=0; i<N; ++i){
+    for(int r=0; r<M; ++r){
+
+      Index_type id = arr1[i] + arr0[r]; 
+      ASSERT_EQ(data[id], id);
+    }
+  }
+  
+  delete[] arr0;
+  delete[] arr1;  
+  delete[] data;
+}
+
+TEST(Nested, ListSegments3)
+{
+
+  int N  = 10;
+  int M  = 11;
+
+  Index_type *arr1 = new Index_type[N];
+  Index_type *arr0 = new Index_type[M];
+  Index_type *data = new Index_type[(N+M)];
+  
+  for(int i=0; i<N; ++i){
+    arr1[i] = rand() % 10;
+  }
+
+  for(int i=0; i<M; ++i){
+    arr0[i] = rand() % 10; 
+  }   
+  
+  for(int i=0; i<(N+M); ++i){
+    data[i] = 0; 
+  }
+
+  using Pol = RAJA::nested::Policy<
+    RAJA::nested::OmpParallelCollapse<
+    RAJA::nested::For<1>,
+    RAJA::nested::For<0> > >;
+  
+  RAJA::ListSegment range1(arr1,N);
+  RAJA::ListSegment range0(arr0,M);
+
+  
+  RAJA::nested::forall(Pol{}, RAJA::make_tuple(range1, range0),
+                       [=] (Index_type i, Index_type r) {
+                         int id = i + r;
+                         data[id] = id; 
+                       });
+
+  for(int i=0; i<N; ++i){
+    for(int r=0; r<M; ++r){
+
+      Index_type id = arr1[i] + arr0[r]; 
+      ASSERT_EQ(data[id], id);
+    }
+  }
+  
+  delete[] arr0;
+  delete[] arr1;  
+  delete[] data;
+}
+#endif
+
+
+
+#if defined(RAJA_ENABLE_CUDA)
+CUDA_TEST(Nested, ListSegments4)
+{
+
+  int N  = 10;
+  int M  = 11;
+
+  Index_type *arr1 = new Index_type[N];
+  Index_type *arr0 = new Index_type[M];
+  Index_type *data = new Index_type[(N+M)];
+    
+  for(int i=0; i<N; ++i){
+    arr1[i] = rand() % 10;
+  }
+
+  for(int i=0; i<M; ++i){
+    arr0[i] = rand() % 10; 
+  }   
+  
+  for(int i=0; i<(N+M); ++i){
+    data[i] = 0; 
+  }
+
+  using Pol = RAJA::nested::Policy<
+  RAJA::nested::CudaCollapse<
+  RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+  RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+  
+  RAJA::ListSegment range1(arr1,N);
+  RAJA::ListSegment range0(arr0,M);
+
+  RAJA::nested::forall(Pol{}, RAJA::make_tuple(range1,range0), 
+                       [=] RAJA_DEVICE (Index_type i, Index_type r) {
+                         int id = i + r;
+                         data[id] = id;
+                       });
+  cudaDeviceSynchronize;
+  
+  for(int i=0; i<N; ++i){
+    for(int r=0; r<M; ++r){
+
+      Index_type id = arr1[i] + arr0[r]; 
+      ASSERT_EQ(data[id], id);
+    }
+  }
+
+}
+#endif

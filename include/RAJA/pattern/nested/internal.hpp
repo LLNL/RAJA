@@ -26,6 +26,7 @@
 #include "camp/tuple.hpp"
 
 #include <type_traits>
+#include <iterator>
 
 namespace RAJA
 {
@@ -79,8 +80,8 @@ using get_space_policies = typename camp::flatten<
 
 
 template <typename Iterator>
-struct iterable_value_type_getter {
-  using type = typename Iterator::iterator::value_type;
+struct iterable_value_type_getter {  
+  using type = typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
