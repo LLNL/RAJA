@@ -48,7 +48,7 @@ namespace RAJA
 namespace nested
 {
   
-  struct omp_parallel_collapse_exec {
+  struct omp_parallel_collapse_exec : make_policy_pattern_t<RAJA::Policy::openmp, RAJA::Pattern::forall, RAJA::policy::omp::For> {
   };
 
   template <typename... FOR>
