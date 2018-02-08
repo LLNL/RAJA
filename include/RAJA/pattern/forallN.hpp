@@ -176,8 +176,7 @@ template <typename POLICY,
           typename... ExecPolicies,
           typename BODY,
           typename... Ts>
-RAJA_INLINE 
-void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
+RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                       BODY &&body,
                                       const Ts &... args)
 {
