@@ -116,7 +116,9 @@ struct ForallN_Executor<0> {
  */
 
 template <typename POLICY, typename BODY, typename... ARGS>
-RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
+RAJA_INLINE 
+RAJA_DEPRECATE("ForallN will be deprecated in next release")
+void forallN_policy(ForallN_Execute_Tag,
                                 BODY const &body,
                                 ARGS const &... args)
 {
@@ -174,7 +176,8 @@ template <typename POLICY,
           typename... ExecPolicies,
           typename BODY,
           typename... Ts>
-RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
+RAJA_INLINE 
+void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                       BODY &&body,
                                       const Ts &... args)
 {

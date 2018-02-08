@@ -422,7 +422,9 @@ template <typename ExecutionPolicy,
           typename Iterator,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::
+RAJA_INLINE
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+ concepts::
     enable_if<type_traits::is_integral<IndexType>,
               type_traits::is_iterator<Iterator>,
               concepts::negate<type_traits::is_integral<Iterator>>>
@@ -457,8 +459,9 @@ RAJA_INLINE concepts::
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Iterator, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_iterator<Iterator>,
+RAJA_INLINE
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+  concepts::enable_if<type_traits::is_iterator<Iterator>,
               concepts::negate<type_traits::is_integral<Iterator>>>
     forall(ExecutionPolicy&& p,
            Iterator begin,
@@ -501,13 +504,16 @@ template <typename ExecutionPolicy,
           typename IndexType1,
           typename IndexType2,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_INLINE 
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>>
 forall(ExecutionPolicy&& p,
        IndexType1 begin,
        IndexType2 end,
        LoopBody&& loop_body)
 {
+  std::cout<<"here 2 "<<std::endl;
   static_assert(
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
@@ -535,7 +541,9 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_INLINE 
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<OffsetType>>
 forall_Icount(ExecutionPolicy&& p,
@@ -578,9 +586,11 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename IndexType3,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
-                                type_traits::is_integral<IndexType2>,
-                                type_traits::is_integral<IndexType3>>
+RAJA_INLINE
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+concepts::enable_if<type_traits::is_integral<IndexType1>,
+                               type_traits::is_integral<IndexType2>,
+                               type_traits::is_integral<IndexType3>>
 forall(ExecutionPolicy&& p,
        IndexType1 begin,
        IndexType2 end,
@@ -624,7 +634,9 @@ template <typename ExecutionPolicy,
           typename IndexType3,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_INLINE 
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<IndexType3>,
                                 type_traits::is_integral<OffsetType>>
