@@ -1,5 +1,5 @@
-#ifndef RAJA_policy_cuda_nested_For_HPP
-#define RAJA_policy_cuda_nested_For_HPP
+#ifndef RAJA_policy_cuda_nested_ForAllBlocks_HPP
+#define RAJA_policy_cuda_nested_ForAllBlocks_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/policy/cuda/nested/internal.hpp"
@@ -58,29 +58,102 @@ namespace nested
 {
 
 
+/*!
+ * A nested::forall statement that allows threaded execution over all physical
+ * blocks, regardless of work distribution.
+ *
+ * This is useful for setting up shared memory regions.
+ *
+ */
+template <typename... EnclosedStmts>
+struct ForAllBlocks : public internal::Statement<camp::nil, EnclosedStmts...>
+{};
+
+
+/*!
+ * A nested::forall statement that allows threaded execution over all logical
+ * blocks, regardless of work distribution.
+ *
+ * This is useful for setting up shared memory regions.
+ *
+ */
+template <typename... EnclosedStmts>
+struct ForAllLogicalBlocks : public internal::Statement<camp::nil, EnclosedStmts...>
+{};
+
+
 namespace internal{
 
 
 
+template<bool physical_only>
+struct cuda_all_physical_blocks_exec;
+
+
+template<camp::idx_t ArgumentId, bool physical_only>
+struct CudaIndexCalc_Policy<ArgumentId, cuda_all_physical_blocks_exec<physical_only>>{
+  template<typename SegmentTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  CudaIndexCalc_Policy(SegmentTuple const &, LaunchDim const &)
+  {
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  int numLogicalBlocks() const {
+    return 1;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  int numLogicalThreads() const {
+    return 1;
+  }
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool assignIndex(Data &, int &block, int &){
+
+    if(physical_only){
+      // only the first logical block for each gridDim
+      // also: once per physical block
+      bool in_bounds = block == blockIdx.x;
+      block = 0;
+
+      return in_bounds;
+    }
+    else{
+      // all logical blocks
+      block = 0;
+      return true;
+    }
+  }
+
+};
+
+
 /*
- * Executor for For work sharing loops within a Cuda kernels that can be
- * described entirely through their CudaIndexCalc_Policy specialization....
- * which means that this Executor doesn't need to perform any special logic or
- * looping.
+ * Executor for sequential loops inside of a Cuda Kernel.
+ *
+ * This is specialized since it need to execute the loop immediately.
  */
-template <camp::idx_t ArgumentId, typename ExecPolicy, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>, IndexCalc> {
+template <typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<ForAllBlocks<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<ArgumentId, ExecPolicy>>;
+  using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<-1, cuda_all_physical_blocks_exec<true>>>;
 
   template <typename Data>
   static
   inline
-  __device__
+  RAJA_DEVICE
   void exec(Data &data, int logical_block)
   {
-
     // execute enclosed statements
     cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
   }
@@ -99,19 +172,16 @@ struct CudaStatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>, Inde
 };
 
 
-
-
-
 /*
  * Executor for sequential loops inside of a Cuda Kernel.
  *
  * This is specialized since it need to execute the loop immediately.
  */
-template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexCalc> {
+template <typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<ForAllLogicalBlocks<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-
+  using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<-1, cuda_all_physical_blocks_exec<false>>>;
 
   template <typename Data>
   static
@@ -119,28 +189,8 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexC
   RAJA_DEVICE
   void exec(Data &data, int logical_block)
   {
-    // Get the segment referenced by this For statement
-    auto const &iter = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Pull out iterators
-    auto begin = iter.begin();
-    auto end = iter.end();
-
-    // compute trip count
-    int len = (int)(end - begin);
-
-    // sequentially step through indices
-    // since we aren't assigning threads, we pass thru the IndexCalc, and
-    // directly assign to the index_tuple
-    for (int i = 0; i < len; ++i) {
-
-      // assign index
-      data.template assign_index<ArgumentId>(*(begin+i));
-
-      // execute enclosed statements
-      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
-    }
-
+    // execute enclosed statements
+    cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
   }
 
 
@@ -150,13 +200,11 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexC
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
     // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+    return cuda_calcdims_statement_list<stmt_list_t, index_calc_t>(data, max_physical);
   }
 
 
 };
-
-
 
 
 

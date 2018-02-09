@@ -78,46 +78,31 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     RAJA_INLINE
     RAJA_HOST_DEVICE
     ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem)
-    //, window(c.window)
     {
-#ifdef __CUDA_ARCH__
-      // Grab a pointer to the shmem window tuple.  We are assuming that this
-      // is the first thing in the dynamic shared memory
-      extern __shared__ char my_ptr[];
-      index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
-#else
-      auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
-#endif
-      if(shmem_window_ptr != nullptr){
-        //index_tuple_t &shmem_window = *shmem_window_ptr;
-        //window = shmem_window;
 
-//        printf("Window (%p): ", shmem_window_ptr);
-//        VarOps::ignore_args(
-//            printf("%d ", convertIndex<int>(camp::get<Args>(window)))...
-//        );
-//        printf("\n");
-      }
-//      else{
-//        printf("No shmem window ptr\n");
-//      }
     }
 
 
     RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    //constexpr
     element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> ... idx) const {
 #ifdef __CUDA_ARCH__
+
+      // Get the shared memory window
+      // (stored at beginning of CUDA dynamic shared memory region)
       extern __shared__ char my_ptr[];
       index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
-      return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
+
+      // Compute our linear offset into our shared memory buffer
+      auto lin = layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...);
+
+      return shmem[lin];
+
 #else
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
       return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
 
-      //return shmem[layout_t::s_oper((idx - camp::get<Args>(window))...)];
 #endif
     }
 };

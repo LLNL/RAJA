@@ -49,11 +49,6 @@ struct SharedMemory;
 
 
 
-
-
-
-
-
 namespace detail {
   void startSharedMemorySetup(void *window_tuple = nullptr, size_t tuple_size = 0);
 

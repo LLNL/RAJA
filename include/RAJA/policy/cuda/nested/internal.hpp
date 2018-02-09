@@ -394,7 +394,53 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
     if(block > 0 || thread > 0){
       return false;
     }
+
+
     return in_bounds;
+  }
+
+};
+
+
+/**
+ * Empty calculator case.  Needed for SetShmemWindow when no For loops have
+ * been issues (ie. just Tile loops)
+ */
+template<typename SegmentTuple>
+struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>>{
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaIndexCalc(SegmentTuple const &, LaunchDim const &)
+  {
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  LaunchDim computeLogicalDims(){
+
+    // evaluate product of each Calculator's block and thread requirements
+    return LaunchDim(1, 1);
+  }
+
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalBlocks() const {
+    return 1;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int numLogicalThreads() const {
+    return 1;
+  }
+
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool assignIndices(Data &, int , int ){
+    return false;
   }
 
 };

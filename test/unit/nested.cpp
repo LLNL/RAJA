@@ -1317,13 +1317,10 @@ CUDA_TEST(Nested, CudaShmemWindow1d){
             CudaKernel<
               nested::Tile<0, nested::tile_fixed<16>, seq_exec,
                 SetShmemWindow<
-
                   For<0, cuda_thread_exec, Lambda<0>>,
-
-                  CudaThreadSync,
-
+                  CudaSyncThreads,
                   For<0, cuda_thread_exec, Lambda<1>>
-                > // SetShmemWindow
+                >
               >
             >
           >;
@@ -1397,7 +1394,7 @@ CUDA_TEST(Nested, CudaShmemWindow2d){
 
                       For<1, cuda_thread_exec, Lambda<0>>,
 
-                      CudaThreadSync,
+                      CudaSyncThreads,
 
                       For<1, cuda_thread_exec, Lambda<1>>
                     >

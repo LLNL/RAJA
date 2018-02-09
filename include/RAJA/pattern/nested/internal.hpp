@@ -125,10 +125,38 @@ struct LoopData {
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE
+  RAJA_INLINE
   void assign_index(IndexT const &i)
   {
     camp::get<Idx>(index_tuple) = i;
        // camp::tuple_element_t<Idx, index_tuple_t>{i};
+  }
+
+
+  template <camp::idx_t Idx>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  int assign_begin()
+  {
+    camp::get<Idx>(index_tuple) = *(camp::get<Idx>(segment_tuple).begin());
+    return 0;
+  }
+
+  template <camp::idx_t ... Idx>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  void assign_begin_all_expanded(camp::idx_seq<Idx...> const &)
+  {
+    VarOps::ignore_args( assign_begin<Idx>()... );
+
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  void assign_begin_all()
+  {
+    assign_begin_all_expanded(camp::make_idx_seq_t<index_tuple_t::TList::size>{});
+
   }
 };
 

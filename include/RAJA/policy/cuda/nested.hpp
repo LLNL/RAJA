@@ -32,9 +32,11 @@
 #include "RAJA/policy/cuda/nested/Collapse.hpp"
 #include "RAJA/policy/cuda/nested/CudaKernel.hpp"
 #include "RAJA/policy/cuda/nested/For.hpp"
+#include "RAJA/policy/cuda/nested/ForAllBlocks.hpp"
 #include "RAJA/policy/cuda/nested/Lambda.hpp"
 #include "RAJA/policy/cuda/nested/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/nested/Sync.hpp"
 #include "RAJA/policy/cuda/nested/Tile.hpp"
+#include "RAJA/policy/cuda/nested/Thread.hpp"
 
 #endif  // closing endif for header file include guard

@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_cuda_nested_Sync_HPP
-#define RAJA_policy_cuda_nested_Sync_HPP
+#ifndef RAJA_policy_cuda_nested_Thread_HPP
+#define RAJA_policy_cuda_nested_Thread_HPP
 
 #include "RAJA/config.hpp"
 #include "camp/camp.hpp"
@@ -67,46 +67,79 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-
 namespace RAJA
 {
 namespace nested
 {
 
-/*!
- * A nested::forall statement that performs a CUDA __syncthreads().
- *
- *
- */
-struct CudaSyncThreads : public internal::Statement<camp::nil>{
-};
+
+
+template <typename... EnclosedStmts>
+struct Thread : internal::Statement<camp::nil, EnclosedStmts...>
+{  };
+
+
+
+
 
 namespace internal
 {
 
-template <typename IndexCalc>
-struct CudaStatementExecutor<CudaSyncThreads, IndexCalc>{
+
+
+template <typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
   template <typename Data>
   static
   inline
   __device__
-  void exec(Data &, int)
+  void exec(Data &data, int logical_block)
   {
-    __syncthreads();
+    // strip off any index calculators, since we evaluate them here
+    using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
+
+    // Get physical parameters
+    LaunchDim max_physical(gridDim.x, blockDim.x);
+
+    // Compute logical dimensions
+    IndexCalc index_calc(data.segment_tuple, max_physical);
+    int num_logical_threads = index_calc.numLogicalThreads();
+
+    // Loop over logical threads in this block
+    int logical_thread = threadIdx.x;
+    while(logical_thread < num_logical_threads){
+
+      // compute indices
+      bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
+
+      // call the user defined function, if the computed index in in bounds
+      if(in_bounds){
+        // execute enclosed statements
+        cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
+      }
+
+      // increment to next block-stride logical thread
+      logical_thread += blockDim.x;
+    }
+
   }
 
 
   template<typename Data>
   static
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &, LaunchDim const &){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-    return LaunchDim();
+    IndexCalc index_calc(data.segment_tuple, max_physical);
+    return index_calc.computeLogicalDims();
+
   }
 
 };
+
 
 
 

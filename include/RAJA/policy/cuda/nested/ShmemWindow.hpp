@@ -16,44 +16,8 @@ namespace RAJA
 {
 namespace nested
 {
-
-template <typename... EnclosedStmts>
-struct OncePerRealBlock : public internal::Statement<EnclosedStmts...>{
-};
-
-
 namespace internal
 {
-
-
-template <typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<OncePerRealBlock<EnclosedStmts...>, IndexCalc> {
-
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  template <typename Data>
-  static
-  RAJA_DEVICE
-  inline
-  void exec(Data &data, int logical_block)
-  {
-    // execute enclosed statements, but only if this is the first logical block
-    if(logical_block == blockIdx.x){
-      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
-    }
-  }
-
-
-  template<typename Data>
-  static
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
-
-    // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
-  }
-};
-
 
 
 
@@ -68,28 +32,48 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
   inline
   void exec(Data &data, int logical_block)
   {
+    // Get physical parameters
+    LaunchDim max_physical(gridDim.x, blockDim.x);
 
+    // Compute logical dimensions
+    IndexCalc index_calc(data.segment_tuple, max_physical);
+    int num_logical_threads = index_calc.numLogicalThreads();
+
+    // Loop over logical threads in this block
+    int logical_thread = threadIdx.x;
 
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
     using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
 
-    // Grab a pointer to the shmem window tuple.  We are assuming that this
-    // is the first thing in the dynamic shared memory
-    extern __shared__ char my_ptr[];
-    index_tuple_t *shmem_window = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
-
-    // Set the shared memory tuple with the beginning of our segments
-    *shmem_window = data.index_tuple;
-
-    // make sure we're all synchronized
+    // make sure all threads are done with current window
     __syncthreads();
 
-    // Thread privatize, triggering Shmem objects to grab updated window info
-    auto private_data = privatize_bodies(data);
+
+    // Grab a pointer to the shmem window tuple.  We are assuming that this
+    // is the first thing in the dynamic shared memory
+    if(logical_thread == 0){
+
+      data.assign_begin_all();
+
+      // compute starting indices based on calculator
+      index_calc.assignIndices(data, logical_block, 0);
+
+      // Grab shmem window pointer
+      extern __shared__ char my_ptr[];
+      index_tuple_t *shmem_window = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
+
+      // Set the shared memory tuple with the beginning of our segments
+      *shmem_window = data.index_tuple;
+
+    }
+
+    // make sure we're all synchronized, so they all see the same window
+    __syncthreads();
+
 
     // execute enclosed statements
-    cuda_execute_statement_list<stmt_list_t, IndexCalc>(private_data, logical_block);
+    cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
   }
 
 
