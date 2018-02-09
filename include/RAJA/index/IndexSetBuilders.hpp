@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -81,7 +81,8 @@ void buildTypedIndexSetAligned(IndexSet& hiset,
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(IndexSet& iset,
+void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                 int fastDim,
                                 int midDim,
                                 int slowDim);
@@ -97,7 +98,8 @@ void buildLockFreeBlockIndexset(IndexSet& iset,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(IndexSet& iset,
+void buildLockFreeColorIndexset( RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                 Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,

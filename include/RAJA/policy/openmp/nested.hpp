@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -48,7 +48,7 @@ namespace RAJA
 namespace nested
 {
   
-  struct omp_parallel_collapse_exec {
+  struct omp_parallel_collapse_exec : make_policy_pattern_t<RAJA::Policy::openmp, RAJA::Pattern::forall, RAJA::policy::omp::For> {
   };
 
 namespace internal
