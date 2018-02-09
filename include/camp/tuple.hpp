@@ -77,6 +77,7 @@ namespace internal
   template <typename... Types, camp::idx_t... Indices>
   struct tuple_helper<camp::idx_seq<Indices...>, camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
+    using TMap = camp::list<camp::list<Types, camp::num<Indices>>...>;
 
     CAMP_HOST_DEVICE constexpr tuple_helper() {}
 
@@ -176,6 +177,7 @@ struct tuple_element<i, tuple<Types...>> {
 template <camp::idx_t i, typename T>
 using tuple_element_t = typename tuple_element<i, T>::type;
 
+// by index
 template <int index, typename... Args>
 CAMP_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept
     -> tpl_get_ret<tuple<Args...>, index> const&
@@ -190,6 +192,27 @@ CAMP_HOST_DEVICE constexpr auto get(tuple<Args...>& t) noexcept
 {
   static_assert(sizeof...(Args) > index, "index out of range");
   return t.tpl_get_store<tuple<Args...>, index>::get_inner();
+}
+
+// by type
+template <typename T, typename... Args>
+CAMP_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept
+    -> tpl_get_ret<tuple<Args...>, camp::at_key<typename tuple<Args...>::TMap, T>::value> const&
+{
+  using index_type = camp::at_key<typename tuple<Args...>::TMap, T>;
+  static_assert(!std::is_same<camp::nil, index_type>::value,
+      "invalid type index");
+  return t.tpl_get_store<tuple<Args...>, index_type::value>::get_inner();
+}
+
+template <typename T, typename... Args>
+CAMP_HOST_DEVICE constexpr auto get(tuple<Args...>& t) noexcept
+    -> tpl_get_ret<tuple<Args...>, camp::at_key<typename tuple<Args...>::TMap, T>::value>&
+{
+  using index_type = camp::at_key<typename tuple<Args...>::TMap, T>;
+  static_assert(!std::is_same<camp::nil, index_type>::value,
+      "invalid type index");
+  return t.tpl_get_store<tuple<Args...>, index_type::value>::get_inner();
 }
 
 template <typename Tuple>

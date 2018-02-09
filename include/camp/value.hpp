@@ -16,7 +16,7 @@ namespace detail
 // TODO: document
 template <typename val = detail::nothing>
 struct value {
-  using type = val;
+  using type = value;
 };
 
 /// A non-value, in truth tests evaluates to false

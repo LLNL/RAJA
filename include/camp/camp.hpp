@@ -9,6 +9,7 @@
 #include "camp/lambda.hpp"
 #include "camp/list/at.hpp"
 #include "camp/list/find_if.hpp"
+#include "camp/map.hpp"
 #include "camp/number.hpp"
 #include "camp/tuple.hpp"
 #include "camp/value.hpp"
@@ -151,6 +152,37 @@ namespace test
 {
   CHECK_TSAME((accumulate<append, list<>, list<int, float, double>>),
               (list<int, float, double>));
+}
+#endif
+
+template<typename T, typename L>
+struct index_of;
+template<typename T, typename ...Elements>
+struct index_of<T, list<Elements...>> {
+  template<typename Seq, typename Item>
+  using inc_until = if_<typename std::is_same<T, Item>::type,
+                        if_c<Seq::size == 1,
+                             typename prepend<Seq, num<first<Seq>::value>>::type,
+                             Seq>,
+                        list<num<first<Seq>::value + 1>>
+                               >;
+  using indices = typename accumulate<inc_until, list<num<0>>, list<Elements...>>::type;
+  using type = typename if_c<indices::size == 2, first<indices>, camp::nil>::type;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((index_of<int, list<>>), (nil));
+  CHECK_TSAME((index_of<int, list<float, double, int>>), (num<2>));
+  CHECK_TSAME((index_of<int, list<float, double, int, int, int, int>>), (num<2>));
+  // CHECK_TSAME((find_if<std::is_pointer, list<float, double>>), (nil));
+  // CHECK_TSAME((find_if_l<bind_front<std::is_same, For<num<1>, int>>,
+  //                        list<For<num<0>, int>, For<num<1>, int>>>),
+  //             (For<num<1>, int>));
+  // CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
+  //                        list<For<num<0>, int>, For<num<1>, int>>>),
+  //             (For<num<1>, int>));
 }
 #endif
 
