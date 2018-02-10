@@ -15,7 +15,15 @@ namespace detail
 
 // TODO: document
 template <typename val = detail::nothing>
+struct value;
+
+template <typename val>
 struct value {
+  using type = val;
+};
+
+template <>
+struct value<detail::nothing> {
   using type = value;
 };
 
