@@ -211,11 +211,11 @@ void runLTimesRajaCudaShmem(bool debug,
 
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
-    ell_data[i] = drand48();
+    ell_data[i] = i; //drand48();
   }
 
   for (size_t i = 0; i < psi_data.size(); ++i) {
-    psi_data[i] = drand48();
+    psi_data[i] = i; //drand48();
   }
 
 
@@ -224,6 +224,8 @@ void runLTimesRajaCudaShmem(bool debug,
   cudaErrchk(cudaMalloc(&d_ell, sizeof(double) * ell_data.size()));
   cudaErrchk(cudaMalloc(&d_phi, sizeof(double) * phi_data.size()));
   cudaErrchk(cudaMalloc(&d_psi, sizeof(double) * psi_data.size()));
+
+  //printf("ell=%p, phi=%p, psi=%p\n", d_ell, d_phi, d_psi);
 
   // Copy to device
   cudaMemcpy(d_ell,
@@ -275,67 +277,127 @@ void runLTimesRajaCudaShmem(bool debug,
 
   // A possible implementation:
   using namespace RAJA::nested;
-  using Pol = nested::Policy<
-        CudaKernel<
-          nested::Tile<0, nested::tile_fixed<tile_mom>, seq_exec,
-            nested::Tile<1, nested::tile_fixed<tile_dir>, seq_exec,
-              // First, load up L matrix for each block
-              SetShmemWindow<
-                ForAllBlocks<
-                  For<0, cuda_thread_exec,
-                    For<1, cuda_thread_exec, Lambda<0>>
-                  >
-                >
-              >,
+//  using Pol = nested::Policy<
+//        CudaKernelAsync<
+//          nested::Tile<0, nested::tile_fixed<tile_mom>, seq_exec,
+//            nested::Tile<1, nested::tile_fixed<tile_dir>, seq_exec,
+//              // First, load up L matrix for each block
+//              SetShmemWindow<
+//                ForAllBlocks<
+//                  For<0, cuda_thread_exec,
+//                    For<1, cuda_thread_exec, Lambda<2>>
+//                  >
+//                >
+//              >,
+//
+//
+//              // Distribute groups and zones across blocks
+//              For<2, cuda_block_exec,
+//                For<3, cuda_threadblock_exec<tile_zone>,
+//                  SetShmemWindow<
+//
+//                    // Load Psi for this g,z
+//                    For<1, cuda_thread_exec, Lambda<3>>,
+//
+//                    CudaSyncThreads,
+//
+//                    // Compute phi for all m's and this g,z
+//                    For<0, cuda_thread_exec,
+//                      Thread<
+//                        // Load phi
+//                        Lambda<4>,
+//
+//                        // Compute phi
+//                        For<1, seq_exec, Lambda<5>>,
+//
+//                        // Store phi
+//                        Lambda<6>
+//                      >
+//                    >
+//                  >
+//                >
+//              >
+//            >
+//          >
+//        >
+//      >;
 
 
-              // Distribute groups and zones across blocks
-              For<2, cuda_block_exec,
-                For<3, cuda_threadblock_exec<tile_zone>,
-                  SetShmemWindow<
+    using Pol = RAJA::nested::Policy<
+                CudaKernelAsync<
+        //CudaKernelBase<cuda_explicit_launch<false, 112, 576>,
 
-                    // Load Psi for this g,z
-                    For<1, cuda_thread_exec, Lambda<1>>,
+                RAJA::nested::Tile<1, RAJA::nested::tile_fixed<tile_mom>, seq_exec,
 
-                    CudaSyncThreads,
+                  // Compute Phi
+                  RAJA::nested::Tile<2, RAJA::nested::tile_fixed<tile_dir>, seq_exec,
+                      // First, load up L matrix for each block
+                      SetShmemWindow<
+                        RAJA::nested::ForAllBlocks<
+                          For<1, cuda_thread_exec, // m
+                            For<2, cuda_thread_exec, Lambda<2>> //d
+                          >
+                        >
+                      >,
 
-                    // Compute phi for all m's and this g,z
-                    For<0, cuda_thread_exec,
-                      Thread<
-                        // Load phi
-                        Lambda<2>,
+                      // Distribute groups and zones across blocks
+                      For<0, cuda_block_exec, // g
+                        For<3, cuda_threadblock_exec<tile_zone>,  // z
+                          SetShmemWindow<
 
-                        // Compute phi
-                        For<1, seq_exec, Lambda<3>>,
+                            // Load Psi for this g,z
+                            For<2, cuda_thread_exec, Lambda<3>>, // d
 
-                        // Store phi
-                        Lambda<4>
-                      >
-                    >
-                  >
-                >
-              >
-            >
-          >
-        >
-      >;
+                            CudaSyncThreads,
+
+                            // Compute phi for all m's and this g,z
+                            For<1, cuda_thread_exec, // m
+                              Thread<
+                                // Load phi
+                                Lambda<4>,
+
+                                // Compute phi
+                                For<2, seq_exec, Lambda<5>>,  // d
+
+                                // Store phi
+                                Lambda<6>,
+                              >, // Thread
+                            > // m
+                          >, // shmem
+                        > // z
+                      > //g
+                    > // tile d
+                  > // tile m
+                > // kernel
+              >; // policy
 
 
-  auto segments = camp::make_tuple(TypedRangeSegment<IMoment>(0,num_moments),
-                                    TypedRangeSegment<IDirection>(0,num_directions),
-                                    TypedRangeSegment<IGroup>(0,num_groups),
-                                    TypedRangeSegment<IZone>(0,num_zones));
 
+  auto segments = camp::make_tuple(
+      TypedRangeSegment<IGroup>(0,num_groups),
+      TypedRangeSegment<IMoment>(0,num_moments),
+      TypedRangeSegment<IDirection>(0,num_directions),
+      TypedRangeSegment<IZone>(0,num_zones));
+
+
+//  using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
+//  ShmemWindowView<shmem_ell_t, ArgList<1,0>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
+//
+//  using shmem_psi_t = SharedMemory<cuda_shmem, double, tile_dir*tile_zone>;
+//  ShmemWindowView<shmem_psi_t, ArgList<1,3>, SizeList<tile_dir, tile_zone>, decltype(segments)> shmem_psi;
+//
+//
+//  using shmem_phi_t = SharedMemory<cuda_shmem, double, tile_mom*tile_zone>;
+//  ShmemWindowView<shmem_phi_t, ArgList<0,3>, SizeList<tile_mom, tile_zone>, decltype(segments)> shmem_phi;
 
   using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
-  ShmemWindowView<shmem_ell_t, ArgList<1,0>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
+  ShmemWindowView<shmem_ell_t, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
 
   using shmem_psi_t = SharedMemory<cuda_shmem, double, tile_dir*tile_zone>;
-  ShmemWindowView<shmem_psi_t, ArgList<1,3>, SizeList<tile_dir, tile_zone>, decltype(segments)> shmem_psi;
-
+  ShmemWindowView<shmem_psi_t, ArgList<2,3>, SizeList<tile_dir, tile_zone>, decltype(segments)> shmem_psi;
 
   using shmem_phi_t = SharedMemory<cuda_shmem, double, tile_mom*tile_zone>;
-  ShmemWindowView<shmem_phi_t, ArgList<0,3>, SizeList<tile_mom, tile_zone>, decltype(segments)> shmem_phi;
+  ShmemWindowView<shmem_phi_t, ArgList<1,3>, SizeList<tile_mom, tile_zone>, decltype(segments)> shmem_phi;
 
 
   nested::forall(
@@ -343,38 +405,49 @@ void runLTimesRajaCudaShmem(bool debug,
 
       segments,
 
-     // Lambda<0>
-     // load L matrix into shmem
-     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-        shmem_ell(d, m) = ell(m, d);
-     },
+      // Lambda<0>
+       // Zero out phi
+      [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+        phi(nm, g, z) = 0.0;
+       },
 
-     // Lambda<1>
-     // load slice of psi into shared
-     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-        shmem_psi(d,z) = psi(d,g,z);
-     },
+       // Lambda<1>
+       // Original single lambda implementation
+       [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+         phi(nm, g, z) += ell(nm, d) * psi(d,g,z);
+       },
 
      // Lambda<2>
-     // Load phi_m_g_z
-     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-       shmem_phi(m, z) = phi(m, g, z);
+     // load L matrix into shmem
+       [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+        shmem_ell(d, nm) = ell(nm, d);
      },
 
      // Lambda<3>
-     // Compute phi_m_g_z
-     [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-       shmem_phi(m, z) += shmem_ell(d, m) * shmem_psi(d,z);
+     // load slice of psi into shared
+     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+        shmem_psi(d,z) = psi(d,g,z);
      },
 
      // Lambda<4>
+     // Load phi_m_g_z
+     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+       shmem_phi(nm, z) = phi(nm, g, z);
+     },
+
+     // Lambda<5>
+     // Compute phi_m_g_z
+     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+       shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
+     },
+
+     // Lambda<6>
      // Store phi_m_g_z
-    [=] RAJA_DEVICE (IMoment m, IDirection d, IGroup g, IZone z){
-      phi(m, g, z) = shmem_phi(m, z);
+     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      phi(nm, g, z) = shmem_phi(nm, z);
     }
 
   );
-
 
 
   cudaDeviceSynchronize();
@@ -436,8 +509,9 @@ int main(){
   int m = 25;
   int d = 80;
   int g = 48;
+  int z = 2*65537; //27*50*50;
   //int z = 3150;
-  int z = 31250;
+  //int z = 31250;
   //int z = 182250;
 #else
   int m = 25;
@@ -445,6 +519,8 @@ int main(){
   int g = 32;
   int z = 32;
 #endif
+
+  printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
   runLTimesRajaCudaNested(debug, m, d, g, z); // warm up
 

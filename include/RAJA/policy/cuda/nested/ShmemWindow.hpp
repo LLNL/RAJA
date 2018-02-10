@@ -71,9 +71,9 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
     // make sure we're all synchronized, so they all see the same window
     __syncthreads();
 
-
     // execute enclosed statements
     cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
+
   }
 
 

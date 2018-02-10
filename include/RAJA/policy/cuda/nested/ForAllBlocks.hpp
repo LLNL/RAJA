@@ -117,19 +117,19 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_all_physical_blocks_exec<physical_o
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &, int &block, int &){
+  bool assignIndex(Data &, int *block, int *){
 
     if(physical_only){
       // only the first logical block for each gridDim
       // also: once per physical block
-      bool in_bounds = block == blockIdx.x;
-      block = 0;
+      bool in_bounds =( (*block) == blockIdx.x );
+      (*block) = 0;
 
       return in_bounds;
     }
     else{
       // all logical blocks
-      block = 0;
+      (*block) = 0;
       return true;
     }
   }

@@ -138,8 +138,10 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexC
       data.template assign_index<ArgumentId>(*(begin+i));
 
       // execute enclosed statements
-      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
-    }
+      if(logical_block >= 0){
+      	cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
+    	}
+		}
 
   }
 

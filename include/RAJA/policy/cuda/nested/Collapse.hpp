@@ -209,12 +209,12 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &, int &thread){
+  bool assignIndex(Data &data, int *, int *thread){
 
     // Compute our linear index, and strip off the thread index
     int len = Base::layout.size();
-    int i = thread % len;
-    thread /= len;
+    int i = (*thread) % len;
+    (*thread) /= len;
 
     // Compute and assign our loop indices
     Base::assignIndex(data, i);
@@ -262,12 +262,12 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &block, int &){
+  bool assignIndex(Data &data, int *block, int *){
 
     // Compute our linear index, and strip off the thread index
     int len = Base::layout.size();
-    int i = block % len;
-    block /= len;
+    int i = (*block) % len;
+    (*block) /= len;
 
     // Compute and assign our loop indices
     Base::assignIndex(data, i);
@@ -322,14 +322,14 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &block, int &thread){
+  bool assignIndex(Data &data, int *block, int *thread){
 
     // Compute our linear index, and strip off the block and thread indices
-    int block_i = block % num_blocks;
-    block /= num_blocks;
+    int block_i = (*block) % num_blocks;
+    (*block) /= num_blocks;
 
-    int thread_i = thread % num_threads;
-    thread /= num_threads;
+    int thread_i = (*thread) % num_threads;
+    (*thread) /= num_threads;
 
     int i = block_i*num_threads + thread_i;
 

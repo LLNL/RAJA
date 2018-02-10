@@ -212,11 +212,11 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_block_exec>{
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &block, int &thread){
+  bool assignIndex(Data &data, int *block, int *thread){
 
     // Compute our index, and strip off the block index
-    int i = block % len;
-    block /= len;
+    int i = (*block) % len;
+    (*block) /= len;
 
     // Assign our computed index to the tuple
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
@@ -260,11 +260,11 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec>{
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &block, int &thread){
+  bool assignIndex(Data &data, int *block, int *thread){
 
     // Compute our index, and strip off the block index
-    int i = thread % len;
-    thread /= len;
+    int i = (*thread) % len;
+    (*thread) /= len;
 
     // Assign our computed index to the tuple
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
@@ -313,14 +313,14 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_threadblock_exec<num_threads_max>>{
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int &block, int &thread){
+  bool assignIndex(Data &data, int *block, int *thread){
 
     // Compute our index, and strip off the thread index
-    int block_i = block % num_blocks;
-    block /= num_blocks;
+    int block_i = (*block) % num_blocks;
+    (*block) /= num_blocks;
 
-    int thread_i = thread % num_threads;
-    thread /= num_threads;
+    int thread_i = (*thread) % num_threads;
+    (*thread) /= num_threads;
 
     int i = block_i*num_threads + thread_i;
 
@@ -384,14 +384,18 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndices(Data &data, int block, int thread){
+  bool assignIndices(Data &data, int const block, int const thread){
 
     // evaluate each index, passing block_thread through
     // each calculator will trim block_thread appropriately
-    bool in_bounds = VarOps::foldl(RAJA::operators::logical_and<bool>(),
-        camp::get<RangeInts>(calc_list).assignIndex(data, block, thread)...);
 
-    if(block > 0 || thread > 0){
+    int block_tmp = block;
+    int thread_tmp = thread;
+
+    bool in_bounds = VarOps::foldl(RAJA::operators::logical_and<bool>(),
+        camp::get<RangeInts>(calc_list).assignIndex(data, &block_tmp, &thread_tmp)...);
+
+    if(block_tmp > 0 || thread_tmp > 0){
       return false;
     }
 

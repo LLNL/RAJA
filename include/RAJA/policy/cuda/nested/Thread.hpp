@@ -116,10 +116,13 @@ struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
       bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
 
       // call the user defined function, if the computed index in in bounds
-      if(in_bounds){
+      //if(in_bounds){
+
         // execute enclosed statements
-        cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
-      }
+        cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, in_bounds ? logical_block : -1);
+        //cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
+
+      //}
 
       // increment to next block-stride logical thread
       logical_thread += blockDim.x;
@@ -137,6 +140,7 @@ struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
     return index_calc.computeLogicalDims();
 
   }
+
 
 };
 

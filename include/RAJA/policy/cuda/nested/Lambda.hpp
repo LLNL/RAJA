@@ -130,21 +130,14 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, CudaIndexCalc_Terminator<Segment
 
   template <typename Data>
   static
-  inline
+  //inline
   __device__
-  void exec(Data &data, int )
+  void exec(Data &data, int logical_block)
   {
-    invoke_lambda<LoopIndex>(data);
-  }
-
-
-  template<typename Data>
-  static
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
-
-    return LaunchDim(1,1);
-
+    //assert((int)logical_block >= (int)0);
+//    if(logical_block >= 0){
+      invoke_lambda<LoopIndex>(data);
+//    }
   }
 
 };
