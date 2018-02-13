@@ -415,6 +415,7 @@ TYPED_TEST_CASE_P(NestedReductionCorrectnessTest);
 
 TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 {
+#if DEPRECATED_TESTS
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
 
@@ -435,10 +436,12 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
   double raja_sum = (double)sum_reducer.get();
 
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
+#endif
 }
 
 TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum2)
 {
+#if DEPRECATED_TESTS
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
 
@@ -460,6 +463,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum2)
   double raja_sum = (double)sum_reducer.get();
 
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
+#endif
 }
 
 REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, 

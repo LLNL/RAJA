@@ -104,6 +104,7 @@ TYPED_TEST_CASE_P(NestedTest);
 
 TYPED_TEST_P(NestedTest, Nested2DTest)
 {
+#if DEPRECATED_TESTS
   using POL = TypeParam;
   using Policy = typename POL::EXEC;
   using View = typename POL::VIEW;
@@ -130,6 +131,7 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
       for (Index_type j = 0; j < size_j; ++j)
         ASSERT_EQ((i == 0) ? size_i : 1, view(i, j));
   }
+#endif
 }
 
 REGISTER_TYPED_TEST_CASE_P(NestedTest, Nested2DTest);
@@ -278,6 +280,8 @@ TYPED_TEST_CASE_P(LTimesTest);
 
 TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 {
+
+#if DEPRECATED_TEST 
   using Args = std::array<Index_type, 4>;
   using POL = TypeParam;
 
@@ -346,6 +350,7 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
       }
     }
   }
+#endif
 }
 
 REGISTER_TYPED_TEST_CASE_P(LTimesTest, LTimesNestedTest);

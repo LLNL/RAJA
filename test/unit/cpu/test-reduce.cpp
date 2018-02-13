@@ -129,6 +129,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
 
 TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
+#if DEPRECATED_TESTS
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
 
@@ -167,7 +168,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
   ASSERT_EQ(tmin1.getLoc(), -1);
-
+#endif
 }
 
 TYPED_TEST(IndexSetReduce, ReduceMaxTest)
