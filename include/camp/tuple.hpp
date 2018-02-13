@@ -39,6 +39,25 @@ template <typename... Args>
 CAMP_HOST_DEVICE constexpr auto make_tuple(Args&&... args)
     -> tuple<internal::special_decay_t<Args>...>;
 
+template <typename T, camp::idx_t I>
+using tpl_get_ret = camp::at_v<camp::as_list<T>, I>;
+
+template <int index, typename... Args, template <typename...> class Tuple>
+CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
+    -> tpl_get_ret<Tuple<Args...>, index> const&;
+template <int index, typename... Args, template <typename...> class Tuple>
+CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
+    -> tpl_get_ret<Tuple<Args...>, index>&;
+template <typename T, typename... Args, template <typename...> class Tuple>
+CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
+    -> tpl_get_ret<
+        Tuple<Args...>,
+        camp::at_key<typename Tuple<Args...>::TMap, T>::value> const&;
+template <typename T, typename... Args, template <typename...> class Tuple>
+CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
+    -> tpl_get_ret<Tuple<Args...>,
+                   camp::at_key<typename Tuple<Args...>::TMap, T>::value>&;
+
 namespace internal
 {
   template <camp::idx_t index, typename Type>
@@ -59,9 +78,7 @@ namespace internal
       return val;
     }
 
-    CAMP_CONSTEXPR14
-    CAMP_HOST_DEVICE
-    Type& get_inner() noexcept { return val; }
+    CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Type& get_inner() noexcept { return val; }
 
   public:
     Type val;
@@ -95,108 +112,65 @@ namespace internal
     }
 
 
-    template <typename... RTypes>
-    CAMP_HOST_DEVICE tuple_helper& operator=(
-        const tuple_helper<camp::idx_seq<Indices...>, RTypes...>& rhs)
+    template <typename RTuple>
+    CAMP_HOST_DEVICE tuple_helper& operator=(const RTuple& rhs)
     {
-      return (camp::sink(
-                  (this->tuple_storage<Indices, Types>::get_inner() =
-                       rhs.tuple_storage<Indices, RTypes>::get_inner())...),
+      return (camp::sink((this->tuple_storage<Indices, Types>::get_inner() =
+                              get<Indices>(rhs))...),
               *this);
     }
   };
 }  // namespace internal
 
-template <typename T, camp::idx_t I>
-using tpl_get_ret = camp::at_v<typename T::TList, I>;
+
 template <typename T, camp::idx_t I>
 using tpl_get_store = internal::tuple_storage<I, tpl_get_ret<T, I>>;
 
-template <typename... Elements>
-struct tuple : public internal::tuple_helper<
-                   typename camp::make_idx_seq<sizeof...(Elements)>::type,
-                   camp::list<Elements...>,
-                   camp::list<Elements...>> {
-  using TList = camp::list<Elements...>;
-  using type = tuple;
-
-private:
-  using Self = tuple;
-  using Base = internal::
-      tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>, TList, TList>;
+template <typename TagList, typename... Elements>
+class tagged_tuple
+{
+  using Self = tagged_tuple;
+  using Base = internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
+                                      camp::list<Elements...>,
+                                      TagList>;
 
 public:
-  // Constructors
-  CAMP_HOST_DEVICE constexpr tuple() : Base{} {};
-  CAMP_HOST_DEVICE constexpr tuple(tuple const& o)
-      : Base(static_cast<Base const&>(o))
-  {
-  }
-  CAMP_HOST_DEVICE constexpr tuple(tuple&& o)
-      : Base{std::move(static_cast<Base>(o))}
-  {
-  }
-  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
-  {
-    Base::operator=(static_cast<Base const&>(rhs.base));
-  }
-  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
-  {
-    Base::operator=(std::move(static_cast<Base>(rhs)));
-  }
-
-  template <typename... OtherTypes>
-  CAMP_HOST_DEVICE constexpr explicit tuple(OtherTypes&&... rest)
-      : Base{std::forward<OtherTypes>(rest)...}
-  {
-  }
-
-  template <typename... RTypes>
-  CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(const tuple<RTypes...>& rhs)
-  {
-    Base::operator=(rhs);
-    return *this;
-  }
-
-};
-
-template <typename TagList, typename... Elements>
-struct tagged_tuple
-    : public internal::tuple_helper<
-          typename camp::make_idx_seq<sizeof...(Elements)>::type,
-          camp::list<Elements...>,
-          TagList> {
   using TList = camp::list<Elements...>;
+  using TMap = typename Base::TMap;
   using type = tagged_tuple;
 
 private:
-  using Self = tagged_tuple;
-  using Base = internal::
-      tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>, TList, TagList>;
+  Base base;
+
+  template <int index, typename... Args, template <typename...> class Tuple>
+  CAMP_HOST_DEVICE friend constexpr auto get(const Tuple<Args...>& t) noexcept
+      -> tpl_get_ret<Tuple<Args...>, index> const&;
+  template <int index, typename... Args, template <typename...> class Tuple>
+  CAMP_HOST_DEVICE friend constexpr auto get(Tuple<Args...>& t) noexcept
+      -> tpl_get_ret<Tuple<Args...>, index>&;
+  template <typename T, typename... Args, template <typename...> class Tuple>
+  CAMP_HOST_DEVICE friend constexpr auto get(const Tuple<Args...>& t) noexcept
+      -> tpl_get_ret<
+          Tuple<Args...>,
+          camp::at_key<typename Tuple<Args...>::TMap, T>::value> const&;
+  template <typename T, typename... Args, template <typename...> class Tuple>
+  CAMP_HOST_DEVICE friend constexpr auto get(Tuple<Args...>& t) noexcept
+      -> tpl_get_ret<Tuple<Args...>,
+                     camp::at_key<typename Tuple<Args...>::TMap, T>::value>&;
 
 public:
   // Constructors
-  CAMP_HOST_DEVICE constexpr tagged_tuple() : Base{} {};
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o)
-      : Base(static_cast<Base const&>(o))
-  {
-  }
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o)
-      : Base{std::move(static_cast<Base>(o))}
-  {
-  }
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs)
-  {
-    Base::operator=(static_cast<Base const&>(rhs.base));
-  }
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs)
-  {
-    Base::operator=(std::move(static_cast<Base>(rhs)));
-  }
+  CAMP_HOST_DEVICE constexpr tagged_tuple() = default;
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) = default;
+
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) = default;
+
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) = default;
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) = default;
 
   template <typename... OtherTypes>
   CAMP_HOST_DEVICE constexpr explicit tagged_tuple(OtherTypes&&... rest)
-      : Base{std::forward<OtherTypes>(rest)...}
+      : base{std::forward<OtherTypes>(rest)...}
   {
   }
 
@@ -204,9 +178,23 @@ public:
   CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(
       const tagged_tuple<RTypes...>& rhs)
   {
-    Base::operator=(rhs);
+    base.operator=(rhs);
     return *this;
   }
+};
+
+template <typename... Tags, typename... Args>
+struct as_list_s<tagged_tuple<camp::list<Tags...>, Args...>> {
+  using type = list<Args...>;
+};
+
+template <typename... Elements>
+class tuple : public tagged_tuple<camp::list<Elements...>, Elements...>
+{
+  using Base = tagged_tuple<camp::list<Elements...>, Elements...>;
+
+public:
+  using Base::Base;
 };
 
 template <camp::idx_t i, typename T>
@@ -228,7 +216,7 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index> const&
 {
   static_assert(sizeof...(Args) > index, "index out of range");
-  return t.tpl_get_store<Tuple<Args...>, index>::get_inner();
+  return t.base.tpl_get_store<Tuple<Args...>, index>::get_inner();
 }
 
 template <int index, typename... Args, template <typename...> class Tuple>
@@ -236,7 +224,7 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index>&
 {
   static_assert(sizeof...(Args) > index, "index out of range");
-  return t.tpl_get_store<Tuple<Args...>, index>::get_inner();
+  return t.base.tpl_get_store<Tuple<Args...>, index>::get_inner();
 }
 
 // by type
@@ -248,7 +236,7 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
   using index_type = camp::at_key<typename Tuple<Args...>::TMap, T>;
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
-  return t.tpl_get_store<Tuple<Args...>, index_type::value>::get_inner();
+  return t.base.tpl_get_store<Tuple<Args...>, index_type::value>::get_inner();
 }
 
 template <typename T, typename... Args, template <typename...> class Tuple>
@@ -259,7 +247,7 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
   using index_type = camp::at_key<typename Tuple<Args...>::TMap, T>;
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
-  return t.tpl_get_store<Tuple<Args...>, index_type::value>::get_inner();
+  return t.base.tpl_get_store<Tuple<Args...>, index_type::value>::get_inner();
 }
 
 template <typename Tuple>
@@ -294,7 +282,7 @@ CAMP_HOST_DEVICE constexpr auto make_tuple(Args&&... args)
 
 template <typename TagList, typename... Args>
 CAMP_HOST_DEVICE constexpr auto make_tagged_tuple(Args&&... args)
-    -> tagged_tuple<internal::special_decay_t<Args>...>
+    -> tagged_tuple<TagList, internal::special_decay_t<Args>...>
 {
   return tagged_tuple<TagList, internal::special_decay_t<Args>...>{
       std::forward<Args>(args)...};
