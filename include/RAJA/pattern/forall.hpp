@@ -422,8 +422,8 @@ template <typename ExecutionPolicy,
           typename Iterator,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
  concepts::
     enable_if<type_traits::is_integral<IndexType>,
               type_traits::is_iterator<Iterator>,
@@ -459,8 +459,8 @@ RAJA_DEPRECATE("Forall methods will require iteration space containers in next r
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Iterator, typename LoopBody>
-RAJA_INLINE
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
   concepts::enable_if<type_traits::is_iterator<Iterator>,
               concepts::negate<type_traits::is_integral<Iterator>>>
     forall(ExecutionPolicy&& p,
@@ -504,8 +504,8 @@ template <typename ExecutionPolicy,
           typename IndexType1,
           typename IndexType2,
           typename LoopBody>
-RAJA_INLINE 
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
 concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>>
 forall(ExecutionPolicy&& p,
@@ -541,8 +541,8 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE 
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
 concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<OffsetType>>
@@ -586,8 +586,8 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename IndexType3,
           typename LoopBody>
-RAJA_INLINE
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
 concepts::enable_if<type_traits::is_integral<IndexType1>,
                                type_traits::is_integral<IndexType2>,
                                type_traits::is_integral<IndexType3>>
@@ -634,8 +634,8 @@ template <typename ExecutionPolicy,
           typename IndexType3,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE 
 RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
 concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<IndexType3>,

@@ -116,8 +116,8 @@ struct ForallN_Executor<0> {
  */
 
 template <typename POLICY, typename BODY, typename... ARGS>
-RAJA_INLINE 
 RAJA_DEPRECATE("ForallN will be deprecated in next release")
+RAJA_INLINE
 void forallN_policy(ForallN_Execute_Tag,
                                 BODY const &body,
                                 ARGS const &... args)
