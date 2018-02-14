@@ -96,11 +96,11 @@ struct LoopData {
   using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
 
   //using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
-  using index_tuple_t = IndexTuple;
+  using index_tuple_t = camp::decay<IndexTuple>;
 
   using policy_t = PolicyType;
 
-  using segment_tuple_t = SegmentTuple;
+  using segment_tuple_t = camp::decay<SegmentTuple>;
   SegmentTuple segment_tuple;
 
   using BodiesTuple = camp::tuple<Bodies...> ;
@@ -189,6 +189,15 @@ void invoke_lambda(Data &data){
   camp::invoke(data.index_tuple, camp::get<LoopIndex>(data.bodies));
 }
 
+template<camp::idx_t ArgumentId, typename Data>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+auto segment_length(Data &data) -> 
+	typename camp::at_v<typename Data::segment_tuple_t::TList, ArgumentId>::iterator::difference_type
+{
+	return camp::get<ArgumentId>(data.segment_tuple).end() - 
+	       camp::get<ArgumentId>(data.segment_tuple).begin();
+}
 
 
 template <camp::idx_t idx, camp::idx_t N, typename StmtList>

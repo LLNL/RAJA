@@ -37,10 +37,10 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
     // Compute logical dimensions
     IndexCalc index_calc(data.segment_tuple, max_physical);
-    int num_logical_threads = index_calc.numLogicalThreads();
+    //int num_logical_threads = index_calc.numLogicalThreads();
 
     // Loop over logical threads in this block
-    int logical_thread = threadIdx.x;
+    //int logical_thread = threadIdx.x;
 
     // Divine the type of the index tuple in wrap.data
     using loop_data_t = camp::decay<Data>;
@@ -52,12 +52,14 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
     // Grab a pointer to the shmem window tuple.  We are assuming that this
     // is the first thing in the dynamic shared memory
-    if(logical_thread == 0){
+    if(threadIdx.x == 0){
 
       data.assign_begin_all();
 
       // compute starting indices based on calculator
-      index_calc.assignIndices(data, logical_block, 0);
+      //index_calc.assignIndices(data, logical_block, 0);
+
+			index_calc.assignBegin(data, 0);
 
       // Grab shmem window pointer
       extern __shared__ char my_ptr[];
@@ -65,7 +67,6 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
       // Set the shared memory tuple with the beginning of our segments
       *shmem_window = data.index_tuple;
-
     }
 
     // make sure we're all synchronized, so they all see the same window

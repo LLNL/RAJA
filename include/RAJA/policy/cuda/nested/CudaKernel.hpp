@@ -169,13 +169,29 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
   data_t private_data = data;
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
+ 
 
+#if 0
 
-/*  if(threadIdx.x == 0){
-    printf("START: shmem=%p, data.segments=%p blockIdx=%d, num_logical_blocks=%d\n", &my_ptr[0],&private_data.index_tuple, (int)blockIdx.x, num_logical_blocks);
-  }
-  __syncthreads();
-*/
+//  if(threadIdx.x == 0){
+    printf("Launch: shmem=%p, data.index=%p(%p), data.segments=%p(%p) blockIdx=%d, num_logical_blocks=%d\n", &my_ptr[0],&private_data.index_tuple, &data.index_tuple, &private_data.index_tuple, &data.index_tuple, (int)blockIdx.x, num_logical_blocks);
+//  }
+
+	  __syncthreads();
+  if(threadIdx.x == 0){
+		auto &x = camp::get<0>(private_data.index_tuple);
+		using x_t = camp::decay< decltype(x) >;
+		x = x_t(666);
+	}
+	  __syncthreads();
+
+  if(threadIdx.x == 1){
+		auto &x = camp::get<0>(private_data.index_tuple);
+		printf("THREAD1: %d\n", (int)*x);
+	}
+
+	  __syncthreads();
+#endif
   // Iterate through logical blocks
   int logical_block = blockIdx.x;
   while(logical_block < num_logical_blocks){
@@ -216,7 +232,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   {
 
     int shmem = RAJA::detail::getSharedMemorySize();
-  //  printf("Shared memory size=%d\n", shmem);
+    printf("Shared memory size=%d\n", shmem);
 
     cudaStream_t stream = 0;
 
@@ -253,8 +269,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
         cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(data, max_physical);
 
 
-    //printf("Logical dims: %ld blocks, %ld threads\n",
-    //    (long)logical_dims.blocks, (long)logical_dims.threads);
+    printf("Logical dims: %ld blocks, %ld threads\n",
+        (long)logical_dims.blocks, (long)logical_dims.threads);
 
 
 
@@ -268,8 +284,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-   // printf("Launch dims: %ld blocks, %ld threads\n",
-   //     (long)launch_dims.blocks, (long)launch_dims.threads);
+    printf("Launch dims: %ld blocks, %ld threads\n",
+        (long)launch_dims.blocks, (long)launch_dims.threads);
 
 
 

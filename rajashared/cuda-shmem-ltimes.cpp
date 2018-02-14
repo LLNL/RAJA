@@ -109,9 +109,14 @@ void runLTimesRajaCudaNested(bool debug,
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_threadblock_exec<56>, ArgList<0,2,3>,
-          For<1, RAJA::seq_exec, Lambda<0>>
-        >
+        //Collapse<RAJA::cuda_threadblock_exec<56>, ArgList<0,2,3>,
+        For<0, cuda_block_exec,
+				  For<2, cuda_block_exec,
+						For<3, cuda_thread_exec,
+							For<1, RAJA::seq_exec, Lambda<0>>
+        		>
+					>
+				>
       >>;
 
 
@@ -125,6 +130,8 @@ void runLTimesRajaCudaNested(bool debug,
 
       [=] __device__ (IMoment m, IDirection d, IGroup g, IZone z) {
           phi(m, g, z) += ell(m, d) * psi(d, g, z);
+					//phi(m,g,z) = 0;
+					//printf("mdgz = %d,%d,%d,%d\n", (int)*m, (int)*d, (int)*g, (int)*z);
       });
 
 
@@ -272,7 +279,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
   static const int tile_mom  = 25;
   static const int tile_dir  = 80;
-  static const int tile_zone = 16;
+  static const int tile_zone = 12;
 
 
   // A possible implementation:
@@ -339,7 +346,7 @@ void runLTimesRajaCudaShmem(bool debug,
                           >
                         >
                       >,
-
+#if 1 
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
                         For<3, cuda_threadblock_exec<tile_zone>,  // z
@@ -352,7 +359,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
                             // Compute phi for all m's and this g,z
                             For<1, cuda_thread_exec, // m
-                              Thread<
+                             // Thread<
                                 // Load phi
                                 Lambda<4>,
 
@@ -361,11 +368,12 @@ void runLTimesRajaCudaShmem(bool debug,
 
                                 // Store phi
                                 Lambda<6>,
-                              >, // Thread
+                            //  >, // Thread
                             > // m
                           >, // shmem
                         > // z
                       > //g
+#endif
                     > // tile d
                   > // tile m
                 > // kernel
@@ -419,31 +427,46 @@ void runLTimesRajaCudaShmem(bool debug,
 
      // Lambda<2>
      // load L matrix into shmem
-       [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+       [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+		 //	extern __shared__ long win[];
+		 //	 printf("Lam<2> g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n", 
+		//	 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
         shmem_ell(d, nm) = ell(nm, d);
      },
 
      // Lambda<3>
      // load slice of psi into shared
-     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+		// 	extern __shared__ long win[];
+		// 	 printf("Lam<3> g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n", 
+	//		 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
         shmem_psi(d,z) = psi(d,g,z);
      },
 
      // Lambda<4>
      // Load phi_m_g_z
-     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+	//	 	extern __shared__ long win[];
+	//	 	 printf("Lam<4> g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n", 
+//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
        shmem_phi(nm, z) = phi(nm, g, z);
      },
 
      // Lambda<5>
      // Compute phi_m_g_z
-     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+//		 	extern __shared__ long win[];
+//		 	 printf("Lam<5> g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n", 
+//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
        shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
      },
 
      // Lambda<6>
      // Store phi_m_g_z
-     [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+//		 	extern __shared__ long win[];
+//		 	 printf("Lam<6> g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n", 
+//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
       phi(nm, g, z) = shmem_phi(nm, z);
     }
 
@@ -479,6 +502,8 @@ void runLTimesRajaCudaShmem(bool debug,
             total += val;
           }
           if(std::abs(total-phi(m,g,z)) > 1e-9){
+	//	 	 printf("ERR g=%d, m=%d, z=%d, %e, %e\n", 
+//			 (int)*g, (int)*m, (int)*z, total, phi(m,g,z));
             ++ errors;
           }
         }
@@ -504,25 +529,27 @@ void runLTimesRajaCudaShmem(bool debug,
 
 int main(){
 
-  bool debug = false;
+  //bool debug = false;
+  bool debug = true;
 #if 1
   int m = 25;
   int d = 80;
   int g = 48;
   int z = 2*65537; //27*50*50;
   //int z = 3150;
+	//int z = 17;
   //int z = 31250;
   //int z = 182250;
 #else
-  int m = 25;
-  int d = 80;
-  int g = 32;
-  int z = 32;
+  int m = 1;
+  int d = 1;
+  int g = 1;
+  int z = 97;
 #endif
 
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-  runLTimesRajaCudaNested(debug, m, d, g, z); // warm up
+//  runLTimesRajaCudaNested(debug, m, d, g, z); // warm up
 
   runLTimesRajaCudaShmem(debug, m, d, g, z);
   runLTimesRajaCudaNested(debug, m, d, g, z);

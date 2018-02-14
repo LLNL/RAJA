@@ -98,6 +98,7 @@ struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
   __device__
   void exec(Data &data, int logical_block)
   {
+	/*
     // strip off any index calculators, since we evaluate them here
     using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
 
@@ -127,7 +128,7 @@ struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
       // increment to next block-stride logical thread
       logical_thread += blockDim.x;
     }
-
+*/
   }
 
 

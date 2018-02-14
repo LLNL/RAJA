@@ -86,29 +86,41 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
   __device__
   void exec(Data &data, int logical_block)
   {
-    // Get physical parameters
-    LaunchDim max_physical(gridDim.x, blockDim.x);
+		// Mask off logical blocks that are out of bounds
+		if(logical_block == 0){
 
-    // Compute logical dimensions
-    IndexCalc index_calc(data.segment_tuple, max_physical);
-    int num_logical_threads = index_calc.numLogicalThreads();
+			// Get physical parameters
+			LaunchDim max_physical(gridDim.x, blockDim.x);
 
-    // Loop over logical threads in this block
-    int logical_thread = threadIdx.x;
-    while(logical_thread < num_logical_threads){
+			// Compute logical dimensions
+			IndexCalc index_calc(data.segment_tuple, max_physical);
+			
+			//int num_logical_threads = index_calc.numLogicalThreads();
 
-      // compute indices
-      bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
+			// set indices to beginning of each segment, and increment
+			// to this threads first iteration
+			bool done = index_calc.assignBegin(data, threadIdx.x);
 
-      // call the user defined function, if the computed index in in bounds
-      if(in_bounds){
-        invoke_lambda<LoopIndex>(data);
-      }
+			// Loop over logical threads in this block
+			//int logical_thread = threadIdx.x;
+			//while(logical_thread < num_logical_threads){
 
-      // increment to next block-stride logical thread
-      logical_thread += blockDim.x;
-    }
+			while(!done) {
+				// compute indices
+				//bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
 
+				// call the user defined function, if the computed index in in bounds
+				//if(in_bounds){
+				invoke_lambda<LoopIndex>(data);
+				//}
+
+				// increment to next block-stride logical thread
+				//logical_thread += blockDim.x;
+				
+				done = index_calc.increment(data, blockDim.x);
+			}
+
+		}
   }
 
 
@@ -125,22 +137,6 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 };
 
 
-template <camp::idx_t LoopIndex, typename SegmentTuple>
-struct CudaStatementExecutor<Lambda<LoopIndex>, CudaIndexCalc_Terminator<SegmentTuple>>{
-
-  template <typename Data>
-  static
-  //inline
-  __device__
-  void exec(Data &data, int logical_block)
-  {
-    //assert((int)logical_block >= (int)0);
-//    if(logical_block >= 0){
-      invoke_lambda<LoopIndex>(data);
-//    }
-  }
-
-};
 
 
 
