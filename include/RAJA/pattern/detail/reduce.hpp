@@ -100,8 +100,8 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &) = default;
   ValueLoc &operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
@@ -153,22 +153,16 @@ public:
   using value_type = T;
   using reduce_type = Reduce;
 
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
   constexpr BaseReduce()
     : c{T(), Reduce::identity()}
   {
   }
   
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
   constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
     : c{init_val, identity_}
   {
   }
 
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
   void reset(T val, T identity_ = Reduce::identity()) {
     c.reset(val, identity_);
   }
@@ -176,19 +170,16 @@ public:
   //! prohibit compiler-generated copy assignment
   BaseReduce &operator=(const BaseReduce &) = delete;
 
-  //! compiler-generated copy constructor
-  RAJA_HOST_DEVICE
+  //! compiler-generated copy constructors
   constexpr BaseReduce(const BaseReduce &copy) : c(copy.c) {}
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE
   RAJA_INLINE
   BaseReduce(BaseReduce &&copy) : c(std::move(copy.c)) {}
 
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
-
-  RAJA_HOST_DEVICE
+  
   void combine(T const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
@@ -210,25 +201,21 @@ protected:
 
 public:
 
-  RAJA_HOST_DEVICE
   constexpr BaseCombinable()
     : identity{T()}, my_data{T()}
   {
   }
   
-  RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
     : identity{identity_}, my_data{init_val}
   {
   }
   
-  RAJA_HOST_DEVICE
   void reset(T init_val, T identity_){
     my_data = init_val;
     identity = identity_;    
   }
 
-  RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const &other)
       : parent{other.parent ? other.parent : &other},
         identity{other.identity},
@@ -236,7 +223,6 @@ public:
   {
   }
 
-  RAJA_HOST_DEVICE
   ~BaseCombinable()
   {
     if (parent && my_data != identity) {
@@ -244,7 +230,6 @@ public:
     }
   }
 
-  RAJA_HOST_DEVICE
   void combine(T const &other) { Reduce{}(my_data, other); }
 
   /*!
@@ -370,7 +355,6 @@ public:
 
   //! reducer function; updates the current instance's state
   RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
   const BaseReduceSum &operator+=(T rhs) const
   {
     this->combine(rhs);
