@@ -35,37 +35,37 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
   static
   inline
   __device__
-  void exec(Data &data, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int logical_block)
   {
     // Get the segment referenced by this Tile statement
-    auto &iter = camp::get<ArgumentId>(data.segment_tuple);
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_type = camp::decay<decltype(iter)>;
-    segment_type orig_iter = iter;
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
 
     int chunk_size = TPol::chunk_size;
 
     // compute trip count
-    int len = iter.end() - iter.begin();
+    int len = segment.end() - segment.begin();
 
     // Iterate through tiles
     for (int i = 0;i < len;i += chunk_size) {
 
       // Assign our new tiled segment
-      iter = orig_iter.slice(i, chunk_size);
+      segment = orig_segment.slice(i, chunk_size);
 
       // Assign the beginning index to the index_tuple for proper use
       // in shmem windows
-      camp::get<ArgumentId>(data.index_tuple) = *iter.begin();
+      camp::get<ArgumentId>(data.index_tuple) = *segment.begin();
 
       // execute enclosed statements
-      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, logical_block);
+      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);
     }
 
 
     // Set range back to original values
-    iter = orig_iter;
+    segment = orig_segment;
   }
 
 

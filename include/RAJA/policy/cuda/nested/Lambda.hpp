@@ -82,43 +82,62 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 
   template <typename Data>
   static
+  //__noinline__
   inline
   __device__
-  void exec(Data &data, int logical_block)
-  {
-		// Mask off logical blocks that are out of bounds
-		if(logical_block == 0){
-
+  void exec(Data &data, int num_logical_blocks, int logical_block)
+  
+	{
+//		printf("Lambda<%d> nlb=%d, lb=%d\n", (int)LoopIndex,  num_logical_blocks, logical_block);
+		if(logical_block <= 0){
 			// Get physical parameters
 			LaunchDim max_physical(gridDim.x, blockDim.x);
 
 			// Compute logical dimensions
 			IndexCalc index_calc(data.segment_tuple, max_physical);
 			
-			//int num_logical_threads = index_calc.numLogicalThreads();
-
 			// set indices to beginning of each segment, and increment
 			// to this threads first iteration
 			bool done = index_calc.assignBegin(data, threadIdx.x);
+			
+			
+			
 
 			// Loop over logical threads in this block
-			//int logical_thread = threadIdx.x;
-			//while(logical_thread < num_logical_threads){
-
+			int iter = 0;
 			while(!done) {
-				// compute indices
-				//bool in_bounds = index_calc.assignIndices(data, logical_block, logical_thread);
+			/*
+			if(threadIdx.x>1){
+				extern __shared__ long win[];
+				int z = *camp::get<3>(data.index_tuple) - win[3];
+				assert(z >= 0);
+				assert(z < 16);
+				int m = *camp::get<1>(data.index_tuple) - win[1];
+				assert(m >= 0);
+				assert(m < 25);
+				int d = *camp::get<2>(data.index_tuple) - win[2];
+				assert(d >= 0);
+				assert(d < 80);
+			}*/
 
-				// call the user defined function, if the computed index in in bounds
-				//if(in_bounds){
+			/*
+				extern __shared__ long win[];
+				int x = *camp::get<3>(data.index_tuple) - win[3];
+				assert(x >= 0);
+				assert(x < 16);
+*/
+//			__threadfence();
+//			__syncthreads();
+				//printf("B/T=%d,%d iter=%d\n", (int)blockIdx.x, (int)threadIdx.x, iter);
 				invoke_lambda<LoopIndex>(data);
-				//}
-
-				// increment to next block-stride logical thread
-				//logical_thread += blockDim.x;
 				
+				++ iter;
 				done = index_calc.increment(data, blockDim.x);
 			}
+			__threadfence();
+			__syncthreads();
+//			if(blockIdx.x==0)
+//			printf("B/T=%d,%d iter=%d (done)\n", (int)blockIdx.x, (int)threadIdx.x, iter);
 
 		}
   }

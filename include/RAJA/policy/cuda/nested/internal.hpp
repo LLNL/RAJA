@@ -270,18 +270,15 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 	template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  int increment(Data &data, int carry){
+  int increment(Data &data, int carry_in){
 		int len = segment_length<ArgumentId>(data);
-		i += carry;
+		i += carry_in;
 
-		int carry_out = 0;
-		if(i >= len){
-			carry_out = i / len;
-			i = i - carry_out*len;
-		}
+		int	carry_out = i / len;
+		i = i - carry_out*len;  // i % len
 
-    auto const &begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    data.template assign_index<ArgumentId>(begin[i]);
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    data.template assign_index<ArgumentId>(*(begin+i));
 
 		return carry_out;
 	}
@@ -310,9 +307,9 @@ struct AssignBegin{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int assign(Data &data, CalcList &calc_list, int carry){
-		carry = camp::get<Idx>(calc_list).assignBegin(data, carry);
-		return AssignBegin<Idx-1>::assign(data, calc_list, carry);
+	int assign(Data &data, CalcList &calc_list, int carry_in){
+		int carry_next = camp::get<Idx>(calc_list).assignBegin(data, carry_in);
+		return AssignBegin<Idx-1>::assign(data, calc_list, carry_next);
 	}
 };
 
@@ -334,9 +331,9 @@ struct Increment{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int increment(Data &data, CalcList &calc_list, int carry){
-		carry = camp::get<Idx>(calc_list).increment(data, carry);
-		return Increment<Idx-1>::increment(data, calc_list, carry);
+	int increment(Data &data, CalcList &calc_list, int carry_in){
+		int carry_next = camp::get<Idx>(calc_list).increment(data, carry_in);
+		return Increment<Idx-1>::increment(data, calc_list, carry_next);
 	}
 };
 
@@ -445,13 +442,15 @@ struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>>{
   RAJA_INLINE
   RAJA_DEVICE
   bool assignBegin(Data &, int){
-		return true;
+		// each physical thread will execute
+		return false;
 	}
 
 	template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
   bool increment(Data &, int ){
+		// only one execution per physical thread
 		return true;
 	}
 
@@ -515,16 +514,16 @@ struct CudaStatementListExecutor{
   static
   inline
   __device__
-  void exec(Data &data, long logical_block){
+  void exec(Data &data, int num_logical_blocks, int logical_block){
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
 
     // Execute this statement
-    CudaStatementExecutor<statement, IndexCalc>::exec(data, logical_block);
+		CudaStatementExecutor<statement, IndexCalc>::exec(data, num_logical_blocks, logical_block);
 
     // call the next statement in the list
-    CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, logical_block);
+    CudaStatementListExecutor<statement_index+1, num_statements, StmtList, IndexCalc>::exec(data, num_logical_blocks, logical_block);
   }
 
 
@@ -559,7 +558,7 @@ struct CudaStatementListExecutor<num_statements,num_statements, StatementList<St
   static
   inline
   __device__
-  void exec(Data &, long) {}
+  void exec(Data &, int, int) {}
 
 
   template<typename Data>
@@ -576,13 +575,93 @@ struct CudaStatementListExecutor<num_statements,num_statements, StatementList<St
 template<typename StmtList, typename IndexCalc, typename Data>
 RAJA_DEVICE
 RAJA_INLINE
-void cuda_execute_statement_list(Data &data, long logical_block){
+void cuda_execute_statement_list(Data &data, int num_logical_blocks, int logical_block){
 
-  CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, logical_block);
+  CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, num_logical_blocks, logical_block);
 
 }
 
 
+template<camp::idx_t ArgumentId, typename StmtList, typename IndexCalc, typename Data>
+RAJA_DEVICE
+RAJA_INLINE
+void cuda_execute_block_distribute(Data &data, int num_logical_blocks, int logical_block, int threads_per_block){
+	
+	// Compute number of blocks
+	int len = segment_length<ArgumentId>(data);
+	int num_blocks = len / threads_per_block;
+	if(num_blocks*threads_per_block < len){
+		num_blocks ++;
+	}
+
+	// Compute our block start and length
+	int rem_logical_block = logical_block/num_blocks;
+	int block_i = logical_block - rem_logical_block*num_blocks;
+	int i = block_i * threads_per_block;
+	
+	int len_block = threads_per_block;
+//	if(i+len_block > len){
+//		len_block = len - i;
+//	}
+
+//	printf("thread_block<%d>: block_i=%d, i=%d, len=%d, len_bock=%d, rem=%d\n",
+//		(int)ArgumentId, block_i, i, len, len_block, rem_logical_block);
+
+	// Assign argument index, and slice the segment for shmem
+  
+	auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+	using segment_t = camp::decay<decltype(segment)>;
+	segment_t orig_segment = segment;
+
+	// Slice the segment for thread iteration
+  camp::get<ArgumentId>(data.segment_tuple) = orig_segment.slice(i, len_block);
+
+
+//	if(threads_per_block == 1){
+		data.template assign_index<ArgumentId>(*camp::get<ArgumentId>(data.segment_tuple).begin());
+//	}
+	
+	// execute enclosed statements
+	cuda_execute_statement_list<StmtList, IndexCalc>(data, num_logical_blocks/num_blocks, rem_logical_block);
+
+	// Replace original segment
+	camp::get<ArgumentId>(data.segment_tuple) = orig_segment;
+	assert(len == segment_length<ArgumentId>(data));
+}
+template<camp::idx_t ArgumentId, typename StmtList, typename IndexCalc, typename Data>
+RAJA_DEVICE
+RAJA_INLINE
+void cuda_execute_block_loop(Data &data, int num_logical_blocks, int logical_block, int threads_per_block){
+	// if we are already in a block work sharing region, we just assign
+	// this block region
+	if(logical_block >= 0){
+		cuda_execute_block_distribute<ArgumentId, StmtList, IndexCalc>(data, num_logical_blocks, logical_block, threads_per_block);
+	}
+
+	// We need to start the logical block grid-stride loop, before we
+	// call ourself to distribute work
+	else{
+	
+		// set initial logical block to our physical block
+		logical_block = (int)blockIdx.x;
+		//printf("Starting block loop\n");
+//		int iter= 0;
+		while(logical_block < num_logical_blocks){
+		
+			//printf("-- logical block %d\n", logical_block);
+			// execute block 
+			cuda_execute_block_distribute<ArgumentId, StmtList, IndexCalc>(data, num_logical_blocks, logical_block, threads_per_block);
+	
+			// grid stride
+			logical_block += (int)gridDim.x;
+			
+//			iter ++;
+		}
+//		if(threadIdx.x == 0 && false){
+//			printf("-- Block Loop END b=%d, iter=%d (%lf)\n", (int)blockIdx.x, iter, (double)num_logical_blocks/(double)gridDim.x);
+//		}
+	}
+}
 
 
 template<typename StmtList, typename IndexCalc, typename Data>
@@ -605,6 +684,9 @@ LaunchDim cuda_calculate_logical_dimensions(Data const &data, LaunchDim const &m
   return cuda_calcdims_statement_list<stmt_list_t, index_calc_t>(data, max_physical);
 
 }
+
+
+
 
 
 

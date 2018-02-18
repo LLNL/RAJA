@@ -162,56 +162,32 @@ namespace internal
 template <typename StmtList, typename Data>
 __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 {
-  extern __shared__ char my_ptr[];
+  //extern __shared__ char my_ptr[];
   // Thread privatize the loop data
-  //auto private_data = privatize_bodies(data);
-  using data_t = camp::decay<Data>;
-  data_t private_data = data;
+	//int i = 0;
+  auto private_data = privatize_bodies(data);
+  //using data_t = camp::decay<Data>;
+  //data_t private_data = data;
+	//if(threadIdx.x==0 && blockIdx.x == 0){
+	//if(blockIdx.x == 0){
+		//printf("shmem start at %p\n", &my_ptr[0]);
+	//	printf("segment tuple at %p (%p)\n", &private_data.segment_tuple, &i);
+		//printf("index tuple at %p\n", &private_data.index_tuple);
+	//	long *val = (long *) &camp::get<0>(private_data.index_tuple);
+//		val[0] = 123;
+	//}
+/*	__syncthreads();
+	if(blockIdx.x == 0){
+		long *val = (long *) &camp::get<0>(private_data.index_tuple);
+		printf("val=%ld\n", val[0]);
+	}
+	*/
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
  
+	// Execute the statement list, using CUDA specific executors
+	cuda_execute_statement_list<StmtList, index_calc_t>(private_data, num_logical_blocks, -1);
 
-#if 0
-
-//  if(threadIdx.x == 0){
-    printf("Launch: shmem=%p, data.index=%p(%p), data.segments=%p(%p) blockIdx=%d, num_logical_blocks=%d\n", &my_ptr[0],&private_data.index_tuple, &data.index_tuple, &private_data.index_tuple, &data.index_tuple, (int)blockIdx.x, num_logical_blocks);
-//  }
-
-	  __syncthreads();
-  if(threadIdx.x == 0){
-		auto &x = camp::get<0>(private_data.index_tuple);
-		using x_t = camp::decay< decltype(x) >;
-		x = x_t(666);
-	}
-	  __syncthreads();
-
-  if(threadIdx.x == 1){
-		auto &x = camp::get<0>(private_data.index_tuple);
-		printf("THREAD1: %d\n", (int)*x);
-	}
-
-	  __syncthreads();
-#endif
-  // Iterate through logical blocks
-  int logical_block = blockIdx.x;
-  while(logical_block < num_logical_blocks){
-//    if(threadIdx.x == 0){
-//      printf("shmem=%p, data=%p block=%d\n", &my_ptr[0], &data, logical_block);
-//    }
-//    printf("KERN [%d,%d] lb=%d of %d\n", (int)blockIdx.x, (int)threadIdx.x, (int)index_calc.logical_block, (int)index_calc.num_logical_blocks);
-
-    // Ensure previous logical block is complete
-    // But we don't need to sync on the first logical block
-    if(logical_block != blockIdx.x){
-      __syncthreads();
-    }
-
-    // Execute the statement list, using CUDA specific executors
-    cuda_execute_statement_list<StmtList, index_calc_t>(private_data, logical_block);
-
-    // Increment to the next logical block (grid stride)
-    logical_block += gridDim.x;
-  }
 }
 
 

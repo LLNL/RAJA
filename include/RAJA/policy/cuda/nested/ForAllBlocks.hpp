@@ -63,13 +63,11 @@ namespace nested
  *
  */
 template <typename... EnclosedStmts>
-struct ForAllBlocks : public internal::Statement<camp::nil, EnclosedStmts...>
+struct BlockDistribute : public internal::Statement<camp::nil, EnclosedStmts...>
 {};
 
 
-
 namespace internal{
-
 
 
 /*
@@ -78,7 +76,7 @@ namespace internal{
  * This is specialized since it need to execute the loop immediately.
  */
 template <typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<ForAllBlocks<EnclosedStmts...>, IndexCalc> {
+struct CudaStatementExecutor<BlockDistribute<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -86,11 +84,22 @@ struct CudaStatementExecutor<ForAllBlocks<EnclosedStmts...>, IndexCalc> {
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int)
   {
-    // execute enclosed statements
-    cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, 0);
-  }
+		// Perform grid-stride iteration over logical blocks
+		int logical_block = (int)blockIdx.x;
+	
+		while(logical_block < (int)gridDim.x){
+
+			// execute enclosed statements
+			cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);
+ 
+ 			// increment by grid stride
+			logical_block += blockDim.x;
+ 		
+		}
+
+ 	}
 
 
   template<typename Data>
