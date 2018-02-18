@@ -279,15 +279,14 @@ template <typename SegmentIterPolicy,
           typename SegmentExecPolicy,
           typename LoopBody,
           typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                        const TypedIndexSet<SegmentTypes...>& iset,
-                        LoopBody loop_body)
+RAJA_SUPPRESS_HD_WARN RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
+                                              const TypedIndexSet<SegmentTypes...>& iset,
+                                              LoopBody loop_body)
 {
 
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
   });
