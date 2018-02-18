@@ -279,9 +279,9 @@ template <typename SegmentIterPolicy,
           typename SegmentExecPolicy,
           typename LoopBody,
           typename... SegmentTypes>
-RAJA_SUPPRESS_HD_WARN RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                                              const TypedIndexSet<SegmentTypes...>& iset,
-                                              LoopBody loop_body)
+RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
+                        const TypedIndexSet<SegmentTypes...>& iset,
+                        LoopBody loop_body)
 {
 
 
