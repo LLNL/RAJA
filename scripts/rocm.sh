@@ -12,14 +12,19 @@
 ## For additional details and restrictions, please see RAJA/LICENSE.txt
 ##
 
-rm -rf build-hcc-release 2>/dev/null
-mkdir build-hcc-release && cd build-hcc-release
+BUILD_DIR='build-hcc-release'
+
+rm -rf ${BUILD_DIR} 2>/dev/null
+mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+
 
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/linux/hcc.cmake \
+  -DENABLE_ROCM=ON -DENABLE_OPENMP=OFF -DBLT_SOURCE_DIR=${BLT_DIR} \
+  -DROCM_ARCH=gfx900 \
+  -C ${RAJA_DIR}/host-configs/linux/rocm.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-hcc-release \
   "$@" \
   ${RAJA_DIR}

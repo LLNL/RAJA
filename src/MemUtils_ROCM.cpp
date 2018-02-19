@@ -57,6 +57,14 @@ void * rocmDeviceAlloc(size_t nbytes, int device)
     rocmErrchk(rocmPeekAtLastError());
     return ptr;
 }
+void * rocmPinnedAlloc(size_t nbytes, int device)
+{
+    void* ptr;
+    hc::accelerator acc;  // default device for now
+    ptr = hc::am_alloc(nbytes,acc,1);
+    rocmErrchk(rocmPeekAtLastError());
+    return ptr;
+}
 rocmError_t rocmMalloc(void ** ptr, size_t nbytes, int device)
 {
     hc::accelerator acc;  // default device for now

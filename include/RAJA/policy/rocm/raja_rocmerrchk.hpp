@@ -61,6 +61,11 @@ typedef hipStream_t rocmStream_t;
 #define gridDim_y   (hc_get_num_groups(1))
 #define gridDim_z   (hc_get_num_groups(2))
 
+// other useful routines from 
+//https://github.com/RadeonOpenCompute/ROCm-Device-Libs/blob/master/hc/src/hc_kernel.cl
+//amp_get_global_id()
+//amp_get_global_size aka hc_get_grid_size
+
 namespace RAJA
 {
 

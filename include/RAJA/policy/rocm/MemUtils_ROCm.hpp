@@ -55,6 +55,7 @@ rocmError_t rocmHostAlloc(void ** ptr , size_t nbytes, int device = 0);
 rocmError_t rocmFreeHost(void * ptr);
 
 void * rocmDeviceAlloc(size_t nbytes, int device = 0);
+void * rocmPinnedAlloc(size_t nbytes, int device = 0);
 rocmError_t rocmMalloc(void ** ptr, size_t nbytes, int device = 0);
 rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device = 0);
 rocmError_t rocmDeviceFree(void * ptr);
@@ -102,6 +103,8 @@ int __syncthreads_or(int predicate) [[hc]]
   hc_barrier(CLK_LOCAL_MEM_FENCE);
   return (*shared_var);
 }
+
+
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +162,7 @@ struct DeviceZeroedAllocator {
   {
     void* ptr;
     hc::accelerator acc;
-    ptr = hc::am_alloc(nbytes,acc,0);
+    ptr = rocmDeviceAlloc(nbytes);
     rocmErrchk(rocmPeekAtLastError());
     rocmMemset(ptr, 0, nbytes);
     rocmErrchk(rocmPeekAtLastError());
@@ -184,8 +187,16 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct rocmInfo {
+  int length = 0; 
+  int blocksize = 0;
+  int tiles = 0;
   dim3 gridDim = 0;
   dim3 blockDim = 0;
+  int static_size = 0;   // amount of static LDS used by kernel
+  int dynamic_size = 16; // amount of dyname LDS used by kernel
+  void * device_mem_ptr; // ptr to device mem area filled in at launch
+  void * host_mem_ptr;   // ptr to host mem filled in at launch
+  void * debug;          // ptr to device mem area filled in at launch
   rocmStream_t stream = 0;
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
@@ -194,6 +205,42 @@ struct rocmInfo {
 #endif
 };
 
+// we reserve the last 8 bytes of LDS to use as a global readonly pointer.
+// This can be used to get the address of a rocmInfo structure in global
+// device memory.  This is necessary since various "remote" functor objects
+// in RAJA  have no access to the parallel_for_each launch information, 
+// including any kernel argument values that would normally be available
+// to a simple lambda launched by parellel_for_each.
+// This solves the problem of class member functions trying to get class
+// member variables when the only starting point is a CPU pointer.
+// Even when data is copied to a device allocated buffer, that address of
+// that buffer is saved in a CPU lvalue container.  Without access to the
+// kernel launch info, "remote" leaf functions have no way to develop a
+// original GPU resident lvalue pointer.
+//
+// Member functions running on the GPU can get the address of this
+// rocmInfo block, which has GPU visible address.  Any further data must
+// be copied to device alloced buffers, and the adddress of those buffers
+// placed into the rocmInfo structure, which is itself copied to a
+// device memory location.  The base address of that rocmInfo structure
+// is what we are retreiving here.
+
+// We reserve another 8 bytes of LDS to use for the group synchronize routines
+// the map looks like this:
+//  TOP of LDS
+//  -8  rocm_info struct device pointer
+// -16  syncthreads shared_var (unsigned long)
+// base of dynamic group segment
+// When we launch kernels, we must use tile_with_dynamic to specify how much
+// dynamic memory to use.
+
+RAJA_DEVICE RAJA_INLINE
+struct rocmInfo ** rocm_get_RI() [[hc]]
+{
+  return (rocmInfo **)((unsigned long)hc::get_dynamic_group_segment_base_pointer()+8);
+}
+
+// REMOVE?
 //! class that changes a value on construction then resets it at destruction
 template <typename T>
 class SetterResetter
@@ -301,14 +348,39 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     hipStream_t stream,
     LOOP_BODY&& loop_body)
 {
-  detail::SetterResetter<bool> setup_reducers_srer(
-      detail::tl_status.setup_reducers, true);
+//  detail::SetterResetter<bool> setup_reducers_srer(
+//      detail::tl_status.setup_reducers, true);
 
   detail::tl_status.stream = stream;
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
   return {loop_body};
+}
+//! setup reducer variables
+RAJA_INLINE void do_setup_reducers(
+//    dim3 gridDim,
+//    dim3 blockDim,
+    size_t length,
+    size_t blocksize,
+    size_t tiles,
+    size_t dynamic_smem,
+    size_t static_smem,
+    hipStream_t stream)
+{
+  detail::tl_status.length    = length;
+  detail::tl_status.blocksize = blocksize;
+  detail::tl_status.tiles     = tiles;
+//  detail::tl_status.gridDim = gridDim;
+//  detail::tl_status.blockDim = blockDim;
+  detail::tl_status.static_size= static_smem;
+  detail::tl_status.dynamic_size= dynamic_smem;
+
+  detail::tl_status.stream = stream;
+  detail::tl_status.setup_reducers = true;
+
+
+  return;
 }
 
 }  // closing brace for rocm namespace

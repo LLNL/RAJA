@@ -39,6 +39,10 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_ROCM)
+#include "RAJA/policy/rocm/MemUtils_ROCm.hpp"
+#endif
+
 #include "RAJA/util/chai_support.hpp"
 
 namespace RAJA

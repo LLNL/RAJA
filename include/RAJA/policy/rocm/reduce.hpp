@@ -366,7 +366,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
       val = temp;
     }
   }
-
+val = (T)5;
   return lastBlock && threadId == 0;
 }
 
@@ -422,6 +422,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
 #endif
 
 }  // namespace impl
+#if 0
 
 //! Object that manages pinned memory buffers for reduction results
 //  use one per reducer object
@@ -600,6 +601,7 @@ public:
 private:
   StreamNode* stream_list;
 };
+#endif
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -608,7 +610,11 @@ private:
 //
 //////////////////////////////////////////////////////////////////////
 //
-
+// TODO:  clean this up.  The if 0 tries to mimic the cuda way.
+//    it is not working yet
+// the else is the previous rocm reductions (pre github) modified for
+//    discrete GPUs.  It passes ex2 right now.
+#if 0
 //! Reduction data for ROCm Offload -- stores value, host pointer, and device
 //! pointer
 template <bool Async, typename Combiner, typename T>
@@ -634,6 +640,8 @@ struct Reduce_Data {
         device{},
         own_device_ptr{false}
   {
+      printf("initValue= %d identity_ = %d\n",(int) initValue,identity_);
+//value = (T) 22;
   }
 
   RAJA_HOST_DEVICE
@@ -655,6 +663,7 @@ struct Reduce_Data {
     if (impl::grid_reduce<Combiner>(temp, identity, device, device_count)) {
       *output = temp;
     }
+*output = (T) 7;
   }
 #endif
 
@@ -669,6 +678,7 @@ struct Reduce_Data {
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
+      printf("numBlocks = %d\n",(int)numBlocks);
       own_device_ptr = true;
     }
     return act;
@@ -744,12 +754,14 @@ struct ReduceAtomic_Data {
   bool setupForDevice()
   {
     bool act = !device && setupReducers();
+//    bool act = !device ;
     if (act) {
       device = device_mempool_type::getInstance().template malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
       own_device_ptr = true;
     }
+     // *device = (T)1.0;
     return act;
   }
 
@@ -783,20 +795,25 @@ public:
         tally_or_val_ptr{new PinnedTally<T>},
         val(init_val, identity_)
   {
+printf("reduce\n");
+      printf("init_val= %d identity_ = %d\n",(int) init_val,identity_);
+//val.value = (T) 2; // works as expected
   }
 
   //! copy and on host attempt to setup for device
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(__ROCM_ARCH__)
-      : parent{other.parent},
-#else
+//#if !defined(__ROCM_ARCH__)
+#if __KALMAR_ACCELERATOR__ == 1
       : parent{&other},
+#else
+      : parent{other.parent},
 #endif
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(__ROCM_ARCH__)
+//#if !defined(__ROCM_ARCH__)
+#if __KALMAR_ACCELERATOR__ != 1
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -812,7 +829,9 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(__ROCM_ARCH__)
+//#if !defined(__ROCM_ARCH__)
+#if __KALMAR_ACCELERATOR__ != 1
+printf("~Reduce\n");
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;
@@ -846,29 +865,25 @@ public:
       tally_or_val_ptr.list->synchronize_streams();
       for (; n != end; ++n) {
         Combiner{}(val.value, *n);
+//        Combiner{}(val.value, 5);
       }
       tally_or_val_ptr.list->free_list();
     }
     return val.value;
+    return (T) 1;
   }
   //! alias for operator T()
   T get() { return operator T(); }
 
   //! apply reduction (const version) -- still combines internal values
   RAJA_HOST_DEVICE
-  void combine(T other) const { Combiner{}(val.value, other); }
-
-  /*!
-   *  \return reference to the local value
-   */
-  T& local() const { return val.value; }
-
-  T get_combined() const { return val.value; }
+//  void combine(T other) const { Combiner{}(val.value, other); }
+  void combine(T other) const { Combiner{}(val.value, 3); }
 
 private:
   const Reduce* parent;
 
-  //! union to hold either pointer to PinnedTally or poiter to value
+  //! union to hold either pointer to PinnedTally or pointer to value
   //  only use list before setup for device and only use val_ptr after
   union tally_u {
     PinnedTally<T>* list;
@@ -889,31 +904,310 @@ private:
   //! storage for reduction data
   reduce_data_type val;
 };
+#else
+static const std::size_t tile_size = 256;
+static const std::size_t segment_size = 32768;
+static const std::size_t max_reductions = 4;
+static const std::size_t block_size = segment_size / max_reductions;
+static const std::size_t max_size = block_size / tile_size;
+
+struct assert_check
+{
+    mutable bool success;
+    RAJA_INLINE assert_check() : success(true)
+    {}
+
+    RAJA_INLINE void operator()(bool cond) const
+    {
+        if (!cond) success = false;
+    }
+
+    ~assert_check()
+    {
+        if (not success)
+        {
+            std::cout << "Assertion check failed" << std::endl;
+            std::abort();
+        }
+    }
+};
+template<class T>
+struct copy_ptr
+{
+   bool is_copy;
+   T* data;
+
+   template<class... Ts>
+   RAJA_INLINE copy_ptr(Ts... xs) [[cpu]] [[hc]]
+   : is_copy(false), data(new T(xs...))
+   {}
+
+   RAJA_INLINE copy_ptr(const copy_ptr& rhs)
+   : is_copy(true), data(rhs.data)
+   {}
+
+   RAJA_INLINE copy_ptr& operator=(copy_ptr rhs)
+   {
+      std::swap(this->b, rhs.b);
+      std::swap(this->data, rhs.data);
+      return *this;
+   }
+
+   T& operator*() const
+   {
+      return *data;
+   }
+
+   T* operator->() const
+   {
+      return data;
+   }
+
+   // Cleanup should only happen on the cpu
+   void cleanup() [[cpu]]
+   {
+      if (not is_copy) delete data;
+      data = nullptr;
+   }
+
+   void cleanup() [[hc]]
+   {
+      data = nullptr;
+   }
+
+   ~copy_ptr()
+   {
+      this->cleanup();
+   }
+};
+
+RAJA_INLINE void abort_msg(const char* message)
+{
+   printf("%s\n", message);
+   std::abort();
+}
+RAJA_INLINE void barrier() [[hc]]
+{
+   amp_barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);;
+}
+
+RAJA_INLINE void barrier() [[cpu]]
+{
+   abort_msg("Call to to function hcc::barrier() invalid on cpu");
+}
+#if 0
+RAJA_INLINE void* get_group_memory(unsigned offset) [[hc]]
+{
+   char * ptr = (char *)hc::get_group_segment_base_pointer();
+   return (void *)(ptr+offset);
+}
+
+RAJA_INLINE  void* get_group_memory(unsigned offset) [[cpu]]
+{
+   abort_msg("Call to to function hcc::get_group_memory() invalid on cpu");
+   return nullptr;
+}
+
+#endif
+struct reductions
+{
+   struct entry
+   {
+      std::function<void(int)> setup;
+   };
+
+   static std::array<entry, max_reductions> reduction_table;
+
+   template<class F>
+   RAJA_INLINE static void for_each(F f)
+   {
+      for(auto&& x:reduction_table)
+      {
+         if (x.setup != nullptr) f(x);
+      }
+   }
+
+   template<class Reducer>
+   RAJA_INLINE static int add(Reducer& r)
+   {
+      for(int i=0;i<reduction_table.size();i++)
+      {
+         auto&& x = reduction_table[i];
+         if (x.setup == nullptr)
+         {
+            x.setup = [&](int tile_len) { r.setup(tile_len); };
+            return i;
+         }
+      }
+      return -1;
+   }
+
+   RAJA_INLINE static void remove(int i)
+   {
+      auto&& x = reduction_table[i];
+      x.setup = nullptr;
+   }
+};
+
+std::array<reductions::entry, max_reductions> reductions::reduction_table = {};
+
+template<class T, class Joiner>
+struct reduce_data
+{
+   T value;
+//   T* result;
+//   int length;
+//   int tiles;
+   int id;
+ 
+
+   RAJA_INLINE reduce_data(T init_val)
+   : value(init_val), id(reductions::add(*this))
+   {}
+
+//   RAJA_INLINE
+//   T get_default_value() const
+//   {
+//      return Joiner::identity();
+//   }
+
+   void setup(int tile_len)
+   { }
+
+   ~reduce_data() 
+   {
+      reductions::remove(this->id);
+   }
+};
+
+
+template<class Joiner, typename T>
+class reducer
+{
+public:
+   static_assert(std::is_trivial<T>::value, "Reductions only supported for trivial types");
+
+
+   copy_ptr<reduce_data<T, Joiner>> data;
+
+
+   RAJA_INLINE RAJA_HOST_DEVICE reducer(T init_val) 
+   : data{init_val}
+   { }
+
+///  ~reducer
+
+
+   RAJA_INLINE T final_result() const
+   {
+//      return std::accumulate(data->result.begin(), data->result.end(), data->value, Joiner());
+    typedef  struct RAJA::rocm::detail::rocmInfo RI;
+    RI & rocm_info = RAJA::rocm::detail::tl_status;
+    T sum = Joiner::identity();
+    int tiles = rocm_info.tiles;
+    // copy just the result buffers back to the host.
+    rocmMemcpy(rocm_info.device_mem_ptr,rocm_info.host_mem_ptr,tiles*sizeof(T));
+    for(int i=0;i<tiles;i++) sum += ((T *) rocm_info.host_mem_ptr)[i];
+    free(rocm_info.host_mem_ptr);
+    return sum;
+   }
+
+   operator T()
+   {
+      return (this->final_result());
+   }
+
+   RAJA_INLINE
+   T* local_mem() const [[hc]]
+   {
+      return (T *) get_group_memory(block_size * data->id);
+   }
+
+   template<class X, class Y>
+   RAJA_INLINE static void join(X& x, const Y& y) [[cpu]][[hc]]
+   {
+      Joiner{}(x, y);
+   }
+
+   //! alias for operator T()
+   RAJA_INLINE
+   T get() { return operator T(); }
+
+//   RAJA_HOST_DEVICE
+//   void combine(T other) const { Joiner{}(data->value, other); }
+
+// group reduction out of LDS memory
+   RAJA_INLINE void reduce(T x) const [[hc]]
+   {
+      const auto local = hc_get_workitem_id(0);
+      const auto tile = hc_get_group_id(0);
+
+      tile_static T buffer[tile_size];  // use LDS memory to store values for 
+                                        // the group
+
+      if (local == 0) std::fill(buffer, buffer+tile_size, Joiner::identity());
+      barrier();
+
+      join(buffer[local], x);
+      barrier();
+
+      // Reduce within a tile using multiple threads.
+      for(std::size_t s = tile_size/2; s > 0; s /= 2)
+      {
+         if (local < s)
+         {
+            join(buffer[local], buffer[local+s]);
+         }
+         barrier();
+      }
+
+      // Store the tile result in the global memory.
+      if (local == 0)
+      {
+         typedef  struct RAJA::rocm::detail::rocmInfo RI;
+         RI ** ptr= (RI **)((unsigned long)hc::get_dynamic_group_segment_base_pointer()+8);
+         join(((T *)(*ptr)->device_mem_ptr)[tile], buffer[0]);
+      }
+      barrier();
+   }
+};
+#endif
 
 }  // end namespace rocm
 
 //! specialization of ReduceSum for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceSum<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public rocm::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>
+    :  public rocm::reducer<RAJA::reduce::sum<T>,T>
 {
 
 public:
-  using Base = rocm::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
+  //! enable operator+= for ReduceSum 
+//      RAJA_INLINE 
+//      RAJA_DEVICE
+//      explicit ReduceSum(T init_val)
+//      : base_type(init_val)
+//      {}
+//  using Base = rocm::reducer<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
+  using Base = rocm::reducer< RAJA::reduce::sum<T>, T>;
   using Base::Base;
-  //! enable operator+= for ReduceSum -- alias for combine()
-  RAJA_HOST_DEVICE
-  const ReduceSum& operator+=(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-};
 
+      RAJA_INLINE 
+      RAJA_DEVICE
+      const ReduceSum<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>&
+      operator+=(T val) const [[hc]]
+      {
+         this->reduce(val);
+         return *this ;
+      }
+
+};
+#if 0
 //! specialization of ReduceMin for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceMin<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public rocm::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
+    :  public hcc::reducer<T, hcc::min<T>>
+//    : public rocm::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
 {
 
 public:
@@ -1021,6 +1315,7 @@ public:
   //! Get the calculated reduced value
   T get() { return Base::get(); }
 };
+#endif
 
 }  // closing brace for RAJA namespace
 

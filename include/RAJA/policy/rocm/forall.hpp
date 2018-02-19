@@ -67,7 +67,7 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-dim3 getGridDim(size_t len, size_t blockDim) 
+size_t getGridDim(size_t len, size_t blockDim) 
 {
   size_t block_size = blockDim;
 
@@ -76,7 +76,8 @@ dim3 getGridDim(size_t len, size_t blockDim)
   return gridSize;
 }
 RAJA_INLINE
-dim3 getGridDim(size_t len, dim3 blockDim) 
+//dim3 getGridDim(size_t len, dim3 blockDim) 
+size_t getGridDim(size_t len, dim3 blockDim) 
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
@@ -181,53 +182,46 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
+  typedef  RAJA::rocm::detail::rocmInfo RI;
   auto begin = std::begin(iter);
   auto end = std::end(iter);
 
   auto len = std::distance(begin, end);
-
   if (len > 0 && BlockSize > 0) {
 
-//    auto gridSize = impl::getGridDim(len, BlockSize);
+    auto tiles = impl::getGridDim(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     rocmStream_t stream = 0;
-//    dim3 block(BlockSize,1,1);
-//    dim3 grid(len,1,1);
 
-//    hc::parallel_for_each(ext.tile_with_dynamic(block.x,block.y,block.z,shmem), [=](const hc::index<3> & idx) [[hc]] [[hc]]
-//    if ( grid.x && ( block.x * block.y * block.z ) ) {
-//         LoopBody * rocm_device_buffer = (LoopBody *)
-//                                 rocmDeviceAlloc(sizeof(LoopBody));
+        RI * launch_info = (RI *)rocmDeviceAlloc(sizeof(RI));
+        RAJA::rocm::do_setup_reducers(len, BlockSize, tiles, 0, 16, stream);
+        RAJA::rocm::detail::tl_status.host_mem_ptr = malloc(tiles*sizeof(unsigned long));  // need to get correct type
+        RAJA::rocm::detail::tl_status.device_mem_ptr = rocmDeviceAlloc(tiles*sizeof(unsigned long));  // need to get correct type
 
+        rocmMemcpy(&RAJA::rocm::detail::tl_status, launch_info, sizeof(RI));
 
-      // Copy functor to constant memory on the device
-//      rocm_device_copy(loop_body,rocm_device_buffer,sizeof(LoopBody));
-
-//	auto ext = hc::extent<3>(grid.x,grid.y,grid.z);
-//        auto fut = hc::parallel_for_each(ext.tile(block.x,block.y,block.z), 
-//                                         [=](const hc::index<3> & idx) [[hc]]{
 	auto ext = hc::extent<1>(len);
-//        auto fut = hc::parallel_for_each(ext.tile(BlockSize), 
-        hc::parallel_for_each(ext.tile(BlockSize), 
+// size of dynamic group segment: 16 (synchthread value + rocm_info ptr)
+        hc::parallel_for_each(ext.tile_with_dynamic(BlockSize,16), 
                                          [=](const hc::tiled_index<1> & idx) [[hc]]{
+           // each tile sets a pointer to the rocm_launch_info structure
+           RI ** launch_ptr;
+           if(idx.local[0] == 0)
+           {
+              launch_ptr = (RI **)((unsigned long)hc::get_dynamic_group_segment_base_pointer()+8);
+              *launch_ptr = launch_info;
+           }
            const auto global = idx.global[0];
            loop_body(global);  
-//        impl::forall_rocm_kernel<BlockSize>(
-//           RAJA::rocm::make_launch_body(
-////             gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
-//             gridSize, block, 0, stream, loop_body),
-//             std::move(begin),
-//             len);
-//      }).wait();
-      });
-//      rocmDeviceFree(rocm_device_buffer);
-//    }
-
+      }).wait();
 
     RAJA::rocm::launch(stream);
     if (!Async) RAJA::rocm::synchronize(stream);
+
+    rocmDeviceFree(RAJA::rocm::detail::tl_status.device_mem_ptr);
+    rocmDeviceFree(launch_info);
 
    RAJA_FT_END;
   }
