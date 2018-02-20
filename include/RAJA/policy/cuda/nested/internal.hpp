@@ -131,8 +131,8 @@ namespace internal
 
 struct LaunchDim {
 
-  int blocks;
-  int threads;
+  long blocks;
+  long threads;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -143,7 +143,7 @@ struct LaunchDim {
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  LaunchDim(int b, int t) : blocks(b), threads(t){}
+  LaunchDim(long b, long t) : blocks(b), threads(t){}
 
 
   RAJA_INLINE
@@ -188,53 +188,59 @@ struct CudaIndexCalc_Policy;
 template<camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 
-	int i;
+	long len;
+	long i;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  CudaIndexCalc_Policy(SegmentTuple const &, LaunchDim const &) : i(0)
+  CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) : 
+  len((camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin())),
+	i(0)
   {
   }
 	
 	template<typename Data>
 	RAJA_INLINE
 	RAJA_DEVICE
-	int assignBegin(Data &data, int carry){
-    auto const &begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+	long assignBegin(Data &data, long carry){
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
     data.template assign_index<ArgumentId>(*begin);
 		i = 0;
+//		printf("begin: seq_exec i=%ld, carry=%ld\n", i, carry);
 		return carry;
 	}
 	
 	template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  int increment(Data &data, int carry){
+  long increment(Data &data, long carry){
 		++ i;
 
-		if(i == segment_length<ArgumentId>(data)){
+		if(i >= len){ //segment_length<ArgumentId>(data)){
 			i = 0;
 		}
 		else{
 			carry = 0;
 		}
     
-		auto const &begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    data.template assign_index<ArgumentId>(begin[i]);
+//		printf("incrm: seq_exec i=%ld, carry=%ld\n", i, carry);
+		
+		auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    data.template assign_index<ArgumentId>(*(begin+i));
 		
 		return carry;
 	}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
+  long numLogicalBlocks() const {
     return 1;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
+  long numLogicalThreads() const {
     return 1;
   }
 
@@ -247,14 +253,14 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 template<camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
-  int len;
-	int i;
+  long len;
+	long i;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
-  len((int)(camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin())),
+  len((camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin())),
 	i(0)
   {
 	}
@@ -262,7 +268,7 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 	template<typename Data>
 	RAJA_INLINE
 	RAJA_DEVICE
-	int assignBegin(Data &data, int carry){
+	long assignBegin(Data &data, long carry){
 		i = 0;
 		return increment(data, carry);
 	}
@@ -270,12 +276,13 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 	template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  int increment(Data &data, int carry_in){
-		int len = segment_length<ArgumentId>(data);
+  long increment(Data &data, long carry_in){
+		//long len = segment_length<ArgumentId>(data);
 		i += carry_in;
 
-		int	carry_out = i / len;
-		i = i - carry_out*len;  // i % len
+		long carry_out = i / len;
+		i = i % len; 
+		//i = i - carry_out*len;  // i % len
 
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
     data.template assign_index<ArgumentId>(*(begin+i));
@@ -285,14 +292,14 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
+  long numLogicalBlocks() const {
     return 1;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
-    return (int)len;
+  long numLogicalThreads() const {
+    return len;
   }
 
 
@@ -307,8 +314,8 @@ struct AssignBegin{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int assign(Data &data, CalcList &calc_list, int carry_in){
-		int carry_next = camp::get<Idx>(calc_list).assignBegin(data, carry_in);
+	long assign(Data &data, CalcList &calc_list, long carry_in){
+		long carry_next = camp::get<Idx>(calc_list).assignBegin(data, carry_in);
 		return AssignBegin<Idx-1>::assign(data, calc_list, carry_next);
 	}
 };
@@ -319,7 +326,7 @@ struct AssignBegin<-1>{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int assign(Data &, CalcList &, int carry){
+	long assign(Data &, CalcList &, long carry){
 		return carry;
 	}
 };
@@ -331,8 +338,8 @@ struct Increment{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int increment(Data &data, CalcList &calc_list, int carry_in){
-		int carry_next = camp::get<Idx>(calc_list).increment(data, carry_in);
+	long increment(Data &data, CalcList &calc_list, long carry_in){
+		long carry_next = camp::get<Idx>(calc_list).increment(data, carry_in);
 		return Increment<Idx-1>::increment(data, calc_list, carry_next);
 	}
 };
@@ -343,7 +350,7 @@ struct Increment<-1>{
 	static
 	RAJA_INLINE
 	RAJA_DEVICE
-	int increment(Data &, CalcList &, int carry){
+	long increment(Data &, CalcList &, long carry){
 		return carry;
 	}
 };
@@ -378,14 +385,14 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
+  long numLogicalBlocks() const {
     return VarOps::foldl(RAJA::operators::multiplies<int>(),
         camp::get<RangeInts>(calc_list).numLogicalBlocks()...);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
+  long numLogicalThreads() const {
     return VarOps::foldl(RAJA::operators::multiplies<int>(),
         camp::get<RangeInts>(calc_list).numLogicalThreads()...);
   }
@@ -399,7 +406,7 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignBegin(Data &data, int carry){
+  bool assignBegin(Data &data, long carry){
 		return AssignBegin<sizeof...(RangeInts)-1>::assign(data, calc_list, carry) > 0;
 	}
 
@@ -410,7 +417,7 @@ struct CudaIndexCalc<SegmentTuple, camp::list<IndexPolicies...>, camp::idx_seq<R
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool increment(Data &data, int carry){
+  bool increment(Data &data, long carry){
 		return Increment<sizeof...(RangeInts)-1>::increment(data, calc_list, carry) > 0;
 	}
 
@@ -449,7 +456,7 @@ struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>>{
 	template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool increment(Data &, int ){
+  bool increment(Data &, long ){
 		// only one execution per physical thread
 		return true;
 	}
@@ -458,20 +465,20 @@ struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
+  long numLogicalBlocks() const {
     return 1;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
+  long numLogicalThreads() const {
     return 1;
   }
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndices(Data &, int , int ){
+  bool assignIndices(Data &, long , long ){
     return false;
   }
 
@@ -514,7 +521,7 @@ struct CudaStatementListExecutor{
   static
   inline
   __device__
-  void exec(Data &data, int num_logical_blocks, int logical_block){
+  void exec(Data &data, long num_logical_blocks, long logical_block){
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
@@ -575,7 +582,7 @@ struct CudaStatementListExecutor<num_statements,num_statements, StatementList<St
 template<typename StmtList, typename IndexCalc, typename Data>
 RAJA_DEVICE
 RAJA_INLINE
-void cuda_execute_statement_list(Data &data, int num_logical_blocks, int logical_block){
+void cuda_execute_statement_list(Data &data, long num_logical_blocks, long logical_block){
 
   CudaStatementListExecutor<0, StmtList::size, StmtList, IndexCalc>::exec(data, num_logical_blocks, logical_block);
 
@@ -585,21 +592,21 @@ void cuda_execute_statement_list(Data &data, int num_logical_blocks, int logical
 template<camp::idx_t ArgumentId, typename StmtList, typename IndexCalc, typename Data>
 RAJA_DEVICE
 RAJA_INLINE
-void cuda_execute_block_distribute(Data &data, int num_logical_blocks, int logical_block, int threads_per_block){
+void cuda_execute_block_distribute(Data &data, long num_logical_blocks, long logical_block, long threads_per_block){
 	
 	// Compute number of blocks
-	int len = segment_length<ArgumentId>(data);
-	int num_blocks = len / threads_per_block;
+	long len = segment_length<ArgumentId>(data);
+	long num_blocks = len / threads_per_block;
 	if(num_blocks*threads_per_block < len){
 		num_blocks ++;
 	}
 
 	// Compute our block start and length
-	int rem_logical_block = logical_block/num_blocks;
-	int block_i = logical_block - rem_logical_block*num_blocks;
-	int i = block_i * threads_per_block;
+	long rem_logical_block = logical_block/num_blocks;
+	long block_i = logical_block - rem_logical_block*num_blocks;
+	long i = block_i * threads_per_block;
 	
-	int len_block = threads_per_block;
+	long len_block = threads_per_block;
 //	if(i+len_block > len){
 //		len_block = len - i;
 //	}
@@ -631,7 +638,7 @@ void cuda_execute_block_distribute(Data &data, int num_logical_blocks, int logic
 template<camp::idx_t ArgumentId, typename StmtList, typename IndexCalc, typename Data>
 RAJA_DEVICE
 RAJA_INLINE
-void cuda_execute_block_loop(Data &data, int num_logical_blocks, int logical_block, int threads_per_block){
+void cuda_execute_block_loop(Data &data, long num_logical_blocks, long logical_block, long threads_per_block){
 	// if we are already in a block work sharing region, we just assign
 	// this block region
 	if(logical_block >= 0){
@@ -645,7 +652,7 @@ void cuda_execute_block_loop(Data &data, int num_logical_blocks, int logical_blo
 		// set initial logical block to our physical block
 		logical_block = (int)blockIdx.x;
 		//printf("Starting block loop\n");
-//		int iter= 0;
+//		long iter= 0;
 		while(logical_block < num_logical_blocks){
 		
 			//printf("-- logical block %d\n", logical_block);

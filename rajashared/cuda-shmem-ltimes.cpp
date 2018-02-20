@@ -285,63 +285,18 @@ void runLTimesRajaCudaShmem(bool debug,
 
   // A possible implementation:
   using namespace RAJA::nested;
-//  using Pol = nested::Policy<
-//        CudaKernelAsync<
-//          nested::Tile<0, nested::tile_fixed<tile_mom>, seq_exec,
-//            nested::Tile<1, nested::tile_fixed<tile_dir>, seq_exec,
-//              // First, load up L matrix for each block
-//              SetShmemWindow<
-//                ForAllBlocks<
-//                  For<0, cuda_thread_exec,
-//                    For<1, cuda_thread_exec, Lambda<2>>
-//                  >
-//                >
-//              >,
-//
-//
-//              // Distribute groups and zones across blocks
-//              For<2, cuda_block_exec,
-//                For<3, cuda_threadblock_exec<tile_zone>,
-//                  SetShmemWindow<
-//
-//                    // Load Psi for this g,z
-//                    For<1, cuda_thread_exec, Lambda<3>>,
-//
-//                    CudaSyncThreads,
-//
-//                    // Compute phi for all m's and this g,z
-//                    For<0, cuda_thread_exec,
-//                      Thread<
-//                        // Load phi
-//                        Lambda<4>,
-//
-//                        // Compute phi
-//                        For<1, seq_exec, Lambda<5>>,
-//
-//                        // Store phi
-//                        Lambda<6>
-//                      >
-//                    >
-//                  >
-//                >
-//              >
-//            >
-//          >
-//        >
-//      >;
-
 
     using Pol = RAJA::nested::Policy<
-#if 	0
+#if 	1
                CudaKernelAsync<
 #else
-							 CudaKernelBase<cuda_explicit_launch<false, 112, 32>,
+							 CudaKernelBase<cuda_explicit_launch<false, 1, 1>,
 #endif
                 RAJA::nested::Tile<1, RAJA::nested::tile_fixed<tile_mom>, seq_exec,
                   // Compute Phi
                   RAJA::nested::Tile<2, RAJA::nested::tile_fixed<tile_dir>, seq_exec,
                       // First, load up L matrix for each block
-#if 0
+#if 1 
                       SetShmemWindow<
 												For<1, cuda_thread_exec, // m
 													For<2, cuda_thread_exec, Lambda<2>> //d
@@ -352,27 +307,27 @@ void runLTimesRajaCudaShmem(bool debug,
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
                         For<3, cuda_threadblock_exec<tile_zone>,  // z
-                   	//		For<3, cuda_block_exec,
+                   			// For<3, cuda_block_exec,
 									 				SetShmemWindow<
                             
                             // Load Psi for this g,z
-//                            For<2, cuda_thread_exec, Lambda<3>>, // d
+                            For<2, cuda_thread_exec, Lambda<3>>, // d
 
-//                            CudaSyncThreads,
+                            CudaSyncThreads,
 
                             // Compute phi for all m's and this g,z
                             For<1, cuda_thread_exec, // m
                                 // Load phi
-//                                Lambda<4>,
+                                Lambda<4>,
 
                                 // Compute phi
                                 For<2, seq_exec, Lambda<5>>,  // d
 
                                 // Store phi
-//                                Lambda<6>,
+                                Lambda<6>,
                             >, // m
 
-//														CudaSyncThreads
+														CudaSyncThreads
                           >, // shmem
                         > // z
                       > //g
@@ -445,7 +400,8 @@ void runLTimesRajaCudaShmem(bool debug,
 //		 	 printf("Lam<3> g=%02d(%02ld), m=%02d(%02ld), d=%02d(%02ld), z=%02d(%02ld) [%d,%d]\n",
 //			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3],
 //			 (int)blockIdx.x, (int)threadIdx.x);
-        shmem_psi(d,z) = psi(d,g,z);
+
+shmem_psi(d,z) = psi(d,g,z);
      },
 
      // Lambda<4>
@@ -455,7 +411,9 @@ void runLTimesRajaCudaShmem(bool debug,
 //		 	 printf("Lam<4> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
 //			 (int)blockIdx.x, (int)threadIdx.x,
 //			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-       shmem_phi(nm, z) = phi(nm, g, z);
+
+//					shmem_phi(nm,z) = 0.0;
+shmem_phi(nm, z) = phi(nm, g, z);
      },
 
      // Lambda<5>
@@ -465,7 +423,16 @@ void runLTimesRajaCudaShmem(bool debug,
 //		 	 printf("Lam<5> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
 //		 (int)blockIdx.x, (int)threadIdx.x,
 //			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-				shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
+	
+			shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
+				
+				//shmem_phi(nm, z) += ell(nm, d) * psi(d,g,z);
+				//shmem_phi(nm, z) += ell(nm, d) * shmem_psi(d,z);
+	
+	//			shmem_phi(nm,z) += 1.0;
+				//::atomicAdd(&psi(d,g,z), 1.0);
+				//::atomicAdd(&phi(nm,g,z), 1.0);
+			//	trip_count += 1;
 				//shmem_phi(nm, z) += shmem_ell(d, nm) * psi(d,g,z);
     		//trip_count += (psi(d,g,z) != shmem_psi(d,z)) ? 1 : 0;
     		//trip_count += (win[1] > 0) ? 1 : 0;
@@ -479,7 +446,10 @@ void runLTimesRajaCudaShmem(bool debug,
 //		 	 printf("Lam<6> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
 //			 (int)blockIdx.x, (int)threadIdx.x,
 //			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-      phi(nm, g, z) = shmem_phi(nm, z);
+      
+			
+			phi(nm, g, z) = shmem_phi(nm, z);
+		//			phi(nm,g,z) = 0.0;
     }
 
   );
@@ -491,7 +461,7 @@ void runLTimesRajaCudaShmem(bool debug,
 	//long expected = num_groups*num_moments*num_zones*num_directions;
 //	long expected = num_groups*num_moments*num_zones;
 //	printf("Trip count: %ld expected %ld err %ld\n", (long)trip_count, expected, (long)trip_count - expected);
-	printf("OOB: %ld\n", (long)trip_count);
+	//printf("OOB: %ld\n", (long)trip_count);
 
   printf("LTimes took %lf seconds using RAJA w/ shmem\n", timer.elapsed());
 
@@ -504,12 +474,18 @@ void runLTimesRajaCudaShmem(bool debug,
                d_phi,
                sizeof(double) * phi_data.size(),
                cudaMemcpyDeviceToHost);
+    cudaMemcpy(&psi_data[0],
+               d_psi,
+               sizeof(double) * psi_data.size(),
+               cudaMemcpyDeviceToHost);
 
     ell.set_data(&ell_data[0]);
     phi.set_data(&phi_data[0]);
     psi.set_data(&psi_data[0]);
     size_t errors = 0;
 		printf("Checking result\n");
+
+#if 1
 		//for (IMoment m(0); m < num_moments; ++m) {
 		for (IMoment m(0); m < 1; ++m) {
 			for (IGroup g(0); g < num_groups; ++g) {
@@ -528,7 +504,26 @@ void runLTimesRajaCudaShmem(bool debug,
       }
 			printf("m=%d (err=%ld)\n", (int)*m, (long)errors);
     }
+#else
+			for (IGroup g(0); g < num_groups; ++g) {
+    		for (IZone z(0); z < num_zones; ++z) {
+          //for (IDirection d(0); d < num_directions; ++d) {
+					for (IMoment m(0); m < num_moments; ++m) {
+            //if(psi(d, g, z) != num_moments){
+            if(phi(m, g, z) != num_directions){
+							errors ++;
+							if(errors < 10){
+								printf("mgz(%d,%d,%d) = %lf\n", (int)*m, (int)*g, (int)*z, phi(m,g,z));
+							}
+						}
+          }
+        }
+      }
 
+			printf("Errors=%ld of %ld\n", errors, (long)num_groups*num_zones*num_moments);
+			printf("Tripct=%ld of %ld\n", (long)trip_count, (long)num_groups*num_zones*num_directions*num_moments);
+			
+#endif
     if(errors == 0){
       printf("  -- no errors\n");
     }
@@ -551,7 +546,7 @@ int main(){
 
   //bool debug = false;
   bool debug = true;
-#if 1 
+#if 1
   int m = 25;
   int d = 80;
   int g = 48;
@@ -561,10 +556,10 @@ int main(){
   //int z = 31250;
   //int z = 182250;
 #else
-  int m = ; 
-  int d = 2;
-  int g = 4;
-  int z = 130000;
+  int m = 1; 
+  int d = 1;
+  int g = 1;
+  int z = 1; //64*1024+1;
 #endif
 
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);

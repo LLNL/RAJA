@@ -76,7 +76,7 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   {
     // execute enclosed statements
 		cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
@@ -108,7 +108,7 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_exec, EnclosedStmts...>,
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   {
 	
 		// Distribute work over blocks using 1 thread per block
@@ -145,7 +145,7 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_threadblock_exec<max_threads>,
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   {
 		// Distribute work over blocks using max_threads thread per block
 		cuda_execute_block_loop<ArgumentId, stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block, max_threads);	
@@ -160,12 +160,14 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_threadblock_exec<max_threads>,
 		LaunchDim dim = cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
 		
 		// Compute how many blocks
-		int len = segment_length<ArgumentId>(data);
-		int num_blocks = len / max_threads;
-		num_blocks += num_blocks*max_threads < len ? 1 : 0;
+		long len = segment_length<ArgumentId>(data);
+		long num_blocks = len / max_threads;
+		if(num_blocks*max_threads < len){
+			num_blocks ++;
+		}
 		
 		dim.blocks *= num_blocks;
-		dim.threads *= max_threads;
+		dim.threads *= (long)max_threads;
 		
 		return dim;
 	}
@@ -188,10 +190,9 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexC
 
   template <typename Data>
   static
-	//__noinline__
   inline
 	RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   {
 		cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
   }

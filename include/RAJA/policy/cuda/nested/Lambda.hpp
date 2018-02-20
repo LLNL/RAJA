@@ -82,10 +82,9 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 
   template <typename Data>
   static
-  //__noinline__
   inline
   __device__
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   
 	{
 //		printf("Lambda<%d> nlb=%d, lb=%d\n", (int)LoopIndex,  num_logical_blocks, logical_block);
@@ -103,41 +102,13 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 			
 			
 
-			// Loop over logical threads in this block
-			int iter = 0;
 			while(!done) {
-			/*
-			if(threadIdx.x>1){
-				extern __shared__ long win[];
-				int z = *camp::get<3>(data.index_tuple) - win[3];
-				assert(z >= 0);
-				assert(z < 16);
-				int m = *camp::get<1>(data.index_tuple) - win[1];
-				assert(m >= 0);
-				assert(m < 25);
-				int d = *camp::get<2>(data.index_tuple) - win[2];
-				assert(d >= 0);
-				assert(d < 80);
-			}*/
-
-			/*
-				extern __shared__ long win[];
-				int x = *camp::get<3>(data.index_tuple) - win[3];
-				assert(x >= 0);
-				assert(x < 16);
-*/
-//			__threadfence();
-//			__syncthreads();
-				//printf("B/T=%d,%d iter=%d\n", (int)blockIdx.x, (int)threadIdx.x, iter);
+			
 				invoke_lambda<LoopIndex>(data);
-				
-				++ iter;
-				done = index_calc.increment(data, blockDim.x);
+			
+			  done = index_calc.increment(data, blockDim.x);
+			
 			}
-			__threadfence();
-			__syncthreads();
-//			if(blockIdx.x==0)
-//			printf("B/T=%d,%d iter=%d (done)\n", (int)blockIdx.x, (int)threadIdx.x, iter);
 
 		}
   }

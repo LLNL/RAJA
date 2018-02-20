@@ -90,7 +90,7 @@ namespace nested
  * CUDA kernel launch policy where the user specifies the number of physical
  * thread blocks and threads per block.
  */
-template <bool async0, int num_blocks, int num_threads>
+template <bool async0, long num_blocks, long num_threads>
 struct cuda_explicit_launch{
 
   static constexpr bool async = async0;
@@ -160,28 +160,10 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
-__global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
+__global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
 {
-  //extern __shared__ char my_ptr[];
-  // Thread privatize the loop data
-	//int i = 0;
-  auto private_data = privatize_bodies(data);
-  //using data_t = camp::decay<Data>;
-  //data_t private_data = data;
-	//if(threadIdx.x==0 && blockIdx.x == 0){
-	//if(blockIdx.x == 0){
-		//printf("shmem start at %p\n", &my_ptr[0]);
-	//	printf("segment tuple at %p (%p)\n", &private_data.segment_tuple, &i);
-		//printf("index tuple at %p\n", &private_data.index_tuple);
-	//	long *val = (long *) &camp::get<0>(private_data.index_tuple);
-//		val[0] = 123;
-	//}
-/*	__syncthreads();
-	if(blockIdx.x == 0){
-		long *val = (long *) &camp::get<0>(private_data.index_tuple);
-		printf("val=%ld\n", val[0]);
-	}
-	*/
+  using data_t = camp::decay<Data>;
+  data_t private_data = data;
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
  
@@ -207,8 +189,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   void exec(Data &&data)
   {
 
-    int shmem = RAJA::detail::getSharedMemorySize();
-    printf("Shared memory size=%d\n", shmem);
+    long shmem = RAJA::detail::getSharedMemorySize();
+    printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;
 

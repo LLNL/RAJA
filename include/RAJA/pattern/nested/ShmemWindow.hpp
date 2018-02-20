@@ -64,23 +64,21 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     using layout_t = RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
     static_assert(layout_t::s_size <= ShmemT::size, "Layout cannot span a larger size than the shared memory");
 
-    //index_tuple_t window;
 
     RAJA_SUPPRESS_HD_WARN
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
     ShmemWindowView() : shmem()
-    //, window()
-    {}
+    {
+		}
 
     RAJA_SUPPRESS_HD_WARN
-    RAJA_INLINE
+		RAJA_INLINE
     RAJA_HOST_DEVICE
     ShmemWindowView(ShmemWindowView const &c) : shmem(c.shmem)
     {
-
-    }
+		}
 
 
     RAJA_SUPPRESS_HD_WARN
@@ -88,16 +86,55 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
     RAJA_HOST_DEVICE
     element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> ... idx) const {
 #ifdef __CUDA_ARCH__
-
-      // Get the shared memory window
+      
+			// Get the shared memory window
       // (stored at beginning of CUDA dynamic shared memory region)
+
+#if 0
+      // BROKEN w/ cuda 9.0.176
       extern __shared__ char my_ptr[];
       index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
-
-      // Compute our linear offset into our shared memory buffer
       auto lin = layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...);
+#endif
 
-      return shmem[lin];
+#if 0
+      // WORKS w/ cuda 9.0.176
+      extern __shared__ char my_ptr[];
+      index_tuple_t *shmem_window_ptr = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
+			index_tuple_t shmem_window = *shmem_window_ptr;
+      auto lin = layout_t::s_oper((idx - camp::get<Args>(shmem_window))...);
+#endif
+
+#if 0
+      // BROKEN w/ cuda 9.0.176
+      extern __shared__ index_tuple_t my_ptr[];
+      auto lin = layout_t::s_oper((idx - camp::get<Args>(my_ptr[0]))...);
+#endif
+
+#if 0
+      // BROKEN w/ cuda 9.0.176
+      __syncthreads();
+      extern __shared__ index_tuple_t my_ptr[];
+      index_tuple_t const &shmem_window = my_ptr[0];
+      auto lin = layout_t::s_oper((idx - camp::get<Args>(shmem_window))...);
+#endif
+
+#if 0
+      // BROKEN w/ cuda 9.0.176
+      extern __shared__ index_tuple_t my_ptr[];
+      index_tuple_t shmem_window = my_ptr[0];
+      auto lin = layout_t::s_oper((idx - camp::get<Args>(shmem_window))...);
+#endif
+
+
+#if 1
+      // WORKS w/ cuda 9.0.176
+      extern __shared__ int my_ptr[];
+      auto lin = layout_t::s_oper((idx - my_ptr[Args])...);
+#endif
+
+
+			return shmem[lin];
 
 #else
       auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());

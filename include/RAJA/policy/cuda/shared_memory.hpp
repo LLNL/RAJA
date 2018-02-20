@@ -59,7 +59,7 @@ struct SharedMemory<cuda_shmem, T, NumElem> {
   static constexpr size_t size = NumElem;
   static constexpr size_t num_bytes = NumElem*sizeof(T);
 
-  int offset; // offset into dynamic shared memory, in bytes
+  long offset; // offset into dynamic shared memory, in bytes
   void *parent;     // pointer to original object
 
   RAJA_INLINE
@@ -75,7 +75,6 @@ struct SharedMemory<cuda_shmem, T, NumElem> {
     // only implement the registration on the HOST
 #ifndef __CUDA_ARCH__
     offset = RAJA::detail::registerSharedMemoryObject(parent, NumElem*sizeof(T));
-//    printf("SharedMemory<cuda_shmem>: offset=%d\n", (int)offset);
 #endif
   }
 
@@ -87,17 +86,8 @@ struct SharedMemory<cuda_shmem, T, NumElem> {
     // Get the pointer to beginning of dynamic shared memory
     extern __shared__ char my_ptr[];
 
-//    if(threadIdx.x == 0 && blockIdx.x == 0){
-//      printf("shmem offset=%d\n", offset);
-//    }
-
-    // Convert this to a pointer of type T at the beginning of OUR shared mem
+		// Convert this to a pointer of type T at the beginning of OUR shared mem
     T *T_ptr = reinterpret_cast<T*>((&my_ptr[0]) + offset);
-
-//    if(i >= size){
-//      printf("i=%d, offset=%d\n", (int)i,  offset);
-//      return T_ptr[0];
-//    }
 
     // Return the i'th element of our buffer
     return T_ptr[i];

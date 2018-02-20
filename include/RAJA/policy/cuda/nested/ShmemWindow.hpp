@@ -26,11 +26,25 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+
+  template <typename Data, camp::idx_t... RangeInts>
+  static
+  RAJA_DEVICE
+  inline
+  void setWindow(Data &data, camp::idx_seq<RangeInts...> const &){
+    // get shmem window
+    extern __shared__ int shmem_window[];
+
+    // Assign each index to the window
+    VarOps::ignore_args((shmem_window[RangeInts] =
+        RAJA::convertIndex<int>(camp::get<RangeInts>(data.index_tuple)))...);
+  }
+
   template <typename Data>
   static
   RAJA_DEVICE
   inline
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, long num_logical_blocks, long logical_block)
   {
     // Get physical parameters
     LaunchDim max_physical(gridDim.x, blockDim.x);
@@ -55,18 +69,25 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
     if(threadIdx.x == 0){
 
       // Grab shmem window pointer
-      extern __shared__ long my_ptr[];
-      index_tuple_t *shmem_window = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
+      //extern __shared__ int my_ptr[];
+      //index_tuple_t *shmem_window = reinterpret_cast<index_tuple_t *>(&my_ptr[0]);
 
       // Set the shared memory tuple with the beginning of our segments
-      *shmem_window = data.index_tuple;
+      using IndexRange = camp::make_idx_seq_t<Data::index_tuple_t::TList::size>;
+      setWindow(data, IndexRange{});
+
+      //*shmem_window = data.index_tuple;
 			
     }
 
     // make sure we're all synchronized, so they all see the same window
 		__syncthreads();
+
+		// privatize data to invoke copy ctors that will capture new window
+		//loop_data_t private_data = data;
     
 		// execute enclosed statements
+    //cuda_execute_statement_list<stmt_list_t, IndexCalc>(private_data, num_logical_blocks, logical_block);
     cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);
 	
 	}
