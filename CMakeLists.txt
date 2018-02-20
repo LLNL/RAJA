@@ -119,9 +119,7 @@ if (NOT RAJA_LOADED)
   endif ()
 
   if (ENABLE_DEPRECATED_TESTS)
-     set(DEPRECATED_TESTS 1)
-  else()
-     set(DEPRECATED_TESTS 0)
+     set(DEPRECATED_TESTS)
   endif()
 
   blt_add_library(

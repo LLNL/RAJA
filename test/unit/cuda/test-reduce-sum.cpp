@@ -174,6 +174,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   }
 }
 
+#ifdef DEPRECATED_TESTS
 CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
@@ -212,7 +213,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   ASSERT_EQ(4 * ibase_chk_val + (itinit * 4), isum3.get());
 
 }
-
+#endif
 //
 // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
 //        of the array using an indexset with four range segments
@@ -230,7 +231,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
 
-  IndexSet iset;
+  UnitIndexSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);
