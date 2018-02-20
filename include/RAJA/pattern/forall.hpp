@@ -287,7 +287,6 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
   });
