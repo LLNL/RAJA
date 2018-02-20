@@ -18,6 +18,10 @@ namespace camp
 template <typename... Rest>
 struct tuple;
 
+template <typename Tuple>
+struct tuple_size;
+
+
 namespace internal
 {
   template <class T>
@@ -42,10 +46,14 @@ CAMP_HOST_DEVICE constexpr auto make_tuple(Args&&... args)
 template <typename T, camp::idx_t I>
 using tpl_get_ret = camp::at_v<camp::as_list<T>, I>;
 
-template <int index, typename... Args, template <typename...> class Tuple>
+template <camp::idx_t index,
+          typename... Args,
+          template <typename...> class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index> const&;
-template <int index, typename... Args, template <typename...> class Tuple>
+template <camp::idx_t index,
+          typename... Args,
+          template <typename...> class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index>&;
 template <typename T, typename... Args, template <typename...> class Tuple>
@@ -89,6 +97,7 @@ namespace internal
 
   template <>
   struct tuple_helper<camp::idx_seq<>, camp::list<>, camp::list<>> {
+    using TMap = camp::list<camp::list<>>;
   };
 
   template <typename... Types, camp::idx_t... Indices, typename... MapTypes>
@@ -142,10 +151,14 @@ public:
 private:
   Base base;
 
-  template <int index, typename... Args, template <typename...> class Tuple>
+  template <camp::idx_t index,
+            typename... Args,
+            template <typename...> class Tuple>
   CAMP_HOST_DEVICE friend constexpr auto get(const Tuple<Args...>& t) noexcept
       -> tpl_get_ret<Tuple<Args...>, index> const&;
-  template <int index, typename... Args, template <typename...> class Tuple>
+  template <camp::idx_t index,
+            typename... Args,
+            template <typename...> class Tuple>
   CAMP_HOST_DEVICE friend constexpr auto get(Tuple<Args...>& t) noexcept
       -> tpl_get_ret<Tuple<Args...>, index>&;
   template <typename T, typename... Args, template <typename...> class Tuple>
@@ -189,8 +202,8 @@ struct as_list_s<tagged_tuple<camp::list<Tags...>, Args...>> {
 };
 
 template <typename... Elements>
-class tuple : public tagged_tuple<camp::list<Elements...>, Elements...>
-{
+struct tuple : public tagged_tuple<camp::list<Elements...>, Elements...> {
+private:
   using Base = tagged_tuple<camp::list<Elements...>, Elements...>;
 
 public:
@@ -211,20 +224,26 @@ template <camp::idx_t i, typename T>
 using tuple_element_t = typename tuple_element<i, T>::type;
 
 // by index
-template <int index, typename... Args, template <typename...> class Tuple>
+template <camp::idx_t index,
+          typename... Args,
+          template <typename...> class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(const Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index> const&
 {
-  static_assert(sizeof...(Args) > index, "index out of range");
-  return t.base.tpl_get_store<Tuple<Args...>, index>::get_inner();
+  using T = Tuple<Args...>;
+  static_assert(tuple_size<T>::value > index, "index out of range");
+  return t.base.tpl_get_store<T, index>::get_inner();
 }
 
-template <int index, typename... Args, template <typename...> class Tuple>
+template <camp::idx_t index,
+          typename... Args,
+          template <typename...> class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>, index>&
 {
-  static_assert(sizeof...(Args) > index, "index out of range");
-  return t.base.tpl_get_store<Tuple<Args...>, index>::get_inner();
+  auto const& rt = t;
+  using Ret = tpl_get_ret<Tuple<Args...>, index>&;
+  return const_cast<Ret>(get<index>(rt));
 }
 
 // by type
@@ -244,14 +263,12 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple<Args...>& t) noexcept
     -> tpl_get_ret<Tuple<Args...>,
                    camp::at_key<typename Tuple<Args...>::TMap, T>::value>&
 {
-  using index_type = camp::at_key<typename Tuple<Args...>::TMap, T>;
-  static_assert(!std::is_same<camp::nil, index_type>::value,
-                "invalid type index");
-  return t.base.tpl_get_store<Tuple<Args...>, index_type::value>::get_inner();
+  auto const& rt = t;
+  using Ret =
+      tpl_get_ret<Tuple<Args...>,
+                  camp::at_key<typename Tuple<Args...>::TMap, T>::value>&;
+  return const_cast<Ret>(get<T>(rt));
 }
-
-template <typename Tuple>
-struct tuple_size;
 
 template <typename... Args>
 struct tuple_size<tuple<Args...>> {
@@ -263,13 +280,13 @@ struct tuple_size<tuple<Args...>&> {
   static constexpr size_t value = sizeof...(Args);
 };
 
-template <typename... Args>
-struct tuple_size<tagged_tuple<Args...>> {
+template <typename L, typename... Args>
+struct tuple_size<tagged_tuple<L, Args...>> {
   static constexpr size_t value = sizeof...(Args);
 };
 
-template <typename... Args>
-struct tuple_size<tagged_tuple<Args...>&> {
+template <typename L, typename... Args>
+struct tuple_size<tagged_tuple<L, Args...>&> {
   static constexpr size_t value = sizeof...(Args);
 };
 

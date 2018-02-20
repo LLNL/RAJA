@@ -20,8 +20,6 @@ namespace camp
 template <typename... Ts>
 struct list;
 template <typename T>
-struct as_array;
-template <typename T>
 struct size;
 template <typename Seq>
 struct flatten;
@@ -258,6 +256,7 @@ namespace test
   CHECK_IEQ((size<idx_seq<0, 0, 0>>), (3));
 }
 #endif
+
 
 }  // end namespace camp
 
