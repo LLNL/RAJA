@@ -90,14 +90,14 @@ namespace nested
  * CUDA kernel launch policy where the user specifies the number of physical
  * thread blocks and threads per block.
  */
-template <bool async0, long num_blocks, long num_threads>
+template <bool async0, int num_blocks, int num_threads>
 struct cuda_explicit_launch{
 
   static constexpr bool async = async0;
 
   template<typename Func>
   RAJA_INLINE
-  static internal::LaunchDim calc_max_physical(Func const &, size_t ){
+  static internal::LaunchDim calc_max_physical(Func const &, int ){
 
     return internal::LaunchDim(num_blocks, num_threads);
   }
@@ -116,7 +116,7 @@ struct cuda_occ_calc_launch{
 
   template<typename Func>
   RAJA_INLINE
-  static internal::LaunchDim calc_max_physical(Func const &func, size_t shmem_size){
+  static internal::LaunchDim calc_max_physical(Func const &func, int shmem_size){
 
     int occ_blocks=-1, occ_threads=-1;
 
@@ -160,10 +160,11 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
-__global__ void CudaKernelLauncher(Data data, long num_logical_blocks)
+__global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 {
   using data_t = camp::decay<Data>;
   data_t private_data = data;
+  //auto private_data = privatize_bodies(data);
 
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
  
@@ -189,7 +190,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   void exec(Data &&data)
   {
 
-    long shmem = RAJA::detail::getSharedMemorySize();
+    int shmem = RAJA::detail::getSharedMemorySize();
     printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;
@@ -203,8 +204,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     using data_t = camp::decay<Data>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 
-    //printf("Physical limits: %ld blocks, %ld threads\n",
-    //    (long)max_physical.blocks, (long)max_physical.threads);
+    //printf("Physical limits: %d blocks, %d threads\n",
+    //    (int)max_physical.blocks, (int)max_physical.threads);
 
 
 
@@ -227,8 +228,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
         cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(data, max_physical);
 
 
-    printf("Logical dims: %ld blocks, %ld threads\n",
-        (long)logical_dims.blocks, (long)logical_dims.threads);
+    printf("Logical dims: %d blocks, %d threads\n",
+        (int)logical_dims.blocks, (int)logical_dims.threads);
 
 
 
@@ -242,8 +243,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-    printf("Launch dims: %ld blocks, %ld threads\n",
-        (long)launch_dims.blocks, (long)launch_dims.threads);
+    printf("Launch dims: %d blocks, %d threads\n",
+        (int)launch_dims.blocks, (int)launch_dims.threads);
 
 
 

@@ -35,7 +35,7 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
   static
   inline
   __device__
-  void exec(Data &data, long num_logical_blocks, long logical_block)
+  void exec(Data &data, int num_logical_blocks, int logical_block)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -44,20 +44,16 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
     using segment_t = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
-    long chunk_size = TPol::chunk_size;
+    int chunk_size = TPol::chunk_size;
 
     // compute trip count
-    long len = segment.end() - segment.begin();
+    int len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (long i = 0;i < len;i += chunk_size) {
+    for (int i = 0;i < len;i += chunk_size) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
-
-      // Assign the beginning index to the index_tuple for proper use
-      // in shmem windows
-      camp::get<ArgumentId>(data.index_tuple) = *segment.begin();
 
       // execute enclosed statements
       cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);

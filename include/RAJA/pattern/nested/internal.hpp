@@ -167,8 +167,8 @@ struct LoopData_Privatizer_Bodies;
 template <typename PolicyType, typename SegmentTuple, typename IndexTuple, typename ... Bodies>
 struct LoopData_Privatizer_Bodies<LoopData<PolicyType, SegmentTuple, IndexTuple, Bodies...>>{
 
-  //using type = LoopData<PolicyType, camp::decay<SegmentTuple> &, camp::decay<IndexTuple> &, camp::decay<Bodies>...>;
-  using type = LoopData<PolicyType, camp::decay<SegmentTuple> , camp::decay<IndexTuple> , camp::decay<Bodies>...>;
+  using type = LoopData<PolicyType, camp::decay<SegmentTuple> &, camp::decay<IndexTuple> &, camp::decay<Bodies>...>;
+  //using type = LoopData<PolicyType, camp::decay<SegmentTuple> , camp::decay<IndexTuple> , camp::decay<Bodies>...>;
 
 };
 

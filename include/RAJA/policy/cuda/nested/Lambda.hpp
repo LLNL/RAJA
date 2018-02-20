@@ -84,11 +84,11 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
   static
   inline
   __device__
-  void exec(Data &data, long num_logical_blocks, long logical_block)
+  void exec(Data &data, int num_logical_blocks, int logical_block)
   
 	{
-//		printf("Lambda<%d> nlb=%d, lb=%d\n", (int)LoopIndex,  num_logical_blocks, logical_block);
-		if(logical_block <= 0){
+
+    if(logical_block <= 0){
 			// Get physical parameters
 			LaunchDim max_physical(gridDim.x, blockDim.x);
 
@@ -98,9 +98,6 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 			// set indices to beginning of each segment, and increment
 			// to this threads first iteration
 			bool done = index_calc.assignBegin(data, threadIdx.x);
-			
-			
-			
 
 			while(!done) {
 			
@@ -111,6 +108,7 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 			}
 
 		}
+
   }
 
 

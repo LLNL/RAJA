@@ -280,10 +280,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
   static const int tile_mom  = 25;
   static const int tile_dir  = 80;
-  static const int tile_zone = 16;
-
-
-  // A possible implementation:
+  static const int tile_zone = 24;
   using namespace RAJA::nested;
 
     using Pol = RAJA::nested::Policy<
@@ -302,7 +299,6 @@ void runLTimesRajaCudaShmem(bool debug,
 													For<2, cuda_thread_exec, Lambda<2>> //d
 												>
                       >,
-											CudaSyncThreads,
 #endif
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
@@ -325,10 +321,8 @@ void runLTimesRajaCudaShmem(bool debug,
 
                                 // Store phi
                                 Lambda<6>,
-                            >, // m
-
-														CudaSyncThreads
-                          >, // shmem
+                            > // m
+                          > // shmem
                         > // z
                       > //g
                     > // tile d
@@ -345,16 +339,6 @@ void runLTimesRajaCudaShmem(bool debug,
       TypedRangeSegment<IZone>(0,num_zones));
 
 
-//  using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
-//  ShmemWindowView<shmem_ell_t, ArgList<1,0>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
-//
-//  using shmem_psi_t = SharedMemory<cuda_shmem, double, tile_dir*tile_zone>;
-//  ShmemWindowView<shmem_psi_t, ArgList<1,3>, SizeList<tile_dir, tile_zone>, decltype(segments)> shmem_psi;
-//
-//
-//  using shmem_phi_t = SharedMemory<cuda_shmem, double, tile_mom*tile_zone>;
-//  ShmemWindowView<shmem_phi_t, ArgList<0,3>, SizeList<tile_mom, tile_zone>, decltype(segments)> shmem_phi;
-
   using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
   ShmemWindowView<shmem_ell_t, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
 
@@ -364,92 +348,55 @@ void runLTimesRajaCudaShmem(bool debug,
   using shmem_phi_t = SharedMemory<cuda_shmem, double, tile_mom*tile_zone>;
   ShmemWindowView<shmem_phi_t, ArgList<1,3>, SizeList<tile_mom, tile_zone>, decltype(segments)> shmem_phi;
 
-	RAJA::ReduceSum<RAJA::cuda_reduce<1024>, long> trip_count(0);
+
+//  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
   nested::forall(
-      Pol{},
+    Pol{},
 
-      segments,
+    segments,
 
-      // Lambda<0>
-       // Zero out phi
-      [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-        phi(nm, g, z) = 0.0;
-       },
+    // Lambda<0>
+     // Zero out phi
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      phi(nm, g, z) = 0.0;
+    },
 
-       // Lambda<1>
-       // Original single lambda implementation
-       [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-         phi(nm, g, z) += ell(nm, d) * psi(d,g,z);
-       },
+    // Lambda<1>
+    // Original single lambda implementation
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      phi(nm, g, z) += ell(nm, d) * psi(d,g,z);
+    },
 
-     // Lambda<2>
-     // load L matrix into shmem
-       [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-//		 	extern __shared__ long win[];
-//		 	 printf("Lam<2> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
-//			 (int)blockIdx.x, (int)threadIdx.x,
-//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-        shmem_ell(d, nm) = ell(nm, d);
-     },
+    // Lambda<2>
+    // load L matrix into shmem
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      shmem_ell(d, nm) = ell(nm, d);
+    },
 
-     // Lambda<3>
-     // load slice of psi into shared
-     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-//		 	 extern __shared__ long win[];
-//		 	 printf("Lam<3> g=%02d(%02ld), m=%02d(%02ld), d=%02d(%02ld), z=%02d(%02ld) [%d,%d]\n",
-//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3],
-//			 (int)blockIdx.x, (int)threadIdx.x);
+    // Lambda<3>
+    // load slice of psi into shared
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      shmem_psi(d,z) = psi(d,g,z);
+    },
 
-shmem_psi(d,z) = psi(d,g,z);
-     },
+    // Lambda<4>
+    // Load phi_m_g_z
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      shmem_phi(nm, z) = phi(nm, g, z);
+    },
 
-     // Lambda<4>
-     // Load phi_m_g_z
-     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-//		 	 extern __shared__ long win[];
-//		 	 printf("Lam<4> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
-//			 (int)blockIdx.x, (int)threadIdx.x,
-//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
+    // Lambda<5>
+    // Compute phi_m_g_z
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
+      //trip_count += 1;
+    },
 
-//					shmem_phi(nm,z) = 0.0;
-shmem_phi(nm, z) = phi(nm, g, z);
-     },
-
-     // Lambda<5>
-     // Compute phi_m_g_z
-     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-		 	 //extern __shared__ long win[];
-//		 	 printf("Lam<5> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
-//		 (int)blockIdx.x, (int)threadIdx.x,
-//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-	
-			shmem_phi(nm, z) += shmem_ell(d, nm) * shmem_psi(d,z);
-				
-				//shmem_phi(nm, z) += ell(nm, d) * psi(d,g,z);
-				//shmem_phi(nm, z) += ell(nm, d) * shmem_psi(d,z);
-	
-	//			shmem_phi(nm,z) += 1.0;
-				//::atomicAdd(&psi(d,g,z), 1.0);
-				//::atomicAdd(&phi(nm,g,z), 1.0);
-			//	trip_count += 1;
-				//shmem_phi(nm, z) += shmem_ell(d, nm) * psi(d,g,z);
-    		//trip_count += (psi(d,g,z) != shmem_psi(d,z)) ? 1 : 0;
-    		//trip_count += (win[1] > 0) ? 1 : 0;
-    		//trip_count += (win[2] > 0) ? 1 : 0;
-     },
-
-     // Lambda<6>
-     // Store phi_m_g_z
-     [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-//		 	 extern __shared__ long win[];
-//		 	 printf("Lam<6> [%d,%d] g=%d(%ld), m=%d(%ld), d=%d(%ld), z=%d(%ld)\n",
-//			 (int)blockIdx.x, (int)threadIdx.x,
-//			 (int)*g, win[0], (int)*nm, win[1], (int)*d, win[2], (int)*z, win[3]);
-      
-			
-			phi(nm, g, z) = shmem_phi(nm, z);
-		//			phi(nm,g,z) = 0.0;
+    // Lambda<6>
+    // Store phi_m_g_z
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+      phi(nm, g, z) = shmem_phi(nm, z);
     }
 
   );
@@ -458,12 +405,10 @@ shmem_phi(nm, z) = phi(nm, g, z);
   cudaDeviceSynchronize();
   timer.stop();
 
-	//long expected = num_groups*num_moments*num_zones*num_directions;
-//	long expected = num_groups*num_moments*num_zones;
-//	printf("Trip count: %ld expected %ld err %ld\n", (long)trip_count, expected, (long)trip_count - expected);
-	//printf("OOB: %ld\n", (long)trip_count);
-
   printf("LTimes took %lf seconds using RAJA w/ shmem\n", timer.elapsed());
+
+//  long tc = trip_count;
+//  printf("trip_count=%ld, %lf\n", tc, (double)tc / (double)(num_directions * num_moments * num_groups * num_zones));
 
 
   // Check correctness
@@ -484,6 +429,7 @@ shmem_phi(nm, z) = phi(nm, g, z);
     psi.set_data(&psi_data[0]);
     size_t errors = 0;
 		printf("Checking result\n");
+
 
 #if 1
 		//for (IMoment m(0); m < num_moments; ++m) {
@@ -544,17 +490,18 @@ shmem_phi(nm, z) = phi(nm, g, z);
 
 int main(){
 
-  //bool debug = false;
-  bool debug = true;
+  bool debug = false;
+  //bool debug = true;
 #if 1
   int m = 25;
   int d = 80;
   int g = 48;
-  int z = 64*1024+1; //27*50*50;
+  //int z = 64*1024+1; //27*50*50;
   //int z = 3150;
 	//int z = 17;
-  //int z = 31250;
+  int z = 31250;
   //int z = 182250;
+  //int z = 131074;
 #else
   int m = 1; 
   int d = 1;
