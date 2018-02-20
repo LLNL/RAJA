@@ -99,10 +99,7 @@ class ValueLoc
 public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
-  
-  //RAJA_SUPPRESS_HD_WARN RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  //RAJA_SUPPRESS_HD_WARN RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
-  
+    
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
 
@@ -159,14 +156,14 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce()
+  BaseReduce()
     : c{T(), Reduce::identity()}
   {
   }
   
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
+  BaseReduce(T init_val, T identity_ = Reduce::identity())
     : c{init_val, identity_}
   {
   }
@@ -181,10 +178,12 @@ public:
   BaseReduce &operator=(const BaseReduce &) = delete;
 
   //! compiler-generated copy constructor
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce(const BaseReduce &copy) : c(copy.c) {}
+  BaseReduce(const BaseReduce &copy) : c(copy.c) {}
 
   //! compiler-generated move constructor
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   RAJA_INLINE
   BaseReduce(BaseReduce &&copy) : c(std::move(copy.c)) {}
@@ -192,6 +191,7 @@ public:
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
 
