@@ -92,21 +92,13 @@ namespace internal
     Type val;
   };
 
-  template <typename Indices, typename Typelist, typename TypeMap>
+  template <typename Indices, typename Typelist>
   struct tuple_helper;
 
-  template <>
-  struct tuple_helper<camp::idx_seq<>, camp::list<>, camp::list<>> {
-    using TMap = camp::list<camp::list<>>;
-  };
-
-  template <typename... Types, camp::idx_t... Indices, typename... MapTypes>
+  template <typename... Types, camp::idx_t... Indices>
   struct tuple_helper<camp::idx_seq<Indices...>,
-                      camp::list<Types...>,
-                      camp::list<MapTypes...>>
+                      camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
-    using TMap = camp::list<camp::list<MapTypes, camp::num<Indices>>...>;
-
     CAMP_HOST_DEVICE constexpr tuple_helper() {}
 
     CAMP_HOST_DEVICE constexpr tuple_helper(Types const&... args)
@@ -129,24 +121,30 @@ namespace internal
               *this);
     }
   };
+
+  template <typename Types, typename Indices>
+  struct tag_map;
+  template <typename... Types, camp::idx_t... Indices>
+  struct tag_map<camp::list<Types...>, camp::idx_seq<Indices...>> {
+    using type = camp::list<camp::list<Types, camp::num<Indices>>...>;
+  };
 }  // namespace internal
 
 
 template <typename T, camp::idx_t I>
 using tpl_get_store = internal::tuple_storage<I, tpl_get_ret<T, I>>;
 
-template <typename TagList, typename... Elements>
-class tagged_tuple
+template <typename... Elements>
+class tuple
 {
-  using Self = tagged_tuple;
+  using Self = tuple;
   using Base = internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
-                                      camp::list<Elements...>,
-                                      TagList>;
+                                      camp::list<Elements...>>;
 
 public:
   using TList = camp::list<Elements...>;
-  using TMap = typename Base::TMap;
-  using type = tagged_tuple;
+  using TMap = typename internal::tag_map<camp::list<Elements...>, camp::make_idx_seq_t<sizeof...(Elements)>>::type;
+  using type = tuple;
 
 private:
   Base base;
@@ -173,48 +171,62 @@ private:
 
 public:
   // Constructors
-  CAMP_HOST_DEVICE constexpr tagged_tuple() = default;
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) = default;
+  CAMP_HOST_DEVICE constexpr tuple() = default;
+  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) = default;
 
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) = default;
+  CAMP_HOST_DEVICE constexpr tuple(tuple&& o) = default;
 
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) = default;
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) = default;
+  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs) = default;
+  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs) = default;
 
-  CAMP_HOST_DEVICE constexpr explicit tagged_tuple(Elements const&... rest)
+  CAMP_HOST_DEVICE constexpr explicit tuple(Elements const&... rest)
       : base{rest...}
   {
   }
 
   template <typename... RTypes>
   CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(
-      const tagged_tuple<RTypes...>& rhs)
+      const tuple<RTypes...>& rhs)
   {
     base.operator=(rhs);
     return *this;
   }
 };
+
+template <typename TagList, typename... Elements>
+class tagged_tuple : public tuple<Elements...>
+{
+  using Self = tagged_tuple;
+  using Base = tuple<Elements...>;
+
+public:
+  using TMap = typename internal::tag_map<TagList, camp::make_idx_seq_t<sizeof...(Elements)>>::type;
+  using type = tagged_tuple;
+
+public:
+  // Constructors
+  using Base::Base;
+  template <typename... RTypes>
+  CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(
+      const tuple<RTypes...>& rhs)
+  {
+    Base::operator=(rhs);
+    return *this;
+  }
+};
+
 template <>
-class tagged_tuple<camp::list<>>
+class tuple<>
 {
 public:
   using TList = camp::list<>;
-  using TMap = camp::list<>;
-  using type = tagged_tuple;
+  using TMap = TList;
+  using type = tuple;
 };
 
 template <typename... Tags, typename... Args>
 struct as_list_s<tagged_tuple<camp::list<Tags...>, Args...>> {
   using type = list<Args...>;
-};
-
-template <typename... Elements>
-struct tuple : public tagged_tuple<camp::list<Elements...>, Elements...> {
-private:
-  using Base = tagged_tuple<camp::list<Elements...>, Elements...>;
-
-public:
-  using Base::Base;
 };
 
 template <camp::idx_t i, typename T>
