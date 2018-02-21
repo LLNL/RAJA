@@ -102,7 +102,6 @@ struct CudaStatementExecutor<CudaSyncThreads, IndexCalc>{
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &, LaunchDim const &){
 
-    // Return launch dimensions of enclosed statements
     return LaunchDim();
   }
 

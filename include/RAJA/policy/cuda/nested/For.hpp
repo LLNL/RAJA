@@ -209,6 +209,37 @@ struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexC
 };
 
 
+template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Segments>
+struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, CudaIndexCalc_Terminator<Segments>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  template <typename Data>
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, int num_logical_blocks, int logical_block)
+  {
+    int len = segment_length<ArgumentId>(data);
+    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+
+    for(int i = 0;i < len;++ i){
+      data.template assign_index<ArgumentId>(*(begin+i));
+      cuda_execute_statement_list<stmt_list_t, CudaIndexCalc_Terminator<Segments>>(data, num_logical_blocks, logical_block);
+    }
+  }
+
+  template<typename Data>
+  static
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    // Return launch dimensions of enclosed statements
+    // seq_exec doesn't affect the number of threads or blocks
+    return cuda_calcdims_statement_list<stmt_list_t, CudaIndexCalc_Terminator<Segments>>(data, max_physical);
+  }
+};
+
 
 
 

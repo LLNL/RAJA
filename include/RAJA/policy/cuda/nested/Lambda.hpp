@@ -125,6 +125,33 @@ struct CudaStatementExecutor<Lambda<LoopIndex>, IndexCalc>{
 };
 
 
+template <camp::idx_t LoopIndex, typename Segments>
+struct CudaStatementExecutor<Lambda<LoopIndex>, CudaIndexCalc_Terminator<Segments>>{
+
+  template <typename Data>
+  static
+  inline
+  __device__
+  void exec(Data &data, int num_logical_blocks, int logical_block)
+
+  {
+    if(logical_block <= 0){
+      invoke_lambda<LoopIndex>(data);
+    }
+  }
+
+
+  template<typename Data>
+  static
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    return LaunchDim();
+
+  }
+
+};
+
 
 
 

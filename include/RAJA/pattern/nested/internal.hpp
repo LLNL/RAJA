@@ -86,6 +86,8 @@ using index_tuple_from_segments =
                            value_type_list_from_segments<Segments> >::type;
 
 
+
+
 template <typename Policy>
 struct StatementExecutor{};
 
@@ -323,6 +325,8 @@ void set_shmem_window_to_begin(camp::tuple<IdxTypes...> &window, camp::tuple<Seg
 
   set_shmem_window_to_begin_expanded(loop_idx{}, window, segment_tuple);
 }
+
+
 
 
 

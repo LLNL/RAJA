@@ -36,5 +36,6 @@
 #include "RAJA/policy/cuda/nested/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/nested/Sync.hpp"
 #include "RAJA/policy/cuda/nested/Tile.hpp"
+#include "RAJA/policy/cuda/nested/Thread.hpp"
 
 #endif  // closing endif for header file include guard
