@@ -71,7 +71,6 @@
 
 #if defined(RAJA_ENABLE_ROCM)
 #include "RAJA/policy/rocm.hpp"
-#include "RAJA/policy/rocm/MemUtils_ROCm.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)

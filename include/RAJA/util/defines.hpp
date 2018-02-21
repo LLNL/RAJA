@@ -57,7 +57,6 @@
 #define RAJA_DEVICE __attribute__((hc))
 #define RAJA_SUPPRESS_HD_WARN
 
-
 #else
 
 #define RAJA_HOST_DEVICE

@@ -60,6 +60,8 @@ namespace atomic
  *
  *   cuda_atomic       -- Only atomic supported in CUDA device functions
  *
+ *   rocm_atomic       -- Only atomic supported in ROCM device functions
+ *
  *   omp_atomic        -- Available (and default) when OpenMP is enabled
  *                        these are safe inside and outside of OMP parallel
  *                        regions
