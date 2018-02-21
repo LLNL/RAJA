@@ -4,7 +4,7 @@
 TEST(CampTuple, AssignCompat)
 {
   // Compatible, though different, tuples are assignable
-  camp::tuple<long long,char> t(5, 'a');
+  const camp::tuple<long long,char> t(5, 'a');
   ASSERT_EQ(camp::get<0>(t), 5);
   ASSERT_EQ(camp::get<1>(t), 'a');
 
