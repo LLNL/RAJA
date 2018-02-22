@@ -1,4 +1,5 @@
 sudo: required
+services: docker
 dist: trusty
 language: cpp
 env:
@@ -31,30 +32,24 @@ matrix:
     - LLVM_VERSION=5.0.0
     - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang-3.9
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
-    env:
-    - COMPILER=clang++-3.9.1
-    - LLVM_VERSION=3.9.1
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: clang-4.0
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++-4.0.0
     - LLVM_VERSION=4.0.0
     - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: intel-17
-    env:
-    - COMPILER=icpc
-    - TRAVIS_INSTALL_COMPILER="intel"
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: nvcc
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
-    env:
-    - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
-    - TRAVIS_INSTALL_COMPILER="nvcc"
-    - DO_TEST=no
+  # - compiler: intel-17
+  #   env:
+  #   - COMPILER=icpc
+  #   - TRAVIS_INSTALL_COMPILER="intel"
+  #   - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
+  # - compiler: nvcc
+  #   addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
+  #   env:
+  #   - COMPILER=g++-4.9
+  #   - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
+  #   - TRAVIS_INSTALL_COMPILER="nvcc"
+  #   - DO_TEST=no
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
@@ -66,25 +61,17 @@ matrix:
     - COMPILER=clang++
     - LLVM_VERSION=3.9.1
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
-  - compiler: nvcc-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
-    env:
-    - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
-    - TRAVIS_INSTALL_COMPILER="nvcc"
-    - DO_TEST=no
+  # - compiler: nvcc-debug
+  #   addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
+  #   env:
+  #   - COMPILER=g++-4.9
+  #   - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
+  #   - TRAVIS_INSTALL_COMPILER="nvcc"
+  #   - DO_TEST=no
 cache:
   directories:
   - $HOME/llvm
 before_install:
-- sudo apt-get update -qq
-- mkdir -p ${HOME}/download
-- if [[ -n "${LLVM_VERSION}" ]]; then . ./scripts/install_llvm.sh ; fi
-- CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- curl -o ${HOME}/cmake-tarball.tar.gz ${CMAKE_URL} &&
-  mkdir -p ${HOME}/cmake &&
-  tar xf ${HOME}/cmake-tarball.tar.gz -C ${HOME}/cmake --strip-components=1 &&
-  export PATH=${HOME}/cmake/bin:${PATH}
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -n "$INTEL_SERIAL_NUMBER" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -z "$INTEL_SERIAL_NUMBER" ]] ; then export DO_BUILD=no ; export DO_TEST=no ; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DEBFILE=${HOME}/download/cuda-repo.deb; fi
@@ -99,7 +86,7 @@ before_install:
   export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
-- ./scripts/travis_build_and_test.sh
+- docker run trws/raja-testing:$compiler ./scripts/travis_build_and_test.sh
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
