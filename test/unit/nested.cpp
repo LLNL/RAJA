@@ -167,13 +167,14 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 
 
 #if defined(RAJA_ENABLE_CUDA)
-/*
+
 CUDA_TEST(Nested, CudaCollapse1a)
 {
 
   using Pol = RAJA::nested::Policy<
       CudaKernel<
-        Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
+        //Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
+        Collapse<RAJA::cuda_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
 
   int *x = nullptr;
   cudaMallocManaged(&x, 3*2*5*sizeof(int));
@@ -197,6 +198,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
   cudaFree(x);
 }
 
+/*
 CUDA_TEST(Nested, CudaCollapse1b)
 {
 

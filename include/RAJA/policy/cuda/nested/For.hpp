@@ -95,6 +95,13 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
 	}
 };
 
+
+
+
+
+
+
+
 /*
  * Executor for block work sharing loop inside a Cuda Kernel.
  *
@@ -128,6 +135,12 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_exec, EnclosedStmts...>,
 		return dim;
 	}
 };
+
+
+
+
+
+
 
 
 /*
@@ -172,6 +185,8 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_threadblock_exec<max_threads>,
 		return dim;
 	}
 };
+
+
 
 
 

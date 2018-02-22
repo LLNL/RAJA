@@ -583,27 +583,19 @@ void cuda_execute_block_distribute(Data &data, int num_logical_blocks, int logic
 	auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 	using segment_t = camp::decay<decltype(segment)>;
 
+	// Store original segment for later
+	segment_t orig_segment = segment;
 
 	// Slice the segment for thread iteration
-	if(true){ //threads_per_block > 1){
-	  segment_t orig_segment = segment;
+  segment = orig_segment.slice(i, threads_per_block);
+  data.template assign_index<ArgumentId>(*segment.begin());
 
-	  segment = orig_segment.slice(i, threads_per_block);
-	  data.template assign_index<ArgumentId>(*segment.begin());
+  // execute enclosed statements
+  cuda_execute_statement_list<StmtList, IndexCalc>(data, num_logical_blocks/num_blocks, rem_logical_block);
 
+  // Replace original segment
+  segment = orig_segment;
 	
-	  // execute enclosed statements
-	  cuda_execute_statement_list<StmtList, IndexCalc>(data, num_logical_blocks/num_blocks, rem_logical_block);
-
-	  // Replace original segment
-	  segment = orig_segment;
-	}
-	else{
-	  data.template assign_index<ArgumentId>(*(segment.begin()+i));
-
-	  // execute enclosed statements
-    cuda_execute_statement_list<StmtList, IndexCalc>(data, num_logical_blocks/num_blocks, rem_logical_block);
-	}
 }
 template<camp::idx_t ArgumentId, typename StmtList, typename IndexCalc, int threads_per_block, typename Data>
 RAJA_DEVICE

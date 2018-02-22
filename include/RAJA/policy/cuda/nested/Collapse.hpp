@@ -155,6 +155,12 @@ struct CudaIndexCalc_CollapsePolicyBase {
   {
   }
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  int size() const {
+    return (int)layout.size();
+  }
+
 
   template<typename Data>
   RAJA_INLINE
@@ -183,48 +189,46 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
 
   using Base = CudaIndexCalc_CollapsePolicyBase<Args...>;
 
+  int i;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc_CollapsePolicy(SegmentTuple const &segments, LaunchDim const &) :
-    Base(segments)
+    Base(segments), i(0)
   {
-  }
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
-    return 1;
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
-    return (int)Base::layout.size();
   }
 
 
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
-  bool assignIndex(Data &data, int *, int *thread){
+  int assignBegin(Data &data, int carry){
+    i = 0;
+    return increment(data, carry);
+  }
 
-    // Compute our linear index, and strip off the thread index
-    int len = Base::layout.size();
-    int i = (*thread) % len;
-    (*thread) /= len;
+  template<typename Data>
+  RAJA_INLINE
+  RAJA_DEVICE
+  int increment(Data &data, int carry_in){
+    int len = Base::size();
+    i += carry_in;
+
+    int carry_out = i / len;
+    i = i - carry_out*len;  // i % len
 
     // Compute and assign our loop indices
     Base::assignIndex(data, i);
 
-    return true;
+    return carry_out;
   }
+
+
 };
 
 
-
+#if 0
 
 /*!
  *  Collapsing policy index calculator that maps all indices to blocks.
@@ -246,19 +250,6 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
   }
 
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
-    return (int)Base::layout.size();
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
-    return 1;
-  }
-
-
   template<typename Data>
   RAJA_INLINE
   RAJA_DEVICE
@@ -275,9 +266,12 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
     return true;
   }
 };
+#endif
 
 
 
+
+#if 0
 /*!
  *  Collapsing policy index calculator that maps all indices to threads and blocks.
  */
@@ -346,26 +340,31 @@ public CudaIndexCalc_CollapsePolicyBase<Args...>
 };
 
 
+#endif
+
+
 
 /*
  * Statement Executor for collapsing multiple segments iteration space,
  * and provides work sharing according to the collapsing execution policy.
  */
-template <typename ExecPolicy, camp::idx_t ... Args, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Collapse<ExecPolicy, ArgList<Args...>, EnclosedStmts...>, IndexCalc> {
+template <camp::idx_t ... Args, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_CollapsePolicy<ArgList<Args...>, ExecPolicy>>;
+  using collapse_policy_t = CudaIndexCalc_CollapsePolicy<ArgList<Args...>, cuda_thread_exec>;
+  using index_calc_t = ExtendCudaIndexCalc<IndexCalc, collapse_policy_t>;
 
 
   template <typename Data>
   static
   inline
   __device__
-  void exec(Data &data, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int logical_block)
   {
     // execute enclosed statements
-    cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, logical_block);
+    cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
+
   }
 
 
@@ -374,13 +373,17 @@ struct CudaStatementExecutor<Collapse<ExecPolicy, ArgList<Args...>, EnclosedStmt
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, index_calc_t>(data, max_physical);
+    // Get launch dimensions of enclosed statements
+    LaunchDim dim = cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+
+    // Append the number of threads we generate
+    collapse_policy_t cpol(data.segment_tuple, max_physical);
+    dim.threads *= cpol.size();
+
+    return dim;
   }
 
 };
-
-
 
 
 
