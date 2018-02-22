@@ -1,5 +1,5 @@
 #!/bin/bash
-
+env
 function or_die () {
     "$@"
     local status=$?
@@ -9,8 +9,8 @@ function or_die () {
     fi
 }
 
-source ~/.bashrc
-cd ${TRAVIS_BUILD_DIR}
+# source ~/.bashrc
+# cd ${TRAVIS_BUILD_DIR}
 or_die mkdir travis-build
 cd travis-build
 if [[ "$DO_BUILD" == "yes" ]] ; then
