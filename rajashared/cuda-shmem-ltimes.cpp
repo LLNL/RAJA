@@ -188,6 +188,7 @@ void runLTimesRajaCudaNested(bool debug,
 
 
 
+
 void runLTimesRajaCudaShmem(bool debug,
     Index_type num_moments,
                           Index_type num_directions,
@@ -277,8 +278,8 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  static const int tile_mom  = 25;
-  static const int tile_dir  = 80;
+  static const int tile_mom  = 16;
+  static const int tile_dir  = 64;
   static const int tile_zone = 32;
   using namespace RAJA::nested;
 
@@ -302,14 +303,10 @@ void runLTimesRajaCudaShmem(bool debug,
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
 
-                        //RAJA::nested::Tile<3, RAJA::nested::tile_fixed<tile_zone>, seq_exec,
-
                         For<3, cuda_threadblock_exec<tile_zone>,  // z
-                   			 //For<3, cuda_block_exec,
-									 				SetShmemWindow<
 
-									 				//For<3, cuda_thread_exec,  // z
-                            
+                        SetShmemWindow<
+
                             // Load Psi for this g,z
                             For<2, cuda_thread_exec, Lambda<3>>, // d
 
@@ -331,8 +328,7 @@ void runLTimesRajaCudaShmem(bool debug,
                               >
                             > // m
                           > // shmem
-                       >  // z
-
+                        >  // z
                       > //g
                     > // tile d
                   > // tile m
@@ -345,7 +341,8 @@ void runLTimesRajaCudaShmem(bool debug,
       TypedRangeSegment<IGroup>(0,num_groups),
       TypedRangeSegment<IMoment>(0,num_moments),
       TypedRangeSegment<IDirection>(0,num_directions),
-      TypedRangeSegment<IZone>(0,num_zones));
+      TypedRangeSegment<IZone>(0,num_zones),
+      ThreadPrivate<double>{});
 
 
   using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
@@ -354,8 +351,6 @@ void runLTimesRajaCudaShmem(bool debug,
   using shmem_psi_t = SharedMemory<cuda_shmem, double, tile_dir*tile_zone>;
   ShmemWindowView<shmem_psi_t, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
 
-  using shmem_phi_t = SharedMemory<cuda_shmem, double, tile_mom*tile_zone>;
-  ShmemWindowView<shmem_phi_t, ArgList<3,1>, SizeList<tile_zone, tile_mom>, decltype(segments)> shmem_phi;
 
   nested::forall(
     Pol{},
@@ -364,44 +359,44 @@ void runLTimesRajaCudaShmem(bool debug,
 
     // Lambda<0>
      // Zero out phi
-    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
       phi(nm, g, z) = 0.0;
     },
 
     // Lambda<1>
     // Original single lambda implementation
-    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
       phi(nm, g, z) += ell(nm, d) * psi(d,g,z);
     },
 
     // Lambda<2>
     // load L matrix into shmem
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
       shmem_ell(d, nm) = ell(nm, d);
     },
 
     // Lambda<3>
     // load slice of psi into shared
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
       shmem_psi(z,d) = psi(d,g,z);
     },
 
     // Lambda<4>
     // Load phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-      shmem_phi(z, nm) = phi(nm, g, z);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
+      phi_local = phi(nm, g, z);
     },
 
     // Lambda<5>
     // Compute phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-      shmem_phi(z, nm) += shmem_ell(d, nm) * shmem_psi(z,d);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
+      phi_local += shmem_ell(d, nm) * shmem_psi(z,d);
     },
 
     // Lambda<6>
     // Store phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z){
-      phi(nm, g, z) = shmem_phi(z, nm);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
+      phi(nm, g, z) = phi_local;
     }
 
   );
@@ -411,10 +406,6 @@ void runLTimesRajaCudaShmem(bool debug,
   timer.stop();
 
   printf("LTimes took %lf seconds using RAJA w/ shmem\n", timer.elapsed());
-
-//  long tc = trip_count;
-//  printf("trip_count=%ld, %lf\n", tc, (double)tc / (double)(num_directions * num_moments * num_groups * num_zones));
-
 
   // Check correctness
   if(debug){
@@ -436,9 +427,7 @@ void runLTimesRajaCudaShmem(bool debug,
 		printf("Checking result\n");
 
 
-#if 1
-		//for (IMoment m(0); m < num_moments; ++m) {
-		for (IMoment m(0); m < 1; ++m) {
+		for (IMoment m(0); m < num_moments; ++m) {
 			for (IGroup g(0); g < num_groups; ++g) {
     		for (IZone z(0); z < num_zones; ++z) {
           double total = 0.0;
@@ -447,34 +436,12 @@ void runLTimesRajaCudaShmem(bool debug,
             total += val;
           }
           if(std::abs(total-phi(m,g,z)) > 1e-9){
-	//	 	 printf("ERR g=%d, m=%d, z=%d, %e, %e\n", 
-//			 (int)*g, (int)*m, (int)*z, total, phi(m,g,z));
-            ++ errors;
+	          ++ errors;
           }
         }
       }
 			printf("m=%d (err=%ld)\n", (int)*m, (long)errors);
     }
-#else
-			for (IGroup g(0); g < num_groups; ++g) {
-    		for (IZone z(0); z < num_zones; ++z) {
-          //for (IDirection d(0); d < num_directions; ++d) {
-					for (IMoment m(0); m < num_moments; ++m) {
-            //if(psi(d, g, z) != num_moments){
-            if(phi(m, g, z) != num_directions){
-							errors ++;
-							if(errors < 10){
-								printf("mgz(%d,%d,%d) = %lf\n", (int)*m, (int)*g, (int)*z, phi(m,g,z));
-							}
-						}
-          }
-        }
-      }
-
-			printf("Errors=%ld of %ld\n", errors, (long)num_groups*num_zones*num_moments);
-			printf("Tripct=%ld of %ld\n", (long)trip_count, (long)num_groups*num_zones*num_directions*num_moments);
-			
-#endif
     if(errors == 0){
       printf("  -- no errors\n");
     }
@@ -516,7 +483,7 @@ int main(){
 
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-  runLTimesRajaCudaNested(debug, m, d, g, z); // warm up
+  runLTimesRajaCudaNested(false, m, d, g, z);
 
   runLTimesRajaCudaShmem(debug, m, d, g, z);
   runLTimesRajaCudaNested(debug, m, d, g, z);
