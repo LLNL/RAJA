@@ -10,33 +10,35 @@ env:
     - DO_TEST=yes
 matrix:
   include:
-  - compiler: gcc-4
+  - compiler: gcc49
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
-    - COMPILER=g++-4.9
+    - COMPILER=g++
+    - IMG=gcc49
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: gcc-6
+  - compiler: gcc6
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=g++-6
+    - COMPILER=g++
+    - IMG=gcc6
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: gcc-7
+  - compiler: gcc7
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
     env:
-    - COMPILER=g++-7
+    - COMPILER=g++
+    - IMG=gcc7
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: clang-5
+  - compiler: clang5
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=clang++-5.0.0
-    - LLVM_VERSION=5.0.0
-    - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
+    - COMPILER=clang++
+    - IMG=clang5
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang-4.0
+  - compiler: clang4
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=clang++-4.0.0
-    - LLVM_VERSION=4.0.0
+    - COMPILER=clang++
+    - IMG=clang4
     - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   # - compiler: intel-17
   #   env:
@@ -53,13 +55,14 @@ matrix:
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
-    - COMPILER=g++-4.9
+    - COMPILER=g++
+    - IMG=gcc49
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
-  - compiler: clang-3.9-debug
+  - compiler: clang-4-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
-    - LLVM_VERSION=3.9.1
+    - IMG=clang4
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
   # - compiler: nvcc-debug
   #   addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
@@ -86,7 +89,7 @@ before_install:
   export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
-- docker run trws/raja-testing:$compiler ./scripts/travis_build_and_test.sh
+- docker run trws/raja-testing:$IMG ./scripts/travis_build_and_test.sh
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
