@@ -320,7 +320,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "Expected an TypedIndexSet but did not get one. Are you using an "
                 "TypedIndexSet policy by mistake?");
 
-
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),

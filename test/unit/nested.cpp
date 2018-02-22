@@ -84,6 +84,8 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
   RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
+  RAJA::ReduceMin<at_v<TypeParam, 2>, RAJA::Real_type> tMin(0.0);
+  RAJA::ReduceMax<at_v<TypeParam, 2>, RAJA::Real_type> tMax(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
@@ -101,6 +103,66 @@ CUDA_TYPED_TEST_P(Nested, Basic)
     }
   }
   ASSERT_FLOAT_EQ(total, tsum.get());
+
+
+  //Check reduction
+  int stride1 = 5;
+  int arr_len = stride1*stride1; 
+
+  double *arr;
+#if defined(RAJA_ENABLE_CUDA)
+  cudaMallocManaged(&arr, arr_len*sizeof(double));
+#else
+  arr = new double[arr_len];
+#endif
+
+  for(int i=0; i<arr_len; ++i){
+    arr[i] = i;
+  }
+  
+  //set the min and max of the array
+  arr[4] = -1;
+  arr[8] = 50;
+
+  tsum.reset(0.0);
+  auto ranges2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, stride1),
+                                  RAJA::TypedRangeSegment<Idx1>(0, stride1));
+
+  RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+      // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
+      tsum += get_val(i) * 1.1 + get_val(j);
+  });    
+
+
+  RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+      // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
+      RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
+      tMin.min(arr[id]);
+      tMax.max(arr[id]);
+  });      
+
+  tMin.reset(0.0);
+  tMax.reset(0.0);
+  
+  RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+      // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
+      RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
+      tMin.min(arr[id]);
+      
+      tMax.max(arr[id]);
+  });      
+
+  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(-1,  tMin.get());
+  ASSERT_FLOAT_EQ(50, tMax.get());
+  
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaFree(arr);
+#else
+  delete[] arr;
+#endif
+
 }
 
 REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
