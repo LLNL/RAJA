@@ -193,8 +193,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment jacobiRange(1, (N + 1));
 
   using jacobiSeqNestedPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<1, RAJA::seq_exec >,
-    RAJA::nested::For<0, RAJA::seq_exec> >;
+  RAJA::nested::For<1, RAJA::seq_exec,
+    RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0>> > >;
 
   printf("RAJA: Sequential Policy - Nested ForallN \n");
   resI2 = 1;
@@ -266,8 +266,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    */
   
   using jacobiOmpNestedPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<1, RAJA::omp_parallel_for_exec >,
-  RAJA::nested::For<0, RAJA::seq_exec> >;
+      RAJA::nested::For<1, RAJA::omp_parallel_for_exec,
+        RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0> > > >;
 
   while (resI2 > tol * tol) {
     
@@ -325,8 +325,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::nested::Policy<
     RAJA::nested::CudaKernel<
-      RAJA::nested::Collapse<RAJA::cuda_threadblock_exec<56>, RAJA::nested::ArgList<1, 0>,
-        RAJA::nested::Lambda<0>
+      RAJA::nested::For<1, RAJA::cuda_threadblock_exec<32>,
+        RAJA::nested::For<0, RAJA::cuda_threadblock_exec<32>,
+          RAJA::nested::Lambda<0>
+        >
       >
     > >;
   
@@ -405,8 +407,8 @@ void computeErr(double *I, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using jacobiSeqNestedPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<1, RAJA::seq_exec >,
-    RAJA::nested::For<0, RAJA::seq_exec> >;
+    RAJA::nested::For<1, RAJA::seq_exec,
+      RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0> > > >;
 
   RAJA::nested::forall(jacobiSeqNestedPolicy{}, RAJA::make_tuple(gridRange,gridRange),
                        [=] (RAJA::Index_type ty, RAJA::Index_type tx ) {

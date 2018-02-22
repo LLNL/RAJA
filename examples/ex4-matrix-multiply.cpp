@@ -42,8 +42,8 @@
   Define number of threads in x and y dimensions of a CUDA thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-//const int CUDA_BLOCK_SIZE_X = 16;
-//const int CUDA_BLOCK_SIZE_Y = 16;
+const int CUDA_BLOCK_SIZE_X = 16;
+const int CUDA_BLOCK_SIZE_Y = 16;
 #endif
 
 
@@ -276,8 +276,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   using NESTED_EXEC_POL1 = 
     RAJA::nested::Policy< 
-       RAJA::nested::For<1, RAJA::omp_parallel_for_exec>, // row
-       RAJA::nested::For<0, RAJA::seq_exec> >;            // col
+       RAJA::nested::For<1, RAJA::omp_parallel_for_exec, // row
+         RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0> > > >;            // col
 
   RAJA::nested::forall(NESTED_EXEC_POL1{}, 
                        RAJA::make_tuple(col_range, row_range),
@@ -307,8 +307,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 
   using NESTED_EXEC_POL2 =
     RAJA::nested::Policy< 
-       RAJA::nested::For<0, RAJA::seq_exec>,                // col
-       RAJA::nested::For<1, RAJA::omp_parallel_for_exec> >; // row
+       RAJA::nested::For<0, RAJA::seq_exec,                // col
+         RAJA::nested::For<1, RAJA::omp_parallel_for_exec, RAJA::nested::Lambda<0> > > >; // row
 
   RAJA::nested::forall(NESTED_EXEC_POL2{},
                        RAJA::make_tuple(col_range, row_range),
@@ -371,7 +371,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL4 =
     RAJA::nested::Policy< 
       RAJA::nested::CudaKernel<
-        RAJA::nested::For<1, RAJA::cuda_threadblock_exec<56>,
+        RAJA::nested::For<1, RAJA::cuda_block_exec,
           RAJA::nested::For<0, RAJA::cuda_thread_exec,
             RAJA::nested::Lambda<0>
           >
@@ -408,8 +408,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL5 =
     RAJA::nested::Policy< 
       RAJA::nested::CudaKernel<
-        RAJA::nested::Collapse<RAJA::cuda_threadblock_exec<56>, RAJA::nested::ArgList<1, 0>,
-          RAJA::nested::Lambda<0>
+        RAJA::nested::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE_Y>,
+          RAJA::nested::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE_X>,
+            RAJA::nested::Lambda<0>
+          >
         >
       >
     >;
