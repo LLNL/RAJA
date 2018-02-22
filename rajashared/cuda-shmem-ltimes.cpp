@@ -278,31 +278,26 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  static const int tile_mom  = 16;
-  static const int tile_dir  = 64;
-  static const int tile_zone = 32;
+  static const int tile_mom  = 32;
+  static const int tile_dir  = 32;
+  static const int tile_zone = 128;
   using namespace RAJA::nested;
 
     using Pol = RAJA::nested::Policy<
-#if 	1
                CudaKernelAsync<
-#else
-							 CudaKernelBase<cuda_explicit_launch<false, 1, 1>,
-#endif
+
                 RAJA::nested::Tile<1, RAJA::nested::tile_fixed<tile_mom>, seq_exec,
-                  // Compute Phi
                   RAJA::nested::Tile<2, RAJA::nested::tile_fixed<tile_dir>, seq_exec,
+
                       // First, load up L matrix for each block
-#if 1 
                       SetShmemWindow<
 												For<1, cuda_thread_exec, // m
 													For<2, cuda_thread_exec, Lambda<2>> //d
 												>
                       >,
-#endif
+
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
-
                         For<3, cuda_threadblock_exec<tile_zone>,  // z
 
                         SetShmemWindow<
@@ -315,10 +310,11 @@ void runLTimesRajaCudaShmem(bool debug,
                             // Compute phi for all m's and this g,z
                             For<1, cuda_thread_exec, // m
 
-
+                              // Compute phi(m,g,z) using thread-local storage
+                              // and shared memory
                               Thread<
                                 // Load phi
-                               Lambda<4>,
+                                Lambda<4>,
 
                                 // Compute phi
                                 For<2, seq_exec, Lambda<5>> ,  // d
@@ -483,10 +479,11 @@ int main(){
 
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-  runLTimesRajaCudaNested(false, m, d, g, z);
+  //runLTimesRajaCudaNested(false, m, d, g, z);
 
   runLTimesRajaCudaShmem(debug, m, d, g, z);
-  runLTimesRajaCudaNested(debug, m, d, g, z);
+  runLTimesRajaCudaShmem(debug, m, d, g, z);
+  //runLTimesRajaCudaNested(debug, m, d, g, z);
 
 
   return 0;

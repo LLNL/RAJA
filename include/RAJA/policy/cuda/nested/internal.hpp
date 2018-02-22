@@ -188,14 +188,12 @@ struct CudaIndexCalc_Policy;
 template<camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 
-	int len;
 	int i;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) : 
-  len((camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin())),
 	i(0)
   {
   }
@@ -216,6 +214,7 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
   int increment(Data &data, int carry){
 		++ i;
 
+		int len = segment_length<ArgumentId>(data);
 		if(i >= len){
 			i = 0;
 		}
@@ -230,17 +229,6 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 		return carry;
 	}
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
-    return 1;
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
-    return 1;
-  }
 
 
 };
@@ -251,14 +239,12 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 template<camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
-  int len;
 	int i;
 
   template<typename SegmentTuple>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaIndexCalc_Policy(SegmentTuple const &segments, LaunchDim const &) :
-  len((camp::get<ArgumentId>(segments).end()-camp::get<ArgumentId>(segments).begin())),
 	i(0)
   {
 	}
@@ -275,11 +261,10 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
   RAJA_INLINE
   RAJA_DEVICE
   int increment(Data &data, int carry_in){
-		//int len = segment_length<ArgumentId>(data);
+		int len = segment_length<ArgumentId>(data);
 		i += carry_in;
 
 		int carry_out = i / len;
-		//i = i % len;
 		i = i - carry_out*len;  // i % len
 
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
@@ -288,17 +273,6 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 		return carry_out;
 	}
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalBlocks() const {
-    return 1;
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  int numLogicalThreads() const {
-    return len;
-  }
 
 
 };
