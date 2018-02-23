@@ -5,14 +5,8 @@
  *
  * \brief   Header file containing the RAJA Region API call
  *
- *          The templates for segments support the following usage pattern:
- *
  *             region<exec_policy>(loop body );
  *
- *          The former is slightly more concise.
- *
- *          IMPORTANT: Use of any of these methods requires a specialization
- *                     for the given index set type and execution policy.
  *
  ******************************************************************************
  */

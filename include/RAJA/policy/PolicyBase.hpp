@@ -43,7 +43,7 @@ enum class Policy {
   tbb
 };
 
-enum class Pattern { undefined, forall, reduce, taskgraph };
+enum class Pattern { undefined, forall, region, reduce, taskgraph };
 
 enum class Launch { undefined, sync, async };
 

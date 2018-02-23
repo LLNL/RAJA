@@ -63,6 +63,6 @@ TEST(Region, basic_Functions){
   testRegionPol<RAJA::seq_region>();
   
 #ifdef RAJA_ENABLE_OPENMP
-  testRegionPol<RAJA::omp_region>();
+  testRegionPol<RAJA::omp_parallel_region>();
 #endif  
 }

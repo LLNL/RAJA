@@ -48,7 +48,7 @@ namespace sequential
 ///
 
 struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::forall,
+                                                          Pattern::region,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
