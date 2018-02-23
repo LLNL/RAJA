@@ -54,10 +54,10 @@ namespace omp
 
 
 template <typename Func>
-RAJA_INLINE void Region_impl(const omp_region &, Func &&body)
+RAJA_INLINE void Region_impl(const omp_parallel_region &, Func &&body)
 {
 
-#pragma omp parallel 
+#pragma omp parallel
   body();
 }
 
