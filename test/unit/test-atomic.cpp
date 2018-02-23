@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -37,7 +37,14 @@ void testAtomicFunctionBasic()
   cudaDeviceSynchronize();
 
 #else
+#ifdef RAJA_ENABLE_ROCM
+  T *dest = nullptr;
+  rocmMalloc((void **)&dest, sizeof(T) * 8);
+
+  RAJA::rocmDeviceSynchronize();
+#else
   T *dest = new T[8];
+#endif
 #endif
 
 
@@ -55,7 +62,6 @@ void testAtomicFunctionBasic()
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomic::atomicAdd<AtomicPolicy>(dest + 0, (T)1);
     RAJA::atomic::atomicSub<AtomicPolicy>(dest + 1, (T)1);
-
     RAJA::atomic::atomicMin<AtomicPolicy>(dest + 2, (T)i);
     RAJA::atomic::atomicMax<AtomicPolicy>(dest + 3, (T)i);
     RAJA::atomic::atomicInc<AtomicPolicy>(dest + 4);
@@ -66,6 +72,9 @@ void testAtomicFunctionBasic()
 
 #ifdef RAJA_ENABLE_CUDA
   cudaDeviceSynchronize();
+#endif
+#ifdef RAJA_ENABLE_ROCM
+  RAJA::rocmDeviceSynchronize();
 #endif
 
   EXPECT_EQ((T)N, dest[0]);
@@ -81,7 +90,11 @@ void testAtomicFunctionBasic()
 #ifdef RAJA_ENABLE_CUDA
   cudaFree(dest);
 #else
+#ifdef RAJA_ENABLE_ROCM
+  rocmFree(dest);
+#else
   delete[] dest;
+#endif
 #endif
 }
 
@@ -117,7 +130,14 @@ void testAtomicRefBasic()
   cudaDeviceSynchronize();
 
 #else
+#ifdef RAJA_ENABLE_ROCM
+  T *dest = nullptr;
+  rocmMalloc((void **)&dest, sizeof(T) * 6);
+
+  RAJA::rocmDeviceSynchronize();
+#else
   T *dest = new T[6];
+#endif
 #endif
 
 
@@ -158,6 +178,9 @@ void testAtomicRefBasic()
 #ifdef RAJA_ENABLE_CUDA
   cudaDeviceSynchronize();
 #endif
+#ifdef RAJA_ENABLE_ROCM
+  RAJA::rocmDeviceSynchronize();
+#endif
 
   EXPECT_EQ((T)N + 1, dest[0]);
   EXPECT_EQ((T)N + 1, dest[1]);
@@ -169,7 +192,11 @@ void testAtomicRefBasic()
 #ifdef RAJA_ENABLE_CUDA
   cudaFree(dest);
 #else
+#ifdef RAJA_ENABLE_ROCM
+  rocmFree(dest);
+#else
   delete[] dest;
+#endif
 #endif
 }
 
@@ -205,8 +232,18 @@ void testAtomicViewBasic()
 
   cudaDeviceSynchronize();
 #else
+#ifdef RAJA_ENABLE_ROCM
+  T *source = nullptr;
+  rocmMalloc((void **)&source, sizeof(T) * N);
+
+  T *dest = nullptr;
+  rocmMalloc((void **)&dest, sizeof(T) * N / 2);
+
+  RAJA::rocmDeviceSynchronize();
+#else
   T *source = new T[N];
   T *dest = new T[N / 2];
+#endif
 #endif
 
   RAJA::forall<RAJA::seq_exec>(seg,
@@ -214,7 +251,6 @@ void testAtomicViewBasic()
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
-
   RAJA::View<T, RAJA::Layout<1>> sum_view(dest, N);
   auto sum_atomic_view = RAJA::make_atomic_view<AtomicPolicy>(sum_view);
 
@@ -225,12 +261,15 @@ void testAtomicViewBasic()
   });
 
   // Assign values to dest using atomic view
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
 #ifdef RAJA_ENABLE_CUDA
   cudaDeviceSynchronize();
+#endif
+#ifdef RAJA_ENABLE_ROCM
+  RAJA::rocmDeviceSynchronize();
 #endif
 
   for (RAJA::Index_type i = 0; i < N / 2; ++i) {
@@ -241,8 +280,13 @@ void testAtomicViewBasic()
   cudaFree(source);
   cudaFree(dest);
 #else
+#ifdef RAJA_ENABLE_ROCM
+  rocmFree(source);
+  rocmFree(dest);
+#else
   delete[] source;
   delete[] dest;
+#endif
 #endif
 }
 
@@ -281,9 +325,22 @@ void testAtomicLogical()
 
   cudaDeviceSynchronize();
 #else
+#ifdef RAJA_ENABLE_ROCM
+  T *dest_and = nullptr;
+  rocmMalloc((void **)&dest_and, sizeof(T) * N);
+
+  T *dest_or = nullptr;
+  rocmMalloc((void **)&dest_or, sizeof(T) * N);
+
+  T *dest_xor = nullptr;
+  rocmMalloc((void **)&dest_xor, sizeof(T) * N);
+
+  RAJA::rocmDeviceSynchronize();
+#else
   T *dest_and = new T[N];
   T *dest_or = new T[N];
   T *dest_xor = new T[N];
+#endif
 #endif
 
   RAJA::forall<RAJA::seq_exec>(seg_bytes, [=](RAJA::Index_type i) {
@@ -305,6 +362,9 @@ void testAtomicLogical()
 #ifdef RAJA_ENABLE_CUDA
   cudaDeviceSynchronize();
 #endif
+#ifdef RAJA_ENABLE_ROCM
+  RAJA::rocmDeviceSynchronize();
+#endif
 
   for (RAJA::Index_type i = 0; i < N; ++i) {
     EXPECT_EQ((T)0x00, dest_and[i]);
@@ -317,9 +377,15 @@ void testAtomicLogical()
   cudaFree(dest_or);
   cudaFree(dest_xor);
 #else
+#ifdef RAJA_ENABLE_ROCM
+  rocmFree(dest_and);
+  rocmFree(dest_or);
+  rocmFree(dest_xor);
+#else
   delete[] dest_and;
   delete[] dest_or;
   delete[] dest_xor;
+#endif
 #endif
 }
 
@@ -396,7 +462,33 @@ CUDA_TEST(Atomic, basic_CUDA_Logical)
   testAtomicLogicalPol<RAJA::cuda_exec<256>, RAJA::atomic::cuda_atomic>();
 }
 
+#endif
 
+#ifdef RAJA_ENABLE_ROCM
+TEST(Atomic, basic_ROCM_AtomicFunction)
+{
+  testAtomicFunctionPol<RAJA::rocm_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicFunctionPol<RAJA::rocm_exec<256>, RAJA::atomic::rocm_atomic>();
+}
+
+TEST(Atomic, basic_ROCM_AtomicRef)
+{
+  testAtomicRefPol<RAJA::rocm_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicRefPol<RAJA::rocm_exec<256>, RAJA::atomic::rocm_atomic>();
+}
+
+TEST(Atomic, basic_ROCM_AtomicView)
+{
+  testAtomicViewPol<RAJA::rocm_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicViewPol<RAJA::rocm_exec<256>, RAJA::atomic::rocm_atomic>();
+}
+
+
+TEST(Atomic, basic_ROCM_Logical)
+{
+  testAtomicLogicalPol<RAJA::rocm_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicLogicalPol<RAJA::rocm_exec<256>, RAJA::atomic::rocm_atomic>();
+}
 #endif
 
 TEST(Atomic, basic_seq_AtomicFunction)
