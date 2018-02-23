@@ -87,6 +87,7 @@
 // in the files included below.
 //
 #include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/region.hpp"
 
 
 //
