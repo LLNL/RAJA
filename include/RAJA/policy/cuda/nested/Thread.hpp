@@ -25,57 +25,54 @@ namespace internal
 
 
 
-template <typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Thread<EnclosedStmts...>, IndexCalc> {
+template <typename Data, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, Thread<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
+  using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, index_calc_t>;
+  enclosed_stmts_t enclosed_stmts;
 
 
+  IndexCalc index_calc;
 
-
-  template <typename Data>
-  static
-  RAJA_DEVICE
   inline
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  RAJA_DEVICE
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
 
-    if(logical_block <= 0){
-      // Get physical parameters
-      LaunchDim max_physical(gridDim.x, blockDim.x);
-
-      // Compute logical dimensions
-      IndexCalc index_calc(data.segment_tuple, max_physical);
-
+    if(block_carry <= 0){
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
       bool done = index_calc.assignBegin(data, threadIdx.x);
 
       while(!done) {
 
-        // Since we are consuming everything in IndexCalc, start over
-        using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
-
         // execute enclosed statements
-        cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
+        enclosed_stmts.exec(data, num_logical_blocks, block_carry);
 
-
-        // increment to next thread
         done = index_calc.increment(data, blockDim.x);
 
       }
+
     }
-	
+
 	}
 
 
-  template<typename Data>
-  static
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+
   }
 };
 

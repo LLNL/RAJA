@@ -29,7 +29,7 @@
 
 
 #include "RAJA/policy/cuda/nested/internal.hpp"
-#include "RAJA/policy/cuda/nested/Collapse.hpp"
+//#include "RAJA/policy/cuda/nested/Collapse.hpp"
 #include "RAJA/policy/cuda/nested/CudaKernel.hpp"
 #include "RAJA/policy/cuda/nested/For.hpp"
 #include "RAJA/policy/cuda/nested/Lambda.hpp"

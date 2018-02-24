@@ -66,28 +66,35 @@ namespace internal{
  * Executor for thread work sharing loop inside a Cuda Kernel.
  *
  */
-template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>, IndexCalc> {
+template <typename Data, camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, For<ArgumentId, cuda_thread_exec, EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec>>;
 
-  template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, index_calc_t>;
+  enclosed_stmts_t enclosed_stmts;
+
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
     // execute enclosed statements
-		cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
-  template<typename Data>
-  static
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
   RAJA_INLINE
 	LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 		
-		LaunchDim dim = cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+		LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 		
 		dim.threads *= segment_length<ArgumentId>(data);
 		
@@ -106,32 +113,39 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_thread_exec, EnclosedStmts...>
  * Executor for block work sharing loop inside a Cuda Kernel.
  *
  */
-template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, cuda_block_exec, EnclosedStmts...>, IndexCalc> {
+template <typename Data, camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, For<ArgumentId, cuda_block_exec, EnclosedStmts...>, IndexCalc> : public CudaBlockLoop<ArgumentId, 1>{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+
+
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
-	
-		// Distribute work over blocks using 1 thread per block
-		cuda_execute_block_loop<ArgumentId, stmt_list_t, IndexCalc, 1>(data, num_logical_blocks, logical_block);
-
+    execBlockLoop(*this, data, num_logical_blocks, block_carry);
   }
 
-  template<typename Data>
-  static
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    int len = segment_length<ArgumentId>(data);
+    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+  }
+
+
   RAJA_INLINE
 	LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
-		
-		LaunchDim dim = cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
-		
+
+    LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
+
 		dim.blocks *= segment_length<ArgumentId>(data);
-		
+
 		return dim;
 	}
 };
@@ -147,41 +161,47 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_block_exec, EnclosedStmts...>,
  * Executor for thread and block work sharing loop inside a Cuda Kernel.
  *
  */
-template <camp::idx_t ArgumentId, size_t max_threads, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, cuda_threadblock_exec<max_threads>, EnclosedStmts...>, IndexCalc> {
+template <typename Data, camp::idx_t ArgumentId, size_t max_threads, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, For<ArgumentId, cuda_threadblock_exec<max_threads>, EnclosedStmts...>, IndexCalc> : public CudaBlockLoop<ArgumentId, max_threads> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec>>;
 
-  
-	template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, index_calc_t>;
+  enclosed_stmts_t enclosed_stmts;
+
+
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
-		// Distribute work over blocks using max_threads thread per block
-		cuda_execute_block_loop<ArgumentId, stmt_list_t, index_calc_t, max_threads>(data, num_logical_blocks, logical_block);
-		
+    execBlockLoop(*this, data, num_logical_blocks, block_carry);
   }
 
-  template<typename Data>
-  static
-  RAJA_INLINE
-	LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
-		
-		LaunchDim dim = cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
-		
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    int len = segment_length<ArgumentId>(data);
+    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+  }
+
+	RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
+
 		// Compute how many blocks
 		int len = segment_length<ArgumentId>(data);
 		int num_blocks = len / max_threads;
 		if(num_blocks*max_threads < len){
 			num_blocks ++;
 		}
-		
+
 		dim.blocks *= num_blocks;
 		dim.threads *= (int)max_threads;
-		
+
 		return dim;
 	}
 };
@@ -197,61 +217,76 @@ struct CudaStatementExecutor<For<ArgumentId, cuda_threadblock_exec<max_threads>,
  *
  * This is specialized since it need to execute the loop immediately.
  */
-template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, IndexCalc> {
+template <typename Data, camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, For<ArgumentId, seq_exec, EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using index_calc_t = ExtendCudaIndexCalc<IndexCalc,CudaIndexCalc_Policy<ArgumentId, seq_exec>>;
 
-  template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, index_calc_t>;
+  enclosed_stmts_t enclosed_stmts;
+
   inline
-	RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  RAJA_DEVICE
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
-		cuda_execute_statement_list<stmt_list_t, index_calc_t>(data, num_logical_blocks, logical_block);
+    // execute enclosed statements
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
-  template<typename Data>
-  static
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-		// seq_exec doesn't affect the number of threads or blocks
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+
   }
 };
 
 
-template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Segments>
-struct CudaStatementExecutor<For<ArgumentId, seq_exec, EnclosedStmts...>, CudaIndexCalc_Terminator<Segments>> {
+template <typename Data, camp::idx_t ArgumentId, typename... EnclosedStmts, typename Segments>
+struct CudaStatementExecutor<Data, For<ArgumentId, seq_exec, EnclosedStmts...>, CudaIndexCalc_Terminator<Segments>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, CudaIndexCalc_Terminator<Segments>>;
+  enclosed_stmts_t enclosed_stmts;
+
   inline
   RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
     int len = segment_length<ArgumentId>(data);
     auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
 
     for(int i = 0;i < len;++ i){
       data.template assign_index<ArgumentId>(*(begin+i));
-      cuda_execute_statement_list<stmt_list_t, CudaIndexCalc_Terminator<Segments>>(data, num_logical_blocks, logical_block);
+
+      // execute enclosed statements
+      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
     }
   }
 
-  template<typename Data>
-  static
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-    // seq_exec doesn't affect the number of threads or blocks
-    return cuda_calcdims_statement_list<stmt_list_t, CudaIndexCalc_Terminator<Segments>>(data, max_physical);
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+
   }
 };
 

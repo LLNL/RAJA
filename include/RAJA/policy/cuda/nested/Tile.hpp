@@ -26,16 +26,17 @@ namespace internal{
 
 
 
-template <camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, IndexCalc> {
+template <typename Data, camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  template <typename Data>
-  static
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+
   inline
   __device__
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -56,7 +57,7 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
       segment = orig_segment.slice(i, chunk_size);
 
       // execute enclosed statements
-      cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);
+      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
     }
 
 
@@ -65,34 +66,32 @@ struct CudaStatementExecutor<Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
   }
 
 
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
 
-  template<typename Data>
-  static
+
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-
-    // Pull out iterators
-    auto const &seg = camp::get<ArgumentId>(data.segment_tuple);
-    auto begin = seg.begin();
-    auto end = seg.end();
-
-    // compute trip count
-    auto len = end - begin;
-
-    // privatize data
+    // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
     data_t private_data = data;
 
-    // Restrict the size of the segment based on tiling chunk size
-    auto chunk_size = TPol::chunk_size;
-    if(chunk_size < len){
-      camp::get<ArgumentId>(private_data.segment_tuple) = seg.slice(0, chunk_size);
-    }
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, TPol::chunk_size);
+
+    // compute dimensions of children with segment restricted to tile
+    LaunchDim dim = enclosed_stmts.calculateDimensions(private_data, max_physical);
 
 
-    // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(private_data, max_physical);
+    return dim;
   }
 
 };

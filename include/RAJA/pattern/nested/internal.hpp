@@ -109,11 +109,16 @@ struct LoopData {
   const BodiesTuple bodies;
   index_tuple_t index_tuple;
 
+  int shmem_window_start[segment_tuple_t::TList::size];
+
   RAJA_INLINE
   constexpr
   LoopData(SegmentTuple const &s, Bodies const & ... b)
       : segment_tuple{s}, bodies{b...}
   {
+    for(size_t i = 0;i < segment_tuple_t::TList::size; ++ i){
+      shmem_window_start[i] = 0;
+    }
   }
 
   template <typename PolicyType0, typename SegmentTuple0, typename IndexTuple0, typename ... Bodies0>
@@ -195,7 +200,7 @@ void invoke_lambda(Data &data){
 template<camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-auto segment_length(Data &data) -> 
+auto segment_length(Data const &data) ->
 	typename camp::at_v<typename Data::segment_tuple_t::TList, ArgumentId>::iterator::difference_type
 {
 	return camp::get<ArgumentId>(data.segment_tuple).end() - 

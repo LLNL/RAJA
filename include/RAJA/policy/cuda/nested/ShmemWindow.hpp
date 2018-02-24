@@ -21,14 +21,17 @@ namespace internal
 
 
 
-template <typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
+template <typename Data, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
 
-  template <typename Data, camp::idx_t... RangeInts>
-  static
+  IndexCalc index_calc;
+
+  template <camp::idx_t... RangeInts>
   RAJA_DEVICE
   inline
   void setWindow(Data &data, camp::idx_seq<RangeInts...> const &){
@@ -37,14 +40,13 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
     // Assign each index to the window
     VarOps::ignore_args((shmem_window[RangeInts] =
+        //data.shmem_window_start[RangeInts])...);
         RAJA::convertIndex<int>(camp::get<RangeInts>(data.index_tuple)))...);
   }
 
-  template <typename Data>
-  static
-  RAJA_DEVICE
   inline
-  void exec(Data &data, int num_logical_blocks, int logical_block)
+  __device__
+  void exec(Data &data, int num_logical_blocks, int block_carry)
   {
 
     // make sure all threads are done with current window
@@ -56,17 +58,12 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 
       data.assign_begin_all();
 
-      // Get physical parameters
-      LaunchDim max_physical(gridDim.x, blockDim.x);
-
       // Compute logical dimensions
-      IndexCalc index_calc(data.segment_tuple, max_physical);
-
       index_calc.assignBegin(data, 0);
 
       // Divine the type of the index tuple in wrap.data
-      using loop_data_t = camp::decay<Data>;
-      using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
+      //using loop_data_t = camp::decay<Data>;
+      //using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
 
       // Set the shared memory tuple with the beginning of our segments
       using IndexRange = camp::make_idx_seq_t<Data::index_tuple_t::TList::size>;
@@ -78,18 +75,23 @@ struct CudaStatementExecutor<SetShmemWindow<EnclosedStmts...>, IndexCalc> {
 		__syncthreads();
 
 		// execute enclosed statements
-    cuda_execute_statement_list<stmt_list_t, IndexCalc>(data, num_logical_blocks, logical_block);
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
 	
 	}
 
 
-  template<typename Data>
-  static
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
 
-    // Return launch dimensions of enclosed statements
-    return cuda_calcdims_statement_list<stmt_list_t, IndexCalc>(data, max_physical);
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+
   }
 };
 

@@ -164,12 +164,13 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 {
   using data_t = camp::decay<Data>;
   data_t private_data = data;
-  //auto private_data = privatize_bodies(data);
 
-  using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
- 
-	// Execute the statement list, using CUDA specific executors
-	cuda_execute_statement_list<StmtList, index_calc_t>(private_data, num_logical_blocks, -1);
+  // Instantiate an executor object
+	using executor_t = cuda_statement_list_executor_t<StmtList, Data>;
+	executor_t executor;
+
+	// execute the the object
+	executor.exec(private_data, num_logical_blocks, -1);
 
 }
 
@@ -182,6 +183,7 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
+  using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType = CudaKernelBase<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
@@ -191,7 +193,7 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
   {
 
     int shmem = RAJA::detail::getSharedMemorySize();
-    //printf("Shared memory size=%d\n", (int)shmem);
+    printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;
 
@@ -219,17 +221,22 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
 
     // Privatize the LoopData, using make_launch_body to setup reductions
     auto cuda_data = RAJA::cuda::make_launch_body(max_physical.blocks, max_physical.threads, shmem, stream, data);
-    //printf("Data size=%d\n", (int)sizeof(cuda_data));
+    printf("Data size=%d\n", (int)sizeof(cuda_data));
 
 
     // Compute logical dimensions
     using SegmentTuple = decltype(data.segment_tuple);
-    LaunchDim logical_dims =
-        cuda_calculate_logical_dimensions<data_t, EnclosedStmts...>(data, max_physical);
+
+    // Instantiate an executor object
+    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
+    executor_t executor;
+
+    // Compute logical dimensions
+    LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
 
-//    printf("Logical dims: %d blocks, %d threads\n",
-//        (int)logical_dims.blocks, (int)logical_dims.threads);
+    printf("Logical dims: %d blocks, %d threads\n",
+        (int)logical_dims.blocks, (int)logical_dims.threads);
 
 
 
@@ -243,8 +250,8 @@ struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-//    printf("Launch dims: %d blocks, %d threads\n",
-//        (int)launch_dims.blocks, (int)launch_dims.threads);
+    printf("Launch dims: %d blocks, %d threads\n",
+        (int)launch_dims.blocks, (int)launch_dims.threads);
 
 
 
