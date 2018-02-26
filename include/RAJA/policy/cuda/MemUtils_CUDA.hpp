@@ -51,6 +51,12 @@ namespace RAJA
 namespace cuda
 {
 
+namespace detail
+{
+  int get_num_sm();
+}
+
+
 //! Allocator for pinned memory for use in basic_mempool
 struct PinnedAllocator {
 

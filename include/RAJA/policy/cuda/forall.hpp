@@ -68,7 +68,7 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-dim3 getGridDim(size_t len, dim3 blockDim)
+unsigned getGridDim(size_t len, dim3 blockDim)
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
@@ -76,6 +76,7 @@ dim3 getGridDim(size_t len, dim3 blockDim)
 
   return gridSize;
 }
+
 
 /*!
  ******************************************************************************
@@ -90,6 +91,13 @@ __device__ __forceinline__ unsigned int getGlobalIdx_1D_1D()
   unsigned int threadId = blockId * blockDim.x + threadIdx.x;
   return threadId;
 }
+
+__device__ __forceinline__ unsigned int getGlobalIdx_1D_1D(unsigned int blockId)
+{
+  unsigned int threadId = blockId * blockDim.x + threadIdx.x;
+  return threadId;
+}
+
 __device__ __forceinline__ unsigned int getGlobalNumThreads_1D_1D()
 {
   unsigned int numThreads = blockDim.x * gridDim.x;
@@ -130,7 +138,7 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
 /*!
  ******************************************************************************
  *
- * \brief  CUDA kernal forall template for indirection array.
+ * \brief  CUDA kernel forall template for indirection array.
  *
  ******************************************************************************
  */
@@ -141,14 +149,54 @@ template <size_t BlockSize,
 __launch_bounds__(BlockSize, 1) __global__
     void forall_cuda_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
+                            unsigned int num_logical_blocks,
                             IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto &body = privatizer.get_priv();
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  if (ii < length) {
-    body(idx[ii]);
+
+  unsigned int logical_block = (unsigned int)blockIdx.x;
+  while(logical_block < num_logical_blocks){
+    auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D(logical_block));
+    if (ii < length) {
+      body(idx[ii]);
+    }
+
+    logical_block += gridDim.x;
+  }
+}
+
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  CUDA kernel forall with occupancy calculator
+ *
+ ******************************************************************************
+ */
+template <typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType>
+__global__
+    void forall_cuda_kernel_occ(LOOP_BODY loop_body,
+                            const Iterator idx,
+                            unsigned int num_logical_blocks,
+                            IndexType length)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto &body = privatizer.get_priv();
+
+  unsigned int logical_block = (unsigned int)blockIdx.x;
+  while(logical_block < num_logical_blocks){
+    auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D(logical_block));
+    if (ii < length) {
+      body(idx[ii]);
+    }
+
+    logical_block += gridDim.x;
   }
 }
 
@@ -162,8 +210,8 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
+template <typename Iterable, typename LoopBody, size_t blockSize, bool Async>
+RAJA_INLINE void forall_impl(cuda_exec<blockSize, Async>,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
@@ -172,18 +220,92 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
   auto len = std::distance(begin, end);
 
-  if (len > 0 && BlockSize > 0) {
-
-    auto gridSize = impl::getGridDim(len, BlockSize);
+  if (len > 0 && blockSize > 0) {
 
     RAJA_FT_BEGIN;
 
     cudaStream_t stream = 0;
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
+    // Compute number of logical blocks
+    auto num_logical_blocks = impl::getGridDim(len, blockSize);
+
+    // get number of blocks per SM, given the function and block size
+    auto &launch_func = impl::forall_cuda_kernel<blockSize, decltype(begin), decltype(RAJA::cuda::make_launch_body(
+        1, blockSize, 0, stream, std::forward<LoopBody>(loop_body))), decltype(len)>;
+    int blocks_per_sm = -1;
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &blocks_per_sm, launch_func, blockSize, 0);
+
+    // Now get how many SM's there are, and compute how many blocks we can run
+    int num_sm = RAJA::cuda::detail::get_num_sm();
+    int gridSize = num_sm * blocks_per_sm;
+
+    // Restrict actual number of blocks, if it exceeds our iteration space
+    gridSize = (num_logical_blocks < gridSize) ? num_logical_blocks : gridSize;
+
+    launch_func<<<gridSize, blockSize, 0, stream>>>(
         RAJA::cuda::make_launch_body(
-            gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+            gridSize, blockSize, 0, stream, std::forward<LoopBody>(loop_body)),
         std::move(begin),
+        num_logical_blocks,
+        len);
+    RAJA::cuda::peekAtLastError();
+
+    RAJA::cuda::launch(stream);
+    if (!Async) RAJA::cuda::synchronize(stream);
+
+    RAJA_FT_END;
+  }
+}
+
+
+
+//
+////////////////////////////////////////////////////////////////////////
+//
+// Function templates for CUDA execution over iterables.
+//
+////////////////////////////////////////////////////////////////////////
+//
+
+template <typename Iterable, typename LoopBody, bool Async>
+RAJA_INLINE void forall_impl(cuda_occ_exec<Async>,
+                             Iterable&& iter,
+                             LoopBody&& loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+
+  auto len = std::distance(begin, end);
+
+  if (len > 0) {
+
+
+    RAJA_FT_BEGIN;
+
+    cudaStream_t stream = 0;
+
+
+    // Ask occupancy calculator for optimal size
+    int gridSize=-1, blockSize=-1;
+    auto &launch_func = impl::forall_cuda_kernel_occ<decltype(begin), decltype(std::forward<LoopBody>(loop_body)), decltype(len)>;
+    cudaOccupancyMaxPotentialBlockSize(
+        &gridSize, &blockSize, launch_func, 0);
+
+
+    // Compute number of logical blocks
+    auto num_logical_blocks = impl::getGridDim(len, blockSize);
+
+    // Restrict actual number of blocks, if it exceeds our iteration space
+    gridSize = (num_logical_blocks < gridSize) ? num_logical_blocks : gridSize;
+
+
+    // Launch
+    impl::forall_cuda_kernel_occ<<<gridSize, blockSize, 0, stream>>>(
+        RAJA::cuda::make_launch_body(
+            gridSize, blockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+        std::move(begin),
+        num_logical_blocks,
         len);
     RAJA::cuda::peekAtLastError();
 
@@ -257,6 +379,27 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
 
   if (!Async) RAJA::cuda::synchronize();
 }
+
+
+template <typename LoopBody,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_occ_exec<Async>>,
+                             const TypedIndexSet<SegmentTypes...>& iset,
+                             LoopBody&& loop_body)
+{
+  int num_seg = iset.getNumSegments();
+  for (int isi = 0; isi < num_seg; ++isi) {
+    iset.segmentCall(isi,
+                     detail::CallForall(),
+                     cuda_occ_exec<true>(),
+                     loop_body);
+  }  // iterate over segments of index set
+
+  if (!Async) RAJA::cuda::synchronize();
+}
+
+
 
 }  // closing brace for cuda namespace
 

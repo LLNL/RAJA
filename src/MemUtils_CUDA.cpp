@@ -40,6 +40,32 @@ namespace cuda
 
 namespace detail
 {
+
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+// Function to get the number of SM's on the current device
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+
+int get_num_sm(){
+
+  static int num_sm = -1;
+
+  if(num_sm < 0){
+    int cur_device = -1;
+    cudaGetDevice(&cur_device);
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, cur_device);
+    num_sm = prop.multiProcessorCount;
+  }
+
+  return num_sm;
+}
+
+
+
 //
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +85,8 @@ cudaInfo tl_status;
 
 //! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
+
+
 
 }  // closing brace for detail namespace
 
