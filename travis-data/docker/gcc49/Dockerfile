@@ -1,4 +1,4 @@
-FROM trws/raja-testing:ubuntu-clang-base
+FROM rajaorg/compiler:ubuntu-clang-base
 
 LABEL maintainer="Tom Scogland <scogland1@llnl.gov>"
 RUN \
