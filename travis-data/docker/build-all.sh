@@ -1,6 +1,10 @@
 #!/usr/bin/env zsh
 
-dockerfiles=(**/Dockerfile)
+if (( $# == 0 )) ; then
+  dockerfiles=(**/Dockerfile)
+else
+  dockerfiles=($@)
+fi
 
 all_images="${compiler_images} ubuntu-clang-base"
 
@@ -23,4 +27,4 @@ done
 
 for img in $all_images ; do
   # docker push rajaorg/compiler:$img
-done
+done 
