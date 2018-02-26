@@ -194,7 +194,7 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::nested::For<1, RAJA::loop_exec >,
     RAJA::nested::For<0, RAJA::loop_exec> >;
 
-  RAJA::nested::forall(initialPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::nested::forall<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
 
       int id = tx + grid.nx * ty;
@@ -225,7 +225,7 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
   RAJA::nested::For<1, RAJA::loop_exec >,
     RAJA::nested::For<0, RAJA::loop_exec> >;
   
-  RAJA::nested::forall(initialPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::nested::forall<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
                          
       int id = tx + ty * grid.nx;
@@ -243,7 +243,7 @@ template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
 
-  RAJA::nested::forall(fdNestedPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::nested::forall<fdNestedPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] RAJA_HOST_DEVICE (RAJA::Index_type tx, RAJA::Index_type ty) {
       //                  
       //Coefficients for fourth order stencil

@@ -293,8 +293,7 @@ void runLTimesRajaNested(bool debug,
   using shmem_ell_t = SharedMemory<seq_shmem, double, 1024>;
   shmem_ell_t foo;
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       segments,
 
@@ -469,8 +468,7 @@ void runLTimesRajaNestedShmem(bool debug,
   ShmemWindowView<shmem_phi_t, ArgList<0, 2, 3>, SizeList<tile_moments, tile_groups, tile_zones>, decltype(segments)> shmem_phi;
 
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       segments,
 

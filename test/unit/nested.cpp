@@ -92,7 +92,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
   auto v = this->view;
   using namespace RAJA::nested;
-  RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::nested::forall<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
     v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
@@ -129,13 +129,13 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   auto ranges2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, stride1),
                                   RAJA::TypedRangeSegment<Idx1>(0, stride1));
 
-  RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::nested::forall<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       tsum += get_val(i) * 1.1 + get_val(j);
   });    
 
 
-  RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::nested::forall<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(arr[id]);
@@ -145,7 +145,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   tMin.reset(0.0);
   tMax.reset(0.0);
   
-  RAJA::nested::forall(Pol{}, ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::nested::forall<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(arr[id]);
@@ -244,8 +244,7 @@ CUDA_TEST(Nested, CudaCollapse1a)
   cudaMallocManaged(&x, 3*2*5*sizeof(int));
 
 
-  RAJA::nested::forall(
-      Pol{},
+  RAJA::nested::forall<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
@@ -276,8 +275,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
   int *x = nullptr;
   cudaMallocManaged(&x, 3*2*5*sizeof(int));
 
-  RAJA::nested::forall(
-      Pol{},
+  RAJA::nested::forall<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
@@ -308,8 +306,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 //  int *x = nullptr;
 //  cudaMallocManaged(&x, 3*2*5*sizeof(int));
 //
-//  RAJA::nested::forall(
-//      Pol{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
 //                       RAJA::RangeSegment(0, 2),
 //                       RAJA::RangeSegment(0, 5)),
@@ -346,7 +343,7 @@ CUDA_TEST(Nested, CudaCollapse2)
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
 
   int N = 41;
-  RAJA::nested::forall(Pol{},
+  RAJA::nested::forall<Pol>(
                        RAJA::make_tuple(RAJA::RangeSegment(1, N),
                                         RAJA::RangeSegment(1, N)),
                        [=] RAJA_DEVICE (Index_type i, Index_type j) {
@@ -379,8 +376,7 @@ CUDA_TEST(Nested, CudaReduceA)
 
   RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 
-  RAJA::nested::forall(
-      Pol{},
+  RAJA::nested::forall<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
@@ -411,8 +407,7 @@ CUDA_TEST(Nested, CudaReduceB)
 
   RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 
-  RAJA::nested::forall(
-      Pol{},
+  RAJA::nested::forall<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
@@ -441,8 +436,7 @@ CUDA_TEST(Nested, CudaReduceB)
 //
 //  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
 //
-//  RAJA::nested::forall(
-//      Pol{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
 //                       RAJA::RangeSegment(0, 2),
 //                       RAJA::RangeSegment(0, 5)),
@@ -471,15 +465,13 @@ CUDA_TEST(Nested, CudaReduceB)
 //  double *ptr = nullptr;
 //  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
 //
-//  RAJA::nested::forall(
-//      Pol{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
 //      [=] RAJA_HOST_DEVICE (Index_type i) {
 //        ptr[i] = 0.0;
 //       });
 //
-//  RAJA::nested::forall(
-//      Pol{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(first, last)),
 //      [=] RAJA_HOST_DEVICE (Index_type i) {
 //        ptr[i] = 1.0;
@@ -524,15 +516,13 @@ CUDA_TEST(Nested, CudaReduceB)
 //  double *ptr = nullptr;
 //  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
 //
-//  RAJA::nested::forall(
-//      PolA{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
 //      [=] RAJA_HOST_DEVICE (Index_type i) {
 //        ptr[i] = 0.0;
 //       });
 //
-//  RAJA::nested::forall(
-//      PolB{},
+//  RAJA::nested::forall<Pol>(
 //      RAJA::make_tuple(RAJA::RangeSegment(first, last),
 //                       RAJA::RangeSegment(0, 16),
 //                       RAJA::RangeSegment(0, 32)),
@@ -586,8 +576,7 @@ TEST(Nested, Shmem1){
   ShmemWindowView<shmem_t, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)> shmem;
 
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       loop_segments,
 
@@ -631,8 +620,7 @@ TEST(Nested, FissionFusion){
     y[i] = 0;
   }
 
-  nested::forall(
-      Pol_Fission{},
+  nested::forall<Pol_Fission>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -646,8 +634,7 @@ TEST(Nested, FissionFusion){
   );
 
 
-  nested::forall(
-      Pol_Fusion{},
+  nested::forall<Pol_Fusion>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -693,8 +680,7 @@ TEST(Nested, Tile){
     x[i] = 0;
   }
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -732,8 +718,7 @@ TEST(Nested, CollapseSeq){
     x[i] = 0;
   }
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -766,8 +751,7 @@ TEST(Nested, Collapse2)
         Lambda<0>
       > >;
 
-  RAJA::nested::forall(
-      Pol{},
+  RAJA::nested::forall<Pol>(
       RAJA::make_tuple(
           RAJA::RangeSegment(0, N),
           RAJA::RangeSegment(0, M)),
@@ -803,8 +787,7 @@ TEST(Nested, Collapse3)
        Lambda<0>
         > >;
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -843,8 +826,7 @@ TEST(Nested, Collapse4)
          Lambda<0>
           > >;
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -887,8 +869,7 @@ TEST(Nested, Collapse5)
         RAJA::nested::For<2, RAJA::seq_exec, Lambda<0> >
         > >;
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -933,8 +914,7 @@ TEST(Nested, Collapse6)
       > >;
 
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -973,8 +953,7 @@ TEST(Nested, Collapse7)
           >
         > >;
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -1019,8 +998,7 @@ TEST(Nested, Collapse8)
           RAJA::nested::For<3, RAJA::seq_exec, Lambda<0> >
           > >;
 
-  RAJA::nested::forall(
-        Pol{},
+  RAJA::nested::forall<Pol>(
         RAJA::make_tuple(
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
@@ -1074,8 +1052,7 @@ TEST(Nested, Collapse8)
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N)),
 //
@@ -1109,8 +1086,7 @@ TEST(Nested, Collapse8)
 //
 //  RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N)),
 //
@@ -1144,8 +1120,7 @@ CUDA_TEST(Nested, CudaExec1a){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeStrideSegment(0,N,2)),
 
@@ -1179,8 +1154,7 @@ CUDA_TEST(Nested, CudaExec1ab){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeStrideSegment(0,N,2)),
 
@@ -1214,8 +1188,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeStrideSegment(0,N,2)),
 
@@ -1248,8 +1221,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N)),
 //
@@ -1291,8 +1263,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0,N)),
 //
@@ -1347,8 +1318,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      segments,
 //
@@ -1412,8 +1382,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 //  ShmemWindowView<shmem_t, ArgList<0>, SizeList<16>, decltype(segments)> shmem;
 //
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      segments,
 //
@@ -1494,8 +1463,7 @@ CUDA_TEST(Nested, CudaExec1ac){
 //  ShmemWindowView<shmem_t, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)> shmem2;
 //
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      segments,
 //
@@ -1568,8 +1536,7 @@ CUDA_TEST(Nested, CudaExec_1threadexec){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -1604,8 +1571,7 @@ CUDA_TEST(Nested, CudaExec_1blockexec){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N)),
 
@@ -1640,8 +1606,7 @@ CUDA_TEST(Nested, CudaExec_1threadblockexec){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N)),
 
@@ -1678,8 +1643,7 @@ CUDA_TEST(Nested, CudaExec_2threadexec){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
@@ -1713,8 +1677,7 @@ CUDA_TEST(Nested, CudaExec_2threadexec){
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 //
@@ -1754,8 +1717,7 @@ CUDA_TEST(Nested, CudaExec_2threadexec){
 //
 //  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 //
-//  nested::forall(
-//      Pol{},
+//  nested::forall<Pol>(
 //
 //      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0,N)),
 //
@@ -1792,8 +1754,7 @@ CUDA_TEST(Nested, CudaExec_tile1threadexec){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       RAJA::make_tuple(RangeSegment(0,N)),
 

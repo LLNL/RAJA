@@ -253,7 +253,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                             >
                           > >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL{},
+  RAJA::nested::forall<NESTED_EXEC_POL>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -279,7 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        RAJA::nested::For<1, RAJA::omp_parallel_for_exec, // row
          RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0> > > >;            // col
 
-  RAJA::nested::forall(NESTED_EXEC_POL1{}, 
+  RAJA::nested::forall<NESTED_EXEC_POL1>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -310,7 +310,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        RAJA::nested::For<0, RAJA::seq_exec,                // col
          RAJA::nested::For<1, RAJA::omp_parallel_for_exec, RAJA::nested::Lambda<0> > > >; // row
 
-  RAJA::nested::forall(NESTED_EXEC_POL2{},
+  RAJA::nested::forall<NESTED_EXEC_POL2>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
   
@@ -340,7 +340,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             > >;
 
 
-  RAJA::nested::forall(NESTED_EXEC_POL3{},
+  RAJA::nested::forall<NESTED_EXEC_POL3>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
  
@@ -379,7 +379,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL4{},
+  RAJA::nested::forall<NESTED_EXEC_POL4>(
                        RAJA::make_tuple(col_range, row_range),
                        [=] RAJA_DEVICE (int col, int row) {
 
@@ -416,7 +416,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL5{},
+  RAJA::nested::forall<NESTED_EXEC_POL5>(
                        RAJA::make_tuple(col_range, row_range), 
                        [=] RAJA_DEVICE (int col, int row) {
 

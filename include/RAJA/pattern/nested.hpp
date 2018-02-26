@@ -67,10 +67,9 @@ template <camp::idx_t ... ArgumentId>
 struct ArgList{};
 
 
-template <typename Pol, typename SegmentTuple, typename ... Bodies>
-RAJA_INLINE void forall(Pol const &, SegmentTuple &&segments, Bodies && ... bodies)
+template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
+RAJA_INLINE void forall(SegmentTuple &&segments, Bodies && ... bodies)
 {
-  using PolicyType = camp::decay<Pol>;
   detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept

@@ -120,8 +120,7 @@ void runLTimesRajaCudaNested(bool debug,
       >>;
 
 
-  nested::forall(
-      Pol{},
+  nested::forall<Pol>(
 
       camp::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
           TypedRangeSegment<IDirection>(0, num_directions),
@@ -348,8 +347,7 @@ void runLTimesRajaCudaShmem(bool debug,
   ShmemWindowView<shmem_psi_t, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
 
 
-  nested::forall(
-    Pol{},
+  nested::forall<Pol>(
 
     segments,
 

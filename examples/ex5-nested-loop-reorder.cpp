@@ -60,11 +60,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::nested::Policy< 
-                        RAJA::nested::For<2, RAJA::seq_exec>,
-                        RAJA::nested::For<1, RAJA::seq_exec>,
-                        RAJA::nested::For<0, RAJA::seq_exec> >;
+                        RAJA::nested::For<2, RAJA::seq_exec,
+                        RAJA::nested::For<1, RAJA::seq_exec,
+                        RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0>> > > >;
 
-  RAJA::nested::forall(KJI_EXECPOL{},
+  RAJA::nested::forall<KJI_EXECPOL>(
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
@@ -77,11 +77,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using JIK_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::For<1, RAJA::seq_exec>,
-                        RAJA::nested::For<0, RAJA::seq_exec>,
-                        RAJA::nested::For<2, RAJA::seq_exec> >;
+                        RAJA::nested::For<1, RAJA::seq_exec,
+                        RAJA::nested::For<0, RAJA::seq_exec,
+                        RAJA::nested::For<2, RAJA::seq_exec, RAJA::nested::Lambda<0>> > >>;
 
-  RAJA::nested::forall(JIK_EXECPOL{},
+  RAJA::nested::forall<JIK_EXECPOL>(
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
@@ -94,11 +94,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using IKJ_EXECPOL = RAJA::nested::Policy<
-                        RAJA::nested::For<0, RAJA::seq_exec>,
-                        RAJA::nested::For<2, RAJA::seq_exec>,
-                        RAJA::nested::For<1, RAJA::seq_exec> >;
+                        RAJA::nested::For<0, RAJA::seq_exec,
+                        RAJA::nested::For<2, RAJA::seq_exec,
+                        RAJA::nested::For<1, RAJA::seq_exec, RAJA::nested::Lambda<0>> > > >;
 
-  RAJA::nested::forall(IKJ_EXECPOL{},
+  RAJA::nested::forall<IKJ_EXECPOL>(
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) {
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
@@ -111,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // types/order do not match the types/order of the strongly-typed nested::For.
 //----------------------------------------------------------------------------//
 
-  RAJA::nested::forall(IKJ_EXECPOL{},
+  RAJA::nested::forall<IKJ_EXECPOL>(
                        RAJA::make_tuple(IRange, JRange, KRange),
     [=] (JIDX i, IIDX j, KIDX k) {
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
