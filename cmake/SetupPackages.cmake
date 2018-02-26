@@ -23,12 +23,6 @@ if (ENABLE_OPENMP)
   endif()
 endif()
 
-#if (ENABLE_CUDA)
-#  blt_register_library(
-#    NAME cub
-#    INCLUDES ${PROJECT_SOURCE_DIR}/include/cub)
-#endif ()
-
 if (ENABLE_TBB)
   find_package(TBB)
   if(TBB_FOUND)

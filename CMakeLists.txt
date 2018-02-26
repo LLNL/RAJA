@@ -94,7 +94,6 @@ if (NOT RAJA_LOADED)
     set (raja_depends
       ${raja_depends}
       cuda)
-    #cub)
   endif ()
 
   if (ENABLE_CHAI)
