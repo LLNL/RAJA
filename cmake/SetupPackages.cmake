@@ -23,20 +23,11 @@ if (ENABLE_OPENMP)
   endif()
 endif()
 
-if (ENABLE_CUDA)
-  if (ENABLE_CUB)
-    find_package(CUB)
-    if (CUB_FOUND)
-      blt_register_library(
-        NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
-    else()
-      message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
-  Please set CUB_DIR for better scan performance.")
-      set(ENABLE_CUB Off)
-    endif()
-  endif()
-endif ()
+#if (ENABLE_CUDA)
+#  blt_register_library(
+#    NAME cub
+#    INCLUDES ${PROJECT_SOURCE_DIR}/include/cub)
+#endif ()
 
 if (ENABLE_TBB)
   find_package(TBB)
