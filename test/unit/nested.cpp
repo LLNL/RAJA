@@ -26,6 +26,8 @@
 using RAJA::Index_type;
 using RAJA::View;
 using RAJA::Layout;
+using RAJA::nested::Lambda;
+using RAJA::nested::ArgList;
 
 using layout_2d = Layout<2, RAJA::Index_type>;
 using view_2d = View<Index_type, layout_2d>;
