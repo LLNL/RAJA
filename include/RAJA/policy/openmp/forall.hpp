@@ -67,8 +67,8 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-
-  RAJA::Region<RAJA::omp_parallel_region>([&](){
+    
+  RAJA::Region<RAJA::omp_parallel_region>([=, &iter](){
 
       using RAJA::internal::thread_privatize;
       auto body = thread_privatize(loop_body);
