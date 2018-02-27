@@ -112,7 +112,6 @@ struct LoopData {
   int shmem_window_start[segment_tuple_t::TList::size];
 
   RAJA_INLINE
-  constexpr
   LoopData(SegmentTuple const &s, Bodies const & ... b)
       : segment_tuple{s}, bodies{b...}
   {
