@@ -37,16 +37,8 @@
 #include <iterator>
 #include <type_traits>
 
-#if defined(RAJA_ENABLE_CUB)
 #include "cub/device/device_scan.cuh"
 #include "cub/util_allocator.cuh"
-#else
-#include <thrust/device_ptr.h>
-#include <thrust/execution_policy.h>
-#include <thrust/functional.h>
-#include <thrust/scan.h>
-#include <thrust/system/cuda/execution_policy.h>
-#endif
 
 namespace RAJA
 {
@@ -66,7 +58,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        Function binary_op)
 {
   cudaStream_t stream = 0;
-#if defined(RAJA_ENABLE_CUB)
+
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -92,10 +84,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                                               stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
-#else
-  ::thrust::inclusive_scan(
-      ::thrust::cuda::par.on(stream), begin, end, begin, binary_op);
-#endif
+
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 }
@@ -116,7 +105,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        T init)
 {
   cudaStream_t stream = 0;
-#if defined(RAJA_ENABLE_CUB)
+
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -144,10 +133,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                                               stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
-#else
-  ::thrust::exclusive_scan(
-      ::thrust::cuda::par.on(stream), begin, end, begin, init, binary_op);
-#endif
+
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 }
@@ -168,7 +154,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                Function binary_op)
 {
   cudaStream_t stream = 0;
-#if defined(RAJA_ENABLE_CUB)
+
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -184,10 +170,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
-#else
-  ::thrust::inclusive_scan(
-      ::thrust::cuda::par.on(stream), begin, end, out, binary_op);
-#endif
+
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 }
@@ -210,7 +193,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                T init)
 {
   cudaStream_t stream = 0;
-#if defined(RAJA_ENABLE_CUB)
+
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -238,10 +221,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                                               stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
-#else
-  ::thrust::exclusive_scan(
-      ::thrust::cuda::par.on(stream), begin, end, out, init, binary_op);
-#endif
+
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 }
