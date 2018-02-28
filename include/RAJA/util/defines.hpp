@@ -52,7 +52,8 @@
 #endif
 
 #else
-#if defined(RAJA_ENABLE_ROCM) && (__KALMAR_ACCELERATOR__ == 1)
+//#if defined(RAJA_ENABLE_ROCM) && (__KALMAR_ACCELERATOR__ == 1)
+#if defined(RAJA_ENABLE_ROCM)
 #define RAJA_HOST_DEVICE __attribute__((cpu)) __attribute__((hc))
 #define RAJA_DEVICE __attribute__((hc))
 #define RAJA_SUPPRESS_HD_WARN

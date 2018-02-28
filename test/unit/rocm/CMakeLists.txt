@@ -22,9 +22,9 @@
 #  NAME test-rocm-scan
 #  SOURCES test-scan.cpp)
 
-#raja_add_test(
-#  NAME test-rocm-reduce-sum
-#  SOURCES test-reduce-sum.cpp)
+raja_add_test(
+  NAME test-rocm-reduce-sum
+  SOURCES test-reduce-sum.cpp)
 
 #raja_add_test(
 #  NAME test-rocm-reduce-min
@@ -38,9 +38,9 @@
 #  NAME test-rocm-reduce-max
 #  SOURCES test-reduce-max.cpp)
 
-#raja_add_test(
-#  NAME test-rocm-forall
-#  SOURCES test-forall.cpp)
+raja_add_test(
+  NAME test-rocm-forall
+  SOURCES test-forall.cpp)
 
 #raja_add_test(
 #  NAME test-rocm-nested-strided

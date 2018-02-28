@@ -82,7 +82,7 @@ rocmError_t rocmMallocManaged(void ** ptr, size_t nbytes, int device)
 //           visible from all GPUs
 // flag = 2, coherent, host resident, but with host address space pointer
     hc::accelerator acc;  // default device for now
-    *ptr = hc::am_alloc(nbytes,acc,1);
+    *ptr = hc::am_alloc(nbytes,acc,2);
     return rocmPeekAtLastError();
 }
 

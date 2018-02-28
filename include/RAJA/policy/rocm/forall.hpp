@@ -214,7 +214,8 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
               *launch_ptr = launch_info;
            }
            const auto global = idx.global[0];
-           loop_body(global);  
+           if(global < len)
+             loop_body(std::move(begin)[global]);  
       }).wait();
 
     RAJA::rocm::launch(stream);
@@ -232,7 +233,7 @@ RAJA_INLINE void forall_impl(rocm_exec<BlockSize, Async>,
 ////////////////////////////////////////////////////////////////////////
 //
 // Function templates for ROCM execution over iterables for within
-// and device kernel.  Called from RAJA::nested::*
+// a device kernel.  Called from RAJA::nested::*
 //
 ////////////////////////////////////////////////////////////////////////
 //
