@@ -2,5 +2,5 @@
 	path = blt
 	url = https://github.com/LLNL/blt.git
 [submodule "include/cub"]
-	path = include/cub
+	path = tpl/cub
 	url = https://github.com/NVlabs/cub.git

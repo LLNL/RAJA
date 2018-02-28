@@ -37,8 +37,8 @@
 #include <iterator>
 #include <type_traits>
 
-#include "cub/cub/device/device_scan.cuh"
-#include "cub/cub/util_allocator.cuh"
+#include "cub/device/device_scan.cuh"
+#include "cub/util_allocator.cuh"
 
 namespace RAJA
 {
