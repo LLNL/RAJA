@@ -46,7 +46,7 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   RAJA_INLINE
   void operator()(InIndexType i)
   {
-    Base::data.template assign_index<ArgumentId>(i);
+    Base::data.template assign_offset<ArgumentId>(i);
     Base::exec();
   }
 };
@@ -67,8 +67,11 @@ struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
     // Create a wrapper, just in case forall_impl needs to thread_privatize
     ForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
 
+    auto len = segment_length<ArgumentId>(data);
+    using len_t = decltype(len);
+
     forall_impl(ExecPolicy{},
-                camp::get<ArgumentId>(data.segment_tuple),
+                TypedRangeSegment<len_t>(0, len),
                 for_wrapper);
 
   }

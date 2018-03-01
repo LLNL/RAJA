@@ -34,17 +34,14 @@ struct StatementExecutor<Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts..
   RAJA_INLINE
   void exec(Data &data)
   {
-    auto b0 = std::begin(camp::get<Arg0>(data.segment_tuple));
-    auto b1 = std::begin(camp::get<Arg1>(data.segment_tuple));
-
-    auto e0 = std::end(camp::get<Arg0>(data.segment_tuple));
-    auto e1 = std::end(camp::get<Arg1>(data.segment_tuple));
+    auto len0 = segment_length<Arg0>(data);
+    auto len1 = segment_length<Arg1>(data);
 
     // Skip a level
-    for (auto i0 = b0; i0 < e0; ++i0) {
-      data.template assign_index<Arg0>(*i0);
-      for (auto i1 = b1; i1 < e1; ++i1) {
-        data.template assign_index<Arg1>(*i1);
+    for (auto i0 = 0; i0 < len0; ++i0) {
+      data.template assign_offset<Arg0>(i0);
+      for (auto i1 = 0; i1 < len1; ++i1) {
+        data.template assign_offset<Arg1>(i1);
 
         execute_statement_list<camp::list<EnclosedStmts...>>(data);
       }

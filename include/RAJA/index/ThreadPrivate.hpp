@@ -37,6 +37,39 @@
 namespace RAJA
 {
 
+
+
+
+template <typename Type>
+class thread_private_iterator
+{
+public:
+  using value_type = Type;
+  using difference_type = Type;
+  using pointer = Type *;
+  using reference = Type &;
+  using iterator_category = std::random_access_iterator_tag;
+
+  template<typename T>
+  RAJA_HOST_DEVICE constexpr T &operator[](T &rhs) const
+  {
+    return rhs;
+  }
+
+  template<typename T>
+  RAJA_HOST_DEVICE constexpr T const &operator[](T const &rhs) const
+  {
+    return rhs;
+  }
+
+  RAJA_HOST_DEVICE constexpr value_type operator*() const {
+    return value_type{};
+  }
+
+};
+
+
+
 /*!
  ******************************************************************************
  *
@@ -56,28 +89,30 @@ namespace RAJA
  */
 
 
+
 template <typename StorageT>
 struct ThreadPrivate {
 
   //! the underlying iterator type (this is bogus, to make it look like a segment)
-  using iterator = Iterators::numeric_iterator<StorageT, StorageT>;
+  using iterator = thread_private_iterator<StorageT>;
   //! the underlying value_type type
   /*!
    * this corresponds to the template parameter
    */
   using value_type = StorageT;
+  using difference_type = StorageT;
 
   //! obtain an iterator to the beginning of this ThreadPrivate
   /*!
    * \return an iterator corresponding to the beginning of the Segment
    */
-  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return iterator{0}; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return iterator{}; }
 
   //! obtain an iterator to the end of this ThreadPrivate
   /*!
    * \return an iterator corresponding to the end of the Segment
    */
-  RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return iterator{0}; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return iterator{}; }
 
   //! obtain the size of this ThreadPrivate
   /*!
@@ -97,7 +132,7 @@ struct ThreadPrivate {
   }
 
   //! equality comparison
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(ThreadPrivate const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(ThreadPrivate const&) const
   {
     return false;
   }

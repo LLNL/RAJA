@@ -68,8 +68,7 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
     // Assign the beginning index to the index_tuple for proper use
     // in shmem windows
-    camp::get<ArgumentId>(Base::data.index_tuple) =
-        *camp::get<ArgumentId>(Base::data.segment_tuple).begin();
+    camp::get<ArgumentId>(Base::data.offset_tuple) = 0;
 
     // Execute enclosed statements
     Base::exec();
@@ -161,7 +160,10 @@ struct IterableTiler {
     using std::distance;
     dist = it.end() - it.begin(); //distance(begin(it), end(it));
     num_blocks = dist / block_size;
-    if (dist % block_size) num_blocks += 1;
+    //if (dist % block_size) num_blocks += 1;
+    if(dist - num_blocks*block_size > 0){
+      num_blocks += 1;
+    }
   }
 
   RAJA_HOST_DEVICE

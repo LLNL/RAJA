@@ -264,10 +264,9 @@ struct CudaStatementExecutor<Data, For<ArgumentId, seq_exec, EnclosedStmts...>, 
   void exec(Data &data, int num_logical_blocks, int block_carry)
   {
     int len = segment_length<ArgumentId>(data);
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
 
     for(int i = 0;i < len;++ i){
-      data.template assign_index<ArgumentId>(*(begin+i));
+      data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
       enclosed_stmts.exec(data, num_logical_blocks, block_carry);

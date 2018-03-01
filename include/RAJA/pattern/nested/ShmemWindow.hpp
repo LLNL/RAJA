@@ -137,7 +137,7 @@ struct ShmemWindowView<ShmemT, ArgList<Args...>, SizeList<Sizes...>, camp::tuple
 			return shmem[lin];
 
 #else
-      auto shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
+			index_tuple_t const *shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
       return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
 
 #endif
@@ -170,13 +170,14 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 //      printf("Setting shmem window %p\n", shmem_window);
 
       // Set the window by copying the current index_tuple to the shared location
-      *shmem_window = data.index_tuple;
+      *shmem_window = data.get_begin_index_tuple(); //data.offset_tuple;
 
       // Privatize to invoke copy ctors
-      loop_data_t private_data = data;
+      //loop_data_t private_data = data;
 
       // Invoke the enclosed statements
-      execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+      //execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+      execute_statement_list<camp::list<EnclosedStmts...>>(data);
     }
     else{
       // No shared memory setup, so this becomes a NOP

@@ -187,18 +187,14 @@ struct CudaIndexCalc_Policy;
 
 template<camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
-
 	int i;
-
-
 	
 	template<typename Data>
 	RAJA_INLINE
 	RAJA_DEVICE
 	int assignBegin(Data &data, int carry){
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    data.template assign_index<ArgumentId>(*begin);
-		i = 0;
+    data.template assign_offset<ArgumentId>(0);
+    i = 0;
 		return carry;
 	}
 	
@@ -216,9 +212,7 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 			carry = 0;
 		}
     
-		
-		auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    data.template assign_index<ArgumentId>(*(begin+i));
+    data.template assign_offset<ArgumentId>(i);
 		
 		return carry;
 	}
@@ -254,8 +248,7 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 		int carry_out = i / len;
 		i = i - carry_out*len;  // i % len
 
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    data.template assign_index<ArgumentId>(*(begin+i));
+    data.template assign_offset<ArgumentId>(i);
 
 		return carry_out;
 	}
@@ -598,7 +591,7 @@ struct CudaBlockLoop {
 
       // Slice the segment for thread iteration
       segment = orig_segment.slice(block_i*threads_per_block, threads_per_block);
-      data.template assign_index<ArgumentId>(*segment.begin());
+      data.template assign_offset<ArgumentId>(0);
       //data.shmem_window_start[ArgumentId] = RAJA::convertIndex<int>(*segment.begin());
 
       // execute enclosed statements

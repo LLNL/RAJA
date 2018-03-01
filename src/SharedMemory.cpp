@@ -47,14 +47,14 @@
  * This is controlled with the startSharedMemorySetup and
  * finishSharedMemorySetup functions
  */
-static bool shared_memory_setup_enabled = false;
+bool RAJA::detail::shared_memory::setup_enabled = false;
 
 
 /*!
  * Pointer to a index tuple (for nested::forall) that contains the
  * shared memory window offsets
  */
-static void *shared_memory_window_tuple = nullptr;
+void *RAJA::detail::shared_memory::window_tuple = nullptr;
 
 
 /*!
@@ -62,14 +62,14 @@ static void *shared_memory_window_tuple = nullptr;
  *
  * This is currently used to tell CUDA how much dynamic shared memory we need
  */
-static size_t shared_memory_total_bytes = 0;
-static size_t shared_memory_window_bytes = 0;
+size_t RAJA::detail::shared_memory::total_bytes = 0;
+size_t RAJA::detail::shared_memory::window_bytes = 0;
 
 /*! Tracks shared memory objects and their offsets into shared memory
  *
  * The offset is currently only used to point into CUDA dynamic shared memory
  */
-static std::map<void *, size_t> shared_memory_objects;
+std::map<void *, size_t> RAJA::detail::shared_memory::objects;
 
 
 
@@ -97,17 +97,15 @@ static std::map<void *, size_t> shared_memory_objects;
  *
  */
 void RAJA::detail::startSharedMemorySetup(void *window_tuple, size_t tuple_size){
-  shared_memory_setup_enabled = true;
-  shared_memory_window_tuple = window_tuple;
-  shared_memory_total_bytes = tuple_size;
-  shared_memory_window_bytes = tuple_size;
-  shared_memory_objects.clear();
+  RAJA::detail::shared_memory::setup_enabled = true;
+  RAJA::detail::shared_memory::window_tuple = window_tuple;
+  RAJA::detail::shared_memory::total_bytes = tuple_size;
+  RAJA::detail::shared_memory::window_bytes = tuple_size;
+  RAJA::detail::shared_memory::objects.clear();
 }
 
 
-void *RAJA::detail::getSharedMemoryWindow(){
-  return shared_memory_window_tuple;
-}
+
 
 /*!
  * Registers a shared memory object, and it's size requirement
@@ -120,19 +118,19 @@ void *RAJA::detail::getSharedMemoryWindow(){
 size_t RAJA::detail::registerSharedMemoryObject(void *object, size_t shmem_size){
 
   // look up object
-  auto iter = shared_memory_objects.find(object);
+  auto iter = RAJA::detail::shared_memory::objects.find(object);
 
   // if object is not registered, set aside some more shmem for it
-  if(iter == shared_memory_objects.end()){
+  if(iter == RAJA::detail::shared_memory::objects.end()){
 
     // Only bother with the registration if we are doing shmem setup
-    if(!shared_memory_setup_enabled){
+    if(!RAJA::detail::shared_memory::setup_enabled){
       return 0;
     }
 
-    size_t offset = shared_memory_total_bytes;
-    shared_memory_total_bytes += shmem_size;
-    shared_memory_objects[object] = offset;
+    size_t offset = RAJA::detail::shared_memory::total_bytes;
+    RAJA::detail::shared_memory::total_bytes += shmem_size;
+    RAJA::detail::shared_memory::objects[object] = offset;
     return offset;
   }
 
@@ -149,7 +147,7 @@ size_t RAJA::detail::registerSharedMemoryObject(void *object, size_t shmem_size)
  * for CUDA, or other backend.
  */
 void RAJA::detail::finishSharedMemorySetup(){
-  shared_memory_setup_enabled = false;
+  RAJA::detail::shared_memory::setup_enabled = false;
 }
 
 /*!
@@ -159,12 +157,12 @@ void RAJA::detail::finishSharedMemorySetup(){
  *
  */
 size_t RAJA::detail::getSharedMemorySize(){
-  if(shared_memory_window_bytes == shared_memory_total_bytes){
+  if(RAJA::detail::shared_memory::window_bytes == RAJA::detail::shared_memory::total_bytes){
     // no shared memory was requested, so don't allocate space for the
     // shmem window
     return 0;
   }
-  return shared_memory_total_bytes;
+  return RAJA::detail::shared_memory::total_bytes;
 }
 
 

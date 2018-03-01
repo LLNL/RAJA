@@ -38,10 +38,12 @@ struct CudaStatementExecutor<Data, SetShmemWindow<EnclosedStmts...>, IndexCalc> 
     // get shmem window
     extern __shared__ int shmem_window[];
 
+    // get the index value tuple
+    auto index_tuple = data.get_begin_index_tuple();
+
     // Assign each index to the window
     VarOps::ignore_args((shmem_window[RangeInts] =
-        //data.shmem_window_start[RangeInts])...);
-        RAJA::convertIndex<int>(camp::get<RangeInts>(data.index_tuple)))...);
+        RAJA::convertIndex<int>(camp::get<RangeInts>(index_tuple)))...);
   }
 
   inline
@@ -61,9 +63,6 @@ struct CudaStatementExecutor<Data, SetShmemWindow<EnclosedStmts...>, IndexCalc> 
       // Compute logical dimensions
       index_calc.assignBegin(data, 0);
 
-      // Divine the type of the index tuple in wrap.data
-      //using loop_data_t = camp::decay<Data>;
-      //using index_tuple_t = camp::decay<typename loop_data_t::index_tuple_t>;
 
       // Set the shared memory tuple with the beginning of our segments
       using IndexRange = camp::make_idx_seq_t<Data::index_tuple_t::TList::size>;

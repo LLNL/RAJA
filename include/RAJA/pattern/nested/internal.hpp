@@ -71,6 +71,24 @@ struct ForTraitBase : public ForBase {
 
 
 template <typename Iterator>
+struct iterable_difftype_getter {
+  using type = typename Iterator::iterator::difference_type;
+};
+
+template <typename Segments>
+using difftype_list_from_segments =
+    typename camp::transform<iterable_difftype_getter, Segments>::type;
+
+
+template <typename Segments>
+using difftype_tuple_from_segments =
+    typename camp::apply_l<camp::lambda<camp::tuple>,
+    difftype_list_from_segments<Segments> >::type;
+
+
+
+
+template <typename Iterator>
 struct iterable_value_type_getter {
   using type = typename Iterator::iterator::value_type;
 };
@@ -92,13 +110,14 @@ template <typename Policy>
 struct StatementExecutor{};
 
 
-template <typename PolicyType, typename SegmentTuple, typename IndexTuple, typename ... Bodies>
+template <typename PolicyType, typename SegmentTuple,typename ... Bodies>
 struct LoopData {
 
   using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
 
-  //using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
-  using index_tuple_t = camp::decay<IndexTuple>;
+  using offset_tuple_t = difftype_tuple_from_segments<typename SegmentTuple::TList>;
+
+  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
 
   using policy_t = PolicyType;
 
@@ -107,7 +126,7 @@ struct LoopData {
 
   using BodiesTuple = camp::tuple<Bodies...> ;
   const BodiesTuple bodies;
-  index_tuple_t index_tuple;
+  offset_tuple_t offset_tuple;
 
   int shmem_window_start[segment_tuple_t::TList::size];
 
@@ -118,24 +137,24 @@ struct LoopData {
     for(size_t i = 0;i < segment_tuple_t::TList::size; ++ i){
       shmem_window_start[i] = 0;
     }
+    assign_begin_all();
   }
 
-  template <typename PolicyType0, typename SegmentTuple0, typename IndexTuple0, typename ... Bodies0>
+  template <typename PolicyType0, typename SegmentTuple0, typename ... Bodies0>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  LoopData(LoopData<PolicyType0, SegmentTuple0, IndexTuple0, Bodies0...> &c)
-      : segment_tuple{c.segment_tuple}, bodies{c.bodies}, index_tuple{c.index_tuple}
+  LoopData(LoopData<PolicyType0, SegmentTuple0, Bodies0...> &c)
+      : segment_tuple{c.segment_tuple}, bodies{c.bodies}, offset_tuple{c.offset_tuple}
   {
   }
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  void assign_index(IndexT const &i)
+  void assign_offset(IndexT const &i)
   {
-    camp::get<Idx>(index_tuple) = i;
-       // camp::tuple_element_t<Idx, index_tuple_t>{i};
+    camp::get<Idx>(offset_tuple) = i;
   }
 
 
@@ -144,7 +163,7 @@ struct LoopData {
   RAJA_INLINE
   int assign_begin()
   {
-    camp::get<Idx>(index_tuple) = *(camp::get<Idx>(segment_tuple).begin());
+    camp::get<Idx>(offset_tuple) = 0;
     return 0;
   }
 
@@ -161,39 +180,48 @@ struct LoopData {
   RAJA_INLINE
   void assign_begin_all()
   {
-    assign_begin_all_expanded(camp::make_idx_seq_t<index_tuple_t::TList::size>{});
-
+    assign_begin_all_expanded(camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
   }
+
+
+
+  template <camp::idx_t ... Idx>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_begin_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple( (*camp::get<Idx>(segment_tuple).begin())... );
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_begin_index_tuple() const
+  {
+    return get_begin_index_tuple_expanded(camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
+  }
+
 };
 
 
-template<typename Data>
-struct LoopData_Privatizer_Bodies;
-
-template <typename PolicyType, typename SegmentTuple, typename IndexTuple, typename ... Bodies>
-struct LoopData_Privatizer_Bodies<LoopData<PolicyType, SegmentTuple, IndexTuple, Bodies...>>{
-
-  using type = LoopData<PolicyType, camp::decay<SegmentTuple> &, camp::decay<IndexTuple> &, camp::decay<Bodies>...>;
-  //using type = LoopData<PolicyType, camp::decay<SegmentTuple> , camp::decay<IndexTuple> , camp::decay<Bodies>...>;
-
-};
 
 
-template<typename Data>
+RAJA_SUPPRESS_HD_WARN
+template <camp::idx_t LoopIndex, camp::idx_t ... Idx, typename Data>
 RAJA_HOST_DEVICE
-auto privatize_bodies(Data &data) ->
-  typename LoopData_Privatizer_Bodies<Data>::type
+RAJA_INLINE
+void invoke_lambda_expanded(camp::idx_seq<Idx...> const &, Data &data)
 {
-  return LoopData_Privatizer_Bodies<Data>::type(data);
+  camp::get<LoopIndex>(data.bodies)(
+            (camp::get<Idx>(data.segment_tuple).begin()[camp::get<Idx>(data.offset_tuple)] )...
+      );
 }
-
 
 
 template<camp::idx_t LoopIndex, typename Data>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 void invoke_lambda(Data &data){
-  camp::invoke(data.index_tuple, camp::get<LoopIndex>(data.bodies));
+  invoke_lambda_expanded<LoopIndex>(camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{}, data);
 }
 
 template<camp::idx_t ArgumentId, typename Data>
@@ -317,7 +345,7 @@ RAJA_INLINE
 RAJA_HOST_DEVICE
 void set_shmem_window_to_begin_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
   VarOps::ignore_args(
-      (camp::get<Seq>(window) = *camp::get<Seq>(segment_tuple).begin())...
+      (camp::get<Seq>(window) = camp::get<Seq>(segment_tuple).begin()[0])...
       );
 }
 

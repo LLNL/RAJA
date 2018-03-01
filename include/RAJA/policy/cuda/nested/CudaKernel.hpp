@@ -108,11 +108,12 @@ struct cuda_explicit_launch{
  * CUDA kernel launch policy where the number of physical blocks and threads
  * are determined by the CUDA occupancy calculator.
  */
-template <bool async0>
+template <int num_threads0, bool async0>
 struct cuda_occ_calc_launch{
 
   static constexpr bool async = async0;
 
+  static constexpr int num_threads = num_threads0;
 
   template<typename Func>
   RAJA_INLINE
@@ -135,7 +136,7 @@ struct cuda_occ_calc_launch{
  *
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct CudaKernelBase : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
+struct CudaKernelExt : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
 };
 
 
@@ -145,10 +146,10 @@ struct CudaKernelBase : public internal::Statement<cuda_exec<0>, EnclosedStmts..
  *
  */
 template <typename... EnclosedStmts>
-using CudaKernel = CudaKernelBase<cuda_occ_calc_launch<false>, EnclosedStmts...>;
+using CudaKernel = CudaKernelExt<cuda_occ_calc_launch<256, false>, EnclosedStmts...>;
 
 template <typename... EnclosedStmts>
-using CudaKernelAsync = CudaKernelBase<cuda_occ_calc_launch<true>, EnclosedStmts...>;
+using CudaKernelAsync = CudaKernelExt<cuda_occ_calc_launch<256, true>, EnclosedStmts...>;
 
 
 namespace internal
@@ -181,10 +182,10 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
  * Specialization that launches CUDA kernels for nested::forall from host code
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct StatementExecutor<CudaKernelBase<LaunchConfig, EnclosedStmts...>> {
+struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using StatementType = CudaKernelBase<LaunchConfig, EnclosedStmts...>;
+  using StatementType = CudaKernelExt<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
   static
