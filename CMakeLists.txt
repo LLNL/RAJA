@@ -45,7 +45,6 @@ if (NOT RAJA_LOADED)
   option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
-  option(ENABLE_CUB "Use cub for scans using CUDA" On)
   option(ENABLE_TESTS "Build tests" On)
   option(ENABLE_EXAMPLES "Build simple examples" On)
   option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
@@ -97,14 +96,6 @@ if (NOT RAJA_LOADED)
       cuda)
   endif ()
 
-  if (ENABLE_CUDA)
-    if (ENABLE_CUB)
-      set (raja_depends
-        ${raja_depends}
-        cub)
-    endif ()
-  endif ()
-
   if (ENABLE_CHAI)
     set (raja_depends
       ${raja_depends}
@@ -135,9 +126,11 @@ if (NOT RAJA_LOADED)
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
     $<INSTALL_INTERFACE:include>)
 
   install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
 
   install(FILES
     ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
