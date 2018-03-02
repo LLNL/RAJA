@@ -1776,3 +1776,48 @@ CUDA_TEST(Nested, CudaExec_tile1threadexec){
 }
 
 #endif // CUDA
+
+
+
+TEST(Nested, Hyperplane_seq){
+
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)4;
+
+    // Loop Fusion
+    using Pol = nested::Policy<
+            Hyperplane<0, seq_exec, ArgList<1>, seq_exec,
+              Lambda<0>
+            >
+          >;
+
+
+    RAJA::ReduceSum<seq_reduce, long> trip_count(0);
+
+
+    nested::forall<Pol>(
+
+        RAJA::make_tuple(TypedRangeSegment<int>(0,N), TypedRangeSegment<int>(0,N)),
+
+        [=] (int i, int j){
+
+            printf("%d, %d\n", i, j);
+
+            trip_count += 1;
+
+        }
+    );
+
+    long result = (long)trip_count;
+    printf("result=%ld\n", result);
+
+    ASSERT_EQ(result, N*N);
+
+}
+
+
+
+
+
