@@ -50,6 +50,16 @@
 
 #include "RAJA/util/camp_aliases.hpp"
 
+
+
+//
+// Generic iteration templates require specializations defined
+// in the files included below.
+//
+#include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/nested.hpp"
+
+
 //
 // Shared memory abstractions
 //
@@ -98,11 +108,6 @@
 
 #include "RAJA/policy/MultiPolicy.hpp"
 
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
 
 
 //
@@ -125,7 +130,7 @@
 // Generic iteration templates for perfectly nested loops
 //
 #include "RAJA/pattern/forallN.hpp"
-#include "RAJA/pattern/nested.hpp"
+
 
 
 //

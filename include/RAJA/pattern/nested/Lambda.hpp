@@ -3,13 +3,10 @@
 
 
 #include "RAJA/config.hpp"
-#include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/nested/internal.hpp"
-
-#include "RAJA/util/chai_support.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"

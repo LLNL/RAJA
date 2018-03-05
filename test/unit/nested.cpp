@@ -233,14 +233,14 @@ INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 
 #if defined(RAJA_ENABLE_CUDA)
 
-/*
+
 CUDA_TEST(Nested, CudaCollapse1a)
 {
-
-  using Pol = RAJA::nested::Policy<
+  using namespace RAJA::nested;
+  using Pol = Policy<
       CudaKernel<
         //Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
-        Collapse<RAJA::cuda_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
+        RAJA::nested::Collapse<RAJA::cuda_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
 
   int *x = nullptr;
   cudaMallocManaged(&x, 3*2*5*sizeof(int));
@@ -257,16 +257,17 @@ CUDA_TEST(Nested, CudaCollapse1a)
   cudaDeviceSynchronize();
 
   for(int i = 0;i < 3*2*5;++ i){
-    ASSERT_EQ(x[i], 1);
+    printf("x[%d]=%d\n", i, x[i]);
+    //ASSERT_EQ(x[i], 1);
   }
 
   cudaFree(x);
-}*/
+}
 
-/*
+
 CUDA_TEST(Nested, CudaCollapse1b)
 {
-
+  using namespace RAJA::nested;
   using Pol = RAJA::nested::Policy<
       CudaKernel<
         Collapse<RAJA::cuda_threadblock_exec<5>, ArgList<0,1>,
@@ -293,7 +294,7 @@ CUDA_TEST(Nested, CudaCollapse1b)
 
   cudaFree(x);
 }
-*/
+
 
 //CUDA_TEST(Nested, CudaCollapse1c)
 //{
@@ -328,10 +329,10 @@ CUDA_TEST(Nested, CudaCollapse1b)
 
 
 
-/*
+
 CUDA_TEST(Nested, CudaCollapse2)
 {
-
+  using namespace RAJA::nested;
   using Pol = RAJA::nested::Policy<
        CudaKernel<
          Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>, Lambda<0>>
@@ -368,7 +369,7 @@ CUDA_TEST(Nested, CudaCollapse2)
 
 CUDA_TEST(Nested, CudaReduceA)
 {
-
+  using namespace RAJA::nested;
   using Pol = RAJA::nested::Policy<
       CudaKernel<
         Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>,
@@ -399,7 +400,7 @@ CUDA_TEST(Nested, CudaReduceA)
 
 CUDA_TEST(Nested, CudaReduceB)
 {
-
+  using namespace RAJA::nested;
   using Pol = RAJA::nested::Policy<
         For<2, RAJA::seq_exec,
           CudaKernel<
@@ -421,7 +422,7 @@ CUDA_TEST(Nested, CudaReduceB)
   ASSERT_EQ((int)reducer, 3*2*5);
 }
 
-*/
+
 
 
 //CUDA_TEST(Nested, CudaReduceC)
@@ -1786,7 +1787,6 @@ TEST(Nested, Hyperplane_seq){
 
   constexpr long N = (long)4;
 
-    // Loop Fusion
     using Pol = nested::Policy<
             Hyperplane<0, seq_exec, ArgList<1>, seq_exec,
               Lambda<0>
@@ -1818,6 +1818,206 @@ TEST(Nested, Hyperplane_seq){
 }
 
 
+#ifdef RAJA_ENABLE_CUDA
 
+
+CUDA_TEST(Nested, Hyperplane_cuda_2d)
+{
+  using namespace RAJA;
+  using namespace RAJA::nested;
+  using Pol = RAJA::nested::Policy<
+            CudaKernel<
+              Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>, cuda_thread_exec,
+                Lambda<0>
+              >
+            >
+          >;
+
+  constexpr long N = (long)24;
+  constexpr long M = (long)11;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, N*M*sizeof(int));
+
+
+  using myview = View<int, Layout<2, RAJA::Index_type>>;
+  myview xv{x, N, M};
+
+  RAJA::nested::forall<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                       RAJA::RangeSegment(0, M)),
+      [=] __device__ (Index_type i, Index_type j) {
+        int left = 1;
+        if(i > 0){
+          left = xv(i-1,j);
+        }
+
+        int up = 1;
+        if(j > 0){
+          up = xv(i,j-1);
+        }
+
+        xv(i,j) = left + up;
+
+       });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 1;i < N;++ i){
+    for(int j = 1;j < M;++ j){
+      ASSERT_EQ(xv(i,j), xv(i-1,j)+xv(i,j-1));
+    }
+  }
+
+  cudaFree(x);
+}
+
+
+
+CUDA_TEST(Nested, Hyperplane_cuda_2d_negstride)
+{
+  using namespace RAJA;
+  using namespace RAJA::nested;
+  using Pol = RAJA::nested::Policy<
+            CudaKernel<
+              Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>, cuda_thread_exec,
+                Lambda<0>
+              >
+            >
+          >;
+
+  constexpr long N = (long)24;
+  constexpr long M = (long)11;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, N*M*sizeof(int));
+
+
+  using myview = View<int, Layout<2, RAJA::Index_type>>;
+  myview xv{x, N, M};
+
+  RAJA::nested::forall<Pol>(
+      RAJA::make_tuple(RAJA::RangeStrideSegment(N-1, -1, -1),
+                       RAJA::RangeStrideSegment(M-1, -1, -1)),
+      [=] __device__ (Index_type i, Index_type j) {
+        int right = 1;
+        if(i < N-1){
+          right = xv(i+1,j);
+        }
+
+        int down = 1;
+        if(j < M-1){
+          down = xv(i,j+1);
+        }
+
+        xv(i,j) = right + down;
+
+       });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < N-1;++ i){
+    for(int j = 0;j < M-1;++ j){
+      ASSERT_EQ(xv(i,j), xv(i+1,j)+xv(i,j+1));
+      //printf("%d ", xv(i,j));
+    }
+    //printf("\n");
+  }
+
+  cudaFree(x);
+}
+
+
+
+TEST(Nested, IndexCalc_seq){
+
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)16;
+
+  auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
+  using segment_t = decltype(segments);
+
+  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t>;
+
+  loop_data_t data(segments);
+
+  RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::seq_exec> ic;
+
+  for(int init = 1;init < 5;++ init){
+    int i = 0;
+
+    ASSERT_EQ(ic.setInitial(data, init) > 0, init > 0);
+    ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+
+    for(int inc = 1;inc < 7;++ inc){
+
+      for(int iter = 0;iter < N;++ iter){
+
+        bool carry = false;
+        i += 1;
+        if(i >= N){
+          i = i%N;
+          carry = true;
+        }
+
+        ASSERT_EQ(ic.increment(data, inc) > 0, carry);
+        ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+      }
+
+
+    }
+  }
+
+}
+TEST(Nested, IndexCalc_thread){
+
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)16;
+
+  auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
+  using segment_t = decltype(segments);
+
+  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t>;
+
+  loop_data_t data(segments);
+
+  RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
+
+  for(int init = 1;init < 5;++ init){
+    //printf("init=%d\n", init);
+    int i = init;
+
+    ASSERT_EQ(ic.setInitial(data, init) > 0, false);
+    ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+
+    for(int inc = 1;inc < 3*N;++ inc){
+      //printf("  inc=%d\n", inc);
+
+      ic.initIteration(data, inc);
+
+      for(int iter = 0;iter < N;++ iter){
+
+
+        bool carry = false;
+        i += inc;
+        if(i >= N){
+          i = i%N;
+          carry = true;
+        }
+
+        //printf("    iter=%d, i=%d, carry=%d\n", iter, i, (int)carry);
+
+        ASSERT_EQ(ic.increment(data, inc) > 0, carry);
+        ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+      }
+
+
+    }
+  }
+
+}
+#endif
 
 

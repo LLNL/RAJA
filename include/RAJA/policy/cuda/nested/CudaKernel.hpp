@@ -181,6 +181,7 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template <typename StmtList, typename Data>
+//__launch_bounds__(1024, 112)
 __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 {
   using data_t = camp::decay<Data>;

@@ -84,6 +84,8 @@
 
 #include "RAJA/util/chai_support.hpp"
 
+#include "RAJA/pattern/shared_memory.hpp"
+
 
 namespace RAJA
 {

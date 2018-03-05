@@ -30,6 +30,7 @@
 
 #include "RAJA/policy/loop/atomic.hpp"
 #include "RAJA/policy/loop/forall.hpp"
+#include "RAJA/policy/loop/nested.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
 

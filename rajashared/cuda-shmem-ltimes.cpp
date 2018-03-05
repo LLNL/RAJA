@@ -198,10 +198,10 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
   // psi[direction, group, zone]
-  using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
+  using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 0>, IDirection, IGroup, IZone>;
 
   // phi[moment, group, zone]
-  using PhiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IMoment, IGroup, IZone>;
+  using PhiView = RAJA::TypedView<double, Layout<3, Index_type, 0>, IMoment, IGroup, IZone>;
 
   // ell[moment, direction]
   using EllView = RAJA::TypedView<double, Layout<2, Index_type, 1>, IMoment, IDirection>;
@@ -257,15 +257,17 @@ void runLTimesRajaCudaShmem(bool debug,
       d_ell,
       make_permuted_layout({num_moments, num_directions}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<camp::idx_t, 3> psi_perm {{2, 1, 0}};
   PsiView psi(
       d_psi,
       make_permuted_layout({num_directions, num_groups, num_zones}, psi_perm));
+      //make_permuted_layout({num_zones, num_groups, num_directions}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<camp::idx_t, 3> phi_perm {{2, 1, 0}};
   PhiView phi(
       d_phi,
       make_permuted_layout({num_moments, num_groups, num_zones}, phi_perm));
+      //make_permuted_layout({num_zones, num_groups, num_moments}, phi_perm));
 
 
 
@@ -277,9 +279,9 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  static const int tile_mom  = 32;
-  static const int tile_dir  = 32;
-  static const int tile_zone = 128;
+  static const int tile_mom  = 25;
+  static const int tile_dir  = 80;
+  static const int tile_zone = 12;
   using namespace RAJA::nested;
 
     using Pol = RAJA::nested::Policy<
@@ -295,9 +297,12 @@ void runLTimesRajaCudaShmem(bool debug,
 												>
                       >,
 
+                      CudaSyncThreads,
+
                       // Distribute groups and zones across blocks
                       For<0, cuda_block_exec, // g
-                        For<3, cuda_threadblock_exec<tile_zone>,  // z
+
+                      For<3, cuda_threadblock_exec<tile_zone>,  // z
 
                         SetShmemWindow<
 
@@ -456,8 +461,8 @@ void runLTimesRajaCudaShmem(bool debug,
 
 int main(){
 
-  bool debug = false;
-  //bool debug = true;
+  //bool debug = false;
+  bool debug = true;
 #if 1
   int m = 25;
   int d = 80;
@@ -477,9 +482,9 @@ int main(){
 
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-  //runLTimesRajaCudaNested(false, m, d, g, z);
+  runLTimesRajaCudaNested(false, m, d, g, z);
 
-  runLTimesRajaCudaShmem(debug, m, d, g, z);
+  runLTimesRajaCudaShmem(false, m, d, g, z);
   runLTimesRajaCudaShmem(debug, m, d, g, z);
   //runLTimesRajaCudaNested(debug, m, d, g, z);
 

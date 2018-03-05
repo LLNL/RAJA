@@ -292,6 +292,55 @@ struct CudaStatementExecutor<Data, For<ArgumentId, seq_exec, EnclosedStmts...>, 
 
 
 
+/*
+ * Executor for sequential loops inside of a Cuda Kernel.
+ *
+ * This is specialized since it need to execute the loop immediately.
+ */
+template <typename Data, camp::idx_t ArgumentId, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, For<ArgumentId, cuda_seq_syncthreads_exec, EnclosedStmts...>, IndexCalc> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, int num_logical_blocks, int block_carry)
+  {
+    int len = segment_length<ArgumentId>(data);
+
+    for(int i = 0;i < len;++ i){
+      data.template assign_offset<ArgumentId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+
+      __syncthreads();
+    }
+  }
+
+
+  inline
+  RAJA_DEVICE
+  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+
+  }
+};
+
+
+
+
+
 } // namespace internal
 }  // end namespace nested
 }  // end namespace RAJA

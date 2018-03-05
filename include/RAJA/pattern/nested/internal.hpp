@@ -25,6 +25,8 @@
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 
+#include "RAJA/util/chai_support.hpp"
+
 #include <type_traits>
 
 namespace RAJA

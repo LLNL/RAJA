@@ -45,7 +45,7 @@ struct CudaStatementExecutor<Data, Thread<EnclosedStmts...>, IndexCalc> {
     if(block_carry <= 0){
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
-      bool done = index_calc.assignBegin(data, threadIdx.x);
+      bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
 
       while(!done) {
 

@@ -61,7 +61,7 @@ struct CudaStatementExecutor<Data, SetShmemWindow<EnclosedStmts...>, IndexCalc> 
       data.assign_begin_all();
 
       // Compute logical dimensions
-      index_calc.assignBegin(data, 0);
+      index_calc.assignBegin(data, 0, 0);
 
 
       // Set the shared memory tuple with the beginning of our segments

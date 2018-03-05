@@ -29,7 +29,6 @@
 
 
 #include "RAJA/config.hpp"
-#include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
