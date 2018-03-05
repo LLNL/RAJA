@@ -160,9 +160,9 @@ struct IterableTiler {
     if (dist % block_size) num_blocks += 1;
   }
 
-  iterator begin() { return iterator(*this, 0); }
+  iterator begin() const { return iterator(*this, 0); }
 
-  iterator end() { return iterator(*this, num_blocks); }
+  iterator end() const { return iterator(*this, num_blocks); }
 
   value_type it;
   camp::idx_t block_size;
