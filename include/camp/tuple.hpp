@@ -18,6 +18,9 @@ namespace camp
 template <typename... Rest>
 struct tuple;
 
+template <typename TagList, typename... Elements>
+class tagged_tuple;
+
 template <typename Tuple>
 struct tuple_size;
 
@@ -138,6 +141,7 @@ namespace internal
 
 template <typename... Elements>
 struct tuple {
+private:
   using Self = tuple;
   using Base = internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
                                       camp::list<Elements...>>;
@@ -150,10 +154,7 @@ public:
   using type = tuple;
 
 private:
-  // TODO: this should *NOT* be public, but gcc4.9 will not build the friend
-  // functions if it is private
   Base base;
-
 
   template <camp::idx_t index, class Tuple>
   CAMP_HOST_DEVICE constexpr friend auto get(const Tuple& t) noexcept
@@ -231,11 +232,11 @@ struct as_list_s<tagged_tuple<camp::list<Tags...>, Args...>> {
 
 template <camp::idx_t i, typename... Types>
 struct tuple_element<i, tuple<Types...>> {
-  using type = camp::at_v<camp::as_list<tuple<Types...>>, i>;
+  using type = camp::at_v<camp::list<Types...>, i>;
 };
 template <camp::idx_t i, typename TypeMap, typename... Types>
 struct tuple_element<i, tagged_tuple<TypeMap, Types...>> {
-  using type = camp::at_v<camp::as_list<tagged_tuple<TypeMap, Types...>>, i>;
+  using type = camp::at_v<camp::list<Types...>, i>;
 };
 
 // by index
