@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -99,13 +99,10 @@ class ValueLoc
 public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
-
-  //
-  // Note: marking these defaulted methods as host-device introduces
-  //       a bunch of warning spew as of CUDA 9.
-  //
+    
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
+
   ValueLoc &operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
@@ -157,17 +154,36 @@ public:
   using value_type = T;
   using reduce_type = Reduce;
 
-  //! prohibit compiler-generated default ctor
-  BaseReduce() = delete;
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  BaseReduce()
+    : c{T(), Reduce::identity()}
+  {
+  }
+  
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  BaseReduce(T init_val, T identity_ = Reduce::identity())
+    : c{init_val, identity_}
+  {
+  }
+
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  void reset(T val, T identity_ = Reduce::identity()) {
+    c.reset(val, identity_);
+  }
 
   //! prohibit compiler-generated copy assignment
   BaseReduce &operator=(const BaseReduce &) = delete;
 
   //! compiler-generated copy constructor
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseReduce(const BaseReduce &copy) : c(copy.c) {}
+  BaseReduce(const BaseReduce &copy) : c(copy.c) {}
 
   //! compiler-generated move constructor
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   RAJA_INLINE
   BaseReduce(BaseReduce &&copy) : c(std::move(copy.c)) {}
@@ -176,12 +192,6 @@ public:
   BaseReduce &operator=(BaseReduce &&) = default;
 
   RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
-  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
-      : c{init_val, identity_}
-  {
-  }
-
   RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
 
@@ -203,15 +213,29 @@ protected:
   T mutable my_data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  BaseCombinable() = delete;
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseCombinable(T init_val, T identity_ = T())
-      : identity{identity_}, my_data{init_val}
+  constexpr BaseCombinable()
+    : identity{T()}, my_data{T()}
   {
   }
+  
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  constexpr BaseCombinable(T init_val, T identity_ = T())
+    : identity{identity_}, my_data{init_val}
+  {
+  }
+  
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  void reset(T init_val, T identity_){
+    my_data = init_val;
+    identity = identity_;    
+  }
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const &other)
       : parent{other.parent ? other.parent : &other},
@@ -220,6 +244,7 @@ public:
   {
   }
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   ~BaseCombinable()
   {
@@ -228,6 +253,7 @@ public:
     }
   }
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   void combine(T const &other) { Reduce{}(my_data, other); }
 
@@ -292,10 +318,14 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
-  BaseReduceMinLoc(T init_val, Index_type init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMinLoc()
+    : Base(value_type(T(), Index_type()))
   {
+  }
+
+  constexpr BaseReduceMinLoc(T init_val, Index_type init_idx)
+    : Base(value_type(init_val,init_idx))
+  {    
   }
 
   /// \brief reducer function; updates the current instance's state
@@ -374,9 +404,13 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  //! constructor requires a default value for the reducer
-  BaseReduceMaxLoc(T init_val, Index_type init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMaxLoc()
+    : Base(value_type(T(), Index_type()))
+  {
+  }
+
+  constexpr BaseReduceMaxLoc(T init_val, Index_type init_idx)
+    : Base(value_type(init_val,init_idx))
   {
   }
 
