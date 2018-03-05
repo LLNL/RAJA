@@ -64,9 +64,11 @@ matrix:
     - DO_TEST=no
 
 before_install:
-- openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d
+- openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d || true
 
 script:
+  # don't try to build and run intel when it's impossible
+- [[ -f ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic ]] || export DO_TEST=no DO_BUILD=no
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
 - docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
