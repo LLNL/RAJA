@@ -345,11 +345,11 @@ void runLTimesRajaCudaShmem(bool debug,
       ThreadPrivate<double>{});
 
 
-  using shmem_ell_t = SharedMemory<cuda_shmem, double, tile_mom*tile_dir>;
-  ShmemWindowView<shmem_ell_t, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
 
-  using shmem_psi_t = SharedMemory<cuda_shmem, double, tile_dir*tile_zone>;
-  ShmemWindowView<shmem_psi_t, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
+  ShmemTile<cuda_shmem, double, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
+
+  ShmemTile<cuda_shmem, double, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
+
 
 
   nested::forall<Pol>(

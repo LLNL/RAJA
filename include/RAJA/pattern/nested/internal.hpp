@@ -281,6 +281,7 @@ struct StatementListExecutor<num_statements,num_statements,StmtList> {
 
 
 template<typename StmtList, typename Data>
+RAJA_INLINE
 void execute_statement_list(Data && data){
   StatementListExecutor<0, StmtList::size, StmtList>::exec(std::forward<Data>(data));
 }
@@ -334,6 +335,7 @@ struct NestedPrivatizer {
  */
 template <typename T>
 constexpr
+RAJA_INLINE
 typename std::enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value, NestedPrivatizer<T>>::type thread_privatize(T &wrapper)
 {
   return NestedPrivatizer<T>{wrapper};

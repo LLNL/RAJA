@@ -119,6 +119,10 @@
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+//
+// Shared memory view patterns
+//
+#include "RAJA/util/ShmemTile.hpp"
 
 //
 // Atomic operations support

@@ -36,7 +36,7 @@ struct CudaStatementExecutor<Data, SetShmemWindow<EnclosedStmts...>, IndexCalc> 
   inline
   void setWindow(Data &data, camp::idx_seq<RangeInts...> const &){
     // get shmem window
-    extern __shared__ int shmem_window[];
+    int *shmem_window = RAJA::internal::cuda_get_shmem_ptr<int>();
 
     // get the index value tuple
     auto index_tuple = data.get_begin_index_tuple();

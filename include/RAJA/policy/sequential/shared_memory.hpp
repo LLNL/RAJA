@@ -58,13 +58,20 @@ struct SharedMemory<seq_shmem, T, NumElem> {
   SharedMemory() :
     data(std::make_shared<std::array<T, size>>())
   {
+//    printf("shmem ctor %p\n", this);
   }
-
 
   RAJA_INLINE
-  SharedMemory(self const &c) : data(c.data)
+  ~SharedMemory()
   {
+//    printf("shmem dtor %p\n", this);
   }
+
+//  RAJA_INLINE
+//  SharedMemory(self const &c) : data(c.data)
+//  {
+//      printf("shmem copy ctor %p\n", this);
+//  }
 
 
 

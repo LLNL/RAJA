@@ -147,10 +147,10 @@ struct StrideCalculator<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>> {
 
 
 template <typename Layout, typename DimTypeList>
-struct TypedLayoutImpl;
+struct TypedStaticLayoutImpl;
 
 template <typename Layout, typename ... DimTypes>
-struct TypedLayoutImpl<Layout, camp::list<DimTypes...>>
+struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>>
 {
   /*!
    * Computes a linear space index from specified indices.
@@ -188,7 +188,7 @@ using StaticLayout =
 
 template <typename TypeList, camp::idx_t ... Sizes>
 using TypedStaticLayout =
-    detail::TypedLayoutImpl<StaticLayout<Sizes...>, TypeList>;
+    detail::TypedStaticLayoutImpl<StaticLayout<Sizes...>, TypeList>;
 
 
 

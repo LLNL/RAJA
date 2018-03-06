@@ -79,11 +79,6 @@ void runLTimesBare(bool ,
   printf("LTimes took %lf seconds using bare loops and pointers\n",
       timer.elapsed());
 
-
-
-  // Check correctness
-  //printf("%e, %e, %e\n", ell_data[1], phi_data[1], psi_data[1]);
-
 }
 
 void runLTimesBareView(bool debug,
@@ -201,7 +196,6 @@ void runLTimesBareView(bool debug,
       printf("  -- failed : %ld errors\n", (long)errors);
     }
   }
-  //printf("%e, %e, %e\n", ell_data[1], phi_data[1], psi_data[1]);
 
 }
 
@@ -290,8 +284,6 @@ void runLTimesRajaNested(bool debug,
       TypedRangeSegment<IGroup>(0, num_groups),
       TypedRangeSegment<IZone>(0, num_zones));
 
-  using shmem_ell_t = SharedMemory<seq_shmem, double, 1024>;
-  shmem_ell_t foo;
 
   nested::forall<Pol>(
 
@@ -336,11 +328,9 @@ void runLTimesRajaNested(bool debug,
       printf("  -- failed : %ld errors\n", (long)errors);
     }
   }
-  //printf("%e, %e, %e\n", ell_data[1], phi_data[0], psi_data[1]);
 
 }
 
-#if 1
 
 void runLTimesRajaNestedShmem(bool debug,
                           Index_type num_moments,
@@ -406,9 +396,9 @@ void runLTimesRajaNestedShmem(bool debug,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
 
-  constexpr size_t tile_moments = 128;
-  constexpr size_t tile_directions = 128;
-  constexpr size_t tile_zones = 128*1024;
+  constexpr size_t tile_moments = 25;
+  constexpr size_t tile_directions = 80;
+  constexpr size_t tile_zones = 256;
   constexpr size_t tile_groups = 0;
 
   using Lambda_LoadEll = Lambda<0>;
@@ -426,22 +416,22 @@ void runLTimesRajaNestedShmem(bool debug,
           For<0, simd_exec, For<1, simd_exec, Lambda_LoadEll>>,
 
           For<2, loop_exec,
-            //nested::Tile<3, nested::tile_fixed<tile_zones>, loop_exec,
-            //  SetShmemWindow<
+            nested::Tile<3, nested::tile_fixed<tile_zones>, loop_exec,
+              SetShmemWindow<
                 // Load Psi into shmem
-                //For<1, simd_exec, For<3, simd_exec, Lambda_LoadPsi >>,
+                For<1, simd_exec, For<3, simd_exec, Lambda_LoadPsi >>,
 
                 For<0, loop_exec, //m
-                  //For<3, simd_exec, Lambda_LoadPhi>, //z
+                  For<3, simd_exec, Lambda_LoadPhi>, //z
 
                   For<1, loop_exec, // d
                     For<3, simd_exec, Lambda_CalcPhi>
-                  >
+                  >,
 
-                  //For<3, simd_exec, Lambda_SavePhi>
+                  For<3, simd_exec, Lambda_SavePhi>
                 >  // m
-            //  > // Shmem Window
-           // > // Tile zones
+              > // Shmem Window
+            > // Tile zones
           > // for g
         > // Shmem Window (mom, dir)
       > // Tile directions
@@ -459,14 +449,9 @@ void runLTimesRajaNestedShmem(bool debug,
       TypedRangeSegment<IZone>(0, num_zones));
 
 
-  using shmem_ell_t = SharedMemory<seq_shmem, double, tile_moments*tile_directions>;
-  ShmemWindowView<shmem_ell_t, ArgList<0,1>, SizeList<tile_moments, tile_directions>, decltype(segments)> shmem_ell;
-
-//  using shmem_psi_t = SharedMemory<seq_shmem, double, tile_zones*tile_directions>;
-//  ShmemWindowView<shmem_psi_t, ArgList<1, 2, 3>, SizeList<tile_directions, tile_groups, tile_zones>, decltype(segments)> shmem_psi;
-//
-//  using shmem_phi_t = SharedMemory<seq_shmem, double, tile_zones*tile_moments>;
-//  ShmemWindowView<shmem_phi_t, ArgList<0, 2, 3>, SizeList<tile_moments, tile_groups, tile_zones>, decltype(segments)> shmem_phi;
+  ShmemTile<seq_shmem, double, ArgList<0,1>, SizeList<tile_moments, tile_directions>, decltype(segments)> shmem_ell;
+  ShmemTile<seq_shmem, double, ArgList<1,2,3>, SizeList<tile_directions, tile_groups, tile_zones>, decltype(segments)> shmem_psi;
+  ShmemTile<seq_shmem, double, ArgList<0,2,3>, SizeList<tile_moments, tile_groups, tile_zones>, decltype(segments)> shmem_phi;
 
 
   nested::forall<Pol>(
@@ -482,24 +467,22 @@ void runLTimesRajaNestedShmem(bool debug,
 
       // Lambda_LoadPsi
       [=] (IMoment, IDirection d, IGroup g, IZone z) {
-//        shmem_psi(d, g, z) = psi(d, g, z);
+        shmem_psi(d, g, z) = psi(d, g, z);
       },
 
       // Lambda_LoadPhi
       [=] (IMoment m, IDirection, IGroup g, IZone z) {
-//        shmem_phi(m, g, z) = phi(m,g,z);
+        shmem_phi(m, g, z) = phi(m,g,z);
       },
 
       // Lambda_CalcPhi
       [=] (IMoment m, IDirection d, IGroup g, IZone z) {
-        //shmem_phi(m, g, z) += shmem_ell(m, d) * shmem_psi(d, g, z);
-        //phi(m, g, z) += shmem_ell(m, d) * shmem_psi(d, g, z);
-        phi(m, g, z) += shmem_ell(m, d) * psi(d, g, z);
+        shmem_phi(m, g, z) += shmem_ell(m, d) * shmem_psi(d, g, z);
       },
 
       // Lambda_SavePhi
       [=] (IMoment m, IDirection, IGroup g, IZone z) {
-//        phi(m,g,z) = shmem_phi(m, g, z);
+        phi(m,g,z) = shmem_phi(m, g, z);
       });
 
 
@@ -536,12 +519,10 @@ void runLTimesRajaNestedShmem(bool debug,
       printf("  -- failed : %ld errors\n", (long)errors);
     }
   }
-  //printf("%e, %e, %e\n", ell_data[1], phi_data[0], psi_data[1]);
 
 }
 
 
-#endif
 
 int main(){
 
@@ -554,8 +535,8 @@ int main(){
 
   printf("m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-//  runLTimesBare(debug, m, d, g, z);
-//  runLTimesBareView(debug, m, d, g, z);
+  runLTimesBare(debug, m, d, g, z);
+  runLTimesBareView(debug, m, d, g, z);
   runLTimesRajaNested(debug, m, d, g, z);
   runLTimesRajaNestedShmem(debug, m, d, g, z);
 

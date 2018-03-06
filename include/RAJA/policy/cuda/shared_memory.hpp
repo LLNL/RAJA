@@ -39,7 +39,19 @@ namespace RAJA
 {
 
 
+namespace internal
+{
 
+template<typename T>
+RAJA_INLINE
+RAJA_DEVICE
+T* cuda_get_shmem_ptr(size_t byte_offset = 0){
+  extern __shared__ char my_ptr[];
+  return reinterpret_cast<T*>(&my_ptr[byte_offset]);
+}
+
+
+}
 
 
 
@@ -83,13 +95,9 @@ struct SharedMemory<cuda_shmem, T, NumElem> {
   RAJA_INLINE
   RAJA_DEVICE
   T &operator[](IDX i) const {
-    // Get the pointer to beginning of dynamic shared memory
-    extern __shared__ char my_ptr[];
 
-		// Convert this to a pointer of type T at the beginning of OUR shared mem
-    T *T_ptr = reinterpret_cast<T*>((&my_ptr[0]) + offset);
+    T *T_ptr = internal::cuda_get_shmem_ptr<T>(offset);
 
-    // Return the i'th element of our buffer
     return T_ptr[i];
   }
 

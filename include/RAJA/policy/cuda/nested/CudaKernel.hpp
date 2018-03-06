@@ -215,7 +215,7 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
   {
 
     int shmem = RAJA::detail::getSharedMemorySize();
-    printf("Shared memory size=%d\n", (int)shmem);
+//    printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;
 
@@ -243,7 +243,7 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
 
     // Privatize the LoopData, using make_launch_body to setup reductions
     auto cuda_data = RAJA::cuda::make_launch_body(max_physical.blocks, max_physical.threads, shmem, stream, data);
-    printf("Data size=%d\n", (int)sizeof(cuda_data));
+//    printf("Data size=%d\n", (int)sizeof(cuda_data));
 
 
     // Compute logical dimensions
@@ -257,8 +257,8 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
 
-    printf("Logical dims: %d blocks, %d threads\n",
-        (int)logical_dims.blocks, (int)logical_dims.threads);
+//    printf("Logical dims: %d blocks, %d threads\n",
+//        (int)logical_dims.blocks, (int)logical_dims.threads);
 
 
 
@@ -272,8 +272,8 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-    printf("Launch dims: %d blocks, %d threads\n",
-        (int)launch_dims.blocks, (int)launch_dims.threads);
+//    printf("Launch dims: %d blocks, %d threads\n",
+//        (int)launch_dims.blocks, (int)launch_dims.threads);
 
 
 
