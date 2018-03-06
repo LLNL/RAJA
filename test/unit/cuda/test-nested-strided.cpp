@@ -31,7 +31,7 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
-#ifdef DEPRECATED_TESTS
+#ifdef RAJA_DEPRECATED_TESTS
 static const int x = 500, y = 300, z = 70;
 
 using namespace RAJA;

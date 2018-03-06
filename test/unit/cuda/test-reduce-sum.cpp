@@ -174,7 +174,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   }
 }
 
-#ifdef DEPRECATED_TESTS
+#ifdef RAJA_DEPRECATED_TESTS
 CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
   double* dvalue = ReduceSumCUDA::dvalue;

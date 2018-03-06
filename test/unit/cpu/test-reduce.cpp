@@ -127,7 +127,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
  
 }
 
-#if DEPRECATED_TESTS
+#if RAJA_DEPRECATED_TESTS
 TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;

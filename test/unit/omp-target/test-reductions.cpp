@@ -288,7 +288,7 @@ protected:
   RAJA::Index_type z_size;
 };
 TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP);
-#ifdef DEPRECATED_TESTS
+#ifdef RAJA_DEPRECATED_TESTS
 TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;

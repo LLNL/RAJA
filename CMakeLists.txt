@@ -53,7 +53,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
-  option(ENABLE_DEPRECATED_TESTS "Test deprecated features" Off)
+  option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -110,10 +110,6 @@ if (NOT RAJA_LOADED)
       ${raja_depends}
       tbb)
   endif ()
-
-  if (ENABLE_DEPRECATED_TESTS)
-     set(DEPRECATED_TESTS)
-  endif()
 
   blt_add_library(
     NAME RAJA

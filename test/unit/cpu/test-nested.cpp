@@ -102,7 +102,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedTest);
 
-#ifdef DEPRECATED_TESTS
+#ifdef RAJA_DEPRECATED_TESTS
 TYPED_TEST_P(NestedTest, Nested2DTest)
 {
   using POL = TypeParam;
@@ -278,7 +278,7 @@ public:
 
 TYPED_TEST_CASE_P(LTimesTest);
 
-#ifdef DEPRECATED_TEST 
+#ifdef RAJA_DEPRECATED_TESTS
 TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 {
 

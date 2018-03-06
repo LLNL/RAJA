@@ -58,7 +58,7 @@
 /*
  * Deprecated tests
  */
-#cmakedefine RAJA_ENABLE_DEPRECATED_TESTS                                                                                                               
+#cmakedefine RAJA_DEPRECATED_TESTS
 
 /*
  * Timer options
