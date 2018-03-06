@@ -32,6 +32,20 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+// Device properties for quick lookup
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+
+int RAJA::cuda::device_info::s_num_sm = -1;
+int RAJA::cuda::device_info::s_max_threads_per_sm = -1;
+int RAJA::cuda::device_info::s_max_shmem_per_block = -1;
+
+
 namespace RAJA
 {
 
@@ -40,29 +54,6 @@ namespace cuda
 
 namespace detail
 {
-
-//
-/////////////////////////////////////////////////////////////////////////////
-//
-// Function to get the number of SM's on the current device
-//
-/////////////////////////////////////////////////////////////////////////////
-//
-
-int get_num_sm(){
-
-  static int num_sm = -1;
-
-  if(num_sm < 0){
-    int cur_device = -1;
-    cudaGetDevice(&cur_device);
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cur_device);
-    num_sm = prop.multiProcessorCount;
-  }
-
-  return num_sm;
-}
 
 
 

@@ -229,21 +229,18 @@ RAJA_INLINE void forall_impl(cuda_exec<blockSize, Async>,
     // Compute number of logical blocks
     auto num_logical_blocks = impl::getGridDim(len, blockSize);
 
-    // get number of blocks per SM, given the function and block size
-    auto &launch_func = impl::forall_cuda_kernel<blockSize, decltype(begin), decltype(RAJA::cuda::make_launch_body(
-        1, blockSize, 0, stream, std::forward<LoopBody>(loop_body))), decltype(len)>;
-    int blocks_per_sm = -1;
-    cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &blocks_per_sm, launch_func, blockSize, 0);
+    // Compute how many blocks will fit on each SM
+    int threads_per_sm = RAJA::cuda::device_info::get_max_threads_per_sm();
+    int blocks_per_sm = threads_per_sm / blockSize;
 
     // Now get how many SM's there are, and compute how many blocks we can run
-    int num_sm = RAJA::cuda::detail::get_num_sm();
+    int num_sm = RAJA::cuda::device_info::get_num_sm();
     int gridSize = num_sm * blocks_per_sm;
 
     // Restrict actual number of blocks, if it exceeds our iteration space
     gridSize = (num_logical_blocks < gridSize) ? num_logical_blocks : gridSize;
 
-    launch_func<<<gridSize, blockSize, 0, stream>>>(
+    impl::forall_cuda_kernel<blockSize><<<gridSize, blockSize, 0, stream>>>(
         RAJA::cuda::make_launch_body(
             gridSize, blockSize, 0, stream, std::forward<LoopBody>(loop_body)),
         std::move(begin),
