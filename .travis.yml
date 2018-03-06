@@ -1,105 +1,75 @@
 sudo: required
+services: docker
 dist: trusty
 language: cpp
 env:
   global:
-    - secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
-    - OMP_NUM_THREADS=3
-    - DO_BUILD=yes
-    - DO_TEST=yes
+  - secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
+  - OMP_NUM_THREADS=3
+  - DO_BUILD=yes
+  - DO_TEST=yes
 matrix:
   include:
-  - compiler: gcc-4
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
+  - compiler: gcc49
     env:
-    - COMPILER=g++-4.9
+    - COMPILER=g++
+    - IMG=gcc49
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: gcc-6
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
+  - compiler: gcc6
     env:
-    - COMPILER=g++-6
+    - COMPILER=g++
+    - IMG=gcc6
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: gcc-7
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
+  - compiler: gcc7
     env:
-    - COMPILER=g++-7
+    - COMPILER=g++
+    - IMG=gcc7
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: clang-5
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
-    env:
-    - COMPILER=clang++-5.0.0
-    - LLVM_VERSION=5.0.0
-    - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang-3.9
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
-    env:
-    - COMPILER=clang++-3.9.1
-    - LLVM_VERSION=3.9.1
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: clang-4.0
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
-    env:
-    - COMPILER=clang++-4.0.0
-    - LLVM_VERSION=4.0.0
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: intel-17
-    env:
-    - COMPILER=icpc
-    - TRAVIS_INSTALL_COMPILER="intel"
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: nvcc
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
-    env:
-    - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
-    - TRAVIS_INSTALL_COMPILER="nvcc"
-    - DO_TEST=no
-  - compiler: gcc-4.9-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
-    env:
-    - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
-  - compiler: clang-3.9-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
+  - compiler: clang5
     env:
     - COMPILER=clang++
-    - LLVM_VERSION=3.9.1
+    - IMG=clang5
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
+  - compiler: clang4
+    env:
+    - COMPILER=clang++
+    - IMG=clang4
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
+  - compiler: intel-16
+    env:
+    - COMPILER=/opt/intel/bin/icpc
+    - IMG=icc16
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
+  - compiler: nvcc
+    env:
+    - COMPILER=g++
+    - IMG=nvcc9
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
+    - DO_TEST=no
+  - compiler: gcc-4.9-debug
+    env:
+    - COMPILER=g++
+    - IMG=gcc49
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
+  - compiler: clang-4-debug
+    env:
+    - COMPILER=clang++
+    - IMG=clang4
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
   - compiler: nvcc-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
-    - COMPILER=g++-4.9
+    - COMPILER=g++
+    - IMG=nvcc9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
-    - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
-cache:
-  directories:
-  - $HOME/llvm
+
 before_install:
-- sudo apt-get update -qq
-- mkdir -p ${HOME}/download
-- if [[ -n "${LLVM_VERSION}" ]]; then . ./scripts/install_llvm.sh ; fi
-- CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- curl -o ${HOME}/cmake-tarball.tar.gz ${CMAKE_URL} &&
-  mkdir -p ${HOME}/cmake &&
-  tar xf ${HOME}/cmake-tarball.tar.gz -C ${HOME}/cmake --strip-components=1 &&
-  export PATH=${HOME}/cmake/bin:${PATH}
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -n "$INTEL_SERIAL_NUMBER" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -z "$INTEL_SERIAL_NUMBER" ]] ; then export DO_BUILD=no ; export DO_TEST=no ; fi
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DEBFILE=${HOME}/download/cuda-repo.deb; fi
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
-  travis_retry sudo dpkg -i ${DEBFILE} &&
-  travis_retry sudo apt-get update -qq &&
-  travis_retry sudo apt-get install --no-install-suggests --no-install-recommends -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
-  travis_retry sudo apt-get clean; fi &&
-  export CUDA_HOME=/usr/local/cuda-8.0 &&
-  export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
-  export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
-  export PATH=${CUDA_HOME}/bin:${PATH}; fi
-script:
-- ./scripts/travis_build_and_test.sh
+- openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d || true
+
+script: # don't try to build and run intel when it's impossible
+- test -f ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic || export DO_TEST=no DO_BUILD=no
+- docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
+- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
+
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
