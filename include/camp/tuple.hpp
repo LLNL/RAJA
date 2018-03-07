@@ -196,6 +196,9 @@ public:
   }
 };
 
+// NOTE: this class should be built on top of tuple.  Any attempt to do that
+// causes nvcc9.1 to die in EDG. As soon as nvcc9.1 goes away, this should be
+// reduced to just a public derivation of tuple that overrides TMap.
 template <typename TagList, typename... Elements>
 class tagged_tuple : public tuple<Elements...>
 {
