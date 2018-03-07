@@ -66,7 +66,7 @@ auto cval() noexcept -> decltype(std::declval<T const>());
 
 /// metafunction to expand a parameter pack and ignore result
 template <typename... Ts>
-void sink(Ts...)
+CAMP_HOST_DEVICE void sink(Ts...)
 {
 }
 
