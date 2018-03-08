@@ -680,10 +680,8 @@ TEST(Nested, FissionFusion_Conditional){
 
   constexpr int N = 16;
   int *x = new int[N];
-  int *y = new int[N];
   for(int i = 0;i < N;++ i){
     x[i] = 0;
-    y[i] = 0;
   }
 
 
@@ -704,15 +702,15 @@ TEST(Nested, FissionFusion_Conditional){
 					x[i] += 2;
 				}
 		);
+  
+		for(int i = 0;i < N;++ i){
+			ASSERT_EQ(x[i], 3 + 3*param);
+		}
 
 	}
 
-  for(int i = 0;i < N;++ i){
-    ASSERT_EQ(x[i], y[i]);
-  }
 
   delete[] x;
-  delete[] y;
 }
 
 TEST(Nested, Tile){
@@ -1897,9 +1895,7 @@ TEST(Nested, Hyperplane_seq){
 
         RAJA::make_tuple(TypedRangeSegment<int>(0,N), TypedRangeSegment<int>(0,N)),
 
-        [=] (int i, int j){
-
-            //printf("%d, %d\n", i, j);
+        [=] (int , int ){
 
             trip_count += 1;
 
@@ -1907,7 +1903,6 @@ TEST(Nested, Hyperplane_seq){
     );
 
     long result = (long)trip_count;
-    //printf("result=%ld\n", result);
 
     ASSERT_EQ(result, N*N);
 

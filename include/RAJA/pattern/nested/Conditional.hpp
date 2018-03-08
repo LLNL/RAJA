@@ -48,7 +48,7 @@ template <long value>
 struct Value {
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const &)
   {
     return value;
   }
