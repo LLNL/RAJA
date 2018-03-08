@@ -54,7 +54,7 @@ namespace detail
                                   make_idx_seq_t<sizeof...(Rest)>,
                                   Idx>::type;
   };
-}
+}  // namespace detail
 
 // TODO: document
 template <typename Seq, typename Num>
@@ -64,6 +64,11 @@ struct at<T, num<Val>> {
   using type = typename detail::_at<T, Val>::type;
 };
 
+template <idx_t Val, typename T, T... vs>
+struct at<int_seq<T, vs...>, num<Val>> {
+  using type =
+      typename detail::_at<camp::list<integral_constant<T, vs>...>, Val>::type;
+};
 
 template <typename T>
 using first = typename at<T, num<0>>::type;
@@ -75,10 +80,30 @@ using second = typename at<T, num<1>>::type;
 template <typename T, idx_t Idx>
 using at_v = typename at<T, num<Idx>>::type;
 
+template <typename T, idx_t Idx>
+constexpr auto at_vf() -> decltype(at_v<T, Idx>::value)
+{
+  return at_v<T, Idx>::value;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  using l3 = typename make_idx_seq_t<3>::type;
+  CHECK_TSAME((at_v<l3, 0>), (num<0>));
+  CHECK_EQ((at_vf<l3, 0>()), (0));
+  CHECK_EQ((at_vf<l3, 1>()), (1));
+  // CHECK_TSAME((make_idx_seq_t<2>), (idx_seq<0, 1>));
+  // CHECK_TSAME((make_idx_seq_t<1>), (idx_seq<0>));
+  // CHECK_TSAME((make_idx_seq_t<0>), (idx_seq<>));
+}  // namespace test
+#endif
+
+
 // TODO: document
 template <typename T, typename U>
 using at_t = typename at<T, U>::type;
-}
+}  // namespace camp
 
 
 #endif /* __CAMP_list_at_hpp */
