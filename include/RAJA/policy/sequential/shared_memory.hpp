@@ -51,35 +51,36 @@ struct SharedMemory<seq_shmem, T, NumElem> {
   static constexpr size_t size = NumElem;
   static constexpr size_t num_bytes = NumElem*sizeof(T);
 
-  std::shared_ptr<std::array<T, size>> data;
+	T *data;
+	self const *parent;
 
   RAJA_INLINE
   constexpr
   SharedMemory() :
-    data(std::make_shared<std::array<T, size>>())
+    data(new T[NumElem]),
+		parent(nullptr)
   {
-//    printf("shmem ctor %p\n", this);
   }
 
   RAJA_INLINE
   ~SharedMemory()
   {
-//    printf("shmem dtor %p\n", this);
+		if(parent == nullptr){
+			delete[] data;
+		}
   }
 
-//  RAJA_INLINE
-//  SharedMemory(self const &c) : data(c.data)
-//  {
-//      printf("shmem copy ctor %p\n", this);
-//  }
-
+  RAJA_INLINE
+  SharedMemory(self const &c) : data(c.data), parent(&c)
+  {
+  }
 
 
   template<typename IDX>
   RAJA_INLINE
   constexpr
   T &operator[](IDX i) const {
-    return (*data)[i];
+    return data[i];
   }
 };
 

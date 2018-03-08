@@ -38,7 +38,7 @@ namespace RAJA
 {
 
 
-
+namespace internal{
 
 template <typename Type>
 class thread_private_iterator
@@ -65,10 +65,14 @@ public:
   RAJA_HOST_DEVICE constexpr value_type operator*() const {
     return value_type{};
   }
+  
+	RAJA_HOST_DEVICE constexpr bool operator==(thread_private_iterator<Type> const &) const {
+    return true;
+  }
 
 };
 
-
+} // namespace internal
 
 /*!
  ******************************************************************************
@@ -94,7 +98,7 @@ template <typename StorageT>
 struct ThreadPrivate {
 
   //! the underlying iterator type (this is bogus, to make it look like a segment)
-  using iterator = thread_private_iterator<StorageT>;
+  using iterator = internal::thread_private_iterator<StorageT>;
   //! the underlying value_type type
   /*!
    * this corresponds to the template parameter
@@ -125,8 +129,7 @@ struct ThreadPrivate {
    * \return Returns a copy of *this, since ThreadPrivate has no iteration
    *         space.
    */
-  RAJA_HOST_DEVICE RAJA_INLINE ThreadPrivate slice(Index_type ,
-                                           Index_type ) const
+  RAJA_HOST_DEVICE RAJA_INLINE ThreadPrivate slice(Index_type, Index_type ) const
   {
     return ThreadPrivate{};
   }

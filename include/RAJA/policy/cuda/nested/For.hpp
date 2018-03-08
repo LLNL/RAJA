@@ -200,7 +200,7 @@ struct CudaStatementExecutor<Data, For<ArgumentId, cuda_threadblock_exec<max_thr
 		}
 
 		dim.blocks *= num_blocks;
-		dim.threads *= (int)max_threads;
+		dim.threads *= max_threads;
 
 		return dim;
 	}

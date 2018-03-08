@@ -75,11 +75,6 @@ namespace nested
  */
 template <camp::idx_t HpArgumentId, typename HpExecPolicy, typename ArgList, typename ExecPolicy, typename... EnclosedStmts>
 struct Hyperplane : public internal::Statement<RAJA::ExecPolicy<HpExecPolicy, ExecPolicy>, EnclosedStmts...> {
-  //! Execution policy for stepping through hyperplanes
-  using h_exec_policy_t = HpExecPolicy;
-
-  //! Execution policy for iterating within a hyperplane
-  using exce_policy_t = ExecPolicy;
 };
 
 

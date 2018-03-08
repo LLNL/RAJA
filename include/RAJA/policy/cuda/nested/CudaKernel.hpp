@@ -119,32 +119,12 @@ struct cuda_occ_calc_launch{
   RAJA_INLINE
   static internal::LaunchDim calc_max_physical(Func const &func, int shmem_size){
 
-#if 1
     int occ_blocks=-1, occ_threads=-1;
 
     cudaOccupancyMaxPotentialBlockSize(
         &occ_blocks, &occ_threads, func, shmem_size);
 
     return internal::LaunchDim(occ_blocks, occ_threads);
-
-#else
-    int num_sm = 56;
-    int threads_per_sm = 2048;
-    int shmem_per_sm = 64*1024;
-
-    int blocks_per_sm = threads_per_sm / num_threads;
-
-    if(shmem_size > 0){
-      int shmem_blocks_per_sm = shmem_per_sm / shmem_size;
-      if(shmem_blocks_per_sm < blocks_per_sm){
-        blocks_per_sm = shmem_blocks_per_sm;
-      }
-    }
-
-    int occ_blocks = blocks_per_sm * num_sm;
-
-    return internal::LaunchDim(occ_blocks, num_threads);
-#endif
 
   }
 };

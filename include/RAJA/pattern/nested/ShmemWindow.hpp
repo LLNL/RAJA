@@ -53,14 +53,10 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
     if(shmem_window != nullptr){
       // Set the window by copying the current index_tuple to the shared location
       *shmem_window = data.get_begin_index_tuple();
+		}
 
-      // Invoke the enclosed statements
-      execute_statement_list<camp::list<EnclosedStmts...>>(data);
-    }
-    else{
-      // No shared memory setup, so this becomes a NOP
-      execute_statement_list<camp::list<EnclosedStmts...>>(std::forward<Data>(data));
-    }
+		// Invoke the enclosed statements
+		execute_statement_list<camp::list<EnclosedStmts...>>(std::forward<Data>(data));
   }
 };
 
