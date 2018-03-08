@@ -16,6 +16,22 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
+#if defined(RAJA_ENABLE_OPENMP)
+
 TEST(SynchronizeTest, omp){
-  RAJA::synchronize<RAJA::omp_synchronize>();
+
+  double test_val = 0.0;
+
+#pragma omp parallel shared(test_val)
+  {
+    if (omp_get_thread_num() == 0) {
+      test_val = 5.0;
+    }
+
+    RAJA::synchronize<RAJA::omp_synchronize>();
+
+    EXPECT_EQ(test_val, 5.0);
+  }
 }
+
+#endif
