@@ -36,6 +36,9 @@ static constexpr Index_type y_len = 5;
 
 
 RAJA_INDEX_VALUE(TypedIndex, "TypedIndex");
+RAJA_INDEX_VALUE(ZoneI, "ZoneI");
+RAJA_INDEX_VALUE(ZoneJ, "ZoneJ");
+RAJA_INDEX_VALUE(ZoneK, "ZoneK");
 
 
 template <typename NestedPolicy>
@@ -257,8 +260,8 @@ CUDA_TEST(Nested, CudaCollapse1a)
   cudaDeviceSynchronize();
 
   for(int i = 0;i < 3*2*5;++ i){
-    printf("x[%d]=%d\n", i, x[i]);
-    //ASSERT_EQ(x[i], 1);
+    //printf("x[%d]=%d\n", i, x[i]);
+    ASSERT_EQ(x[i], 1);
   }
 
   cudaFree(x);
@@ -1490,7 +1493,7 @@ CUDA_TEST(Nested, CudaShmemWindow2d){
       //ASSERT_EQ(ptr[i*M+j], (int)(i*j));
     }
   }
-	printf("errors=%ld of %ld\n", errors, (long)M*N);
+	//printf("errors=%ld of %ld\n", errors, (long)M*N);
 	//ASSERT_EQ(errors, 0);
 
   // check trip count
@@ -1546,7 +1549,7 @@ CUDA_TEST(Nested, CudaExec_1threadexec){
 
 
   long result = (long)trip_count;
-  printf("result=%ld\n", result);
+  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N*N);
 }
@@ -1796,7 +1799,7 @@ TEST(Nested, Hyperplane_seq){
 
         [=] (int i, int j){
 
-            printf("%d, %d\n", i, j);
+            //printf("%d, %d\n", i, j);
 
             trip_count += 1;
 
@@ -1804,7 +1807,7 @@ TEST(Nested, Hyperplane_seq){
     );
 
     long result = (long)trip_count;
-    printf("result=%ld\n", result);
+    //printf("result=%ld\n", result);
 
     ASSERT_EQ(result, N*N);
 
@@ -1920,6 +1923,116 @@ CUDA_TEST(Nested, Hyperplane_cuda_2d_negstride)
   cudaFree(x);
 }
 
+
+CUDA_TEST(Nested, Hyperplane_cuda_3d_tiled)
+{
+  using namespace RAJA;
+  using namespace RAJA::nested;
+  using Pol = RAJA::nested::Policy<
+            CudaKernel<
+              RAJA::nested::Tile<1, RAJA::nested::tile_fixed<13>, seq_exec,
+                RAJA::nested::Tile<2, RAJA::nested::tile_fixed<5>, seq_exec,
+                  Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1,2>, cuda_thread_exec,
+                    Lambda<0>
+                  >
+                >
+              >
+            >
+          >;
+
+  constexpr long N = (long)11;
+  constexpr long M = (long)27;
+  constexpr long O = (long)13;
+
+  long *x = nullptr;
+  cudaMallocManaged(&x, N*M*O*sizeof(long));
+
+
+  using myview = TypedView<long, Layout<3, RAJA::Index_type>, ZoneI, ZoneJ, ZoneK>;
+  myview xv{x, N, M, O};
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  RAJA::nested::forall<Pol>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<ZoneI>(0, N),
+                       RAJA::TypedRangeSegment<ZoneJ>(0, M),
+                       RAJA::TypedRangeSegment<ZoneK>(0, O)),
+      [=] __device__ (ZoneI i, ZoneJ j, ZoneK k) {
+
+        long left = 1;
+        if(i > 0){
+          left = xv(i-1,j,k);
+        }
+
+        long up = 1;
+        if(j > 0){
+          up = xv(i,j-1,k);
+        }
+
+        long back = 1;
+        if(k > 0){
+          back = xv(i,j,k-1);
+        }
+
+        xv(i,j,k) = left + up + back;
+
+        trip_count += 1;
+
+       });
+
+  cudaDeviceSynchronize();
+
+
+  ASSERT_EQ((long)trip_count, (long)N*M*O);
+
+
+  long y[N][M][O];
+  for(int i = 0;i < N;++ i){
+    for(int j = 0;j < M;++ j){
+      for(int k = 0;k < O;++ k){
+        long left = 1;
+        if(i > 0){
+          left = y[i-1][j][k];
+        }
+
+        long up = 1;
+        if(j > 0){
+          up = y[i][j-1][k];
+        }
+
+        long back = 1;
+        if(k > 0){
+          back = y[i][j][k-1];
+        }
+
+        y[i][j][k] = left + up + back;
+      }
+    }
+  }
+
+
+//  for(int i = 0;i < N;++ i){
+//    printf("\ni=%d:\n  ", i);
+//    for(int j = 0;j < M;++ j){
+//      for(int k = 0;k < O;++ k){
+//        printf("%ld(%ld) ", xv(i,j,k), y[i][j][k]);
+//      }
+//      printf("\n  ");
+//    }
+//  }
+//  printf("\n");
+
+
+  for(ZoneI i(0);i < N;++ i){
+    for(ZoneJ j(0);j < M;++ j){
+      for(ZoneK k(0);k < O;++ k){
+        ASSERT_EQ(xv(i,j,k), y[*i][*j][*k]);
+      }
+    }
+  }
+
+  cudaFree(x);
+}
 
 
 TEST(Nested, IndexCalc_seq){

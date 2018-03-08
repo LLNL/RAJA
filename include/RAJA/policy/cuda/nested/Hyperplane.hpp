@@ -53,8 +53,9 @@ struct CudaStatementExecutor<Data, Hyperplane<HpArgumentId, cuda_seq_syncthreads
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
     int hp_len = segment_length<HpArgumentId>(data) +
-        VarOps::foldl(RAJA::operators::plus<idx_t>(),
+        VarOps::foldl(RAJA::operators::plus<int>(),
             segment_length<Args>(data)...);
+
 
     /* Execute the outer loop over hyperplanes
      *
@@ -96,9 +97,12 @@ struct CudaStatementExecutor<Data, HyperplaneInner<HpArgumentId, ArgList<Args...
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
   using stmt_list_t = StatementList<EnclosedStmts...>;
+  using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, index_calc_t>;
   enclosed_stmts_t enclosed_stmts;
+
+  IndexCalc index_calc;
 
   inline
   RAJA_DEVICE
@@ -108,26 +112,42 @@ struct CudaStatementExecutor<Data, HyperplaneInner<HpArgumentId, ArgList<Args...
     auto h = camp::get<HpArgumentId>(data.offset_tuple);
     using idx_t = decltype(h);
 
-    // compute actual iterate for HpArgumentId
-    // as:  i0 = h - (i1 + i2 + i3 + ...)
-    idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
-        camp::get<Args>(data.offset_tuple)...);
-
     // get length of Hp indexed argument
     auto len = segment_length<HpArgumentId>(data);
 
-    // check bounds
-    if(i >= 0 && i < len){
 
-      // store in tuple
-      data.template assign_offset<HpArgumentId>(i);
+    if(block_carry <= 0){
+      // set indices to beginning of each segment, and increment
+      // to this threads first iteration
+      bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
 
-      // execute enclosed statements
-      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+      while(!done) {
 
-      // reset h for next iteration
-      data.template assign_offset<HpArgumentId>(h);
+        // compute actual iterate for HpArgumentId
+        // as:  i0 = h - (i1 + i2 + i3 + ...)
+        idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+            camp::get<Args>(data.offset_tuple)...);
+
+        // check bounds
+        if(i >= 0 && i < len){
+
+          // store in tuple
+          data.template assign_offset<HpArgumentId>(i);
+
+          // execute enclosed statements
+          enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+
+          // reset h for next iteration
+          data.template assign_offset<HpArgumentId>(h);
+        }
+
+
+        done = index_calc.increment(data, blockDim.x);
+
+      }
+
     }
+
 
   }
 

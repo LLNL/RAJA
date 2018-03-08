@@ -346,6 +346,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
+
   ShmemTile<cuda_shmem, double, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
 
   ShmemTile<cuda_shmem, double, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
