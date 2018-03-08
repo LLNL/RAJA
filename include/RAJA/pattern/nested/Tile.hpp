@@ -37,7 +37,10 @@ namespace nested
  * A nested::forall statement that implements a tiling (or blocking) loop.
  *
  */
-template <camp::idx_t ArgumentId, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename TilePolicy,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
 struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using tile_policy_t = TilePolicy;
   using exec_policy_t = ExecPolicy;
@@ -50,18 +53,18 @@ struct tile_fixed {
 };
 
 
-namespace internal{
+namespace internal
+{
 
 
-template <camp::idx_t ArgumentId, typename Data, typename ... EnclosedStmts>
+template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
 struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, EnclosedStmts...>;
   using Base::Base;
 
   template <typename InSegmentType>
-  RAJA_INLINE
-  void operator()(InSegmentType s)
+  RAJA_INLINE void operator()(InSegmentType s)
   {
     // Assign the tile's segment to the tuple
     camp::get<ArgumentId>(Base::data.segment_tuple) = s;
@@ -74,8 +77,6 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
     Base::exec();
   }
 };
-
-
 
 
 template <typename Iterable>
@@ -158,10 +159,10 @@ struct IterableTiler {
     using std::begin;
     using std::end;
     using std::distance;
-    dist = it.end() - it.begin(); //distance(begin(it), end(it));
+    dist = it.end() - it.begin();  // distance(begin(it), end(it));
     num_blocks = dist / block_size;
-    //if (dist % block_size) num_blocks += 1;
-    if(dist - num_blocks*block_size > 0){
+    // if (dist % block_size) num_blocks += 1;
+    if (dist - num_blocks * block_size > 0) {
       num_blocks += 1;
     }
   }
@@ -181,15 +182,15 @@ struct IterableTiler {
 };
 
 
-
-template <camp::idx_t ArgumentId, typename TPol, typename EPol, typename ... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename TPol,
+          typename EPol,
+          typename... EnclosedStmts>
 struct StatementExecutor<Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &data)
+  static RAJA_INLINE void exec(Data &data)
   {
     // Get the segment we are going to tile
     auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -208,10 +209,9 @@ struct StatementExecutor<Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
-
   }
 };
-} // end namespace internal
+}  // end namespace internal
 
 }  // end namespace nested
 }  // end namespace RAJA

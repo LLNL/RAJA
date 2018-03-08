@@ -38,26 +38,23 @@ struct Lambda : internal::Statement<camp::nil> {
 };
 
 
-
-namespace internal{
+namespace internal
+{
 
 template <camp::idx_t LoopIndex>
-struct StatementExecutor<Lambda<LoopIndex>>{
+struct StatementExecutor<Lambda<LoopIndex>> {
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &&data)
+  static RAJA_INLINE void exec(Data &&data)
   {
     invoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
 
-} // namespace internal
+}  // namespace internal
 
 }  // end namespace nested
 }  // end namespace RAJA
-
 
 
 #endif /* RAJA_pattern_nested_HPP */

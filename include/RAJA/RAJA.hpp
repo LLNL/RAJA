@@ -41,15 +41,11 @@
 #include "RAJA/util/types.hpp"
 
 
-
-
-
 #include "RAJA/util/Operators.hpp"
 
 #include "RAJA/util/basic_mempool.hpp"
 
 #include "RAJA/util/camp_aliases.hpp"
-
 
 
 //
@@ -100,18 +96,16 @@
 #include "RAJA/index/IndexValue.hpp"
 
 
-
 #include "RAJA/policy/MultiPolicy.hpp"
-
 
 
 //
 // Multidimensional layouts and views
 //
 #include "RAJA/util/Layout.hpp"
-#include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/View.hpp"
 
 //
@@ -129,7 +123,6 @@
 // Generic iteration templates for perfectly nested loops
 //
 #include "RAJA/pattern/forallN.hpp"
-
 
 
 //

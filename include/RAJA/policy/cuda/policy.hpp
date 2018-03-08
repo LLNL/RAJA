@@ -31,9 +31,9 @@
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/Layout.hpp"
 
 namespace RAJA
 {
@@ -231,29 +231,34 @@ struct CudaDim {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  CudaDim maximum(CudaDim const &c) const {
+  CudaDim maximum(CudaDim const &c) const
+  {
     CudaDim m;
 
-    m.num_threads.x = num_threads.x > c.num_threads.x ? num_threads.x : c.num_threads.x;
-    m.num_threads.y = num_threads.y > c.num_threads.y ? num_threads.y : c.num_threads.y;
-    m.num_threads.z = num_threads.z > c.num_threads.z ? num_threads.z : c.num_threads.z;
+    m.num_threads.x =
+        num_threads.x > c.num_threads.x ? num_threads.x : c.num_threads.x;
+    m.num_threads.y =
+        num_threads.y > c.num_threads.y ? num_threads.y : c.num_threads.y;
+    m.num_threads.z =
+        num_threads.z > c.num_threads.z ? num_threads.z : c.num_threads.z;
 
-    m.num_blocks.x = num_blocks.x > c.num_blocks.x ? num_blocks.x : c.num_blocks.x;
-    m.num_blocks.y = num_blocks.y > c.num_blocks.y ? num_blocks.y : c.num_blocks.y;
-    m.num_blocks.z = num_blocks.z > c.num_blocks.z ? num_blocks.z : c.num_blocks.z;
+    m.num_blocks.x =
+        num_blocks.x > c.num_blocks.x ? num_blocks.x : c.num_blocks.x;
+    m.num_blocks.y =
+        num_blocks.y > c.num_blocks.y ? num_blocks.y : c.num_blocks.y;
+    m.num_blocks.z =
+        num_blocks.z > c.num_blocks.z ? num_blocks.z : c.num_blocks.z;
 
     return m;
   }
 
   RAJA_INLINE
   RAJA_DEVICE
-  bool threadIncluded() const {
-    return (threadIdx.x < num_threads.x) &&
-           (threadIdx.y < num_threads.y) &&
-           (threadIdx.z < num_threads.z) &&
-           (blockIdx.x < num_blocks.x) &&
-           (blockIdx.y < num_blocks.y) &&
-           (blockIdx.z < num_blocks.z);
+  bool threadIncluded() const
+  {
+    return (threadIdx.x < num_threads.x) && (threadIdx.y < num_threads.y)
+           && (threadIdx.z < num_threads.z) && (blockIdx.x < num_blocks.x)
+           && (blockIdx.y < num_blocks.y) && (blockIdx.z < num_blocks.z);
   }
 };
 
@@ -300,7 +305,9 @@ struct CudaThreadBlock {
 
   __device__ inline RAJA::Index_type operator()(void)
   {
-    RAJA::Index_type idx = (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block + (RAJA::Index_type)view(threadIdx);
+    RAJA::Index_type idx =
+        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block
+        + (RAJA::Index_type)view(threadIdx);
 
     if (idx >= distance) {
       idx = RAJA::operators::limits<RAJA::Index_type>::min();
@@ -410,8 +417,6 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 
-
-
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
@@ -424,19 +429,19 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
  * CUDA shared memory
  */
 
-struct cuda_shmem {};
+struct cuda_shmem {
+};
 
 
 /*!
  * CUDA shared memory that allows global indexing into a block's shmem
  */
-template<typename DimView>
+template <typename DimView>
 struct block_map_shmem {
 
-  template<typename T>
-  RAJA_INLINE
-  RAJA_DEVICE
-  static T apply(ptrdiff_t dim_size, T idx){
+  template <typename T>
+  RAJA_INLINE RAJA_DEVICE static T apply(ptrdiff_t dim_size, T idx)
+  {
     DimView dim_view;
     ptrdiff_t block_offset = dim_view(blockIdx) * dim_size;
     return idx - block_offset;
@@ -446,8 +451,6 @@ struct block_map_shmem {
 using block_map_x_shmem = block_map_shmem<Dim3x>;
 using block_map_y_shmem = block_map_shmem<Dim3y>;
 using block_map_z_shmem = block_map_shmem<Dim3z>;
-
-
 
 
 }  // closing brace for RAJA namespace

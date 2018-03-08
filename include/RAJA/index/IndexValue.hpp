@@ -283,14 +283,12 @@ namespace impl
 {
 
 template <typename TO, typename FROM>
-constexpr
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM const val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM const val)
 {
   return TO(val);
 }
 template <typename TO, typename FROM>
-constexpr
-RAJA_HOST_DEVICE RAJA_INLINE TO
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO
 convertIndex_helper(typename FROM::IndexValueType const val)
 {
   return static_cast<TO>(*val);
@@ -304,8 +302,7 @@ convertIndex_helper(typename FROM::IndexValueType const val)
  *
  */
 template <typename TO, typename FROM>
-constexpr
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
 {
   return impl::convertIndex_helper<TO, FROM>(val);
 }

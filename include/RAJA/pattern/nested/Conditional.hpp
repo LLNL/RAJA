@@ -18,89 +18,74 @@ namespace nested
  *
  */
 template <typename Condition, typename... EnclosedStmts>
-struct If : public internal::Statement<camp::nil, EnclosedStmts...>{
+struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 };
 
 
-
-
 /*!
- * An expression that returns the value of the specified nested::forall 
+ * An expression that returns the value of the specified nested::forall
  * parameter.
  *
  * This allows run-time values to affect the control logic within
  * nested::forall policies.
  */
-template<camp::idx_t ParamId>
-struct Param{
-	
-	template<typename Data>
-	RAJA_HOST_DEVICE
-	RAJA_INLINE
-	static
-	auto eval(Data const &data) ->
-		decltype(camp::get<ParamId>(data.param_tuple)) const &
-	{
-		return camp::get<ParamId>(data.param_tuple);
-	}
+template <camp::idx_t ParamId>
+struct Param {
 
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
+      -> decltype(camp::get<ParamId>(data.param_tuple)) const &
+  {
+    return camp::get<ParamId>(data.param_tuple);
+  }
 };
 
 /*!
- * An expression that returns a compile time literal value. 
+ * An expression that returns a compile time literal value.
  *
  */
-template<long value>
-struct Value{
-	
-	template<typename Data>
-	RAJA_HOST_DEVICE
-	RAJA_INLINE
-	static
-	long eval(Data const &data)
-	{
-		return value;
-	}
+template <long value>
+struct Value {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const &data)
+  {
+    return value;
+  }
 };
 
 /*!
- * An equality expression 
+ * An equality expression
  *
  */
-template<typename L, typename R>
-struct Equals{ 
-	
-	template<typename Data>
-	RAJA_HOST_DEVICE
-	RAJA_INLINE
-	static
-	bool eval(Data const &data)
-	{
-		return L::eval(data) == R::eval(data);
-	}
+template <typename L, typename R>
+struct Equals {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) == R::eval(data);
+  }
 };
 
 
 /*!
- * An negation expression 
+ * An negation expression
  *
  */
-template<typename L>
-struct Not{ 
-	
-	template<typename Data>
-	RAJA_HOST_DEVICE
-	RAJA_INLINE
-	static
-	bool eval(Data const &data)
-	{
-		return !(L::eval(data));
-	}
+template <typename L>
+struct Not {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return !(L::eval(data));
+  }
 };
 
 
-namespace internal{
-
+namespace internal
+{
 
 
 template <typename Condition, typename... EnclosedStmts>
@@ -108,24 +93,20 @@ struct StatementExecutor<If<Condition, EnclosedStmts...>> {
 
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &&data)
+  static RAJA_INLINE void exec(Data &&data)
   {
 
-		if(Condition::eval(data)){
-			execute_statement_list<camp::list<EnclosedStmts...>>(std::forward<Data>(data));
-		}
-
+    if (Condition::eval(data)) {
+      execute_statement_list<camp::list<EnclosedStmts...>>(
+          std::forward<Data>(data));
+    }
   }
 };
-
 
 
 }  // namespace internal
 }  // end namespace nested
 }  // end namespace RAJA
-
 
 
 #endif /* RAJA_pattern_nested_HPP */

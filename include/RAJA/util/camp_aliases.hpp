@@ -32,21 +32,21 @@
 #define RAJA_CAMP_ALIASES_HPP
 
 #include "camp/defines.hpp"
-#include "camp/tuple.hpp"
 #include "camp/list/list.hpp"
+#include "camp/tuple.hpp"
 
 namespace RAJA
 {
 
-  using ::camp::make_tuple;
+using ::camp::make_tuple;
 
-  using ::camp::tuple;
+using ::camp::tuple;
 
-  using ::camp::list;
+using ::camp::list;
 
-  using ::camp::at_v;
+using ::camp::at_v;
 
-  using ::camp::idx_t;
+using ::camp::idx_t;
 
 }  // end namespace RAJA
 

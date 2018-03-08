@@ -86,7 +86,8 @@ using policy::sequential::seq_reduce;
 ///////////////////////////////////////////////////////////////////////
 ///
 
-struct seq_shmem{};
+struct seq_shmem {
+};
 
 }  // closing brace for RAJA namespace
 

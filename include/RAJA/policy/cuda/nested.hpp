@@ -14,7 +14,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
 //
 // LLNL-CODE-689114
@@ -28,16 +28,16 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/cuda/nested/internal.hpp"
 #include "RAJA/policy/cuda/nested/Collapse.hpp"
 #include "RAJA/policy/cuda/nested/Conditional.hpp"
 #include "RAJA/policy/cuda/nested/CudaKernel.hpp"
 #include "RAJA/policy/cuda/nested/For.hpp"
-#include "RAJA/policy/cuda/nested/Lambda.hpp"
 #include "RAJA/policy/cuda/nested/Hyperplane.hpp"
+#include "RAJA/policy/cuda/nested/Lambda.hpp"
 #include "RAJA/policy/cuda/nested/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/nested/Sync.hpp"
-#include "RAJA/policy/cuda/nested/Tile.hpp"
 #include "RAJA/policy/cuda/nested/Thread.hpp"
+#include "RAJA/policy/cuda/nested/Tile.hpp"
+#include "RAJA/policy/cuda/nested/internal.hpp"
 
 #endif  // closing endif for header file include guard

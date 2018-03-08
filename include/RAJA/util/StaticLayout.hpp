@@ -41,16 +41,16 @@ namespace detail
 {
 
 
-
-template <typename Range,
-          typename Sizes,
-          typename Strides>
+template <typename Range, typename Sizes, typename Strides>
 struct StaticLayoutBase_impl;
 
 
-
-template <camp::idx_t... RangeInts, RAJA::Index_type... Sizes, RAJA::Index_type... Strides>
-struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>, camp::idx_seq<Strides...>> {
+template <camp::idx_t... RangeInts,
+          RAJA::Index_type... Sizes,
+          RAJA::Index_type... Strides>
+struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
+                             camp::idx_seq<Sizes...>,
+                             camp::idx_seq<Strides...>> {
 
   using sizes = camp::idx_seq<Sizes...>;
   using strides = camp::idx_seq<Strides...>;
@@ -58,14 +58,15 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...
   /*!
    * Default constructor.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticLayoutBase_impl()
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticLayoutBase_impl() {}
+
+  RAJA_INLINE static void print()
   {
+    VarOps::ignore_args(printf("SL: arg%d: size=%d, stride=%d\n",
+                               (int)RangeInts,
+                               (int)Sizes,
+                               (int)Strides)...);
   }
-
-  RAJA_INLINE static void print() {
-    VarOps::ignore_args(printf("SL: arg%d: size=%d, stride=%d\n", (int)RangeInts, (int)Sizes, (int)Strides)...);
-  }
-
 
 
   /*!
@@ -85,9 +86,8 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...
 
 
   template <typename... Indices>
-  static
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  RAJA::Index_type s_oper(Indices... indices)
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type s_oper(
+      Indices... indices)
   {
     // dot product of strides and indices
     return VarOps::sum<RAJA::Index_type>((indices * Strides)...);
@@ -100,58 +100,62 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...
    *
    * @return Total size spanned by indices
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type size() const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type size() const
+  {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
     return VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
-        (Sizes == 0 ? 1 : Sizes)...);
+                         (Sizes == 0 ? 1 : Sizes)...);
   }
 
 
-  static constexpr RAJA::Index_type s_size = VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
-        (Sizes == 0 ? 1 : Sizes)...);
-
+  static constexpr RAJA::Index_type s_size =
+      VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
+                    (Sizes == 0 ? 1 : Sizes)...);
 };
 
-template<camp::idx_t N, camp::idx_t Idx, camp::idx_t ... Sizes>
+template <camp::idx_t N, camp::idx_t Idx, camp::idx_t... Sizes>
 struct StrideCalculatorIdx {
-    static_assert(N == sizeof...(Sizes), "");
+  static_assert(N == sizeof...(Sizes), "");
 
-    using sizes_seq = camp::idx_seq<Sizes...>;
-    static constexpr camp::idx_t size = camp::seq_at<Idx, sizes_seq>::value;
-    static constexpr camp::idx_t size_last = StrideCalculatorIdx<N, Idx+1, Sizes...>::size;
-    static constexpr camp::idx_t value = (size_last > 0 ? size_last : 1) * StrideCalculatorIdx<N, Idx+1, Sizes...>::value;
-    static constexpr camp::idx_t stride = size > 0 ? value : 0;
+  using sizes_seq = camp::idx_seq<Sizes...>;
+  static constexpr camp::idx_t size = camp::seq_at<Idx, sizes_seq>::value;
+  static constexpr camp::idx_t size_last =
+      StrideCalculatorIdx<N, Idx + 1, Sizes...>::size;
+  static constexpr camp::idx_t value =
+      (size_last > 0 ? size_last : 1)
+      * StrideCalculatorIdx<N, Idx + 1, Sizes...>::value;
+  static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
 template <camp::idx_t N, camp::idx_t... Sizes>
 struct StrideCalculatorIdx<N, N, Sizes...> {
-    static_assert(N == sizeof...(Sizes), "");
+  static_assert(N == sizeof...(Sizes), "");
 
-    static constexpr camp::idx_t size = 1;
-    static constexpr camp::idx_t value = 1;
-    static constexpr camp::idx_t stride = size > 0 ? value : 0;
+  static constexpr camp::idx_t size = 1;
+  static constexpr camp::idx_t value = 1;
+  static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
-template<typename Range, typename Sizes>
+template <typename Range, typename Sizes>
 struct StrideCalculator;
 
 template <camp::idx_t... RangeInts, camp::idx_t... Sizes>
 struct StrideCalculator<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>> {
-    static_assert(sizeof...(Sizes) == sizeof...(RangeInts), "");
+  static_assert(sizeof...(Sizes) == sizeof...(RangeInts), "");
 
-    using sizes = camp::idx_seq<Sizes...>;
-    static constexpr camp::idx_t N = sizeof...(Sizes);
-    using strides = camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::stride...>;
+  using sizes = camp::idx_seq<Sizes...>;
+  static constexpr camp::idx_t N = sizeof...(Sizes);
+  using strides =
+      camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::stride...>;
 };
 
 
 template <typename Layout, typename DimTypeList>
 struct TypedStaticLayoutImpl;
 
-template <typename Layout, typename ... DimTypes>
-struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>>
-{
+template <typename Layout, typename... DimTypes>
+struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   /*!
    * Computes a linear space index from specified indices.
    * This is formed by the dot product of the indices and the layout strides.
@@ -159,9 +163,8 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>>
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
-  static
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  RAJA::Index_type s_oper(DimTypes... indices)
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type s_oper(
+      DimTypes... indices)
   {
     return Layout::s_oper(convertIndex<Index_type>(indices)...);
   }
@@ -170,29 +173,27 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>>
   static constexpr RAJA::Index_type s_size = Layout::s_size;
 
   RAJA_INLINE
-  static void print(){Layout::print();}
+  static void print() { Layout::print(); }
 };
 
 
-} // namespace detail
+}  // namespace detail
 
 
-template <camp::idx_t ... Sizes>
-using StaticLayout =
-    detail::StaticLayoutBase_impl<camp::make_idx_seq_t<sizeof...(Sizes)>, camp::idx_seq<Sizes...>,
-    typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>, camp::idx_seq<Sizes...>>::strides
-    >;
+template <camp::idx_t... Sizes>
+using StaticLayout = detail::
+    StaticLayoutBase_impl<camp::make_idx_seq_t<sizeof...(Sizes)>,
+                          camp::idx_seq<Sizes...>,
+                          typename detail::
+                              StrideCalculator<camp::make_idx_seq_t<sizeof...(
+                                                   Sizes)>,
+                                               camp::idx_seq<Sizes...>>::
+                                  strides>;
 
 
-
-
-template <typename TypeList, camp::idx_t ... Sizes>
+template <typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
     detail::TypedStaticLayoutImpl<StaticLayout<Sizes...>, TypeList>;
-
-
-
-
 
 
 }  // namespace RAJA

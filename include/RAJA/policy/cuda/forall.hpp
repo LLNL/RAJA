@@ -146,7 +146,7 @@ __launch_bounds__(BlockSize, 1) __global__
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
-  auto &body = privatizer.get_priv();
+  auto& body = privatizer.get_priv();
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
     body(idx[ii]);
@@ -185,9 +185,11 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     size_t shmem = RAJA::detail::getSharedMemorySize();
 
     impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
-        RAJA::cuda::make_launch_body(
-            gridSize, BlockSize, shmem, stream,
-            std::forward<LoopBody>(loop_body)),
+        RAJA::cuda::make_launch_body(gridSize,
+                                     BlockSize,
+                                     shmem,
+                                     stream,
+                                     std::forward<LoopBody>(loop_body)),
         std::move(begin),
         len);
     RAJA::cuda::peekAtLastError();
@@ -198,7 +200,6 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     RAJA_FT_END;
   }
 }
-
 
 
 //

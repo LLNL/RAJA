@@ -1,7 +1,7 @@
 #ifndef RAJA_policy_loop_nested_Collapse_HPP
 #define RAJA_policy_loop_nested_Collapse_HPP
 
-#include<RAJA/pattern/nested.hpp>
+#include <RAJA/pattern/nested.hpp>
 
 namespace RAJA
 {
@@ -20,9 +20,7 @@ template <typename... EnclosedStmts>
 struct StatementExecutor<Collapse<loop_exec, ArgList<>, EnclosedStmts...>> {
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &data)
+  static RAJA_INLINE void exec(Data &data)
   {
     // termination case: no more loops, just execute enclosed statements
     execute_statement_list<camp::list<EnclosedStmts...>>(data);
@@ -34,16 +32,18 @@ struct StatementExecutor<Collapse<loop_exec, ArgList<>, EnclosedStmts...>> {
 // Executor that handles collapsing of an arbitrarily deep set of seq_exec
 // loops
 //
-template <camp::idx_t Arg0, camp::idx_t ... ArgRest, typename... EnclosedStmts>
-struct StatementExecutor<Collapse<loop_exec, ArgList<Arg0, ArgRest...>, EnclosedStmts...>> {
+template <camp::idx_t Arg0, camp::idx_t... ArgRest, typename... EnclosedStmts>
+struct StatementExecutor<Collapse<loop_exec,
+                                  ArgList<Arg0, ArgRest...>,
+                                  EnclosedStmts...>> {
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &data)
+  static RAJA_INLINE void exec(Data &data)
   {
     // compute next-most inner loop Executor
-    using next_loop_t = StatementExecutor<Collapse<loop_exec, ArgList<ArgRest...>, EnclosedStmts...>>;
+    using next_loop_t = StatementExecutor<Collapse<loop_exec,
+                                                   ArgList<ArgRest...>,
+                                                   EnclosedStmts...>>;
 
     auto len0 = segment_length<Arg0>(data);
 
@@ -56,14 +56,10 @@ struct StatementExecutor<Collapse<loop_exec, ArgList<Arg0, ArgRest...>, Enclosed
 };
 
 
-
-
-
-} // namespace internal
+}  // namespace internal
 
 }  // end namespace nested
 }  // end namespace RAJA
-
 
 
 #endif /* RAJA_pattern_nested_HPP */

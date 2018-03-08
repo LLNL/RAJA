@@ -153,7 +153,8 @@ struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+  using atomic_type =
+      RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
 
   base_type base_;
 
@@ -172,7 +173,7 @@ struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
 
 template <typename AtomicPolicy, typename ViewType>
 RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy> make_atomic_view(
-    ViewType const & view)
+    ViewType const &view)
 {
 
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);

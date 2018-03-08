@@ -216,11 +216,12 @@ public:
    *
    * @return Total size spanned by indices
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
+  {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
     return VarOps::foldl(RAJA::operators::multiplies<IdxLin>(),
-        (sizes[RangeInts] == 0 ? 1 : sizes[RangeInts])...);
+                         (sizes[RangeInts] == 0 ? 1 : sizes[RangeInts])...);
   }
 };
 

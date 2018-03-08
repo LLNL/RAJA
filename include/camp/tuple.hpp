@@ -46,7 +46,7 @@ namespace internal
     CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
 
     CAMP_SUPPRESS_HD_WARN
-    CAMP_HOST_DEVICE constexpr tuple_storage(Type const &v) : val{v} {}
+    CAMP_HOST_DEVICE constexpr tuple_storage(Type const& v) : val{v} {}
 
     CAMP_SUPPRESS_HD_WARN
     CAMP_HOST_DEVICE constexpr tuple_storage(Type&& v)
@@ -80,14 +80,14 @@ namespace internal
 
     CAMP_HOST_DEVICE constexpr tuple_helper() {}
 
-    CAMP_HOST_DEVICE constexpr tuple_helper(Types const &... args)
+    CAMP_HOST_DEVICE constexpr tuple_helper(Types const&... args)
         : internal::tuple_storage<Indices, Types>(args)...
     {
     }
 
-    CAMP_HOST_DEVICE constexpr tuple_helper(
-        const tuple_helper& rhs) :
-        tuple_storage<Indices, Types>(rhs.tuple_storage<Indices, Types>::get_inner())...
+    CAMP_HOST_DEVICE constexpr tuple_helper(const tuple_helper& rhs)
+        : tuple_storage<Indices, Types>(
+              rhs.tuple_storage<Indices, Types>::get_inner())...
     {
     }
 
@@ -124,7 +124,8 @@ private:
 public:
   // Constructors
   CAMP_HOST_DEVICE constexpr tuple() : Base{} {};
-  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : Base(static_cast<Base const &>(o))
+  CAMP_HOST_DEVICE constexpr tuple(tuple const& o)
+      : Base(static_cast<Base const&>(o))
   {
   }
   CAMP_HOST_DEVICE constexpr tuple(tuple&& o)
@@ -133,7 +134,7 @@ public:
   }
   CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
   {
-    Base::operator=(static_cast<Base const &>(rhs));
+    Base::operator=(static_cast<Base const&>(rhs));
     return *this;
   }
   CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
@@ -242,9 +243,10 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
 
 CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
-CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
-                                                  Fn&& f,
-                                                  camp::idx_seq<Sequence...> const &)
+CAMP_HOST_DEVICE constexpr auto invoke_with_order(
+    TupleLike&& t,
+    Fn&& f,
+    camp::idx_seq<Sequence...> const&)
     -> decltype(f(get<Sequence>(forward<TupleLike>(t))...))
 {
   return f(get<Sequence>(forward<TupleLike>(t))...);

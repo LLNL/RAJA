@@ -62,12 +62,18 @@ using Policy = internal::StatementList<Stmts...>;
 ///
 /// Template list of argument indices
 ///
-template <camp::idx_t ... ArgumentId>
-struct ArgList{};
+template <camp::idx_t... ArgumentId>
+struct ArgList {
+};
 
 
-template <typename PolicyType, typename SegmentTuple, typename ParamTuple, typename ... Bodies>
-RAJA_INLINE void forall_param(SegmentTuple &&segments, ParamTuple &&params, Bodies && ... bodies)
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename... Bodies>
+RAJA_INLINE void forall_param(SegmentTuple &&segments,
+                              ParamTuple &&params,
+                              Bodies &&... bodies)
 {
   detail::setChaiExecutionSpace<PolicyType>();
 
@@ -78,8 +84,11 @@ RAJA_INLINE void forall_param(SegmentTuple &&segments, ParamTuple &&params, Bodi
 
   using segment_tuple_t = camp::decay<SegmentTuple>;
   using param_tuple_t = camp::decay<ParamTuple>;
-  
-	using loop_data_t = internal::LoopData<PolicyType, segment_tuple_t, param_tuple_t, camp::decay<Bodies>...>;
+
+  using loop_data_t = internal::LoopData<PolicyType,
+                                         segment_tuple_t,
+                                         param_tuple_t,
+                                         camp::decay<Bodies>...>;
 
 
   // Setup a shared memory window tuple
@@ -93,10 +102,9 @@ RAJA_INLINE void forall_param(SegmentTuple &&segments, ParamTuple &&params, Bodi
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
   // and only copied to provide thread-private instances.
-  loop_data_t loop_data(
-          std::forward<SegmentTuple>(segments),
-          std::forward<ParamTuple>(params),
-          std::forward<Bodies>(bodies)...);
+  loop_data_t loop_data(std::forward<SegmentTuple>(segments),
+                        std::forward<ParamTuple>(params),
+                        std::forward<Bodies>(bodies)...);
 
   // Turn off shared memory setup
   RAJA::detail::finishSharedMemorySetup();
@@ -112,14 +120,12 @@ RAJA_INLINE void forall_param(SegmentTuple &&segments, ParamTuple &&params, Bodi
   detail::clearChaiExecutionSpace();
 }
 
-template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
-RAJA_INLINE void forall(SegmentTuple &&segments, Bodies && ... bodies)
+template <typename PolicyType, typename SegmentTuple, typename... Bodies>
+RAJA_INLINE void forall(SegmentTuple &&segments, Bodies &&... bodies)
 {
-	RAJA::nested::forall_param<PolicyType>(
-		std::forward<SegmentTuple>(segments),
-		RAJA::make_tuple(),
-		std::forward<Bodies>(bodies)...
-	);
+  RAJA::nested::forall_param<PolicyType>(std::forward<SegmentTuple>(segments),
+                                         RAJA::make_tuple(),
+                                         std::forward<Bodies>(bodies)...);
 }
 
 }  // end namespace nested
@@ -127,13 +133,13 @@ RAJA_INLINE void forall(SegmentTuple &&segments, Bodies && ... bodies)
 }  // end namespace RAJA
 
 
-#include "RAJA/pattern/nested/Lambda.hpp"
-#include "RAJA/pattern/nested/For.hpp"
-#include "RAJA/pattern/nested/Tile.hpp"
 #include "RAJA/pattern/nested/Collapse.hpp"
-#include "RAJA/pattern/nested/ShmemWindow.hpp"
-#include "RAJA/pattern/nested/Hyperplane.hpp"
 #include "RAJA/pattern/nested/Conditional.hpp"
+#include "RAJA/pattern/nested/For.hpp"
+#include "RAJA/pattern/nested/Hyperplane.hpp"
+#include "RAJA/pattern/nested/Lambda.hpp"
+#include "RAJA/pattern/nested/ShmemWindow.hpp"
+#include "RAJA/pattern/nested/Tile.hpp"
 
 
 #endif /* RAJA_pattern_nested_HPP */

@@ -27,11 +27,11 @@
 #define RAJA_policy_sequential_shared_memory_HPP
 
 
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/shared_memory.hpp"
 #include <stddef.h>
 #include <memory>
 #include <vector>
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/shared_memory.hpp"
 
 namespace RAJA
 {
@@ -43,48 +43,38 @@ namespace RAJA
  *
  * Data is accessible with const capture-by-value copies of this object.
  */
-template<typename T, size_t NumElem>
+template <typename T, size_t NumElem>
 struct SharedMemory<seq_shmem, T, NumElem> {
   using self = SharedMemory<seq_shmem, T, NumElem>;
   using element_t = T;
 
   static constexpr size_t size = NumElem;
-  static constexpr size_t num_bytes = NumElem*sizeof(T);
+  static constexpr size_t num_bytes = NumElem * sizeof(T);
 
-	T *data;
-	self const *parent;
+  T *data;
+  self const *parent;
 
   RAJA_INLINE
-  constexpr
-  SharedMemory() :
-    data(new T[NumElem]),
-		parent(nullptr)
-  {
-  }
+  constexpr SharedMemory() : data(new T[NumElem]), parent(nullptr) {}
 
   RAJA_INLINE
   ~SharedMemory()
   {
-		if(parent == nullptr){
-			delete[] data;
-		}
+    if (parent == nullptr) {
+      delete[] data;
+    }
   }
 
   RAJA_INLINE
-  SharedMemory(self const &c) : data(c.data), parent(&c)
+  SharedMemory(self const &c) : data(c.data), parent(&c) {}
+
+
+  template <typename IDX>
+  RAJA_INLINE constexpr T &operator[](IDX i) const
   {
-  }
-
-
-  template<typename IDX>
-  RAJA_INLINE
-  constexpr
-  T &operator[](IDX i) const {
     return data[i];
   }
 };
-
-
 
 
 }  // namespace RAJA
