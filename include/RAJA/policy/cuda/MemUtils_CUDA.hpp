@@ -51,6 +51,54 @@ namespace RAJA
 namespace cuda
 {
 
+
+struct device_info{
+  public:
+    static
+    RAJA_INLINE
+    int get_num_sm(){
+      update();
+      return s_num_sm;
+    }
+
+    static
+    RAJA_INLINE
+    int get_max_threads_per_sm(){
+      update();
+      return s_max_threads_per_sm;
+    }
+
+    static
+    RAJA_INLINE
+    int get_max_shmem_per_block(){
+      update();
+      return s_max_shmem_per_block;
+    }
+
+
+  private:
+
+    static
+    RAJA_INLINE
+    void update(){
+      if(s_num_sm < 0){
+        int cur_device = -1;
+        cudaGetDevice(&cur_device);
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, cur_device);
+        s_num_sm = prop.multiProcessorCount;
+        s_max_threads_per_sm = prop.maxThreadsPerMultiProcessor;
+        s_max_shmem_per_block = prop.sharedMemPerBlock;
+      }
+    }
+
+    static int s_num_sm;
+    static int s_max_threads_per_sm;
+    static int s_max_shmem_per_block;
+};
+
+
+
 //! Allocator for pinned memory for use in basic_mempool
 struct PinnedAllocator {
 

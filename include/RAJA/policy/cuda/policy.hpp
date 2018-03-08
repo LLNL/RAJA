@@ -131,6 +131,21 @@ struct cuda_exec
 
 
 /*
+ * Policy like cuda_exec, but uses occupancy calculator to determine
+ * number of threads and blocks.
+ */
+template <bool Async = false>
+struct cuda_occ_exec
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::forall,
+                                                detail::get_launch<Async>::
+                                                    value,
+                                                RAJA::Platform::cuda> {
+};
+
+
+/*
  * Policy for on-device loops, akin to RAJA::loop_exec
  */
 struct cuda_loop_exec
@@ -200,6 +215,7 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
 }  // end namespace policy
 
 using policy::cuda::cuda_exec;
+using policy::cuda::cuda_occ_exec;
 using policy::cuda::cuda_loop_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;

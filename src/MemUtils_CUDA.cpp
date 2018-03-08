@@ -32,6 +32,20 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+// Device properties for quick lookup
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+
+int RAJA::cuda::device_info::s_num_sm = -1;
+int RAJA::cuda::device_info::s_max_threads_per_sm = -1;
+int RAJA::cuda::device_info::s_max_shmem_per_block = -1;
+
+
 namespace RAJA
 {
 
@@ -40,6 +54,9 @@ namespace cuda
 
 namespace detail
 {
+
+
+
 //
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +76,8 @@ cudaInfo tl_status;
 
 //! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
+
+
 
 }  // closing brace for detail namespace
 

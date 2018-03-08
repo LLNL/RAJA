@@ -290,3 +290,120 @@ CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
     ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
   }
 }
+
+
+///
+/// Run traversal with simple range-based iteration
+///
+CUDA_TEST_F(ForallCUDA, forall_range_occ)
+{
+  RAJA::Real_ptr parent = ::parent;
+  RAJA::Real_ptr test_array = ::test_array;
+  RAJA::Real_ptr ref_array = ::ref_array;
+
+  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ref_array[i] = parent[i] * parent[i];
+  }
+
+  RAJA::forall<RAJA::cuda_occ_exec<> >(
+      RAJA::make_range(0, array_length), [=] __device__(RAJA::Index_type idx) {
+        test_array[idx] = parent[idx] * parent[idx];
+      });
+
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
+  }
+}
+
+///
+/// Run range Icount test in its simplest form for sanity check
+///
+CUDA_TEST_F(ForallCUDA, forall_icount_range_occ)
+{
+  RAJA::Real_ptr parent = ::parent;
+  RAJA::Real_ptr test_array = ::test_array;
+  RAJA::Real_ptr ref_array = ::ref_array;
+
+  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+
+  //
+  // Generate reference result to check correctness.
+  // Note: Reference does not use RAJA!!!
+  //
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ref_array[i] = parent[i] * parent[i];
+  }
+
+  RAJA::forall_Icount<RAJA::cuda_occ_exec<> >(
+      RAJA::make_range(0, array_length),
+      0,
+      [=] __device__(RAJA::Index_type icount, RAJA::Index_type idx) {
+        test_array[icount] = parent[idx] * parent[idx];
+      });
+
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
+  }
+}
+
+///
+/// Run traversal test with IndexSet containing multiple segments.
+///
+CUDA_TEST_F(ForallCUDA, forall_indexset_occ)
+{
+  RAJA::Real_ptr parent = ::parent;
+  RAJA::Real_ptr test_array = ::test_array;
+  RAJA::Real_ptr ref_array = ::ref_array;
+
+  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+
+  //
+  // Generate reference result to check correctness.
+  // Note: Reference does not use RAJA!!!
+  //
+  for (decltype(is_indices.size()) i = 0; i < is_indices.size(); ++i) {
+    ref_array[is_indices[i]] = parent[is_indices[i]] * parent[is_indices[i]];
+  }
+
+  RAJA::forall<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_occ_exec<> >>(
+      iset, [=] __device__(RAJA::Index_type idx) {
+        test_array[idx] = parent[idx] * parent[idx];
+      });
+
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
+  }
+}
+
+///
+/// Run Icount test with IndexSet containing multiple segments.
+///
+CUDA_TEST_F(ForallCUDA, forall_icount_indexset_occ)
+{
+  RAJA::Real_ptr parent = ::parent;
+  RAJA::Real_ptr test_array = ::test_array;
+  RAJA::Real_ptr ref_array = ::ref_array;
+
+  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+
+  RAJA::Index_type test_alen = is_indices.size();
+  for (RAJA::Index_type i = 0; i < test_alen; ++i) {
+    ref_array[i] = parent[is_indices[i]] * parent[is_indices[i]];
+  }
+
+  RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit,
+                                       RAJA::cuda_occ_exec<> >>(
+      iset, [=] __device__(RAJA::Index_type icount, RAJA::Index_type idx) {
+        test_array[icount] = parent[idx] * parent[idx];
+      });
+
+  for (RAJA::Index_type i = 0; i < array_length; ++i) {
+    ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
+  }
+}
