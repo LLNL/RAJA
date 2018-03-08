@@ -247,11 +247,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   using NESTED_EXEC_POL = 
-    RAJA::nested::Policy< RAJA::nested::For<1, RAJA::seq_exec,    // row
-                            RAJA::nested::For<0, RAJA::seq_exec,  // col
-                              RAJA::nested::Lambda<0>
-                            >
-                          > >;
+    RAJA::nested::Policy< 
+      RAJA::nested::For<1, RAJA::seq_exec,    // row
+        RAJA::nested::For<0, RAJA::seq_exec,  // col
+          RAJA::nested::Lambda<0>
+        >
+      >  
+    >;
 
   RAJA::nested::forall<NESTED_EXEC_POL>(
                        RAJA::make_tuple(col_range, row_range),
@@ -273,11 +275,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp outer)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double)); 
   
   using NESTED_EXEC_POL1 = 
     RAJA::nested::Policy< 
-       RAJA::nested::For<1, RAJA::omp_parallel_for_exec, // row
-         RAJA::nested::For<0, RAJA::seq_exec, RAJA::nested::Lambda<0> > > >;            // col
+      RAJA::nested::For<1, RAJA::omp_parallel_for_exec, // row
+        RAJA::nested::For<0, RAJA::seq_exec,            // col
+          RAJA::nested::Lambda<0> 
+        > 
+      > 
+    >;
 
   RAJA::nested::forall<NESTED_EXEC_POL1>(
                        RAJA::make_tuple(col_range, row_range),
@@ -298,6 +306,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp inner)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // Swapping the template arguments in this nested policy swaps the loop 
   // nest ordering so the col loop is on the outside and the row loop is 
@@ -307,8 +317,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 
   using NESTED_EXEC_POL2 =
     RAJA::nested::Policy< 
-       RAJA::nested::For<0, RAJA::seq_exec,                // col
-         RAJA::nested::For<1, RAJA::omp_parallel_for_exec, RAJA::nested::Lambda<0> > > >; // row
+      RAJA::nested::For<0, RAJA::seq_exec,                  // col
+        RAJA::nested::For<1, RAJA::omp_parallel_for_exec,   // row
+          RAJA::nested::Lambda<0> 
+        > 
+      > 
+    >;
 
   RAJA::nested::forall<NESTED_EXEC_POL2>(
                        RAJA::make_tuple(col_range, row_range),
@@ -329,16 +343,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - collapse)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // This policy collapses the row and col loops in an OpenMP parallel region.
   // This is the same as using an OpenMP 'parallel for' directive on the 
   // outer loop with a 'collapse(2) clause.
   //
-  using NESTED_EXEC_POL3 = RAJA::nested::Policy<
-          RAJA::nested::Collapse<RAJA::nested::omp_parallel_collapse_exec, RAJA::nested::ArgList<1, 0>,
-              RAJA::nested::Lambda<0>
-            > >;
-
+  using NESTED_EXEC_POL3 = 
+    RAJA::nested::Policy<
+      RAJA::nested::Collapse<RAJA::nested::omp_parallel_collapse_exec, 
+                             RAJA::nested::ArgList<1, 0>,   // row, col
+        RAJA::nested::Lambda<0> 
+      > 
+    >;
 
   RAJA::nested::forall<NESTED_EXEC_POL3>(
                        RAJA::make_tuple(col_range, row_range),
@@ -363,6 +381,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running CUDA mat-mult (RAJA-nested - POL4)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // This policy collapses the into a single CUDA kernel where the row 
   // iterations are distributed across the 'y' block dimension and the
@@ -399,6 +419,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running CUDA mat-mult (RAJA-POL5)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // This policy collapses the col and row loops into a single CUDA kernel
   // using two-dimensional CUDA thread blocks with x and y dimensions defined
