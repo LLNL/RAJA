@@ -2044,9 +2044,9 @@ TEST(Nested, IndexCalc_seq){
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
 
-  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t>;
+  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t, camp::tuple<>>;
 
-  loop_data_t data(segments);
+  loop_data_t data(segments, camp::tuple<>{});
 
   RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::seq_exec> ic;
 
@@ -2085,9 +2085,9 @@ TEST(Nested, IndexCalc_thread){
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
 
-  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t>;
+  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t, camp::tuple<>>;
 
-  loop_data_t data(segments);
+  loop_data_t data(segments, camp::tuple<>{});
 
   RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
 

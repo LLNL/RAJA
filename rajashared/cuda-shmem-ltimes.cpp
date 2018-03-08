@@ -341,8 +341,7 @@ void runLTimesRajaCudaShmem(bool debug,
       TypedRangeSegment<IGroup>(0,num_groups),
       TypedRangeSegment<IMoment>(0,num_moments),
       TypedRangeSegment<IDirection>(0,num_directions),
-      TypedRangeSegment<IZone>(0,num_zones),
-      ThreadPrivate<double>{});
+      TypedRangeSegment<IZone>(0,num_zones));
 
 
 
@@ -353,9 +352,11 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  nested::forall<Pol>(
+  nested::forall_param<Pol>(
 
     segments,
+
+		camp::tuple<double>{0.0}, // thread private temporary storage (last arg in lambdas)
 
     // Lambda<0>
      // Zero out phi

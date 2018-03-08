@@ -100,11 +100,6 @@
 #include "RAJA/index/IndexValue.hpp"
 
 
-//
-// Thread private storage
-//
-#include "RAJA/index/ThreadPrivate.hpp"
-
 
 #include "RAJA/policy/MultiPolicy.hpp"
 

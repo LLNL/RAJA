@@ -112,10 +112,10 @@ template <typename Policy>
 struct StatementExecutor{};
 
 
-template <typename PolicyType, typename SegmentTuple,typename ... Bodies>
+template <typename PolicyType, typename SegmentTuple, typename ParamTuple, typename ... Bodies>
 struct LoopData {
 
-  using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
+  using Self = LoopData<PolicyType, SegmentTuple, ParamTuple, Bodies...>;
 
   using offset_tuple_t = difftype_tuple_from_segments<typename SegmentTuple::TList>;
 
@@ -123,8 +123,13 @@ struct LoopData {
 
   using policy_t = PolicyType;
 
-  using segment_tuple_t = camp::decay<SegmentTuple>;
+	
+
+  using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
+	
+	using param_tuple_t = ParamTuple;
+	ParamTuple param_tuple;
 
   using BodiesTuple = camp::tuple<Bodies...> ;
   const BodiesTuple bodies;
@@ -133,8 +138,8 @@ struct LoopData {
   int shmem_window_start[segment_tuple_t::TList::size];
 
   RAJA_INLINE
-  LoopData(SegmentTuple const &s, Bodies const & ... b)
-      : segment_tuple{s}, bodies{b...}
+  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const & ... b)
+      : segment_tuple{s}, param_tuple{p}, bodies{b...}
   {
     for(size_t i = 0;i < segment_tuple_t::TList::size; ++ i){
       shmem_window_start[i] = 0;
@@ -142,12 +147,12 @@ struct LoopData {
     assign_begin_all();
   }
 
-  template <typename PolicyType0, typename SegmentTuple0, typename ... Bodies0>
+  template <typename PolicyType0, typename SegmentTuple0, typename ParamTuple0, typename ... Bodies0>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  LoopData(LoopData<PolicyType0, SegmentTuple0, Bodies0...> &c)
-      : segment_tuple{c.segment_tuple}, bodies{c.bodies}, offset_tuple{c.offset_tuple}
+  LoopData(LoopData<PolicyType0, SegmentTuple0, ParamTuple0, Bodies0...> &c)
+      : segment_tuple{c.segment_tuple}, param_tuple{c.param_tuple}, bodies{c.bodies}, offset_tuple{c.offset_tuple}
   {
   }
 
@@ -208,13 +213,14 @@ struct LoopData {
 
 
 RAJA_SUPPRESS_HD_WARN
-template <camp::idx_t LoopIndex, camp::idx_t ... Idx, typename Data>
+template <camp::idx_t LoopIndex, camp::idx_t ... OffsetIdx, camp::idx_t ... ParamIdx, typename Data>
 RAJA_HOST_DEVICE
 RAJA_INLINE
-void invoke_lambda_expanded(camp::idx_seq<Idx...> const &, Data &data)
+void invoke_lambda_expanded(camp::idx_seq<OffsetIdx...> const &, camp::idx_seq<ParamIdx...> const &, Data &data)
 {
   camp::get<LoopIndex>(data.bodies)(
-            (camp::get<Idx>(data.segment_tuple).begin()[camp::get<Idx>(data.offset_tuple)] )...
+            (camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)] )...,
+						camp::get<ParamIdx>(data.param_tuple)...
       );
 }
 
@@ -223,7 +229,10 @@ template<camp::idx_t LoopIndex, typename Data>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 void invoke_lambda(Data &data){
-  invoke_lambda_expanded<LoopIndex>(camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{}, data);
+  invoke_lambda_expanded<LoopIndex>(
+	camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{}, 
+	camp::make_idx_seq_t<Data::param_tuple_t::TList::size>{}, 
+	data);
 }
 
 template<camp::idx_t ArgumentId, typename Data>
