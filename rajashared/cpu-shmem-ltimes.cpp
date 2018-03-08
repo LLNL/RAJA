@@ -51,9 +51,9 @@ void runLTimesBare(bool ,
   }
 
 
-  double * __restrict__ d_ell = &ell_data[0];
-  double * __restrict__ d_phi = &phi_data[0];
-  double * __restrict__ d_psi = &psi_data[0];
+  double * RAJA_RESTRICT d_ell = &ell_data[0];
+  double * RAJA_RESTRICT d_phi = &phi_data[0];
+  double * RAJA_RESTRICT d_psi = &psi_data[0];
 
 
 
