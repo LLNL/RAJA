@@ -132,8 +132,8 @@ RAJA_INLINE void forall(SegmentTuple &&segments, Bodies && ... bodies)
 #include "RAJA/pattern/nested/Tile.hpp"
 #include "RAJA/pattern/nested/Collapse.hpp"
 #include "RAJA/pattern/nested/ShmemWindow.hpp"
-
 #include "RAJA/pattern/nested/Hyperplane.hpp"
+#include "RAJA/pattern/nested/Conditional.hpp"
 
 
 #endif /* RAJA_pattern_nested_HPP */

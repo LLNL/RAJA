@@ -660,6 +660,60 @@ TEST(Nested, FissionFusion){
   delete[] y;
 }
 
+TEST(Nested, FissionFusion_Conditional){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  // Loop Fusion if param == 0
+	// Loop Fission if param == 1
+	
+  using Pol = nested::Policy<
+	        If<Equals<Param<0>, Value<0>>,
+            For<0, seq_exec, Lambda<0>, Lambda<1>>
+					>,
+					If<Equals<Param<0>, Value<1>>,
+						For<0, seq_exec, Lambda<0>>,
+						For<0, seq_exec, Lambda<1>>
+				  >
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N];
+  int *y = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+    y[i] = 0;
+  }
+
+
+	for(int param = 0;param < 2;++ param){
+
+
+		nested::forall_param<Pol>(
+
+				RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+
+				RAJA::make_tuple(param),
+
+				[=](int i, int, int){
+					x[i] += 1;
+				},
+
+				[=](int i, int, int){
+					x[i] += 2;
+				}
+		);
+
+	}
+
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(x[i], y[i]);
+  }
+
+  delete[] x;
+  delete[] y;
+}
 
 TEST(Nested, Tile){
   using namespace RAJA;
@@ -1070,6 +1124,52 @@ CUDA_TEST(Nested, CudaExec){
 
   ASSERT_EQ(result, N);
 }
+
+CUDA_TEST(Nested, CudaConditional){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)1024;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<
+              For<0, cuda_threadblock_exec<32>, 
+							  If<Param<0>, Lambda<0>>,
+								Lambda<1>
+						  >
+            >
+        >;
+
+	for(int param = 0;param < 2;++ param){
+
+		RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+
+		nested::forall_param<Pol>(
+
+				RAJA::make_tuple(TypedRangeSegment<int>(0,N)),
+
+				RAJA::make_tuple((bool)param),
+
+				// This only gets executed if param==1
+				[=] RAJA_DEVICE (int i, bool){
+					trip_count += 2;
+				},
+				
+				// This always gets executed
+				[=] RAJA_DEVICE (int i, bool){
+					trip_count += 1;
+				}
+		);
+		cudaDeviceSynchronize();
+
+		long result = (long)trip_count;
+
+		ASSERT_EQ(result, N*(2*param+1));
+	}
+}
+
+
 
 CUDA_TEST(Nested, CudaExec1){
   using namespace RAJA;
