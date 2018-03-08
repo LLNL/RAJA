@@ -25,6 +25,9 @@ namespace policy
 namespace omp
 {
 
+/*!
+ * \brief Synchronize all OpenMP threads and tasks.
+ */
 RAJA_INLINE
 void
 synchronize_impl(const omp_synchronize&)

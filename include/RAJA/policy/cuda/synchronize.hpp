@@ -31,6 +31,9 @@ namespace policy
 namespace cuda
 {
 
+/*!
+ * \brief Synchronize the current CUDA device.
+ */
 RAJA_INLINE
 void
 synchronize_impl(const cuda_synchronize&)
