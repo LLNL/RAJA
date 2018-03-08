@@ -33,7 +33,6 @@ void
 synchronize_impl(const omp_synchronize&)
 {
 #pragma omp barrier
-#pragma omp taskwait
 }
 
 
