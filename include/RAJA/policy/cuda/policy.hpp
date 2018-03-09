@@ -204,6 +204,10 @@ struct cuda_synchronize
 }  // end namespace policy
 
 using policy::cuda::cuda_exec;
+
+template<size_t BLOCK_SIZE>
+using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+
 using policy::cuda::cuda_loop_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;
