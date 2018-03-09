@@ -300,7 +300,7 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return tpl_get_store<Tuple, index_type::value>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
 }
 
 template <typename T, class Tuple>
@@ -311,7 +311,7 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple& t) noexcept -> tuple_ebt_t<T, Tuple>&
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return tpl_get_store<Tuple, index_type::value>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
 }
 
 template <typename... Args>
