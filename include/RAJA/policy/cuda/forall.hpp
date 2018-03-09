@@ -184,6 +184,8 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     // Get amount of dynamic shared memory requested by SharedMemory objects
     size_t shmem = RAJA::detail::getSharedMemorySize();
 
+    printf("(1) gridsize = (%d,%d), blocksize = %d\n", (int)gridSize.x, (int)gridSize.y, (int)BlockSize);
+
     impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
         RAJA::cuda::make_launch_body(
             gridSize, BlockSize, shmem, stream,
