@@ -5,7 +5,7 @@
  *
  * \brief   Header file containing the RAJA Region API call
  *
- *             region<exec_policy>(loop body );
+ *             \code region<exec_policy>(loop body ); \endcode
  *
  *
  ******************************************************************************
@@ -51,9 +51,9 @@ namespace RAJA
 {
   
   template<typename ExecutionPolicy, typename LoopBody>
-  void Region(LoopBody&& loop_body)
+  void region(LoopBody&& loop_body)
   {
-    Region_impl(ExecutionPolicy(), loop_body);    
+    region_impl(ExecutionPolicy(), loop_body);
   }
 
 }  // closing brace for RAJA namespace

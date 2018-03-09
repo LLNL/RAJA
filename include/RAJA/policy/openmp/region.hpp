@@ -1,13 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA omp region
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -26,16 +16,6 @@
 #ifndef RAJA_region_openmp_HPP
 #define RAJA_region_openmp_HPP
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/openmp/policy.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/pattern/detail/forall.hpp"
-
 namespace RAJA
 {
 namespace policy
@@ -43,18 +23,23 @@ namespace policy
 namespace omp
 {
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Add description here... 
-//
-//////////////////////////////////////////////////////////////////////
-//
-
+/*!
+ * \brief RAJA::region implementation for OpenMP.
+ *
+ * Generates an OpenMP parallel region
+ *
+ * \code
+ *
+ * RAJA::region<omp_parallel_region>(loop body);
+ *
+ * \endcode
+ * 
+ * \tparam Policy region policy
+ *
+*/
 
 template <typename Func>
-RAJA_INLINE void Region_impl(const omp_parallel_region &, Func &&body)
+RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
 {
 
 #pragma omp parallel

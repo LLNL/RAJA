@@ -21,7 +21,7 @@
 #include "RAJA_gtest.hpp"
 
 
-template <typename RegionPolicy>
+template <typename RegionPolicy, typename loopPol>
 void testRegion()
 {
     
@@ -32,14 +32,14 @@ void testRegion()
     A[i] = 0; 
   }
   
-  RAJA::Region<RegionPolicy>([=] (){
+  RAJA::region<RegionPolicy>([=] (){
 
-      RAJA::forall<RAJA::omp_for_exec>(RAJA::RangeSegment(0,N), [=](int i){
+      RAJA::forall<loopPol>(RAJA::RangeSegment(0,N), [=](int i){
           A[i] += 1; 
         });    
       
       
-      RAJA::forall<RAJA::omp_for_exec>(RAJA::RangeSegment(0,N), [=](int i){
+      RAJA::forall<loopPol>(RAJA::RangeSegment(0,N), [=](int i){
           A[i] += 1; 
         });      
       
@@ -49,20 +49,22 @@ void testRegion()
     EXPECT_EQ(A[i],2);
   }
 
+  delete[] A;
+  
 }
 
-template<typename ExecPol>
+template<typename ExecPol, typename LoopPol>
 void testRegionPol()
 {
 
-  testRegion<ExecPol>();
+  testRegion<ExecPol, LoopPol>();
 }
 
 TEST(Region, basic_Functions){
 
-  testRegionPol<RAJA::seq_region>();
+  testRegionPol<RAJA::seq_region, RAJA::loop_exec>();
   
 #ifdef RAJA_ENABLE_OPENMP
-  testRegionPol<RAJA::omp_parallel_region>();
+  testRegionPol<RAJA::omp_parallel_region, RAJA::omp_for_exec>();
 #endif  
 }

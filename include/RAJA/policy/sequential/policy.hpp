@@ -49,7 +49,7 @@ namespace sequential
 
 struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Pattern::region,
-                                                          Launch::undefined,
+                                                          Launch::sync,
                                                           Platform::host> {
 };
 

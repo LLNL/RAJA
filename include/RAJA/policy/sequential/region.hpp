@@ -1,15 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA seq region implementation
- *
- *          Note: GNU compiler does not enforce sequential iterations.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -28,16 +16,6 @@
 #ifndef RAJA_region_sequential_HPP
 #define RAJA_region_sequential_HPP
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/pattern/detail/forall.hpp"
-
 namespace RAJA
 {
 namespace policy
@@ -45,18 +23,23 @@ namespace policy
 namespace sequential
 {
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// RAJA sequential region
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-
+/*!
+ * \brief RAJA::region implementation for sequential
+ *
+ * Generates sequential region
+ *
+ * \code
+ *
+ * RAJA::region<seq_region>(loop body);
+ *
+ * \endcode
+ * 
+ * \tparam Policy region policy
+ *
+*/
+  
 template <typename Func>
-RAJA_INLINE void Region_impl(const seq_region &, Func &&body)
+RAJA_INLINE void region_impl(const seq_region &, Func &&body)
 {
   body();
 }
