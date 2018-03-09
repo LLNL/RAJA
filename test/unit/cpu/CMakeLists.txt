@@ -57,3 +57,7 @@ raja_add_test(
 raja_add_test(
   NAME test-forall-view
   SOURCES test-forall-view.cpp)
+
+raja_add_test(
+  NAME test-synchronize
+  SOURCES test-synchronize.cpp)

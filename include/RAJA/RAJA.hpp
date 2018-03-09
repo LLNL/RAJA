@@ -120,6 +120,11 @@
 
 
 //
+// Synchronization
+//
+#include "RAJA/pattern/synchronize.hpp"
+
+//
 //////////////////////////////////////////////////////////////////////
 //
 // These contents of the header files included here define index set

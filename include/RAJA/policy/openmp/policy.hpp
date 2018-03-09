@@ -190,6 +190,10 @@ struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
 };
 
+struct omp_synchronize
+    : make_policy_pattern_launch_t<Policy::openmp, Pattern::synchronize, Launch::sync> {
+};
+
 }  // closing brace for omp namespace
 }  // closing brace for policy namespace
 
@@ -204,6 +208,7 @@ using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_collapse_nowait_exec;
 using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
+using policy::omp::omp_synchronize;
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using policy::omp::omp_target_parallel_for_exec;
