@@ -34,7 +34,7 @@ struct Param {
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
-      -> decltype(camp::get<ParamId>(data.param_tuple)) const &
+      -> decltype(camp::get<ParamId>(data.param_tuple))
   {
     return camp::get<ParamId>(data.param_tuple);
   }

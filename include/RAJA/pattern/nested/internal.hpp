@@ -136,7 +136,7 @@ struct LoopData {
 
   RAJA_INLINE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
-      : segment_tuple{s}, param_tuple{p}, bodies{b...}
+      : segment_tuple(s), param_tuple(p), bodies(b...)
   {
     for (size_t i = 0; i < segment_tuple_t::TList::size; ++i) {
       shmem_window_start[i] = 0;
@@ -150,10 +150,10 @@ struct LoopData {
             typename... Bodies0>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
       LoopData<PolicyType0, SegmentTuple0, ParamTuple0, Bodies0...> &c)
-      : segment_tuple{c.segment_tuple},
-        param_tuple{c.param_tuple},
-        bodies{c.bodies},
-        offset_tuple{c.offset_tuple}
+      : segment_tuple(c.segment_tuple),
+        param_tuple(c.param_tuple),
+        bodies(c.bodies),
+        offset_tuple(c.offset_tuple)
   {
   }
 
