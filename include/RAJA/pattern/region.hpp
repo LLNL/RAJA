@@ -29,23 +29,7 @@
 #ifndef RAJA_region_HPP
 #define RAJA_region_HPP
 
-#include <functional>
-#include <iterator>
-#include <type_traits>
-
-#include "RAJA/config.hpp"
-
-#include "RAJA/internal/Iterators.hpp"
-#include "RAJA/internal/Span.hpp"
-#include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/region.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-#include "RAJA/util/concepts.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/util/chai_support.hpp"
-
 
 namespace RAJA
 {
