@@ -49,55 +49,71 @@ namespace RAJA
  * The dimension sizes specified are the block-local sizes, and define the
  * amount of shared memory to be requested.
  */
-template<typename ShmemPol, typename T, typename Args, typename Sizes, typename Segments>
+template <typename ShmemPol,
+          typename T,
+          typename Args,
+          typename Sizes,
+          typename Segments>
 struct ShmemTile;
 
-template<typename ShmemPol, typename T, camp::idx_t ... Args, RAJA::Index_type ... Sizes, typename ... Segments>
-struct ShmemTile<ShmemPol, T, RAJA::nested::ArgList<Args...>, SizeList<Sizes...>, camp::tuple<Segments...>>
-{
-    static_assert(sizeof...(Args) == sizeof...(Sizes), "ArgList and SizeList must be same length");
+template <typename ShmemPol,
+          typename T,
+          camp::idx_t... Args,
+          RAJA::Index_type... Sizes,
+          typename... Segments>
+struct ShmemTile<ShmemPol,
+                 T,
+                 RAJA::nested::ArgList<Args...>,
+                 SizeList<Sizes...>,
+                 camp::tuple<Segments...>> {
+  static_assert(sizeof...(Args) == sizeof...(Sizes),
+                "ArgList and SizeList must be same length");
 
-    using self_t = ShmemTile<ShmemPol, T, RAJA::nested::ArgList<Args...>, SizeList<Sizes...>, camp::tuple<Segments...>>;
-    // compute the index tuple that nested::forall is going to use
-    using segment_tuple_t = camp::tuple<Segments...>;
-    using index_tuple_t = RAJA::nested::internal::index_tuple_from_segments<typename segment_tuple_t::TList>;
+  using self_t = ShmemTile<ShmemPol,
+                           T,
+                           RAJA::nested::ArgList<Args...>,
+                           SizeList<Sizes...>,
+                           camp::tuple<Segments...>>;
+  // compute the index tuple that nested::forall is going to use
+  using segment_tuple_t = camp::tuple<Segments...>;
+  using index_tuple_t = RAJA::nested::internal::index_tuple_from_segments<
+      typename segment_tuple_t::TList>;
 
-    // compute the indices that we are going to use
-    using arg_tuple_t = camp::tuple<camp::at_v<typename index_tuple_t::TList, Args>...>;
+  // compute the indices that we are going to use
+  using arg_tuple_t =
+      camp::tuple<camp::at_v<typename index_tuple_t::TList, Args>...>;
 
-    // typed layout to map indices to shmem space
-    using layout_t = RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
+  // typed layout to map indices to shmem space
+  using layout_t =
+      RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
 
-    // shared memory object type
-    using shmem_t = SharedMemory<ShmemPol, T, layout_t::s_size>;
-    using element_t = T;
-    shmem_t shmem;
-
-
-    RAJA_SUPPRESS_HD_WARN
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    constexpr
-    ShmemTile() : shmem()
-    {
-		}
-
-    RAJA_SUPPRESS_HD_WARN
-		RAJA_INLINE
-    RAJA_HOST_DEVICE
-    ShmemTile(ShmemTile const &c) : shmem(c.shmem)
-    {
-		}
+  // shared memory object type
+  using shmem_t = SharedMemory<ShmemPol, T, layout_t::s_size>;
+  using element_t = T;
+  shmem_t shmem;
 
 
-    RAJA_SUPPRESS_HD_WARN
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    element_t &operator()(camp::at_v<typename index_tuple_t::TList, Args> ... idx) const {
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ShmemTile() : shmem() {}
+
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ShmemTile(ShmemTile const &c) : shmem(c.shmem) {}
+
+
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  element_t &operator()(
+      camp::at_v<typename index_tuple_t::TList, Args>... idx) const
+  {
 #ifdef __CUDA_ARCH__
-      
-			// Get the shared memory window
-      // (stored at beginning of CUDA dynamic shared memory region)
+
+// Get the shared memory window
+// (stored at beginning of CUDA dynamic shared memory region)
 
 #if 0
       // BROKEN w/ cuda 9.0.176
@@ -137,27 +153,26 @@ struct ShmemTile<ShmemPol, T, RAJA::nested::ArgList<Args...>, SizeList<Sizes...>
 
 
 #if 1
-      // WORKS w/ cuda 9.0.176
-      int *my_ptr = internal::cuda_get_shmem_ptr<int>();
-      auto lin = layout_t::s_oper((idx - my_ptr[Args])...);
+    // WORKS w/ cuda 9.0.176
+    int *my_ptr = internal::cuda_get_shmem_ptr<int>();
+    auto lin = layout_t::s_oper((idx - my_ptr[Args])...);
 #endif
 
 
-			return shmem[lin];
+    return shmem[lin];
 
 #else
-			index_tuple_t const *shmem_window_ptr = static_cast<index_tuple_t*>(RAJA::detail::getSharedMemoryWindow());
-      return shmem[layout_t::s_oper((idx - camp::get<Args>(*shmem_window_ptr))...)];
+    index_tuple_t const *shmem_window_ptr =
+        static_cast<index_tuple_t *>(RAJA::detail::getSharedMemoryWindow());
+    return shmem[layout_t::s_oper(
+        (idx - camp::get<Args>(*shmem_window_ptr))...)];
 
 #endif
-    }
+  }
 };
 
 
-
-
 }  // end namespace RAJA
-
 
 
 #endif

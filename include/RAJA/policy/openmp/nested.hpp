@@ -34,9 +34,9 @@
 #include <climits>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/pattern/nested.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/pattern/nested.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
@@ -47,99 +47,97 @@ namespace RAJA
 {
 namespace nested
 {
-  
-  struct omp_parallel_collapse_exec : make_policy_pattern_t<RAJA::Policy::openmp, RAJA::Pattern::forall, RAJA::policy::omp::For> {
-  };
+
+struct omp_parallel_collapse_exec
+    : make_policy_pattern_t<RAJA::Policy::openmp,
+                            RAJA::Pattern::forall,
+                            RAJA::policy::omp::For> {
+};
 
 namespace internal
 {
 
-  /////////
-  //Collapsing two loops
-  /////////
-  
-  template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
-  struct StatementExecutor<Collapse<omp_parallel_collapse_exec, ArgList<Arg0, Arg1>, EnclosedStmts...>> {
+/////////
+// Collapsing two loops
+/////////
 
-    
-    template <typename Data>
-    static
-    RAJA_INLINE
-    void exec(Data && data)
-    {
+template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
+struct StatementExecutor<Collapse<omp_parallel_collapse_exec,
+                                  ArgList<Arg0, Arg1>,
+                                  EnclosedStmts...>> {
 
-      using data_t = camp::decay<Data>;
 
-      auto l0 = segment_length<Arg0>(data);
-      auto l1 = segment_length<Arg1>(data);
+  template <typename Data>
+  static RAJA_INLINE void exec(Data&& data)
+  {
+
+    using data_t = camp::decay<Data>;
+
+    auto l0 = segment_length<Arg0>(data);
+    auto l1 = segment_length<Arg1>(data);
 
 #pragma omp parallel
-      {
-        data_t private_data = data;
-        
+    {
+      data_t private_data = data;
+
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for collapse(2)
 #else
 #pragma omp for
 #endif
-        for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
-          for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
-            private_data.template assign_offset<Arg0>(i0);
-            private_data.template assign_offset<Arg1>(i1);
-            execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
-          }
+      for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
+        for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
+          private_data.template assign_offset<Arg0>(i0);
+          private_data.template assign_offset<Arg1>(i1);
+          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
         }
-        
       }
-       
     }
-   
-  };
+  }
+};
 
 
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          typename... EnclosedStmts>
+struct StatementExecutor<Collapse<omp_parallel_collapse_exec,
+                                  ArgList<Arg0, Arg1, Arg2>,
+                                  EnclosedStmts...>> {
 
-  template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, typename... EnclosedStmts>
-  struct StatementExecutor<Collapse<omp_parallel_collapse_exec, ArgList<Arg0, Arg1, Arg2>, EnclosedStmts...>> {
 
-    
-    template <typename Data>
-    static
-    RAJA_INLINE
-    void exec(Data && data)
-    {
+  template <typename Data>
+  static RAJA_INLINE void exec(Data&& data)
+  {
 
-      using data_t = camp::decay<Data>;
+    using data_t = camp::decay<Data>;
 
-      auto l0 = segment_length<Arg0>(data);
-      auto l1 = segment_length<Arg1>(data);
-      auto l2 = segment_length<Arg2>(data);
+    auto l0 = segment_length<Arg0>(data);
+    auto l1 = segment_length<Arg1>(data);
+    auto l2 = segment_length<Arg2>(data);
 
 #pragma omp parallel
-      {
-        data_t private_data = data;
-        
+    {
+      data_t private_data = data;
+
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for collapse(3)
 #else
 #pragma omp for
 #endif
-        for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
-          for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
-            for (auto i2 = (decltype(l2))0; i2 < l2; ++i2){
-              private_data.template assign_offset<Arg0>(i0);
-              private_data.template assign_offset<Arg1>(i1);
-              private_data.template assign_offset<Arg2>(i2);
-              execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
-            }
+      for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
+        for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
+          for (auto i2 = (decltype(l2))0; i2 < l2; ++i2) {
+            private_data.template assign_offset<Arg0>(i0);
+            private_data.template assign_offset<Arg1>(i1);
+            private_data.template assign_offset<Arg2>(i2);
+            execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
           }
         }
-        
       }
-       
     }
-   
-  };
-
+  }
+};
 
 
 }  // namespace internal

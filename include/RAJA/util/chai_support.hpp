@@ -78,9 +78,6 @@ struct get_space_from_platform<Platform::undefined> {
 };
 
 
-
-
-
 /*!
  * Returns the platform for the specified execution policy.
  * This is a catch-all, so anything undefined gets Platform::undefined
@@ -92,12 +89,11 @@ struct get_platform {
 };
 
 
-
 /*!
  * Takes a list of policies, extracts their platforms, and provides the
  * reduction of them all.
  */
-template <typename ... Policies>
+template <typename... Policies>
 struct get_platform_from_list {
   static constexpr Platform value =
       VarOps::foldl(max_platform(), get_platform<Policies>::value...);
@@ -112,7 +108,6 @@ struct get_platform_from_list<> {
 };
 
 
-
 /*!
  * Specialization to define the platform for anything derived from PolicyBase,
  * which should catch all standard policies.
@@ -121,10 +116,10 @@ struct get_platform_from_list<> {
  */
 template <typename T>
 struct get_platform<T,
-                 typename std::
-                     enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
-                               && !RAJA::type_traits::is_indexset_policy<T>::
-                                      value>::type>{
+                    typename std::
+                        enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
+                                  && !RAJA::type_traits::is_indexset_policy<T>::
+                                         value>::type> {
 
   static constexpr Platform value = T::platform;
 };
@@ -136,9 +131,9 @@ struct get_platform<T,
  * Examines both segment iteration and segment execution policies.
  */
 template <typename SEG, typename EXEC>
-struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>  :
-  public get_platform_from_list<SEG, EXEC>
-{};
+struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>
+    : public get_platform_from_list<SEG, EXEC> {
+};
 
 
 /*!
@@ -147,15 +142,12 @@ struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>  :
  */
 template <typename TAGS, typename... POLICIES>
 struct get_platform<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
-  : public get_platform_from_list<POLICIES...>
-{};
+    : public get_platform_from_list<POLICIES...> {
+};
 
 
-
-template<typename T>
+template <typename T>
 using get_space = get_space_from_platform<get_platform<T>::value>;
-
-
 }
 }
 

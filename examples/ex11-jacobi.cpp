@@ -76,8 +76,6 @@
  * CUDA_BLOCK_SIZE   - Number of threads per threads block
 */
 #if defined(RAJA_ENABLE_CUDA)
-//const int CUDA_BLOCK_SIZE_X = 16;
-//const int CUDA_BLOCK_SIZE_Y = 16;
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
@@ -344,7 +342,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //
     RAJA::nested::forall<jacobiCUDANestedPolicy>(
                          RAJA::make_tuple(jacobiRange,jacobiRange),
-                         [=] __device__  (RAJA::Index_type m, RAJA::Index_type n) {
+                         [=] RAJA_DEVICE  (RAJA::Index_type m, RAJA::Index_type n) {
                            
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
@@ -362,7 +360,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //
     RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      gridRange, [=] __device__(RAJA::Index_type k) {
+      gridRange, [=] RAJA_DEVICE (RAJA::Index_type k) {
       
           RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);
           Iold[k] = I[k];

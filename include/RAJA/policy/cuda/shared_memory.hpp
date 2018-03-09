@@ -42,18 +42,13 @@ namespace RAJA
 namespace internal
 {
 
-template<typename T>
-RAJA_INLINE
-RAJA_DEVICE
-T* cuda_get_shmem_ptr(size_t byte_offset = 0){
+template <typename T>
+RAJA_INLINE RAJA_DEVICE T *cuda_get_shmem_ptr(size_t byte_offset = 0)
+{
   extern __shared__ char my_ptr[];
-  return reinterpret_cast<T*>(&my_ptr[byte_offset]);
+  return reinterpret_cast<T *>(&my_ptr[byte_offset]);
 }
-
-
 }
-
-
 
 
 /*!
@@ -63,52 +58,46 @@ T* cuda_get_shmem_ptr(size_t byte_offset = 0){
  *
  * The data is always in CUDA shared memory, so it's block-local.
  */
-template<typename T, size_t NumElem>
+template <typename T, size_t NumElem>
 struct SharedMemory<cuda_shmem, T, NumElem> {
   using self = SharedMemory<cuda_shmem, T, NumElem>;
   using element_t = T;
 
   static constexpr size_t size = NumElem;
-  static constexpr size_t num_bytes = NumElem*sizeof(T);
+  static constexpr size_t num_bytes = NumElem * sizeof(T);
 
-  long offset; // offset into dynamic shared memory, in bytes
-  void *parent;     // pointer to original object
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  SharedMemory() :
-  offset(-1), parent((void*)this) {}
+  long offset;   // offset into dynamic shared memory, in bytes
+  void *parent;  // pointer to original object
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-   SharedMemory(self const &c) :
-  offset(c.offset), parent(c.parent)
+  SharedMemory() : offset(-1), parent((void *)this) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  SharedMemory(self const &c) : offset(c.offset), parent(c.parent)
   {
-    // only implement the registration on the HOST
+// only implement the registration on the HOST
 #ifndef __CUDA_ARCH__
-    offset = RAJA::detail::registerSharedMemoryObject(parent, NumElem*sizeof(T));
+    offset =
+        RAJA::detail::registerSharedMemoryObject(parent, NumElem * sizeof(T));
 #endif
   }
 
 
-  template<typename IDX>
-  RAJA_INLINE
-  RAJA_DEVICE
-  T &operator[](IDX i) const {
+  template <typename IDX>
+  RAJA_INLINE RAJA_DEVICE T &operator[](IDX i) const
+  {
 
     T *T_ptr = internal::cuda_get_shmem_ptr<T>(offset);
 
     return T_ptr[i];
   }
-
 };
-
-
-
 
 
 }  // namespace RAJA
 
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA
 
 #endif

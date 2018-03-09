@@ -13,9 +13,9 @@
 #define RAJA_policy_cuda_nested_Collapse_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 #include "RAJA/pattern/nested.hpp"
 #include "RAJA/policy/cuda/nested/For.hpp"
+#include "camp/camp.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -41,8 +41,8 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/policy/cuda/nested/For.hpp"
 #include "RAJA/pattern/nested/Collapse.hpp"
+#include "RAJA/policy/cuda/nested/For.hpp"
 //#include "RAJA/util/Layout.hpp"
 
 
@@ -54,41 +54,45 @@ namespace internal
 {
 
 
-
-
 /*
  * Statement Executor for collapsing multiple segments iteration space,
  * and provides work sharing according to the collapsing execution policy.
  */
-template <typename Data, typename ExecPolicy, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, Collapse<ExecPolicy, ArgList<>, EnclosedStmts...>, IndexCalc> {
+template <typename Data,
+          typename ExecPolicy,
+          typename... EnclosedStmts,
+          typename IndexCalc>
+struct CudaStatementExecutor<Data,
+                             Collapse<ExecPolicy, ArgList<>, EnclosedStmts...>,
+                             IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
   enclosed_stmts_t enclosed_stmts;
 
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int block_carry)
+  inline RAJA_DEVICE void exec(Data &data,
+                               int num_logical_blocks,
+                               int block_carry)
   {
     // execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
     return enclosed_stmts.calculateDimensions(data, max_physical);
   }
-
 };
 
 
@@ -96,41 +100,50 @@ struct CudaStatementExecutor<Data, Collapse<ExecPolicy, ArgList<>, EnclosedStmts
  * Statement Executor for collapsing multiple segments iteration space,
  * and provides work sharing according to the collapsing execution policy.
  */
-template <typename Data, typename ExecPolicy, camp::idx_t Arg0, camp::idx_t ... ArgRest,  typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, Collapse<ExecPolicy, ArgList<Arg0, ArgRest...>, EnclosedStmts...>, IndexCalc> {
+template <typename Data,
+          typename ExecPolicy,
+          camp::idx_t Arg0,
+          camp::idx_t... ArgRest,
+          typename... EnclosedStmts,
+          typename IndexCalc>
+struct CudaStatementExecutor<Data,
+                             Collapse<ExecPolicy,
+                                      ArgList<Arg0, ArgRest...>,
+                                      EnclosedStmts...>,
+                             IndexCalc> {
 
-  using stmt_list_t = StatementList<For<Arg0, ExecPolicy, Collapse<ExecPolicy, ArgList<ArgRest...>, EnclosedStmts...> > >;
+  using stmt_list_t = StatementList<For<Arg0,
+                                        ExecPolicy,
+                                        Collapse<ExecPolicy,
+                                                 ArgList<ArgRest...>,
+                                                 EnclosedStmts...> > >;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
   enclosed_stmts_t enclosed_stmts;
 
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, int num_logical_blocks, int block_carry)
+  inline RAJA_DEVICE void exec(Data &data,
+                               int num_logical_blocks,
+                               int block_carry)
   {
     // execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
     return enclosed_stmts.calculateDimensions(data, max_physical);
   }
-
 };
-
-
-
-
-
 
 
 }  // namespace internal

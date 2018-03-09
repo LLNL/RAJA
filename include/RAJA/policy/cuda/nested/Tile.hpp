@@ -34,8 +34,8 @@
 
 #ifdef RAJA_ENABLE_CUDA
 
-#include "RAJA/pattern/nested/internal.hpp"
 #include "RAJA/pattern/nested/Tile.hpp"
+#include "RAJA/pattern/nested/internal.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
@@ -48,22 +48,28 @@ namespace RAJA
 {
 namespace nested
 {
-namespace internal{
+namespace internal
+{
 
 
-
-
-template <typename Data, camp::idx_t ArgumentId, typename TPol, typename ... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, IndexCalc> {
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename IndexCalc>
+struct CudaStatementExecutor<Data,
+                             Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+                             IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
   enclosed_stmts_t enclosed_stmts;
 
-  inline
-  __device__
-  void exec(Data &data, int num_logical_blocks, int block_carry)
+  inline __device__ void exec(Data &data,
+                              int num_logical_blocks,
+                              int block_carry)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -78,7 +84,7 @@ struct CudaStatementExecutor<Data, Tile<ArgumentId, TPol, seq_exec, EnclosedStmt
     int len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0;i < len;i += chunk_size) {
+    for (int i = 0; i < len; i += chunk_size) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -93,16 +99,17 @@ struct CudaStatementExecutor<Data, Tile<ArgumentId, TPol, seq_exec, EnclosedStmt
   }
 
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
 
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
@@ -115,20 +122,18 @@ struct CudaStatementExecutor<Data, Tile<ArgumentId, TPol, seq_exec, EnclosedStmt
     segment = segment.slice(0, TPol::chunk_size);
 
     // compute dimensions of children with segment restricted to tile
-    LaunchDim dim = enclosed_stmts.calculateDimensions(private_data, max_physical);
+    LaunchDim dim =
+        enclosed_stmts.calculateDimensions(private_data, max_physical);
 
 
     return dim;
   }
-
 };
 
 
-
-
-} // end namespace internal
+}  // end namespace internal
 }  // end namespace nested
 }  // end namespace RAJA
 
-#endif // RAJA_ENABLE_CUDA
-#endif /* RAJA_pattern_nested_HPP */
+#endif  // RAJA_ENABLE_CUDA
+#endif  /* RAJA_pattern_nested_HPP */

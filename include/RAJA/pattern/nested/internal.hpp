@@ -80,9 +80,6 @@ struct ForTraitBase : public ForBase {
 };
 
 
-
-
-
 template <typename Iterator>
 struct iterable_difftype_getter {
   using type = typename Iterator::iterator::difference_type;
@@ -96,9 +93,7 @@ using difftype_list_from_segments =
 template <typename Segments>
 using difftype_tuple_from_segments =
     typename camp::apply_l<camp::lambda<camp::tuple>,
-    difftype_list_from_segments<Segments> >::type;
-
-
+                           difftype_list_from_segments<Segments>>::type;
 
 
 template <typename Iterator>
@@ -114,137 +109,145 @@ using value_type_list_from_segments =
 template <typename Segments>
 using index_tuple_from_segments =
     typename camp::apply_l<camp::lambda<camp::tuple>,
-                           value_type_list_from_segments<Segments> >::type;
-
-
+                           value_type_list_from_segments<Segments>>::type;
 
 
 template <typename Policy>
-struct StatementExecutor{};
+struct StatementExecutor {
+};
 
 
-template <typename PolicyType, typename SegmentTuple,typename ... Bodies>
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename... Bodies>
 struct LoopData {
 
-  using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
+  using Self = LoopData<PolicyType, SegmentTuple, ParamTuple, Bodies...>;
 
-  using offset_tuple_t = difftype_tuple_from_segments<typename SegmentTuple::TList>;
+  using offset_tuple_t =
+      difftype_tuple_from_segments<typename SegmentTuple::TList>;
 
   using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
 
   using policy_t = PolicyType;
 
-  using segment_tuple_t = camp::decay<SegmentTuple>;
+
+  using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
-  using BodiesTuple = camp::tuple<Bodies...> ;
+  using param_tuple_t = ParamTuple;
+  ParamTuple param_tuple;
+
+  using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
   int shmem_window_start[segment_tuple_t::TList::size];
 
   RAJA_INLINE
-  LoopData(SegmentTuple const &s, Bodies const & ... b)
-      : segment_tuple{s}, bodies{b...}
+  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
+      : segment_tuple(s), param_tuple(p), bodies(b...)
   {
-    for(size_t i = 0;i < segment_tuple_t::TList::size; ++ i){
+    for (size_t i = 0; i < segment_tuple_t::TList::size; ++i) {
       shmem_window_start[i] = 0;
     }
     assign_begin_all();
   }
 
-  template <typename PolicyType0, typename SegmentTuple0, typename ... Bodies0>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  LoopData(LoopData<PolicyType0, SegmentTuple0, Bodies0...> &c)
-      : segment_tuple{c.segment_tuple}, bodies{c.bodies}, offset_tuple{c.offset_tuple}
+  template <typename PolicyType0,
+            typename SegmentTuple0,
+            typename ParamTuple0,
+            typename... Bodies0>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
+      LoopData<PolicyType0, SegmentTuple0, ParamTuple0, Bodies0...> &c)
+      : segment_tuple(c.segment_tuple),
+        param_tuple(c.param_tuple),
+        bodies(c.bodies),
+        offset_tuple(c.offset_tuple)
   {
   }
 
   template <camp::idx_t Idx, typename IndexT>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  void assign_offset(IndexT const &i)
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_offset(IndexT const &i)
   {
     camp::get<Idx>(offset_tuple) = i;
   }
 
 
   template <camp::idx_t Idx>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  int assign_begin()
+  RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()
   {
     camp::get<Idx>(offset_tuple) = 0;
     return 0;
   }
 
-  template <camp::idx_t ... Idx>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  void assign_begin_all_expanded(camp::idx_seq<Idx...> const &)
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_begin_all_expanded(
+      camp::idx_seq<Idx...> const &)
   {
-    VarOps::ignore_args( assign_begin<Idx>()... );
-
+    VarOps::ignore_args(assign_begin<Idx>()...);
   }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
   void assign_begin_all()
   {
-    assign_begin_all_expanded(camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
+    assign_begin_all_expanded(
+        camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
   }
 
 
-
-  template <camp::idx_t ... Idx>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  index_tuple_t get_begin_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_begin_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
   {
-    return camp::make_tuple( (*camp::get<Idx>(segment_tuple).begin())... );
+    return camp::make_tuple((*camp::get<Idx>(segment_tuple).begin())...);
   }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
   index_tuple_t get_begin_index_tuple() const
   {
-    return get_begin_index_tuple_expanded(camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
+    return get_begin_index_tuple_expanded(
+        camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
   }
-
 };
 
 
-
-
 RAJA_SUPPRESS_HD_WARN
-template <camp::idx_t LoopIndex, camp::idx_t ... Idx, typename Data>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-void invoke_lambda_expanded(camp::idx_seq<Idx...> const &, Data &data)
+template <camp::idx_t LoopIndex,
+          camp::idx_t... OffsetIdx,
+          camp::idx_t... ParamIdx,
+          typename Data>
+RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
+    camp::idx_seq<OffsetIdx...> const &,
+    camp::idx_seq<ParamIdx...> const &,
+    Data &data)
 {
-  camp::get<LoopIndex>(data.bodies)(
-            (camp::get<Idx>(data.segment_tuple).begin()[camp::get<Idx>(data.offset_tuple)] )...
-      );
+  camp::get<LoopIndex>(
+      data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
+                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
+                   camp::get<ParamIdx>(data.param_tuple)...);
 }
 
 
-template<camp::idx_t LoopIndex, typename Data>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void invoke_lambda(Data &data){
-  invoke_lambda_expanded<LoopIndex>(camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{}, data);
+template <camp::idx_t LoopIndex, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
+{
+  invoke_lambda_expanded<LoopIndex>(
+      camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{},
+      camp::make_idx_seq_t<Data::param_tuple_t::TList::size>{},
+      data);
 }
 
-template<camp::idx_t ArgumentId, typename Data>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-auto segment_length(Data const &data) ->
-	typename camp::at_v<typename Data::segment_tuple_t::TList, ArgumentId>::iterator::difference_type
+template <camp::idx_t ArgumentId, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
+    typename camp::at_v<typename Data::segment_tuple_t::TList,
+                        ArgumentId>::iterator::difference_type
 {
-	return camp::get<ArgumentId>(data.segment_tuple).end() - 
-	       camp::get<ArgumentId>(data.segment_tuple).begin();
+  return camp::get<ArgumentId>(data.segment_tuple).end()
+         - camp::get<ArgumentId>(data.segment_tuple).begin();
 }
 
 
@@ -252,15 +255,14 @@ template <camp::idx_t idx, camp::idx_t N, typename StmtList>
 struct StatementListExecutor;
 
 
+template <camp::idx_t statement_index,
+          camp::idx_t num_statements,
+          typename StmtList>
+struct StatementListExecutor {
 
-
-template <camp::idx_t statement_index, camp::idx_t num_statements, typename StmtList>
-struct StatementListExecutor{
-
-  template<typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &&data) {
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
 
     // Get the statement we're going to execute
     using statement = camp::at_v<StmtList, statement_index>;
@@ -269,7 +271,8 @@ struct StatementListExecutor{
     StatementExecutor<statement>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index+1, num_statements, StmtList>::exec(std::forward<Data>(data));
+    StatementListExecutor<statement_index + 1, num_statements, StmtList>::exec(
+        std::forward<Data>(data));
   }
 };
 
@@ -279,42 +282,38 @@ struct StatementListExecutor{
  */
 
 template <camp::idx_t num_statements, typename StmtList>
-struct StatementListExecutor<num_statements,num_statements,StmtList> {
+struct StatementListExecutor<num_statements, num_statements, StmtList> {
 
-  template<typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &&) {}
-
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&)
+  {
+  }
 };
 
 
-
-
-template<typename StmtList, typename Data>
-RAJA_INLINE
-void execute_statement_list(Data && data){
-  StatementListExecutor<0, StmtList::size, StmtList>::exec(std::forward<Data>(data));
+template <typename StmtList, typename Data>
+RAJA_INLINE void execute_statement_list(Data &&data)
+{
+  StatementListExecutor<0, StmtList::size, StmtList>::exec(
+      std::forward<Data>(data));
 }
 
 // Gives all GenericWrapper derived types something to enable_if on
 // in our thread_privatizer
-struct GenericWrapperBase {};
+struct GenericWrapperBase {
+};
 
-template <typename Data, typename ... EnclosedStmts>
+template <typename Data, typename... EnclosedStmts>
 struct GenericWrapper : public GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
 
   RAJA_INLINE
-  constexpr
-  explicit GenericWrapper(data_t &d) : data{d} {}
+  constexpr explicit GenericWrapper(data_t &d) : data{d} {}
 
   RAJA_INLINE
-  void exec(){
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
-  }
+  void exec() { execute_statement_list<camp::list<EnclosedStmts...>>(data); }
 };
 
 
@@ -331,13 +330,14 @@ struct NestedPrivatizer {
   value_type privatized_wrapper;
 
   RAJA_INLINE
-  constexpr
-  NestedPrivatizer(const T &o) : privatized_data{o.data}, privatized_wrapper(privatized_data) {}
+  constexpr NestedPrivatizer(const T &o)
+      : privatized_data{o.data}, privatized_wrapper(privatized_data)
+  {
+  }
 
   RAJA_INLINE
   reference_type get_priv() { return privatized_wrapper; }
 };
-
 
 
 /**
@@ -345,42 +345,38 @@ struct NestedPrivatizer {
  * from GenericWrapper
  */
 template <typename T>
-constexpr
-RAJA_INLINE
-typename std::enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value, NestedPrivatizer<T>>::type thread_privatize(T &wrapper)
+constexpr RAJA_INLINE typename std::
+    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
+              NestedPrivatizer<T>>::type
+    thread_privatize(T &wrapper)
 {
   return NestedPrivatizer<T>{wrapper};
 }
 
 
-
-
-template<camp::idx_t ... Seq, typename ... IdxTypes, typename ... Segments>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void set_shmem_window_to_begin_expanded(camp::idx_seq<Seq...>, camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
+template <camp::idx_t... Seq, typename... IdxTypes, typename... Segments>
+RAJA_INLINE RAJA_HOST_DEVICE void set_shmem_window_to_begin_expanded(
+    camp::idx_seq<Seq...>,
+    camp::tuple<IdxTypes...> &window,
+    camp::tuple<Segments...> const &segment_tuple)
+{
   VarOps::ignore_args(
-      (camp::get<Seq>(window) = camp::get<Seq>(segment_tuple).begin()[0])...
-      );
+      (camp::get<Seq>(window) = camp::get<Seq>(segment_tuple).begin()[0])...);
 }
 
-template<typename ... IdxTypes, typename ... Segments>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void set_shmem_window_to_begin(camp::tuple<IdxTypes...> &window, camp::tuple<Segments...> const &segment_tuple){
+template <typename... IdxTypes, typename... Segments>
+RAJA_INLINE RAJA_HOST_DEVICE void set_shmem_window_to_begin(
+    camp::tuple<IdxTypes...> &window,
+    camp::tuple<Segments...> const &segment_tuple)
+{
   using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
 
   set_shmem_window_to_begin_expanded(loop_idx{}, window, segment_tuple);
 }
 
 
-
-
-
-
 }  // end namespace internal
 }  // end namespace nested
-
 
 
 #ifdef RAJA_ENABLE_CHAI
@@ -390,10 +386,10 @@ namespace detail
 
 
 template <typename T>
-struct get_statement_platform
-{
+struct get_statement_platform {
   static constexpr Platform value =
-          get_platform_from_list<typename T::execution_policy_t, typename T::enclosed_statements_t>::value;
+      get_platform_from_list<typename T::execution_policy_t,
+                             typename T::enclosed_statements_t>::value;
 };
 
 /*!
@@ -404,19 +400,18 @@ struct get_statement_platform
  * each of them.
  */
 template <typename... Stmts>
-struct get_platform<RAJA::nested::internal::StatementList<Stmts...>>{
+struct get_platform<RAJA::nested::internal::StatementList<Stmts...>> {
   static constexpr Platform value =
-        VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
+      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
 };
 
 /*!
  * Specialize for an empty statement list to be undefined
  */
 template <>
-struct get_platform<RAJA::nested::internal::StatementList<>>{
+struct get_platform<RAJA::nested::internal::StatementList<>> {
   static constexpr Platform value = Platform::undefined;
 };
-
 
 
 }  // end detail namespace

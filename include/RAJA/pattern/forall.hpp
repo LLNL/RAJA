@@ -319,7 +319,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
@@ -344,7 +345,8 @@ RAJA_INLINE concepts::
     forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();

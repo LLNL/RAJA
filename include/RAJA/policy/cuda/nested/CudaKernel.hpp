@@ -13,8 +13,8 @@
 #define RAJA_policy_cuda_nested_CudaKernel_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 #include "RAJA/pattern/nested.hpp"
+#include "camp/camp.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -57,21 +57,18 @@ namespace nested
 {
 
 
-
-
-
 /*!
  * CUDA kernel launch policy where the user specifies the number of physical
  * thread blocks and threads per block.
  */
 template <bool async0, int num_blocks, int num_threads>
-struct cuda_explicit_launch{
+struct cuda_explicit_launch {
 
   static constexpr bool async = async0;
 
-  template<typename Func>
-  RAJA_INLINE
-  static internal::LaunchDim calc_max_physical(Func const &, int ){
+  template <typename Func>
+  RAJA_INLINE static internal::LaunchDim calc_max_physical(Func const &, int)
+  {
 
     return internal::LaunchDim(num_blocks, num_threads);
   }
@@ -83,43 +80,25 @@ struct cuda_explicit_launch{
  * are determined by the CUDA occupancy calculator.
  */
 template <int num_threads0, bool async0>
-struct cuda_occ_calc_launch{
+struct cuda_occ_calc_launch {
 
   static constexpr bool async = async0;
 
   static constexpr int num_threads = num_threads0;
 
-  template<typename Func>
-  RAJA_INLINE
-  static internal::LaunchDim calc_max_physical(Func const &func, int shmem_size){
+  template <typename Func>
+  RAJA_INLINE static internal::LaunchDim calc_max_physical(Func const &func,
+                                                           int shmem_size)
+  {
 
-#if 1
-    int occ_blocks=-1, occ_threads=-1;
+    int occ_blocks = -1, occ_threads = -1;
 
-    cudaOccupancyMaxPotentialBlockSize(
-        &occ_blocks, &occ_threads, func, shmem_size);
+    cudaOccupancyMaxPotentialBlockSize(&occ_blocks,
+                                       &occ_threads,
+                                       func,
+                                       shmem_size);
 
     return internal::LaunchDim(occ_blocks, occ_threads);
-
-#else
-    int num_sm = 56;
-    int threads_per_sm = 2048;
-    int shmem_per_sm = 64*1024;
-
-    int blocks_per_sm = threads_per_sm / num_threads;
-
-    if(shmem_size > 0){
-      int shmem_blocks_per_sm = shmem_per_sm / shmem_size;
-      if(shmem_blocks_per_sm < blocks_per_sm){
-        blocks_per_sm = shmem_blocks_per_sm;
-      }
-    }
-
-    int occ_blocks = blocks_per_sm * num_sm;
-
-    return internal::LaunchDim(occ_blocks, num_threads);
-#endif
-
   }
 };
 
@@ -130,7 +109,8 @@ struct cuda_occ_calc_launch{
  *
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct CudaKernelExt : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
+struct CudaKernelExt
+    : public internal::Statement<cuda_exec<0>, EnclosedStmts...> {
 };
 
 
@@ -140,15 +120,16 @@ struct CudaKernelExt : public internal::Statement<cuda_exec<0>, EnclosedStmts...
  *
  */
 template <typename... EnclosedStmts>
-using CudaKernel = CudaKernelExt<cuda_occ_calc_launch<1024, false>, EnclosedStmts...>;
+using CudaKernel =
+    CudaKernelExt<cuda_occ_calc_launch<1024, false>, EnclosedStmts...>;
 
 template <typename... EnclosedStmts>
-using CudaKernelAsync = CudaKernelExt<cuda_occ_calc_launch<1024, true>, EnclosedStmts...>;
+using CudaKernelAsync =
+    CudaKernelExt<cuda_occ_calc_launch<1024, true>, EnclosedStmts...>;
 
 
 namespace internal
 {
-
 
 
 /*!
@@ -162,15 +143,12 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
   data_t private_data = data;
 
   // Instantiate an executor object
-	using executor_t = cuda_statement_list_executor_t<StmtList, Data>;
-	executor_t executor;
+  using executor_t = cuda_statement_list_executor_t<StmtList, Data>;
+  executor_t executor;
 
-	// execute the the object
-	executor.exec(private_data, num_logical_blocks, -1);
-
+  // execute the the object
+  executor.exec(private_data, num_logical_blocks, -1);
 }
-
-
 
 
 /*!
@@ -183,16 +161,13 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
   using StatementType = CudaKernelExt<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data &&data)
+  static RAJA_INLINE void exec(Data &&data)
   {
 
     int shmem = RAJA::detail::getSharedMemorySize();
-//    printf("Shared memory size=%d\n", (int)shmem);
+    //    printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;
-
 
 
     //
@@ -200,15 +175,11 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     //
 
     using data_t = camp::decay<Data>;
-    LaunchDim max_physical = LaunchConfig::calc_max_physical(CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
+    LaunchDim max_physical = LaunchConfig::calc_max_physical(
+        CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 
 //    printf("Physical limits: %d blocks, %d threads\n",
 //        (int)max_physical.blocks, (int)max_physical.threads);
-
-
-
-
-
 
 
     //
@@ -216,8 +187,9 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     //
 
     // Privatize the LoopData, using make_launch_body to setup reductions
-    auto cuda_data = RAJA::cuda::make_launch_body(max_physical.blocks, max_physical.threads, shmem, stream, data);
-//    printf("Data size=%d\n", (int)sizeof(cuda_data));
+    auto cuda_data = RAJA::cuda::make_launch_body(
+        max_physical.blocks, max_physical.threads, shmem, stream, data);
+    //    printf("Data size=%d\n", (int)sizeof(cuda_data));
 
 
     // Compute logical dimensions
@@ -231,11 +203,8 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
 
-//    printf("Logical dims: %d blocks, %d threads\n",
-//        (int)logical_dims.blocks, (int)logical_dims.threads);
-
-
-
+    //    printf("Logical dims: %d blocks, %d threads\n",
+    //        (int)logical_dims.blocks, (int)logical_dims.threads);
 
 
     //
@@ -246,18 +215,16 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-//    printf("Launch dims: %d blocks, %d threads\n",
-//        (int)launch_dims.blocks, (int)launch_dims.threads);
-
-
-
+    //    printf("Launch dims: %d blocks, %d threads\n",
+    //        (int)launch_dims.blocks, (int)launch_dims.threads);
 
 
     //
     // Launch the kernels
     //
     CudaKernelLauncher<StatementList<EnclosedStmts...>>
-    <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(cuda_data, logical_dims.blocks);
+        <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
+            cuda_data, logical_dims.blocks);
 
 
     // Check for errors
@@ -265,16 +232,11 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
 
     RAJA::cuda::launch(stream);
 
-    if (!LaunchConfig::async){
+    if (!LaunchConfig::async) {
       RAJA::cuda::synchronize(stream);
     }
-
-
-
-
   }
 };
-
 
 
 }  // namespace internal

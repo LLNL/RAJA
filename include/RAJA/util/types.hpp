@@ -61,10 +61,9 @@ const int UndefinedValue = -9999999;
 ///
 /// Template list of sizes
 ///
-template<Index_type ... Sizes>
-struct SizeList{};
-
-
+template <Index_type... Sizes>
+struct SizeList {
+};
 
 
 /*!

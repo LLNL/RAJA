@@ -103,8 +103,7 @@ struct TypedRangeSegment {
 
   //! move constructor
   RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment&& o)
-      : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end))
+      : m_begin(std::move(o.m_begin)), m_end(std::move(o.m_end))
   {
   }
 
@@ -115,7 +114,8 @@ struct TypedRangeSegment {
   }
 
   //! copy assignment
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const& o)
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment& operator=(
+      TypedRangeSegment const& o)
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
@@ -159,11 +159,12 @@ struct TypedRangeSegment {
    * length
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(Index_type begin,
-                                           Index_type length) const
+                                                       Index_type length) const
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
-    return TypedRangeSegment{convertIndex<Index_type>(start), convertIndex<Index_type>(end)};
+    return TypedRangeSegment{convertIndex<Index_type>(start),
+                             convertIndex<Index_type>(end)};
   }
 
   //! equality comparison
@@ -263,12 +264,15 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin,
+                                           Index_type end,
+                                           Index_type stride)
       : m_begin(iterator(DiffT{begin}, DiffT{stride})),
         m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) + static_cast<value_type>(stride)
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin)
+                + static_cast<value_type>(stride)
                 - (stride > 0 ? value_type{1} : value_type{-1}))
                / static_cast<value_type>(stride))
   {
@@ -295,7 +299,8 @@ struct TypedRangeStrideSegment {
   }
 
   //! copy assignment
-  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o)
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(
+      TypedRangeStrideSegment const& o)
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
@@ -349,9 +354,7 @@ struct TypedRangeStrideSegment {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
 
-    return TypedRangeStrideSegment{start,
-                                   end,
-                                   m_begin.get_stride()};
+    return TypedRangeStrideSegment{start, end, m_begin.get_stride()};
   }
 
   //! equality comparison

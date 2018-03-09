@@ -13,8 +13,8 @@
 #define RAJA_policy_cuda_nested_Lambda_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 #include "RAJA/pattern/nested.hpp"
+#include "camp/camp.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -51,86 +51,77 @@ namespace internal
 {
 
 template <typename Data, camp::idx_t LoopIndex, typename IndexCalc>
-struct CudaStatementExecutor<Data, RAJA::nested::Lambda<LoopIndex>, IndexCalc>{
+struct CudaStatementExecutor<Data, RAJA::nested::Lambda<LoopIndex>, IndexCalc> {
 
   IndexCalc index_calc;
 
-  inline
-  __device__
-  void exec(Data &data, int num_logical_blocks, int block_carry)
-	{
+  inline __device__ void exec(Data &data,
+                              int num_logical_blocks,
+                              int block_carry)
+  {
 
-    if(block_carry <= 0){
-			// set indices to beginning of each segment, and increment
-			// to this threads first iteration
-			bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
+    if (block_carry <= 0) {
+      // set indices to beginning of each segment, and increment
+      // to this threads first iteration
+      bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
 
-			while(!done) {
-			
-				invoke_lambda<LoopIndex>(data);
-			
-			  done = index_calc.increment(data, blockDim.x);
-			
-			}
+      while (!done) {
 
-		}
+        invoke_lambda<LoopIndex>(data);
 
+        done = index_calc.increment(data, blockDim.x);
+      }
+    }
   }
 
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     // nop
   }
 
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
 
     return LaunchDim();
-
   }
-
 };
 
 
 template <typename Data, camp::idx_t LoopIndex, typename Segments>
-struct CudaStatementExecutor<Data, Lambda<LoopIndex>, CudaIndexCalc_Terminator<Segments>>{
+struct CudaStatementExecutor<Data,
+                             Lambda<LoopIndex>,
+                             CudaIndexCalc_Terminator<Segments>> {
 
-  inline
-  __device__
-  void exec(Data &data, int num_logical_blocks, int block_carry)
+  inline __device__ void exec(Data &data,
+                              int num_logical_blocks,
+                              int block_carry)
 
   {
-    if(block_carry <= 0){
+    if (block_carry <= 0) {
       invoke_lambda<LoopIndex>(data);
     }
   }
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     // nop
   }
 
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
 
     return LaunchDim();
-
   }
-
 };
-
-
-
-
-
-
 
 
 }  // namespace internal

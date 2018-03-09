@@ -13,8 +13,8 @@
 #define RAJA_policy_cuda_nested_Sync_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 #include "RAJA/pattern/nested.hpp"
+#include "camp/camp.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -52,40 +52,32 @@ namespace nested
  *
  *
  */
-struct CudaSyncThreads : public internal::Statement<camp::nil>{
+struct CudaSyncThreads : public internal::Statement<camp::nil> {
 };
 
 namespace internal
 {
 
 template <typename Data, typename IndexCalc>
-struct CudaStatementExecutor<Data, CudaSyncThreads, IndexCalc>{
+struct CudaStatementExecutor<Data, CudaSyncThreads, IndexCalc> {
 
-  inline
-  __device__
-  void exec(Data &, int , int )
-  {
-    __syncthreads();
-  }
+  inline __device__ void exec(Data &, int, int) { __syncthreads(); }
 
-  inline
-  RAJA_DEVICE
-  void initBlocks(Data &data, int num_logical_blocks, int block_stride)
+  inline RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
   {
     // nop
   }
 
 
   RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical){
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
 
     return LaunchDim();
-
   }
-
 };
-
-
 
 
 }  // namespace internal

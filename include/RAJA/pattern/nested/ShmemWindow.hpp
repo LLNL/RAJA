@@ -49,18 +49,13 @@ namespace nested
  */
 
 template <typename... EnclosedStmts>
-struct SetShmemWindow : public internal::Statement<camp::nil, EnclosedStmts...>
-{
+struct SetShmemWindow
+    : public internal::Statement<camp::nil, EnclosedStmts...> {
 };
 
 
-
-
-
-
-namespace internal{
-
-
+namespace internal
+{
 
 
 template <typename... EnclosedStmts>
@@ -68,37 +63,30 @@ struct StatementExecutor<SetShmemWindow<EnclosedStmts...>> {
 
 
   template <typename Data>
-  static
-  RAJA_INLINE
-  void exec(Data && data)
+  static RAJA_INLINE void exec(Data &&data)
   {
     // Grab pointer to shared shmem window
     using loop_data_t = camp::decay<Data>;
     using index_tuple_t = typename loop_data_t::index_tuple_t;
-    index_tuple_t *shmem_window = static_cast<index_tuple_t*>(detail::getSharedMemoryWindow());
+    index_tuple_t *shmem_window =
+        static_cast<index_tuple_t *>(detail::getSharedMemoryWindow());
 
-    if(shmem_window != nullptr){
-      // Set the window by copying the current index_tuple to the shared location
+    if (shmem_window != nullptr) {
+      // Set the window by copying the current index_tuple to the shared
+      // location
       *shmem_window = data.get_begin_index_tuple();
+    }
 
-      // Invoke the enclosed statements
-      execute_statement_list<camp::list<EnclosedStmts...>>(data);
-    }
-    else{
-      // No shared memory setup, so this becomes a NOP
-      execute_statement_list<camp::list<EnclosedStmts...>>(std::forward<Data>(data));
-    }
+    // Invoke the enclosed statements
+    execute_statement_list<camp::list<EnclosedStmts...>>(
+        std::forward<Data>(data));
   }
 };
 
 
-
-
-
-} // namespace internal
+}  // namespace internal
 }  // end namespace nested
 }  // end namespace RAJA
-
 
 
 #endif /* RAJA_pattern_nested_HPP */

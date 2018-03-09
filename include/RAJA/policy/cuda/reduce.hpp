@@ -603,19 +603,13 @@ struct Reduce_Data {
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
-  Reduce_Data()
-  {
-    reset(T(), T());
-  }
+  Reduce_Data() { reset(T(), T()); }
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
-  Reduce_Data(T initValue, T identity_)
-  {
-    reset(initValue, identity_);
-  }
+  Reduce_Data(T initValue, T identity_) { reset(initValue, identity_); }
 
   void reset(T initValue, T identity_ = T())
   {
@@ -688,15 +682,9 @@ struct ReduceAtomic_Data {
   T* device;
   bool own_device_ptr;
 
-  ReduceAtomic_Data()
-  {
-    reset(T(), T());
-  }
-  
-  ReduceAtomic_Data(T initValue, T identity_)
-  {
-    reset(initValue, identity_);
-  }
+  ReduceAtomic_Data() { reset(T(), T()); }
+
+  ReduceAtomic_Data(T initValue, T identity_) { reset(initValue, identity_); }
 
   void reset(T initValue, T identity_ = Combiner::identity())
   {
@@ -764,10 +752,7 @@ template <bool Async, typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-
-  Reduce()
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
+  Reduce() : parent{this}, tally_or_val_ptr{new PinnedTally<T>}
   {
     reset(T(), Combiner::identity());
   }
@@ -775,8 +760,7 @@ public:
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
+      : parent{this}, tally_or_val_ptr{new PinnedTally<T>}
   {
     reset(init_val, identity_);
   }
