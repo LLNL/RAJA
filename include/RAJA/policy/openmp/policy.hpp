@@ -77,9 +77,12 @@ struct Distribute {
 //
 
 struct omp_parallel_region
-    : make_policy_pattern_t<Policy::openmp, Pattern::region, omp::For> {
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host> {
 };
-
+  
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
