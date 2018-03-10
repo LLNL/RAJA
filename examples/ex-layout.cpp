@@ -21,11 +21,12 @@
 #include "memoryManager.hpp"
 
 /*
- *  Layout Example
+ *  Layout and View Examples
  *
- *  Populates a 4-dimensional array
  *
  *  RAJA features shown:
+ *    -  Layout
+ *    -  View 
  *    - `forall` loop iteration template method
  *    -  basic usage of the layout object
  */
@@ -33,8 +34,9 @@
 //
 // Function to check result
 //
+
 template<typename T>
-void checkResult(T A, T B, int len);
+void printMat(T A, int nRows, int nCols);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -42,156 +44,129 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //Define dimension
 //
-  const int dim = 4;
+  const int dim = 3;
 
 //
 // Define stride length
 //  
   const int Istride = 2;
   const int Jstride = 3;
-  const int Mstride = 4;
-  const int Nstride = 5;
+  const int Kstride = 4;
 
 //
 //Define range segment
 //
   RAJA::RangeSegment Irange(0,Istride);
   RAJA::RangeSegment Jrange(0,Jstride);
-  RAJA::RangeSegment Mrange(0,Mstride);
-  RAJA::RangeSegment Nrange(0,Nstride);
+  RAJA::RangeSegment Krange(0,Kstride);
 
+//-------------------------------------------//
 //
-// Allocate 1D arrays
-//
-  int array_len = Istride*Jstride*Mstride*Nstride;
+// 1. The following example illustrates how a
+//    layout may be used to used to abstract
+//    index calculations.
+//-------------------------------------------//
 
-  int* A = new int[array_len];
-  int* B = new int[array_len];
-
-  //Wrap A in a view
-  RAJA::View<int, RAJA::Layout<dim> > A_IJMN_view(A, Istride, Jstride, Mstride, Nstride);
-
-  //Create layout objects assuming an IJMN indexing
-  RAJA::Layout<dim> IJMN_layout = RAJA::make_permuted_layout({Istride,Jstride,Mstride,Nstride}, RAJA::as_array<RAJA::Perm<0,1,2,3>>::get());
-  //Equivalent to : RAJA::Layout<dim> IJMN_Layout(Istride,JStride,MStride,Nstride);
-
-//----------------------------------------------------------------------------//
-//
-// In the following example we show how a layout
-// object may be used to convert a 1D index to a 4D index.
-//----------------------------------------------------------------------------//   
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array_len), [=] (int id) {
-      
-      //Map from 1D index to 4D index
-      int i,j,m,n;
-      IJMN_layout.toIndices(id,i,j,m,n);
-      
-      A_IJMN_view(i,j,m,n) = id%dim;
-  });
-
-
-//----------------------------------------------------------------------------//
-//
-// In the following example we show how a layout
-// object may be used to convert from a 4D index 
-// to a 1D index.
-//----------------------------------------------------------------------------//
-  using IJMN_EXEC_POL =
-    RAJA::nested::Policy< 
-    RAJA::nested::For<3, RAJA::seq_exec>,
-    RAJA::nested::For<2, RAJA::seq_exec>,
-    RAJA::nested::For<1, RAJA::seq_exec>,                
-    RAJA::nested::For<0, RAJA::seq_exec> >;
-
-  
-  RAJA::nested::forall(IJMN_EXEC_POL{},
-                       RAJA::make_tuple(Irange, Jrange, Mrange, Nrange),
-                       [=](int i, int j, int m, int n) {
-                         
-       int id = IJMN_layout(i,j,m,n);
-       B[id] = id%dim;
-  });
-
-//
-// Check result
-//
-  checkResult(A, B, array_len);
-
-
-
-//============================================================================//
 //  
-//As a second example we can permute the the layout object
-//============================================================================//
-
-  //Create a view with permuted strides
-  RAJA::View<int, RAJA::Layout<dim> > A_NMJI_view(A, Nstride, Mstride, Jstride, Istride);
-  
-  //Permute the layout
-  RAJA::Layout<dim> NMJI_layout = RAJA::make_permuted_layout({Istride,Jstride,Mstride,Nstride}, RAJA::as_array<RAJA::Perm<3,2,1,0>>::get());
-  
-//----------------------------------------------------------------------------//
+// Here we create a 3-d layout object with stride dimensions
+// IStride, JStride, Kstride yielding IStride x JStride x Kstride
+// unique indices. 
 //
-//Conversion of 1D index to 4D index with an NMJI layout
-//----------------------------------------------------------------------------//
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array_len), [=] (int id) {
-      
-      //Map from 1D index to 4D index
-      int m,n,i,j;
-      NMJI_layout.toIndices(id,i,j,m,n);
-      A_NMJI_view(n,m,j,i) = id/dim;
+  RAJA::Layout<dim> layout(Kstride,Jstride,Istride);
 
-    });
+//Layout has a method to map from a multi-index space to
+//a linear space.
+  int i=1, j=2, k=3;
+
+//Equivalently: int id = i + Istride*(j + Jstride*k)
+  int id = layout(k,j,i);
+
+//Print result
+  std::cout<<"\nLayout results 1: "<<std::endl;
+  std::cout<<"id = "<<id<<" expected: "<< i + Istride*(j + Jstride*k)<<std::endl;
   
-//----------------------------------------------------------------------------//
 //
-// Conversion on from a 4D index with permuted layout (NMJI) to
-// to a 1D index.
-//----------------------------------------------------------------------------//
-    using NMJI_EXEC_POL =
-    RAJA::nested::Policy< 
-    RAJA::nested::For<3, RAJA::seq_exec>, 
-    RAJA::nested::For<2, RAJA::seq_exec>,
+//We may retrive the inverse of the mapping via the toIndices method
+//  
+  int ii, jj, kk;
+  layout.toIndices(id, kk, jj, ii);
+  std::cout<<"("<<ii<<","<<jj<<","<<kk<<")"<<" expected"<<" ("<<i<<","<<j<<","<<k<<")"<<std::endl;
+
+  std::cout<<"---------------------------------------------------------------------------------- \n"<<std::endl;
+
+//We may also permute the layout via the following function call
+  RAJA::Layout<dim> KJI_layout = RAJA::make_permuted_layout({Istride,Jstride,Kstride}, RAJA::as_array<RAJA::Perm<2,1,0>>::get());
+  
+//Print results
+  int id2 = KJI_layout(k,j,i);
+  std::cout<<"Layout results 2: "<<std::endl;
+  std::cout<<"id2 = "<<id2<<" expected: "<< k + Istride*(j + Jstride*i)<<std::endl;
+
+//
+//We may retrive the inverse of the mapping via the toIndices method
+//    
+  layout.toIndices(id, kk, jj, ii);
+  std::cout<<"("<<ii<<","<<jj<<","<<kk<<")"<<" expected"<<" ("<<i<<","<<j<<","<<k<<")"<<std::endl;
+  std::cout<<"---------------------------------------------------------------------------------- \n"<<std::endl;
+  
+//-------------------------------------------//
+//
+// 2. The RAJA::View decouples memmory from layout
+//    simplifying multidimensional indexing on a
+//    one-dimensional array. 
+//-------------------------------------------//
+  
+//
+// Allocate 2D arrays
+//
+  int array_len = Istride*Jstride;
+  int* A = new int[array_len];
+
+//Dimension of the matrix
+  const int matDim = 2;
+
+//Here we assume an A{i,j} indexing where i is the fastest
+  RAJA::View<int, RAJA::Layout<matDim> > Aview(A, Istride, Jstride);
+  
+  using NESTED_EXEC_POL = RAJA::nested::Policy<
     RAJA::nested::For<1, RAJA::seq_exec>,
     RAJA::nested::For<0, RAJA::seq_exec>>;
 
+//
+//In this example we enumrate the entries of a matrix, in a row major fashion.
+//
+  RAJA::nested::forall(NESTED_EXEC_POL{},
+                       RAJA::make_tuple(Irange, Jrange), [=] (int i, int j){
 
-  RAJA::nested::forall(NMJI_EXEC_POL{},
-                       RAJA::make_tuple(Irange, Jrange, Mrange, Nrange),
-                       [=] (int i, int j, int m, int n) {
+                         Aview(i,j) = i + Istride*j; 
                          
-                         int id = NMJI_layout(i,j,m,n);
-                         B[id] = id/dim;                          
-  });
-  checkResult(A, B, array_len);
+                       });
 
-
+  std::cout<<"Matrix should be enumerated in a row major fashion"<<std::endl;
+  printMat(Aview, Istride, Jstride);
+    
   
 //
 // Clean up. 
 //
   delete[] A;
-  delete[] B;
   std::cout << "\n DONE!...\n";
 
   return 0;
 }
 
 template<typename T>
-void checkResult(T A, T B, int len)
+void printMat(T A, int nRows, int nCols)
 {
 
-  bool match = true;
-  for(int i=0; i<len; ++i){
-    if( std::abs( A[i]-B[i] ) > 1e-8 ) {
-      match = false;
+  for(int r=0; r<nRows; ++r)
+    {
+      for(int c=0; c<nCols; ++c)
+        {
+          std::cout<<A(r,c)<<" ";
+        }
+      std::cout<<""<<std::endl;
     }
-  }
-  
-  if ( match ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  }
 
+  
 }
