@@ -144,17 +144,17 @@ void runLTimesBareView(bool debug,
 
 
   // create views on data
-  std::array<camp::idx_t, 2> ell_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
   EllView ell(
       d_ell,
       make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
   PsiView psi(
       d_psi,
       make_permuted_layout({{num_directions, num_groups, num_zones}}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
   PhiView phi(
       d_phi,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
@@ -265,17 +265,17 @@ void runLTimesRajaNested(bool debug,
 
 
   // create views on data
-  std::array<camp::idx_t, 2> ell_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
   EllView ell(
       d_ell,
       make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
   PsiView psi(
       d_psi,
       make_permuted_layout({{num_directions, num_groups, num_zones}}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
   PhiView phi(
       d_phi,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
@@ -295,7 +295,7 @@ void runLTimesRajaNested(bool debug,
   RAJA::Timer timer;
   timer.start();
 
-  auto segments =  camp::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
+  auto segments =  RAJA::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
       TypedRangeSegment<IDirection>(0, num_directions),
       TypedRangeSegment<IGroup>(0, num_groups),
       TypedRangeSegment<IZone>(0, num_zones));
@@ -396,17 +396,17 @@ void runLTimesRajaNestedShmem(bool debug,
 
 
   // create views on data
-  std::array<camp::idx_t, 2> ell_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
   EllView ell(
       d_ell,
       make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
   PsiView psi(
       d_psi,
       make_permuted_layout({{num_directions, num_groups, num_zones}}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
   PhiView phi(
       d_phi,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
@@ -459,7 +459,7 @@ void runLTimesRajaNestedShmem(bool debug,
   RAJA::Timer timer;
   timer.start();
 
-  auto segments =  camp::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
+  auto segments =  RAJA::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
       TypedRangeSegment<IDirection>(0, num_directions),
       TypedRangeSegment<IGroup>(0, num_groups),
       TypedRangeSegment<IZone>(0, num_zones));

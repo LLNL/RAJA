@@ -777,7 +777,7 @@ TEST(Nested, CollapseSeq){
 
   nested::forall<Pol>(
 
-      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+      RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
       [=](RAJA::Index_type i, RAJA::Index_type j){
         x[i*N + j] += 1;
@@ -2139,9 +2139,9 @@ TEST(Nested, IndexCalc_seq){
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
 
-  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t, camp::tuple<>>;
+  using loop_data_t = RAJA::nested::internal::LoopData<RAJA::list<>, segment_t, RAJA::tuple<>>;
 
-  loop_data_t data(segments, camp::tuple<>{});
+  loop_data_t data(segments, RAJA::tuple<>{});
 
   RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::seq_exec> ic;
 
@@ -2149,7 +2149,7 @@ TEST(Nested, IndexCalc_seq){
     int i = 0;
 
     ASSERT_EQ(ic.setInitial(data, init) > 0, init > 0);
-    ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+    ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 7;++ inc){
 
@@ -2163,7 +2163,7 @@ TEST(Nested, IndexCalc_seq){
         }
 
         ASSERT_EQ(ic.increment(data, inc) > 0, carry);
-        ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+        ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
       }
 
 
@@ -2180,9 +2180,9 @@ TEST(Nested, IndexCalc_thread){
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
 
-  using loop_data_t = RAJA::nested::internal::LoopData<camp::list<>, segment_t, camp::tuple<>>;
+  using loop_data_t = RAJA::nested::internal::LoopData<RAJA::list<>, segment_t, RAJA::tuple<>>;
 
-  loop_data_t data(segments, camp::tuple<>{});
+  loop_data_t data(segments, RAJA::tuple<>{});
 
   RAJA::nested::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
 
@@ -2191,7 +2191,7 @@ TEST(Nested, IndexCalc_thread){
     int i = init;
 
     ASSERT_EQ(ic.setInitial(data, init) > 0, false);
-    ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+    ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 3*N;++ inc){
       //printf("  inc=%d\n", inc);
@@ -2211,7 +2211,7 @@ TEST(Nested, IndexCalc_thread){
         //printf("    iter=%d, i=%d, carry=%d\n", iter, i, (int)carry);
 
         ASSERT_EQ(ic.increment(data, inc) > 0, carry);
-        ASSERT_EQ(camp::get<0>(data.offset_tuple), i);
+        ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
       }
 
 
