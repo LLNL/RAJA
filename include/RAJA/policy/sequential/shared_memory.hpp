@@ -44,7 +44,7 @@ namespace RAJA
  * Data is accessible with const capture-by-value copies of this object.
  */
 template <typename T, size_t NumElem>
-struct SharedMemory<seq_shmem, T, NumElem> {
+struct SharedMemory<seq_shmem, T, NumElem> : public internal::SharedMemoryBase {
   using self = SharedMemory<seq_shmem, T, NumElem>;
   using element_t = T;
 
@@ -67,6 +67,18 @@ struct SharedMemory<seq_shmem, T, NumElem> {
 
   RAJA_INLINE
   SharedMemory(self const &c) : data(c.data), parent(&c) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  size_t shmem_setup_buffer(size_t) {
+    return num_bytes;
+  }
+
+  template<typename OffsetTuple>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void shmem_set_window(OffsetTuple const &){
+  }
 
 
   template <typename IDX>

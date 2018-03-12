@@ -83,7 +83,6 @@ if (NOT RAJA_LOADED)
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
     src/MemUtils_CUDA.cpp
-		src/SharedMemory.cpp
     src/ThreadUtils_CPU.cpp)
 
   set (raja_depends)

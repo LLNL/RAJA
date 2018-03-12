@@ -578,18 +578,21 @@ TEST(Nested, Shmem1){
 
   auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
 
-  ShmemTile<seq_shmem, int, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)> shmem;
+  using shmem_t = ShmemTile<seq_shmem, int, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)>;
+  shmem_t shmem;
 
 
-  nested::forall<Pol>(
+  nested::forall_param<Pol>(
 
       loop_segments,
 
-      [=](int i){
-        shmem(i) = i;
+      RAJA::make_tuple(shmem),
+
+      [=](int i, shmem_t &sh){
+        sh(i) = i;
       },
-      [=](int i){
-        x[i] = shmem(i) * 2;
+      [=](int i, shmem_t &sh){
+        x[i] = sh(i) * 2;
       }
   );
 
@@ -1476,25 +1479,26 @@ CUDA_TEST(Nested, CudaShmemWindow1d){
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
+  using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0>, SizeList<16>, decltype(segments)>;
+  shmem_t shmem;
 
-  ShmemTile<cuda_shmem, double, ArgList<0>, SizeList<16>, decltype(segments)> shmem;
-
-
-  nested::forall<Pol>(
+  nested::forall_param<Pol>(
 
       segments,
 
-      [=] __device__ (RAJA::Index_type i){
+      RAJA::make_tuple(shmem),
+
+      [=] __device__ (RAJA::Index_type i, shmem_t &sh){
 
         trip_count += 1;
-        shmem(i) = i;
+        sh(i) = i;
 
       },
 
-      [=] __device__ (RAJA::Index_type i){
+      [=] __device__ (RAJA::Index_type i, shmem_t &sh){
 
         trip_count += 1;
-        ptr[i] = shmem(i);
+        ptr[i] = sh(i);
 
       }
   );
@@ -1556,22 +1560,24 @@ CUDA_TEST(Nested, CudaShmemWindow2d){
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
 
-  ShmemTile<cuda_shmem, double, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)> shmem;
-  ShmemTile<cuda_shmem, double, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)> shmem2;
+  using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)>;
+  using shmem2_t = ShmemTile<cuda_shmem, double, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)>;
 
 
-  nested::forall<Pol>(
+  nested::forall_param<Pol>(
 
       segments,
 
-      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j){
+      RAJA::make_tuple(shmem_t(), shmem2_t()),
+
+      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, shmem_t &shmem, shmem2_t &shmem2){
 			//	printf("%d,%d\n", (int)i, (int)j);
         trip_count += 1;
         shmem(i,j) = i*j;
         shmem2(i,j) = 2*i*j;
       },
 
-      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j){
+      [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, shmem_t &shmem, shmem2_t &shmem2){
 
         trip_count += 1;
         //ptr[i*M + j] = shmem(i,j);

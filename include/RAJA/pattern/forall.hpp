@@ -84,8 +84,6 @@
 
 #include "RAJA/util/chai_support.hpp"
 
-#include "RAJA/pattern/shared_memory.hpp"
-
 
 namespace RAJA
 {
@@ -211,10 +209,8 @@ RAJA_INLINE concepts::
     forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 
-  RAJA::detail::startSharedMemorySetup();
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  RAJA::detail::finishSharedMemorySetup();
 
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
@@ -237,10 +233,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                IndexType&& icount,
                                LoopBody&& loop_body)
 {
-  RAJA::detail::startSharedMemorySetup();
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  RAJA::detail::finishSharedMemorySetup();
 
   using std::begin;
   using std::end;
@@ -271,10 +265,8 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                                LoopBody loop_body)
 {
 
-  RAJA::detail::startSharedMemorySetup();
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  RAJA::detail::finishSharedMemorySetup();
 
   // no need for icount variant here
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
@@ -294,10 +286,8 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                         LoopBody loop_body)
 {
 
-  RAJA::detail::startSharedMemorySetup();
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  RAJA::detail::finishSharedMemorySetup();
 
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);

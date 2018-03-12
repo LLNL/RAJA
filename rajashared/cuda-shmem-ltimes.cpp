@@ -326,7 +326,8 @@ void runLTimesRajaCudaShmem(bool debug,
                                 // Store phi
                                 Lambda<6>
                               >
-                            > // m
+                            >, // m
+                            CudaSyncThreads
                           > // shmem
                         >  // z
                       > //g
@@ -346,9 +347,11 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  ShmemTile<cuda_shmem, double, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)> shmem_ell;
+  using shmem_ell_t = ShmemTile<cuda_shmem, double, ArgList<2,1>, SizeList<tile_dir, tile_mom>, decltype(segments)>;
+  shmem_ell_t shmem_ell;
 
-  ShmemTile<cuda_shmem, double, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)> shmem_psi;
+  using shmem_psi_t = ShmemTile<cuda_shmem, double, ArgList<3,2>, SizeList<tile_zone, tile_dir>, decltype(segments)>;
+  shmem_psi_t shmem_psi;
 
 
 
@@ -356,47 +359,50 @@ void runLTimesRajaCudaShmem(bool debug,
 
     segments,
 
-		camp::tuple<double>{0.0}, // thread private temporary storage (last arg in lambdas)
+		RAJA::make_tuple(
+		    shmem_ell,
+		    shmem_psi,
+		    0.0), // thread private temporary storage (last arg in lambdas)
 
     // Lambda<0>
      // Zero out phi
-    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &, shmem_psi_t &, double &){
       phi(nm, g, z) = 0.0;
     },
 
     // Lambda<1>
     // Original single lambda implementation
-    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
+    [=] RAJA_HOST_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &, shmem_psi_t &, double &){
       phi(nm, g, z) += ell(nm, d) * psi(d,g,z);
     },
 
     // Lambda<2>
     // load L matrix into shmem
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
-      shmem_ell(d, nm) = ell(nm, d);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &sh_ell, shmem_psi_t &, double &){
+      sh_ell(d, nm) = ell(nm, d);
     },
 
     // Lambda<3>
     // load slice of psi into shared
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &){
-      shmem_psi(z,d) = psi(d,g,z);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &, shmem_psi_t &sh_psi, double &){
+      sh_psi(z,d) = psi(d,g,z);
     },
 
     // Lambda<4>
     // Load phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &, shmem_psi_t &, double &phi_local){
       phi_local = phi(nm, g, z);
     },
 
     // Lambda<5>
     // Compute phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
-      phi_local += shmem_ell(d, nm) * shmem_psi(z,d);
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &sh_ell, shmem_psi_t &sh_psi, double &phi_local){
+      phi_local += sh_ell(d, nm) * sh_psi(z,d);
     },
 
     // Lambda<6>
     // Store phi_m_g_z
-    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, double &phi_local){
+    [=] RAJA_DEVICE  (IGroup g, IMoment nm, IDirection d, IZone z, shmem_ell_t &, shmem_psi_t &, double &phi_local){
       phi(nm, g, z) = phi_local;
     }
 
@@ -470,7 +476,7 @@ int main(){
   int d = 80;
   int g = 48;
   //int z = 64*1024; //27*50*50;
-  //int z = 3150;
+  //int z = 1000;
 	//int z = 17;
   //int z = 31250;
   //int z = 182250;
@@ -485,7 +491,6 @@ int main(){
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
   runLTimesRajaCudaNested(false, m, d, g, z);
-
   runLTimesRajaCudaShmem(false, m, d, g, z);
   runLTimesRajaCudaShmem(debug, m, d, g, z);
   //runLTimesRajaCudaNested(debug, m, d, g, z);

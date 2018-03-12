@@ -190,7 +190,7 @@ struct StatementExecutor<CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
   static RAJA_INLINE void exec(Data &&data)
   {
 
-    int shmem = RAJA::detail::getSharedMemorySize();
+    int shmem = (int)RAJA::internal::shmem_setup_buffers(data.param_tuple);
     //    printf("Shared memory size=%d\n", (int)shmem);
 
     cudaStream_t stream = 0;

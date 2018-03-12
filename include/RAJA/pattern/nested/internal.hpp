@@ -132,15 +132,15 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
-  int shmem_window_start[segment_tuple_t::TList::size];
+  //int shmem_window_start[segment_tuple_t::TList::size];
 
   RAJA_INLINE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
-    for (size_t i = 0; i < segment_tuple_t::TList::size; ++i) {
-      shmem_window_start[i] = 0;
-    }
+//    for (size_t i = 0; i < segment_tuple_t::TList::size; ++i) {
+//      shmem_window_start[i] = 0;
+//    }
     assign_begin_all();
   }
 
@@ -342,26 +342,6 @@ constexpr RAJA_INLINE typename std::
   return NestedPrivatizer<T>{wrapper};
 }
 
-
-template <camp::idx_t... Seq, typename... IdxTypes, typename... Segments>
-RAJA_INLINE RAJA_HOST_DEVICE void set_shmem_window_to_begin_expanded(
-    camp::idx_seq<Seq...>,
-    camp::tuple<IdxTypes...> &window,
-    camp::tuple<Segments...> const &segment_tuple)
-{
-  VarOps::ignore_args(
-      (camp::get<Seq>(window) = camp::get<Seq>(segment_tuple).begin()[0])...);
-}
-
-template <typename... IdxTypes, typename... Segments>
-RAJA_INLINE RAJA_HOST_DEVICE void set_shmem_window_to_begin(
-    camp::tuple<IdxTypes...> &window,
-    camp::tuple<Segments...> const &segment_tuple)
-{
-  using loop_idx = typename camp::make_idx_seq<sizeof...(IdxTypes)>::type;
-
-  set_shmem_window_to_begin_expanded(loop_idx{}, window, segment_tuple);
-}
 
 
 }  // end namespace internal

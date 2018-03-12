@@ -180,7 +180,7 @@ public:
 
   CAMP_HOST_DEVICE constexpr tuple(tuple&& o) : base(std::move(o.base)) {}
 
-  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs) { base = rhs.base; }
+  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs) { base = rhs.base; return *this; }
   CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs) { base = std::move(rhs.base); return *this; }
 
   CAMP_HOST_DEVICE constexpr explicit tuple(Elements const&... rest)
@@ -241,8 +241,8 @@ public:
 
   CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) : base(std::move(o.base)) {}
 
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) { base = rhs.base; }
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) { base = std::move(rhs.base); }
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) { base = rhs.base; return *this;}
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) { base = std::move(rhs.base); return *this;}
 
   CAMP_HOST_DEVICE constexpr explicit tagged_tuple(Elements const&... rest)
       : base{rest...}
@@ -295,21 +295,23 @@ template <typename T, class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
     -> tuple_ebt_t<T, Tuple> const&
 {
+  using internal::tpl_get_store;
   using index_type = camp::at_key<typename Tuple::TMap, T>;
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
-  return t.base
-      .internal::template tpl_get_store<Tuple, index_type::value>::get_inner();
+
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
 }
 
 template <typename T, class Tuple>
 CAMP_HOST_DEVICE constexpr auto get(Tuple& t) noexcept -> tuple_ebt_t<T, Tuple>&
 {
+  using internal::tpl_get_store;
   using index_type = camp::at_key<typename Tuple::TMap, T>;
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
-  return t.base
-      .internal::template tpl_get_store<Tuple, index_type::value>::get_inner();
+
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
 }
 
 template <typename... Args>

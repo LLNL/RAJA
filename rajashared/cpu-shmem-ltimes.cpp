@@ -449,40 +449,43 @@ void runLTimesRajaNestedShmem(bool debug,
       TypedRangeSegment<IZone>(0, num_zones));
 
 
-  ShmemTile<seq_shmem, double, ArgList<0,1>, SizeList<tile_moments, tile_directions>, decltype(segments)> shmem_ell;
-  ShmemTile<seq_shmem, double, ArgList<1,2,3>, SizeList<tile_directions, tile_groups, tile_zones>, decltype(segments)> shmem_psi;
-  ShmemTile<seq_shmem, double, ArgList<0,2,3>, SizeList<tile_moments, tile_groups, tile_zones>, decltype(segments)> shmem_phi;
+  using shmem_ell_t = ShmemTile<seq_shmem, double, ArgList<0,1>, SizeList<tile_moments, tile_directions>, decltype(segments)>;
+  using shmem_psi_t = ShmemTile<seq_shmem, double, ArgList<1,2,3>, SizeList<tile_directions, tile_groups, tile_zones>, decltype(segments)>;
+  using shmem_phi_t = ShmemTile<seq_shmem, double, ArgList<0,2,3>, SizeList<tile_moments, tile_groups, tile_zones>, decltype(segments)>;
 
+  shmem_ell_t shmem_ell;
+  shmem_psi_t shmem_psi;
+  shmem_phi_t shmem_phi;
 
-  nested::forall<Pol>(
+  nested::forall_param<Pol>(
 
       segments,
 
-
+      RAJA::make_tuple(shmem_ell, shmem_psi, shmem_phi),
 
       // Lambda_LoadEll
-      [=] (IMoment m, IDirection d, IGroup, IZone) {
-        shmem_ell(m, d) = ell(m, d);
+      [=] (IMoment m, IDirection d, IGroup, IZone, shmem_ell_t&sh_ell, shmem_psi_t&, shmem_phi_t&) {
+        sh_ell(m, d) = ell(m, d);
       },
 
       // Lambda_LoadPsi
-      [=] (IMoment, IDirection d, IGroup g, IZone z) {
-        shmem_psi(d, g, z) = psi(d, g, z);
+      [=] (IMoment, IDirection d, IGroup g, IZone z, shmem_ell_t&, shmem_psi_t&sh_psi, shmem_phi_t&) {
+        sh_psi(d, g, z) = psi(d, g, z);
       },
 
       // Lambda_LoadPhi
-      [=] (IMoment m, IDirection, IGroup g, IZone z) {
-        shmem_phi(m, g, z) = phi(m,g,z);
+      [=] (IMoment m, IDirection, IGroup g, IZone z, shmem_ell_t&, shmem_psi_t&, shmem_phi_t&sh_phi) {
+        sh_phi(m, g, z) = phi(m,g,z);
       },
 
       // Lambda_CalcPhi
-      [=] (IMoment m, IDirection d, IGroup g, IZone z) {
-        shmem_phi(m, g, z) += shmem_ell(m, d) * shmem_psi(d, g, z);
+      [=] (IMoment m, IDirection d, IGroup g, IZone z, shmem_ell_t&sh_ell, shmem_psi_t&sh_psi, shmem_phi_t&sh_phi) {
+        sh_phi(m, g, z) += sh_ell(m, d) * sh_psi(d, g, z);
       },
 
       // Lambda_SavePhi
-      [=] (IMoment m, IDirection, IGroup g, IZone z) {
-        phi(m,g,z) = shmem_phi(m, g, z);
+      [=] (IMoment m, IDirection, IGroup g, IZone z, shmem_ell_t&, shmem_psi_t&, shmem_phi_t&sh_phi) {
+        phi(m,g,z) = sh_phi(m, g, z);
       });
 
 
@@ -526,7 +529,7 @@ void runLTimesRajaNestedShmem(bool debug,
 
 int main(){
 
-  bool debug = false;
+  bool debug = true;
 
   int m = 25;
   int d = 80;

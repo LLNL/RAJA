@@ -91,13 +91,6 @@ RAJA_INLINE void forall_param(SegmentTuple &&segments,
                                          camp::decay<Bodies>...>;
 
 
-  // Setup a shared memory window tuple
-  using index_tuple_t = typename loop_data_t::index_tuple_t;
-  index_tuple_t shmem_window;
-
-  // Turn on shared memory setup
-  RAJA::detail::startSharedMemorySetup(&shmem_window, sizeof(index_tuple_t));
-
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the nested::forall mechanics by-referenece,
@@ -106,12 +99,11 @@ RAJA_INLINE void forall_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
-  // Turn off shared memory setup
-  RAJA::detail::finishSharedMemorySetup();
+  // Setup shared memory objects passed in through parameter tuple
+  RAJA::internal::shmem_setup_buffers(loop_data.param_tuple);
 
   // initialize the shmem tuple to the beginning of each loop iteration
-  internal::set_shmem_window_to_begin(shmem_window, loop_data.segment_tuple);
-
+  RAJA::internal::shmem_set_windows(loop_data.param_tuple, loop_data.get_begin_index_tuple());
 
   // Execute!
   internal::execute_statement_list<PolicyType>(loop_data);
