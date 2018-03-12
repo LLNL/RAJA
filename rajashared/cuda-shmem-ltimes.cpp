@@ -83,17 +83,17 @@ void runLTimesRajaCudaNested(bool debug,
 
 
   // create views on data
-  std::array<camp::idx_t, 2> ell_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
   EllView ell(
       d_ell,
       make_permuted_layout({num_moments, num_directions}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
   PsiView psi(
       d_psi,
       make_permuted_layout({num_directions, num_groups, num_zones}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
   PhiView phi(
       d_phi,
       make_permuted_layout({num_moments, num_groups, num_zones}, phi_perm));
@@ -122,7 +122,7 @@ void runLTimesRajaCudaNested(bool debug,
 
   nested::forall<Pol>(
 
-      camp::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
+      RAJA::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
           TypedRangeSegment<IDirection>(0, num_directions),
           TypedRangeSegment<IGroup>(0, num_groups),
           TypedRangeSegment<IZone>(0, num_zones)),
@@ -252,18 +252,18 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
   // create views on data
-  std::array<camp::idx_t, 2> ell_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
   EllView ell(
       d_ell,
       make_permuted_layout({num_moments, num_directions}, ell_perm));
 
-  std::array<camp::idx_t, 3> psi_perm {{2, 1, 0}};
+  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
   PsiView psi(
       d_psi,
       make_permuted_layout({num_directions, num_groups, num_zones}, psi_perm));
       //make_permuted_layout({num_zones, num_groups, num_directions}, psi_perm));
 
-  std::array<camp::idx_t, 3> phi_perm {{2, 1, 0}};
+  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
   PhiView phi(
       d_phi,
       make_permuted_layout({num_moments, num_groups, num_zones}, phi_perm));
@@ -338,7 +338,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  auto segments = camp::make_tuple(
+  auto segments = RAJA::make_tuple(
       TypedRangeSegment<IGroup>(0,num_groups),
       TypedRangeSegment<IMoment>(0,num_moments),
       TypedRangeSegment<IDirection>(0,num_directions),
@@ -476,7 +476,7 @@ int main(){
   int d = 80;
   int g = 48;
   //int z = 64*1024; //27*50*50;
-  //int z = 1000;
+  //int z = 3150;
 	//int z = 17;
   //int z = 31250;
   //int z = 182250;
@@ -491,6 +491,7 @@ int main(){
   printf("Param: m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
   runLTimesRajaCudaNested(false, m, d, g, z);
+
   runLTimesRajaCudaShmem(false, m, d, g, z);
   runLTimesRajaCudaShmem(debug, m, d, g, z);
   //runLTimesRajaCudaNested(debug, m, d, g, z);

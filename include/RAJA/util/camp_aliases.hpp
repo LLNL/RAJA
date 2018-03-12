@@ -38,15 +38,17 @@
 namespace RAJA
 {
 
-using ::camp::make_tuple;
+using ::camp::at_v;
 
-using ::camp::tuple;
+using ::camp::get;
 
 using ::camp::list;
 
-using ::camp::at_v;
-
 using ::camp::idx_t;
+
+using ::camp::make_tuple;
+
+using ::camp::tuple;
 
 }  // end namespace RAJA
 
