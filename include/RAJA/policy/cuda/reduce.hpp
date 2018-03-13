@@ -604,9 +604,7 @@ struct Reduce_Data {
   bool own_device_ptr;
 
   Reduce_Data()
-  {
-    Reduce_Data(T(),T());
-  }
+    : Reduce_Data(T(),T()){};
 
   /*! \brief create from a default value and offload information
    *
@@ -623,7 +621,7 @@ struct Reduce_Data {
 
   void reset(T initValue, T identity_ = T())
   {
-    cudaDeviceSynchronize();
+    operator T(); //syncs device
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -693,18 +691,20 @@ struct ReduceAtomic_Data {
   bool own_device_ptr;
 
   ReduceAtomic_Data()
-  {
-    reset(T(), T());
-  }
+    : ReduceAtomic_Data(T(),T()) {};
   
-  ReduceAtomic_Data(T initValue, T identity_)
+  explicit ReduceAtomic_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{nullptr},
+    own_device_ptr{false}
   {
-    reset(initValue, identity_);
   }
+
 
   void reset(T initValue, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -787,7 +787,7 @@ public:
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
+    operator T(); //syncs device
     val = reduce_data_type(in_val, identity_);
   }
 
