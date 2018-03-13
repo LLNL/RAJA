@@ -605,16 +605,20 @@ struct Reduce_Data {
 
   Reduce_Data()
   {
-    reset(T(), T());
+    Reduce_Data(T(),T());
   }
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
-  Reduce_Data(T initValue, T identity_)
+  explicit Reduce_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{},
+    own_device_ptr{false}
   {
-    reset(initValue, identity_);
   }
 
   void reset(T initValue, T identity_ = T())
