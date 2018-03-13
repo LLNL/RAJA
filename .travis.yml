@@ -25,6 +25,11 @@ matrix:
     - COMPILER=g++
     - IMG=gcc7
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+  - compiler: clang6
+    env:
+    - COMPILER=clang++
+    - IMG=clang6
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
   - compiler: clang5
     env:
     - COMPILER=clang++
