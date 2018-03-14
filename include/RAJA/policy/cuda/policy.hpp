@@ -31,7 +31,6 @@
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
-#include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -197,16 +196,26 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
               "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
               "a multiple of WARP_SIZE");
 
+struct cuda_synchronize
+    : make_policy_pattern_launch_t<Policy::cuda, Pattern::synchronize, Launch::sync> {
+};
+
 }  // end namespace cuda
 }  // end namespace policy
 
 using policy::cuda::cuda_exec;
+
+template<size_t BLOCK_SIZE>
+using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+
 using policy::cuda::cuda_seq_syncthreads_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;
 using policy::cuda::cuda_reduce_atomic;
 using policy::cuda::cuda_reduce_atomic_async;
 using policy::cuda::CudaPolicy;
+
+using policy::cuda::cuda_synchronize;
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
@@ -227,38 +236,6 @@ struct CudaDim {
            (int)num_threads.x,
            (int)num_threads.y,
            (int)num_threads.z);
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  CudaDim maximum(CudaDim const &c) const
-  {
-    CudaDim m;
-
-    m.num_threads.x =
-        num_threads.x > c.num_threads.x ? num_threads.x : c.num_threads.x;
-    m.num_threads.y =
-        num_threads.y > c.num_threads.y ? num_threads.y : c.num_threads.y;
-    m.num_threads.z =
-        num_threads.z > c.num_threads.z ? num_threads.z : c.num_threads.z;
-
-    m.num_blocks.x =
-        num_blocks.x > c.num_blocks.x ? num_blocks.x : c.num_blocks.x;
-    m.num_blocks.y =
-        num_blocks.y > c.num_blocks.y ? num_blocks.y : c.num_blocks.y;
-    m.num_blocks.z =
-        num_blocks.z > c.num_blocks.z ? num_blocks.z : c.num_blocks.z;
-
-    return m;
-  }
-
-  RAJA_INLINE
-  RAJA_DEVICE
-  bool threadIncluded() const
-  {
-    return (threadIdx.x < num_threads.x) && (threadIdx.y < num_threads.y)
-           && (threadIdx.z < num_threads.z) && (blockIdx.x < num_blocks.x)
-           && (blockIdx.y < num_blocks.y) && (blockIdx.z < num_blocks.z);
   }
 };
 

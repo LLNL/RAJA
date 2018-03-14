@@ -42,6 +42,7 @@
 #if defined(__NVCC__)
 #include "RAJA/policy/cuda/scan.hpp"
 #endif
+#include "RAJA/policy/cuda/synchronize.hpp"
 
 #include "RAJA/policy/cuda/forallN.hpp"
 
