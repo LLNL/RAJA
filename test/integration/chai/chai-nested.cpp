@@ -70,13 +70,13 @@ CUDA_TEST(Chai, NestedSimpleOld) {
  * Simple tests using nested::forall and View
  */
 CUDA_TEST(Chai, NestedSimple) {
-  typedef RAJA::nested::Policy<
-      RAJA::nested::For<0, RAJA::seq_exec,
-        RAJA::nested::For<1, RAJA::seq_exec> > > POLICY;
-  typedef RAJA::nested::Policy<
-      RAJA::nested::For<0, RAJA::seq_exec,
-        RAJA::nested::CudaKernel<
-          RAJA::nested::For<1, RAJA::cuda_threadblock_exec<32> > > > >POLICY_GPU;
+  typedef RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::For<1, RAJA::seq_exec> > > POLICY;
+  typedef RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::CudaKernel<
+          RAJA::statement::For<1, RAJA::cuda_threadblock_exec<32> > > > >POLICY_GPU;
 
   const int X = 16;
   const int Y = 16;
@@ -84,7 +84,7 @@ CUDA_TEST(Chai, NestedSimple) {
   chai::ManagedArray<float> v1(X*Y);
   chai::ManagedArray<float> v2(X*Y);
 
-  RAJA::nested::forall<POLICY>(
+  RAJA::kernel<POLICY>(
 
       RAJA::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
 
@@ -93,7 +93,7 @@ CUDA_TEST(Chai, NestedSimple) {
         v1[index] = index;
   });
 
-  RAJA::nested::forall<POLICY_GPU>(
+  RAJA::kernel<POLICY_GPU>(
 
       RAJA::make_tuple(RangeSegment(0,Y), RangeSegment(0,X) ),
 
@@ -104,7 +104,7 @@ CUDA_TEST(Chai, NestedSimple) {
 
   cudaDeviceSynchronize();
 
-  RAJA::nested::forall<POLICY>(
+  RAJA::kernel<POLICY>(
 
       RAJA::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
 

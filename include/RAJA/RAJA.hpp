@@ -53,7 +53,7 @@
 // in the files included below.
 //
 #include "RAJA/pattern/forall.hpp"
-#include "RAJA/pattern/nested.hpp"
+#include "RAJA/pattern/kernel.hpp"
 
 
 //

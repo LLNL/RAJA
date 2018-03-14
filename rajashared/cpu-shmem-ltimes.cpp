@@ -43,8 +43,6 @@ void runLTimesBare(bool ,
                           Index_type num_zones)
 {
 
-  using namespace RAJA::nested;
-
 
   // allocate data
   // phi is initialized to all zeros, the others are randomized
@@ -103,8 +101,6 @@ void runLTimesBareView(bool debug,
                           Index_type num_groups,
                           Index_type num_zones)
 {
-
-  using namespace RAJA::nested;
 
   // psi[direction, group, zone]
   using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
@@ -218,14 +214,14 @@ void runLTimesBareView(bool debug,
 
 
 
-void runLTimesRajaNested(bool debug,
+void runLTimesRajaKernel(bool debug,
                           Index_type num_moments,
                           Index_type num_directions,
                           Index_type num_groups,
                           Index_type num_zones)
 {
 
-  using namespace RAJA::nested;
+	using namespace RAJA::statement;
 
   // psi[direction, group, zone]
   using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
@@ -282,7 +278,7 @@ void runLTimesRajaNested(bool debug,
 
 
 
-  using Pol = RAJA::nested::Policy<
+  using Pol = RAJA::KernelPolicy<
     For<0, loop_exec,
       For<1, loop_exec,
         For<2, loop_exec,
@@ -301,7 +297,7 @@ void runLTimesRajaNested(bool debug,
       TypedRangeSegment<IZone>(0, num_zones));
 
 
-  nested::forall<Pol>(
+  kernel<Pol>(
 
       segments,
 
@@ -313,7 +309,7 @@ void runLTimesRajaNested(bool debug,
 
 
   timer.stop();
-  printf("LTimes took %lf seconds using RAJA::nested::forall\n",
+  printf("LTimes took %lf seconds using RAJA::kernel\n",
       timer.elapsed());
 
 
@@ -348,16 +344,16 @@ void runLTimesRajaNested(bool debug,
 }
 
 
-void runLTimesRajaNestedShmem(bool debug,
+void runLTimesRajaKernelShmem(bool debug,
                           Index_type num_moments,
                           Index_type num_directions,
                           Index_type num_groups,
                           Index_type num_zones)
 {
 
-  using namespace RAJA::nested;
-
-  // psi[direction, group, zone]
+	using namespace RAJA::statement;
+  
+	// psi[direction, group, zone]
   using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
 
   // phi[moment, group, zone]
@@ -423,16 +419,16 @@ void runLTimesRajaNestedShmem(bool debug,
   using Lambda_CalcPhi = Lambda<3>;
   using Lambda_SavePhi = Lambda<4>;
 
-  using Pol = RAJA::nested::Policy<
-    nested::Tile<0, nested::tile_fixed<tile_moments>, loop_exec,
-      nested::Tile<1, nested::tile_fixed<tile_directions>, loop_exec,
+  using Pol = RAJA::KernelPolicy<
+    statement::Tile<0, statement::tile_fixed<tile_moments>, loop_exec,
+      statement::Tile<1, statement::tile_fixed<tile_directions>, loop_exec,
         SetShmemWindow<
 
           // Load shmem L
           For<0, simd_exec, For<1, simd_exec, Lambda_LoadEll>>,
 
           For<2, loop_exec,
-            nested::Tile<3, nested::tile_fixed<tile_zones>, loop_exec,
+            statement::Tile<3, statement::tile_fixed<tile_zones>, loop_exec,
               SetShmemWindow<
                 // Load Psi into shmem
                 For<1, simd_exec, For<3, simd_exec, Lambda_LoadPsi >>,
@@ -473,7 +469,7 @@ void runLTimesRajaNestedShmem(bool debug,
   shmem_psi_t shmem_psi;
   shmem_phi_t shmem_phi;
 
-  nested::forall_param<Pol>(
+  kernel_param<Pol>(
 
       segments,
 
@@ -507,7 +503,7 @@ void runLTimesRajaNestedShmem(bool debug,
 
 
   timer.stop();
-  printf("LTimes took %lf seconds using RAJA::nested::forall and shmem\n",
+  printf("LTimes took %lf seconds using RAJA::kernel and shmem\n",
       timer.elapsed());
 
 
@@ -556,8 +552,8 @@ int main(){
 
   runLTimesBare(debug, m, d, g, z);
   runLTimesBareView(debug, m, d, g, z);
-  runLTimesRajaNested(debug, m, d, g, z);
-  runLTimesRajaNestedShmem(debug, m, d, g, z);
+  runLTimesRajaKernel(debug, m, d, g, z);
+  runLTimesRajaKernelShmem(debug, m, d, g, z);
 
 
 

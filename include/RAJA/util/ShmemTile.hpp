@@ -63,7 +63,7 @@ template <typename ShmemPol,
           typename... Segments>
 struct ShmemTile<ShmemPol,
                  T,
-                 RAJA::nested::ArgList<Args...>,
+                 RAJA::ArgList<Args...>,
                  SizeList<Sizes...>,
                  camp::tuple<Segments...>>
                  : public internal::SharedMemoryBase
@@ -73,12 +73,12 @@ struct ShmemTile<ShmemPol,
 
   using self_t = ShmemTile<ShmemPol,
                            T,
-                           RAJA::nested::ArgList<Args...>,
+                           RAJA::ArgList<Args...>,
                            SizeList<Sizes...>,
                            camp::tuple<Segments...>>;
-  // compute the index tuple that nested::forall is going to use
+  // compute the index tuple that kernel is going to use
   using segment_tuple_t = camp::tuple<Segments...>;
-  using index_tuple_t = RAJA::nested::internal::index_tuple_from_segments<
+  using index_tuple_t = RAJA::internal::index_tuple_from_segments<
       typename segment_tuple_t::TList>;
 
   // compute the indices that we are going to use

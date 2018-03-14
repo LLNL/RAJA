@@ -243,7 +243,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// Next, we use a RAJA::nested::forall method to execute the calculation.
+// Next, we use a RAJA::kernel method to execute the calculation.
 // This is different than RAJA::forall and so a few points of exmplanation
 // are in order:
 //
@@ -255,8 +255,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //    lambda for this to be correct, in general. RAJA provides strongly-typed
 //    indices to help with this. However, this example does not use them.
 // 3) An execution policy is required for each level in the loop nest. These
-//    are specified in the 'RAJA::nested::For' templates in the 
-//    'RAJA::nested::Policy type.
+//    are specified in the 'RAJA::statement::For' templates in the
+//    'RAJA::KernelPolicy type.
 // 4) The loop nest ordering is specified in the nested execution policy -- 
 //    the first 'For' policy is the outermost loop, the second 'For' policy 
 //    is the loop nested inside the outermost loop, and so on. 
@@ -269,15 +269,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   using NESTED_EXEC_POL = 
-    RAJA::nested::Policy< 
-      RAJA::nested::For<1, RAJA::seq_exec,    // row
-        RAJA::nested::For<0, RAJA::seq_exec,  // col
-          RAJA::nested::Lambda<0>
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,    // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>
         >
       >  
     >;
 
-  RAJA::nested::forall<NESTED_EXEC_POL>(
+  RAJA::kernel<NESTED_EXEC_POL>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -301,15 +301,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double)); 
   
   using NESTED_EXEC_POL1 = 
-    RAJA::nested::Policy< 
-      RAJA::nested::For<1, RAJA::omp_parallel_for_exec, // row
-        RAJA::nested::For<0, RAJA::seq_exec,            // col
-          RAJA::nested::Lambda<0> 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec, // row
+        RAJA::statement::For<0, RAJA::seq_exec,            // col
+          RAJA::statement::Lambda<0>
         > 
       > 
     >;
 
-  RAJA::nested::forall<NESTED_EXEC_POL1>(
+  RAJA::kernel<NESTED_EXEC_POL1>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -338,15 +338,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // sequentially, while row (inner) iterations execute in parallel.
   // 
   using NESTED_EXEC_POL2 =
-    RAJA::nested::Policy< 
-      RAJA::nested::For<0, RAJA::seq_exec,                  // col
-        RAJA::nested::For<1, RAJA::omp_parallel_for_exec,   // row
-          RAJA::nested::Lambda<0> 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,                  // col
+        RAJA::statement::For<1, RAJA::omp_parallel_for_exec,   // row
+          RAJA::statement::Lambda<0>
         > 
       > 
     >;
 
-  RAJA::nested::forall<NESTED_EXEC_POL2>(
+  RAJA::kernel<NESTED_EXEC_POL2>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
   
@@ -373,14 +373,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // outer loop with a 'collapse(2) clause.
   //
   using NESTED_EXEC_POL3 = 
-    RAJA::nested::Policy<
-      RAJA::nested::Collapse<RAJA::nested::omp_parallel_collapse_exec, 
-                             RAJA::nested::ArgList<1, 0>,   // row, col
-        RAJA::nested::Lambda<0> 
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                             RAJA::ArgList<1, 0>,   // row, col
+        RAJA::statement::Lambda<0>
       > 
     >;
 
-  RAJA::nested::forall<NESTED_EXEC_POL3>(
+  RAJA::kernel<NESTED_EXEC_POL3>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
  
@@ -420,17 +420,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // both kernels.
   // 
   using NESTED_EXEC_POL4 =
-    RAJA::nested::Policy< 
-      RAJA::nested::CudaKernel<
-        RAJA::nested::For<1, RAJA::cuda_block_exec,
-          RAJA::nested::For<0, RAJA::cuda_thread_exec,
-            RAJA::nested::Lambda<0>
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_block_exec,
+          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::Lambda<0>
           >
         >
       >
     >;
 
-  RAJA::nested::forall<NESTED_EXEC_POL4>(
+  RAJA::kernel<NESTED_EXEC_POL4>(
                        RAJA::make_tuple(col_range, row_range),
                        [=] RAJA_DEVICE (int col, int row) {
 
@@ -461,21 +461,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // dotproduct loop using RAJA For loop construct.
   // 
   using NESTED_EXEC_POL5 =
-    RAJA::nested::Policy< 
-      RAJA::nested::CudaKernel<
-        RAJA::nested::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
-          RAJA::nested::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
-            RAJA::nested::Lambda<0>,  // dot = 0.0
-            RAJA::nested::For<2, RAJA::seq_exec,
-              RAJA::nested::Lambda<1> // dot += ... 
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+            RAJA::statement::Lambda<0>,  // dot = 0.0
+            RAJA::statement::For<2, RAJA::seq_exec,
+              RAJA::statement::Lambda<1> // dot += ...
             >,
-            RAJA::nested::Lambda<2>   // set C entry
+            RAJA::statement::Lambda<2>   // set C entry
           >
         >
       >
     >;
 
-  RAJA::nested::forall_param<NESTED_EXEC_POL5>(
+  RAJA::kernel_param<NESTED_EXEC_POL5>(
                 RAJA::make_tuple(col_range, row_range, dot_range), 
 
     RAJA::tuple<double>{0.0},

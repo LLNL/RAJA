@@ -44,7 +44,8 @@ static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::
 static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_exec<16> > > >::value == chai::GPU, "");
 static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_thread_x_exec > > >::value == chai::GPU, "");
 
-static_assert(RAJA::detail::get_space<RAJA::nested::Policy<RAJA::nested::For<0, RAJA::seq_exec>>>::value == chai::CPU, "");
+static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::For<0, RAJA::seq_exec>>>::value == chai::CPU, "");
+static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::For<0, RAJA::seq_exec>>>>::value == chai::GPU, "");
 #endif
 
 

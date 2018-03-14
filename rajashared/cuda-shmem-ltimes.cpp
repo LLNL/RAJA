@@ -28,7 +28,7 @@ void runLTimesRajaCudaNested(bool debug,
                           Index_type num_zones)
 {
 
-  using namespace RAJA::nested;
+  using namespace RAJA::statement;
 
   // psi[direction, group, zone]
   using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
@@ -107,7 +107,7 @@ void runLTimesRajaCudaNested(bool debug,
 
 
 
-  using Pol = RAJA::nested::Policy<
+  using Pol = RAJA::KernelPolicy<
       CudaKernel<
         For<0, cuda_block_exec,
 				  //For<2, cuda_block_exec,
@@ -120,7 +120,7 @@ void runLTimesRajaCudaNested(bool debug,
       >>;
 
 
-  nested::forall<Pol>(
+  kernel<Pol>(
 
       RAJA::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
           TypedRangeSegment<IDirection>(0, num_directions),
@@ -138,7 +138,7 @@ void runLTimesRajaCudaNested(bool debug,
 
   cudaDeviceSynchronize();
   timer.stop();
-  printf("LTimes took %lf seconds using RAJA::nested::forall\n",
+  printf("LTimes took %lf seconds using RAJA::kernel\n",
       timer.elapsed());
 
 
@@ -282,13 +282,13 @@ void runLTimesRajaCudaShmem(bool debug,
   static const int tile_mom  = 25;
   static const int tile_dir  = 80;
   static const int tile_zone = 12;
-  using namespace RAJA::nested;
+  using namespace RAJA::statement;
 
-    using Pol = RAJA::nested::Policy<
+    using Pol = RAJA::KernelPolicy<
                CudaKernelAsync<
 
-                RAJA::nested::Tile<1, RAJA::nested::tile_fixed<tile_mom>, seq_exec,
-                  RAJA::nested::Tile<2, RAJA::nested::tile_fixed<tile_dir>, seq_exec,
+                RAJA::statement::Tile<1, RAJA::statement::tile_fixed<tile_mom>, seq_exec,
+                  RAJA::statement::Tile<2, RAJA::statement::tile_fixed<tile_dir>, seq_exec,
 
                       // First, load up L matrix for each block
                       SetShmemWindow<
@@ -355,7 +355,7 @@ void runLTimesRajaCudaShmem(bool debug,
 
 
 
-  nested::forall_param<Pol>(
+  kernel_param<Pol>(
 
     segments,
 

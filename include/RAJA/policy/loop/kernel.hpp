@@ -3,12 +3,14 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
+ * \brief   RAJA header file containing constructs used to run kernel::forall
+ *          traversals with loop_exec.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_policy_loop_kernel_HPP
+#define RAJA_policy_loop_kernel_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -25,16 +27,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_sequential_HPP
-#define RAJA_sequential_HPP
 
-#include "RAJA/policy/sequential/atomic.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/policy/sequential/kernel.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
-#include "RAJA/policy/sequential/shared_memory.hpp"
-
+#include "RAJA/policy/loop/kernel/Collapse.hpp"
 
 #endif  // closing endif for header file include guard

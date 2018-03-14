@@ -44,7 +44,7 @@
 #include "RAJA/policy/openmp/scan.hpp"
 
 #include "RAJA/policy/openmp/forallN.hpp"
-#include "RAJA/policy/openmp/nested.hpp"
+#include "RAJA/policy/openmp/kernel.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp/target_forall.hpp"
