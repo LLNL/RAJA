@@ -2044,9 +2044,9 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
   RAJA::kernel<Pol>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<ZoneI>(0, N),
-                       RAJA::TypedRangeSegment<ZoneJ>(0, M),
-                       RAJA::TypedRangeSegment<ZoneK>(0, O)),
+      RAJA::make_tuple(RAJA::TypedRangeStrideSegment<ZoneI>(0, N, 1),
+                       RAJA::TypedRangeStrideSegment<ZoneJ>(0, M, 1),
+                       RAJA::TypedRangeStrideSegment<ZoneK>(0, O, 1)),
       [=] __device__ (ZoneI i, ZoneJ j, ZoneK k) {
 
         long left = 1;

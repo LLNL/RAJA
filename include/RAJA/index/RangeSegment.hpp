@@ -351,10 +351,19 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
                                                  Index_type length) const
   {
-    auto start = m_begin[0] + begin;
-    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+    auto stride = m_begin.get_stride();
+    auto start = m_begin[0] + begin*stride;
+    auto end = start + stride*length;
 
-    return TypedRangeStrideSegment{start, end, m_begin.get_stride()};
+    if(stride > 0){
+      end = end > m_end[0] ? m_end[0] : end;
+    }
+    else{
+      end = end < m_end[0] ? m_end[0] : end;
+    }
+    return TypedRangeStrideSegment{convertIndex<Index_type>(start),
+      convertIndex<Index_type>(end),
+      m_begin.get_stride()};
   }
 
   //! equality comparison
