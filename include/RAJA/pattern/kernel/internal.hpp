@@ -141,15 +141,10 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
-  //int shmem_window_start[segment_tuple_t::TList::size];
-
   RAJA_INLINE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
-//    for (size_t i = 0; i < segment_tuple_t::TList::size; ++i) {
-//      shmem_window_start[i] = 0;
-//    }
     assign_begin_all();
   }
 
@@ -192,7 +187,7 @@ struct LoopData {
   void assign_begin_all()
   {
     assign_begin_all_expanded(
-        camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
 
 
@@ -208,7 +203,7 @@ struct LoopData {
   index_tuple_t get_begin_index_tuple() const
   {
     return get_begin_index_tuple_expanded(
-        camp::make_idx_seq_t<offset_tuple_t::TList::size>{});
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
 };
 
@@ -233,9 +228,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
 template <camp::idx_t LoopIndex, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
 {
+  using offset_tuple_t = typename Data::offset_tuple_t;
+  using param_tuple_t = typename Data::param_tuple_t;
+
   invoke_lambda_expanded<LoopIndex>(
-      camp::make_idx_seq_t<Data::offset_tuple_t::TList::size>{},
-      camp::make_idx_seq_t<Data::param_tuple_t::TList::size>{},
+      camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
+      camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
       data);
 }
 
@@ -292,7 +290,7 @@ struct StatementListExecutor<num_statements, num_statements, StmtList> {
 template <typename StmtList, typename Data>
 RAJA_INLINE void execute_statement_list(Data &&data)
 {
-  StatementListExecutor<0, StmtList::size, StmtList>::exec(
+  StatementListExecutor<0, camp::size<StmtList>::value, StmtList>::exec(
       std::forward<Data>(data));
 }
 

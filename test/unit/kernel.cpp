@@ -69,7 +69,6 @@ protected:
 };
 TYPED_TEST_CASE_P(Kernel);
 
-#if 1
 
 RAJA_HOST_DEVICE constexpr Index_type get_val(Index_type v) noexcept
 {
@@ -225,8 +224,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 
 
 
-
-#endif
 
 
 #if defined(RAJA_ENABLE_CUDA)

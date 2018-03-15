@@ -123,8 +123,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // get type of Hp arguments index
     using data_t = camp::decay<Data>;
-    using idx_t =
-        camp::at_v<typename data_t::offset_tuple_t::TList, HpArgumentId>;
+    using idx_t = camp::tuple_element_t<HpArgumentId, typename data_t::offset_tuple_t>;
 
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution

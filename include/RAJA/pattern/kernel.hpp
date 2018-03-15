@@ -61,8 +61,7 @@ using KernelPolicy = internal::StatementList<Stmts...>;
 /// Template list of argument indices
 ///
 template <camp::idx_t... ArgumentId>
-struct ArgList {
-};
+using ArgList = camp::idx_seq<ArgumentId ...>;
 
 
 template <typename PolicyType,

@@ -131,7 +131,7 @@ struct cuda_exec
 
 
 /*
- * Policy for and on-device loop with a __syncthreads() after each iteration
+ * Policy for on-device loop with a __syncthreads() after each iteration
  */
 struct cuda_seq_syncthreads_exec
     : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
