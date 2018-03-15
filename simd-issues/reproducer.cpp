@@ -5,8 +5,14 @@
 #include <time.h>       /* time */
 #include "Layout.hpp"
 #include "View.hpp"
-#include "RangeSegment.hpp"
+#include "nested.hpp"
 #include "camp/camp.hpp"
+#include "RangeSegment.hpp"
+
+#include "seq_policy.hpp"
+#include "simd_policy.hpp"
+#include "omp_policy.hpp"
+
 
 using arr_type = double;
 
@@ -31,7 +37,11 @@ int main(int argc, char *argv[])
 
   RAJA::RangeSegment myStride(0,stride);
 
-
+  //using Pol = RAJA::nested::Policy<RAJA::nested::For<0,RAJA::simd_exec>>;
+  
+  using Pol = RAJA::nested::Policy<RAJA::nested::For<2,RAJA::omp_parallel_for_exec>,
+                                   RAJA::nested::For<1,RAJA::seq_exec>,
+                                   RAJA::nested::For<0,RAJA::simd_exec> >;
 
   
   
