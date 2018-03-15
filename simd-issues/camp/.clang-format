@@ -1,0 +1,28 @@
+BasedOnStyle : google
+IndentWidth : 2
+BreakBeforeBraces : Linux
+KeepEmptyLinesAtTheStartOfBlocks : true
+MaxEmptyLinesToKeep : 2
+AccessModifierOffset : -2
+UseTab: Never
+AllowShortIfStatementsOnASingleLine : true
+ConstructorInitializerAllOnOneLineOrOnePerLine : true
+AllowShortFunctionsOnASingleLine : true
+AllowShortLoopsOnASingleLine : false
+BinPackParameters : false
+AllowAllParametersOfDeclarationOnNextLine : false
+AlignTrailingComments : true
+ColumnLimit : 80
+PenaltyBreakBeforeFirstCallParameter : 100
+PenaltyReturnTypeOnItsOwnLine : 65000
+PenaltyBreakString : 10
+NamespaceIndentation : Inner
+
+# These improve formatting results but require clang 3.6/7 or higher
+BreakBeforeBinaryOperators : NonAssignment
+AlignAfterOpenBracket: true
+BinPackArguments : false
+AlignOperands : true
+AlwaysBreakTemplateDeclarations : true
+Cpp11BracedListStyle : true
+

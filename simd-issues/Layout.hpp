@@ -39,6 +39,12 @@
 using Index_type = long int;
 #include "camp/camp.hpp"
 
+template<typename T1>
+long int convertIndex(T1 mydata_type)
+{  
+  return (long int) mydata_type;
+}
+
 namespace RAJA
 {
 
@@ -113,7 +119,7 @@ public:
   typedef camp::make_idx_seq_t<sizeof...(RangeInts)> IndexRange;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
+  static constexpr size_t limit = 99999999999999999;//RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride1_dim = StrideOneDim;
 
   // const char *index_types[sizeof...(RangeInts)];
@@ -186,15 +192,17 @@ public:
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
+  /*  
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
     // dot product of strides and indices
     return VarOps::sum<IdxLin>(
-        ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
+    ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
             indices, strides))...);
   }
+  */
 
 
   /*!
@@ -207,6 +215,7 @@ public:
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
+  /*
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &... indices) const
@@ -214,6 +223,7 @@ public:
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
                                    % inv_mods[RangeInts])...);
   }
+  */
 };
 
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
@@ -336,6 +346,7 @@ private:
    * result to typed indices
    *
    */
+  /*  
   template <typename... Indices, camp::idx_t... RangeInts>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
                                                     IdxLin linear_index,
@@ -346,6 +357,7 @@ private:
                     locals[RangeInts]...);
     VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
   }
+*/  
 };
 
 
