@@ -61,7 +61,7 @@ using KernelPolicy = internal::StatementList<Stmts...>;
 /// Template list of argument indices
 ///
 template <camp::idx_t... ArgumentId>
-using ArgList = camp::idx_seq<ArgumentId ...>;
+using ArgList = camp::idx_seq<ArgumentId...>;
 
 
 template <typename PolicyType,
@@ -100,7 +100,8 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   RAJA::internal::shmem_setup_buffers(loop_data.param_tuple);
 
   // initialize the shmem tuple to the beginning of each loop iteration
-  RAJA::internal::shmem_set_windows(loop_data.param_tuple, loop_data.get_begin_index_tuple());
+  RAJA::internal::shmem_set_windows(loop_data.param_tuple,
+                                    loop_data.get_begin_index_tuple());
 
   // Execute!
   internal::execute_statement_list<PolicyType>(loop_data);
@@ -113,8 +114,8 @@ template <typename PolicyType, typename SegmentTuple, typename... Bodies>
 RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 {
   RAJA::kernel_param<PolicyType>(std::forward<SegmentTuple>(segments),
-                                         RAJA::make_tuple(),
-                                         std::forward<Bodies>(bodies)...);
+                                 RAJA::make_tuple(),
+                                 std::forward<Bodies>(bodies)...);
 }
 
 

@@ -4,10 +4,10 @@
  * \file
  *
  * \brief   Header file for loop kernel internals.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -348,7 +348,6 @@ constexpr RAJA_INLINE typename std::
 {
   return NestedPrivatizer<T>{wrapper};
 }
-
 
 
 }  // end namespace internal

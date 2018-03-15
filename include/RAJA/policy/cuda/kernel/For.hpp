@@ -4,21 +4,21 @@
  * \file
  *
  * \brief   Header file for CUDA statement executors.
- *          
+ *
  ******************************************************************************
  */
- 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -48,8 +48,8 @@ template <typename Data,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::For<ArgumentId,
-                                 cuda_thread_exec,
-                                 EnclosedStmts...>,
+                                            cuda_thread_exec,
+                                            EnclosedStmts...>,
                              IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -99,7 +99,9 @@ template <typename Data,
           typename... EnclosedStmts,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
-                             statement::For<ArgumentId, cuda_block_exec, EnclosedStmts...>,
+                             statement::For<ArgumentId,
+                                            cuda_block_exec,
+                                            EnclosedStmts...>,
                              IndexCalc> : public CudaBlockLoop<ArgumentId, 1> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -150,8 +152,8 @@ template <typename Data,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::For<ArgumentId,
-                                 cuda_threadblock_exec<max_threads>,
-                                 EnclosedStmts...>,
+                                            cuda_threadblock_exec<max_threads>,
+                                            EnclosedStmts...>,
                              IndexCalc>
     : public CudaBlockLoop<ArgumentId, max_threads> {
 
@@ -212,7 +214,8 @@ template <typename Data,
           typename... EnclosedStmts,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
-                             statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+                             statement::
+                                 For<ArgumentId, seq_exec, EnclosedStmts...>,
                              IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -254,7 +257,8 @@ template <typename Data,
           typename... EnclosedStmts,
           typename Segments>
 struct CudaStatementExecutor<Data,
-                             statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+                             statement::
+                                 For<ArgumentId, seq_exec, EnclosedStmts...>,
                              CudaIndexCalc_Terminator<Segments>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -307,8 +311,8 @@ template <typename Data,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::For<ArgumentId,
-                                 cuda_seq_syncthreads_exec,
-                                 EnclosedStmts...>,
+                                            cuda_seq_syncthreads_exec,
+                                            EnclosedStmts...>,
                              IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;

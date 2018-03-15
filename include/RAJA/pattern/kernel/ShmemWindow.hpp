@@ -4,22 +4,22 @@
  * \file
  *
  * \brief   Header file for shared memory window.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -60,8 +60,6 @@ namespace internal
 {
 
 
-
-
 template <typename... EnclosedStmts>
 struct StatementExecutor<statement::SetShmemWindow<EnclosedStmts...>> {
 
@@ -77,11 +75,7 @@ struct StatementExecutor<statement::SetShmemWindow<EnclosedStmts...>> {
     execute_statement_list<camp::list<EnclosedStmts...>>(
         std::forward<Data>(data));
   }
-
 };
-
-
-
 
 
 }  // namespace internal

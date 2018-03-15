@@ -183,8 +183,9 @@ struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
 };
 
-struct omp_synchronize
-    : make_policy_pattern_launch_t<Policy::openmp, Pattern::synchronize, Launch::sync> {
+struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
+                                                      Pattern::synchronize,
+                                                      Launch::sync> {
 };
 
 }  // closing brace for omp namespace

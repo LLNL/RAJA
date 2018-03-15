@@ -84,7 +84,7 @@ struct Not {
 };
 
 
-}  // end namespace statement 
+}  // end namespace statement
 
 namespace internal
 {

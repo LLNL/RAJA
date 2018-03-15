@@ -4,10 +4,10 @@
  * \file
  *
  * \brief   Header file for hyperplane patern executor.
- *          
+ *
  ******************************************************************************
  */
- 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -111,10 +111,10 @@ template <camp::idx_t HpArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
 struct StatementExecutor<statement::Hyperplane<HpArgumentId,
-                                    HpExecPolicy,
-                                    ArgList<Args...>,
-                                    ExecPolicy,
-                                    EnclosedStmts...>> {
+                                               HpExecPolicy,
+                                               ArgList<Args...>,
+                                               ExecPolicy,
+                                               EnclosedStmts...>> {
 
 
   template <typename Data>
@@ -123,15 +123,17 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // get type of Hp arguments index
     using data_t = camp::decay<Data>;
-    using idx_t = camp::tuple_element_t<HpArgumentId, typename data_t::offset_tuple_t>;
+    using idx_t =
+        camp::tuple_element_t<HpArgumentId, typename data_t::offset_tuple_t>;
 
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
-    using kernel_policy = statement::Collapse<ExecPolicy,
-                                   ArgList<Args...>,
-                                   HyperplaneInner<HpArgumentId,
-                                                   ArgList<Args...>,
-                                                   EnclosedStmts...>>;
+    using kernel_policy =
+        statement::Collapse<ExecPolicy,
+                            ArgList<Args...>,
+                            HyperplaneInner<HpArgumentId,
+                                            ArgList<Args...>,
+                                            EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
     ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);

@@ -34,8 +34,8 @@
 #include <climits>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/pattern/kernel/Collapse.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -62,8 +62,8 @@ namespace internal
 
 template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
-                                  ArgList<Arg0, Arg1>,
-                                  EnclosedStmts...>> {
+                                             ArgList<Arg0, Arg1>,
+                                             EnclosedStmts...>> {
 
 
   template <typename Data>
@@ -101,8 +101,8 @@ template <camp::idx_t Arg0,
           camp::idx_t Arg2,
           typename... EnclosedStmts>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
-                                  ArgList<Arg0, Arg1, Arg2>,
-                                  EnclosedStmts...>> {
+                                             ArgList<Arg0, Arg1, Arg2>,
+                                             EnclosedStmts...>> {
 
 
   template <typename Data>

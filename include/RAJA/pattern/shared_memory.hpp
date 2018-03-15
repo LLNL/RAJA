@@ -31,10 +31,10 @@
 #include <map>
 #include <memory>
 #include "RAJA/config.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/Operators.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/Operators.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
 #include "camp/camp.hpp"
 
 namespace RAJA
@@ -49,20 +49,16 @@ template <typename SharedPolicy, typename T, size_t NumElem>
 struct SharedMemory;
 
 
-
 namespace internal
 {
-
-
 
 
 /*!
  * Shared memory objects that utilize the ShmemWindow should be derived from
  * this type to enable run-time functions like shmem_set_window, etc.
  */
-struct SharedMemoryBase{};
-
-
+struct SharedMemoryBase {
+};
 
 
 /**
@@ -72,10 +68,10 @@ struct SharedMemoryBase{};
  * This specialization allows for NOPs for non-shared memory objects.
  */
 template <typename T>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value, size_t>::type
-shmem_setup_buffer(T &, size_t)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::
+    enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
+              size_t>::type
+    shmem_setup_buffer(T &, size_t)
 {
   return 0;
 }
@@ -91,15 +87,13 @@ shmem_setup_buffer(T &, size_t)
  * @return The number of bytes this shared memory object consumes.
  */
 template <typename T>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value, size_t>::type
-shmem_setup_buffer(T &shmem, size_t offset)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::
+    enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
+              size_t>::type
+    shmem_setup_buffer(T &shmem, size_t offset)
 {
   return shmem.shmem_setup_buffer(offset);
 }
-
-
 
 
 /**
@@ -108,10 +102,9 @@ shmem_setup_buffer(T &shmem, size_t offset)
  * This specialization allows for NOPs for non-shared memory objects.
  */
 template <typename T, typename OffsetTuple>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
-shmem_set_window(T &, OffsetTuple const &)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::
+    enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
+    shmem_set_window(T &, OffsetTuple const &)
 {
 }
 
@@ -123,17 +116,12 @@ shmem_set_window(T &, OffsetTuple const &)
  * These objects must derive from ShmemWindowBase.
  */
 template <typename T, typename OffsetTuple>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
-shmem_set_window(T &shmem, OffsetTuple const &offset_tuple)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::
+    enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
+    shmem_set_window(T &shmem, OffsetTuple const &offset_tuple)
 {
   shmem.shmem_set_window(offset_tuple);
 }
-
-
-
-
 
 
 /*!
@@ -146,20 +134,23 @@ struct ShmemHelper {
   template <typename ParamTuple>
   static RAJA_INLINE size_t setup_buffers(ParamTuple &param_tuple)
   {
-    size_t offset = ShmemHelper<Idx-1>::setup_buffers(param_tuple);
+    size_t offset = ShmemHelper<Idx - 1>::setup_buffers(param_tuple);
 
     // assign shmem offset, and compute offset of next buffer
-    size_t new_offset = offset + shmem_setup_buffer(camp::get<Idx>(param_tuple), offset);
+    size_t new_offset =
+        offset + shmem_setup_buffer(camp::get<Idx>(param_tuple), offset);
 
     return new_offset;
   }
 
   template <typename ParamTuple, typename OffsetTuple>
-  static RAJA_INLINE RAJA_HOST_DEVICE void set_window(ParamTuple &param_tuple, OffsetTuple const &offset_tuple)
+  static RAJA_INLINE RAJA_HOST_DEVICE void set_window(
+      ParamTuple &param_tuple,
+      OffsetTuple const &offset_tuple)
   {
     shmem_set_window(camp::get<Idx>(param_tuple), offset_tuple);
 
-    ShmemHelper<Idx-1>::set_window(param_tuple, offset_tuple);
+    ShmemHelper<Idx - 1>::set_window(param_tuple, offset_tuple);
   }
 };
 
@@ -176,13 +167,11 @@ struct ShmemHelper<-1> {
   }
 
   template <typename ParamTuple, typename OffsetTuple>
-  static RAJA_INLINE RAJA_HOST_DEVICE void set_window(ParamTuple &, OffsetTuple const &)
+  static RAJA_INLINE RAJA_HOST_DEVICE void set_window(ParamTuple &,
+                                                      OffsetTuple const &)
   {
   }
-
-
 };
-
 
 
 /*!
@@ -191,31 +180,28 @@ struct ShmemHelper<-1> {
  *
  * @return Total bytes of shared memory needed
  */
-template<typename ... Params>
-RAJA_INLINE
-size_t shmem_setup_buffers(camp::tuple<Params...> &param_tuple){
+template <typename... Params>
+RAJA_INLINE size_t shmem_setup_buffers(camp::tuple<Params...> &param_tuple)
+{
 
-  return ShmemHelper<((camp::idx_t)sizeof...(Params))-1>::setup_buffers(param_tuple);
-
+  return ShmemHelper<((camp::idx_t)sizeof...(Params)) - 1>::setup_buffers(
+      param_tuple);
 }
-
 
 
 /*!
  * Updates shared memory window offsets for shared memory objects that have
  * been passed into RAJA kernels via the parameter tuple.
  */
-template<typename ... Params, typename OffsetTuple>
-RAJA_HOST_DEVICE
-RAJA_INLINE
-void shmem_set_windows(camp::tuple<Params...> &param_tuple, OffsetTuple const &offset_tuple){
-	
-	ShmemHelper<((camp::idx_t)sizeof...(Params))-1>::set_window(param_tuple, offset_tuple);
+template <typename... Params, typename OffsetTuple>
+RAJA_HOST_DEVICE RAJA_INLINE void shmem_set_windows(
+    camp::tuple<Params...> &param_tuple,
+    OffsetTuple const &offset_tuple)
+{
 
+  ShmemHelper<((camp::idx_t)sizeof...(Params)) - 1>::set_window(param_tuple,
+                                                                offset_tuple);
 }
-
-
-
 
 
 }  // namespace internal

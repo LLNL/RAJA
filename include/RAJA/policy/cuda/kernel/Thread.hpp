@@ -4,22 +4,22 @@
  * \file
  *
  * \brief   Header file for CUDA thread executors.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -54,7 +54,9 @@ namespace internal
 
 
 template <typename Data, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::Thread<EnclosedStmts...>, IndexCalc> {
+struct CudaStatementExecutor<Data,
+                             statement::Thread<EnclosedStmts...>,
+                             IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using index_calc_t = CudaIndexCalc_Terminator<typename Data::segment_tuple_t>;

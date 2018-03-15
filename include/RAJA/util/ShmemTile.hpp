@@ -4,26 +4,25 @@
  * \file
  *
  * \brief   Header file for multi-dimensional shared memory tile Views.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 
 #ifndef RAJA_util_ShmemTile_HPP
@@ -65,9 +64,7 @@ struct ShmemTile<ShmemPol,
                  T,
                  RAJA::ArgList<Args...>,
                  SizeList<Sizes...>,
-                 camp::tuple<Segments...>>
-                 : public internal::SharedMemoryBase
-                 {
+                 camp::tuple<Segments...>> : public internal::SharedMemoryBase {
   static_assert(sizeof...(Args) == sizeof...(Sizes),
                 "ArgList and SizeList must be same length");
 
@@ -108,16 +105,18 @@ struct ShmemTile<ShmemPol,
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  size_t shmem_setup_buffer(size_t offset){
+  size_t shmem_setup_buffer(size_t offset)
+  {
     return shmem.shmem_setup_buffer(offset);
   }
 
-  template<typename OffsetTuple>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void shmem_set_window(OffsetTuple const &offset_tuple){
-    VarOps::ignore_args( (offsets[Args] = convertIndex<int>(camp::get<Args>(offset_tuple)))... );
-	}
+  template <typename OffsetTuple>
+  RAJA_INLINE RAJA_HOST_DEVICE void shmem_set_window(
+      OffsetTuple const &offset_tuple)
+  {
+    VarOps::ignore_args(
+        (offsets[Args] = convertIndex<int>(camp::get<Args>(offset_tuple)))...);
+  }
 
 
   RAJA_SUPPRESS_HD_WARN
@@ -126,7 +125,7 @@ struct ShmemTile<ShmemPol,
   element_t &operator()(
       camp::at_v<typename index_tuple_t::TList, Args>... idx) const
   {
-    return shmem[layout_t::s_oper( (idx - offsets[Args]) ... )];
+    return shmem[layout_t::s_oper((idx - offsets[Args])...)];
   }
 };
 

@@ -196,8 +196,9 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
               "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
               "a multiple of WARP_SIZE");
 
-struct cuda_synchronize
-    : make_policy_pattern_launch_t<Policy::cuda, Pattern::synchronize, Launch::sync> {
+struct cuda_synchronize : make_policy_pattern_launch_t<Policy::cuda,
+                                                       Pattern::synchronize,
+                                                       Launch::sync> {
 };
 
 }  // end namespace cuda
@@ -205,7 +206,7 @@ struct cuda_synchronize
 
 using policy::cuda::cuda_exec;
 
-template<size_t BLOCK_SIZE>
+template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
 using policy::cuda::cuda_seq_syncthreads_exec;

@@ -4,10 +4,10 @@
  * \file
  *
  * \brief   Header file for tile wrapper and iterator.
- *          
+ *
  ******************************************************************************
  */
- 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -198,7 +198,8 @@ template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
+struct StatementExecutor<statement::
+                             Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
 
   template <typename Data>

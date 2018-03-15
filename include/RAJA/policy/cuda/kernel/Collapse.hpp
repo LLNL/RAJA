@@ -21,15 +21,15 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -60,7 +60,9 @@ template <typename Data,
           typename... EnclosedStmts,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
-                             statement::Collapse<ExecPolicy, ArgList<>, EnclosedStmts...>,
+                             statement::Collapse<ExecPolicy,
+                                                 ArgList<>,
+                                                 EnclosedStmts...>,
                              IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -105,15 +107,16 @@ template <typename Data,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::Collapse<ExecPolicy,
-                                      ArgList<Arg0, ArgRest...>,
-                                      EnclosedStmts...>,
+                                                 ArgList<Arg0, ArgRest...>,
+                                                 EnclosedStmts...>,
                              IndexCalc> {
 
-  using stmt_list_t = StatementList<statement::For<Arg0,
-                                        ExecPolicy,
-                                        statement::Collapse<ExecPolicy,
-                                                 ArgList<ArgRest...>,
-                                                 EnclosedStmts...> > >;
+  using stmt_list_t =
+      StatementList<statement::For<Arg0,
+                                   ExecPolicy,
+                                   statement::Collapse<ExecPolicy,
+                                                       ArgList<ArgRest...>,
+                                                       EnclosedStmts...> > >;
 
   using enclosed_stmts_t =
       CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;

@@ -4,22 +4,22 @@
  * \file
  *
  * \brief   Header file for CUDA shared memory window executors.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -65,7 +65,8 @@ struct CudaStatementExecutor<Data,
   {
 
     // Call setWindow on all of our shmem objects
-    RAJA::internal::shmem_set_windows(data.param_tuple, data.get_begin_index_tuple());
+    RAJA::internal::shmem_set_windows(data.param_tuple,
+                                      data.get_begin_index_tuple());
 
     // execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);

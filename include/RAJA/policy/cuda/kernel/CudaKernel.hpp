@@ -20,15 +20,15 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -156,10 +156,12 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
  * Specialization that launches CUDA kernels for kernel::forall from host code
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct StatementExecutor<statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
+struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
+                                                  EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using StatementType = statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>;
+  using StatementType =
+      statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -179,8 +181,8 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig, EnclosedStmts...
     LaunchDim max_physical = LaunchConfig::calc_max_physical(
         CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 
-//    printf("Physical limits: %d blocks, %d threads\n",
-//        (int)max_physical.blocks, (int)max_physical.threads);
+    //    printf("Physical limits: %d blocks, %d threads\n",
+    //        (int)max_physical.blocks, (int)max_physical.threads);
 
 
     //

@@ -352,18 +352,17 @@ struct TypedRangeStrideSegment {
                                                  Index_type length) const
   {
     auto stride = m_begin.get_stride();
-    auto start = m_begin[0] + begin*stride;
-    auto end = start + stride*length;
+    auto start = m_begin[0] + begin * stride;
+    auto end = start + stride * length;
 
-    if(stride > 0){
+    if (stride > 0) {
       end = end > m_end[0] ? m_end[0] : end;
-    }
-    else{
+    } else {
       end = end < m_end[0] ? m_end[0] : end;
     }
     return TypedRangeStrideSegment{convertIndex<Index_type>(start),
-      convertIndex<Index_type>(end),
-      m_begin.get_stride()};
+                                   convertIndex<Index_type>(end),
+                                   m_begin.get_stride()};
   }
 
   //! equality comparison

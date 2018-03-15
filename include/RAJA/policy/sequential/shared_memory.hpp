@@ -70,14 +70,11 @@ struct SharedMemory<seq_shmem, T, NumElem> : public internal::SharedMemoryBase {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  size_t shmem_setup_buffer(size_t) {
-    return num_bytes;
-  }
+  size_t shmem_setup_buffer(size_t) { return num_bytes; }
 
-  template<typename OffsetTuple>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void shmem_set_window(OffsetTuple const &){
+  template <typename OffsetTuple>
+  RAJA_INLINE RAJA_HOST_DEVICE void shmem_set_window(OffsetTuple const &)
+  {
   }
 
 

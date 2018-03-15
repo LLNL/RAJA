@@ -4,22 +4,22 @@
  * \file
  *
  * \brief   Header file for statement wrappers and executors.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
-// 
+//
 // LLNL-CODE-689114
-// 
+//
 // All rights reserved.
-// 
+//
 // This file is part of RAJA.
-// 
+//
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -81,7 +81,8 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 template <camp::idx_t ArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
+struct StatementExecutor<statement::
+                             For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
 
 
   template <typename Data>

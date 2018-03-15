@@ -4,10 +4,10 @@
  * \file
  *
  * \brief   Header file for CUDA hyperplane executors.
- *          
+ *
  ******************************************************************************
  */
- 
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -51,20 +51,20 @@ template <typename Data,
           typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::Hyperplane<HpArgumentId,
-                                        cuda_seq_syncthreads_exec,
-                                        ArgList<Args...>,
-                                        ExecPolicy,
-                                        EnclosedStmts...>,
+                                                   cuda_seq_syncthreads_exec,
+                                                   ArgList<Args...>,
+                                                   ExecPolicy,
+                                                   EnclosedStmts...>,
                              IndexCalc> {
 
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
   using stmt_list_t =
       StatementList<statement::Collapse<ExecPolicy,
-                             ArgList<Args...>,
-                             HyperplaneInner<HpArgumentId,
-                                             ArgList<Args...>,
-                                             EnclosedStmts...> > >;
+                                        ArgList<Args...>,
+                                        HyperplaneInner<HpArgumentId,
+                                                        ArgList<Args...>,
+                                                        EnclosedStmts...> > >;
 
   using enclosed_stmts_t =
       CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
