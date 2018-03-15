@@ -621,7 +621,6 @@ struct Reduce_Data {
 
   void reset(T initValue, T identity_ = T())
   {
-    operator T(); //syncs device
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -769,21 +768,15 @@ class Reduce
 {
 public:
 
-  Reduce()
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(T(), Combiner::identity());
-  }
+  explicit Reduce()
+    : Reduce(T (),  Combiner::identity()){}
 
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
     : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(init_val, identity_);
-  }
+    tally_or_val_ptr{new PinnedTally<T>},
+    val(init_val, identity_){}
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
