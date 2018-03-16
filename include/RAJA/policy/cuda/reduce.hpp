@@ -610,7 +610,7 @@ struct Reduce_Data {
    *
    *  allocates PinnedTally to hold device values
    */
-  explicit Reduce_Data(T initValue, T identity_)
+  Reduce_Data(T initValue, T identity_)
     : value{initValue},
     identity{identity_},
     device_count{nullptr},
@@ -692,7 +692,7 @@ struct ReduceAtomic_Data {
   ReduceAtomic_Data()
     : ReduceAtomic_Data(T(),T()) {};
   
-  explicit ReduceAtomic_Data(T initValue, T identity_)
+  ReduceAtomic_Data(T initValue, T identity_)
     : value{initValue},
     identity{identity_},
     device_count{nullptr},
@@ -768,7 +768,7 @@ class Reduce
 {
 public:
 
-  explicit Reduce()
+  Reduce()
     : Reduce(T (),  Combiner::identity()){}
 
   //! create a reduce object
@@ -961,7 +961,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMinLoc(T init_val, Index_type init_idx)
+  ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
@@ -999,7 +999,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMaxLoc(T init_val, Index_type init_idx)
+  ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
