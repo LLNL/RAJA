@@ -146,7 +146,6 @@ if (NOT RAJA_LOADED)
 
   if(ENABLE_EXAMPLES)
     add_subdirectory(examples)
-    add_subdirectory(rajashared)
   endif()
 
   if (ENABLE_DOCUMENTATION)

@@ -73,3 +73,14 @@ raja_add_executable(
 raja_add_executable(
   NAME ex13-wave-eqn
   SOURCES ex13-wave-eqn.cpp)
+  
+  
+if(ENABLE_CUDA)
+raja_add_executable(
+  NAME cuda-shmem-ltimes
+  SOURCES cuda-shmem-ltimes.cpp)
+endif()
+
+raja_add_executable(
+  NAME cpu-shmem-ltimes
+  SOURCES cpu-shmem-ltimes.cpp)
