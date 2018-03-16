@@ -68,9 +68,113 @@ struct Equals {
   }
 };
 
+/*!
+ * A negated equality expression
+ *
+ */
+template <typename L, typename R>
+struct NotEquals {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) != R::eval(data);
+  }
+};
+
 
 /*!
- * An negation expression
+ * A logical OR expression
+ *
+ */
+template <typename L, typename R>
+struct Or {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) || R::eval(data);
+  }
+};
+
+
+/*!
+ * A logical AND expression
+ *
+ */
+template <typename L, typename R>
+struct And {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) && R::eval(data);
+  }
+};
+
+
+/*!
+ * A less than expression
+ *
+ */
+template <typename L, typename R>
+struct LessThan {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) < R::eval(data);
+  }
+};
+
+
+/*!
+ * A less or equals than expression
+ *
+ */
+template <typename L, typename R>
+struct LessThanEq {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) <= R::eval(data);
+  }
+};
+
+
+/*!
+ * A greater than expression
+ *
+ */
+template <typename L, typename R>
+struct GreaterThan {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) > R::eval(data);
+  }
+};
+
+
+/*!
+ * A greater or equals than expression
+ *
+ */
+template <typename L, typename R>
+struct GreaterThanEq {
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  {
+    return L::eval(data) >= R::eval(data);
+  }
+};
+
+
+/*!
+ * A negation expression
  *
  */
 template <typename L>
