@@ -33,7 +33,7 @@ defined. This can be done directly or by using the ``RAJA_DEVICE`` macro.
 
 It is also important to understand the difference between CPU (host) and 
 GPU (device) memory allocations and transfers work. For a detailed discussion, 
-see `Device Memory <http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory`_. RAJA does not provide a memory model by design. So users 
+see `Device Memory <http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory>`_. RAJA does not provide a memory model by design. So users 
 are responsible for ensuring that data is properly allocated and initialized 
 on the device when working running GPU code. This can be done using explicit 
 host and device allocation and copying between host and device memory spaces
