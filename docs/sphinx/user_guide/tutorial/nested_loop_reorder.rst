@@ -90,7 +90,7 @@ illustration purposes; if you run the example code, you will see the loop
 index triple printed in the exact order in which they are traversed.
 The integer that appears as the first argument to each 'For' 
 template corresponds to the index of a range in the tuple and also to the
- associated lambda index argument; i.e., '0' is for 'i', '1' is for 'j', 
+associated lambda index argument; i.e., '0' is for 'i', '1' is for 'j', 
 and '2' is for 'k'. The integer arguments are needed so that the levels in 
 the loop nest can be permuted by reordering the policy arguments and the 
 kernel remains the same.

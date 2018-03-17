@@ -60,9 +60,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::KernelPolicy<
-                        RAJA::statement::For<2, RAJA::seq_exec,
-                          RAJA::statement::For<1, RAJA::seq_exec,
-                            RAJA::statement::For<0, RAJA::seq_exec, 
+                        RAJA::statement::For<2, RAJA::seq_exec,    // k
+                          RAJA::statement::For<1, RAJA::seq_exec,  // j
+                            RAJA::statement::For<0, RAJA::seq_exec,// i 
                               RAJA::statement::Lambda<0>
                             > 
                           > 
@@ -81,9 +81,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using JIK_EXECPOL = RAJA::KernelPolicy<
-                        RAJA::statement::For<1, RAJA::seq_exec,
-                          RAJA::statement::For<0, RAJA::seq_exec,
-                            RAJA::statement::For<2, RAJA::seq_exec, 
+                        RAJA::statement::For<1, RAJA::seq_exec,    // j
+                          RAJA::statement::For<0, RAJA::seq_exec,  // i
+                            RAJA::statement::For<2, RAJA::seq_exec,// k 
                               RAJA::statement::Lambda<0>
                             > 
                           > 
@@ -102,9 +102,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using IKJ_EXECPOL = RAJA::KernelPolicy<
-                        RAJA::statement::For<0, RAJA::seq_exec,
-                          RAJA::statement::For<2, RAJA::seq_exec,
-                            RAJA::statement::For<1, RAJA::seq_exec, 
+                        RAJA::statement::For<0, RAJA::seq_exec,    // i
+                          RAJA::statement::For<2, RAJA::seq_exec,  // k
+                            RAJA::statement::For<1, RAJA::seq_exec,// j 
                               RAJA::statement::Lambda<0>
                             > 
                           > 
