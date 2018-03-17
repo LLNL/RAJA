@@ -61,11 +61,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using KJI_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<2, RAJA::seq_exec,
-                        RAJA::statement::For<1, RAJA::seq_exec,
-                        RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > > >;
+                          RAJA::statement::For<1, RAJA::seq_exec,
+                            RAJA::statement::For<0, RAJA::seq_exec, 
+                              RAJA::statement::Lambda<0>
+                            > 
+                          > 
+                        > 
+                      >;
 
-  RAJA::kernel<KJI_EXECPOL>(
-                       RAJA::make_tuple(IRange, JRange, KRange),
+  RAJA::kernel<KJI_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
@@ -78,11 +82,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using JIK_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<1, RAJA::seq_exec,
-                        RAJA::statement::For<0, RAJA::seq_exec,
-                        RAJA::statement::For<2, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >>;
+                          RAJA::statement::For<0, RAJA::seq_exec,
+                            RAJA::statement::For<2, RAJA::seq_exec, 
+                              RAJA::statement::Lambda<0>
+                            > 
+                          > 
+                        > 
+                      >;
 
-  RAJA::kernel<JIK_EXECPOL>(
-                       RAJA::make_tuple(IRange, JRange, KRange),
+  RAJA::kernel<JIK_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) { 
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
@@ -95,11 +103,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using IKJ_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<0, RAJA::seq_exec,
-                        RAJA::statement::For<2, RAJA::seq_exec,
-                        RAJA::statement::For<1, RAJA::seq_exec, RAJA::statement::Lambda<0>> > > >;
+                          RAJA::statement::For<2, RAJA::seq_exec,
+                            RAJA::statement::For<1, RAJA::seq_exec, 
+                              RAJA::statement::Lambda<0>
+                            > 
+                          > 
+                        > 
+                      >;
 
-  RAJA::kernel<IKJ_EXECPOL>(
-                       RAJA::make_tuple(IRange, JRange, KRange),
+  RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
     [=] (IIDX i, JIDX j, KIDX k) {
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });
@@ -111,8 +123,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // types/order do not match the types/order of the strongly-typed nested::For.
 //----------------------------------------------------------------------------//
 
-  RAJA::kernel<IKJ_EXECPOL>(
-                       RAJA::make_tuple(IRange, JRange, KRange),
+  RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
     [=] (JIDX i, IIDX j, KIDX k) {
        printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
     });

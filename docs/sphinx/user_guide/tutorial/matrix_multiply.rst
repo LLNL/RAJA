@@ -107,9 +107,8 @@ Nested-loop RAJA
 
 In this section, we show how to recast the matrix-multiplication calculation 
 by using ``RAJA::kernel`` nested-loop capabilities. There are some 
-important differences worth noting between nested-loop RAJA and the 
-``RAJA::forall`` loop construct we have been using to this point. We
-describe these differences in detail in the example :ref:`nestedreorder-label`.
+important differences worth noting between the use of the ``RAJA::kernel``
+and ``RAJA::forall`` loop constructs. 
 
 We first present a complete example, and then describe its key elements:
 
