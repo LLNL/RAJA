@@ -131,9 +131,11 @@ for reference.
    tutorial/add_vectors.rst
    tutorial/dot_product.rst
    tutorial/indexset_segments.rst
+   tutorial/vertexsum_coloring.rst
    tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
-   tutorial/vertexsum_coloring.rst
+   tutorial/complex_loops-intro.rst
+   tutorial/complex_loops-shmem.rst
    tutorial/reductions.rst
    tutorial/atomic_binning.rst
    tutorial/scan.rst

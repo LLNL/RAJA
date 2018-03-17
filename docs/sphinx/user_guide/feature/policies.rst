@@ -18,7 +18,9 @@
 Execution Policies
 ==================
 
-..note:: *THIS SECTION IS A WORK-IN-PROGRESS!!!*
+.. warning:: **This section is a work-in-progress!! It needs to be updated 
+             and reworked to be consistent with recent changes related to 
+             new 'kernel' stuff.**
 
 This section describes the various execution policies that ``RAJA`` provides. 
 
