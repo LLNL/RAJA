@@ -73,7 +73,7 @@ In the first RAJA variant, we convert the outermost C-style 'row' loop to
 use the ``RAJA::forall`` traversal method with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 191-204
+                    :lines: 190-203
 
 Here, the lambda expression for the loop body contains the 'col' and 'k'
 loops.
@@ -89,7 +89,7 @@ For the second RAJA variant, we nest a ``RAJA::forall`` traversal method
 call for the 'column' loop inside the outer 'row' traversal:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 226-239
+                    :lines: 225-238
 
 Here, the lambda expression for the column loop body is contained within the 
 lambda expression for the outer row loop. The outer loop execution policy
@@ -113,7 +113,7 @@ and ``RAJA::forall`` loop constructs.
 We first present a complete example, and then describe its key elements:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 271-291
+                    :lines: 270-290
 
 Note that the ``RAJA::kernel`` template takes two arguments. Similar to the 
 ``RAJA::forall`` usage to this point, the first argument describes the
@@ -151,7 +151,7 @@ and keep the column loop sequential as in earlier examples, the policy we
 would use is:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 303-310
+                    :lines: 302-309
 
 To swap the loop nest ordering and keep the same execution policy on each loop,
 we would use the following policy which swaps the ``RAJA::statement::For`` 
@@ -159,7 +159,7 @@ types. The inner loop is now the 'row' loop and is still parallel;
 the outer loop is now the 'col' loop and is still sequential:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-		    :lines: 340-347
+		    :lines: 339-346
 
 
 The RAJA framework can also collapse nested loops in an OpenMP parallel region
@@ -168,7 +168,7 @@ For example, the following policy will distribute the nested loop iterations
 differently and reduce the granularity of work done by each thread:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 375-381
+                    :lines: 374-380
 
 The ``RAJA::ArgList`` type indicates which loops in the nest are to be 
 collapsed and their nesting order within the collapse region.
