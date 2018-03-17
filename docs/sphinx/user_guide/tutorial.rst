@@ -114,7 +114,7 @@ Examples
 The remainder of this tutorial illustrates how to exercise various RAJA 
 features using simple examples. Note that all the examples employ
 RAJA traversal template methods, which are described briefly 
-here :ref:`forall-label`. For the purposes of the discussion, we
+here :ref:`loop_basic-label`. For the purposes of the discussion, we
 assume that any and all data used has been properly allocated and initialized.
 This is done in the code examples, but is not discussed further here.
 

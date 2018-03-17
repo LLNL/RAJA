@@ -12,13 +12,13 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _forall-label:
+.. _loop_basic-label:
 
 =========================
 Single and Nested Loops
 =========================
 
-The ``RAJA::forall`` and `RAJA::kernel`` loop traversal template 
+The ``RAJA::forall`` and ``RAJA::kernel`` loop traversal template 
 methods are the building blocks for most RAJA usage. RAJA users pass 
 application code fragments, such as loop bodies, into these loop traversal 
 methods using lambda expressions along with iteration space information. 
