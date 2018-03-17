@@ -23,11 +23,27 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Matrix Multiplication Example with Shared Memory
+ *  Matrix Multiplication Example with Complex Policies
  *
  *  This is the same matrix multiplication example as in the file
- *  ex4-matrix-multiply.cpp but shows how to use RAJA shared memory
- *  concepts.
+ *  ex4-matrix-multiply.cpp but shows how to use more complex RAJA 'kernel'
+ *  policies.
+ *
+ *  RAJA features shown:
+ *    - Index range segment
+ *    - View abstraction
+ *    - 'RAJA::kernel' loop execution with complex policies; e.g.,
+ *       - Multiple lambdas
+ *       - Thread-local storage
+ *       - Shared memory tiling windows
+ *
+ * For CPU execution RAJA shared memory windows can be used to improve 
+ * performance via cache blocking. For CUDA GPU execution, CUDA shared 
+ * memory can be used to improve performance. 
+ *
+ *
+ * See examples in ex4-matrix-multiply.cpp for basic RAJA nested loop 
+ * constructs via RAJA::kernel abstractions.
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -198,7 +214,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA shared memory matrix multiplication example...\n";
+  std::cout << "\n\nRAJA matrix multiplication complex policy example...\n";
 
 //
 // Define num rows/cols in matrix
@@ -237,56 +253,151 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //
 // Here, we define RAJA range segments to define the ranges of
-// row and column indices
+// row, column, and dot product indices
 //
   RAJA::RangeSegment row_range(0, N);
   RAJA::RangeSegment col_range(0, N);
-
+  RAJA::RangeSegment dot_range(0, N);
 
 //----------------------------------------------------------------------------//
 
-//
-// See discussion in ex4-matrix-multiply.cpp for exmplanation of RAJA
-// nested loop constructs.
-//
+  //
+  // We start by implementing the matrix-multiplication example in the
+  // file ex4-matrix-multiply.cpp using multipl lambdas. This helps lay 
+  // the foundation for more complex kernels in which we introduce 
+  // shared memory.
+  // 
 
-#if 0
-  Add example of tiled sequential shared memory usage (cache blocking) 
+#if 0 // WORK-IN-PROGRESS-1
+  std::cout << "\n Running sequential mat-mult multiple lambdas (RAJA-POL1)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  //
+  // This policy executes the col, row and k (inner dot product) loops 
+  // sequentially using a triply-nested loop execution policy and three 
+  // lambda expressions to: initialize the dot product variable, define
+  // the 'k' inner loop row-col dot product body, and to store the 
+  // computed row-col dot product in the proper location in the result matrix.
+  //
+  // Note that we also pass the scalar dot product variable into each lambda
+  // via a single value tuple parameter. This enables the same variable to be
+  // by all three lambdas.
+  //
+  using NESTED_EXEC_POL1 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,
+        RAJA::statement::For<0, RAJA::seq_exec,
+          RAJA::statement::Lambda<0>,  // dot = 0.0
+          RAJA::statement::For<2, RAJA::seq_exec,
+            RAJA::statement::Lambda<1> // inner loop: dot += ...
+          >,
+          RAJA::statement::Lambda<2>   // set C(row, col) = dot
+        >
+      >
+    >;
+
+  RAJA::kernel_param<NESTED_EXEC_POL1>(
+                RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot = 0.0;
+    },
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot += Aview(row, k) * Bview(k, col);
+    },
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       Cview(row, col) = dot;
+    }
+
+  );
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+#endif // WORK-IN-PROGRESS-1
+
+#if 0 // WORK-IN-PROGRESS-2
+  Build on previous kernel by adding tiled sequential shared memory (cache blocking) 
 
   std::cout << "\n Running sequential mat-mult (RAJA-tiled-shmem)...\n";
     
   std::memset(C, 0, N*N * sizeof(double));
 
-  using NESTED_EXEC_POL = 
-    RAJA::nested::Policy< 
-      RAJA::nested::For<1, RAJA::seq_exec,    // row
-        RAJA::nested::For<0, RAJA::seq_exec,  // col
-          RAJA::nested::Lambda<0>
-        >
-      >  
-    >;
+  using NESTED_EXEC_POL2 = 
 
-  RAJA::nested::forall<NESTED_EXEC_POL>(
-                       RAJA::make_tuple(col_range, row_range),
-                       [=](int col, int row) {
-      
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-        
-    Cview(row, col) = dot;
+  RAJA::kernel_param<NESTED_EXEC_POL2>(
+                RAJA::make_tuple(col_range, row_range, dot_range),
 
-  });
+  );
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
-#endif
+#endif // WORK-IN-PROGRESS-2 
   
-
-#if defined(RAJA_ENABLE_CUDA)
 //----------------------------------------------------------------------------//
 
-#if 0 // WORK-IN-PROGRESS  
+#if defined(RAJA_ENABLE_OPENMP)
+//  Add examples showing OpenMP shared memory analogue of previous examples....
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_CUDA)
+
+  std::cout << "\n Running CUDA tiled mat-mult (RAJA-POL3)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  //
+  // This policy collapses the col and row loops into a single CUDA kernel
+  // using two-dimensional CUDA thread blocks with x and y dimensions defined
+  // by the TILE_SIZE arguments.
+  //
+  // Note also that we use three lambdas here and implement the inner
+  // dot product loop using RAJA For loop construct.
+  //
+  using NESTED_EXEC_POL3 =
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<TILE_SIZE>,
+          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<TILE_SIZE>,
+            RAJA::statement::Lambda<0>,  // dot = 0.0
+            RAJA::statement::For<2, RAJA::seq_exec,
+              RAJA::statement::Lambda<1> // dot += ...
+            >,
+            RAJA::statement::Lambda<2>   // set C entry
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel_param<NESTED_EXEC_POL3>(
+                RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot = 0.0;
+    },
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot += Aview(row, k) * Bview(k, col);
+    },
+
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       Cview(row, col) = dot;
+    }
+
+  );
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+//----------------------------------------------------------------------------//
+//  Add example showing CUDA shared memory analogue of previous examples....
+
+#if 0 // WORK-IN-PROGRESS-3
   std::cout << "\n Running CUDA tiled mat-mult (RAJA-tiled-shmem)...\n";
 
   std::memset(C, 0, N*N * sizeof(double)); 
@@ -393,7 +504,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
+  //
+  // For comparison, the following examples show raw CUDA implementations of
+  // the RAJA CUDA shared memory kernel above. 
+  // 
+  // Note: The CUDA kernels are defined near the top of this file.
+  // 
 
 // Define thread block dimensions
   dim3 blockdim(TILE_SIZE, TILE_SIZE);
@@ -402,7 +518,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
 
 //printf("griddim = (%d,%d), blockdim = (%d,%d)\n", (int)griddim.x, (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
-
 
 //
 // NOTE: we choose the CUDA kernel we run based on matrix dimension.
@@ -437,8 +552,7 @@ if (N % TILE_SIZE == 0) {
 
 }
 
-#endif
-
+#endif // if defined(RAJA_ENABLE_CUDA) 
 
 //----------------------------------------------------------------------------//
 

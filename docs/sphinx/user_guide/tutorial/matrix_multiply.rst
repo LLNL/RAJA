@@ -170,23 +170,27 @@ differently and reduce the granularity of work done by each thread:
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 375-381
 
+The ``RAJA::ArgList`` type indicates which loops in the nest are to be 
+collapsed and their nesting order within the collapse region.
 The result of using this policy is essentially the same as using an OpenMP
-'parallel for' directive on the outer loop with a 'collapse(2) clause. This
-may or may not improve performance. This depends on how the compiler creates
+'parallel for' directive on the outer loop with a 'collapse(2) clause. 
+
+Note that collapsing loops via the OpenMP collapse clause may or may not 
+improve performance. It depends on how the compiler creates
 collapsed-loop indices using divide/mod operations and how well it can 
 apply optimizations, such as dead-code-elimination. Note that there are no 
 policies for the individual loop levels inside the OpenMP collapse policy. 
 
-Lastly, we describe how to use a ``RAJA::statement::CudaKernel`` type to 
+Lastly, we describe how to use ``RAJA::statement::CudaKernel`` types to 
 collapse a loop nest into a single CUDA kernel and launch it with a particular 
 thread-block decomposition. 
 
-Here is a policy that will distribute all row iterations across the 
-CUDA thread blocks and all column iterations across the threads in each
+Here is a policy that will distribute the row indices across 
+CUDA thread blocks and all column indices across threads in each
 block:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 422-431
+                    :lines: 416-425
 
 This is equivalent to defining a CUDA kernel with the lambda body inside
 it and defining row and column indices as::
@@ -196,5 +200,13 @@ it and defining row and column indices as::
 
 and launching the kernel with 'x' grid dimension N and 'x' blocksize N. 
 
+The following policy will tile row and col indices across two-dimensional
+CUDA thread blocks with 'x' and 'y' dimensions defined by the 'CUDA_BLOCK_SIZE'
+parameter.
+
+.. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
+                    :lines: 458-467
+
 The file ``RAJA/examples/ex4-matrix-multiply.cpp``
-contains the complete working example code.
+contains the complete working example code. It also contains raw CUDA 
+versions of the last RAJA CUDA example described here for comparison. 

@@ -35,8 +35,8 @@ raja_add_executable(
   SOURCES ex4-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex4a-matrix-multiply-shmem
-  SOURCES ex4a-matrix-multiply-shmem.cpp)
+  NAME ex4a-matrix-multiply-complexpol-shmem
+  SOURCES ex4a-matrix-multiply-complexpol-shmem.cpp)
 
 raja_add_executable(
   NAME ex5-nested-loop-reorder

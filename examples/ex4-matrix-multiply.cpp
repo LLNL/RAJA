@@ -31,7 +31,7 @@
  *  RAJA features shown:
  *    - Index range segment
  *    - View abstraction
- *    - 'RAJA::nested' loop abstractions
+ *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *    - Collapsing loops under OpenMP and CUDA policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -158,11 +158,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //
 // Here, we define RAJA range segments to define the ranges of
-// row, column, and dot product indices
+// row and column indices
 //
   RAJA::RangeSegment row_range(0, N);
   RAJA::RangeSegment col_range(0, N);
-  RAJA::RangeSegment dot_range(0, N);
 
 
 //----------------------------------------------------------------------------//
@@ -406,19 +405,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   //
   // This policy replaces the loop nest with a single CUDA kernel launch
-  // (kernel body is the lambda loop body) where the row iterations are 
-  // assigned to thread blocks and the col iterations are assigned to
+  // (kernel body is the lambda loop body) where the row indices are 
+  // assigned to thread blocks and the col indices are assigned to
   // threads within each block.
   // 
   // This is equivalent to launching a CUDA kernel with grid dimension N
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
   //
-  // NOTE: When the matrix dimension N is an integer multiple of 
-  // CUDA_BLOCK_SIZE (used in the kernel below), the CUDA grid and
-  // thread dimension kernel launch parameters will be the same for 
-  // both kernels.
-  // 
   using NESTED_EXEC_POL4 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -447,54 +441,47 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-  
+
   std::cout << "\n Running CUDA tiled mat-mult (RAJA-POL5)...\n";
 
-  std::memset(C, 0, N*N * sizeof(double)); 
-  
+  std::memset(C, 0, N*N * sizeof(double));
+
   //
   // This policy collapses the col and row loops into a single CUDA kernel
   // using two-dimensional CUDA thread blocks with x and y dimensions defined
-  // by the CUDA_BLOCK_SIZE arguments.  
+  // by CUDA_BLOCK_SIZE arguments.
   //
-  // Note also that we use three lambdas here and implement the inner 
-  // dotproduct loop using RAJA For loop construct.
+  // When the matrix dimension N is an integer multiple of CUDA_BLOCK_SIZE, 
+  // the CUDA grid and thread dimension kernel launch parameters will be the 
+  // same as in this kernel and the one above.
   // 
   using NESTED_EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
           RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
-            RAJA::statement::Lambda<0>,  // dot = 0.0
-            RAJA::statement::For<2, RAJA::seq_exec,
-              RAJA::statement::Lambda<1> // dot += ...
-            >,
-            RAJA::statement::Lambda<2>   // set C entry
+            RAJA::statement::Lambda<0>
           >
         >
       >
     >;
 
-  RAJA::kernel_param<NESTED_EXEC_POL5>(
-                RAJA::make_tuple(col_range, row_range, dot_range), 
+  RAJA::kernel<NESTED_EXEC_POL5>(
+                       RAJA::make_tuple(col_range, row_range),
+                       [=] RAJA_DEVICE (int col, int row) {
 
-    RAJA::tuple<double>{0.0},
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row, k) * Bview(k, col);
+      }
 
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot = 0.0;
-    },
+      Cview(row, col) = dot;
 
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
+  });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
+
+
 
 //----------------------------------------------------------------------------//
 
