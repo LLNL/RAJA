@@ -375,7 +375,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL3 = 
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                             RAJA::ArgList<1, 0>,   // row, col
+                                RAJA::ArgList<1, 0>,   // row, col
         RAJA::statement::Lambda<0>
       > 
     >;

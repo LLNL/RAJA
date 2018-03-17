@@ -73,7 +73,7 @@ In the first RAJA variant, we convert the outermost C-style 'row' loop to
 use the ``RAJA::forall`` traversal method with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
-                    :lines: 191-202
+                    :lines: 191-204
 
 Here, the lambda expression for the loop body contains the 'col' and 'k'
 loops.
