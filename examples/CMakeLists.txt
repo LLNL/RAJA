@@ -39,6 +39,10 @@ raja_add_executable(
   SOURCES ex4-matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME ex4a-matrix-multiply-complexpol-shmem
+  SOURCES ex4a-matrix-multiply-complexpol-shmem.cpp)
+
+raja_add_executable(
   NAME ex5-nested-loop-reorder
   SOURCES ex5-nested-loop-reorder.cpp)
 
@@ -73,3 +77,14 @@ raja_add_executable(
 raja_add_executable(
   NAME ex13-wave-eqn
   SOURCES ex13-wave-eqn.cpp)
+  
+  
+if(ENABLE_CUDA)
+raja_add_executable(
+  NAME cuda-shmem-ltimes
+  SOURCES cuda-shmem-ltimes.cpp)
+endif()
+
+raja_add_executable(
+  NAME cpu-shmem-ltimes
+  SOURCES cpu-shmem-ltimes.cpp)

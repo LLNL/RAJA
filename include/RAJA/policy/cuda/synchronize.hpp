@@ -35,17 +35,16 @@ namespace cuda
  * \brief Synchronize the current CUDA device.
  */
 RAJA_INLINE
-void
-synchronize_impl(const cuda_synchronize&)
+void synchronize_impl(const cuda_synchronize&)
 {
   cudaErrchk(cudaDeviceSynchronize());
 }
 
 
-} // end of namespace cuda
-} // end of namespace impl
-} // end of namespace RAJA
+}  // end of namespace cuda
+}  // end of namespace impl
+}  // end of namespace RAJA
 
-#endif // defined(RAJA_ENABLE_CUDA)
+#endif  // defined(RAJA_ENABLE_CUDA)
 
-#endif // RAJA_synchronize_cuda_HPP
+#endif  // RAJA_synchronize_cuda_HPP
