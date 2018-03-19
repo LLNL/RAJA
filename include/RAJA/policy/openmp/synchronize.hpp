@@ -29,15 +29,14 @@ namespace omp
  * \brief Synchronize all OpenMP threads and tasks.
  */
 RAJA_INLINE
-void
-synchronize_impl(const omp_synchronize&)
+void synchronize_impl(const omp_synchronize&)
 {
 #pragma omp barrier
 }
 
 
-} // end of namespace omp
-} // end of namespace impl
-} // end of namespace RAJA
+}  // end of namespace omp
+}  // end of namespace impl
+}  // end of namespace RAJA
 
-#endif // RAJA_synchronize_openmp_HPP
+#endif  // RAJA_synchronize_openmp_HPP

@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-// 
+//
 // Produced at the Lawrence Livermore National Laboratory
 //
 // LLNL-CODE-689114
@@ -57,7 +57,6 @@ class ReduceOMP
   using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceOMP>;
 
 public:
-
   using Base::Base;
   //! prohibit compiler-generated default ctor
   ReduceOMP() = delete;
@@ -93,10 +92,7 @@ class ReduceOMPOrdered
   std::shared_ptr<std::vector<T>> data;
 
 public:
-  ReduceOMPOrdered()
-    { 
-      reset(T(), T());
-    }
+  ReduceOMPOrdered() { reset(T(), T()); }
 
   //! constructor requires a default value for the reducer
   explicit ReduceOMPOrdered(T init_val, T identity_)
@@ -104,9 +100,11 @@ public:
     reset(init_val, identity_);
   }
 
-  void reset(T init_val, T identity_){
-    Base::reset(init_val,identity_);
-    data = std::shared_ptr<std::vector<T>>(std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_));
+  void reset(T init_val, T identity_)
+  {
+    Base::reset(init_val, identity_);
+    data = std::shared_ptr<std::vector<T>>(
+        std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_));
   }
 
   ~ReduceOMPOrdered()

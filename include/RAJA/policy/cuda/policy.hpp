@@ -131,9 +131,9 @@ struct cuda_exec
 
 
 /*
- * Policy for on-device loops, akin to RAJA::loop_exec
+ * Policy for on-device loop with a __syncthreads() after each iteration
  */
-struct cuda_loop_exec
+struct cuda_seq_syncthreads_exec
     : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                          RAJA::Pattern::forall,
                                                          RAJA::Launch::sync,
@@ -196,8 +196,9 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
               "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
               "a multiple of WARP_SIZE");
 
-struct cuda_synchronize
-    : make_policy_pattern_launch_t<Policy::cuda, Pattern::synchronize, Launch::sync> {
+struct cuda_synchronize : make_policy_pattern_launch_t<Policy::cuda,
+                                                       Pattern::synchronize,
+                                                       Launch::sync> {
 };
 
 }  // end namespace cuda
@@ -205,10 +206,10 @@ struct cuda_synchronize
 
 using policy::cuda::cuda_exec;
 
-template<size_t BLOCK_SIZE>
+template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
-using policy::cuda::cuda_loop_exec;
+using policy::cuda::cuda_seq_syncthreads_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;
 using policy::cuda::cuda_reduce_atomic;
@@ -227,7 +228,7 @@ struct CudaDim {
   cuda_dim_t num_threads;
   cuda_dim_t num_blocks;
 
-  __host__ __device__ void print(void) const
+  RAJA_HOST_DEVICE void print(void) const
   {
     printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
            (int)num_blocks.x,
@@ -282,7 +283,9 @@ struct CudaThreadBlock {
 
   __device__ inline RAJA::Index_type operator()(void)
   {
-    RAJA::Index_type idx = (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block + (RAJA::Index_type)view(threadIdx);
+    RAJA::Index_type idx =
+        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block
+        + (RAJA::Index_type)view(threadIdx);
 
     if (idx >= distance) {
       idx = RAJA::operators::limits<RAJA::Index_type>::min();
@@ -390,6 +393,43 @@ using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
 using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+/*!
+ * CUDA shared memory
+ */
+
+struct cuda_shmem {
+};
+
+
+/*!
+ * CUDA shared memory that allows global indexing into a block's shmem
+ */
+template <typename DimView>
+struct block_map_shmem {
+
+  template <typename T>
+  RAJA_INLINE RAJA_DEVICE static T apply(ptrdiff_t dim_size, T idx)
+  {
+    DimView dim_view;
+    ptrdiff_t block_offset = dim_view(blockIdx) * dim_size;
+    return idx - block_offset;
+  }
+};
+
+using block_map_x_shmem = block_map_shmem<Dim3x>;
+using block_map_y_shmem = block_map_shmem<Dim3y>;
+using block_map_z_shmem = block_map_shmem<Dim3z>;
+
 
 }  // closing brace for RAJA namespace
 

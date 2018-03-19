@@ -183,8 +183,9 @@ struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
 };
 
-struct omp_synchronize
-    : make_policy_pattern_launch_t<Policy::openmp, Pattern::synchronize, Launch::sync> {
+struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
+                                                      Pattern::synchronize,
+                                                      Launch::sync> {
 };
 
 }  // closing brace for omp namespace
@@ -207,6 +208,17 @@ using policy::omp::omp_target_parallel_for_exec;
 using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 #endif
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+using omp_shmem = seq_shmem;
 
 }  // closing brace for RAJA namespace
 
