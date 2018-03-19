@@ -54,11 +54,11 @@ using POL =
 
 
 #define KERNEL //produces incorrect ouput
-#undef KERNEL //traditional nesting - produces correct ouput 
+//#undef KERNEL //traditional nesting - produces correct ouput 
 
 using POL2 = RAJA::omp_parallel_for_exec;
 using POL1 = RAJA::loop_exec;
-using POL0 = RAJA::loop_exec;
+using POL0 = RAJA::simd_exec;
 
 #define mu(i,j,k)     a_mu[base+i+ni*(j)+nij*(k)]
 #define la(i,j,k) a_lambda[base+i+ni*(j)+nij*(k)]

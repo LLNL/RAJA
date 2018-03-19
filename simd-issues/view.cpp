@@ -26,6 +26,21 @@ using arr_type = double;
 
 #define nestedTest 1
 
+#define KERNEL //produces incorrect ouput
+//#undef KERNEL //traditional nesting - produces correct ouput 
+
+using POL = 
+  RAJA::KernelPolicy<
+  RAJA::statement::For<2, RAJA::omp_parallel_for_exec,
+  RAJA::statement::For<1, RAJA::loop_exec,
+  RAJA::statement::For<0, RAJA::simd_exec,
+  RAJA::statement::Lambda<0> > > > >;
+
+
+using POL2 = RAJA::omp_parallel_for_exec;
+using POL1 = RAJA::loop_exec;
+using POL0 = RAJA::simd_exec;
+
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -47,19 +62,25 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::RangeSegment myStride(0,stride);
 
-  using POL = 
-    RAJA::KernelPolicy<
-    RAJA::statement::For<2, RAJA::omp_parallel_for_exec,
-    RAJA::statement::For<1, RAJA::loop_exec,
-    RAJA::statement::For<0, RAJA::simd_exec,
-    RAJA::statement::Lambda<0> > > > >;
 
-
-
+#ifdef KERNEL
   RAJA::kernel<POL>(RAJA::make_tuple(myStride,myStride,myStride), [=] (RAJA::Index_type k, RAJA::Index_type j, 
                                                                        RAJA::Index_type i){
-                      Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i) ;                                     
+#else
+                      RAJA::forall<POL2>(myStride, [=] (int k){
+                          RAJA::forall<POL1>(myStride, [=] (int j){
+                              RAJA::forall<POL0>(myStride, [=] (int i){
+#endif                      
+                                  Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i) ;
+
+                                  
+#ifdef KERNEL
                     });
+#else                                          
+                   });
+                });
+             });
+#endif  
 
                    
   double sum = 0.0;
