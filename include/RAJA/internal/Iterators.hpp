@@ -200,8 +200,9 @@ public:
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : val(0), stride(1) {}
 
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(DifferenceType rhs,
-                                                      DifferenceType stride_ = DifferenceType(1))
+  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
+      DifferenceType rhs,
+      DifferenceType stride_ = DifferenceType(1))
       : val(rhs), stride(stride_)
   {
   }
@@ -212,10 +213,7 @@ public:
   {
   }
 
-  RAJA_HOST_DEVICE inline DifferenceType get_stride() const
-  {
-    return stride;
-  }
+  RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return stride; }
 
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator++()
   {
@@ -254,7 +252,9 @@ public:
     difference_type diff = (static_cast<difference_type>(val)
                             - (static_cast<difference_type>(rhs.val)));
 
-    return (diff % stride != difference_type{0}) ? (difference_type{1} + diff / stride) : diff / stride;
+    return (diff % stride != difference_type{0})
+               ? (difference_type{1} + diff / stride)
+               : diff / stride;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const

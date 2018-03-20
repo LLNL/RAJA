@@ -57,68 +57,97 @@ struct max_platform {
 };
 
 template <Platform p>
-struct get_space_impl {
+struct get_space_from_platform {
 };
 
 template <>
-struct get_space_impl<Platform::host> {
+struct get_space_from_platform<Platform::host> {
   static constexpr chai::ExecutionSpace value = chai::CPU;
 };
 
 #if defined(RAJA_ENABLE_CUDA)
 template <>
-struct get_space_impl<Platform::cuda> {
+struct get_space_from_platform<Platform::cuda> {
   static constexpr chai::ExecutionSpace value = chai::GPU;
 };
 #endif
 
 template <>
-struct get_space_impl<Platform::undefined> {
+struct get_space_from_platform<Platform::undefined> {
   static constexpr chai::ExecutionSpace value = chai::NONE;
 };
 
 
-template <typename... Ts>
-struct get_space_from_list {
-  static constexpr chai::ExecutionSpace value =
-      get_space_impl<VarOps::foldl(max_platform(), Ts::platform...)>::value;
-};
-
+/*!
+ * Returns the platform for the specified execution policy.
+ * This is a catch-all, so anything undefined gets Platform::undefined
+ */
 template <typename T, typename = void>
-struct get_space {
+struct get_platform {
   // catch-all: undefined CHAI space
-  static constexpr chai::ExecutionSpace value = chai::NONE;
+  static constexpr Platform value = Platform::undefined;
 };
+
+
+/*!
+ * Takes a list of policies, extracts their platforms, and provides the
+ * reduction of them all.
+ */
+template <typename... Policies>
+struct get_platform_from_list {
+  static constexpr Platform value =
+      VarOps::foldl(max_platform(), get_platform<Policies>::value...);
+};
+
+/*!
+ * Define an empty list as Platform::undefined;
+ */
+template <>
+struct get_platform_from_list<> {
+  static constexpr Platform value = Platform::undefined;
+};
+
+
+/*!
+ * Specialization to define the platform for anything derived from PolicyBase,
+ * which should catch all standard policies.
+ *
+ * (not for MultiPolicy or nested::Policy)
+ */
+template <typename T>
+struct get_platform<T,
+                    typename std::
+                        enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
+                                  && !RAJA::type_traits::is_indexset_policy<T>::
+                                         value>::type> {
+
+  static constexpr Platform value = T::platform;
+};
+
+
+/*!
+ * Specialization to define the platform for an IndexSet execution policy.
+ *
+ * Examines both segment iteration and segment execution policies.
+ */
+template <typename SEG, typename EXEC>
+struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>
+    : public get_platform_from_list<SEG, EXEC> {
+};
+
+
+/*!
+ * specialization for combining the execution polices for a forallN policy.
+ *
+ */
+template <typename TAGS, typename... POLICIES>
+struct get_platform<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
+    : public get_platform_from_list<POLICIES...> {
+};
+
 
 template <typename T>
-struct get_space<T,
-                 typename std::
-                     enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
-                               && !RAJA::type_traits::is_indexset_policy<T>::
-                                      value>::type>
-    : public get_space_impl<T::platform> {
-};
-
-template <typename SEG, typename EXEC>
-struct get_space<RAJA::ExecPolicy<SEG, EXEC>> : public get_space<EXEC> {
-};
-
-template <typename SEG, typename EXEC>
-struct get_space_from_list<RAJA::ExecPolicy<SEG, EXEC>> {
-  static constexpr chai::ExecutionSpace value = get_space<EXEC>::value;
-};
-
-template <typename TAGS, typename... POLICIES>
-struct get_space<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
-    : public get_space_from_list<POLICIES...> {
-};
-
-
-template <typename... POLICIES>
-struct get_space_from_list<camp::list<POLICIES...>> {
-  static constexpr chai::ExecutionSpace value =
-      get_space_from_list<typename POLICIES::policy_type...>::value;
-};
+using get_space = get_space_from_platform<get_platform<T>::value>;
 }
 }
 

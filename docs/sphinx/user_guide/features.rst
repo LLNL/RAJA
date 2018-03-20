@@ -23,7 +23,7 @@ This section provides a high-level description of all the main RAJA features.
 .. toctree::
    :maxdepth: 2
 
-   feature/forall
+   feature/loop_basic
    feature/policies
    feature/index
    feature/reduction

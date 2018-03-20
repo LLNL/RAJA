@@ -51,3 +51,7 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-forall-view
   SOURCES test-forall-view.cpp)
+
+raja_add_test(
+  NAME test-cuda-synchronize
+  SOURCES test-synchronize.cpp)

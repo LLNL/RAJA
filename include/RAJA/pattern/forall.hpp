@@ -211,6 +211,7 @@ RAJA_INLINE concepts::
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
               body);
@@ -234,6 +235,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 {
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   using std::begin;
   using std::end;
   using std::distance;
@@ -284,9 +286,9 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                         LoopBody loop_body)
 {
 
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
   });
@@ -307,7 +309,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
@@ -332,7 +335,8 @@ RAJA_INLINE concepts::
     forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();

@@ -40,11 +40,26 @@
 
 #include "RAJA/util/types.hpp"
 
+
 #include "RAJA/util/Operators.hpp"
 
 #include "RAJA/util/basic_mempool.hpp"
 
 #include "RAJA/util/camp_aliases.hpp"
+
+
+//
+// Generic iteration templates require specializations defined
+// in the files included below.
+//
+#include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/kernel.hpp"
+
+
+//
+// Shared memory abstractions
+//
+#include "RAJA/pattern/shared_memory.hpp"
 
 //
 // All platforms must support sequential execution.
@@ -80,13 +95,8 @@
 //
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/policy/MultiPolicy.hpp"
 
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
+#include "RAJA/policy/MultiPolicy.hpp"
 
 
 //
@@ -95,8 +105,13 @@
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+//
+// Shared memory view patterns
+//
+#include "RAJA/util/ShmemTile.hpp"
 
 //
 // Atomic operations support
@@ -108,8 +123,6 @@
 // Generic iteration templates for perfectly nested loops
 //
 #include "RAJA/pattern/forallN.hpp"
-#include "RAJA/pattern/nested.hpp"
-#include "RAJA/pattern/nested/tile.hpp"
 
 
 //
@@ -117,6 +130,11 @@
 //
 #include "RAJA/pattern/reduce.hpp"
 
+
+//
+// Synchronization
+//
+#include "RAJA/pattern/synchronize.hpp"
 
 //
 //////////////////////////////////////////////////////////////////////
