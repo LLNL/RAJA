@@ -30,18 +30,17 @@ namespace RAJA
  * RAJA::synchronize<RAJA::cuda_synchronize>();
  *
  * \endcode
- * 
+ *
  * \tparam Policy synchronization policy
  *
  * \see RAJA::policy::omp::synchronize_impl
  * \see RAJA::policy::cuda::synchronize_impl
  */
-template<typename Policy>
+template <typename Policy>
 void synchronize()
 {
   synchronize_impl(Policy{});
 }
-
 }
 
-#endif // RAJA_synchronize_HPP
+#endif  // RAJA_synchronize_HPP

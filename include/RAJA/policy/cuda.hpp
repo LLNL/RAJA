@@ -45,7 +45,10 @@
 #include "RAJA/policy/cuda/synchronize.hpp"
 
 #include "RAJA/policy/cuda/forallN.hpp"
-#include "RAJA/policy/cuda/nested.hpp"
+
+#include "RAJA/policy/cuda/shared_memory.hpp"
+
+#include "RAJA/policy/cuda/kernel.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

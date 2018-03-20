@@ -313,7 +313,8 @@ static_assert(check<unsigned long long>(),
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
               detail::associative_tag {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return Ret{lhs} + rhs;
   }
@@ -322,7 +323,8 @@ struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minus : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return Ret{lhs} - rhs;
   }
@@ -331,7 +333,9 @@ struct minus : public detail::binary_function<Arg1, Arg2, Ret> {
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
                     detail::associative_tag {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return Ret{lhs} * rhs;
   }
@@ -340,7 +344,8 @@ struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct divides : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return Ret{lhs} / rhs;
   }
@@ -348,7 +353,8 @@ struct divides : public detail::binary_function<Arg1, Arg2, Ret> {
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct modulus : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return Ret{lhs} % rhs;
   }
@@ -359,7 +365,8 @@ struct modulus : public detail::binary_function<Arg1, Arg2, Ret> {
 template <typename Arg1, typename Arg2 = Arg1>
 struct logical_and : public detail::comparison_function<Arg1, Arg2>,
                      detail::associative_tag {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs && rhs;
   }
@@ -369,7 +376,8 @@ struct logical_and : public detail::comparison_function<Arg1, Arg2>,
 template <typename Arg1, typename Arg2 = Arg1>
 struct logical_or : public detail::comparison_function<Arg1, Arg2>,
                     detail::associative_tag {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs || rhs;
   }
@@ -378,14 +386,18 @@ struct logical_or : public detail::comparison_function<Arg1, Arg2>,
 
 template <typename T>
 struct logical_not : public detail::unary_function<T, bool> {
-  RAJA_HOST_DEVICE bool operator()(const T& lhs) const { return !lhs; }
+  RAJA_HOST_DEVICE constexpr bool operator()(const T& lhs) const
+  {
+    return !lhs;
+  }
 };
 
 // Bitwise
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_or : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return lhs | rhs;
   }
@@ -393,7 +405,8 @@ struct bit_or : public detail::binary_function<Arg1, Arg2, Ret> {
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return lhs & rhs;
   }
@@ -401,7 +414,8 @@ struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return lhs ^ rhs;
   }
@@ -412,7 +426,8 @@ struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return (lhs < rhs) ? lhs : rhs;
   }
@@ -425,7 +440,8 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag {
-  RAJA_HOST_DEVICE Ret operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
+                                            const Arg2& rhs) const
   {
     return (lhs < rhs) ? rhs : lhs;
   }
@@ -439,7 +455,8 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct equal_to : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs == rhs;
   }
@@ -447,7 +464,8 @@ struct equal_to : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct not_equal_to : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs != rhs;
   }
@@ -455,7 +473,8 @@ struct not_equal_to : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct greater : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs >= rhs;
   }
@@ -463,7 +482,8 @@ struct greater : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct less : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs <= rhs;
   }
@@ -472,7 +492,8 @@ struct less : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct greater_equal : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs >= rhs;
   }
@@ -480,7 +501,8 @@ struct greater_equal : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Arg1, typename Arg2 = Arg1>
 struct less_equal : public detail::comparison_function<Arg1, Arg2> {
-  RAJA_HOST_DEVICE bool operator()(const Arg1& lhs, const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
+                                             const Arg2& rhs) const
   {
     return lhs <= rhs;
   }
@@ -490,13 +512,16 @@ struct less_equal : public detail::comparison_function<Arg1, Arg2> {
 
 template <typename Ret, typename Orig = Ret>
 struct identity : public detail::unary_function<Orig, Ret> {
-  RAJA_HOST_DEVICE Ret operator()(const Orig& lhs) const { return lhs; }
+  RAJA_HOST_DEVICE constexpr Ret operator()(const Orig& lhs) const
+  {
+    return lhs;
+  }
 };
 
 template <typename T, typename U>
 struct project1st : public detail::binary_function<T, U, T> {
-  RAJA_HOST_DEVICE T operator()(const T& lhs,
-                                const U& RAJA_UNUSED_ARG(rhs)) const
+  RAJA_HOST_DEVICE constexpr T operator()(const T& lhs,
+                                          const U& RAJA_UNUSED_ARG(rhs)) const
   {
     return lhs;
   }
@@ -504,8 +529,8 @@ struct project1st : public detail::binary_function<T, U, T> {
 
 template <typename T, typename U = T>
 struct project2nd : public detail::binary_function<T, U, U> {
-  RAJA_HOST_DEVICE U operator()(const T& RAJA_UNUSED_ARG(lhs),
-                                const U& rhs) const
+  RAJA_HOST_DEVICE constexpr U operator()(const T& RAJA_UNUSED_ARG(lhs),
+                                          const U& rhs) const
   {
     return rhs;
   }

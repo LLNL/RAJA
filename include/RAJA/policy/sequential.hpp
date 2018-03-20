@@ -30,8 +30,11 @@
 
 #include "RAJA/policy/sequential/atomic.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
+#include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/sequential/reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
+#include "RAJA/policy/sequential/shared_memory.hpp"
+
 
 #endif  // closing endif for header file include guard

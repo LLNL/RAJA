@@ -99,7 +99,7 @@ class ValueLoc
 public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
-    
+
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
 
@@ -156,21 +156,19 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  BaseReduce()
-    : c{T(), Reduce::identity()}
-  {
-  }
-  
+  BaseReduce() : c{T(), Reduce::identity()} {}
+
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   BaseReduce(T init_val, T identity_ = Reduce::identity())
-    : c{init_val, identity_}
+      : c{init_val, identity_}
   {
   }
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void reset(T val, T identity_ = Reduce::identity()) {
+  void reset(T val, T identity_ = Reduce::identity())
+  {
     c.reset(val, identity_);
   }
 
@@ -213,26 +211,23 @@ protected:
   T mutable my_data;
 
 public:
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  constexpr BaseCombinable() : identity{T()}, my_data{T()} {}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseCombinable()
-    : identity{T()}, my_data{T()}
-  {
-  }
-  
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
-    : identity{identity_}, my_data{init_val}
+      : identity{identity_}, my_data{init_val}
   {
   }
-  
+
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void reset(T init_val, T identity_){
+  void reset(T init_val, T identity_)
+  {
     my_data = init_val;
-    identity = identity_;    
+    identity = identity_;
   }
 
   RAJA_SUPPRESS_HD_WARN
@@ -318,14 +313,11 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  constexpr BaseReduceMinLoc()
-    : Base(value_type(T(), Index_type()))
-  {
-  }
+  constexpr BaseReduceMinLoc() : Base(value_type(T(), Index_type())) {}
 
   constexpr BaseReduceMinLoc(T init_val, Index_type init_idx)
-    : Base(value_type(init_val,init_idx))
-  {    
+      : Base(value_type(init_val, init_idx))
+  {
   }
 
   /// \brief reducer function; updates the current instance's state
@@ -404,13 +396,10 @@ public:
   using value_type = typename Base::value_type;
   using Base::Base;
 
-  constexpr BaseReduceMaxLoc()
-    : Base(value_type(T(), Index_type()))
-  {
-  }
+  constexpr BaseReduceMaxLoc() : Base(value_type(T(), Index_type())) {}
 
   constexpr BaseReduceMaxLoc(T init_val, Index_type init_idx)
-    : Base(value_type(init_val,init_idx))
+      : Base(value_type(init_val, init_idx))
   {
   }
 

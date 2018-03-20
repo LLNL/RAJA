@@ -45,7 +45,8 @@ source code bases that can be readily ported to new architectures. RAJA is
 one C++-based programming model abstraction layer that can help to meet this 
 performance portability challenge.
 
-RAJA provides portable abstractions for single and nested loops, reductions,
+RAJA provides portable abstractions for singly-nested and multiply-nested 
+loops -- as well as a variety of loop transformations, reductions,
 scans, atomic operations, data layouts and views, iteration spaces, etc.
 Currently supported execution policies for different programming model 
 back-ends include: sequential, SIMD, CUDA, OpenMP multi-threading and target 

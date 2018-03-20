@@ -55,8 +55,8 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
-  NAME nested
-  SOURCES nested.cpp)
+  NAME kernel
+  SOURCES kernel.cpp)
 
 raja_add_test(
   NAME test-multipolicy
