@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -77,10 +77,10 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
 
-    ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
+    ReduceMax<cuda_reduce<block_size>, double> dmax0; dmax0.reset(DEFAULT_VAL);
     ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
     ReduceMax<cuda_reduce<block_size>, double> dmax2(BIG_VAL);
-
+    
     int loops = 16;
     for (int k = 0; k < loops; k++) {
 
@@ -101,7 +101,34 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
+
+    //Reset values and run again
+    dmax0.reset(DEFAULT_VAL);
+    dmax1.reset(DEFAULT_VAL);
+    dmax2.reset(BIG_VAL);
+    
+    loops = 16;
+    for (int k = 0; k < loops; k++) {
+      
+      double droll = dist(mt);
+      int index = int(dist2(mt));
+      if (droll > dvalue[index]) {
+        dvalue[index] = droll;
+        dcurrentMax = RAJA_MAX(dcurrentMax, droll);
+      }
+      
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dmax0.max(dvalue[i]);
+          dmax1.max(2 * dvalue[i]);
+          dmax2.max(dvalue[i]);
+        });
+      
+      ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
+      ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
+      ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
+    }
   }
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////

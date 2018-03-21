@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,9 +31,8 @@
  *  RAJA features shown:
  *    - Index range segment
  *    - View abstraction
- *    - 'RAJA::nested' loop abstractions
+ *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *    - Collapsing loops under OpenMP and CUDA policies
- *    - Nested loop reordering
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -42,8 +41,7 @@
   Define number of threads in x and y dimensions of a CUDA thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE_X = 16;
-const int CUDA_BLOCK_SIZE_Y = 16;
+#define CUDA_BLOCK_SIZE 16
 #endif
 
 
@@ -58,6 +56,26 @@ const int DIM = 2;
 #define A(r, c) A[c + N * r]
 #define B(r, c) B[c + N * r]
 #define C(r, c) C[c + N * r]
+
+/*
+  Define CUDA matrix multiplication kernel for comparison to RAJA version
+*/
+#if defined(RAJA_ENABLE_CUDA)
+__global__ void matMultKernel(int N, double* C, double* A, double* B)
+{
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if ( row < N && col < N ) {
+    double dot = 0.0;
+    for (int k = 0; k < N; ++k) {
+      dot += A(row, k) * B(k, col);
+    }
+
+    C(row, col) = dot;
+  }
+}
+#endif
 
 //
 // Functions for checking results
@@ -87,6 +105,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define num rows/cols in matrix
 //
   const int N = 1000;
+//const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE; 
 
 //
 // Allocate and initialize matrix data.
@@ -148,16 +167,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
+// In the next few examples, we show ways that we can use RAJA::forall
+// statements for the matrix multiplication kernel. This usage is not
+// recommended for performance reasons. Specifically, it limits the amount
+// of parallelism that can be exposed to less than is possible. We show 
+// this usage here, to make this point clear. Later in this file, we 
+// introduce RAJA nested loop abstractions and show that we can extract all 
+// available parallelism.
+//
+//
 // In the first RAJA implementation, we replace the outer 'row' loop
 // with a RAJA::forall statement. The lambda expression contains the
 // inner loops.
-//
-// Note that this works also with an OpenMP or CUDA execution policy on the
-// outer loop so that it can run in parallel. When this is done, each thread 
-// execute the lambda expression body, which contains the 'col' and 'k' loops. 
-// Although this enables some parallelism, there is still more available. 
-// Later in this file, we introduce RAJA nested loop abstractions and show 
-// that we can extract all available parallelism.
 //
 
 //----------------------------------------------------------------------------//
@@ -194,7 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // However, nesting RAJA::forall calls like this is not recommended as
 // it limits the ability to expose parallelism and flexibility for
-// implementatio alternatives.
+// implementation alternatives.
 //
 
   std::cout << "\n Running sequential mat-mult (RAJA-row, RAJA-col)...\n";
@@ -221,7 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// Next, we use a RAJA::nested::forall method to execute the calculation.
+// Next, we use a RAJA::kernel method to execute the calculation.
 // This is different than RAJA::forall and so a few points of exmplanation
 // are in order:
 //
@@ -233,8 +254,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //    lambda for this to be correct, in general. RAJA provides strongly-typed
 //    indices to help with this. However, this example does not use them.
 // 3) An execution policy is required for each level in the loop nest. These
-//    are specified in the 'RAJA::nested::For' templates in the 
-//    'RAJA::nested::Policy type.
+//    are specified in the 'RAJA::statement::For' templates in the
+//    'RAJA::KernelPolicy type.
 // 4) The loop nest ordering is specified in the nested execution policy -- 
 //    the first 'For' policy is the outermost loop, the second 'For' policy 
 //    is the loop nested inside the outermost loop, and so on. 
@@ -247,10 +268,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   using NESTED_EXEC_POL = 
-    RAJA::nested::Policy< RAJA::nested::For<1, RAJA::seq_exec>,    // row
-                          RAJA::nested::For<0, RAJA::seq_exec> >;  // col
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,    // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >  
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL{},
+  RAJA::kernel<NESTED_EXEC_POL>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -270,13 +296,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp outer)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double)); 
   
   using NESTED_EXEC_POL1 = 
-    RAJA::nested::Policy< 
-       RAJA::nested::For<1, RAJA::omp_parallel_for_exec>, // row
-       RAJA::nested::For<0, RAJA::seq_exec> >;            // col
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec, // row
+        RAJA::statement::For<0, RAJA::seq_exec,            // col
+          RAJA::statement::Lambda<0>
+        > 
+      > 
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL1{}, 
+  RAJA::kernel<NESTED_EXEC_POL1>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
       
@@ -295,6 +327,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp inner)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // Swapping the template arguments in this nested policy swaps the loop 
   // nest ordering so the col loop is on the outside and the row loop is 
@@ -303,11 +337,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // sequentially, while row (inner) iterations execute in parallel.
   // 
   using NESTED_EXEC_POL2 =
-    RAJA::nested::Policy< 
-       RAJA::nested::For<0, RAJA::seq_exec>,                // col
-       RAJA::nested::For<1, RAJA::omp_parallel_for_exec> >; // row
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,                  // col
+        RAJA::statement::For<1, RAJA::omp_parallel_for_exec,   // row
+          RAJA::statement::Lambda<0>
+        > 
+      > 
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL2{},
+  RAJA::kernel<NESTED_EXEC_POL2>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
   
@@ -326,18 +364,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - collapse)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
   // This policy collapses the row and col loops in an OpenMP parallel region.
   // This is the same as using an OpenMP 'parallel for' directive on the 
   // outer loop with a 'collapse(2) clause.
   //
-  using NESTED_EXEC_POL3 =
-    RAJA::nested::Policy< 
-      RAJA::nested::OmpParallelCollapse< 
-                    RAJA::nested::For<1>,         // row
-                    RAJA::nested::For<0> > > ;    // col
+  using NESTED_EXEC_POL3 = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                RAJA::ArgList<1, 0>,   // row, col
+        RAJA::statement::Lambda<0>
+      > 
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL3{},
+  RAJA::kernel<NESTED_EXEC_POL3>(
                        RAJA::make_tuple(col_range, row_range),
                        [=](int col, int row) {
  
@@ -353,25 +395,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult<double>(Cview, N);
 #endif
 
-
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running CUDA mat-mult (RAJA-nested - POL4)...\n";
 
+  std::memset(C, 0, N*N * sizeof(double)); 
+  
   //
-  // This policy collapses the into a single CUDA kernel where the row 
-  // iterations are distributed across the 'y' block dimension and the
-  // col iterations are distributed across the 'x' thread dimension.
+  // This policy replaces the loop nest with a single CUDA kernel launch
+  // (kernel body is the lambda loop body) where the row indices are 
+  // assigned to thread blocks and the col indices are assigned to
+  // threads within each block.
   // 
+  // This is equivalent to launching a CUDA kernel with grid dimension N
+  // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
+  // and col = threadIdx.x in the kernel.
+  //
   using NESTED_EXEC_POL4 =
-    RAJA::nested::Policy< 
-      RAJA::nested::CudaCollapse<
-                    RAJA::nested::For<1, RAJA::cuda_block_y_exec>,      // row
-                    RAJA::nested::For<0, RAJA::cuda_thread_x_exec> > >; //col
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_block_exec,
+          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL4{},
+  RAJA::kernel<NESTED_EXEC_POL4>(
                        RAJA::make_tuple(col_range, row_range),
                        [=] RAJA_DEVICE (int col, int row) {
 
@@ -389,35 +442,78 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running CUDA mat-mult (RAJA-POL5)...\n";
+  std::cout << "\n Running CUDA tiled mat-mult (RAJA-POL5)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
 
   //
   // This policy collapses the col and row loops into a single CUDA kernel
   // using two-dimensional CUDA thread blocks with x and y dimensions defined
-  // by the CUDA_BLOCK_SIZE_X and CUDA_BLOCK_SIZE_Y template arguments,
-  // respectively. 
+  // by CUDA_BLOCK_SIZE arguments.
+  //
+  // When the matrix dimension N is an integer multiple of CUDA_BLOCK_SIZE, 
+  // the CUDA grid and thread dimension kernel launch parameters will be the 
+  // same as in this kernel and the one above.
   // 
-  using NESTED_EXEC_POL5 = 
-    RAJA::nested::Policy< 
-      RAJA::nested::CudaCollapse<
-        RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y>>, // row
-        RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X>>> >; // col
+  using NESTED_EXEC_POL5 =
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
 
-  RAJA::nested::forall(NESTED_EXEC_POL5{},
-                       RAJA::make_tuple(col_range, row_range), 
+  RAJA::kernel<NESTED_EXEC_POL5>(
+                       RAJA::make_tuple(col_range, row_range),
                        [=] RAJA_DEVICE (int col, int row) {
 
       double dot = 0.0;
       for (int k = 0; k < N; ++k) {
         dot += Aview(row, k) * Bview(k, col);
       }
-          
+
       Cview(row, col) = dot;
 
   });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
-#endif
+
+
+
+//----------------------------------------------------------------------------//
+
+//
+// The following example shows a raw CUDA version of the RAJA CUDA 
+// matrix-multiplication kernel above. We include it for comparison.
+//
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running CUDA tiled mat-mult (no RAJA)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double)); 
+
+  // Define thread block dimensions
+  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  // Define grid dimensions to match the RAJA version above
+  dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x), 
+               RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
+
+//printf("griddim = (%d,%d), blockdim = (%d,%d)\n", (int)griddim.x, (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
+
+  // Launch CUDA kernel defined near the top of this file.
+  matMultKernel<<<griddim, blockdim>>>(N, C, A, B);
+
+  cudaDeviceSynchronize();
+
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+#endif // if RAJA_ENABLE_CUDA
+
 
 //----------------------------------------------------------------------------//
 

@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -94,14 +94,7 @@ parameter is optional; if not specified the RAJA policy provides a default of
 
 Since the lambda defining the loop body will be passed to a device kernel, 
 it must be decorated with the ``__device__`` attribute when it is defined. 
-This can be done directly, or by using the ``RAJA_DEVICE`` macro if one so 
-chooses.
-
-Note that the user is responsible for making sure that the data arrays
-are properly allocated and initialized on the device. This can be done using
-explicit device allocation and copying from host memory, via CUDA unified
-memory if available, or by using ``CHAI`` (for more information about CHAI, s
-ee :ref:`plugins-label`). 
+This can be done directly or by using the ``RAJA_DEVICE`` macro.
 
 The file ``RAJA/examples/ex1-add-vectors.cpp`` contains the complete 
 working example code.

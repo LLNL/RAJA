@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -325,7 +325,11 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator=(T rhs) const { *m_value_ptr = rhs; return rhs; }
+  T operator=(T rhs) const
+  {
+    *m_value_ptr = rhs;
+    return rhs;
+  }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE

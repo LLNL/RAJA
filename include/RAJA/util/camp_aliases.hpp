@@ -14,7 +14,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -32,21 +32,23 @@
 #define RAJA_CAMP_ALIASES_HPP
 
 #include "camp/defines.hpp"
-#include "camp/tuple.hpp"
 #include "camp/list/list.hpp"
+#include "camp/tuple.hpp"
 
 namespace RAJA
 {
 
-  using ::camp::make_tuple;
+using ::camp::at_v;
 
-  using ::camp::tuple;
+using ::camp::get;
 
-  using ::camp::list;
+using ::camp::list;
 
-  using ::camp::at_v;
+using ::camp::idx_t;
 
-  using ::camp::idx_t;
+using ::camp::make_tuple;
+
+using ::camp::tuple;
 
 }  // end namespace RAJA
 

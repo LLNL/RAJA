@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -145,7 +145,7 @@ struct IndexValue {
     return TYPE(value / a);
   }
 
-  //! modulus to underlying index from another strong type
+  //! division to underlying index from another strong type
   RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(TYPE a) const
   {
     return TYPE(value / a.value);
@@ -157,7 +157,7 @@ struct IndexValue {
     return TYPE(value % a);
   }
 
-  //! division to underlying index from another strong type
+  //! modulus to underlying index from another strong type
   RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(TYPE a) const
   {
     return TYPE(value % a.value);
@@ -283,13 +283,13 @@ namespace impl
 {
 
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM const val)
 {
   return TO(val);
 }
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO
-convertIndex_helper(typename FROM::IndexValueType val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO
+convertIndex_helper(typename FROM::IndexValueType const val)
 {
   return static_cast<TO>(*val);
 }
@@ -302,7 +302,7 @@ convertIndex_helper(typename FROM::IndexValueType val)
  *
  */
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
 {
   return impl::convertIndex_helper<TO, FROM>(val);
 }

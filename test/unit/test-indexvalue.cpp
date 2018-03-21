@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -17,7 +17,7 @@
 /// Source file containing tests for Span
 ///
 
-#include "RAJA/index/IndexValue.hpp"
+#include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
 RAJA_INDEX_VALUE(StrongTypeIndex, "Strong Type")

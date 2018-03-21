@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -56,6 +56,15 @@ using Index_type = std::ptrdiff_t;
 /// Although this is a magic value, it avoids sprinkling them throughout code.
 ///
 const int UndefinedValue = -9999999;
+
+
+///
+/// Template list of sizes
+///
+template <Index_type... Sizes>
+struct SizeList {
+};
+
 
 /*!
  ******************************************************************************

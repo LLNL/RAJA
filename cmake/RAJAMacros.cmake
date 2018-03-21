@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -42,8 +42,6 @@ macro(raja_add_executable)
   if (ENABLE_TBB)
     list (APPEND arg_DEPENDS_ON tbb)
   endif ()
-
-  message(STATUS "${arg_NAME} building with depends: ${arg_DEPENDS_ON}")
 
   if (${arg_TEST})
     set (_output_dir test)

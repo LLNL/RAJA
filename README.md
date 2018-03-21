@@ -1,4 +1,4 @@
-RAJA v0.5.1
+RAJA v0.5.3
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -57,12 +57,6 @@ are not allowed!):
 More details about RAJA configuration options are located in the User 
 Documentation.
 
-Example Applications
---------------------
-
-The RAJA proxy example repository is currently being reworked. It will be 
-available soon. **Stay tuned!!**
-
 User Documentation
 -------------------
 
@@ -77,6 +71,21 @@ Other references that may be of interest include:
 To cite RAJA, please use the following reference:
 
 * R. D. Hornung and J. A. Keasler, [The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf), Tech Report, LLNL-TR-661403, Sep. 2014.
+
+Related Software
+--------------------
+
+The [**RAJA Performance Suite**](https://github.com/LLNL/RAJAPerf) contains
+a collection of loop kernels implemented in multiple RAJA and non-RAJA
+variants. We use it to monitor and assess RAJA performance on different
+platforms using a variety of compilers.
+
+The [**RAJA Proxies**](https://github.com/LLNL/RAJAProxies) repository 
+contains RAJA versions of several important HPC proxy applications.
+
+[**CHAI**](https://github.com/LLNL/CHAI) provides a managed array abstraction
+that works with RAJA to automatically copy data used in RAJA kernels to the
+appropriate space for execution. It was developed as a complement to RAJA.
 
 Mailing List
 -----------------

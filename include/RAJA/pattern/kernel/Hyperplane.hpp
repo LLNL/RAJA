@@ -1,0 +1,204 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for hyperplane patern executor.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_pattern_kernel_Hyperplane_HPP
+#define RAJA_pattern_kernel_Hyperplane_HPP
+
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/kernel/For.hpp"
+#include "RAJA/util/defines.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "camp/camp.hpp"
+
+#include <iostream>
+#include <type_traits>
+
+namespace RAJA
+{
+namespace statement
+{
+
+
+/*!
+ * A kernel::forall statement that performs hyperplane iteration over multiple
+ * indices.
+ *
+ * Given segments S0, S1, ...
+ * and iterates i0, i1, ... that range from 0 to Ni, where Ni = length(Si),
+ * hyperplanes are defined as h = i0 + i1 + i2 + ...
+ * For h = 0 ... sum(Ni)
+ *
+ * The iteration is advanced for
+ *
+ * -i0 = -h + i1 + i2 + ...
+ *
+ * Where HpArg is the argument id for i0, and Args define the arguments ids for
+ * i1, i2, ...
+ *
+ *
+ *
+ *
+ * The implemented loop pattern looks like:
+ *
+ *  RAJA::forall<HpExecPolicy>(RangeSegment(0, Nh), [=](RAJA::Index_type h){
+ *
+ *     RAJA::kernel::forall<Collapse<ExecPolicy, ArgList<1,2,...>, Lambda<0>>>(
+ *        RAJA::make_tuple(S1, S2, ...),
+ *        [=](RAJA::Index_type i1, RAJA::Index_type i2, ...){
+ *
+ *          // Compute i0
+ *          RAJA::Index_type i0 = h - sum(i1, i2, ...);
+ *
+ *          // Check if h is in bounds
+ *          if(h >= 0 && h < Nh){
+ *
+              loop_body(i0, i1, i2, ...);
+ *          }
+ *
+ *        });
+ *
+ *  });
+ *
+ */
+template <camp::idx_t HpArgumentId,
+          typename HpExecPolicy,
+          typename ArgList,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
+struct Hyperplane
+    : public internal::Statement<RAJA::ExecPolicy<HpExecPolicy, ExecPolicy>,
+                                 EnclosedStmts...> {
+};
+
+}  // end namespace statement
+
+namespace internal
+{
+
+
+template <camp::idx_t HpArgumentId, typename ArgList, typename... EnclosedStmts>
+struct HyperplaneInner
+    : public internal::Statement<camp::nil, EnclosedStmts...> {
+};
+
+
+template <camp::idx_t HpArgumentId,
+          typename HpExecPolicy,
+          camp::idx_t... Args,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
+struct StatementExecutor<statement::Hyperplane<HpArgumentId,
+                                               HpExecPolicy,
+                                               ArgList<Args...>,
+                                               ExecPolicy,
+                                               EnclosedStmts...>> {
+
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &data)
+  {
+
+    // get type of Hp arguments index
+    using data_t = camp::decay<Data>;
+    using idx_t =
+        camp::tuple_element_t<HpArgumentId, typename data_t::offset_tuple_t>;
+
+    // Add a Collapse policy around our enclosed statements that will handle
+    // the inner hyperplane loop's execution
+    using kernel_policy =
+        statement::Collapse<ExecPolicy,
+                            ArgList<Args...>,
+                            HyperplaneInner<HpArgumentId,
+                                            ArgList<Args...>,
+                                            EnclosedStmts...>>;
+
+    // Create a For-loop wrapper for the outer loop
+    ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);
+
+    // compute manhattan distance of iteration space to determine
+    // as:  hp_len = l0 + l1 + l2 + ...
+    idx_t hp_len = segment_length<HpArgumentId>(data)
+                   + VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                   segment_length<Args>(data)...);
+
+    /* Execute the outer loop over hyperplanes
+     *
+     * This will store h in the index_tuple as argument HpArgumentId, so that
+     * later, the HyperplaneInner executor can pull it out, and calculate that
+     * arguments actual value (and restrict to valid hyperplane indices)
+     */
+    forall_impl(HpExecPolicy{},
+                TypedRangeSegment<idx_t>(0, hp_len),
+                outer_wrapper);
+  }
+};
+
+
+template <camp::idx_t HpArgumentId,
+          camp::idx_t... Args,
+          typename... EnclosedStmts>
+struct StatementExecutor<HyperplaneInner<HpArgumentId,
+                                         ArgList<Args...>,
+                                         EnclosedStmts...>> {
+
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &data)
+  {
+
+    // get h value
+    auto h = camp::get<HpArgumentId>(data.offset_tuple);
+    using idx_t = decltype(h);
+
+    // compute actual iterate for HpArgumentId
+    // as:  i0 = h - (i1 + i2 + i3 + ...)
+    idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                camp::get<Args>(data.offset_tuple)...);
+
+    // get length of Hp indexed argument
+    auto len = segment_length<HpArgumentId>(data);
+
+    // check bounds
+    if (i >= 0 && i < len) {
+
+      // store in tuple
+      data.template assign_offset<HpArgumentId>(i);
+
+      // execute enclosed statements
+      execute_statement_list<StatementList<EnclosedStmts...>>(data);
+
+      // reset h for next iteration
+      data.template assign_offset<HpArgumentId>(h);
+    }
+  }
+};
+
+
+}  // end namespace internal
+
+}  // end namespace RAJA
+
+#endif /* RAJA_pattern_kernel_HPP */

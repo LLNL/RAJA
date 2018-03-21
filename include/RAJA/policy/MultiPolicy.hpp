@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -154,8 +154,8 @@ namespace detail
 // Once a specific policy is selected, that policy will select the correct
 // policy... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
-struct get_space<RAJA::MultiPolicy<SELECTOR, POLICIES...>>
-    : public get_space_impl<Platform::undefined> {
+struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
+  static constexpr Platform value = Platform::undefined;
 };
 #endif
 

@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -13,6 +13,10 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
+
+raja_add_test(
+  NAME camp_tuple
+  SOURCES camp_tuple.cpp)
 
 raja_add_test(
   NAME test-atomic
@@ -47,8 +51,8 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
-  NAME nested
-  SOURCES nested.cpp)
+  NAME kernel
+  SOURCES kernel.cpp)
 
 raja_add_test(
   NAME test-multipolicy

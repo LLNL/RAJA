@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -132,20 +132,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   // Sequential policy
-  using fdPolicy = RAJA::nested::Policy<
-    RAJA::nested::For<1, RAJA::seq_exec >,
-    RAJA::nested::For<0, RAJA::seq_exec> >;
+  using fdPolicy = RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::seq_exec,
+    RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
   // OpenMP policy
-  // using fdPolicy = RAJA::nested::Policy<
-  // RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
-  // RAJA::nested::For<1, RAJA::seq_exec > >;
+  // using fdPolicy = RAJA::KernelPolicy<
+  // RAJA::statement::For<0, RAJA::omp_parallel_for_exec >,
+  // RAJA::statement::For<1, RAJA::seq_exec > >;
 
   // CUDA policy
-  // using fdPolicy = RAJA::nested::Policy<
-  // RAJA::nested::CudaCollapse<
-  // RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
-  // RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+  // using fdPolicy = RAJA::KernelPolicy<
+  // RAJA::statement::CudaCollapse<
+  // RAJA::statement::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+  // RAJA::statement::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
 
 
   time = 0;
@@ -190,11 +190,11 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
-  using initialPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<1, RAJA::loop_exec >,
-    RAJA::nested::For<0, RAJA::loop_exec> >;
+  using initialPolicy = RAJA::KernelPolicy<
+  RAJA::statement::For<1, RAJA::loop_exec >,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
 
-  RAJA::nested::forall(initialPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
 
       int id = tx + grid.nx * ty;
@@ -221,11 +221,11 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
-  using initialPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<1, RAJA::loop_exec >,
-    RAJA::nested::For<0, RAJA::loop_exec> >;
+  using initialPolicy = RAJA::KernelPolicy<
+  RAJA::statement::For<1, RAJA::loop_exec >,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
   
-  RAJA::nested::forall(initialPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
                          
       int id = tx + ty * grid.nx;
@@ -243,7 +243,7 @@ template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
 
-  RAJA::nested::forall(fdNestedPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::kernel<fdNestedPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] RAJA_HOST_DEVICE (RAJA::Index_type tx, RAJA::Index_type ty) {
       //                  
       //Coefficients for fourth order stencil

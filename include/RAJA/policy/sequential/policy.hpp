@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -76,6 +76,18 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
 using policy::sequential::seq_exec;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_reduce;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+struct seq_shmem {
+};
 
 }  // closing brace for RAJA namespace
 

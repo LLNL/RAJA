@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -17,6 +17,10 @@
 ==================
 Execution Policies
 ==================
+
+.. warning:: **This section is a work-in-progress!! It needs to be updated 
+             and reworked to be consistent with recent changes related to 
+             new 'kernel' stuff.**
 
 This section describes the various execution policies that ``RAJA`` provides. 
 

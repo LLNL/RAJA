@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -247,7 +247,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
-  return {loop_body};
+  using return_type = typename std::remove_reference<LOOP_BODY>::type;
+  return return_type(std::forward<LOOP_BODY>(loop_body));
 }
 
 }  // closing brace for cuda namespace

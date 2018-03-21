@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -19,11 +19,28 @@ RAJA Tutorial
 **********************
 
 This RAJA tutorial introduces the most commonly-used RAJA concepts and
-capabilities via a sequence of simple examples. To understand the discussion 
-and example codes, a working knowledge of C++ templates and lambda functions
-is required. Before we begin, we provide a bit of background discussion of
-the key features of C++ lambda expressions, which are essential using RAJA
-easily.
+capabilities via a sequence of simple examples. 
+
+To understand the discussion and example codes, a working knowledge of C++ 
+templates and lambda functions is required. Here, we provide a bit 
+of background discussion of the key aspect of C++ lambda expressions, which 
+are essential to using RAJA easily.
+
+To understand the examples that run on a GPU device, it is important to note
+that any lambda expression that is defined outside of a GPU kernel and passed
+to GPU kernel must decorated with the ``__device__`` attribute when it is 
+defined. This can be done directly or by using the ``RAJA_DEVICE`` macro.
+
+It is also important to understand the difference between CPU (host) and 
+GPU (device) memory allocations and transfers work. For a detailed discussion, 
+see `Device Memory <http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory>`_. RAJA does not provide a memory model by design. So users 
+are responsible for ensuring that data is properly allocated and initialized 
+on the device when working running GPU code. This can be done using explicit 
+host and device allocation and copying between host and device memory spaces
+or via CUDA unified memory (UM), if available. RAJA developers also support a 
+library called ``CHAI`` which is complementary to RAJA and which provides a 
+simple alternative to manual CUDA calls or UM. For more information about 
+CHAI, see :ref:`plugins-label`.
 
 ===============================
 A Little C++ Lambda Background
@@ -97,7 +114,7 @@ Examples
 The remainder of this tutorial illustrates how to exercise various RAJA 
 features using simple examples. Note that all the examples employ
 RAJA traversal template methods, which are described briefly 
-here :ref:`forall-label`. For the purposes of the discussion, we
+here :ref:`loop_basic-label`. For the purposes of the discussion, we
 assume that any and all data used has been properly allocated and initialized.
 This is done in the code examples, but is not discussed further here.
 
@@ -114,9 +131,11 @@ for reference.
    tutorial/add_vectors.rst
    tutorial/dot_product.rst
    tutorial/indexset_segments.rst
+   tutorial/vertexsum_coloring.rst
    tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
-   tutorial/vertexsum_coloring.rst
+   tutorial/complex_loops-intro.rst
+   tutorial/complex_loops-shmem.rst
    tutorial/reductions.rst
    tutorial/atomic_binning.rst
    tutorial/scan.rst

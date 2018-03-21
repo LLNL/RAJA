@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -240,11 +240,11 @@ void computeErr(double *I, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
-  using errPolicy = RAJA::nested::Policy<
-    RAJA::nested::For<1, RAJA::loop_exec >,
-    RAJA::nested::For<0, RAJA::loop_exec> >;
+  using errPolicy = RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> > >;
 
-  RAJA::nested::forall(errPolicy{}, RAJA::make_tuple(fdBounds,fdBounds),
+  RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
     
       int id = tx + grid.n * ty;

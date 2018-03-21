@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -23,7 +23,7 @@ This section provides a high-level description of all the main RAJA features.
 .. toctree::
    :maxdepth: 2
 
-   feature/forall
+   feature/loop_basic
    feature/policies
    feature/index
    feature/reduction
