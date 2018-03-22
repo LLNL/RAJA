@@ -43,7 +43,7 @@ enum class Policy {
   tbb
 };
 
-enum class Pattern { undefined, forall, reduce, taskgraph, synchronize};
+enum class Pattern { undefined, forall, reduce, taskgraph, synchronize };
 
 enum class Launch { undefined, sync, async };
 
@@ -137,11 +137,14 @@ namespace concepts
 
 template <typename Pol>
 struct ExecutionPolicy
-    : DefineConcept(
-          ::RAJA::concepts::has_type<::RAJA::Policy>(camp::decay<decltype(Pol::policy)>()),
-          ::RAJA::concepts::has_type<::RAJA::Pattern>(camp::decay<decltype(Pol::pattern)>()),
-          ::RAJA::concepts::has_type<::RAJA::Launch>(camp::decay<decltype(Pol::launch)>()),
-          ::RAJA::concepts::has_type<::RAJA::Platform>(camp::decay<decltype(Pol::platform)>())) {
+    : DefineConcept(::RAJA::concepts::has_type<::RAJA::Policy>(
+                        camp::decay<decltype(Pol::policy)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Pattern>(
+                        camp::decay<decltype(Pol::pattern)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Launch>(
+                        camp::decay<decltype(Pol::launch)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Platform>(
+                        camp::decay<decltype(Pol::platform)>())) {
 };
 
 }  // end namespace concepts

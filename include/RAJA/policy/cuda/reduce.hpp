@@ -605,11 +605,12 @@ struct Reduce_Data {
 
   Reduce_Data()
     : Reduce_Data(T(),T()){};
-
+  
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
+
   Reduce_Data(T initValue, T identity_)
     : value{initValue},
     identity{identity_},
@@ -700,7 +701,6 @@ struct ReduceAtomic_Data {
     own_device_ptr{false}
   {
   }
-
 
   void reset(T initValue, T identity_ = Combiner::identity())
   {

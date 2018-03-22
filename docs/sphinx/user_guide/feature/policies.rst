@@ -18,6 +18,10 @@
 Execution Policies
 ==================
 
+.. warning:: **This section is a work-in-progress!! It needs to be updated 
+             and reworked to be consistent with recent changes related to 
+             new 'kernel' stuff.**
+
 This section describes the various execution policies that ``RAJA`` provides. 
 
 .. note:: * All RAJA execution policies are in the namespace ``RAJA``.
