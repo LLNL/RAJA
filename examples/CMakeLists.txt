@@ -50,17 +50,17 @@ raja_add_executable(
   NAME ex7-reductions
   SOURCES ex7-reductions.cpp)
   
-raja_add_executable(
-  NAME ex8-pi-reduce_vs_atomic
-  SOURCES ex8-pi-reduce_vs_atomic.cpp)
+#raja_add_executable(
+#  NAME ex8-pi-reduce_vs_atomic
+#  SOURCES ex8-pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
   NAME ex9-scan
   SOURCES ex9-scan.cpp)
 
-raja_add_executable(
-  NAME ex10-binning.cpp
-  SOURCES ex10-binning.cpp)
+#raja_add_executable(
+#  NAME ex10-binning.cpp
+#  SOURCES ex10-binning.cpp)
 
 raja_add_executable(
   NAME ex11-jacobi

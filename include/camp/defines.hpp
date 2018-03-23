@@ -44,8 +44,8 @@ namespace camp
 
 #else
  #if defined(__HCC__)
-  #define CAMP_DEVICE [[hc]]
-  #define CAMP_HOST_DEVICE [[cpu]][[hc]]
+  #define CAMP_DEVICE __attribute__((hc))
+  #define CAMP_HOST_DEVICE __attribute__((cpu)) __attribute__((hc))
   #define CAMP_SUPPRESS_HD_WARN
  #else
   #define CAMP_DEVICE

@@ -32,7 +32,7 @@
 
 #if defined(RAJA_ENABLE_ROCM)
 
-#include "RAJA/pattern/nested.hpp"
+#include "RAJA/pattern/kernel.hpp"
 
 #include <cassert>
 #include <climits>
@@ -50,7 +50,7 @@
 
 namespace RAJA
 {
-namespace nested
+namespace statement
 {
 
 
@@ -156,7 +156,7 @@ struct ROCmWrapper {
   void RAJA_DEVICE operator()() const
   {
     auto const &pol = camp::get<idx>(data.policy_tuple);
-    Executor<internal::remove_all_t<decltype(pol)>> e{};
+    Executor<::RAJA::internal::remove_all_t<decltype(pol)>> e{};
     Next next_wrapper{data};
     e(pol, next_wrapper);
   }
@@ -349,7 +349,7 @@ struct Executor<Collapse<rocm_collapse_exec<Async>, FOR_TYPES...>> {
 };
 
 
-}  // namespace nested
+}  // namespace statement
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_ROCM guard

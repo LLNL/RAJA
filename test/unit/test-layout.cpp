@@ -223,6 +223,7 @@ TEST(LayoutTest, 2D_IJ)
   }
 }
 
+#if 1
 TEST(LayoutTest, 2D_JI)
 {
   typedef RAJA::Layout<2> my_layout;
@@ -260,6 +261,7 @@ TEST(LayoutTest, 2D_JI)
     ASSERT_EQ(k % 15, k2);
   }
 }
+#endif
 
 
 TEST(LayoutTest, 2D_IJ_ProjJ)
@@ -314,6 +316,7 @@ TEST(LayoutTest, 2D_IJ_ProjJ)
 
 TEST(LayoutTest, 3D_KJI_ProjJ)
 {
+#if 1
   typedef RAJA::Layout<3> my_layout;
 
   /*
@@ -365,6 +368,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
     // check projection of j
     ASSERT_EQ(j, 0);
   }
+#endif
 }
 
 
