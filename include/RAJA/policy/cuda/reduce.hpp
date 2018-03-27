@@ -603,17 +603,25 @@ struct Reduce_Data {
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
-  Reduce_Data() { reset(T(), T()); }
-
+  Reduce_Data()
+    : Reduce_Data(T(),T()){};
+  
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
-  Reduce_Data(T initValue, T identity_) { reset(initValue, identity_); }
+
+  Reduce_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{},
+    own_device_ptr{false}
+  {
+  }
 
   void reset(T initValue, T identity_ = T())
   {
-    cudaDeviceSynchronize();
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -682,13 +690,20 @@ struct ReduceAtomic_Data {
   T* device;
   bool own_device_ptr;
 
-  ReduceAtomic_Data() { reset(T(), T()); }
-
-  ReduceAtomic_Data(T initValue, T identity_) { reset(initValue, identity_); }
+  ReduceAtomic_Data()
+    : ReduceAtomic_Data(T(),T()) {};
+  
+  ReduceAtomic_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{nullptr},
+    own_device_ptr{false}
+  {
+  }
 
   void reset(T initValue, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -752,22 +767,20 @@ template <bool Async, typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-  Reduce() : parent{this}, tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(T(), Combiner::identity());
-  }
+
+  Reduce()
+    : Reduce(T (),  Combiner::identity()){}
 
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
-      : parent{this}, tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(init_val, identity_);
-  }
+    : parent{this},
+    tally_or_val_ptr{new PinnedTally<T>},
+    val(init_val, identity_){}
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
+    operator T(); //syncs device
     val = reduce_data_type(in_val, identity_);
   }
 
@@ -948,7 +961,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMinLoc(T init_val, Index_type init_idx)
+  ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
@@ -986,7 +999,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMaxLoc(T init_val, Index_type init_idx)
+  ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
