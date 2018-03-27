@@ -76,10 +76,12 @@ matrix:
 
 before_install: # don't try to build and run intel when it's impossible
 - |
-  if [[ "x$encrypted_cd1f6303bca7_key" != "x" ]] ; then
-    openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d
-  else
-    export DO_TEST=no DO_BUILD=no
+  if [[ "$IMG" == "icc16" ]]; then 
+    if [[ "x$encrypted_cd1f6303bca7_key" != "x" ]] ; then
+      openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d
+    else
+      export DO_TEST=no DO_BUILD=no
+    fi
   fi
 
 script: 
