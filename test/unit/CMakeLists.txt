@@ -50,9 +50,9 @@ raja_add_test(
   NAME test-span
   SOURCES test-span.cpp)
 
-#raja_add_test(
-#  NAME kernel
-#  SOURCES kernel.cpp)
+raja_add_test(
+  NAME kernel
+  SOURCES kernel.cpp)
 
 #raja_add_test(
 #  NAME test-multipolicy

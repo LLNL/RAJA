@@ -21,6 +21,9 @@
 #if defined(RAJA_ENABLE_CUDA)
 #include <cuda_runtime.h>
 #endif
+#if defined(RAJA_ENABLE_ROCM)
+#include <hip/hip_runtime.h>
+#endif
 
 
 using namespace RAJA;
@@ -52,6 +55,9 @@ protected:
     cudaMallocManaged(&data,
                       sizeof(Index_type) * x_len * y_len,
                       cudaMemAttachGlobal);
+#elif defined(RAJA_ENABLE_ROCM)
+    rocmMalloc((void **)&data,
+                      sizeof(Index_type) * x_len * y_len);
 #else
     data = new Index_type[x_len * y_len];
 #endif
@@ -62,6 +68,8 @@ protected:
   {
 #if defined(RAJA_ENABLE_CUDA)
     cudaFree(data);
+#elif defined(RAJA_ENABLE_ROCM)
+    rocmFree(data);
 #else
     delete[] data;
 #endif
@@ -79,7 +87,11 @@ RAJA_HOST_DEVICE constexpr Index_type get_val(T v) noexcept
 {
   return *v;
 }
+#if defined(RAJA_ENABLE_CUDA)
 CUDA_TYPED_TEST_P(Kernel, Basic)
+#elif defined(RAJA_ENABLE_ROCM)
+ROCM_TYPED_TEST_P(Kernel, Basic)
+#endif
 {
   using Pol = at_v<TypeParam, 0>;
   using IndexTypes = at_v<TypeParam, 1>;
@@ -113,6 +125,8 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   double *arr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaMallocManaged(&arr, arr_len*sizeof(double));
+#elif defined(RAJA_ENABLE_ROCM)
+  rocmMalloc((void **)&arr, arr_len*sizeof(double));
 #else
   arr = new double[arr_len];
 #endif
@@ -160,6 +174,8 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
+#elif defined(RAJA_ENABLE_ROCM)
+  rocmFree(arr);
 #else
   delete[] arr;
 #endif
@@ -218,6 +234,8 @@ using CUDATypes = ::testing::Types<
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce<1024>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
+#endif
+#if defined(RAJA_ENABLE_ROCM)
 #endif
 
 

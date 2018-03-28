@@ -130,6 +130,15 @@ struct rocm_exec
                                                     value,
                                                 RAJA::Platform::rocm> {
 };
+/*
+ * Policy for on-device loop with a __syncthreads() after each iteration
+ */
+struct rocm_seq_syncthreads_exec
+    : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::rocm,
+                                                         RAJA::Pattern::forall,
+                                                         RAJA::Launch::sync,
+                                                         RAJA::Platform::rocm> {
+};
 
 
 /*
@@ -201,6 +210,7 @@ static_assert(MAX_BLOCK_SIZE % WAVEFRONT_SIZE == 0,
 }  // end namespace rocm
 }  // end namespace policy
 
+using policy::rocm::rocm_seq_syncthreads_exec;
 using policy::rocm::rocm_exec;
 using policy::rocm::rocm_loop_exec;
 using policy::rocm::rocm_reduce;

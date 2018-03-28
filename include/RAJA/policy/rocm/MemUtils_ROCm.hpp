@@ -105,6 +105,11 @@ int __syncthreads_or(int predicate) [[hc]]
 }
 
 
+#else
+RAJA_INLINE
+void __syncthreads()
+{
+}
 #endif
 
 ////////////////////////////////////////////////////////////////////

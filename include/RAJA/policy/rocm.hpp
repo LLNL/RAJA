@@ -74,6 +74,7 @@ dim3(int _x, int _y, int _z):x(_x),y(_y),z(_z) {};
 
 #include "RAJA/policy/rocm/forallN.hpp"
 //#include "RAJA/policy/rocm/nested.hpp"
+#include "RAJA/policy/rocm/kernel.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_ROCM)
 
