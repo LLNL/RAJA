@@ -126,20 +126,6 @@ using POL =
 #define float_sw4 double
 
 
-#define mu(i,j,k)     a_mu[base+i+ni*(j)+nij*(k)]
-#define la(i,j,k) a_lambda[base+i+ni*(j)+nij*(k)]
-
-  // Reversed indexation                                                                                            
-#define u(c,i,j,k)   a_u[base3+i+ni*(j)+nij*(k)+nijk*(c)]
-#define lu(c,i,j,k) a_lu[base3+i+ni*(j)+nij*(k)+nijk*(c)]
-#define strx(i) a_strx[i-ifirst0]
-#define stry(j) a_stry[j-jfirst0]
-#define strz(k) a_strz[k-kfirst0]
-#define acof(i,j,k) a_acof[(i-1)+6*(j-1)+48*(k-1)]
-#define bope(i,j) a_bope[i-1+6*(j-1)]
-#define ghcof(i) a_ghcof[i-1]
-
-
 void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast,
 		 int nk, float_sw4* RAJA_RESTRICT a_acof, float_sw4 *RAJA_RESTRICT a_bope,
 		 float_sw4* RAJA_RESTRICT a_ghcof, float_sw4* RAJA_RESTRICT a_lu, float_sw4* RAJA_RESTRICT a_u,
@@ -1112,17 +1098,11 @@ TEST(Kernel, SW4For){
 		  a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 
 
-  double pass = 1.0;
-
   for(auto i=0; i<arr_len; ++i)
     {
-      double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
-      if(err > 1e-8){
-	pass = -1.0; 
-      }
+      ASSERT_FLOAT_EQ(a_lu_native[i], a_lu_raja[i]);
     }
 
-  ASSERT_FLOAT_EQ(pass, 1.0);
   
 
 }//End of test brace
@@ -1193,17 +1173,11 @@ TEST(Kernel, SW4Nested){
 		  a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 
 
-  double pass = 1.0;
-
   for(auto i=0; i<arr_len; ++i)
     {
-      double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
-      if(err > 1e-8){
-	pass = -1.0; 
-      }
+      ASSERT_FLOAT_EQ(a_lu_native[i], a_lu_raja[i]);
     }
 
-  ASSERT_FLOAT_EQ(pass, 1.0);
   
 
 }//End of test brace
