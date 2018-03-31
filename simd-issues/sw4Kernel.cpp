@@ -113,9 +113,13 @@ int main(int argc, char *argv[])
    long int arr_len = k_len*j_len*i_len;
 
    //Allocate arrays
-   long int dim = 3;
-   double * a_lu_native  = new double[dim*arr_len]; //ref solution
-   double * a_lu_raja    = new double[dim*arr_len]; //SIMD solution
+   //long int dim = 3;
+   //double * a_lu_native  = new double[dim*arr_len]; //ref solution
+   //double * a_lu_raja    = new double[dim*arr_len]; //SIMD solution
+
+   size_t lu_arraySz = 13153412 + 10;  //padding
+   double * a_lu_native  = new double[lu_arraySz]; //ref solution
+   double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
    
    double * a_acof       = new double[arr_len];
    double * a_bope       = new double[arr_len];
@@ -126,7 +130,7 @@ int main(int argc, char *argv[])
    double * a_strx       = new double[arr_len];
    double * a_stry       = new double[arr_len];
    double * a_strz       = new double[arr_len];
-   for(auto i=0; i<dim*arr_len; ++i)
+   for(auto i=0; i<lu_arraySz; ++i)
       {
          a_lu_native[i]  = 0.0; //output for the native version
          a_lu_raja[i]    = 0.0; //output for the raja version
@@ -163,7 +167,7 @@ int main(int argc, char *argv[])
 
    bool pass = true;
 
-   for(auto i=0; i<arr_len; ++i)
+   for(auto i=0; i<lu_arraySz; ++i)
       {
         double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
          if(err > 1e-8){

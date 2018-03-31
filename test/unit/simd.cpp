@@ -22,6 +22,7 @@
 #include <iostream>
 #include <chrono>
 #include <cmath>
+#include <cassert>
 
 
 using namespace RAJA;
@@ -181,7 +182,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
    RAJA::RangeSegment j_range(jfirst+2,jlast-1);
    RAJA::RangeSegment i_range(ifirst+2,ilast-1);
 
-#pragma omp parallel for                                                                                             
+   //#pragma omp parallel for                                                                                             
    for(int  k= k1; k <= k2 ; k++ ){
       for(int j=jfirst+2; j <= jlast-2 ; j++ ) {
 #pragma omp simd                                                                      
@@ -422,7 +423,14 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
 //	    lu(1,i,j,k) = a1*lu(1,i,j,k) + cof*r1;
 //            lu(2,i,j,k) = a1*lu(2,i,j,k) + cof*r2;
 //            lu(3,i,j,k) = a1*lu(3,i,j,k) + cof*r3;
-            lu(1,i,j,k) =  cof*r1;
+
+            size_t id1 = base3+i+ni*(j)+nij*(k)+nijk*(1);
+            size_t id2 = base3+i+ni*(j)+nij*(k)+nijk*(2);
+            size_t id3 = base3+i+ni*(j)+nij*(k)+nijk*(3);
+
+            //std::cout<<id1<<" "<<id2<<" "<<id3<<std::endl;
+
+            lu(1,i,j,k) =  cof*r1;            
             lu(2,i,j,k) =  cof*r2;
             lu(3,i,j,k) =  cof*r3;
             }
@@ -1026,10 +1034,13 @@ void rhs4sg_rev_raja_For( int ifirst, int ilast, int jfirst, int jlast, int kfir
 //	    lu(1,i,j,k) = a1*lu(1,i,j,k) + cof*r1;
 //            lu(2,i,j,k) = a1*lu(2,i,j,k) + cof*r2;
 //            lu(3,i,j,k) = a1*lu(3,i,j,k) + cof*r3;
+
             lu(1,i,j,k) =  cof*r1;
             lu(2,i,j,k) =  cof*r2;
             lu(3,i,j,k) =  cof*r3;
 
+            
+            
                  });
               });
         });
@@ -1055,8 +1066,9 @@ TEST(Kernel, SW4For){
 
   //Allocate arrays
   long int dim = 3;
-  double * a_lu_native  = new double[dim*arr_len]; //ref solution
-  double * a_lu_raja    = new double[dim*arr_len]; //SIMD solution
+  size_t lu_arraySz = 13153412 + 10;  //padding
+  double * a_lu_native  = new double[lu_arraySz]; //ref solution
+  double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
    
   double * a_acof       = new double[arr_len];
   double * a_bope       = new double[arr_len];
@@ -1069,7 +1081,7 @@ TEST(Kernel, SW4For){
   double * a_strz       = new double[arr_len];
 
    
-  for(auto i=0; i<dim*arr_len; ++i)
+  for(auto i=0; i<lu_arraySz; ++i)
     {
       a_lu_native[i]  = 0.0; //output for the native version
       a_lu_raja[i]    = 0.0; //output for the raja version
@@ -1110,6 +1122,7 @@ TEST(Kernel, SW4For){
     }
 
 
+
    delete[] a_lu_native;
    delete[] a_lu_raja;
 
@@ -1143,10 +1156,11 @@ TEST(Kernel, SW4Nested){
   long int i_len = ilast-ifirst + 10;
   long int arr_len = k_len*j_len*i_len;
 
-  //Allocate arrays
-  long int dim = 3;
-  double * a_lu_native  = new double[dim*arr_len]; //ref solution
-  double * a_lu_raja    = new double[dim*arr_len]; //SIMD solution
+
+  size_t lu_arraySz = 13153412+10; 
+  double * a_lu_native  = new double[lu_arraySz]; //ref solution
+  double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
+
    
   double * a_acof       = new double[arr_len];
   double * a_bope       = new double[arr_len];
@@ -1159,7 +1173,7 @@ TEST(Kernel, SW4Nested){
   double * a_strz       = new double[arr_len];
 
    
-  for(auto i=0; i<dim*arr_len; ++i)
+  for(auto i=0; i<lu_arraySz; ++i)
     {
       a_lu_native[i]  = 0.0; //output for the native version
       a_lu_raja[i]    = 0.0; //output for the raja version
@@ -1194,7 +1208,7 @@ TEST(Kernel, SW4Nested){
 		  a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 
 
-  for(auto i=0; i<arr_len; ++i)
+  for(auto i=0; i<lu_arraySz; ++i)
     {
       ASSERT_FLOAT_EQ(a_lu_native[i], a_lu_raja[i]);
     }
