@@ -182,7 +182,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
    RAJA::RangeSegment j_range(jfirst+2,jlast-1);
    RAJA::RangeSegment i_range(ifirst+2,ilast-1);
 
-   //#pragma omp parallel for                                                                                             
+#pragma omp parallel for                                                                                             
    for(int  k= k1; k <= k2 ; k++ ){
       for(int j=jfirst+2; j <= jlast-2 ; j++ ) {
 #pragma omp simd                                                                      
@@ -196,7 +196,8 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
       float_sw4 u3zim1,u3zim2,lau3zx,mu3xz,u3zjp2,u3zjp1,u3zjm1,u3zjm2,lau3zy;
       float_sw4 mu3yz,mu1zx,u1zip2,u1zip1,u1zim1,u1zim2;
       float_sw4 u2zjp2,u2zjp1,u2zjm1,u2zjm2,mu2zy,lau1xz,lau2yz,muz1,muz2,muz3,muz4;
-      
+
+
 /* from inner_loop_4a, 28x3 = 84 ops */
             mux1 = mu(i-1,j,k)*strx(i-1)-
 	       tf*(mu(i,j,k)*strx(i)+mu(i-2,j,k)*strx(i-2));
@@ -206,6 +207,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
 	       3*(mu(i+1,j,k)*strx(i+1)+mu(i,j,k)*strx(i));
             mux4 = mu(i+1,j,k)*strx(i+1)-
 	       tf*(mu(i,j,k)*strx(i)+mu(i+2,j,k)*strx(i+2));
+
 
             muy1 = mu(i,j-1,k)*stry(j-1)-
 	       tf*(mu(i,j,k)*stry(j)+mu(i,j-2,k)*stry(j-2));
@@ -224,6 +226,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
 	       3*(mu(i,j,k+1)*strz(k+1)+mu(i,j,k)*strz(k));
             muz4 = mu(i,j,k+1)*strz(k+1)-
 	       tf*(mu(i,j,k)*strz(k)+mu(i,j,k+2)*strz(k+2));
+
 /* xx, yy, and zz derivatives:*/
 /* 75 ops */
             r1 = i6*( strx(i)*( (2*mux1+la(i-1,j,k)*strx(i-1)-
@@ -269,6 +272,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
                      muz3*(u(2,i,j,k+1)-u(2,i,j,k)) +
                      muz4*(u(2,i,j,k+2)-u(2,i,j,k)) ) );
 
+
 /* 75 ops */
             r3 = i6*( strx(i)*(mux1*(u(3,i-2,j,k)-u(3,i,j,k)) + 
                       mux2*(u(3,i-1,j,k)-u(3,i,j,k)) + 
@@ -291,7 +295,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
                     tf*(la(i,j,k)*strz(k)+la(i,j,k+2)*strz(k+2)))*
 		  (u(3,i,j,k+2)-u(3,i,j,k)) ) );
 
-
+            //----
 /* Mixed derivatives: */
 /* 29ops /mixed derivative */
 /* 116 ops for r1 */
@@ -377,6 +381,9 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
                              8*(-u(3,i,j-1,k+1)+u(3,i,j+1,k+1))) ) - (
                         mu(i,j,k+2)*(u(3,i,j-2,k+2)-u(3,i,j+2,k+2)+
 				     8*(-u(3,i,j-1,k+2)+u(3,i,j+1,k+2))) )) ;
+
+
+
 /* 116 ops for r3 */
 /*  (mu*u_z)_x */
             r3 = r3 + strx(i)*strz(k)*
@@ -419,6 +426,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
                         la(i,j,k+2)*(u(2,i,j-2,k+2)-u(2,i,j+2,k+2)+
 				     8*(-u(2,i,j-1,k+2)+u(2,i,j+1,k+2))) )) ;
 
+
 /* 9 ops */
 //	    lu(1,i,j,k) = a1*lu(1,i,j,k) + cof*r1;
 //            lu(2,i,j,k) = a1*lu(2,i,j,k) + cof*r2;
@@ -433,6 +441,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
             lu(1,i,j,k) =  cof*r1;            
             lu(2,i,j,k) =  cof*r2;
             lu(3,i,j,k) =  cof*r3;
+
             }
       }
    }
@@ -1069,11 +1078,11 @@ TEST(Kernel, SW4For){
   size_t lu_arraySz = 13153412 + 10;  //padding
   double * a_lu_native  = new double[lu_arraySz]; //ref solution
   double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
-   
+  double * a_u          = new double[lu_arraySz];
+     
   double * a_acof       = new double[arr_len];
   double * a_bope       = new double[arr_len];
   double * a_ghcof      = new double[arr_len];
-  double * a_u          = new double[arr_len];
   double * a_mu         = new double[arr_len];
   double * a_lambda     = new double[arr_len];
   double * a_strx       = new double[arr_len];
@@ -1123,6 +1132,7 @@ TEST(Kernel, SW4For){
 
 
 
+
    delete[] a_lu_native;
    delete[] a_lu_raja;
 
@@ -1160,12 +1170,11 @@ TEST(Kernel, SW4Nested){
   size_t lu_arraySz = 13153412+10; 
   double * a_lu_native  = new double[lu_arraySz]; //ref solution
   double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
-
+  double * a_u          = new double[lu_arraySz];
    
   double * a_acof       = new double[arr_len];
   double * a_bope       = new double[arr_len];
   double * a_ghcof      = new double[arr_len];
-  double * a_u          = new double[arr_len];
   double * a_mu         = new double[arr_len];
   double * a_lambda     = new double[arr_len];
   double * a_strx       = new double[arr_len];
@@ -1199,8 +1208,6 @@ TEST(Kernel, SW4Nested){
 		    nk, a_acof, a_bope, a_ghcof, a_lu_native, a_u,
 		    a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 
-   
-
   std::cout<<"Calling RAJA Nested..."<<std::endl;
   //Call RAJA version
   rhs4sg_rev_raja_Nested(ifirst, ilast, jfirst, jlast, kfirst, klast,
@@ -1214,6 +1221,7 @@ TEST(Kernel, SW4Nested){
     }
 
 
+  
   delete[] a_lu_native;
    delete[] a_lu_raja;
 

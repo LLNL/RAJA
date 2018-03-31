@@ -113,18 +113,15 @@ int main(int argc, char *argv[])
    long int arr_len = k_len*j_len*i_len;
 
    //Allocate arrays
-   //long int dim = 3;
-   //double * a_lu_native  = new double[dim*arr_len]; //ref solution
-   //double * a_lu_raja    = new double[dim*arr_len]; //SIMD solution
 
    size_t lu_arraySz = 13153412 + 10;  //padding
    double * a_lu_native  = new double[lu_arraySz]; //ref solution
    double * a_lu_raja    = new double[lu_arraySz]; //SIMD solution
-   
+   double * a_u          = new double[lu_arraySz];
+      
    double * a_acof       = new double[arr_len];
    double * a_bope       = new double[arr_len];
    double * a_ghcof      = new double[arr_len];
-   double * a_u          = new double[arr_len];
    double * a_mu         = new double[arr_len];
    double * a_lambda     = new double[arr_len];
    double * a_strx       = new double[arr_len];
