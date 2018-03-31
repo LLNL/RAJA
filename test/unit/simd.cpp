@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+#include <cmath>
 
 
 using namespace RAJA;
@@ -1115,7 +1116,7 @@ TEST(Kernel, SW4For){
 
   for(auto i=0; i<arr_len; ++i)
     {
-      double err = abs(a_lu_native[i]-a_lu_raja[i]);
+      double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
       if(err > 1e-8){
 	pass = -1.0; 
       }
@@ -1196,7 +1197,7 @@ TEST(Kernel, SW4Nested){
 
   for(auto i=0; i<arr_len; ++i)
     {
-      double err = abs(a_lu_native[i]-a_lu_raja[i]);
+      double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
       if(err > 1e-8){
 	pass = -1.0; 
       }
