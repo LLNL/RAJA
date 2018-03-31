@@ -32,7 +32,12 @@
 
 
 #include "RAJA/RAJA.hpp"
+#include <cstdio>
+#include <time.h>       /* time */
 #include <cstdlib>
+#include <iostream>
+#include <chrono>
+#include <cmath>
 
 #define float_sw4 double
 
@@ -121,8 +126,6 @@ int main(int argc, char *argv[])
    double * a_strx       = new double[arr_len];
    double * a_stry       = new double[arr_len];
    double * a_strz       = new double[arr_len];
-
-   
    for(auto i=0; i<dim*arr_len; ++i)
       {
          a_lu_native[i]  = 0.0; //output for the native version
@@ -162,7 +165,7 @@ int main(int argc, char *argv[])
 
    for(auto i=0; i<arr_len; ++i)
       {
-         double err = abs(a_lu_native[i]-a_lu_raja[i]);
+        double err = std::abs(a_lu_native[i]-a_lu_raja[i]);
          if(err > 1e-8){
             pass = false; 
          }
@@ -175,7 +178,20 @@ int main(int argc, char *argv[])
       {
          std::cout<<"RAJA and native versions did NOT produce the same output"<<std::endl;
       }
+
+   delete[] a_lu_native;
+   delete[] a_lu_raja;
    
+   delete[] a_acof;
+   delete[] a_bope;
+   delete[] a_ghcof;
+   delete[] a_u;
+   delete[] a_mu;
+   delete[] a_lambda;
+   delete[] a_strx;
+   delete[] a_stry;
+   delete[] a_strz;
+
    return 0;
 }
 

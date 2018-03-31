@@ -67,7 +67,10 @@ TEST(Kernel, ViewNestedFor){
      {
        ASSERT_FLOAT_EQ(C[i], 1.0);
      }
-  
+
+   delete [] A;
+   delete [] B;
+   delete [] C;
    
 }
 
@@ -114,7 +117,10 @@ using POL =
      {
        ASSERT_FLOAT_EQ(C[i], 1.0);
      }
-  
+
+   delete [] A;
+   delete [] B;
+   delete [] C;
    
 }
 
@@ -1103,6 +1109,21 @@ TEST(Kernel, SW4For){
       ASSERT_FLOAT_EQ(a_lu_native[i], a_lu_raja[i]);
     }
 
+
+   delete[] a_lu_native;
+   delete[] a_lu_raja;
+
+   delete[] a_acof;
+   delete[] a_bope;
+   delete[] a_ghcof;
+   delete[] a_u;
+   delete[] a_mu;
+   delete[] a_lambda;
+   delete[] a_strx;
+   delete[] a_stry;
+   delete[] a_strz;
+
+
   
 
 }//End of test brace
@@ -1178,6 +1199,19 @@ TEST(Kernel, SW4Nested){
       ASSERT_FLOAT_EQ(a_lu_native[i], a_lu_raja[i]);
     }
 
+
+  delete[] a_lu_native;
+   delete[] a_lu_raja;
+
+   delete[] a_acof;
+   delete[] a_bope;
+   delete[] a_ghcof;
+   delete[] a_u;
+   delete[] a_mu;
+   delete[] a_lambda;
+   delete[] a_strx;
+   delete[] a_stry;
+   delete[] a_strz;
   
 
 }//End of test brace
