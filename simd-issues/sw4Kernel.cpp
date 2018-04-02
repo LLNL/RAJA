@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
       {
          a_lu_native[i]  = 0.0; //output for the native version
          a_lu_raja[i]    = 0.0; //output for the raja version
+         a_u[i]       = rand() % 10 + 1;
       }
 
    for(auto i=0; i<arr_len; ++i)
@@ -138,7 +139,6 @@ int main(int argc, char *argv[])
          a_acof[i]  = rand() % 10 + 1;
          a_bope[i]    = rand() % 10 + 1;
          a_ghcof[i]   = rand() % 10 + 1;
-         a_u[i]       = rand() % 10 + 1;
          a_mu[i]      = rand() % 10 + 1;
          a_lambda[i]  = rand() % 10 + 1;
          a_strx[i]    = rand() % 10 + 1;
