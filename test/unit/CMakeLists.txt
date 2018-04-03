@@ -55,6 +55,10 @@ raja_add_test(
   SOURCES kernel.cpp)
 
 raja_add_test(
+  NAME simd
+  SOURCES simd.cpp)
+
+raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
 
