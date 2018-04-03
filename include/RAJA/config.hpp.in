@@ -169,8 +169,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
 #endif
 
-#if defined(_OPENMP) && (_OPENMP >= 201307)
-#define RAJA_SIMD  _Pragma("omp simd")
+#if defined(_OPENMP)
+#define RAJA_SIMD
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
 #define RAJA_SIMD _Pragma("simd")
