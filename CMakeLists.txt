@@ -90,6 +90,12 @@ if (NOT RAJA_LOADED)
   if (ENABLE_OPENMP)
     set (raja_depends
       openmp)
+
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    message(WARNING "RAJA::simd_exec not supported ")
+    message(WARNING "RAJA::simd_exec will behave like loop_exec ")
+  endif()
+
   endif()
 
   if (ENABLE_CUDA)
