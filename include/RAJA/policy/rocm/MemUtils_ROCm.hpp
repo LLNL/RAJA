@@ -75,6 +75,13 @@ rocmError_t rocmDeviceSynchronize()
   fut.wait();
   return rocmPeekAtLastError();
 }
+template <typename Func>
+RAJA_INLINE void rocmOccupancyMaxPotentialBlockSize(int * blocks, int * threads,
+                                                    Func const &func,
+                                                    int shmem_size) {
+*blocks = 16;
+*threads = 64;
+}
 
 #if __KALMAR_ACCELERATOR__ == 1
 RAJA_DEVICE RAJA_INLINE

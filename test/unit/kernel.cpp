@@ -236,6 +236,11 @@ using CUDATypes = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 #if defined(RAJA_ENABLE_ROCM)
+using ROCMTypes = ::testing::Types<
+    list<KernelPolicy<For<1, s, ROCmKernel<For<0, RAJA::rocm_threadblock_exec<128>, Lambda<0>>>>>,
+         list<TypedIndex, Index_type>,
+         RAJA::rocm_reduce<1024>>>;
+INSTANTIATE_TYPED_TEST_CASE_P(ROCM, Kernel, ROCMTypes);
 #endif
 
 
@@ -558,6 +563,323 @@ CUDA_TEST(Kernel, SubRange_Complex)
 }
 
 
+#endif
+
+#if defined(RAJA_ENABLE_ROCM)
+
+
+ROCM_TEST(Kernel, ROCmCollapse1a)
+{
+  using Pol = KernelPolicy<
+      ROCmKernel<
+        //Collapse<RAJA::rocm_threadblock_exec<128>, ArgList<0,1,2>, Lambda<0>>>>;
+        statement::Collapse<RAJA::rocm_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
+
+  int *x = nullptr;
+  rocmMalloc((void **)&x, 3*2*5*sizeof(int));
+
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] __device__ (Index_type i, Index_type j, Index_type k) {
+        x[i + j*3 + k*3*2] = 1;
+       });
+
+  rocmDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    //printf("x[%d]=%d\n", i, x[i]);
+    ASSERT_EQ(x[i], 1);
+  }
+
+  rocmFree(x);
+}
+
+#if 0
+CUDA_TEST(Kernel, CudaCollapse1b)
+{
+  using Pol = RAJA::KernelPolicy<
+      CudaKernel<
+        Collapse<RAJA::cuda_threadblock_exec<5>, ArgList<0,1>,
+          For<2, RAJA::seq_exec, Lambda<0>>
+        >
+      >>;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, 3*2*5*sizeof(int));
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        x[i + j*3 + k*3*2] = 1;
+       });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  cudaFree(x);
+}
+
+
+//CUDA_TEST(Kernel, CudaCollapse1c)
+//{
+//
+//  using Pol = RAJA::KernelPolicy<
+//      CudaKernel<
+//        Collapse<RAJA::cuda_block_seq_exec, ArgList<0,1>,
+//          For<2, RAJA::cuda_thread_exec, Lambda<0>>
+//        >
+//      >>;
+//
+//  int *x = nullptr;
+//  cudaMallocManaged(&x, 3*2*5*sizeof(int));
+//
+//  RAJA::kernel<Pol>(
+//      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+//                       RAJA::RangeSegment(0, 2),
+//                       RAJA::RangeSegment(0, 5)),
+//      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+//        x[i + j*3 + k*3*2] = 1;
+//       });
+//
+//  cudaDeviceSynchronize();
+//
+//  for(int i = 0;i < 3*2*5;++ i){
+//    ASSERT_EQ(x[i], 1);
+//  }
+//
+//  cudaFree(x);
+//}
+
+
+
+
+
+CUDA_TEST(Kernel, CudaCollapse2)
+{
+  using Pol = RAJA::KernelPolicy<
+       CudaKernel<
+         Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>, Lambda<0>>
+       >>;
+
+
+  Index_type *sum1;
+  cudaMallocManaged(&sum1, 1*sizeof(Index_type));
+
+  Index_type *sum2;
+  cudaMallocManaged(&sum2, 1*sizeof(Index_type));
+
+  int N = 41;
+  RAJA::kernel<Pol>(
+                       RAJA::make_tuple(RAJA::RangeSegment(1, N),
+                                        RAJA::RangeSegment(1, N)),
+                       [=] RAJA_DEVICE (Index_type i, Index_type j) {
+
+                         RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
+                         RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
+
+                       });
+
+  cudaDeviceSynchronize();
+
+  ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum1);
+  ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum2);
+
+  cudaFree(sum1);
+  cudaFree(sum2);
+
+}
+
+
+CUDA_TEST(Kernel, CudaReduceA)
+{
+
+  using Pol = RAJA::KernelPolicy<
+      CudaKernel<
+        Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>,
+          For<2, RAJA::seq_exec, Lambda<0>>
+        >
+      >>;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+//        printf("b=%d,t=%d, i,j,k=%d,%d,%d\n",
+//            (int)blockIdx.x, (int)threadIdx.x,
+//            (int)i, (int)j, (int)k);
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+
+
+
+CUDA_TEST(Kernel, CudaReduceB)
+{
+
+  using Pol = RAJA::KernelPolicy<
+        For<2, RAJA::seq_exec,
+          CudaKernel<
+            Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0,1>, Lambda<0>>
+          >
+        >>;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+
+
+CUDA_TEST(Kernel, CudaReduceC)
+{
+
+  using Pol = RAJA::KernelPolicy<
+        For<2, RAJA::loop_exec,
+          For<0, RAJA::loop_exec,
+            CudaKernel<
+              For<1, RAJA::cuda_threadblock_exec<45>, Lambda<0>>
+            >
+          >
+        >>;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+
+
+CUDA_TEST(Kernel, SubRange_ThreadBlock)
+{
+  using Pol = RAJA::KernelPolicy<
+        CudaKernel<
+          For<0, RAJA::cuda_threadblock_exec<57>, Lambda<0>>
+        >>;
+
+  size_t num_elem = 2048;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(first, last)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 1.0;
+       });
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, num_elem-20);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
+
+
+
+
+
+CUDA_TEST(Kernel, SubRange_Complex)
+{
+  using PolA = RAJA::KernelPolicy<
+          CudaKernel<
+            For<0, RAJA::cuda_threadblock_exec<128>, Lambda<0>>
+          >>;
+
+  using PolB = RAJA::KernelPolicy<
+          CudaKernel<
+            Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0, 1>,
+              For<2, RAJA::seq_exec, Lambda<0>>
+            >
+          >>;
+
+
+  size_t num_elem = 1024;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::kernel<PolA>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::kernel<PolB>(
+      RAJA::make_tuple(RAJA::RangeSegment(first, last),
+                       RAJA::RangeSegment(0, 16),
+                       RAJA::RangeSegment(0, 32)),
+      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
+       });
+
+
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, (num_elem-20)*16*32);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
+
+#endif
 #endif
 
 

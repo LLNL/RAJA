@@ -612,10 +612,11 @@ struct ROCmBlockLoop {
 
 
   template <typename Executor, typename Data>
-  inline __device__ void execBlockLoop(Executor &exec,
+//  inline __device__ void execBlockLoop(Executor &exec,
+  inline void execBlockLoop(Executor &exec,
                                        Data &data,
                                        int num_logical_blocks,
-                                       int block_carry)
+                                       int block_carry) [[hc]]
   {
     // if we are already in a block work sharing region, we just assign
     // this block region

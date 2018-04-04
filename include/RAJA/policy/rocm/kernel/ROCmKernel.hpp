@@ -45,7 +45,7 @@
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
-#include "RAJA/policy/rocm/MemUtils_ROCM.hpp"
+#include "RAJA/policy/rocm/MemUtils_ROCm.hpp"
 #include "RAJA/policy/rocm/policy.hpp"
 
 #include "RAJA/internal/ForallNPolicy.hpp"
@@ -197,7 +197,7 @@ struct StatementExecutor<statement::ROCmKernelExt<LaunchConfig,
 
 
     // Compute logical dimensions
-    using SegmentTuple = decltype(data.segment_tuple);
+//    using SegmentTuple = decltype(data.segment_tuple);
 
     // Instantiate an executor object
     using executor_t = rocm_statement_list_executor_t<stmt_list_t, data_t>;
@@ -231,7 +231,7 @@ struct StatementExecutor<statement::ROCmKernelExt<LaunchConfig,
 
 
     // Check for errors
-    RAJA::rocm::peekAtLastError();
+    RAJA::rocmPeekAtLastError();
 
     RAJA::rocm::launch(stream);
 

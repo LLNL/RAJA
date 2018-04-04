@@ -81,6 +81,6 @@ raja_add_executable(
   SOURCES cuda-shmem-ltimes.cpp)
 endif()
 
-raja_add_executable(
-  NAME cpu-shmem-ltimes
-  SOURCES cpu-shmem-ltimes.cpp)
+#raja_add_executable(
+#  NAME cpu-shmem-ltimes
+#  SOURCES cpu-shmem-ltimes.cpp)

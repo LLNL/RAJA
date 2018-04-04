@@ -907,7 +907,7 @@ private:
 #else
 static const std::size_t tile_size = 256;
 static const std::size_t segment_size = 32768;
-static const std::size_t max_reductions = 4;
+static const std::size_t max_reductions = 16;
 static const std::size_t block_size = segment_size / max_reductions;
 static const std::size_t max_size = block_size / tile_size;
 
@@ -1112,6 +1112,13 @@ public:
     return sum;
    }
 
+   void reset(T init_val, T identity_ = Joiner::identity())
+   {
+     operator T(); //syncs device
+//     data->value = reduce_data_type(init_val);
+     data->value = init_val;
+   }
+
    operator T()
    {
       return (this->final_result());
@@ -1202,22 +1209,23 @@ public:
       }
 
 };
-#if 0
 //! specialization of ReduceMin for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceMin<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    :  public hcc::reducer<T, hcc::min<T>>
+    :  public rocm::reducer<RAJA::reduce::min<T>,T>
+//    :  public hcc::reducer<T, hcc::min<T>>
 //    : public rocm::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = rocm::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
+//  using Base = rocm::reducer<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
+  using Base = rocm::reducer< RAJA::reduce::min<T>, T>;
   using Base::Base;
   //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceMin& min(T rhs) const
+  const ReduceMin& min(T rhs) const [[hc]]
   {
-    this->combine(rhs);
+    this->reduce(rhs);
     return *this;
   }
 };
@@ -1225,34 +1233,39 @@ public:
 //! specialization of ReduceMax for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceMax<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public rocm::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
+    :  public rocm::reducer<RAJA::reduce::max<T>,T>
+//    : public rocm::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = rocm::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
+//  using Base = rocm::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
+  using Base = rocm::reducer< RAJA::reduce::max<T>, T>;
   using Base::Base;
   //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceMax& max(T rhs) const
+  const ReduceMax& max(T rhs) const [[hc]]
   {
-    this->combine(rhs);
+    this->reduce(rhs);
     return *this;
   }
 };
 
+#if 0
 //! specialization of ReduceMinLoc for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceMinLoc<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public rocm::Reduce<Async,
-                          RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
-                          RAJA::reduce::detail::ValueLoc<T>,
-                          maybe_atomic>
+    :  public rocm::reducer< RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+                          RAJA::reduce::detail::ValueLoc<T>>
+//    : public rocm::Reduce<Async,
+//                          RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+//                          RAJA::reduce::detail::ValueLoc<T>,
+//                          maybe_atomic>
 {
 
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = rocm::
-      Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+      reducer<RAJA::reduce::min<value_type>, value_type>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -1281,16 +1294,19 @@ public:
 //! specialization of ReduceMaxLoc for rocm_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
 class ReduceMaxLoc<rocm_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public rocm::
-          Reduce<Async,
-                 RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
-                 RAJA::reduce::detail::ValueLoc<T, false>,
-                 maybe_atomic>
+    :  public rocm::reducer< RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T>>,
+                          RAJA::reduce::detail::ValueLoc<T>>
+//    : public rocm::
+//          Reduce<Async,
+//                 RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
+//                 RAJA::reduce::detail::ValueLoc<T, false>,
+//                 maybe_atomic>
 {
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
   using Base = rocm::
-      Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
+      reducer<RAJA::reduce::max<value_type>, value_type>;
+//      Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
