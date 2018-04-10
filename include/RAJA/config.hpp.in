@@ -131,8 +131,10 @@ const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined (_WIN32)
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_RESTRICT __restrict
 #else
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_RESTRICT __restrict__
 #endif
 
