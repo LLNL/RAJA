@@ -56,6 +56,11 @@
 #cmakedefine RAJA_ENABLE_CHAI
 
 /*
+ *Force inline option
+ */
+#cmakedefine RAJA_ENABLE_FORCEINLINE_RECURSIVE
+
+/*
  * Timer options
  */
 
@@ -161,6 +166,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
+#ifdef RAJA_ENABLE_FORCEINLINE_RECURSIVE
+#define RAJA_FORCEINLINE_RECURSIVE  _Pragma("forceinline recursive")
+#else
+#define RAJA_FORCEINLINE_RECURSIVE
+#endif
+
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(ENABLE_CUDA)
@@ -189,6 +200,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for GNU compilers
 //
 
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(ENABLE_CUDA)
@@ -215,6 +227,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
 
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
@@ -235,6 +248,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for clang compilers
 //
 
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(ENABLE_CUDA)

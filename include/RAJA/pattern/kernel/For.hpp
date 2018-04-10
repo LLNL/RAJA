@@ -95,6 +95,7 @@ struct StatementExecutor<statement::
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
+    RAJA_FORCEINLINE_RECURSIVE
     forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
 };
