@@ -46,6 +46,18 @@ RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
   body();
 }
 
+template <typename Func0, typename Func1>
+RAJA_INLINE void region_impl(const omp_parallel_region &, Func0&& outer_body, Func1&& inner_body)
+{
+
+#pragma omp parallel
+  {
+    outer_body(inner_body);
+  }
+
+}
+
+
 
 }  // closing brace for omp namespace
 

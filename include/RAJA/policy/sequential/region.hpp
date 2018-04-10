@@ -44,6 +44,11 @@ RAJA_INLINE void region_impl(const seq_region &, Func &&body)
   body();
 }
 
+template <typename Func0, typename Func1>
+RAJA_INLINE void region_impl(const seq_region &, Func0 &&outer_body, Func1 &&inner_body)
+{
+  outer_body(inner_body);
+}
 
 }  // closing brace for sequential namespace
 

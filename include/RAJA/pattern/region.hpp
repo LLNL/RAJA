@@ -40,6 +40,12 @@ namespace RAJA
     region_impl(ExecutionPolicy(), loop_body);
   }
 
+  template<typename ExecutionPolicy, typename OuterBody, typename InnerBody>
+  void region(OuterBody&& outer_body, InnerBody&& inner_body)
+  {
+    region_impl(ExecutionPolicy(), outer_body, inner_body);
+  }
+
 }  // closing brace for RAJA namespace
 
 
