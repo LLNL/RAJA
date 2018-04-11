@@ -31,6 +31,10 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/internal/raja_require_openmp.hpp"
+#endif
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/util/basic_mempool.hpp"
