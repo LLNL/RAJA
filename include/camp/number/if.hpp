@@ -43,8 +43,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "camp/list/list.hpp"
-#include "camp/number/number.hpp"
 #include "camp/value.hpp"
 
 #include <type_traits>
