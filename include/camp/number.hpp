@@ -1,7 +1,6 @@
 #ifndef CAMP_NUMBER_HPP
 #define CAMP_NUMBER_HPP
 
-#include "camp/list/list.hpp"
 #include "camp/number/if.hpp"
 #include "camp/number/number.hpp"
 
