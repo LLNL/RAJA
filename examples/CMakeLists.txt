@@ -59,7 +59,7 @@ raja_add_executable(
   SOURCES ex9-scan.cpp)
 
 raja_add_executable(
-  NAME ex10-binning.cpp
+  NAME ex10-binning
   SOURCES ex10-binning.cpp)
 
 raja_add_executable(
