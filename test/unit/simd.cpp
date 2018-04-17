@@ -53,18 +53,18 @@ TEST(Kernel, ViewNestedFor){
    using POL1 = RAJA::loop_exec;
    using POL0 = RAJA::simd_exec;
 
-   RAJA::forall<POL2>(myStride, [=] (int k){
-    RAJA::forall<POL1>(myStride, [=] (int j){
-     RAJA::forall<POL0>(myStride, [=] (int i){
+   RAJA::forall<POL2>(myStride, [=] (RAJA::Index_type k){
+       RAJA::forall<POL1>(myStride, [=] (RAJA::Index_type j){
+           RAJA::forall<POL0>(myStride, [=] (RAJA::Index_type i){
 
-       Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i);
-       });
+               Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i);
+             });
+         });
      });
-   });
 
 
    //check output
-   for(int i=0; i<arrLen; ++i)
+   for(size_t i=0; i<arrLen; ++i)
      {
        ASSERT_FLOAT_EQ(C[i], 1.0);
      }
@@ -79,7 +79,7 @@ TEST(Kernel, ViewNestedFor){
 
 
 
-TEST(Kernel, ViewNested){
+TEST(Kernel, ViewKernel){
 
   using arr_type = double;
 using POL = 
@@ -178,9 +178,6 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
    
    int k1 = 7; 
    int k2 = 101;   
-   RAJA::RangeSegment k_range(k1,k2+1);
-   RAJA::RangeSegment j_range(jfirst+2,jlast-1);
-   RAJA::RangeSegment i_range(ifirst+2,ilast-1);
 
 #pragma omp parallel for                                                                                             
    for(int  k= k1; k <= k2 ; k++ ){
@@ -432,9 +429,9 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
 //            lu(2,i,j,k) = a1*lu(2,i,j,k) + cof*r2;
 //            lu(3,i,j,k) = a1*lu(3,i,j,k) + cof*r3;
 
-            size_t id1 = base3+i+ni*(j)+nij*(k)+nijk*(1);
-            size_t id2 = base3+i+ni*(j)+nij*(k)+nijk*(2);
-            size_t id3 = base3+i+ni*(j)+nij*(k)+nijk*(3);
+//            size_t id1 = base3+i+ni*(j)+nij*(k)+nijk*(1);
+//            size_t id2 = base3+i+ni*(j)+nij*(k)+nijk*(2);
+//            size_t id3 = base3+i+ni*(j)+nij*(k)+nijk*(3);
 
             //std::cout<<id1<<" "<<id2<<" "<<id3<<std::endl;
 
@@ -450,7 +447,7 @@ void rhs4sg_rev_native( int ifirst, int ilast, int jfirst, int jlast, int kfirst
 }//end brace
 
 //RAJA version
-void rhs4sg_rev_raja_Nested( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast,
+void rhs4sg_rev_raja_Kernel( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast,
 		 int nk, float_sw4* RAJA_RESTRICT a_acof, float_sw4 *RAJA_RESTRICT a_bope,
 		 float_sw4* RAJA_RESTRICT a_ghcof, float_sw4* RAJA_RESTRICT a_lu, float_sw4* RAJA_RESTRICT a_u,
 		 float_sw4* RAJA_RESTRICT a_mu, float_sw4* RAJA_RESTRICT a_lambda, 
@@ -508,7 +505,7 @@ void rhs4sg_rev_raja_Nested( int ifirst, int ilast, int jfirst, int jlast, int k
 						 RAJA::statement::Lambda<0> > > > >;
 
    RAJA::kernel<POL>(RAJA::make_tuple(i_range,j_range,k_range),
-                     [=] (int i, int j, int k) {
+                     [=] (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k) {
 
       float_sw4 mux1,mux2,mux3,mux4,muy1,muy2,muy3,muy4;
       float_sw4 r1,r2,r3,mucof,mu1zz,mu2zz,mu3zz,lap2mu,q,u3zip2,u3zip1;
@@ -807,9 +804,9 @@ void rhs4sg_rev_raja_For( int ifirst, int ilast, int jfirst, int jlast, int kfir
    RAJA::RangeSegment i_range(ifirst+2,ilast-1);
 
 
-  RAJA::forall<POL2>(k_range, [=] (int k){
-        RAJA::forall<POL1>(j_range, [=] (int j){
-              RAJA::forall<POL0>(i_range, [=] (int i){
+   RAJA::forall<POL2>(k_range, [=] (RAJA::Index_type k){
+       RAJA::forall<POL1>(j_range, [=] (RAJA::Index_type j){
+           RAJA::forall<POL0>(i_range, [=] (RAJA::Index_type i){
 
       float_sw4 mux1,mux2,mux3,mux4,muy1,muy2,muy3,muy4;
       float_sw4 r1,r2,r3,mucof,mu1zz,mu2zz,mu3zz,lap2mu,q,u3zip2,u3zip1;
@@ -1152,7 +1149,7 @@ TEST(Kernel, SW4For){
 }//End of test brace
 
 
-TEST(Kernel, SW4Nested){
+TEST(Kernel, SW4Kernel){
 
 
   long int kfirst=-1, klast=103;
@@ -1208,9 +1205,9 @@ TEST(Kernel, SW4Nested){
 		    nk, a_acof, a_bope, a_ghcof, a_lu_native, a_u,
 		    a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 
-  std::cout<<"Calling RAJA Nested..."<<std::endl;
+  std::cout<<"Calling RAJA Kernel..."<<std::endl;
   //Call RAJA version
-  rhs4sg_rev_raja_Nested(ifirst, ilast, jfirst, jlast, kfirst, klast,
+  rhs4sg_rev_raja_Kernel(ifirst, ilast, jfirst, jlast, kfirst, klast,
 		  nk, a_acof, a_bope, a_ghcof, a_lu_raja, a_u,
 		  a_mu, a_lambda, h, a_strx, a_stry, a_strz );
 

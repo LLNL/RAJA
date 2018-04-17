@@ -51,9 +51,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   arr_type *A = new arr_type[arrLen];   
   arr_type *B = new arr_type[arrLen];   
   arr_type *C = new arr_type[arrLen];   
-  RAJA::View<arr_type, RAJA::Layout<3> > Aview(A,stride,stride,stride);
-  RAJA::View<arr_type, RAJA::Layout<3> > Bview(B,stride,stride,stride);
-  RAJA::View<arr_type, RAJA::Layout<3> > Cview(C,stride,stride,stride);
+  RAJA::View<arr_type, RAJA::Layout<3,RAJA::Index_type,2> > Aview(A,stride,stride,stride);
+  RAJA::View<arr_type, RAJA::Layout<3,RAJA::Index_type,2> > Bview(B,stride,stride,stride);
+  RAJA::View<arr_type, RAJA::Layout<3,RAJA::Index_type,2> > Cview(C,stride,stride,stride);
   
   for(int i=0; i<arrLen; ++i){
     A[i] = 0.5;
@@ -62,24 +62,28 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::RangeSegment myStride(0,stride);
 
+  std::cout<<"stride = "<<stride<<std::endl;
+  
 
 #ifdef KERNEL
-  RAJA::kernel<POL>(RAJA::make_tuple(myStride,myStride,myStride), [=] (RAJA::Index_type k, RAJA::Index_type j, 
-                                                                       RAJA::Index_type i){
+  RAJA::kernel<POL>(RAJA::make_tuple(myStride,myStride,myStride), [=] (RAJA::Index_type i, RAJA::Index_type j, 
+                                                                       RAJA::Index_type k){
 #else
-                      RAJA::forall<POL2>(myStride, [=] (int k){
-                          RAJA::forall<POL1>(myStride, [=] (int j){
-                              RAJA::forall<POL0>(myStride, [=] (int i){
-#endif                      
-                                  Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i) ;
 
+                      //#pragma forceinline recursive
+                      RAJA::forall<POL2>(myStride, [=] (RAJA::Index_type k){
+                          RAJA::forall<POL1>(myStride, [=] (RAJA::Index_type j){
+                              RAJA::forall<POL0>(myStride, [=] (RAJA::Index_type i){
+#endif
+                                  
+                                  Cview(k,j,i) = Aview(k,j,i)*Bview(k,j,i);
                                   
 #ifdef KERNEL
                     });
 #else                                          
-                   });
-                });
-             });
+                            });
+                        });
+                    });
 #endif  
 
                    

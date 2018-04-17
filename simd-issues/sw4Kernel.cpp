@@ -551,12 +551,12 @@ void rhs4sg_rev_raja( int ifirst, int ilast, int jfirst, int jlast, int kfirst, 
 #ifdef KERNEL
    std::cout<<"using RAJA Kernel"<<std::endl;
    RAJA::kernel<POL>(RAJA::make_tuple(i_range,j_range,k_range),
-                     [=] (int i, int j, int k) {
+                     [=] (RAJA::Index_type i, RAJA::Index_type j,RAJA::Index_type k) {
 #else
   std::cout<<"using RAJA Forall nesting"<<std::endl;
-  RAJA::forall<POL2>(k_range, [=] (int k){
-        RAJA::forall<POL1>(j_range, [=] (int j){
-              RAJA::forall<POL0>(i_range, [=] (int i){
+  RAJA::forall<POL2>(k_range, [=] (RAJA::Index_type k){
+      RAJA::forall<POL1>(j_range, [=] (RAJA::Index_type j){
+          RAJA::forall<POL0>(i_range, [=] (RAJA::Index_type i){
 #endif
 
       float_sw4 mux1,mux2,mux3,mux4,muy1,muy2,muy3,muy4;
