@@ -37,6 +37,10 @@ please see :ref:`complex_intro-label`.
           * Each ``RAJA::kernel`` method requires a statement with an 
             *execution policy* type for each level in a loop nest.
 
+-------------------------
+Simple (Non-nested) Loops
+-------------------------
+
 The ``RAJA::forall`` templates is used to execute simple (e.g., non-nested) 
 loops. For example, a C-style loop like::
 
@@ -53,6 +57,10 @@ may be written in a RAJA form as::
 The RAJA form takes a template argument for the execution policy, and
 two arguments: an object describing the loop iteration space (e.g., a RAJA 
 segment or index set) and a lambda expression defining the loop body.
+
+-------------------------
+Nested Loop Basics
+-------------------------
 
 The ``RAJA::kernel`` traversal templates provide flexibility in
 how arbitrary loop nests can be run with minimal source code changes. A
