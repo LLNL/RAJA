@@ -15,7 +15,7 @@
 .. _loop_basic-label:
 
 ==============================================
-Basic Loop Execution: Single and Nested Loops
+Loop Execution Basics
 ==============================================
 
 The ``RAJA::forall`` and ``RAJA::kernel`` loop traversal template 
@@ -26,16 +26,17 @@ describe loop indexing, are also passed. Then, after loops are written in the
 RAJA form, they can be run using different programming model back-ends by 
 changing execution policy template arguments. Index space traversal and
 loop transformations can also be applied by changing iteration space objects
-and execution policy details. For information on RAJA execution policies and
-iteration space constructs, see :ref:`policies-label` and :ref:`index-label`,
-respectively. For information about complex kernels and loop transformations,
-please see :ref:`complex_intro-label`.
+and execution policy details. 
 
 .. note:: * All **forall** and **kernel** methods are in the namespace ``RAJA``.
           * Each ``RAJA::forall`` traversal method is templated on an 
             *execution policy*. 
           * Each ``RAJA::kernel`` method requires a statement with an 
             *execution policy* type for each level in a loop nest.
+
+For more information on RAJA execution policies and iteration space constructs, 
+see :ref:`policies-label` and :ref:`index-label`, respectively. For information 
+about complex kernels and loop transformations, please see :ref:`complex_intro-label`.
 
 -------------------------
 Simple (Non-nested) Loops
@@ -54,9 +55,16 @@ may be written in a RAJA form as::
     c[i] = a[i] + b[i];
   });
 
-The RAJA form takes a template argument for the execution policy, and
-two arguments: an object describing the loop iteration space (e.g., a RAJA 
-segment or index set) and a lambda expression defining the loop body.
+The ``RAJA::forall`` traversal templates take a template argument for the execution 
+policy, and two arguments: an object describing the loop iteration space, such as
+a RAJA segment or index set, and a lambda expression defining the loop body. Using 
+different loop execution policies enable the loop to run in different ways; e.g., 
+using different programming model backends. Different iteration space objects, 
+enable the loop iterates to be reordered, run in different threads, etc. 
+
+.. note:: Changing loop execution policy types and iteration space constructs
+          enable loops to run in different ways without modifying the loop lernel
+          code.
 
 -------------------------
 Nested Loop Basics
@@ -129,7 +137,7 @@ specify several items:
 
   #. The desired execution policy (or policies).
 
-  #. The loop iteration space(s) -- in most cases an iteration space can be any valid random access container.
+  #. The loop iteration space(s) -- often, an iteration space can be any valid random access container allowing users to define their own iteration space types.
 
   #. The lambda capture type; e.g., [=] or [&].
 
@@ -137,5 +145,5 @@ specify several items:
 
   #. The loop iteration variables and their types, which are arguments to the lambda loop body.
 
-Basic usage of ``RAJA::forall`` and ``RAJA::kernel`` may be found 
+Various examples of usage of ``RAJA::forall`` and ``RAJA::kernel`` may be found 
 in the examples in :ref:`tutorial-label`.
