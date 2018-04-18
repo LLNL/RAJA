@@ -80,6 +80,10 @@ struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
 
+struct omp_for_simd_exec
+    : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
+};
+
 struct omp_for_nowait_exec
     : make_policy_pattern_launch_platform_t<Policy::openmp,
                                             Pattern::forall,
@@ -110,6 +114,9 @@ struct omp_parallel_exec
 };
 
 struct omp_parallel_for_exec : omp_parallel_exec<omp_for_exec> {
+};
+
+struct omp_parallel_for_simd_exec : omp_parallel_exec<omp_for_simd_exec> {
 };
 
 template <unsigned int N>
@@ -192,10 +199,12 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 }  // closing brace for policy namespace
 
 using policy::omp::omp_for_exec;
+using policy::omp::omp_for_simd_exec;
 using policy::omp::omp_for_nowait_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
 using policy::omp::omp_parallel_for_exec;
+using policy::omp::omp_parallel_for_simd_exec;
 using policy::omp::omp_parallel_segit;
 using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_collapse_nowait_exec;

@@ -147,6 +147,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N); 
 #endif
 
+#if defined(RAJA_ENABLE_OPENMP)
+  std::cout << "\n Running RAJA OpenMP SIMD daxpy...\n";
+   
+  std::memcpy( a, a0, N * sizeof(double) );  
+
+  RAJA::forall<RAJA::omp_parallel_for_simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    a[i] += b[i] * c;
+  });
+
+  checkResult(a, aref, N);
+//printResult(a, N); 
+#endif
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
