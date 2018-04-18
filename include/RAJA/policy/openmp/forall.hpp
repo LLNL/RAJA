@@ -107,7 +107,7 @@ RAJA_INLINE void forall_impl(const omp_for_exec&,
 }
 
 ///
-/// OpenMP parallel for policy implementation
+/// OpenMP parallel for simd policy implementation
 ///
 
 template <typename Iterable, typename Func>
