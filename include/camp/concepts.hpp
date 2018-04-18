@@ -6,6 +6,7 @@
 
 #include "camp/helpers.hpp"
 #include "camp/number.hpp"
+#include "camp/list.hpp"
 
 namespace camp
 {
