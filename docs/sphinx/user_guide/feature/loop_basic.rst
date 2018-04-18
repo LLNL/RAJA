@@ -14,26 +14,31 @@
 
 .. _loop_basic-label:
 
-=========================
-Single and Nested Loops
-=========================
+==============================================
+Basic Loop Execution: Single and Nested Loops
+==============================================
 
 The ``RAJA::forall`` and ``RAJA::kernel`` loop traversal template 
-methods are the building blocks for most RAJA usage. RAJA users pass 
-application code fragments, such as loop bodies, into these loop traversal 
-methods using lambda expressions along with iteration space information. 
-Then, once loops are written in the RAJA form, they can be run using different 
-programming model back-ends by changing execution policy template arguments. 
-For information on available RAJA execution policies, see :ref:`policies-label`.
+methods are the building blocks for most RAJA usage involving loop execution. 
+RAJA users pass application code fragments, representing loop bodies, into 
+these traversal methods as lambda expressions. Iteration space objects, which
+describe loop indexing, are also passed. Then, after loops are written in the 
+RAJA form, they can be run using different programming model back-ends by 
+changing execution policy template arguments. Index space traversal and
+loop transformations can also be applied by changing iteration space objects
+and execution policy details. For information on RAJA execution policies and
+iteration space constructs, see :ref:`policies-label` and :ref:`index-label`,
+respectively. For information about complex kernels and loop transformations,
+please see :ref:`complex_intro-label`.
 
-.. note:: * All forall and kernel methods are in the namespace ``RAJA``.
+.. note:: * All **forall** and **kernel** methods are in the namespace ``RAJA``.
           * Each ``RAJA::forall`` traversal method is templated on an 
             *execution policy*. 
           * Each ``RAJA::kernel`` method requires a statement with an 
             *execution policy* type for each level in a loop nest.
 
-The ``RAJA::forall`` templates encapsulate standard C-style for loops.  
-For example, a C-style loop like::
+The ``RAJA::forall`` templates is used to execute simple (e.g., non-nested) 
+loops. For example, a C-style loop like::
 
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
@@ -51,7 +56,7 @@ segment or index set) and a lambda expression defining the loop body.
 
 The ``RAJA::kernel`` traversal templates provide flexibility in
 how arbitrary loop nests can be run with minimal source code changes. A
-loop nest, such as::
+(N+1)-level loop nest, such as::
 
   for (int iN = 0; iN < NN; ++iN) {
     ...
@@ -74,29 +79,42 @@ may be written in a RAJA form as::
                 >( 
       RAJA::make_tuple(iter_space IN, ..., iter_space I0),
 
-      [=] (index_type iN, ... , index_type i1) {
+      [=] (index_type iN, ... , index_type i0) {
          //loop body
     });
 
-Here, we have a loop nest of M = N+1 levels. The ``RAJA::kernel`` 
-takes a ``RAJA::KernelPolicy`` template type, which defines a nested sequence
-of ``RAJA::statement::For`` types, one for each level of the loop nest plus
-a ``RAJA::statement::Lambda`` type for the lambda loop body. This first argument
-to the ``RAJA::kernel`` method is a tuple of M iteration spaces and the second
-is the lambda expression for the inner loop body. The lambda expression for 
-the loop body must have M loop index arguments and they must be in the same 
-order as the associated iteration spaces in the tuple.
+The ``RAJA::kernel`` template takes a ``RAJA::KernelPolicy`` template argument that
+defines a nested sequence of ``RAJA::statement::For`` types, one for each level in 
+the loop nest. Each one has an integral template argument (described below) and an 
+execution policy template argument for the corresponding level in the loop nest. 
+The innermost types in the kernel policy are ``RAJA::statement::Lambda`` types 
+indicating the lambdas (or lambda) to be used to comprise the inner loop body.
 
-.. note:: For the nested loop case, the loop nest ordering is determined by the
-          order of the nested policies, starting with the outermost loop and 
-          ending with the innermost loop. The integer value that appears as 
-          the first parameter to each of the ``For`` templates indicates which 
-          iteration space/lambda index argument it corresponds to.
+.. note:: The nesting of ``RAJA::statement::For`` types is analogous to how one
+          would nest for-statements in a traditional C-style loop nest.
 
-          **This allows arbitrary loop nesting order transformations to 
-          to be done simply by changing the ordering of the policies**. This
-          is analogous to changing the order or 'for-loop' statements in
-          C-style code.
+The first argument to the ``RAJA::kernel`` method is a tuple of N+1 iteration spaces, 
+one for each loop nest level. This argument is followed by one or more lambda 
+expression arguments that may be used to form the inner loop body. Here, we have
+only one lambda expression argument that will be executed as the inner loop body;
+this is indicated by the ``RAJA::statement::Lambda<0>`` innermost type in the kernel
+policy above.
+
+.. note:: The arguments for each lambda expression that is used in a RAJA kernel 
+          loop body are indices that must match the contents of the 
+          *iteration space tuple* in number, order, and type. Not all index 
+          arguments must be used in each lambda, but they all must appear.
+
+For RAJA nested loops defined by a ``RAJA::kernel``, as shown above, the loop nest 
+ordering is determined by the order of the nested policies, starting with the 
+outermost loop and ending with the innermost loop. 
+
+.. note:: The integer value that appears as the first parameter in each 
+          ``RAJA::statement::For`` templates indicates which iteration space tuple
+          entry or lambda index argument it corresponds to. **This allows loop 
+          nesting order to be changed simply by changing the ordering of the 
+          nested policy statements**. This is analogous to changing the order 
+          of 'for-loop' statements in C-style nested loop code.
 
 In summary, these RAJA template methods require a user to understand how to
 specify several items:
