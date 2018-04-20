@@ -29,7 +29,7 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/Span.hpp"
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)

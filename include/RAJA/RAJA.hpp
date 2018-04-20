@@ -6,8 +6,8 @@
  * \brief   Main RAJA header file.
  *
  *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
+ *          It provides a single access point to all RAJA features by 
+ *          including other RAJA headers. 
  *
  *          IMPORTANT: If changes are made to this file, note that contents
  *                     of some header files require that they are included
@@ -36,7 +36,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/util/types.hpp"
 

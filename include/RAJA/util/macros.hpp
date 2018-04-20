@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for common RAJA internal definitions.
+ * \brief   Header file for common RAJA internal macro definitions.
  *
  ******************************************************************************
  */
@@ -23,8 +23,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_INTERNAL_DEFINES_HPP
-#define RAJA_INTERNAL_DEFINES_HPP
+#ifndef RAJA_INTERNAL_MACROS_HPP
+#define RAJA_INTERNAL_MACROS_HPP
 
 #include "RAJA/config.hpp"
 
@@ -170,4 +170,4 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 
 #endif
 
-#endif /* RAJA_INTERNAL_DEFINES_HPP */
+#endif /* RAJA_INTERNAL_MACROS_HPP */

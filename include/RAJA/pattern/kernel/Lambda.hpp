@@ -30,7 +30,7 @@
 
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"

@@ -33,7 +33,7 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 
 namespace RAJA

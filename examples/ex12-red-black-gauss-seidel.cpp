@@ -21,7 +21,6 @@
 #include <cmath>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
 
 #include "memoryManager.hpp"
 

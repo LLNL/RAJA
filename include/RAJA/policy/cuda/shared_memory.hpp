@@ -33,7 +33,7 @@
 
 #ifdef RAJA_ENABLE_CUDA
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {

@@ -28,7 +28,7 @@
 #define RAJA_ITERATORS_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include <iterator>

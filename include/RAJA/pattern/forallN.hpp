@@ -30,7 +30,7 @@
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Operators.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"

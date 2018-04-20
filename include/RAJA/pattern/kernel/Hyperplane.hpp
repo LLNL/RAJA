@@ -28,7 +28,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
