@@ -8,7 +8,6 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -28,8 +27,8 @@
 #ifndef RAJA_policy_cuda_kernel_ShmemWindow_HPP
 #define RAJA_policy_cuda_kernel_ShmemWindow_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

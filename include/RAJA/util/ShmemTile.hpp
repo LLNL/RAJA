@@ -28,8 +28,8 @@
 #ifndef RAJA_util_ShmemTile_HPP
 #define RAJA_util_ShmemTile_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/StaticLayout.hpp"
 
 #include <iostream>

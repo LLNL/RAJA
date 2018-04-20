@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA wrapper for multiple policies and dynamic selection
+ * \brief   RAJA wrapper for "multi-policy" and dynamic policy selection
  *
  ******************************************************************************
  */
@@ -26,9 +26,10 @@
 #ifndef RAJA_MultiPolicy_HPP
 #define RAJA_MultiPolicy_HPP
 
+#include "RAJA/config.hpp"
+
 #include <tuple>
 
-#include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"

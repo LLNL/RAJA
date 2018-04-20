@@ -1,8 +1,18 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for CUDA kernel conditional methods.
+ *
+ ******************************************************************************
+ */
+
 #ifndef RAJA_policy_cuda_kernel_Conditional_HPP
 #define RAJA_policy_cuda_kernel_Conditional_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

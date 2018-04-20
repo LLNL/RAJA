@@ -28,8 +28,8 @@
 #ifndef RAJA_pattern_kernel_Lambda_HPP
 #define RAJA_pattern_kernel_Lambda_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

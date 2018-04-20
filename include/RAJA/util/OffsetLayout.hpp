@@ -28,6 +28,7 @@
 #define RAJA_OFFSETLAYOUT_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Permutations.hpp"

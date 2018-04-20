@@ -39,15 +39,32 @@
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Enable/disable exploratory fault tolerance mechanism.
+ *
+ ******************************************************************************
+ */
 #cmakedefine ENABLE_FT
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Default RAJA floating point scalar and pointer options.
+ *
+ ******************************************************************************
+ */
 #define @RAJA_FP@
 #define @RAJA_PTR@
 
-/*
- * Programming models
+/*!
+ ******************************************************************************
+ *
+ * \brief Programming model back-ends, plus CHAI enable/disable.
+ *
+ ******************************************************************************
  */
-
 #cmakedefine RAJA_ENABLE_OPENMP
 #cmakedefine RAJA_ENABLE_TARGET_OPENMP
 #cmakedefine RAJA_ENABLE_TBB
@@ -55,17 +72,24 @@
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_CHAI
 
-/*
- * Timer options
+/*!
+ ******************************************************************************
+ *
+ * \brief Timer options.
+ *
+ ******************************************************************************
  */
-
 #cmakedefine RAJA_USE_CHRONO
 #cmakedefine RAJA_USE_GETTIME
 #cmakedefine RAJA_USE_CLOCK
 #cmakedefine RAJA_USE_CYCLE
 
-/*
- * Detect the host C++ compiler we are using.
+/*!
+ ******************************************************************************
+ *
+ * \brief Detect the host C++ compiler we are using.
+ *
+ ******************************************************************************
  */
 #if defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL

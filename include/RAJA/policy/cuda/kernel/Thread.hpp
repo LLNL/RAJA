@@ -28,8 +28,8 @@
 #ifndef RAJA_policy_cuda_kernel_Thread_HPP
 #define RAJA_policy_cuda_kernel_Thread_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

@@ -26,8 +26,8 @@
 #ifndef RAJA_FORALLN_PERMUTATIONS_HPP
 #define RAJA_FORALLN_PERMUTATIONS_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "camp/camp.hpp"
 
 #include <array>

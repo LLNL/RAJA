@@ -8,7 +8,6 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -28,6 +27,7 @@
 #define RAJA_policy_cuda_kernel_Hyperplane_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"

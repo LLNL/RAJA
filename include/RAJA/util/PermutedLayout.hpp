@@ -27,9 +27,10 @@
 #ifndef RAJA_PERMUTEDLAYOUT_HPP
 #define RAJA_PERMUTEDLAYOUT_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iostream>
 
-#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Layout.hpp"

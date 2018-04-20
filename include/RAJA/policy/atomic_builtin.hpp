@@ -27,9 +27,9 @@
 #define RAJA_policy_atomic_builtin_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
-
 
 namespace RAJA
 {

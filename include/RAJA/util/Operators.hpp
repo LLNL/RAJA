@@ -32,7 +32,6 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/macros.hpp"
-
 #include "RAJA/util/concepts.hpp"
 
 #include <stdint.h>

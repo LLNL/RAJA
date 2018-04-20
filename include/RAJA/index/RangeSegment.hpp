@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining typed rangesegment classes.
+ * \brief   RAJA header file defining typed range segment classes.
  *
  ******************************************************************************
  */

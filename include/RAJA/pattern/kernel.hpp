@@ -29,6 +29,7 @@
 
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

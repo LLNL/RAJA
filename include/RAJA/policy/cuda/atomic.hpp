@@ -27,6 +27,7 @@
 #define RAJA_policy_cuda_atomic_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"

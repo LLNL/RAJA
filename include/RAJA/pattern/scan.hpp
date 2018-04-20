@@ -27,6 +27,7 @@
 #define RAJA_scan_HPP
 
 #include "RAJA/config.hpp"
+
 #include "camp/concepts.hpp"
 #include "camp/helpers.hpp"
 

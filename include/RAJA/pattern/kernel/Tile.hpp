@@ -27,6 +27,7 @@
 #define RAJA_pattern_kernel_Tile_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

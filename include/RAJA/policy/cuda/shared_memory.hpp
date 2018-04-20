@@ -26,8 +26,8 @@
 #ifndef RAJA_policy_cuda_shared_memory_HPP
 #define RAJA_policy_cuda_shared_memory_HPP
 
-
 #include "RAJA/config.hpp"
+
 #include "RAJA/pattern/shared_memory.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 

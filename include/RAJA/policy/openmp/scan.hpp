@@ -23,10 +23,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-
 #ifndef RAJA_scan_openmp_HPP
 #define RAJA_scan_openmp_HPP
+
+#include "RAJA/config.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/sequential/scan.hpp"

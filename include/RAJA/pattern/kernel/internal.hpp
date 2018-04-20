@@ -28,6 +28,7 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/macros.hpp"

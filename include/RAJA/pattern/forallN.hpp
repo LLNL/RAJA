@@ -27,8 +27,10 @@
 #define RAJA_forallN_generic_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 

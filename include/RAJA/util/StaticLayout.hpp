@@ -26,9 +26,10 @@
 #ifndef RAJA_util_static_layout_HPP
 #define RAJA_util_static_layout_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iostream>
 #include <limits>
-#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Operators.hpp"

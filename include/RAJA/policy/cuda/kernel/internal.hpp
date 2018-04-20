@@ -9,15 +9,6 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_cuda_kernel_internal_HPP
-#define RAJA_policy_cuda_kernel_internal_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -33,6 +24,16 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
+#ifndef RAJA_policy_cuda_kernel_internal_HPP
+#define RAJA_policy_cuda_kernel_internal_HPP
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/pattern/kernel.hpp"
+#include "camp/camp.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 #include <cassert>
 #include <climits>

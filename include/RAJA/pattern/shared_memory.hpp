@@ -26,15 +26,18 @@
 #ifndef RAJA_pattern_shared_memory_HPP
 #define RAJA_pattern_shared_memory_HPP
 
+#include "RAJA/config.hpp"
 
 #include <stddef.h>
 #include <map>
 #include <memory>
-#include "RAJA/config.hpp"
+
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+
 #include "camp/camp.hpp"
 
 namespace RAJA

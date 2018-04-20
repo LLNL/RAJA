@@ -1,3 +1,13 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for kernel conditional templates
+ *
+ ******************************************************************************
+ */
+
 #ifndef RAJA_pattern_kernel_Conditional_HPP
 #define RAJA_pattern_kernel_Conditional_HPP
 

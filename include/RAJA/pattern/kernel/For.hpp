@@ -28,7 +28,6 @@
 #ifndef RAJA_pattern_nested_For_HPP
 #define RAJA_pattern_nested_For_HPP
 
-
 #include "RAJA/config.hpp"
 
 #include <iostream>
