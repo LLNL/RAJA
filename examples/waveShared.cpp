@@ -11,7 +11,6 @@
 //
 // For details about use and distribution, please read RAJA/LICENSE.
 //
-// -------Intial pass at shared memory-----------
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cmath>
