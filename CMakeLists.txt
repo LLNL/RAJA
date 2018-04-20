@@ -82,7 +82,8 @@ if (NOT RAJA_LOADED)
     src/AlignedRangeIndexSetBuilders.cpp
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
-    src/MemUtils_CUDA.cpp)
+    src/MemUtils_CUDA.cpp
+    src/ThreadUtils_CPU.cpp)
 
   set (raja_depends)
 
