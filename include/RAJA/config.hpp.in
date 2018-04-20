@@ -84,6 +84,12 @@
 
 namespace RAJA {
 
+#if defined(RAJA_ENABLE_OPENMP)
+#if not defined(_OPENMP)
+#error RAJA was configured to use OpenMP, a host code is compiling it without OpenMP. This would cause a linker error. Please enable OpenMP in your code, or disable it in RAJA 
+#endif // _OPENMP
+#endif // RAJA_ENABLE_OPENMP
+
 
 /*!
  ******************************************************************************

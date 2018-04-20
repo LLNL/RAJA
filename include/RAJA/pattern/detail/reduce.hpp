@@ -53,7 +53,6 @@ namespace reduce
 {
 
 #ifdef RAJA_RAJA_ENABLE_TARGET_OPENMP
-#include "RAJA/internal/raja_require_openmp.hpp"
 #pragma omp declare target
 #endif
 
