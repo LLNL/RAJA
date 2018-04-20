@@ -150,7 +150,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace detail
 {
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 // Top level MultiPolicy shouldn't select a CHAI execution space
 // Once a specific policy is selected, that policy will select the correct
 // policy... see policy_invoker in MultiPolicy.hpp

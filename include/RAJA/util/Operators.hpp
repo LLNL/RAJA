@@ -35,7 +35,7 @@
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 #include <limits>
 #endif
 
@@ -283,7 +283,7 @@ struct limits
                       detail::floating_point_limits<T>>::type {
 };
 
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {

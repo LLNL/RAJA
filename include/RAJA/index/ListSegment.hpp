@@ -99,7 +99,7 @@ class TypedListSegment
   //! specialization for allocation of CPU_memory
   void allocate(CPU_memory) { m_data = new T[m_size]; }
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)

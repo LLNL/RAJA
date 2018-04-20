@@ -30,7 +30,7 @@
 
 #include "RAJA/config.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
 #include <iostream>
 #include <type_traits>

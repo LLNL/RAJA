@@ -354,7 +354,7 @@ constexpr RAJA_INLINE typename std::
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {

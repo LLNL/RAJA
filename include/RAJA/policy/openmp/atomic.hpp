@@ -41,7 +41,7 @@ namespace RAJA
 namespace atomic
 {
 
-#ifdef RAJA_COMPILER_MSVC
+#if defined(RAJA_COMPILER_MSVC)
 
 
 // For MS Visual C, just default to builtin_atomic for everything

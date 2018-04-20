@@ -29,7 +29,7 @@
 
 #include "RAJA/config.hpp"
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 #include "chai/ArrayManager.hpp"
 #include "chai/ExecutionSpaces.hpp"

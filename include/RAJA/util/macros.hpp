@@ -150,7 +150,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #endif
 #endif
 
-#ifdef RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED
+#if defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
 
 // When using a C++14 compiler, use the standard-specified deprecated attribute
 #define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
