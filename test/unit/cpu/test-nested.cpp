@@ -102,7 +102,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedTest);
 
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined (RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedTest, Nested2DTest)
 {
   using POL = TypeParam;
@@ -194,7 +194,7 @@ struct PolLTimesC : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined (RAJA_ENABLE_OPENMP)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP : PolLTimesCommon {
@@ -227,7 +227,7 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
-#ifdef RAJA_ENABLE_TBB
+#if defined(RAJA_ENABLE_TBB)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesF_TBB : PolLTimesCommon {
@@ -278,7 +278,7 @@ public:
 
 TYPED_TEST_CASE_P(LTimesTest);
 
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined (RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 {
 

@@ -33,7 +33,7 @@ using namespace RAJA;
 // block_size is needed by the reduction variables to setup shared memory
 // Care should be used here to cover the maximum block dimensions used by this
 // test
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined(RAJA_DEPRECATED_TESTS)
 static const size_t block_size = 256;
 #endif
 
@@ -53,7 +53,7 @@ RAJA_INDEX_VALUE(IDirection, "IDirection");
 RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined(RAJA_DEPRECATED_TESTS)
 template <typename POL>
 static void runLTimesTest(Index_type num_moments,
                           Index_type num_directions,
@@ -319,7 +319,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedCUDA);
 
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TYPED_TEST_P(NestedCUDA, LTimes)
 {
   runLTimesTest<TypeParam>(2, 0, 7, 3);
@@ -359,7 +359,7 @@ CUDA_TEST(NestedCUDA, NegativeRange)
 }
 #endif
 
-#ifdef RAJA_DEPRECATED_TESTS
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TEST(NestedCUDA, PositiveRange)
 {
   double *data;
