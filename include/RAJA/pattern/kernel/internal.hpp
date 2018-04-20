@@ -31,14 +31,14 @@
 
 #include <type_traits>
 
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
-
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 
+#include "RAJA/index/IndexSet.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 #include "RAJA/util/chai_support.hpp"
 
 namespace RAJA

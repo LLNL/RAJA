@@ -28,10 +28,10 @@
 
 #include "RAJA/config.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+
 // rely on builtin_atomic when OpenMP can't do the job
 #include "RAJA/policy/atomic_builtin.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/util/macros.hpp"
 

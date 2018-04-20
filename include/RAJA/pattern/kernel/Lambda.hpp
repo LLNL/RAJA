@@ -33,14 +33,14 @@
 #include <iostream>
 #include <type_traits>
 
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
-
-#include "camp/camp.hpp"
-#include "camp/concepts.hpp"
-#include "camp/tuple.hpp"
 
 namespace RAJA
 {

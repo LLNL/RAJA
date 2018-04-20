@@ -37,14 +37,9 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/macros.hpp"
-
 #include "RAJA/util/types.hpp"
-
-
 #include "RAJA/util/Operators.hpp"
-
 #include "RAJA/util/basic_mempool.hpp"
-
 #include "RAJA/util/camp_aliases.hpp"
 
 

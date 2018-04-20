@@ -35,7 +35,6 @@
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-
 #ifdef RAJA_CHECK_LIMITS
 #include <limits>
 #endif

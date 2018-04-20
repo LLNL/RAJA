@@ -34,9 +34,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "RAJA/util/macros.hpp"
-
 #include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(__cplusplus >= 201103L,

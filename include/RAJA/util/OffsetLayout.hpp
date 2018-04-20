@@ -31,6 +31,7 @@
 
 #include <array>
 #include <limits>
+
 #include "camp/camp.hpp"
 
 #include "RAJA/index/IndexValue.hpp"

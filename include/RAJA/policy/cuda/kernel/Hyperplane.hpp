@@ -31,12 +31,12 @@
 #include <iostream>
 #include <type_traits>
 
+#include "camp/camp.hpp"
+
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "camp/camp.hpp"
 
 namespace RAJA
 {

@@ -32,13 +32,13 @@
 #include <map>
 #include <memory>
 
+#include "camp/camp.hpp"
+
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "camp/camp.hpp"
 
 namespace RAJA
 {
