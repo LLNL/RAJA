@@ -27,7 +27,6 @@
 #ifndef RAJA_pattern_kernel_HPP
 #define RAJA_pattern_kernel_HPP
 
-
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/macros.hpp"

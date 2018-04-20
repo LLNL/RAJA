@@ -60,11 +60,11 @@
 #ifndef RAJA_forall_generic_HPP
 #define RAJA_forall_generic_HPP
 
+#include "RAJA/config.hpp"
+
 #include <functional>
 #include <iterator>
 #include <type_traits>
-
-#include "RAJA/config.hpp"
 
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/Span.hpp"
