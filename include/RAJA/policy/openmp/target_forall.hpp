@@ -26,8 +26,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_target_forall_openmp_HXX
-#define RAJA_target_forall_openmp_HXX
+#ifndef RAJA_target_forall_openmp_HPP
+#define RAJA_target_forall_openmp_HPP
 
 #include "RAJA/config.hpp"
 

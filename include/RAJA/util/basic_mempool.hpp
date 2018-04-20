@@ -432,4 +432,4 @@ struct generic_allocator {
 } /* end namespace RAJA */
 
 
-#endif /* BASIC_MEMPOOL_HXX_ */
+#endif /* RAJA_BASIC_MEMPOOL_HPP */
