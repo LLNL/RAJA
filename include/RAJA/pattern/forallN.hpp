@@ -116,9 +116,7 @@ struct ForallN_Executor<0> {
  */
 
 template <typename POLICY, typename BODY, typename... ARGS>
-RAJA_DEPRECATE("ForallN will be deprecated in next release")
-RAJA_INLINE
-void forallN_policy(ForallN_Execute_Tag,
+RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
                                 BODY const &body,
                                 ARGS const &... args)
 {
@@ -250,6 +248,7 @@ RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
+RAJA_DEPRECATE("ForallN will be deprecated in next release")
 RAJA_INLINE void forallN(Ts &&... args)
 {
 
