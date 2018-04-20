@@ -28,7 +28,12 @@
 
 #include "RAJA/config.hpp"
 
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "RAJA/internal/Span.hpp"
+
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
@@ -38,10 +43,6 @@
 #else
 #define cudaErrchk(...)
 #endif
-
-#include <memory>
-#include <type_traits>
-#include <utility>
 
 namespace RAJA
 {

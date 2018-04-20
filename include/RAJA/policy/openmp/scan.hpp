@@ -28,16 +28,16 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
-
-#include <omp.h>
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <type_traits>
 #include <vector>
+
+#include <omp.h>
+
+#include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 
 namespace RAJA
 {

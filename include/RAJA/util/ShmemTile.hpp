@@ -30,10 +30,10 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/StaticLayout.hpp"
-
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/util/StaticLayout.hpp"
 
 namespace RAJA
 {

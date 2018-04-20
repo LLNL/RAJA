@@ -30,15 +30,15 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
-
 #if defined(RAJA_ENABLE_CUDA)
 
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/pattern/kernel.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

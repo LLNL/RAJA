@@ -26,9 +26,9 @@
 #ifndef policy_openmp_HPP
 #define policy_openmp_HPP
 
-#include "RAJA/policy/PolicyBase.hpp"
-
 #include <type_traits>
+
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {

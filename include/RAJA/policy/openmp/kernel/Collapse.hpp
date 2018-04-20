@@ -33,9 +33,9 @@
 #include <cassert>
 #include <climits>
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

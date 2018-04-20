@@ -31,9 +31,6 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/concepts.hpp"
-
 #include <stdint.h>
 #include <cfloat>
 #include <cstdint>
@@ -42,6 +39,9 @@
 #ifdef RAJA_CHECK_LIMITS
 #include <limits>
 #endif
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/concepts.hpp"
 
 namespace RAJA
 {

@@ -28,14 +28,14 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+#include <type_traits>
+
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
-
-#include <iostream>
-#include <type_traits>
 
 namespace RAJA
 {

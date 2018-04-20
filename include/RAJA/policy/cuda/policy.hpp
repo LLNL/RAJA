@@ -31,7 +31,9 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/pattern/reduce.hpp"
+
 #include "RAJA/policy/PolicyBase.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 

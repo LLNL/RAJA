@@ -28,9 +28,9 @@
 
 #include "RAJA/config.hpp"
 
-#include "camp/camp.hpp"
-
 #include <array>
+
+#include "camp/camp.hpp"
 
 namespace RAJA
 {

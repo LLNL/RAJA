@@ -29,21 +29,20 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+#include <type_traits>
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/shared_memory.hpp"
 
 #include "RAJA/util/chai_support.hpp"
-
-#include "RAJA/pattern/shared_memory.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
-
-#include <iostream>
-#include <type_traits>
 
 namespace RAJA
 {

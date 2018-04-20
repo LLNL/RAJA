@@ -30,10 +30,13 @@
 
 #include "RAJA/config.hpp"
 
+#ifdef RAJA_ENABLE_CUDA
+
+#include <iostream>
+#include <type_traits>
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#ifdef RAJA_ENABLE_CUDA
 
 #include "RAJA/pattern/kernel/Tile.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
@@ -41,9 +44,6 @@
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
-
-#include <iostream>
-#include <type_traits>
 
 namespace RAJA
 {

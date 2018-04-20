@@ -30,13 +30,13 @@
 
 #include "RAJA/config.hpp"
 
-#include "camp/helpers.hpp"
-
 #include <cstddef>
 
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
+
+#include "camp/helpers.hpp"
 
 namespace RAJA
 {

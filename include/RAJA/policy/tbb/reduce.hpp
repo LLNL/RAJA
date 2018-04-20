@@ -33,15 +33,19 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-#include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/pattern/detail/reduce.hpp"
-#include "RAJA/pattern/reduce.hpp"
-#include "RAJA/policy/tbb/policy.hpp"
-#include "RAJA/util/types.hpp"
-
-#include <tbb/tbb.h>
 #include <memory>
 #include <tuple>
+
+#include <tbb/tbb.h>
+
+#include "RAJA/internal/MemUtils_CPU.hpp"
+
+#include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
+
+#include "RAJA/policy/tbb/policy.hpp"
+
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

@@ -28,13 +28,13 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+
 #include "RAJA/internal/Iterators.hpp"
 
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/index/IndexValue.hpp"
-
-#include <iostream>
 
 namespace RAJA
 {

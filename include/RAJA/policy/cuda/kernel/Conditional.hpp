@@ -28,14 +28,15 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+#include <type_traits>
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/Conditional.hpp"
-#include "RAJA/policy/cuda/kernel/internal.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
 {

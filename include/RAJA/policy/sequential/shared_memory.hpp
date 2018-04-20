@@ -31,6 +31,7 @@
 #include <stddef.h>
 #include <memory>
 #include <vector>
+
 #include "RAJA/pattern/shared_memory.hpp"
 
 namespace RAJA

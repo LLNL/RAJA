@@ -28,12 +28,13 @@
 
 #include "RAJA/config.hpp"
 
+#include <string>
+
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include <string>
 
 namespace RAJA
 {

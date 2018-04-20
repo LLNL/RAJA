@@ -37,6 +37,7 @@
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
+
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 

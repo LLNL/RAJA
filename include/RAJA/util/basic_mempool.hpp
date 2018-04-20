@@ -26,16 +26,15 @@
 #ifndef RAJA_BASIC_MEMPOOL_HPP
 #define RAJA_BASIC_MEMPOOL_HPP
 
-#include "RAJA/util/align.hpp"
-
-#include "RAJA/util/mutex.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <list>
 #include <map>
+
+#include "RAJA/util/align.hpp"
+#include "RAJA/util/mutex.hpp"
 
 namespace RAJA
 {

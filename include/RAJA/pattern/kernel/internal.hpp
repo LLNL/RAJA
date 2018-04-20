@@ -29,6 +29,8 @@
 
 #include "RAJA/config.hpp"
 
+#include <type_traits>
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/macros.hpp"
@@ -38,8 +40,6 @@
 #include "camp/concepts.hpp"
 
 #include "RAJA/util/chai_support.hpp"
-
-#include <type_traits>
 
 namespace RAJA
 {

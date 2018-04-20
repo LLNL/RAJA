@@ -28,10 +28,11 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/pattern/shared_memory.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-
 #ifdef RAJA_ENABLE_CUDA
+
+#include "RAJA/pattern/shared_memory.hpp"
+
+#include "RAJA/policy/cuda/policy.hpp"
 
 #include "RAJA/util/macros.hpp"
 

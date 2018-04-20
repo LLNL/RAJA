@@ -28,13 +28,13 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/Operators.hpp"
-#include "RAJA/util/TypeConvert.hpp"
-#include "RAJA/util/macros.hpp"
+#if defined(RAJA_ENABLE_CUDA)
 
 #include <stdexcept>
 
-#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/util/Operators.hpp"
+#include "RAJA/util/TypeConvert.hpp"
+#include "RAJA/util/macros.hpp"
 
 
 namespace RAJA

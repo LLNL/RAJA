@@ -34,6 +34,8 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include <algorithm>
+
 #include "RAJA/pattern/forall.hpp"
 
 #include "RAJA/util/macros.hpp"
@@ -46,8 +48,6 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
-
-#include <algorithm>
 
 namespace RAJA
 {

@@ -33,17 +33,18 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include <memory>
+#include <vector>
+
+#include <omp.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
+
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/openmp/target_reduce.hpp"
-
-#include <omp.h>
-
-#include <memory>
-#include <vector>
 
 namespace RAJA
 {
