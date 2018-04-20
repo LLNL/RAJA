@@ -29,18 +29,31 @@
 
 #include "RAJA/config.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include <omp.h>
+#endif
+
 namespace RAJA
 {
 
 /*!
 *************************************************************************
 *
-* Return max number of available threads for code run on CPU.
+* Return max number of available OpenMP threads for code run on CPU;
+* else return 1 if OpenMP is not enabled.
 *
 *************************************************************************
 */
-int getMaxReduceThreadsCPU();
-int getMaxOMPThreadsCPU();
+int getMaxOMPThreadsCPU() 
+{
+  int nthreads = 1; 
+
+#if defined(RAJA_ENABLE_OPENMP)
+  nthreads = omp_get_max_threads();
+#endif
+
+  return nthreads;
+}
 
 }  // closing brace for RAJA namespace
 
