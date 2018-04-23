@@ -30,15 +30,14 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/policy/cuda/policy.hpp"
-
-#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
 #include <iterator>
 #include <type_traits>
 
 #include "cub/device/device_scan.cuh"
 #include "cub/util_allocator.cuh"
+
+#include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 namespace RAJA
 {

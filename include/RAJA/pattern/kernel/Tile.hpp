@@ -27,15 +27,16 @@
 #define RAJA_pattern_kernel_Tile_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
+
+#include <iostream>
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

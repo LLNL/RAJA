@@ -28,17 +28,18 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
+
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/index/IndexSet.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
 
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/chai_support.hpp"
 
 namespace RAJA
 {
@@ -353,7 +354,7 @@ constexpr RAJA_INLINE typename std::
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {

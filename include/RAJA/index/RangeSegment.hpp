@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining typed rangesegment classes.
+ * \brief   RAJA header file defining typed range segment classes.
  *
  ******************************************************************************
  */
@@ -28,13 +28,13 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+
 #include "RAJA/internal/Iterators.hpp"
 
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/index/IndexValue.hpp"
-
-#include <iostream>
 
 namespace RAJA
 {

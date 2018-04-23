@@ -192,7 +192,7 @@ struct PolLTimesC : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined(RAJA_ENABLE_OPENMP)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP : PolLTimesCommon {
@@ -225,7 +225,7 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
-#ifdef RAJA_ENABLE_TBB
+#if defined(RAJA_ENABLE_TBB)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesF_TBB : PolLTimesCommon {

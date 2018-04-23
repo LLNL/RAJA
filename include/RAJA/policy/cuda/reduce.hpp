@@ -33,31 +33,23 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/util/basic_mempool.hpp"
-
-#include "RAJA/util/SoAArray.hpp"
-
-#include "RAJA/util/SoAPtr.hpp"
-
-#include "RAJA/util/mutex.hpp"
-
-#include "RAJA/pattern/detail/reduce.hpp"
-
-#include "RAJA/pattern/reduce.hpp"
-
-#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
-#include "RAJA/policy/cuda/policy.hpp"
-
-#include "RAJA/policy/cuda/atomic.hpp"
-
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#include <type_traits>
 
 #include <cuda.h>
 
-#include <type_traits>
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/SoAArray.hpp"
+#include "RAJA/util/SoAPtr.hpp"
+#include "RAJA/util/mutex.hpp"
+
+#include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
+
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/atomic.hpp"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 namespace RAJA
 {

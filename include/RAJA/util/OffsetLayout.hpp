@@ -28,14 +28,18 @@
 #define RAJA_OFFSETLAYOUT_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/index/IndexValue.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/Permutations.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
 
 #include <array>
 #include <limits>
+
 #include "camp/camp.hpp"
+
+#include "RAJA/index/IndexValue.hpp"
+
+#include "RAJA/internal/LegacyCompatibility.hpp"
+
+#include "RAJA/util/Permutations.hpp"
+#include "RAJA/util/PermutedLayout.hpp"
 
 namespace RAJA
 {

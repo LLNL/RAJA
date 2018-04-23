@@ -9,9 +9,6 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_sequential_kernel_HPP
-#define RAJA_policy_sequential_kernel_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -29,5 +26,8 @@
 
 
 #include "RAJA/policy/sequential/kernel/Collapse.hpp"
+
+#ifndef RAJA_policy_sequential_kernel_HPP
+#define RAJA_policy_sequential_kernel_HPP
 
 #endif  // closing endif for header file include guard

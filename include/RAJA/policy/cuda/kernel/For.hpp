@@ -28,6 +28,7 @@
 #define RAJA_policy_cuda_kernel_For_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 

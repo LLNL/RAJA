@@ -17,7 +17,6 @@
 #define EXAMPLES_MEMORYMANAGER_HPP
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
 
 /*
   As RAJA does not manage memory we include a general purpose memory

@@ -28,15 +28,15 @@
 #ifndef RAJA_policy_cuda_kernel_Thread_HPP
 #define RAJA_policy_cuda_kernel_Thread_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/cuda/kernel/internal.hpp"
 
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
 {

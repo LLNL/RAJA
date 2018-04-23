@@ -29,7 +29,6 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/util/defines.hpp"
 
 #include "buildIndexSet.hpp"
 
@@ -40,12 +39,12 @@ using TestingTypes = ::testing::
     Types<
   std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
   std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined(RAJA_ENABLE_OPENMP)
   
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
 #endif
-#ifdef RAJA_ENABLE_TBB
+#if defined(RAJA_ENABLE_TBB)
           ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
            ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
 #endif
