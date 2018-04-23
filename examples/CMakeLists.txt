@@ -15,6 +15,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME manyMatrix
+  SOURCES manyMatrix.cpp)
+
+raja_add_executable(
   NAME ex-layout
   SOURCES ex-layout.cpp)
 

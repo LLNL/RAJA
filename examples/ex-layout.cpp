@@ -127,7 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //Here we assume an A{i,j} indexing where i is the fastest
   RAJA::View<int, RAJA::Layout<matDim> > Aview(A, Istride, Jstride);
-  
+#if 0  
   using NESTED_EXEC_POL = RAJA::nested::Policy<
     RAJA::nested::For<1, RAJA::seq_exec>,
     RAJA::nested::For<0, RAJA::seq_exec>>;
@@ -144,7 +144,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout<<"Matrix should be enumerated in a row major fashion"<<std::endl;
   printMat(Aview, Istride, Jstride);
-    
+#endif    
   
 //
 // Clean up. 
