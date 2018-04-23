@@ -28,9 +28,9 @@ const int MAT_ENTRIES = 9;
 const int NCOLS = 3;
 const int NROWS = 3;
 
-#define A(elem, row, col) A[col + row*3 + elem*MAT_ENTRIES]
-#define B(elem, row, col) B[col + row*3 + elem*MAT_ENTRIES]
-#define C(elem, row, col) C[col + row*3 + elem*MAT_ENTRIES]
+#define A(elem, row, col) A[col + row*NCOLS + elem*MAT_ENTRIES]
+#define B(elem, row, col) B[col + row*NCOLS + elem*MAT_ENTRIES]
+#define C(elem, row, col) C[col + row*NCOLS + elem*MAT_ENTRIES]
 
 #define AComp(elem, row, col) AComp[elem + Nelem*(col + row*NCOLS)]
 #define BComp(elem, row, col) BComp[elem + Nelem*(col + row*NCOLS)]
