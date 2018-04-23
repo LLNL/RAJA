@@ -40,7 +40,7 @@
 
 #if defined(RAJA_ENABLE_FT)
 
-#if definded(RAJA_REPORT_FT)
+#if defined(RAJA_REPORT_FT)
 
 #include <stdio.h>
 #include "cycle.h"

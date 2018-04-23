@@ -4,6 +4,7 @@
  * \file
  *
  * \brief  Internal header for RAJA forall "BED" macros 
+ *         (i.e., loop begin/end bounds)
  *
  ******************************************************************************
  */
