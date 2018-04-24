@@ -15,6 +15,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME setData
+  SOURCES setData.cpp)
+
+raja_add_executable(
   NAME manyMatrix
   SOURCES manyMatrix.cpp)
 

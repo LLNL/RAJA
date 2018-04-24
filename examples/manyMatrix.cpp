@@ -17,7 +17,9 @@
 #include <cstring>
 #include <iostream>
 #include <chrono>
+#if defined (RAJA_ENABLE_CUDA)
 #include "cuda.h"
+#endif
 
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
@@ -36,7 +38,7 @@ const int NROWS = 3;
 #define BComp(elem, row, col) BComp[elem + Nelem*(col + row*NCOLS)]
 #define CComp(elem, row, col) CComp[elem + Nelem*(col + row*NCOLS)]
 
-
+#if defined (RAJA_ENABLE_CUDA)
 template<typename myPolicy>
 void multiplyVer1(const double * const RAJA_RESTRICT A, const double * const RAJA_RESTRICT B,
                  double * const RAJA_RESTRICT C, const size_t Nelem)
@@ -86,7 +88,7 @@ void multiplyVer2(const double * const RAJA_RESTRICT AComp, const double * const
 
 
 template<typename myPolicy, typename T>
-void multiplyView(const T const RAJA_RESTRICT Aview, const T const RAJA_RESTRICT Bview,
+void multiplyView(const T RAJA_RESTRICT Aview, const T RAJA_RESTRICT Bview,
                   T const RAJA_RESTRICT Cview, const size_t Nelem)
 {
 
@@ -109,7 +111,7 @@ void multiplyView(const T const RAJA_RESTRICT Aview, const T const RAJA_RESTRICT
 
 }
 
-
+#endif
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -118,6 +120,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int Nelem = 25600;
   const int NITER = 10000;
   double myMin, totalTime;
+
+#if defined (RAJA_ENABLE_CUDA)
 
   double * const RAJA_RESTRICT A = memoryManager::allocate<double>(Nelem*MAT_ENTRIES);
   double * const RAJA_RESTRICT B = memoryManager::allocate<double>(Nelem*MAT_ENTRIES);
@@ -254,7 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   compareOutput(C,CComp, Nelem);
   std::cout<<"\n \n \n"<<std::endl;
 
-    
+#endif    
   
 //
 // Clean up. 
