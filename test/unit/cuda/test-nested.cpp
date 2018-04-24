@@ -33,7 +33,9 @@ using namespace RAJA;
 // block_size is needed by the reduction variables to setup shared memory
 // Care should be used here to cover the maximum block dimensions used by this
 // test
+#if defined(RAJA_DEPRECATED_TESTS)
 static const size_t block_size = 256;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -51,6 +53,7 @@ RAJA_INDEX_VALUE(IDirection, "IDirection");
 RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
+#if defined(RAJA_DEPRECATED_TESTS)
 template <typename POL>
 static void runLTimesTest(Index_type num_moments,
                           Index_type num_directions,
@@ -193,6 +196,7 @@ static void runLTimesTest(Index_type num_moments,
   ASSERT_EQ(lminloc.getLoc(), pdminloc.getLoc());
   ASSERT_EQ(lmaxloc.getLoc(), pdmaxloc.getLoc());
 }
+#endif
 
 // Use thread-block mappings
 struct PolLTimesA_GPU {
@@ -315,6 +319,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedCUDA);
 
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TYPED_TEST_P(NestedCUDA, LTimes)
 {
   runLTimesTest<TypeParam>(2, 0, 7, 3);
@@ -352,7 +357,9 @@ CUDA_TEST(NestedCUDA, NegativeRange)
     ASSERT_EQ(host_data[i], data[i]);
   }
 }
+#endif
 
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TEST(NestedCUDA, PositiveRange)
 {
   double *data;
@@ -377,3 +384,4 @@ CUDA_TEST(NestedCUDA, PositiveRange)
     ASSERT_EQ(host_data[i], data[i]);
   }
 }
+#endif
