@@ -783,7 +783,7 @@ TEST(Kernel, CollapseSeq){
   delete[] x;
 }
 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined(RAJA_ENABLE_OPENMP)
 TEST(Kernel, Collapse2)
 {
   int N = 16;
@@ -1075,7 +1075,7 @@ TEST(Kernel, Collapse8)
 
 #endif //RAJA_ENABLE_OPENMP
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
 
 CUDA_TEST(Kernel, CudaExec){
@@ -1604,7 +1604,7 @@ CUDA_TEST(Kernel, CudaShmemWindow2d){
 
 
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
 CUDA_TEST(Kernel, CudaExec_1threadexec){
   using namespace RAJA;
@@ -1904,7 +1904,7 @@ TEST(Kernel, Hyperplane_seq){
 }
 
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
 
 CUDA_TEST(Kernel, Hyperplane_cuda_2d)

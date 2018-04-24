@@ -14,7 +14,7 @@ matrix:
     env:
     - COMPILER=g++
     - IMG=gcc49
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DRAJA_DEPRECATED_TESTS=On"
   - compiler: gcc6
     env:
     - COMPILER=g++

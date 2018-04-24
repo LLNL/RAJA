@@ -99,7 +99,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -150,7 +150,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -174,6 +174,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   }
 }
 
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
@@ -212,7 +213,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   ASSERT_EQ(4 * ibase_chk_val + (itinit * 4), isum3.get());
 
 }
-
+#endif
 //
 // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
 //        of the array using an indexset with four range segments
@@ -230,7 +231,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
 
-  IndexSet iset;
+  UnitIndexSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);
@@ -283,7 +284,7 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
         pos_chk_val += rand_dvalue[i];
       }
     }
-    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
       if (rand_dvalue[i] < 0.0) {
         dsumN += rand_dvalue[i];
       } else {
@@ -306,7 +307,7 @@ CUDA_TEST_F(ReduceSumCUDA, increasing_size)
 
     ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
 
-    forall<cuda_exec<block_size, true> >(0, size, [=] __device__(int i) {
+    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] __device__(int i) {
       dsum0 += dvalue[i];
     });
 
