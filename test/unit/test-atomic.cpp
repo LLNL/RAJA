@@ -30,7 +30,7 @@ void testAtomicFunctionBasic()
   RAJA::RangeSegment seg(0, N);
 
 // initialize an array
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
   cudaMallocManaged((void **)&dest, sizeof(T) * 8);
 
@@ -64,7 +64,7 @@ void testAtomicFunctionBasic()
     RAJA::atomic::atomicDec<AtomicPolicy>(dest + 7, (T)16);
   });
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
 
@@ -78,7 +78,7 @@ void testAtomicFunctionBasic()
   EXPECT_EQ((T)13, dest[7]);
 
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaFree(dest);
 #else
   delete[] dest;
@@ -110,7 +110,7 @@ void testAtomicRefBasic()
   RAJA::RangeSegment seg(0, N);
 
 // initialize an array
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
   cudaMallocManaged((void **)&dest, sizeof(T) * 6);
 
@@ -155,7 +155,7 @@ void testAtomicRefBasic()
     sum5 -= 1;
   });
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
 
@@ -166,7 +166,7 @@ void testAtomicRefBasic()
   EXPECT_EQ((T)1, dest[4]);
   EXPECT_EQ((T)1, dest[5]);
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaFree(dest);
 #else
   delete[] dest;
@@ -196,7 +196,7 @@ void testAtomicViewBasic()
   RAJA::RangeSegment seg_half(0, N / 2);
 
 // initialize an array
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   T *source = nullptr;
   cudaMallocManaged((void **)&source, sizeof(T) * N);
 
@@ -229,7 +229,7 @@ void testAtomicViewBasic()
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
 
@@ -237,7 +237,7 @@ void testAtomicViewBasic()
     EXPECT_EQ((T)2, dest[i]);
   }
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaFree(source);
   cudaFree(dest);
 #else
@@ -269,7 +269,7 @@ void testAtomicLogical()
   RAJA::RangeSegment seg_bytes(0, N);
 
 // initialize an array
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   T *dest_and = nullptr;
   cudaMallocManaged((void **)&dest_and, sizeof(T) * N);
 
@@ -302,7 +302,7 @@ void testAtomicLogical()
     RAJA::atomic::atomicXor<AtomicPolicy>(dest_xor + offset, (T)(1 << bit));
   });
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
 
@@ -312,7 +312,7 @@ void testAtomicLogical()
     EXPECT_EQ((T)0xFF, dest_xor[i]);
   }
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
   cudaFree(dest_and);
   cudaFree(dest_or);
   cudaFree(dest_xor);
@@ -334,7 +334,7 @@ void testAtomicLogicalPol()
 }
 
 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined(RAJA_ENABLE_OPENMP)
 
 TEST(Atomic, basic_OpenMP_AtomicFunction)
 {
@@ -369,7 +369,7 @@ TEST(Atomic, basic_OpenMP_Logical)
 
 #endif
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
 CUDA_TEST(Atomic, basic_CUDA_AtomicFunction)
 {
