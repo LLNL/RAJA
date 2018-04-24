@@ -19,6 +19,14 @@ raja_add_executable(
   SOURCES view.cpp)
 
 raja_add_executable(
+  NAME view1
+  SOURCES view1.cpp)
+
+raja_add_executable(
+  NAME view2
+  SOURCES view2.cpp)
+
+raja_add_executable(
   NAME sw4Kernel
   SOURCES sw4Kernel.cpp)
 
