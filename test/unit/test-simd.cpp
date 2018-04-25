@@ -26,19 +26,6 @@
 using namespace RAJA;
 using namespace RAJA::statement;
 
-template<typename T>
-RAJA_INLINE
-T alignHint(T x)
-{
-#if defined (RAJA_COMPILER_INTEL)
-  RAJA_ALIGN_DATA(x);
-  return x;
-#else
-  return RAJA_ALIGN_DATA(x);
-#endif
-}
-
-
 TEST(SIMD, align){
 
   int N = 1024;
@@ -53,8 +40,8 @@ TEST(SIMD, align){
     }
 
 
-  double *y = alignHint(a);
-  double *x = alignHint(b);
+  double *y = RAJA::align_hint(a);
+  double *x = RAJA::align_hint(b);
 
   RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
       y[i] += x[i] * c;
