@@ -18,19 +18,19 @@
 Matrix Multiplication (Nested Loops)
 ------------------------------------
 
-Key RAJA features shown in this example:
+Key RAJA features shown in the following examples:
 
   * ``RAJA::forall`` loop traversal template 
   * RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA::kernel`` template for nested-loop execution
-  * RAJA nested-loop interchange 
+  * Basic RAJA nested-loop interchange 
 
 
-In this example, we multiply two square matrices 'A' and 'B' of dimension
-N x N and store the result in matrix 'C'. To motivate the use of the 
-``RAJA::View`` abstraction that we introduce here, we define the following 
-macros to access the matrix entries in the C-version:
+In this section, we present examples showing multiplication of two square 
+matrices 'A' and 'B' of dimension N x N where we store the result in matrix 'C'.
+To motivate the use of the ``RAJA::View`` abstraction that we introduce here, 
+we define the following macros to access the matrix entries in the C-version:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 56-58
@@ -65,9 +65,9 @@ permutations, stridings, etc. For more information about
 RAJA views, see :ref:`view-label`.
 
 .. note:: The first few RAJA variants of the matrix multiplication operation
-          do not illustrate recommended RAJA usage. They are included to 
+          show RAJA usage that we do not recommend. They are included to 
           show *why they are not recommended* and to motivate the use of
-          ``RAJA::kernel`` capabilities for nested loops.
+          ``RAJA::kernel`` constructs for nested loops, described later.
 
 In the first RAJA variant, we convert the outermost C-style 'row' loop to
 use the ``RAJA::forall`` traversal method with a sequential execution policy:
@@ -75,8 +75,8 @@ use the ``RAJA::forall`` traversal method with a sequential execution policy:
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 190-203
 
-Here, the lambda expression for the loop body contains the 'col' and 'k'
-loops.
+Here,we have one lambda expression for the loop body, which contains the 
+'col' and 'k' loops.
 
 Note that changing the execution policy to an OpenMP or CUDA policy enables the 
 outer 'row' loop to run in parallel. When this is done, each thread will execute
@@ -91,63 +91,70 @@ call for the 'column' loop inside the outer 'row' traversal:
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 225-238
 
-Here, the lambda expression for the column loop body is contained within the 
-lambda expression for the outer row loop. The outer loop execution policy
-can be replaced with an OpenMP policy and the result will be the same as using 
-an OpenMP policy in the previous version. 
+Here, the innermost lambda expression contains the inner 'k' loop. The 'col' 
+loop is executed via the ``RAJA::forall`` method call within the 
+lambda expression for the outer 'row' loop. Note that we can replace either
+forall execution policy with an OpenMP execution policy to parallelize either
+the 'row' or 'col' loop. For examples, if we use an OpenMP execution policy 
+on the outer 'row' loop, the result will be the same as using an OpenMP policy 
+in the ``RAJA::forall`` statement in the previous example. 
 
-However, changing the outer loop policy to a CUDA policy will not compile. 
-This is by design in RAJA since nesting forall statements inside lambdas in 
-this way has limited utility, is inflexible, and can hinder performance when 
-compared to ``RAJA::kernel`` constructs, which we describe next. 
+Note that it is not recommended to use such a parallel execution policy for 
+both loops in this example as RAJA provides better mechanisms for 
+parallelizing loop nests. Also, changing the outer loop policy to a CUDA 
+policy will not compile. This is by design in RAJA since nesting forall 
+statements inside lambdas in this way has limited utility, is inflexible, 
+and can hinder performance when compared to ``RAJA::kernel`` constructs, 
+which we describe next. 
+
+.. _matmultkernel-label:
 
 ^^^^^^^^^^^^^^^^^
 Nested-loop RAJA
 ^^^^^^^^^^^^^^^^^
 
 In this section, we show how to recast the matrix-multiplication calculation 
-by using ``RAJA::kernel`` nested-loop capabilities. There are some 
-important differences worth noting between the use of the ``RAJA::kernel``
-and ``RAJA::forall`` loop constructs. 
-
-We first present a complete example, and then describe its key elements:
+by using ``RAJA::kernel`` nested-loop capabilities, which were introduced in
+:ref:`loop_elements-nested-label`. There are some important differences 
+between the use of the ``RAJA::kernel`` and ``RAJA::forall`` loop constructs. 
+Before we dig into those details, we first present a complete example, and 
+then describe its key elements:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 270-290
 
-Note that the ``RAJA::kernel`` template takes two arguments. Similar to the 
-``RAJA::forall`` usage to this point, the first argument describes the
+Note that the ``RAJA::kernel`` template takes two arguments in this example. 
+Similar to ``RAJA::forall``, the first argument describes the
 iteration space and the second argument is the lambda loop body. Here, the
 index space is described as a *tuple* of ranges (created via the 
-``RAJA::make_tuple`` method), one for each of the 'col' and 'row' loop 
-The lambda has an index argument for each level in the loop nest. 
+``RAJA::make_tuple`` method), one for the 'col' loop and one for the 'row' 
+loop. The lambda has an index argument for each level in the loop nest. 
 
 .. note :: The number and order of lambda arguments must match the number and
-           order of ranges in the tuple for this to be correct.
+           order of the elements in the tuple for this to be correct.
 
 The execution policy defined by the ``RAJA::KernelPolicy`` type specifies
 a policy for each level in the loop nest via the nested 
 ``RAJA::statement::For`` types. Here, the row and column loops will both 
 execute sequentially. The integer that appears as the first argument to each 
-'For' template corresponds to the index of a range '(0, 1, 2, ...)' in the 
-tuple and also to the associated lambda index argument; i.e., '0' is the 
-'col' range, '1' is the 'row' range. The innermost type 
-``RAJA::statement::Lambda<0>`` indicates that the first (and only!) lambda
-expression passed to the ``RAJA::kernel`` method after the tuple of ranges
+'For' template corresponds to the index of a range '(0, 1, ...)' in the 
+tuple and also to the associated index argument to the lambda. Here, '0' is the 
+'col' range and '1' is the 'row' range because that is the order the ranges
+appear in the tuple. The innermost type ``RAJA::statement::Lambda<0>`` 
+indicates that the first (and only in this case!) lambda expression passed 
+to the ``RAJA::kernel`` method after the index space tuple
 defines the inner loop body.  
 
 The integer arguments in the 'For' statements are needed so that the levels 
-in the loop nest can be 
-permuted by reordering the policy arguments while the loop kernel remains 
-the same. This is akin to how you would reorder C-style nested loops; i.e., 
-reorder for-statements that loop over the indices for each loop nest level.
-Here, the row policy is first (tuple index '1') so it is the outermost loop, 
-and the col policy is next (tuple index '0') so it is the next loop, etc. We 
-will demonstrate the reordering concept later in this example and discuss it in
-more detail in the example :ref:`nestedreorder-label`.
+in the loop nest can be permuted by reordering the policy arguments while the 
+loop kernel remains the same. This is analogous to how you would reorder 
+C-style nested loops; i.e., reorder for-statements that loop over the indices 
+for each loop nest level. We will demonstrate the reordering concept shortly 
+with this example and discuss it in more detail in the example in 
+:ref:`nestedreorder-label`.
 
 If we wanted to execute the row loop using OpenMP multi-threaded parallelism 
-and keep the column loop sequential as in earlier examples, the policy we 
+and keep the column loop sequential as we discussed earlier, the policy we 
 would use is:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
@@ -163,9 +170,10 @@ the outer loop is now the 'col' loop and is still sequential:
 
 
 The RAJA framework can also collapse nested loops in an OpenMP parallel region
-using a ``RAJA::statement::Collapse`` type in the execution policy.
-For example, the following policy will distribute the nested loop iterations 
-differently and reduce the granularity of work done by each thread:
+using a ``RAJA::statement::Collapse`` type in the execution policy. This
+allows multiple levels in a loop nest to be parallelized. For example, the 
+following policy will distribute the iterations for both loop levels
+across OpenMP threads, increasing the granularity of work done by each thread:
 
 .. literalinclude:: ../../../../examples/ex4-matrix-multiply.cpp
                     :lines: 374-380
@@ -182,7 +190,7 @@ apply optimizations, such as dead-code-elimination. Note that there are no
 policies for the individual loop levels inside the OpenMP collapse policy. 
 
 Lastly, we describe how to use ``RAJA::statement::CudaKernel`` types to 
-collapse a loop nest into a single CUDA kernel and launch it with a particular 
+generate a CUDA kernel from a loop nest and launch it with a particular 
 thread-block decomposition. 
 
 Here is a policy that will distribute the row indices across 

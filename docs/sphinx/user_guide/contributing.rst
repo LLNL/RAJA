@@ -115,5 +115,5 @@ is used on a wide variety of systems with a number of configurations, and adding
 new tests helps ensure that all features work as expected across these
 environments.
 
-RAJA's tests are all in the ``test`` directory and are split up by backend and
-feature.
+RAJA's tests are all in the ``test`` directory and are split up by programming
+model back-end and feature.

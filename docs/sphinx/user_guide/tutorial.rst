@@ -113,8 +113,8 @@ Examples
 
 The remainder of this tutorial illustrates how to exercise various RAJA 
 features using simple examples. Note that all the examples employ
-RAJA traversal template methods, which are described briefly 
-here :ref:`loop_basic-label`. For the purposes of the discussion, we
+RAJA traversal template methods, which are introduced in 
+:ref:`loop_elements-label`. For the purposes of the discussion, we
 assume that any and all data used has been properly allocated and initialized.
 This is done in the code examples, but is not discussed further here.
 
@@ -132,10 +132,10 @@ for reference.
    tutorial/dot_product.rst
    tutorial/indexset_segments.rst
    tutorial/vertexsum_coloring.rst
+   tutorial/reductions.rst
+   tutorial/atomic_binning.rst
+   tutorial/scan.rst
    tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
    tutorial/complex_loops-intro.rst
    tutorial/complex_loops-shmem.rst
-   tutorial/reductions.rst
-   tutorial/atomic_binning.rst
-   tutorial/scan.rst
