@@ -516,7 +516,6 @@ forall(ExecutionPolicy&& p,
        IndexType2 end,
        LoopBody&& loop_body)
 {
-  std::cout<<"here 2 "<<std::endl;
   static_assert(
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
