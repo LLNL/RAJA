@@ -285,7 +285,7 @@ T * align_hint(T * x)
   RAJA_ALIGN_DATA(x);
   return x;
 #else
-  return reinterpret_cast<T *>(RAJA_ALIGN_DATA(x));
+  return static_cast<T *>(RAJA_ALIGN_DATA(x));
 #endif
 }
     
