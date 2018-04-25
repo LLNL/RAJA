@@ -209,6 +209,8 @@ RAJA_INLINE T atomicSub(builtin_atomic, T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE T atomicMin(builtin_atomic, T volatile *acc, T value)
 {
+  if (*acc < value)
+    return *acc;
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a < value ? a : value;
@@ -221,6 +223,8 @@ RAJA_INLINE T atomicMin(builtin_atomic, T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE T atomicMax(builtin_atomic, T volatile *acc, T value)
 {
+  if (*acc > value)
+    return *acc;
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a > value ? a : value;
