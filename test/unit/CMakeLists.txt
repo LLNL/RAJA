@@ -58,6 +58,10 @@ raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
 
+raja_add_test(
+  NAME test-simd
+  SOURCES test-simd.cpp)
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)
