@@ -93,8 +93,7 @@ if (NOT RAJA_LOADED)
       openmp)
 
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    message(WARNING "RAJA::simd_exec not supported ")
-    message(WARNING "RAJA::simd_exec will behave like loop_exec ")
+     message(WARNING "RAJA::simd_exec not supported when OpenMP is enabled with the Intel compiler")
   endif()
 
   endif()
