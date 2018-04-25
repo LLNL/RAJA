@@ -56,6 +56,11 @@
 #cmakedefine RAJA_ENABLE_CHAI
 
 /*
+ * Deprecated tests
+ */
+#cmakedefine RAJA_DEPRECATED_TESTS
+
+/*
  * Timer options
  */
 

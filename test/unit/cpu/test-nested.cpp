@@ -102,6 +102,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedTest);
 
+#if defined (RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedTest, Nested2DTest)
 {
   using POL = TypeParam;
@@ -135,6 +136,7 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 REGISTER_TYPED_TEST_CASE_P(NestedTest, Nested2DTest);
 
 INSTANTIATE_TYPED_TEST_CASE_P(Nested2D, NestedTest, InstPolicies);
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -192,7 +194,7 @@ struct PolLTimesC : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined (RAJA_ENABLE_OPENMP)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP : PolLTimesCommon {
@@ -225,7 +227,7 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
-#ifdef RAJA_ENABLE_TBB
+#if defined(RAJA_ENABLE_TBB)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesF_TBB : PolLTimesCommon {
@@ -276,8 +278,10 @@ public:
 
 TYPED_TEST_CASE_P(LTimesTest);
 
+#if defined (RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 {
+
   using Args = std::array<Index_type, 4>;
   using POL = TypeParam;
 
@@ -351,3 +355,4 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 REGISTER_TYPED_TEST_CASE_P(LTimesTest, LTimesNestedTest);
 
 INSTANTIATE_TYPED_TEST_CASE_P(LTimes, LTimesTest, LTimesPolicies);
+#endif

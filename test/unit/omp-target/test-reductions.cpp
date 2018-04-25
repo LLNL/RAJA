@@ -288,7 +288,7 @@ protected:
   RAJA::Index_type z_size;
 };
 TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP);
-
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
@@ -317,6 +317,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
 
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
 }
+#endif
 
 REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum);
 
