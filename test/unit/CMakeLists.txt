@@ -27,6 +27,10 @@ raja_add_test(
   SOURCES test-layout.cpp)
 
 raja_add_test(
+  NAME test-view
+  SOURCES test-view.cpp)
+
+raja_add_test(
   NAME test-timer
   SOURCES test-timer.cpp)
 
