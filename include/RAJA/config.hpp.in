@@ -279,16 +279,16 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 template<typename T>
 RAJA_INLINE
-T align_hint(T x)
+T * align_hint(T * x)
 {
 #if defined (RAJA_COMPILER_INTEL)
   RAJA_ALIGN_DATA(x);
   return x;
 #else
-  return RAJA_ALIGN_DATA(x);
+  return reinterpret_cast<T *>(RAJA_ALIGN_DATA(x));
 #endif
 }
-  
+    
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard
