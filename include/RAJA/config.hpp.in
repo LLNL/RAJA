@@ -267,7 +267,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
 
 #define RAJA_INLINE inline
-#define RAJA_ALIGN_DATA(d)
+#define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
 
