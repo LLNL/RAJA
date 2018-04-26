@@ -177,7 +177,7 @@ template <typename T, typename OPER>
 RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc, OPER &&oper)
 {
   BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper), [](T const &){return false;});
+  return cas(acc, std::forward<OPER>(oper), [](T const &) { return false; });
 }
 
 template <typename T, typename OPER, typename ShortCircuit>
@@ -209,8 +209,9 @@ RAJA_INLINE T atomicSub(builtin_atomic, T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE T atomicMin(builtin_atomic, T volatile *acc, T value)
 {
-  if (*acc < value)
+  if (*acc < value) {
     return *acc;
+  }
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a < value ? a : value;
@@ -223,8 +224,9 @@ RAJA_INLINE T atomicMin(builtin_atomic, T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE T atomicMax(builtin_atomic, T volatile *acc, T value)
 {
-  if (*acc > value)
+  if (*acc > value) {
     return *acc;
+  }
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a > value ? a : value;
