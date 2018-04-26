@@ -31,6 +31,7 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#if defined(RAJA_DEPRECATED_TESTS)
 static const int x = 500, y = 300, z = 70;
 
 using namespace RAJA;
@@ -91,7 +92,6 @@ static void stride_test(int stride, bool reverse = false)
   cudaFree(arr);
 }
 
-
 CUDA_TEST(forallN, rangeStrides1)
 {
   stride_test(1, false);
@@ -132,3 +132,4 @@ CUDA_TEST(forallN, rangeStrides4_reverse)
 {
   stride_test(4, true);
 }
+#endif
