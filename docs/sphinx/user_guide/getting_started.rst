@@ -118,15 +118,15 @@ This will copy RAJA header files to the ``include`` directory and the RAJA
 library will be installed in the ``lib`` directory.
 
 
-=================
-Basic RAJA Usage
-=================
+======================
+A Simple RAJA Example
+======================
 
-Let's take a quick tour through a few key RAJA concepts. Directions for
-locating the complete working code for this first RAJA example are given
-in :ref:`firstexample-label`.
+Let's take a quick tour through a few key RAJA concepts by way of a simple 
+example. Directions for locating working code for the example and running it
+are given at the end of this section.
 
-The central loop traversal concept in RAJA is a ``forall`` template method, 
+The basic loop traversal concept in RAJA is a ``forall`` template method, 
 which runs a loop based on parameters it is given. RAJA ``forall`` methods
 encapsulate loop execution details allowing the loop to be run in 
 different ways without changing the loop code itself, only the parameters
@@ -155,7 +155,7 @@ values [0, N) one after the other.
 The RAJA form of this sequential loop replaces the ``for-loop``
 with a call to a RAJA ``forall`` method::
 
-  // Initialize a, b, c as before...
+  // Initialize N, a, b, c as before...
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
     a[i] += b[i] * c;
@@ -164,10 +164,10 @@ with a call to a RAJA ``forall`` method::
 The data allocation and loop body are exactly the same as the original code.
 The ``RAJA::forall`` method takes as arguments the loop bounds in a
 ``RAJA::RangeSegment`` object and a C++ lambda expression containing the loop 
-body. The method is templated on an `execution policy` type and the 
-template specialization for that type determines how the loop will run. Here, 
-we use the ``RAJA::seq_exec`` policy to run the loop iterations sequentially, 
-in order, exactly like the original loop.
+body. The ``RAJA::forall`` method is templated on an `execution policy` type 
+and the template specialization for that type determines how the loop will 
+run. Here, we use the ``RAJA::seq_exec`` policy to run the loop iterations 
+sequentially, in order, exactly like the original loop.
 
 Of course, this example isn't very exciting. 
 
@@ -177,7 +177,7 @@ exactly the same as I would have written it in C...."
 
 The reason is that RAJA provides mechanisms that make it easy to run the 
 loop with different parallel programming model back-ends (which have different
-syntaxes and usage concepts) tune for performance by mapping loop 
+syntaxes and usage concepts) and tune for performance by mapping loop 
 iterations to different orderings and data layouts without changing the 
 code as it appears in an application.
 
@@ -188,16 +188,17 @@ multi-threading, one could use the following execution policy::
 
   RAJA::omp_parallel_for_exec
 
-Alternatively, to run the loop on an NVIDIA GPU using CUDA, use this
-execution policy instead::
+Alternatively, to run the loop on an NVIDIA GPU using CUDA, you could use 
+this execution policy instead::
 
-  const int CUDA_BLOCK_SIZE = 512;
-
-  RAJA::cuda_exec<CUDA_BLOCK_SIZE>
+  RAJA::cuda_exec<512>
 
 Here, we specify that the loop should run with 512 threads in a CUDA 
-`thread block`. If we omit the thread block size template parameter, this
-policy provides 256 threads as the default. 
+`thread block`. If we omit the thread block size template parameter and use::
+
+  RAJA::cuda_exec
+
+the CUDA policy provides 256 threads as the default. 
 
 Note that we have assumed that the data arrays on the GPU device have been
 allocated and initialized properly. Also, to exercise different
@@ -205,15 +206,7 @@ parallel programming model back-ends that RAJA supports, they must be
 enabled when RAJA is configured. See :ref:`configopt-label` for more 
 information.
 
-
-.. _firstexample-label:
-
-------------------------
-First RAJA example code
-------------------------
-
 If you want to view and run the daxpy example code yourself, the complete 
 implementation is located in the file: ``RAJA/examples/ex0-daxpy.cpp``. 
-
 After building RAJA, with the options you select, the executable for this 
 example, will reside in the file: ``<build-dir>/examples/bin/ex0-daxpy``.
