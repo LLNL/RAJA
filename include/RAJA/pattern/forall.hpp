@@ -84,6 +84,9 @@
 
 #include "RAJA/util/chai_support.hpp"
 
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
+
 
 namespace RAJA
 {
@@ -399,9 +402,13 @@ RAJA_INLINE concepts::
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
 
+  util::callPreLaunchPlugins(detail::get_platform<ExecutionPolicy>::value);
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
+
+  util::callPostLaunchPlugins(detail::get_platform<ExecutionPolicy>::value);
 
   detail::clearChaiExecutionSpace();
 }

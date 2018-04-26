@@ -79,6 +79,7 @@ if (NOT RAJA_LOADED)
   include (cmake/RAJAMacros.cmake)
 
   set (raja_sources
+    src/PluginStrategy.cpp
     src/AlignedRangeIndexSetBuilders.cpp
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
