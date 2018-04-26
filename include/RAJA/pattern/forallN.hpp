@@ -248,6 +248,7 @@ RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
+RAJA_DEPRECATE("ForallN will be deprecated in next release")
 RAJA_INLINE void forallN(Ts &&... args)
 {
 
