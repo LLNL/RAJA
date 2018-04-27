@@ -25,6 +25,9 @@ patterns. For example, these types can be used to aggregate, partition,
 (re)order, etc. loop iterates. Here, we introduce RAJA index and iteration 
 space concepts and types.
 
+More extensive examples of RAJA iteration space usage can be found in the
+:ref:`indexset-label` and :ref:`vertexsum-label` sections of the tutorial.
+
 .. note:: All types described here are located in the RAJA namespace.
 
 -------
@@ -185,6 +188,3 @@ execute all of its segments. For example,::
 will execute a loop kernel in three chunks defined by two range segments 
 and one list segment. The segments will be iterated over in
 parallel using OpenMP, and each segment will execute sequentially.
-
-For examples of RAJA index set usage, please see the 
-:ref:`indexset-label` and :ref:`vertexsum-label` sections of the tutorial.

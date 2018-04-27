@@ -112,18 +112,22 @@ Examples
 =========
 
 The remainder of this tutorial illustrates how to exercise various RAJA 
-features using simple examples. Note that all the examples employ
-RAJA traversal template methods, which are introduced in 
-:ref:`loop_elements-label`. For the purposes of the discussion, we
-assume that any and all data used has been properly allocated and initialized.
-This is done in the code examples, but is not discussed further here.
+features using simple examples. Additional information aboout the RAJA
+features used can be found in the different sections of :ref:`features-label`.
 
-Also, the examples demonstrate CPU execution (sequential, SIMD, openmp 
-multi-threading) and CUDA GPU execution only. RAJA also has support for
-Intel Threading Building Blocks (TBB) and OpenACC. These features are
-enabled with CMake options similar to other programming models. Also, they
-are considered experimental; they are described in :ref:`policies-label`
-for reference.
+The examples demonstrate CPU execution (sequential, SIMD, OpenMP
+multi-threading) and CUDA GPU execution. RAJA supports other parallel 
+programming model back-ends such as Intel Threading Building Blocks 
+(TBB), OpenMP target offload, etc. and support for additional models
+is also under development. RAJA usage of other programming models,
+not shown in the examples, is similar to what is shown.  
+
+All RAJA programming model support features are enabled via CMake options,
+which are described in :ref:`configopt-label`. 
+
+For the purposes of the discussion for each example, we
+assume that any and all data used has been properly allocated and initialized.
+This is done in the example code files, but is not discussed further here.
 
 .. toctree::
    :maxdepth: 1

@@ -29,15 +29,20 @@ loop transformations can also be applied by changing iteration space objects
 and execution policy details. 
 
 .. note:: * All **forall** and **kernel** methods are in the namespace ``RAJA``.
-          * Each ``RAJA::forall`` traversal method is templated on an 
-            *execution policy*. 
-          * Each ``RAJA::kernel`` method requires a statement with an 
-            *execution policy* type for each level in a loop nest.
+          * Each ``RAJA::forall`` loop traversal method is templated on an 
+            *execution policy*. A 'forall' method takes two arguments: an 
+            iteration space object and lambda expression kernel body.
+          * Each ``RAJA::kernel`` method is templated on a policy that contains 
+            statement with an *execution policy* type for each level in a 
+            loop nest. A 'kernel' method takes a *tuple* of iteration space
+            objects and one or more lambda expressions representing parts of
+            loop bodies.
+
+Various examples showing how to use ``RAJA::forall`` and ``RAJA::kernel`` 
+methods may be found in sections of the :ref:`tutorial-label`.
 
 For more information on RAJA execution policies and iteration space constructs, 
-see :ref:`policies-label` and :ref:`index-label`, respectively. For 
-information about complex kernels and loop transformations, please see 
-:ref:`complex_intro-label`.
+see :ref:`policies-label` and :ref:`index-label`, respectively. 
 
 .. _loop_elements-forall-label:
 
@@ -160,6 +165,3 @@ specify several items:
   #. The lambda expression that defines the loop body.
 
   #. The loop iteration variables and their types, which are arguments to the lambda loop body.
-
-Various examples of usage of ``RAJA::forall`` and ``RAJA::kernel`` may be found 
-in the examples in :ref:`tutorial-label`.

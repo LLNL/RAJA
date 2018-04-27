@@ -18,14 +18,14 @@
 RAJA Features
 ************************
 
-This section provides a high-level description of all the main RAJA features. 
+The following sections describe key aspects of the main RAJA features. 
 
 .. toctree::
    :maxdepth: 2
 
    feature/loop_basic
    feature/policies
-   feature/index
+   feature/iteration_spaces
    feature/reduction
    feature/atomic
    feature/view
