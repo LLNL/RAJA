@@ -49,12 +49,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA reductions example...\n";
 
 //
-// Define vector length
+// Define array length
 //
   const int N = 1000000;
 
 //
-// Allocate and initialize vector data
+// Allocate array data and initialize data to alternating sequence of 1, -1.
 //
   int* a = memoryManager::allocate<int>(N);
 

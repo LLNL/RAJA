@@ -25,18 +25,17 @@ Key RAJA features shown in this example:
   * RAJA reduction types
   * RAJA reduction policies
 
-In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum reduction type.
-The example introduces all of the RAJA supported reduction types: min, max,
-sum, min-loc, max-loc, and shows how they are used. All RAJA reduction types
-are defined and used similarly.
+In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum 
+reduction type. The following example uses all supported RAJA reduction types: 
+min, max, sum, min-loc, max-loc.
 
-.. note:: Multiple RAJA reductions can be combined in any RAJA kernel execution
-          constructs, and the reductions can be combined with any other
-          kernel operations. 
+.. note:: Multiple RAJA reductions can be combined in any RAJA loop kernel 
+          execution method, and reduction operations can be combined with 
+          any other kernel operations. 
 
-We start by allocating an array, using CUDA Unified Memory if CUDA is enabled,
-and initializing its values in a manner that makes it easy to show what the
-different reduction types do:
+We start by allocating an array (the memory manager in the example uses 
+CUDA Unified Memory if CUDA is enabled) and initializing its values in a 
+manner that makes it easy to show what the different reduction types do:
 
 .. literalinclude:: ../../../../examples/ex7-reductions.cpp
                     :lines: 51-76
@@ -64,11 +63,10 @@ A sequential kernel that exercises all RAJA sequential reduction types is:
 .. literalinclude:: ../../../../examples/ex7-reductions.cpp
                     :lines: 99-118
 
-Note that each reduction takes an initial value at construction and that 
-reduced values are retrieved after the kernel completes  by using an 
-appropriate 'get' method. The 'get()' method returns the reduced value for
-each reduction type; the 'getLoc()' method returns the index at which the 
-reduced value was observed for min-loc and max-loc reductions
+Note that each reduction takes an initial value at construction and the 
+reduced value for each type is retrieved after the kernel completes by calling 
+a 'get()' method. The min-loc/max-loc index values are retrived using
+'getLoc()' methods.
 
 For parallel multi-threading execution via OpenMP, the example can be run 
 by replacing the execution and reduction policies policies with:
