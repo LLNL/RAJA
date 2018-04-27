@@ -27,8 +27,9 @@ as they need. Available RAJA reduction types are described in this section.
 
 .. note:: * All RAJA reduction types are in the namespace ``RAJA``.
           * Each RAJA reduction type is templated on an *reduction policy* 
-            that **must be compatible** with the loop kernel execution policy
-            and a value type for the reduction variable.
+            and a value type for the reduction variable. The reduction policy
+            **must be compatible** with the loop kernel execution policy
+            where the reduction is used.
           * Each RAJA reduction type accepts an initial reduction value at
             construction.
           * Each RAJA reduction type has 'get' methods to access its reduced
@@ -41,15 +42,15 @@ Other examples of RAJA reductions can be found in the
 Reduction Types
 ----------------
 
-* ``ReducSum< reduce_policy, data_type >`` - Sum reduction.
+* ``ReduceSum< reduce_policy, data_type >`` - Sum of values.
 
-* ``ReducMin< reduce_policy, data_type >`` - Min reduction.
+* ``ReduceMin< reduce_policy, data_type >`` - Min value.
 
-* ``ReducMax< reduce_policy, data_type >`` - Max reduction.
+* ``ReduceMax< reduce_policy, data_type >`` - Max value.
 
-* ``ReducMinLoc< reduce_policy, data_type >`` - Min reduction that provides a loop index where the minimum was found.
+* ``ReduceMinLoc< reduce_policy, data_type >`` - Min value and a loop index where the minimum was found.
 
-* ``ReducMaxLoc< reduce_policy, data_type >`` - Max reduction that provides a loop index where the maximum was found.
+* ``ReduceMaxLoc< reduce_policy, data_type >`` - Max value and a loop index where the maximum was found.
 
 .. note:: * When ``ReduceMinLoc`` and ``ReduceMaxLoc`` are used in a sequential
             execution context, the loop index where the min/max was found is
@@ -104,20 +105,25 @@ Reduction Policies
             an OpenMP reduction policy must be used when the execution policy 
             is an OpenMP policy, and so on.
 
-* ``seq_reduce``  - Sequential policy for reductions used with sequential and 'loop' execution policies. Currently, RAJA reductions with SIMD execution policies are not defined.
+Also
+
+.. note:: RAJA reductions used with SIMD execution policies are not guranteed
+          to generate correct results.
+
+* ``seq_reduce``  - Sequential policy for reductions used with sequential and 'loop' execution policies. 
 
 * ``omp_reduce``  - Thread-safe OpenMP reduction policy for use with OpenMP execution policies.
 
-* ``omp_reduce_ordered``  - Thread-safe OpenMP reduction policy that generates reproducible results; e.g., with sum or min/max-loc reductions.
+* ``omp_reduce_ordered``  - Thread-safe OpenMP reduction policy that generates reproducible results; e.g., with sum or min-loc/max-loc reductions.
 
-* ``omp_target_reduce``  - Thread-safe OpenMP reduction policy for target offload execution policies (e.g., when using OpenMP4.5 to run on a GPU).
+* ``omp_target_reduce``  - Thread-safe OpenMP reduction policy for target offload execution policies (i.e., when using OpenMP4.5 to run on a GPU).
 
 * ``tbb_reduce``  - Thread-safe TBB reduction for use with TBB execution policies.
 
 * ``cuda_reduce`` - Thread-safe reduction policy for use with CUDA execution policies.
 
-* ``cuda_reduce_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value.
+* ``cuda_reduce_async`` - Reduction policy for use with CUDA execution policies that may not use cuda device synchronization when retrieving final reduction value.
 
 * ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that may use CUDA atomic operations in the reduction.
 
-* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value and which may use CUDA atomic operations in the reduction.
+* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use cuda device synchronization when retrieving final reduction value and which may use CUDA atomic operations in the reduction.
