@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _pi-label:
+.. _atomichist-label:
 
 --------------------------------------------------
 Computing a Histogram with Atomic Operations

@@ -18,8 +18,9 @@
 Atomics
 ========
 
-To avoid race conditions at specific memory locations, RAJA provides 
-portable atomic operations, which are described in this section.
+RAJA provides portable atomic operations that can be used to update values
+at arbitrary memory locations while avoiding data races. They are described
+in this section.
 
 -----------------
 Atomic Operations
@@ -107,10 +108,10 @@ After this operation, 'sum' will be equal to 'N'.
 AtomicRef
 ^^^^^^^^^^^^^^^^^^^^
 
-RAJA also provides an atomic interface similar to C++ 'std::atomic', but for 
-arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` provides
-an object-oriented interface to the atomic methods described above. For 
-example, after the following operations:: 
+RAJA also provides an atomic interface similar to C++ 'std::atomic', but which
+works for arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` 
+provides an object-oriented interface to the atomic methods described above. 
+For example, after the following operations:: 
 
   double val = 2.0;
   RAJA::atomic::AtomicRef<double,  RAJA::seq_atomic > sum(&val);
@@ -121,10 +122,11 @@ example, after the following operations::
 
 the value of 'val' will be 5.
 
-Note that the operators that the 'AtomicRef' class provide return the object
-that holds the address of the data given passes the constructor. If you need 
-to keep the original value of the data before the atomic call, you need to 
-use the atomic methods listed above.
+Note that the operations provided by the 'AtomicRef' class return the object
+that holds the address of the data given to the constructor. It will likely 
+change with each atomic update call. If you need to keep the original value 
+of the data before an atomic call, you need to use the atomic methods listed 
+above and not the ``RAJA::atomic::AtomicRef`` interface.
 
 ---------------
 Atomic Policies
@@ -132,7 +134,7 @@ Atomic Policies
 
 .. note:: * All RAJA atomic policies are in the namespace ``RAJA::atomic``.
           * There are no RAJA atomic policies for TBB (Intel Threading Building 
-            Blocks) execution contexts.
+            Blocks) execution contexts currently.
 
 * ``seq_atomic``     - Policy for use in sequential execution contexts, primarily for consistency with parallel policies. Note that sequential atomic operations are not protected and will likely produce incorrect results when used in a parallel execution context.
 
@@ -158,5 +160,5 @@ context and does the right thing. Similarly, if the 'forall' method used
 an OpenMP execution policy, the OpenMP version of the atomic operation 
 would be used.
 
-A complete working code that shows RAJA atomic usage can be found in 
-``<build-dir>/examples/ex8-pi-reduce_vs_atomic.cpp``. 
+A complete working example code that shows RAJA atomic usage can be found in 
+:ref:`atomichist-label`.

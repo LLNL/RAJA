@@ -104,11 +104,8 @@ Reduction Policies
             policy must be used when the execution policy is a CUDA policy, 
             an OpenMP reduction policy must be used when the execution policy 
             is an OpenMP policy, and so on.
-
-Also
-
-.. note:: RAJA reductions used with SIMD execution policies are not guranteed
-          to generate correct results.
+          * **RAJA reductions used with SIMD execution policies are not 
+            guranteed to generate correct results.**
 
 * ``seq_reduce``  - Sequential policy for reductions used with sequential and 'loop' execution policies. 
 
