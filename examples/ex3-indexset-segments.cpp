@@ -38,6 +38,7 @@
  *    - `forall` loop iteration template method
  *    -  Index range segment 
  *    -  Index list segment 
+ *    -  Strided index range segment 
  *    -  IndexSet segment container
  *    -  Hierarchical execution policies
  *
@@ -172,6 +173,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N);
 
+//----------------------------------------------------------------------------//
+//
+// Alternatively, we can also use a RAJA strided range segment to run the
+// loop in reverse.
+//
+  std::cout << "\n Running RAJA daxpy with indices reversed via negatively strided range segment...\n";
+
+  std::memcpy( a, a0, N * sizeof(double) );
+
+//
+// Reverse the order of indices in the vector
+//
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeStrideSegment(N-1, -1, -1), [=] (IdxType i) {
+    a[i] += b[i] * c;
+  });
+
+  checkResult(a, aref, N);
+//printResult(a, N);
 
 //----------------------------------------------------------------------------//
 
