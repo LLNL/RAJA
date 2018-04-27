@@ -26,6 +26,8 @@
 #ifndef RAJA_VIEW_HPP
 #define RAJA_VIEW_HPP
 
+#include <type_traits>
+
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
@@ -46,9 +48,16 @@ struct View {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
+  using nc_value_type = typename std::remove_const<value_type>::type;
+  using nc_pointer_type = typename std::add_pointer<
+                              typename std::remove_const<
+                                  typename std::remove_pointer<pointer_type>::type
+                              >::type
+                          >::type;
+  using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
+
   layout_type const layout;
   pointer_type data;
-
 
   template <typename... Args>
   RAJA_INLINE constexpr View(pointer_type data_ptr, Args... dim_sizes)
@@ -58,6 +67,15 @@ struct View {
 
   RAJA_INLINE constexpr View(pointer_type data_ptr, layout_type &&layout)
       : layout(layout), data(data_ptr)
+  {
+  }
+
+  RAJA_INLINE constexpr View(View const &) = default;
+
+  template <bool IsConstView = std::is_const<value_type>::value>
+  RAJA_INLINE constexpr View(
+          typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
+      : layout(rhs.layout), data(rhs.data)
   {
   }
 

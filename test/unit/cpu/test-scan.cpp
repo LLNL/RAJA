@@ -36,10 +36,10 @@ const int N = 32000;
 
 using ExecTypes = std::tuple<
     RAJA::seq_exec
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined (RAJA_ENABLE_OPENMP)
     ,RAJA::omp_parallel_for_exec
 #endif
-#if defined(RAJA_ENABLE_TBB)
+#if defined (RAJA_ENABLE_TBB)
     ,RAJA::tbb_for_exec
 #endif
 >;
