@@ -61,7 +61,7 @@ stride-1 (i.e., contiguous) range of indices (figure below).
 
 .. figure:: ../figures/RangeSegment.png
 
-   A RAJA range segment defines a stride-1 index range [beg, end).
+   A range segment defines a stride-1 index range [beg, end).
 
 One can create an explicitly-typed range segment or one with the default
 ``RAJA::Index_type`` index type. For example,::
@@ -80,7 +80,7 @@ stride, including negative stride (figure below).
 
 .. figure:: ../figures/RangeStrideSegment.png
 
-   A RAJA range segment defines an index range with arbitrary stride [beg, end, stride).
+   A range-stride segment defines an index range with arbitrary stride [beg, end, stride).
 
 One can create an explicitly-typed strided range segment or one with the 
 default ``RAJA::Index_type`` index type. For example,::
@@ -118,6 +118,8 @@ indices, akin to an indirection array (figure below).
 
 .. figure:: ../figures/ListSegment.png
 
+   A list segment defines arbitrary collection of indices. Here, we have a list segment with 5 irregularly-spaced indices.
+
 A list segment is created by passing an array of integral values to its
 constructor. For example::
 
@@ -154,8 +156,14 @@ IndexSets
 --------------
 
 A ``RAJA::TypedIndexSet`` is a container that can hold an arbitrary collection
-of segment objects of arbitrary type. An index set object can be passed to any 
-RAJA loop execution template to execute all of its segments. For example,::
+of segment objects of arbitrary type. 
+
+.. figure:: ../figures/IndexSet.png
+
+   An index set with 2 range segments and one list segment.
+
+An index set object can be passed to any RAJA loop execution template to 
+execute all of its segments. For example,::
 
    // Create an index set that can hold range segments (default index type)
    // and list segments (int type) 
