@@ -88,7 +88,7 @@ and get the same result since the loop is `data-parallel`:
                     :lines: 165-171
 
 Alternatively, we can also use a RAJA strided range segment to run the loop 
-in reverse by giving it a stride of -1. For example::
+in reverse by giving it a stride of -1. For example:
 
 .. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
                     :lines: 188-190
