@@ -54,7 +54,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   int M = 10;
   int N = 30;
-  RAJA::RangeSegment array_range(0, N);
+  RAJA::TypedRangeSegment<int> array_range(0, N);
 
   int* array = memoryManager::allocate<int>(N);
   int* bins = memoryManager::allocate<int>(M);
