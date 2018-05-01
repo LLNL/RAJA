@@ -22,14 +22,15 @@
 #include "memoryManager.hpp"
 
 //#define A(elem, row, col) A[col + row*NCOLS + elem*MAT_ENTRIES]
-#define A(elem, row, col) A[col + NCOLS*(row + NROWS*elem)]
-#define A2(elem, row, col) A2[elem + Nelem*(col + row*NCOLS)]
+#define A2(elem, row, col) A2[col + NCOLS*(elem + Nelem*row)]
 
-#define B2(elem, row, col) B2[elem + Nelem*(col + row*NCOLS)]
+//#define B(col,row, elem) B[col + NCOLS*(row + elem*NROWS)]
+#define B2(elem, row, col) B2[col + NCOLS*(elem + Nelem*row)]
 
 const int NROWS = 3;
-const int NCOLS = 3;
-const int MAT_ENTRIES = 9;
+const int NCOLS = 4;
+const int Nelem = 2;
+const int MAT_ENTRIES = NROWS*NCOLS;
 
 using RAJA::Index_type;
 void compareOutput(double *C, double *CComp, Index_type Nelem);
@@ -37,7 +38,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   srand(time(NULL));
-  const int Nelem = 2;
 
   //Layout 1
   double * A  = memoryManager::allocate<double>(Nelem*MAT_ENTRIES);
@@ -48,12 +48,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double * A2 = memoryManager::allocate<double>(Nelem*MAT_ENTRIES);
   double * B2 = memoryManager::allocate<double>(Nelem*MAT_ENTRIES);
 
-  //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<0,1,2> >::get() );
+  //#define A2(elem, row, col) A2[elem + Nelem*(col  + row*NCOLS)]
+  //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<1,2,0> >::get() );
+
+  //#define A2(elem, row, col) A2[elem + Nelem*(row + NROWS*col)]
   //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<2,1,0> >::get() );
+  
+  //#define A2(elem, row, col) A2[col + NCOLS*(row + NROWS*elem)]
   //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<0,1,2> >::get() );
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<2,0,1> >::get() );
+  
+  //#define A(elem, row, col) A[col + NCOLS*(elem + Nelem*row)]
+  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<1,0,2> >::get() );
+  
+  //#define A2(elem, row, col) A2[row + NROWS*(elem + Nelem*col)]
+  //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<2,0,1> >::get() );
+
+  //#define A2(elem, row, col) A2[row + NROWS*(col + NCOLS*elem)]
   //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<0,2,1> >::get() );
-  //auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<1,0,2> >::get() );
+
+
   
   RAJA::View<double, RAJA::Layout<3> > B2view(B2, layout);
 
@@ -64,21 +77,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     {
       for(Index_type row=0; row<NROWS; ++row)
         {
-          for(Index_type col=0; col<NROWS; ++col)
+          for(Index_type col=0; col<NCOLS; ++col)
             {
-	      Index_type id = col + row*NROWS;
-              A(e,row,col)     = id;
-	      Bview(e,row,col) = id;
+              Index_type id = col + NCOLS*(row *Nelem);
+              //A(e,row,col)     = id;
+              //Bview(e,row,col) = id;
 
-	      A2(e,row,col) = id;
-	      B2view(e,row,col) = id;
+              A2(e,row,col) = id;
+
+              A2(e,row,col) = id;
+              B2view(e,row,col) = id;
+              //B2view(col,row,e) = id;
             }
         }
     }
   //--------------------------------------------
 
   std::cout<<"Permute 1"<<std::endl;
-  compareOutput(A, B, Nelem); 
+  //compareOutput(A, B, Nelem); 
   std::cout<<"------- \n \n"<<std::endl;
 
 
@@ -86,17 +102,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   compareOutput(A2, B2, Nelem); 
   std::cout<<"------- \n \n"<<std::endl;
 
-  for(Index_type e = 0; e<Nelem; ++e)
-    {      
-      for(Index_type r=0; r<NROWS; ++r)
+  for(Index_type e=0; e<Nelem; ++e)
+    {
+      for(Index_type row=0; row<NROWS; ++row)
         {
-          for(Index_type c=0; c<NCOLS; ++c)
+          for(Index_type col=0; col<NCOLS; ++col)
             {
-	      //Index_type id = c + NROWS*(r + NCOLS*e);
-	      //std::cout<<B2[id]<<" ";
-	      std::cout<<B2(e,r,c)<<" ";
+              //Index_type id = c + NROWS*(r + NCOLS*e);
+              //std::cout<<B2view(e,row,col)<<" ";
+              std::cout<<B2(e,row,col)<<" ";
             } 
-	  std::cout<<" "<<std::endl;
+          std::cout<<" "<<std::endl;
         }
       std::cout<<"-----------------------"<<std::endl;
     }
@@ -118,7 +134,7 @@ void compareOutput(double *C, double *CComp, Index_type Nelem)
         {
           for(Index_type c=0; c<NCOLS; ++c)
             {
-	      Index_type id = c + NROWS*(r + NCOLS*e);
+              Index_type id = c + NROWS*(r + NCOLS*e);
               double terr = std::abs(C[id] - CComp[id]);
               if((terr) > 1e-8)
                 {
