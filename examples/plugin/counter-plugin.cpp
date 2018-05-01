@@ -22,15 +22,15 @@ class CounterPlugin :
 {
   public:
   void 
-  preLaunch(RAJA::Platform p) {
-    if (p == RAJA::Platform::host)
+  preLaunch(RAJA::util::PluginContext p) {
+    if (p.platform == RAJA::Platform::host)
       std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_counter << " time!" << std::endl;
     else
       std::cout << " [CounterPlugin]: Launching device kernel for the " << ++device_counter << " time!" << std::endl;
   }
 
   void 
-  postLaunch(RAJA::Platform p) {
+  postLaunch(RAJA::util::PluginContext p) {
   }
 
   private:

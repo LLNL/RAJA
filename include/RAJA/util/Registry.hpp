@@ -36,7 +36,7 @@ namespace util {
 
     const std::string& getName() const { return Name; }
     const std::string& getDesc() const { return Desc; }
-    std::shared_ptr<T> instantiate() const { return object; }
+    std::shared_ptr<T> get() const { return object; }
   };
 
   /// A global registry used in conjunction with static constructors to make
@@ -77,7 +77,7 @@ namespace util {
     /// This function is exported by the executable and called by the plugin to
     /// add a node to the executable's registry. Therefore it's not defined here
     /// to avoid it being instantiated in the plugin and is instead defined in
-    /// the executable (see LLVM_INSTANTIATE_REGISTRY below).
+    /// the executable (see RAJA_INSTANTIATE_REGISTRY below).
     static void add_node(node *N);
 
     /// Iterators for registry entries.
@@ -96,18 +96,11 @@ namespace util {
     };
 
     // begin is not defined here in order to avoid usage of an undefined static
-    // data member, instead it's instantiated by LLVM_INSTANTIATE_REGISTRY.
+    // data member, instead it's instantiated by RAJA_INSTANTIATE_REGISTRY.
     static iterator begin();
     static iterator end()   { return iterator(nullptr); }
 
-    /// A static registration template. Use like such:
-    ///
-    ///   Registry<Collector>::Add<FancyGC>
-    ///   X("fancy-gc", "Newfangled garbage collector.");
-    ///
-    /// Use of this template requires that:
-    ///
-    ///  1. The registered subclass has a default constructor.
+    /// A static registration template.
     template <typename V>
     class Add {
       entry Entry;

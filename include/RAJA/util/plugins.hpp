@@ -15,6 +15,7 @@
 #ifndef RAJA_plugins_HPP
 #define RAJA_plugins_HPP
 
+#include "RAJA/util/PluginContext.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 
 namespace RAJA {
@@ -22,26 +23,26 @@ namespace util {
 
 inline
 void
-callPreLaunchPlugins(Platform p)
+callPreLaunchPlugins(PluginContext p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).instantiate()->preLaunch(p);
+    (*plugin).get()->preLaunch(p);
   }
 
 }
 
 inline
 void
-callPostLaunchPlugins(Platform p)
+callPostLaunchPlugins(PluginContext p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).instantiate()->postLaunch(p);
+    (*plugin).get()->postLaunch(p);
   }
 }
 

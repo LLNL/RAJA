@@ -12,32 +12,19 @@
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-#ifndef RAJA_PluginStrategy_HPP
-#define RAJA_PluginStrategy_HPP
+#ifndef RAJA_plugin_context_HPP
+#define RAJA_plugin_context_HPP
 
-#include "RAJA/util/PluginContext.hpp"
-#include "RAJA/util/Registry.hpp"
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA {
 namespace util {
 
-
-class PluginStrategy 
-{
-  public:
-    PluginStrategy();
-
-    virtual ~PluginStrategy() = default;
-
-    virtual void preLaunch(PluginContext p) = 0;
-
-    virtual void postLaunch(PluginContext p) = 0;
+struct PluginContext {
+  Platform platform;
 };
-
-using PluginRegistry = Registry<PluginStrategy>;
 
 } // closing brace for util namespace
 } // closing brace for RAJA namespace
-
 
 #endif

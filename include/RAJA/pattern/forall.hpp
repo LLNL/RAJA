@@ -400,17 +400,16 @@ RAJA_INLINE concepts::
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
 
-  util::callPreLaunchPlugins(detail::get_platform<ExecutionPolicy>::value);
+  util::callPreLaunchPlugins(p_context); 
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
 
-  util::callPostLaunchPlugins(detail::get_platform<ExecutionPolicy>::value);
-
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
 }
 
 //
