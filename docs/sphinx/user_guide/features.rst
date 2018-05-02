@@ -26,7 +26,7 @@ The following sections describe key aspects of the main RAJA features.
    feature/loop_basic
    feature/policies
    feature/iteration_spaces
+   feature/view
    feature/reduction
    feature/atomic
-   feature/view
    feature/scan
