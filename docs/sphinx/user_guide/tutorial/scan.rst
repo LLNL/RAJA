@@ -30,6 +30,7 @@ In the examples, we demonstrate a variety of scan operations supported by RAJA.
 We show how different scan operations can be performed by passing different
 RAJA operators to the RAJA scan template methods. Each operator is a template
 type, where the template argument is the type of the values it operates on.
+For a summary of RAJA scan functionality, see :ref:`scan-label`. 
 
 In the following discussion, we present examples of RAJA sequential, OpenMP,
 and CUDA scan operations. All examples use the same integer arrays for input
