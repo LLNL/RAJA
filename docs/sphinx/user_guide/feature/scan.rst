@@ -33,7 +33,7 @@ two flavors: *inclusive* and *exclusive*.
 
 An **inclusive scan** takes the input sequence
 
-   x = { x:sub:`0`, x:sub:`1`, x:sub:`2`, ... }
+   x = { x\ :sub:`0`\, x\ :sub:`1`\, x\ :sub:`2`\, ... }
 
 and calculates the output sequence::
 
