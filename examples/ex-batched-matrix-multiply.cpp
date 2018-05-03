@@ -147,12 +147,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
   if(tMin < myMin) myMin = tMin;
   }
-  std::cout<<"Matrix Multiplication with layout 1 run time : "<<myMin<<" seconds"<<std::endl;
+  std::cout<<"Matrix Multiplication with layout 1 on CPU run time : "<<myMin<<" seconds"<<std::endl;
 //-------------------------------------------
 
 //-------------------------------------------
 //Matrix multiply with layout 2 on the CPU
 //
+  timer.reset();
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     
@@ -163,7 +164,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
   if(tMin < myMin) myMin = tMin;
   }
-  std::cout<<"Matrix Multiplication with layout 2 run time : "<<myMin<<" seconds"<<std::endl;
+  std::cout<<"Matrix Multiplication with layout 2 on CPU run time : "<<myMin<<" seconds"<<std::endl;
 //---------------------------------------------
 
 //
@@ -175,6 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //-------------------------------------------
 //Matrix multiply with layout 1 on the GPU
 //
+  timer.reset();
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     
@@ -186,12 +188,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
   if(tMin < myMin) myMin = tMin;
   }
-  std::cout<<"Matrix Multiplication with layout 1 run time : "<<myMin<<" seconds"<<std::endl;
+  std::cout<<"Matrix Multiplication with layout 1 on GPU run time : "<<myMin<<" seconds"<<std::endl;
 //-------------------------------------------
 
 //-------------------------------------------
 //Matrix multiply with layout 2 on the GPU
 //
+  timer.reset();
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     
@@ -203,7 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
   if(tMin < myMin) myMin = tMin;
   }
-  std::cout<<"Matrix Multiplication with layout 2 run time : "<<myMin<<" seconds"<<std::endl;
+  std::cout<<"Matrix Multiplication with layout 2 on GPU run time : "<<myMin<<" seconds"<<std::endl;
 //---------------------------------------------
 
 //
