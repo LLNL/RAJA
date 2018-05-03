@@ -104,9 +104,9 @@ features (akin to a reference guide).
    :maxdepth: 2
 
    getting_started
-   tutorial
    features
-   plugins
+   tutorial
    config_options
+   plugins
    contributing
    raja_license
