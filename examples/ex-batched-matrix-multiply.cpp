@@ -53,16 +53,14 @@ using GPUPol = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 #endif
 using CPUPol = RAJA::loop_exec;
 
-
-
 //Dimensions of matrices
 const Index_type NCOLS = 3;
 const Index_type NROWS = 3;
-const Index_type NMAT  = 80000000;
+const Index_type NMAT  = 800000;
 const Index_type NELEM = NCOLS*NROWS*NMAT;
 
 //Number of iterations
-const int NITER = 21;
+const int NITER = 2;
 
 //
 // Functions for comparing outputs
@@ -182,7 +180,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
   timer.start();
   multiplyViewGPU<GPUPol>(Aview,Bview,Cview,NMAT);
-  cudaDeviceSyncronize();
+  cudaDeviceSynchronize();
   timer.stop();
   
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -199,7 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
   timer.start();
   multiplyViewGPU<GPUPol>(Al2view,Bl2view,Cl2view,NMAT);
-  cudaDeviceSyncronize();
+  cudaDeviceSynchronize();
   timer.stop();
   
   RAJA::Timer::ElapsedType tMin = timer.elapsed();
