@@ -65,6 +65,7 @@ and calculates the output sequence:
 using the recursive definition
 
    y\ :sub:`0`\ = x\ :sub:`0`
+
    y\ :sub:`i`\ = y\ :sub:`i-1`\ op x\ :sub:`i`\, for each i > 0
 
 An **exclusive scan** is similar, but the output of an exclusive scan is 
@@ -74,6 +75,7 @@ rest of the output sequence is the same as inclusive scan, but shifted one
 position to the right; i.e.,
 
    y\ :sub:`0`\ = op\ :sub:`identity`
+
    y\ :sub:`i`\ = y\ :sub:`i-1` op x\ :sub:`i-1`\, for each i > 0
 
 If you would like more information about scan operations, a good overview of 
