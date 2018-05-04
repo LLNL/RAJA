@@ -19,16 +19,17 @@ Indices, Segments, and IndexSets
 ================================
 
 Loop variables and their associated iteration spaces are fundamental to 
-loop kernels with RAJA. RAJA provides iteration space types that serve as
-flexible building blocks that can be used to form a variety of loop iteration
-patterns. For example, these types can be used to aggregate, partition,
-(re)order, etc. loop iterates. Here, we introduce RAJA index and iteration 
-space concepts and types.
+writing loop kernels in RAJA. RAJA provides some basic iteration space types 
+that serve as flexible building blocks that can be used to form a variety 
+of loop iteration patterns. For example, these types can be used to 
+aggregate, partition, (re)order, etc. a set of loop iterates. In this
+section, we introduce RAJA index and iteration space concepts and types.
 
-More extensive examples of RAJA iteration space usage can be found in the
+More examples of RAJA iteration space usage can be found in the
 :ref:`indexset-label` and :ref:`vertexsum-label` sections of the tutorial.
 
-.. note:: All types described here are located in the RAJA namespace.
+.. note:: All RAJA iteration space types described here are located in the 
+          namespace ``RAJA``.
 
 -------
 Indices
@@ -38,29 +39,30 @@ Just like traditional C and C++ for-loops, RAJA uses index variables to
 identify loop iterates; e.g., a lambda expression loop body takes an index
 variable argument. RAJA containers and methods are templated in
 a sufficiently general way to allow users to use any integral type for an
-index variable. In most cases, the index variable type is explicitly specified
+index variable. In most cases, the index variable type is explicitly defined
 by users. However, RAJA also provides a ``RAJA::Index_type`` type, which is 
-used as a default in some circumstances for convenience (i.e., users can
-use an alias to a typed construct without specifying the type). The
-``RAJA::Index_type`` type is an alias to the C++ type 'std::ptrdiff_', which 
-is appropriate for most compilers to generate various loop-level optimizations.
+used as a default in some circumstances for convenience. For example, this
+allows use of common aliases to typed constructs without specifying the type. 
+The ``RAJA::Index_type`` type is an alias to the C++ type 'std::ptrdiff_t', 
+which is appropriate for most compilers to generate useful loop-level 
+optimizations.
 
 Users can change the type of ``RAJA::Index_type`` by editing the RAJA
-``types.hpp`` header file.
+``RAJA/include/RAJA/util/types.hpp`` header file.
 
 -------------
 Segments
 -------------
 
 A RAJA 'Segment' is a container of loop iterates that one wants to 
-execute as a unit. RAJA provides a few important Segment types for
-contiguous index ranges, strided ranges, and arbitrary lists of indices.
+execute as a unit. RAJA provides Segment types for contiguous index ranges, 
+constant (non-unit) stride ranges, and arbitrary lists of indices.
 
 Stride-1 Segments
 ^^^^^^^^^^^^^^^^^^^
 
 A ``RAJA::TypedRangeSegment`` is the fundamental type for representing a 
-stride-1 (i.e., contiguous) range of indices (figure below).
+stride-1 (i.e., contiguous) range of indices.
 
 .. figure:: ../figures/RangeSegment.png
 
@@ -78,8 +80,8 @@ One can create an explicitly-typed range segment or one with the default
 Strided Segments
 ^^^^^^^^^^^^^^^^^^^
 
-A ``RAJA::TypedRangeStrideSegment`` is used to define a range with non-unit
-stride, including negative stride (figure below).
+A ``RAJA::TypedRangeStrideSegment`` defines a range with a constant stride
+that is given explicitly stride, including negative stride.
 
 .. figure:: ../figures/RangeStrideSegment.png
 
@@ -91,8 +93,7 @@ default ``RAJA::Index_type`` index type. For example,::
    // A stride-2 index range [beg, end, 2) of type int.
    RAJA::TypedRangeStrideSegment<int> stride2_range(beg, end, 2);
 
-   // A index range with -1 stride [0, N-1, -1) of the RAJA::Index_type 
-   // default type
+   // A index range with -1 stride [0, N-1, -1) of the RAJA::Index_type default type
    RAJA::RangeStrideSegment neg1_range( N-1, -1, -1);
 
 Using a negative stride range in a RAJA loop traversal template will run the
@@ -106,22 +107,24 @@ will print the values::
 
    N-1  N-2  N-3 .... 1 0 
 
-The following items are worth noting when using RAJA strided range types.
+RAJA strided ranges support both positive and negative stride values. The
+following items are worth noting:
 
-.. note:: * TypedRangeStrideSegment allows for positive or negative strides
-          * For stride > 0, begin() > end() implies size()==0
-          * For stride < 0, begin() < end() implies size()==0
-          * Stride zero is undefined
+.. note:: When using a RAJA strided range, no loop iterations will be run
+          under the following conditions:
+            * Stride > 0 and begin > end
+            * Stride < 0 and begin < end
+            * Stride == 0
 
 List Segments
 ^^^^^^^^^^^^^^
 
 A ``RAJA::TypedListSegment`` is used to define an arbitrary set of loop 
-indices, akin to an indirection array (figure below).
+indices, akin to an indirection array.
 
 .. figure:: ../figures/ListSegment.png
 
-   A list segment defines arbitrary collection of indices. Here, we have a list segment with 5 irregularly-spaced indices.
+   A list segment defines an arbitrary collection of indices. Here, we have a list segment with 5 irregularly-spaced indices.
 
 A list segment is created by passing an array of integral values to its
 constructor. For example::
@@ -159,23 +162,26 @@ IndexSets
 --------------
 
 A ``RAJA::TypedIndexSet`` is a container that can hold an arbitrary collection
-of segment objects of arbitrary type. 
+of segment objects of arbitrary type as illustrated in the following figure.
 
 .. figure:: ../figures/IndexSet.png
 
    An index set with 2 range segments and one list segment.
 
-An index set object can be passed to any RAJA loop execution template to 
-execute all of its segments. For example,::
+We can create an index set that describes an iteration space like this as
+follows::
 
-   // Create an index set that can hold range segments (default index type)
-   // and list segments (int type) 
-   RAJA::TypedIndexSet< RAJA::RangeSegment, RAJA::TypedListSegment<int> > iset;
+   // Create an index set that can hold range and list segments with the
+   // default index type
+   RAJA::TypedIndexSet< RAJA::RangeSegment, RAJA::ListSegment > iset;
 
    // Add two range segments and one list segment to the index set
    iset.push_back( RAJA::RangeSegment( ... ) );
-   iset.push_back( RAJA::TypedListSegment<int>(...) );
+   iset.push_back( RAJA::ListSegment(...) );
    iset.push_back( RAJA::RangeSegment( ... ) );
+
+Now that we've created this index set object, we can pass it to any RAJA 
+loop execution template to execute the indices defined by all of its segments::
 
    // Define an index set execution policy type that will iterate over
    // its segments in parallel (OpenMP) and execute each segment sequentially 
@@ -185,6 +191,6 @@ execute all of its segments. For example,::
    // Run a kernel with iterates defined by the index set
    RAJA::forall<ISET_EXECPOL>(iset, [=] (int i) { ... });
 
-will execute a loop kernel in three chunks defined by two range segments 
-and one list segment. The segments will be iterated over in
+The loop iterations will execute in three chunks defined by the two range 
+segments and one list segment. The segments will be iterated over in
 parallel using OpenMP, and each segment will execute sequentially.
