@@ -21,6 +21,9 @@ Scans
 RAJA provides portable parallel scan operations, which are basic 
 parallel algorithm building blocks. They are described in this section.
 
+Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
+scan operations.
+
 -----------------
 Scan Operations
 -----------------
@@ -129,5 +132,3 @@ types of scans, such as:
 
 .. note:: * All RAJA scan operators are in the namespace ``RAJA::operators``.
 
-Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
-scan operations.
