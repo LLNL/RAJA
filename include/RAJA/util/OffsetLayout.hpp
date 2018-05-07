@@ -113,6 +113,7 @@ struct OffsetLayout
 };
 
 template <size_t n_dims, typename IdxLin = Index_type>
+RAJA_HOST_DEVICE
 auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
                         const std::array<IdxLin, n_dims>& upper)
     -> OffsetLayout<n_dims, IdxLin>
@@ -121,6 +122,7 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
 }
 
 template <size_t Rank, typename IdxLin = Index_type>
+RAJA_HOST_DEVICE
 auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
                                  const std::array<IdxLin, Rank>& upper,
                                  const std::array<IdxLin, Rank>& permutation)
