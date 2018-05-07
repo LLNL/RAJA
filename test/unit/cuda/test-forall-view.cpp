@@ -105,3 +105,51 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
     EXPECT_EQ(arr_h[i], test_val);
   }
 }
+
+CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
+{
+  
+  const Index_type DIM=2;
+  const Index_type N = 2;
+  const Index_type boxSize = (N+2)*(N+2); 
+  Index_type *box;
+  Index_type y[N+2][N+2];
+  
+  for(Index_type row=0; row<N+2; ++row){
+    for(Index_type col=0; col<N+2; ++col){      
+      y[row][col] = 0;
+    }
+  }
+
+  for(Index_type row=1; row<N+1; ++row){
+    for(Index_type col=1; col<N+1; ++col){      
+      y[row][col] = 1;
+    }
+  }
+  
+
+
+  cudaMallocManaged((void**)&box, boxSize*sizeof(Index_type), cudaMemAttachGlobal);
+
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{-1,-1}}, {{2,2}});
+  RAJA::View<Index_type, RAJA::OffsetLayout<DIM>>boxview(box,layout);
+  
+  forall<RAJA::cuda_exec<block_size>>
+    (RAJA::RangeSegment(0, N*N), 
+     [=] __device__(Index_type i) { 
+      const int row = i%N; 
+      const int col = i/N;
+      boxview(row,col) = 1;
+      
+  });  
+
+
+  for (Index_type row = 0; row < N; ++row) {
+    for (Index_type col = 0; col < N; ++col) {      
+      int id = col + N*row;
+      EXPECT_EQ(y[row][col], box[id]);
+    }
+  }
+
+
+}
