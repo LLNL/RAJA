@@ -47,6 +47,12 @@ namespace sequential
 /// Segment execution policies
 ///
 
+struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                          Pattern::region,
+                                                          Launch::sync,
+                                                          Platform::host> {
+};
+
 struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                         Pattern::forall,
                                                         Launch::undefined,
@@ -74,6 +80,7 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
 }  // end namespace sequential
 
 using policy::sequential::seq_exec;
+using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_reduce;
 
