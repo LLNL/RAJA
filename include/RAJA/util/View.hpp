@@ -68,7 +68,10 @@ struct View {
   {
   }
 
-  RAJA_INLINE constexpr View(View const &) = default;
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
+      : layout(V.layout), data(V.data)
+  {
+  }
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
