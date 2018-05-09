@@ -107,6 +107,27 @@ RAJA_INLINE void forall_impl(const omp_for_exec&,
 }
 
 ///
+/// OpenMP parallel for simd policy implementation
+///
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const omp_for_simd_exec&,
+                             Iterable&& iter,
+                             Func&& loop_body)
+{
+  RAJA_EXTRACT_BED_IT(iter);
+
+#if defined (RAJA_COMPILER_MSVC)
+#pragma omp for
+#else
+#pragma omp for simd
+#endif
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
+  }
+}
+
+///
 /// OpenMP parallel for static policy implementation
 ///
 
