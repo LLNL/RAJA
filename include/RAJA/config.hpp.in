@@ -277,6 +277,13 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
 #cmakedefine RAJA_HAVE_MM_MALLOC
 
+//
+//Creates a general framework for compiler alignment hints
+//
+// Example usage:
+// double *a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,10*sizeof(double));
+// double *y = RAJA::align_hint
+
 template<typename T>
 RAJA_INLINE
 T * align_hint(T * x)
