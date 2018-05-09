@@ -30,7 +30,11 @@ namespace sequential
  *
  * \code
  *
- * RAJA::region<seq_region>(loop body);
+ * RAJA::region<seq_region>([=](){
+ *
+ *  // region body - may contain multiple loops
+ *
+ *  });
  *
  * \endcode
  * 

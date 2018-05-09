@@ -30,7 +30,11 @@ namespace omp
  *
  * \code
  *
- * RAJA::region<omp_parallel_region>(loop body);
+ * RAJA::region<omp_parallel_region>([=](){
+ *
+ *  // region body - may contain multiple loops
+ *
+ *  });
  *
  * \endcode
  * 
