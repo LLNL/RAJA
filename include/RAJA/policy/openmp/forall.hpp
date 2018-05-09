@@ -68,13 +68,13 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                              Func&& loop_body)
 {
 
-  auto outerLam =  [=](Func&& loop_body){
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    forall_impl(InnerPolicy{}, iter, body.get_priv());
-  };
+  RAJA::region<RAJA::omp_parallel_region>([&](){
 
-  RAJA::region<RAJA::omp_parallel_region>(outerLam,loop_body);
+      using RAJA::internal::thread_privatize;
+      auto body = thread_privatize(loop_body);
+      forall_impl(InnerPolicy{}, iter, body.get_priv());
+
+    });
 
 }
 
