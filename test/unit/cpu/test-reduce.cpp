@@ -40,12 +40,12 @@ using TestingTypes = ::testing::
     Types<
   std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
   std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined (RAJA_ENABLE_OPENMP)
   
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
 #endif
-#ifdef RAJA_ENABLE_TBB
+#if defined (RAJA_ENABLE_TBB)
           ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
            ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
 #endif
@@ -127,6 +127,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
  
 }
 
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
@@ -167,8 +168,8 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
   ASSERT_EQ(tmin1.getLoc(), -1);
-
 }
+#endif
 
 TYPED_TEST(IndexSetReduce, ReduceMaxTest)
 {
