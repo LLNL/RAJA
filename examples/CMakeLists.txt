@@ -90,5 +90,5 @@ raja_add_executable(
   SOURCES ex-batched-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex-offset.cpp
+  NAME ex-offset
   SOURCES ex-offset.cpp)
