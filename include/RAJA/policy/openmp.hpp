@@ -39,6 +39,7 @@
 
 #include "RAJA/policy/openmp/atomic.hpp"
 #include "RAJA/policy/openmp/forall.hpp"
+#include "RAJA/policy/openmp/region.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/openmp/reduce.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
