@@ -36,6 +36,9 @@
 #include "chai/ManagedArray.hpp"
 #endif
 
+#define FIX_NVCC_BUG
+#undef FIX_NVCC_BUG
+
 namespace RAJA
 {
 
@@ -68,10 +71,15 @@ struct View {
   {
   }
 
+#if defined(FIX_NVCC_BUG)
   RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
       : layout(V.layout), data(V.data)
   {
   }
+#else
+
+  RAJA_INLINE constexpr View(View const &) = default;
+#endif
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
