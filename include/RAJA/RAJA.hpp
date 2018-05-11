@@ -91,6 +91,13 @@
 #include "RAJA/index/IndexValue.hpp"
 
 
+//
+// Generic iteration templates require specializations defined
+// in the files included below.
+//
+#include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/region.hpp"
+
 #include "RAJA/policy/MultiPolicy.hpp"
 
 
