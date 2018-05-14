@@ -167,7 +167,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
       reduce::detail::ValueLoc<double> randval(droll, index);
       applier::updatedvalue(dvalue, randval, dcurrent);
 
-      forall<cuda_exec<block_size>>(0, TEST_VEC_LEN, [=] __device__(int i) {
+      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
         applier::apply(dmin0, dvalue[i], i);
         applier::apply(dmin1, 2 * dvalue[i], i);
         applier::apply(dmin2, dvalue[i], i);

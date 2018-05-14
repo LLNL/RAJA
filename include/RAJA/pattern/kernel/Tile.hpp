@@ -181,11 +181,11 @@ struct IterableTiler {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  iterator begin() { return iterator(*this, 0); }
+  iterator begin() const { return iterator(*this, 0); }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  iterator end() { return iterator(*this, num_blocks); }
+  iterator end() const { return iterator(*this, num_blocks); }
 
   value_type it;
   camp::idx_t block_size;
