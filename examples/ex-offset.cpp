@@ -237,9 +237,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >;
 
-  RAJA::kernel<NESTED_EXEC_POL2>
+  RAJA::kernel<NESTED_EXEC_POL5>
     (RAJA::make_tuple(col_range, row_range), 
-     [=](int col, int row) {
+     [=] RAJA_DEVICE (int col, int row) {
       
       box1view(row,col) = box0view(row,col) + box0view(row-1,col) 
                         + box0view(row+1,col) + box0view(row,col-1) + box0view(row,col+1);
