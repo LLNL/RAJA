@@ -74,7 +74,7 @@ const int NITER = 10;
 // Function for comparing outputs
 //
 template<typename T, typename U>
-void compareOutput(T C, U Cl2,Index_type N);
+void compareOutput(T C, U Cl2,Index_type Nelem);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -295,7 +295,7 @@ void compareOutput(T C, U Cl2, Index_type Nelem)
 {
 
   bool status = true;
-  for(Index_type e = 0; e<NMAT; ++e){
+  for(Index_type e = 0; e<Nelem; ++e){
     for(Index_type row=0; row<NROWS; ++row){
       for(Index_type col=0; col<NCOLS; ++col){
         double terr = std::abs(C(e,row,col) - Cl2(e,row,col));

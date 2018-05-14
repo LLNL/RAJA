@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cmath>
 
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
@@ -203,10 +204,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL2 = 
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec, // row
-        RAJA::statement::For<0, RAJA::loop_exec,           // col
+        RAJA::statement::For<0, RAJA::seq_exec,            // col
           RAJA::statement::Lambda<0>
-        >
-      >  
+        > 
+      > 
     >;
 
   RAJA::kernel<NESTED_EXEC_POL2>
