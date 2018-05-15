@@ -101,8 +101,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA OpenMP pi approximation (reduction)...\n";
 
-  using EXEC_POL2   = RAJA::omp_parallel_for_exec;
-  using REDUCE_POL2 = RAJA::omp_reduce;
+  using EXEC_POL2   = RAJA::omp_target_parallel_for_exec<32>;
+  using REDUCE_POL2 = RAJA::omp_target_reduce<32>;
 
   RAJA::ReduceSum<REDUCE_POL2, double> omp_pi(0.0);
 
@@ -119,9 +119,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0;
 
+  using EXEC2_POL2 = RAJA::omp_parallel_for_exec;
   using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
 
-  RAJA::forall<EXEC_POL2>(bins, [=](int i) {
+  RAJA::forall<EXEC2_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) / num_bins;
       RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 4.0 / (1.0 + x * x));
   });

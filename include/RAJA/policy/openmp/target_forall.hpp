@@ -66,9 +66,11 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
 #pragma omp target teams distribute parallel for num_teams(Teams) \
     schedule(static, 1) map(to : body)
   for (Index_type i = 0; i < distance; ++i) {
-    Body ib = body;
-    ib(begin[i]);
+//    Body ib = body;
+//    ib(begin[i]);
+      body(begin[i]);
   }
+
 }
 
 template <typename Iterable, typename Func>
