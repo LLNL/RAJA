@@ -74,7 +74,7 @@ const int NITER = 10;
 // Function for comparing outputs
 //
 template<typename T, typename U>
-void compareOutput(T C, U Cl2,Index_type Nelem);
+void compareOutput(T C, U Cl2,Index_type N);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -147,7 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     timer.start();
     RAJA::forall<CPUPol>(RAJA::RangeSegment(0, NMAT), [=] (Index_type i) {      
-        
+
         Cview(i,0,0) = Aview(i,0,0)*Bview(i,0,0) + Aview(i,0,1)*Bview(i,1,0) + Aview(i,0,2)*Bview(i,2,0);
         Cview(i,0,1) = Aview(i,0,0)*Bview(i,0,1) + Aview(i,0,1)*Bview(i,1,1) + Aview(i,0,2)*Bview(i,2,1);
         Cview(i,0,2) = Aview(i,0,0)*Bview(i,0,2) + Aview(i,0,1)*Bview(i,1,2) + Aview(i,0,2)*Bview(i,2,2);
@@ -204,9 +204,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //Compare output
 //
-  compareOutput(Cview, Cl2view, NELEM);
+  compareOutput(Cview, Cl2view, NMAT);
 
 #if defined(RAJA_ENABLE_CUDA)
+  std::cout<<"running code on the gpu"<<std::endl;
 //-------------------------------------------
 //Matrix multiply with layout 1 on the GPU
 //
@@ -271,7 +272,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //Compare output
 //
-  compareOutput(Cview, Cl2view, NELEM);  
+  compareOutput(Cview, Cl2view, NMAT);
 #endif
   
 //
@@ -291,11 +292,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Compare output
 //
 template<typename T, typename U>
-void compareOutput(T C, U Cl2, Index_type Nelem)
+void compareOutput(T C, U Cl2, Index_type N)
 {
 
   bool status = true;
-  for(Index_type e = 0; e<Nelem; ++e){
+  for(Index_type e = 0; e<N; ++e){
     for(Index_type row=0; row<NROWS; ++row){
       for(Index_type col=0; col<NCOLS; ++col){
         double terr = std::abs(C(e,row,col) - Cl2(e,row,col));
