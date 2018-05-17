@@ -13,10 +13,15 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cstdlib>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/Timer.hpp"
 
-#include <iostream>
+
 #include "memoryManager.hpp"
 
 /*
