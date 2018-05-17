@@ -29,7 +29,7 @@
 
 using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
 
-constexpr const int TEST_VEC_LEN = 1024;
+constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;
 
 using namespace RAJA;
 
@@ -225,17 +225,11 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   double* dvalue = ReduceSumCUDA::dvalue;
   int* ivalue = ReduceSumCUDA::ivalue;
 
-#if 0
+
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
-#else
-  RangeSegment seg0((int)0.0125*TEST_VEC_LEN, (int)0.2375*TEST_VEC_LEN);
-  RangeSegment seg1((int)0.2875*TEST_VEC_LEN, (int)0.4500*TEST_VEC_LEN);
-  RangeSegment seg2((int)0.5250*TEST_VEC_LEN, (int)0.7125*TEST_VEC_LEN);
-  RangeSegment seg3((int)0.7775*TEST_VEC_LEN, (int)0.9650*TEST_VEC_LEN);
-#endif
 
   UnitIndexSet iset;
   iset.push_back(seg0);
