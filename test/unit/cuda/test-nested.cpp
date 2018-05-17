@@ -346,7 +346,7 @@ CUDA_TEST(NestedCUDA, NegativeRange)
 
   forallN<NestedPolicy<
       ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_HOST_DEVICE(int k, int j) {
+      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
         const int idx = ((k - -2) * 10) + (j - -2);
         data[idx] = idx * 1.0;
       });

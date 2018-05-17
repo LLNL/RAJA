@@ -150,7 +150,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -252,7 +252,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
   forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset, [=] RAJA_HOST_DEVICE(int i) {
+      iset, [=] RAJA_DEVICE(int i) {
         dsum0 += dvalue[i];
         isum1 += 2 * ivalue[i];
         dsum2 += 3 * dvalue[i];
@@ -313,7 +313,7 @@ CUDA_TEST_F(ReduceSumCUDA, increasing_size)
 
     ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
 
-    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] RAJA_HOST_DEVICE(int i) {
+    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] RAJA_DEVICE(int i) {
       dsum0 += dvalue[i];
     });
 

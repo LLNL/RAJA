@@ -117,7 +117,7 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
           dmax0.max(dvalue[i]);
           dmax1.max(2 * dvalue[i]);
           dmax2.max(dvalue[i]);
@@ -224,7 +224,7 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
     }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-        iset, [=] RAJA_HOST_DEVICE(int i) {
+        iset, [=] RAJA_DEVICE(int i) {
           dmax0.max(dvalue[i]);
           dmax1.max(2 * dvalue[i]);
         });

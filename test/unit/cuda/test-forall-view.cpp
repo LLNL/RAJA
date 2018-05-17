@@ -93,7 +93,7 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
   RAJA::View<double, RAJA::OffsetLayout<1> > view(arr_d, my_layout);
 
   forall<RAJA::cuda_exec<block_size>>(RAJA::RangeSegment(1, alen+1),
-  [=] RAJA_HOST_DEVICE(Index_type i) {
+  [=] RAJA_DEVICE(Index_type i) {
     view(i) = test_val;
   });
 
