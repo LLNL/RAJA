@@ -22,23 +22,23 @@
 /*
  *  Batched Matrix Multiply Example
  *
- *  Carries out matrix multiplication
+ *  This example carries out matrix multiplication
  *  for NMAT matrices. Here we assume
  *  matrices are small (3 x 3).
  *  Each iteration of the RAJA loop
  *  multiplies a matrix from the batch.
  *
- *  The notation a_erc corresponds to the matrix entry
+ *  The notation A^{e}_rc corresponds to the matrix entry
  *  in the row - r, column - c of matrix - e.
  *  
  *  Furthermore, we explore performance for two data layouts.
  *  Layout 1: Assumes matrices are contiguous in memory 
  *  enabling vectorized operations.
- *  i.e. [a_100, a_101, a_102, ... ]
+ *  i.e. [A^{0}_{00}, A^{0}_{01}, A^{0}_{02}, ...]
  *
  * Layout 2: Multiplies matrices assuming matrix entries are grouped together
  * allowing for coalesced reads and writes.
- * i.e. [a_000, a_100, a_200, a_001, a_101, a_201 ... ]
+ * i.e. [A^{0}_{00}, A^{1}_{00}, A^{2}_{00}, \dots]
  *
  * We expect that layout 1 will perform better on the CPU
  * and layout 2 would perform better on the GPU.
@@ -59,16 +59,16 @@ using RAJA::Index_type;
 const int CUDA_BLOCK_SIZE = 256;
 using GPUPol = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 #endif
-using CPUPol = RAJA::simd_exec;
+using CPUPol1 = RAJA::simd_exec;
+using CPUPol2 = RAJA::loop_exec;
 
 //Dimensions of matrices
 const Index_type NCOLS = 3;
 const Index_type NROWS = 3;
-const Index_type NMAT  = 15000000;
-const Index_type NELEM = NCOLS*NROWS*NMAT;
+const Index_type NMAT  = 12000000;
 
 //Number of iterations
-const int NITER = 10;
+const int NITER = 20;
 
 //
 // Function for comparing outputs
@@ -80,7 +80,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA batched matrix multiplication example...\n";
-
+  std::cout << "Number of matrices to be multiplied: "<<NMAT <<" \n";
   double myMin;
   srand(time(NULL));
   auto timer = RAJA::Timer();
@@ -146,7 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for(Index_type i=0; i<NITER; ++i){
     
     timer.start();
-    RAJA::forall<CPUPol>(RAJA::RangeSegment(0, NMAT), [=] (Index_type i) {      
+    RAJA::forall<CPUPol1>(RAJA::RangeSegment(0, NMAT), [=] (Index_type i) {      
 
         Cview(i,0,0) = Aview(i,0,0)*Bview(i,0,0) + Aview(i,0,1)*Bview(i,1,0) + Aview(i,0,2)*Bview(i,2,0);
         Cview(i,0,1) = Aview(i,0,0)*Bview(i,0,1) + Aview(i,0,1)*Bview(i,1,1) + Aview(i,0,2)*Bview(i,2,1);
@@ -177,7 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for(Index_type i=0; i<NITER; ++i){
     
     timer.start();
-    RAJA::forall<CPUPol>(RAJA::RangeSegment(0, NMAT), [=] (Index_type i) {      
+    RAJA::forall<CPUPol2>(RAJA::RangeSegment(0, NMAT), [=] (Index_type i) {      
         
         Cl2view(i,0,0) = Al2view(i,0,0)*Bl2view(i,0,0) + Al2view(i,0,1)*Bl2view(i,1,0) + Al2view(i,0,2)*Bl2view(i,2,0);
         Cl2view(i,0,1) = Al2view(i,0,0)*Bl2view(i,0,1) + Al2view(i,0,1)*Bl2view(i,1,1) + Al2view(i,0,2)*Bl2view(i,2,1);
@@ -207,7 +207,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   compareOutput(Cview, Cl2view, NMAT);
 
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout<<"running code on the gpu"<<std::endl;
 //-------------------------------------------
 //Matrix multiply with layout 1 on the GPU
 //
