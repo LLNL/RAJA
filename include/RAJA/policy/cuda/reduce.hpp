@@ -638,11 +638,14 @@ struct Reduce_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
   void init_grid_val(T* output)
   {
     *output = identity;
   }
 
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -726,11 +729,14 @@ struct ReduceAtomic_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
   void init_grid_val(T* output)
   {
     *output = identity;
   }
 
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -795,6 +801,8 @@ public:
   }
 
   //! copy and on host attempt to setup for device
+  //  init val_ptr to avoid uninitialized read caused by host copy of
+  //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
 #if !defined(__CUDA_ARCH__)
