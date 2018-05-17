@@ -62,10 +62,7 @@ using RAJA::Index_type;
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
-using GPUPol = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 #endif
-using CPUPol1 = RAJA::simd_exec;
-using CPUPol2 = RAJA::loop_exec;
 
 //Dimensions of matrices
 const Index_type NCOLS = 3;
@@ -147,6 +144,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //-------------------------------------------
 //Matrix multiply with layout 1 on the CPU
 //
+  using CPUPol1 = RAJA::simd_exec;
+
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     
@@ -178,6 +177,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //-------------------------------------------
 //Matrix multiply with layout 2 on the CPU
 //
+  using CPUPol2 = RAJA::loop_exec;
+
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     
@@ -215,6 +216,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //-------------------------------------------
 //Matrix multiply with layout 1 on the GPU
 //
+  using GPUPol = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
+
   myMin = std::numeric_limits<double>::max();  
   for(Index_type i=0; i<NITER; ++i){
     

@@ -198,7 +198,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //printBox(box1,boxN);
   checkResult(box1, box_ref, boxSize);
+
 //----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n Running sequential box-stencil (RAJA-Kernel - omp parallel for)...\n";  
   using NESTED_EXEC_POL2 = 
@@ -220,6 +223,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //printBox(box1,N);
   checkResult(box1, box_ref, boxSize);
+#endif
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
