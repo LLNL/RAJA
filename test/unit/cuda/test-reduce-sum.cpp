@@ -29,7 +29,7 @@
 
 using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
 
-constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;
+constexpr const int TEST_VEC_LEN = 1024;
 
 using namespace RAJA;
 
@@ -99,7 +99,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -137,7 +137,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   ReduceSum<cuda_reduce<block_size>, double> dsum5;
   ReduceSum<cuda_reduce<block_size>, double> dsum6(5.0);
   ReduceSum<cuda_reduce<block_size>, double> dsum7;
-  
+
   dsum0.reset(0.0);
   dsum1.reset(dtinit * 1.0);
   dsum2.reset(0.0);
@@ -146,11 +146,11 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   dsum5.reset(dtinit * 5.0);
   dsum6.reset(0.0);
   dsum7.reset(dtinit * 7.0);
-  
+
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -197,7 +197,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 
   forallN<NestedPolicy<ExecList<ExecPolicy<seq_segit,
                                            cuda_exec<block_size> > > > >(
-      iset, [=] __device__(int i) {
+      iset, [=] RAJA_HOST_DEVICE(int i) {
         dsum0 += dvalue[i];
         isum1 += 2 * ivalue[i];
         dsum2 += 3 * dvalue[i];
@@ -225,11 +225,17 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   double* dvalue = ReduceSumCUDA::dvalue;
   int* ivalue = ReduceSumCUDA::ivalue;
 
-
+#if 0
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
+#else
+  RangeSegment seg0((int)0.0125*TEST_VEC_LEN, (int)0.2375*TEST_VEC_LEN);
+  RangeSegment seg1((int)0.2875*TEST_VEC_LEN, (int)0.4500*TEST_VEC_LEN);
+  RangeSegment seg2((int)0.5250*TEST_VEC_LEN, (int)0.7125*TEST_VEC_LEN);
+  RangeSegment seg3((int)0.7775*TEST_VEC_LEN, (int)0.9650*TEST_VEC_LEN);
+#endif
 
   UnitIndexSet iset;
   iset.push_back(seg0);
@@ -246,7 +252,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
   forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset, [=] __device__(int i) {
+      iset, [=] RAJA_HOST_DEVICE(int i) {
         dsum0 += dvalue[i];
         isum1 += 2 * ivalue[i];
         dsum2 += 3 * dvalue[i];
@@ -284,7 +290,7 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
         pos_chk_val += rand_dvalue[i];
       }
     }
-    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
       if (rand_dvalue[i] < 0.0) {
         dsumN += rand_dvalue[i];
       } else {
@@ -307,7 +313,7 @@ CUDA_TEST_F(ReduceSumCUDA, increasing_size)
 
     ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
 
-    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] __device__(int i) {
+    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] RAJA_HOST_DEVICE(int i) {
       dsum0 += dvalue[i];
     });
 
