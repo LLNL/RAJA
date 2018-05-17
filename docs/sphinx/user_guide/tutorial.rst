@@ -140,6 +140,7 @@ This is done in the example code files, but is not discussed further here.
    tutorial/atomic_binning.rst
    tutorial/scan.rst
    tutorial/matrix_multiply.rst
+   tutorial/view.rst
    tutorial/nested_loop_reorder.rst
    tutorial/complex_loops-intro.rst
    tutorial/complex_loops-shmem.rst
