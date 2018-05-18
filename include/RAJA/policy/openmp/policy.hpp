@@ -76,6 +76,13 @@ struct Distribute {
 //////////////////////////////////////////////////////////////////////
 //
 
+struct omp_parallel_region
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host> {
+};
+  
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
@@ -195,6 +202,7 @@ using policy::omp::omp_for_exec;
 using policy::omp::omp_for_nowait_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
+using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_for_exec;
 using policy::omp::omp_parallel_segit;
 using policy::omp::omp_parallel_for_segit;
