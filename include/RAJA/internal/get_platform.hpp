@@ -4,8 +4,18 @@
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
+#include "RAJA/pattern/kernel/internal.hpp"
+
 namespace RAJA
 {
+
+namespace policy {
+namespace multi {
+template <typename Selector, typename... Policies>
+class MultiPolicy;
+
+}
+}
 
 namespace detail 
 {
@@ -115,11 +125,12 @@ struct get_platform<RAJA::internal::StatementList<>> {
   static constexpr Platform value = Platform::undefined;
 };
 
+
 // Top level MultiPolicy shouldn't select a CHAI execution space
 // Once a specific policy is selected, that policy will select the correct
 // policy... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
-struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
+struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>> {
   static constexpr Platform value = Platform::undefined;
 };
 
