@@ -65,7 +65,6 @@ const int CUDA_BLOCK_SIZE = 256;
 // Dimensions of matrices
 const int NCOLS = 3;
 const int NROWS = 3;
-//const int NMAT = 12000000;
 const int NMAT = 12000000;
 
 // Number of iterations
