@@ -23,6 +23,10 @@ raja_add_test(
   SOURCES test-atomic.cpp)
 
 raja_add_test(
+  NAME test-region
+  SOURCES test-region.cpp)
+
+raja_add_test(
   NAME test-layout
   SOURCES test-layout.cpp)
 
@@ -61,6 +65,10 @@ raja_add_test(
 raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
+
+raja_add_test(
+  NAME test-simd
+  SOURCES test-simd.cpp)
 
 add_subdirectory(cpu)
 
