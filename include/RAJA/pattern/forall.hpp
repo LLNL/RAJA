@@ -82,8 +82,6 @@
 
 #include "RAJA/pattern/detail/forall.hpp"
 
-#include "RAJA/util/chai_support.hpp"
-
 #include "RAJA/internal/get_platform.hpp"
 #include "RAJA/util/plugins.hpp"
 
@@ -316,13 +314,18 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "an "
                 "TypedIndexSet policy by mistake?");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -342,13 +345,18 @@ RAJA_INLINE concepts::
                 "an "
                 "TypedIndexSet policy by mistake?");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<IdxSet>(c),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -372,14 +380,19 @@ forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       icount,
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 
@@ -447,7 +460,11 @@ RAJA_INLINE
                 "Iterator pair does not meet requirement of "
                 "RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   auto len = std::distance(begin, end);
   using SpanType = impl::Span<Iterator, decltype(len)>;
@@ -457,7 +474,8 @@ RAJA_INLINE
                       icount,
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -481,7 +499,11 @@ RAJA_INLINE
                 "Iterator pair does not meet requirement of "
                 "RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   auto len = std::distance(begin, end);
   using SpanType = impl::Span<Iterator, decltype(len)>;
@@ -490,7 +512,8 @@ RAJA_INLINE
                SpanType{begin, len},
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 //
@@ -526,13 +549,18 @@ forall(ExecutionPolicy&& p,
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_range(begin, end),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -564,14 +592,19 @@ forall_Icount(ExecutionPolicy&& p,
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_range(begin, end),
                       icount,
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 //
@@ -611,13 +644,18 @@ forall(ExecutionPolicy&& p,
                 "Cannot deduce a common type between begin and end for Range "
                 "creation");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_strided_range(begin, end, stride),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 static_assert(
@@ -661,14 +699,19 @@ forall_Icount(ExecutionPolicy&& p,
                 "Cannot deduce a common type between begin and end for Range "
                 "creation");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_strided_range(begin, end, stride),
                       icount,
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 //
@@ -698,13 +741,18 @@ RAJA_INLINE concepts::
            const IndexType len,
            LoopBody&& loop_body)
 {
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                TypedListSegment<ArrayIdxType>(idx, len, Unowned),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -735,7 +783,11 @@ RAJA_INLINE concepts::
                   LoopBody&& loop_body)
 {
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   // turn into an iterator
   forall_Icount(std::forward<ExecutionPolicy>(p),
@@ -743,7 +795,8 @@ RAJA_INLINE concepts::
                 icount,
                 std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -755,11 +808,16 @@ template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 /*!
@@ -772,11 +830,16 @@ template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall_Icount(Args&&... args)
 {
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<ExecutionPolicy>::value;
+
+  util::callPreLaunchPlugins(p_context); 
+
 
   forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
+
 }
 
 namespace detail

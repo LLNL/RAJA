@@ -33,7 +33,9 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
+
 #include "RAJA/util/concepts.hpp"
 
 namespace RAJA
@@ -149,17 +151,6 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace detail
 {
 
-#ifdef RAJA_ENABLE_CHAI
-// Top level MultiPolicy shouldn't select a CHAI execution space
-// Once a specific policy is selected, that policy will select the correct
-// policy... see policy_invoker in MultiPolicy.hpp
-template <typename SELECTOR, typename... POLICIES>
-struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
-  static constexpr Platform value = Platform::undefined;
-};
-#endif
-
-
 template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   static_assert(index < size, "index must be in the range of possibilities");
@@ -189,16 +180,17 @@ struct policy_invoker<0, size, Policy, rest...> {
   {
     if (offset == size - 1) {
 
-      // Now we know what policy is going to be invoked, so we can tell
-      // CHAI what execution space to use
-      detail::setChaiExecutionSpace<Policy>();
+      util::PluginContext p_context;
+      p_context.platform = detail::get_platform<Policy>::value;
+
+      util::callPreLaunchPlugins(p_context); 
 
 
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
 
 
-      detail::clearChaiExecutionSpace();
+      util::callPostLaunchPlugins(p_context);
 
     } else {
       throw std::runtime_error("unknown offset invoked");

@@ -36,8 +36,6 @@
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 
-#include "RAJA/util/chai_support.hpp"
-
 #include <type_traits>
 
 namespace RAJA
@@ -351,47 +349,6 @@ constexpr RAJA_INLINE typename std::
 
 
 }  // end namespace internal
-
-
-#ifdef RAJA_ENABLE_CHAI
-
-namespace detail
-{
-
-
-template <typename T>
-struct get_statement_platform {
-  static constexpr Platform value =
-      get_platform_from_list<typename T::execution_policy_t,
-                             typename T::enclosed_statements_t>::value;
-};
-
-/*!
- * Specialization to define the platform for an kernel::StatementList, and
- * (by alias) a kernel::Policy
- *
- * This collects the Platform from each of it's statements, recursing into
- * each of them.
- */
-template <typename... Stmts>
-struct get_platform<RAJA::internal::StatementList<Stmts...>> {
-  static constexpr Platform value =
-      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
-};
-
-/*!
- * Specialize for an empty statement list to be undefined
- */
-template <>
-struct get_platform<RAJA::internal::StatementList<>> {
-  static constexpr Platform value = Platform::undefined;
-};
-
-
-}  // end detail namespace
-
-#endif  // RAJA_ENABLE_CHAI
-
 
 }  // end namespace RAJA
 

@@ -34,7 +34,8 @@
 
 #include "RAJA/pattern/kernel/internal.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
 
 #include "RAJA/pattern/shared_memory.hpp"
 
@@ -72,7 +73,10 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
-  detail::setChaiExecutionSpace<PolicyType>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<PolicyType>::value;
+
+  util::callPreLaunchPlugins(p_context); 
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -106,8 +110,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   // Execute!
   internal::execute_statement_list<PolicyType>(loop_data);
 
-
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
 }
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>

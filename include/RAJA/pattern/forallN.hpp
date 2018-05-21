@@ -35,11 +35,12 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
 
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
-
-#include "RAJA/util/chai_support.hpp"
 
 namespace RAJA
 {
@@ -252,14 +253,16 @@ RAJA_DEPRECATE("ForallN will be deprecated in next release")
 RAJA_INLINE void forallN(Ts &&... args)
 {
 
-  detail::setChaiExecutionSpace<POLICY>();
+  util::PluginContext p_context;
+  p_context.platform = detail::get_platform<POLICY>::value;
 
+  util::callPreLaunchPlugins(p_context); 
 
   fun_unpacker<POLICY, Indices...>(camp::idx_seq<sizeof...(args) - 1>{},
                                    camp::make_idx_seq_t<sizeof...(args) - 1>{},
                                    camp::forward<Ts>(args)...);
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(p_context);
 }
 
 }  // namespace RAJA
