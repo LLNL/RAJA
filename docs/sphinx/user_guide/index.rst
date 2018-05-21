@@ -110,6 +110,7 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    features
    app_considerations
    tutorial
+   using_raja
    config_options
    plugins
    contributing
