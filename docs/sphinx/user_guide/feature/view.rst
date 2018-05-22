@@ -33,22 +33,22 @@ may be to introduce a macro::
 
    #define A(r, c) A[c + N * r]
 
-The parenthesis operator is used to access a value in a particular row `r` and 
-column `c` and the macro carries out the index conversion. Unfortunately,
-this simple solution is fairly limited. Using macros like this with other
-matrices or permutations of the data layout requires additional macros. 
-To simplify multidimensional indexing, RAJA introduces ``RAJA::View`` 
-and ``RAJA::Layout`` objects which enable indexing into data of any dimension 
-and provides various data layout options.
+The macro is used to access a matrix entry in a particular row `r` and 
+column `c` by performing the correct index conversion. Unfortunately,
+this solution has serious limitations, such as having additional 
+matrices or wanting to permute the data layout requires additional macro
+definitions. To simplify multidimensional indexing and permutations, RAJA 
+provides ``RAJA::View`` and ``RAJA::Layout`` classes which enable indexing into 
+data of any number of dimensions as well as various data layout options.
 
 ---------
 RAJA View
 ---------
 
-The ``RAJA::View`` is a class templated on pointer type and a ``RAJA::Layout`` 
-type. The ``RAJA::Layout`` specifies the number of dimensions in an array. 
-Wrapping the pointer of the :math:`M \times N` matrix in a ``RAJA::View``
-is accomplished in the following manner::
+The ``RAJA::View`` is a class templated on a pointer type and a 
+``RAJA::Layout`` type. In its simplest form, ``RAJA::Layout`` is used to 
+specify the number of dimensions of an array. Wrapping the pointer of an
+:math:`M \times N` matrix in a ``RAJA::View`` is accomplished as follows::
 
    double *A = new double [M*N];
 
