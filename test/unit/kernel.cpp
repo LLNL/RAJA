@@ -222,9 +222,43 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 
 
 
+//-----------
+//Attempt to add listSegment to unit test
+TEST(Kernel, ListSegment)
+{
 
+  using namespace RAJA;
+  const int N = 10;
+  using IdxType = RAJA::Index_type;
+  using ListSegType = RAJA::TypedListSegment<IdxType>;
+  
+  std::vector<IdxType> idx;
+  for (IdxType i=0; i < N; i++) {
+    idx.push_back(i);    
+  }
 
+  //Create list segment
+  ListSegType idx_list(&idx[0], idx.size());
+  
+  using NESTED_EXEC_POL = 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,    // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+        RAJA::statement::Lambda<0>                           
+      >
+     >
+    >;
 
+  RAJA::kernel<NESTED_EXEC_POL>
+    (RAJA::make_tuple(idx_list, idx_list),
+     [=](IdxType i, IdxType j) {
+
+      IdxType id = i + N*j;
+      
+    });
+  
+  
+}
 
 #if defined(RAJA_ENABLE_CUDA)
 
