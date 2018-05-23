@@ -311,24 +311,65 @@ struct TargetReduceLoc {
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    if (!omp_is_initial_device()) {
+/*    if (!omp_is_initial_device()) {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
         Reducer{}(val.device[tid], loc.device[tid], val.value, loc.value);
       }
     }
+*/
   }
 
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
     if (!info.isMapped) {
+
+        int n = omp::omp_thread_block_max;
+        int m = Teams;
+
+        // do reduction on gpu
+     #pragma omp target map(to: m,n)
+     {
+
+        // sum all teams into first two teams, unrolled this just to test best config
+        for(int j=2; j<m; j+=2)
+        {
+            #pragma omp parallel for
+            for(int i=0; i<n; ++i )
+            {
+                int idx1 = i;
+                int idx2 = n + i;
+                int jdx1 = j*n + i;
+                int jdx2 = jdx1 + n;
+                Reducer{}(val.device[idx1], loc.device[idx1], val.device[jdx1], loc.device[jdx1]);
+                Reducer{}(val.device[idx2], loc.device[idx2], val.device[jdx2], loc.device[jdx2]);
+            }
+
+        }
+
+        // sum last two teams
+        #pragma omp parallel for
+        for( int i=0; i<n; ++i ){
+           Reducer{}(val.device[i], loc.device[i], val.device[n+i], loc.device[n+i]);
+        }
+
+        // serial summation of all elements in last team, can improve
+        for( int i=1; i<n; ++i ){
+           Reducer{}(val.device[0], loc.device[0], val.device[i], loc.device[i]);
+        }
+
+     }
+
+//////////////////////////////////////
       val.deviceToHost(info);
       loc.deviceToHost(info);
-      for (int i = 0; i < Teams; ++i) {
-        Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
-      }
+//      for (int i = 0; i < Teams; ++i) {
+//        Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
+//      }
+      val.value = val.host[0];
+      loc.value = loc.host[0];
       val.cleanup(info);
       loc.cleanup(info);
       info.isMapped = true;
@@ -361,10 +402,12 @@ struct TargetReduceLoc {
   //! apply reduction (const version) -- still reduces internal values
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
-//    int tid = omp_get_team_num();
-//    int thrid = omp_get_thread_num();
-//    int idx = tid*omp_thread_block_max + thrid;
-    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
+    int tid = omp_get_team_num();
+    int thrid = omp_get_thread_num();
+    int idx = tid*omp::omp_thread_block_max + thrid;
+    Reducer{}(val.device[idx], loc.device[idx], rhsVal, rhsLoc);
+
+//    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
 
