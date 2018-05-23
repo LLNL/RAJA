@@ -227,6 +227,8 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 TEST(Kernel, ListSegment)
 {
 
+  std::cout<<"----[List segment test]-----"<<std::endl;
+  
   using namespace RAJA;
   const int N = 10;
   using IdxType = RAJA::Index_type;
@@ -242,18 +244,16 @@ TEST(Kernel, ListSegment)
   
   using NESTED_EXEC_POL = 
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,    // row
-        RAJA::statement::For<0, RAJA::seq_exec,  // col
-        RAJA::statement::Lambda<0>                           
-      >
-     >
+      RAJA::statement::For<0, RAJA::seq_exec,
+                           RAJA::statement::Lambda<0>      
+                           >
     >;
 
+  
   RAJA::kernel<NESTED_EXEC_POL>
-    (RAJA::make_tuple(idx_list, idx_list),
-     [=](IdxType i, IdxType j) {
-
-      IdxType id = i + N*j;
+    //(RAJA::make_tuple(RAJA::RangeSegment(0,10)), [=](IdxType i) {
+    (RAJA::make_tuple(idx_list), [=](IdxType i) {
+      IdxType id = i;
       
     });
   

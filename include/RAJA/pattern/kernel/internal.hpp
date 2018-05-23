@@ -39,6 +39,7 @@
 #include "RAJA/util/chai_support.hpp"
 
 #include <type_traits>
+#include <iterator>
 
 namespace RAJA
 {
@@ -80,7 +81,7 @@ struct ForTraitBase : public ForBase {
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename Iterator::iterator::difference_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type; 
 };
 
 template <typename Segments>
@@ -96,7 +97,7 @@ using difftype_tuple_from_segments =
 
 template <typename Iterator>
 struct iterable_value_type_getter {
-  using type = typename Iterator::iterator::value_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
