@@ -58,7 +58,7 @@ static void stride_test(int stride, bool reverse = false)
                                 cuda_block_x_exec,
                                 cuda_thread_y_exec>,
                        Permute<PERM_IJK>>>(seg_x, seg_y, seg_z,
-                                           [=] RAJA_DEVICE(Index_type i,
+                                           [=] RAJA_HOST_DEVICE(Index_type i,
                                                            Index_type j,
                                                            Index_type k) {
                                              Index_type val = (i*y*z) + (j*z) + k;
