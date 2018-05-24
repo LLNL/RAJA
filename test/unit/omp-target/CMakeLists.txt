@@ -21,4 +21,7 @@ if(ENABLE_TARGET_OPENMP)
   raja_add_test(
     NAME test-omp-target-reductions
     SOURCES test-reductions.cpp)
+  raja_add_test(
+    NAME test-omp-target-kernel
+    SOURCES kernel.cpp)
 endif(ENABLE_TARGET_OPENMP)
