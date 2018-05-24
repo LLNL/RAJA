@@ -240,8 +240,8 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator::difference_type
+    typename std::iterator_traits< typename camp::at_v<typename Data::segment_tuple_t::TList,
+                        ArgumentId>::iterator >::difference_type
 {
   return camp::get<ArgumentId>(data.segment_tuple).end()
          - camp::get<ArgumentId>(data.segment_tuple).begin();
