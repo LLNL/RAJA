@@ -251,7 +251,6 @@ TEST(Kernel, ListSegment)
 
   
   RAJA::kernel<NESTED_EXEC_POL>
-    //(RAJA::make_tuple(RAJA::RangeSegment(0,10)), [=](IdxType i) {
     (RAJA::make_tuple(idx_list), [=](IdxType i) {
       IdxType id = i;
       
@@ -262,6 +261,49 @@ TEST(Kernel, ListSegment)
 
 #if defined(RAJA_ENABLE_CUDA)
 
+
+//-----------
+//Attempt to add listSegment to unit test
+CUDA_TEST(Kernel, CUDAListSegment)
+{
+
+  using namespace RAJA;
+  const int N = 10;
+  using IdxType = RAJA::Index_type;
+  using ListSegType = RAJA::TypedListSegment<IdxType>;
+  
+  std::vector<IdxType> idx;
+  for (IdxType i=0; i < N; i++) {
+    idx.push_back(i);    
+  }
+
+  //Create list segment
+  ListSegType idx_list(&idx[0], idx.size());
+  
+  const int CUDA_BLOCK_SIZE = 10;
+  using NESTED_EXEC_POL =
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+                           RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
+                           RAJA::statement::Lambda<0>
+                                                >
+                           >
+      >
+    >;
+  
+  RAJA::RangeSegment myRange(0,10);
+
+  RAJA::kernel<NESTED_EXEC_POL>(
+                                //RAJA::make_tuple(myRange, myRange),
+                                RAJA::make_tuple(idx_list, idx_list),
+                       [=] RAJA_DEVICE (int col, int row) {
+                         
+                         double dot = 0.0;
+                         
+  });
+
+}
 
 CUDA_TEST(Kernel, CudaCollapse1a)
 {

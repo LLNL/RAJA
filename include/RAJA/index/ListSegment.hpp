@@ -153,6 +153,7 @@ public:
   /// does not own the segment data and will hold a pointer to given data.
   /// In this case, caller must manage object lifetimes properly.
   ///
+  RAJA_HOST_DEVICE
   TypedListSegment(const value_type* values,
                    Index_type length,
                    IndexOwnership owned = Owned)
@@ -185,6 +186,16 @@ public:
     initIndexData(other.m_data, other.m_size, other.m_owned);
   }
 
+
+  //! copy assignment
+  RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment& operator=(
+       TypedListSegment const& o)
+  {
+    
+    m_data = o.m_data;
+    return *this;
+  }
+
   ///
   /// Move-constructor for list segment.
   ///
@@ -198,7 +209,7 @@ public:
   ///
   /// Destroy segment including its contents
   ///
-  ~TypedListSegment()
+  RAJA_HOST_DEVICE ~TypedListSegment()
   {
     if (m_data == nullptr || m_owned != Owned) return;
     deallocate(std::integral_constant<bool, Has_CUDA>());
@@ -222,6 +233,24 @@ public:
   RAJA_HOST_DEVICE iterator begin() const { return m_data; }
   //! accessor to retrieve the total number of elements in a TypedListSegment
   RAJA_HOST_DEVICE Index_type size() const { return m_size; }
+
+  //! Create a slice of this instance as a new instance
+  /*!
+   * \return A new instance spanning *begin() + begin to *begin() + begin +
+   * length
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment slice(Index_type begin,
+                                                      Index_type length) const
+  {
+
+    //ListSegType idx_list(&idx[0], idx.size());
+    //auto start = m_data[0];
+    //auto end = start + length > m_end[0] ? m_end[0] : start + length;
+
+    return TypedListSegment(&m_data[0],length);
+    //return TypedRangeSegment{convertIndex<Index_type>(start),
+    //convertIndex<Index_type>(end)};
+  }
 
   //! get ownership of the data (Owned/Unowned)
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
@@ -259,8 +288,8 @@ private:
   //
   // Initialize segment data properly based on whether object
   // owns the index data.
-  //
-  void initIndexData(const value_type* container,
+  //  
+  RAJA_HOST_DEVICE void initIndexData(const value_type* container,
                      Index_type len,
                      IndexOwnership container_own)
   {
