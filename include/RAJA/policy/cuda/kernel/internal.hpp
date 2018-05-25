@@ -119,7 +119,7 @@ struct LaunchDim {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr LaunchDim() : blocks(1), threads(1) {}
+  constexpr LaunchDim() : blocks(0), threads(0) {}
 
 
   RAJA_INLINE
@@ -135,11 +135,19 @@ struct LaunchDim {
 
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr LaunchDim maximum(LaunchDim const &c) const
+  LaunchDim maximum(LaunchDim const &c) const
   {
-    return LaunchDim{blocks > c.blocks ? blocks : c.blocks,
-                     threads > c.threads ? threads : c.threads};
+    LaunchDim result(-1, -1);
+
+    if(c.blocks > -1 && blocks > -1){
+      result.blocks = std::max(c.blocks, blocks);
+    }
+
+    if(c.threads > -1 && threads > -1){
+      result.threads = std::max(c.threads, threads);
+    }
+
+    return result;
   }
 
   RAJA_INLINE
@@ -147,6 +155,29 @@ struct LaunchDim {
   constexpr LaunchDim operator*(LaunchDim const &c) const
   {
     return LaunchDim{blocks * c.blocks, threads * c.threads};
+  }
+
+
+  RAJA_INLINE
+  void addThreads(int t){
+    // Create a trap for an argument with 0 threads
+    if(t == 0 || threads == -1){
+      threads = -1;
+    }
+    else{
+      threads = (threads == 0) ? t : threads*t;
+    }
+  }
+
+  RAJA_INLINE
+  void addBlocks(int b){
+    // Create a trap for an argument with 0 blocks
+    if(b == 0 || blocks == -1){
+      blocks = 1;
+    }
+    else{
+      blocks = (blocks == 0) ? b : blocks*b;
+    }
   }
 };
 
@@ -579,14 +610,7 @@ struct CudaBlockLoop {
       block_i -= num_blocks;
     }
 
-    //    // Assign argument index, and slice the segment for shmem
-    //    if(threads_per_block == 1){
-    //      auto &segment = camp::get<ArgumentId>(data.segment_tuple);
-    //      data.template
-    //      assign_index<ArgumentId>(*(segment.begin()+block_i*threads_per_block));
-    //      enclosed_stmts.exec(data, num_logical_blocks, carry_out);
-    //    }
-    //    else{
+
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
     using segment_t = camp::decay<decltype(segment)>;
 
@@ -597,17 +621,12 @@ struct CudaBlockLoop {
     segment =
         orig_segment.slice(block_i * threads_per_block, threads_per_block);
     data.template assign_offset<ArgumentId>(0);
-    // data.shmem_window_start[ArgumentId] =
-    // RAJA::convertIndex<int>(*segment.begin());
 
-    // execute enclosed statements
-    // enclosed_stmts.exec(data, num_logical_blocks/num_blocks,
-    // rem_logical_block);
+    // Execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, carry_out);
 
     // Replace original segment
     segment = orig_segment;
-    //    }
   }
 
 
