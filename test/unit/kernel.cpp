@@ -174,7 +174,6 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
       v(get_val(i), j) = get_val(i) * x_len + j;
       tsum += get_val(i) * 1.1 + j;
   });
-  cudaDeviceSynchronize();
 
   for (Index_type i = 0; i < x_len; ++i) {
     for (Index_type j = 0; j < y_len; ++j) {
