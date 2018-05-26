@@ -290,10 +290,11 @@ public:
   RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment slice(Index_type begin,
                                                       Index_type length) const
   {
+    Index_type end = begin+length > m_size ? (m_size-begin) : length;
 #if !defined(__CUDA_ARCH__)
-    return TypedListSegment(&m_data[begin], length, Unowned);    
+    return TypedListSegment(&m_data[begin], end, Unowned);
 #else
-    return TypedListSegment(&m_data[begin], length);
+    return TypedListSegment(&m_data[begin], end);
 #endif
   }
 
