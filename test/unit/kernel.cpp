@@ -157,22 +157,25 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
 
-  Index_type * idx_x = new Index_type[x_len];
-  Index_type * idx_y = new Index_type[y_len];  
-  for(int i=0; i<x_len; ++i) idx_x[i] = i;
-  for(int i=0; i<x_len; ++i) idx_y[i] = i;
-  RAJA::TypedListSegment<Index_type> idx_list(&idx_x[0], x_len);
-  RAJA::TypedListSegment<Index_type> idy_list(&idx_y[0], y_len);
-  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
-  auto rangeSegList = RAJA::make_tuple(RAJA::RangeSegment(0,y_len), RAJA::RangeSegment(0,x_len));
+  std::vector<Idx0> idx_x;
+  std::vector<Idx1> idx_y;
+
+  for(int i=0; i<x_len; ++i) idx_x.push_back(static_cast<Idx0>(i));
+  for(int i=0; i<y_len; ++i) idx_y.push_back(static_cast<Idx1>(i));
 
   tsum.reset(0.0);
-  total=0.0;
-  RAJA::kernel<Pol>(rangeSegList, [=] RAJA_HOST_DEVICE(Index_type i, Index_type j) {
+  total = 0.0;
+  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
+  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
+  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
+
+  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
-      v(i, j) = i * x_len + j;
-      tsum += i * 1.1 + j;
+      v(get_val(i), j) = get_val(i) * x_len + j;
+      tsum += get_val(i) * 1.1 + j;
   });
+  cudaDeviceSynchronize();
+
   for (Index_type i = 0; i < x_len; ++i) {
     for (Index_type j = 0; j < y_len; ++j) {
       ASSERT_EQ(this->view(i, j), i * x_len + j);
@@ -180,9 +183,7 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
     }
   }
   ASSERT_FLOAT_EQ(total, tsum.get());
-
-  
-
+ 
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
 #else
@@ -246,155 +247,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
 
-
-TEST(Kernel, ListSegment)
-{
-
-  Index_type * idx_x = new Index_type[x_len];
-  Index_type * idx_y = new Index_type[y_len];  
-  double * idx_test;
-  idx_test = new double[x_len*y_len];
-
-  for(int i=0; i<x_len; ++i) idx_x[i] = i;
-  for(int i=0; i<x_len; ++i) idx_y[i] = i;
-
-  RAJA::TypedListSegment<Index_type> idx_list(&idx_x[0], x_len);
-  RAJA::TypedListSegment<Index_type> idy_list(&idx_y[0], y_len);
-  RAJA::ReduceSum<RAJA::seq_reduce, double> tsum(0.0);
-  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
-  
-  double total=0.0;
-  tsum.reset(0.0); 
-
-  using Pol =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<0, RAJA::seq_exec,
-         RAJA::statement::Lambda<0>
-                             >
-                         >
-    >;
-
-  RAJA::kernel<Pol>(rangeList, [=] (Index_type i, Index_type j) {
-      idx_test[i*x_len + j] = i * x_len + j;
-      tsum += i * 1.1 + j;
-  });
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-  ASSERT_FLOAT_EQ(total, tsum.get());  
-  delete[] idx_x;
-  delete[] idx_y;
-}
-
-#if defined(RAJA_ENABLE_OPENMP)
-TEST(Kernel, ListSegmentOMP)
-{
-
-  Index_type * idx_x = new Index_type[x_len];
-  Index_type * idx_y = new Index_type[y_len];  
-  double * idx_test;
-  idx_test = new double[x_len*y_len];
-
-  for(int i=0; i<x_len; ++i) idx_x[i] = i;
-  for(int i=0; i<x_len; ++i) idx_y[i] = i;
-
-  RAJA::TypedListSegment<Index_type> idx_list(&idx_x[0], x_len);
-  RAJA::TypedListSegment<Index_type> idy_list(&idx_y[0], y_len);
-  RAJA::ReduceSum<RAJA::omp_reduce, double> tsum(0.0);
-  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
-  
-  double total=0.0;
-  tsum.reset(0.0); 
-
-  using Pol =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
-        RAJA::statement::For<0, RAJA::seq_exec,
-         RAJA::statement::Lambda<0>
-                             >
-                         >
-    >;
-
-  RAJA::kernel<Pol>(rangeList, [=] (Index_type i, Index_type j) {
-      idx_test[i*x_len + j] = i * x_len + j;
-      tsum += i * 1.1 + j;
-  });
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-  ASSERT_FLOAT_EQ(total, tsum.get());  
-  delete[] idx_x;
-  delete[] idx_y;
-  delete[] idx_test;
-}
-#endif
-
-
-
 #if defined(RAJA_ENABLE_CUDA)
-
-//-----------
-//Attempt to add listSegment to unit test
-CUDA_TEST(Kernel, CUDAListSegment)
-{
-
-  Index_type * idx_x = new Index_type[x_len];
-  Index_type * idx_y = new Index_type[y_len];  
-  double * idx_test;
-  cudaMallocManaged(&idx_test,x_len*y_len*sizeof(double));
-
-  for(int i=0; i<x_len; ++i) idx_x[i] = i;
-  for(int i=0; i<y_len; ++i) idx_y[i] = i;
-
-  RAJA::TypedListSegment<Index_type> idx_list(&idx_x[0], x_len);
-  RAJA::TypedListSegment<Index_type> idy_list(&idx_y[0], y_len);
-  RAJA::ReduceSum<RAJA::cuda_reduce<256>, double> tsum(0.0);
-
-  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
-  //auto rangeList = RAJA::make_tuple(RAJA::RangeSegment(0,x_len),RAJA::RangeSegment(0,y_len));
-  
-  double total=0.0;
-  tsum.reset(0.0); 
-
-  using Pol =
-    RAJA::KernelPolicy<
-    RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_threadblock_exec<16>, 
-        RAJA::statement::For<0, RAJA::cuda_threadblock_exec<16>,
-         RAJA::statement::Lambda<0>
-                             >
-                         >
-                        >
-    >;
-
-
-  RAJA::kernel<Pol>(rangeList, [=] RAJA_DEVICE (Index_type i, Index_type j) {
-      idx_test[i*x_len + j] = i * x_len + j;
-      tsum += i * 1.1 + j;
-  });
-
-  cudaDeviceSynchronize();
-
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-  cudaDeviceSynchronize();
-  ASSERT_FLOAT_EQ(total, tsum.get());  
-
-  cudaFree(idx_test);
-  delete[] idx_x;
-  delete[] idx_y;
-}
 
 CUDA_TEST(Kernel, CudaCollapse1a)
 {
@@ -503,6 +356,10 @@ CUDA_TEST(Kernel, CudaCollapse2)
 
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
+
+  //Initialize data to zero
+  sum1[0] = 0; 
+  sum2[0] = 0; 
 
   int N = 41;
   RAJA::kernel<Pol>(
