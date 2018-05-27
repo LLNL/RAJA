@@ -292,7 +292,7 @@ public:
   {
     Index_type end = begin+length > m_size ? (m_size-begin) : length;
 #if !defined(__CUDA_ARCH__)
-    return TypedListSegment(&m_data[begin], end, Unowned);
+    return TypedListSegment(&m_data[begin], end, Owned);
 #else
     return TypedListSegment(&m_data[begin], end);
 #endif
