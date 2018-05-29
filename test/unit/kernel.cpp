@@ -304,7 +304,7 @@ TEST(Kernel,ListSegment){
 
   using Pol =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+      RAJA::statement::For<1, RAJA::loop_exec,
         RAJA::statement::For<0, RAJA::loop_exec,
          RAJA::statement::Lambda<0>
                              >
