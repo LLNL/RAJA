@@ -155,7 +155,7 @@ public:
                                     Index_type length) 
     : m_data{const_cast<value_type*>(values)}, m_size{length}, m_owned{Unowned}
   {
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
     // Deep copy may only take place on the host. 
     initIndexData(values, length, Owned);
 #endif
@@ -198,7 +198,7 @@ public:
   TypedListSegment(const TypedListSegment& other)
     : m_data{other.m_data}, m_size{other.m_size}, m_owned{Unowned}
   {
-#if !defined(__CUDA_ARCH__)    
+#if !defined(RAJA_DEVICE_CODE)    
     // Deep copy may only take place on the host. 
     initIndexData(other.m_data, other.m_size, other.m_owned);
 #endif
@@ -209,7 +209,7 @@ public:
   ///  
   RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment& operator=(TypedListSegment const & other)
   {        
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
     // Deep copy may only take place on the host. 
     if (this != &other) {
       initIndexData(other.m_data, other.m_size, other.m_owned);
@@ -255,7 +255,7 @@ public:
   RAJA_HOST_DEVICE
   ~TypedListSegment()
   {
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
     // Deallocation may only take place on the host
     if (m_data == nullptr || m_owned != Owned) return;
     deallocate(std::integral_constant<bool, Has_CUDA>());
@@ -286,13 +286,15 @@ public:
   /*!
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
+   * 
+   * Current status: Tiling may not be distributing data correctly
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment slice(Index_type begin,
                                                       Index_type length) const
   {
     Index_type end = begin+length > m_size ? (m_size-begin) : length;
-#if !defined(__CUDA_ARCH__)
-    return TypedListSegment(&m_data[begin], end, Owned);
+#if !defined(RAJA_DEVICE_CODE)
+    return TypedListSegment(&m_data[begin], end, Unowned);
 #else
     return TypedListSegment(&m_data[begin], end);
 #endif

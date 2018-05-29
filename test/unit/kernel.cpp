@@ -156,32 +156,6 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
-
-  std::vector<Idx0> idx_x;
-  std::vector<Idx1> idx_y;
-
-  for(int i=0; i<x_len; ++i) idx_x.push_back(static_cast<Idx0>(i));
-  for(int i=0; i<y_len; ++i) idx_y.push_back(static_cast<Idx1>(i));
-
-  tsum.reset(0.0);
-  total = 0.0;
-  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
-  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
-  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
-
-  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
-    // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
-      v(get_val(i), j) = get_val(i) * x_len + j;
-      tsum += get_val(i) * 1.1 + j;
-  });
-
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(this->view(i, j), i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-  ASSERT_FLOAT_EQ(total, tsum.get());
  
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
@@ -245,6 +219,149 @@ using CUDATypes = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
+template<typename Pol, typename RedPol>
+void testListSegment(){
+  Index_type * idx_x = new Index_type[x_len];
+  Index_type * idx_y = new Index_type[y_len];  
+  double * idx_test;
+
+#if defined(RAJA_ENABLE_CUDA)
+    cudaMallocManaged(&idx_test,
+                      sizeof(double) * x_len * y_len,
+                      cudaMemAttachGlobal);
+#else
+  idx_test = new double[x_len*y_len];
+#endif
+
+  for(int i=0; i<x_len; ++i) idx_x[i] = i;
+  for(int i=0; i<x_len; ++i) idx_y[i] = i;
+
+  RAJA::TypedListSegment<Index_type> idx_list(&idx_x[0], x_len);
+  RAJA::TypedListSegment<Index_type> idy_list(&idx_y[0], y_len);
+  RAJA::ReduceSum<RedPol, double> tsum(0.0);
+  
+  double total=0.0;
+  tsum.reset(0.0); 
+  auto iterSpace1 = RAJA::make_tuple(idx_list, idy_list);
+  RAJA::kernel<Pol>(iterSpace1, [=] RAJA_HOST_DEVICE (Index_type i, Index_type j) {
+      idx_test[i*x_len + j] = i * x_len + j;
+      tsum += i * 1.1 + j;
+  });
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  ASSERT_FLOAT_EQ(total, tsum.get());  
+
+
+  total=0.0;
+  tsum.reset(0.0); 
+  auto iterSpace2 = RAJA::make_tuple(RAJA::RangeSegment(0,x_len), idy_list);
+  RAJA::kernel<Pol>(iterSpace2, [=] RAJA_HOST_DEVICE (Index_type i, Index_type j) {
+      idx_test[i*x_len + j] = i * x_len + j;
+      tsum += i * 1.1 + j;
+  });
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  ASSERT_FLOAT_EQ(total, tsum.get());  
+
+
+  total=0.0;
+  tsum.reset(0.0); 
+  auto iterSpace3 = RAJA::make_tuple(RAJA::RangeSegment(0,x_len), idy_list,RAJA::RangeSegment(0,10));
+  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+      idx_test[i*x_len + j] = i * x_len + j + k - k;
+      tsum += i * 1.1 + j;
+  });
+
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  
+  ASSERT_FLOAT_EQ(total, tsum.get());  
+
+  delete[] idx_x;
+  delete[] idx_y;
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaFree(idx_test);
+#else
+ delete[] idx_test;
+#endif
+
+}
+
+TEST(Kernel,ListSegment){
+
+  using Pol =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
+         RAJA::statement::Lambda<0>
+                             >
+                         >
+    >;  
+
+  testListSegment<Pol, RAJA::seq_reduce>();
+
+#if defined(RAJA_ENABLE_OPENMP)
+  using PolOMP1 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
+         RAJA::statement::Lambda<0>
+                             >
+                         >
+    >;
+
+  testListSegment<PolOMP1, RAJA::omp_reduce>();
+
+  using PolOMP2 = RAJA::KernelPolicy<
+    RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, ArgList<0, 1>,
+                              Lambda<0>
+                                > >;
+
+  testListSegment<PolOMP2, RAJA::omp_reduce>();
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+
+  using PolCUDA1 =
+    RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<1, RAJA::cuda_threadblock_exec<16>, 
+        RAJA::statement::For<0, RAJA::cuda_threadblock_exec<16>,
+         RAJA::statement::Lambda<0>
+                             >
+                         >
+                        >
+    >;
+
+  testListSegment<PolCUDA1, RAJA::cuda_reduce<256> >();
+
+  using PolCUDA2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_block_exec,
+          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
+
+  testListSegment<PolCUDA2, RAJA::cuda_reduce<256> >();
+#endif
+}
 
 #if defined(RAJA_ENABLE_CUDA)
 
