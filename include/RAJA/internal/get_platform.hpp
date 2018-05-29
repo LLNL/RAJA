@@ -36,7 +36,7 @@ struct max_platform {
  */
 template <typename T, typename = void>
 struct get_platform {
-  // catch-all: undefined CHAI space
+  // catch-all: undefined platform
   static constexpr Platform value = Platform::undefined;
 };
 
@@ -126,9 +126,9 @@ struct get_platform<RAJA::internal::StatementList<>> {
 };
 
 
-// Top level MultiPolicy shouldn't select a CHAI execution space
+// Top level MultiPolicy shouldn't select a platform
 // Once a specific policy is selected, that policy will select the correct
-// policy... see policy_invoker in MultiPolicy.hpp
+// platform... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
 struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>> {
   static constexpr Platform value = Platform::undefined;

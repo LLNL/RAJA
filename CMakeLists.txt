@@ -100,12 +100,6 @@ if (NOT RAJA_LOADED)
       cuda)
   endif ()
 
-  if (ENABLE_CHAI)
-    set (raja_depends
-      ${raja_depends}
-      chai)
-  endif ()
-
   if (ENABLE_TBB)
     set(raja_depends
       ${raja_depends}
