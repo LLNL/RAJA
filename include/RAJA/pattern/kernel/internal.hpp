@@ -115,7 +115,6 @@ struct StatementExecutor {
 };
 
 
-#pragma omp declare target
 template <typename PolicyType,
           typename SegmentTuple,
           typename ParamTuple,
