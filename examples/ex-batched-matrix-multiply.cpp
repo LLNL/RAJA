@@ -27,26 +27,43 @@
 /*
  *  Batched Matrix Multiply Example
  *
- *  This example carries out matrix multiplication
- *  for NMAT matrices. Here we assume
- *  matrices are of dimension 3 x 3.
- *  Each iteration of the RAJA loop
- *  multiplies a pair of matrices from the batch.
+ *  Example carries out batched matrix multiplication
+ *  for matrices of dimension 3 x 3 using two different
+ *  data layouts. 
+ * 
+ *  Matrices are stored in arrays A, and B. Results 
+ *  are stored in C. We introduce the notation A^{e}_rc
+ *  to correspond to the matrix entry in the row - r, 
+ *  column - c of matrix - e. Below we describe the potential
+ *  layouts in the case of two matrices NMAT=2.
  *
- *  The notation A^{e}_rc corresponds to the matrix entry
- *  in the row - r, column - c of matrix - e.
+ * Layout 1:
+ * Matrix entries are grouped together so that each 
+ * matrix is in a row major ordering. 
+ * i.e. A = [A^{0}_{00}, A^{0}_{01}, A^{0}_{02},
+ *           A^{0}_{10}, A^{0}_{11}, A^{0}_{12},
+ *           A^{0}_{20}, A^{0}_{21}, A^{0}_{22},
+ *           A^{1}_{00}, A^{1}_{01}, A^{1}_{02},
+ *           A^{1}_{10}, A^{1}_{11}, A^{1}_{12},
+ *           A^{1}_{20}, A^{1}_{21}, A^{1}_{22}];
  *
- *  Furthermore, we explore performance for two data layouts.
- *  Layout 1: Assumes matrices are contiguous in memory
- *  enabling vectorized operations.
- *  i.e. [A^{0}_{00}, A^{0}_{01}, A^{0}_{02}, ...]
+ * Layout 2:
+ * Matrix entries are first ordered by matrix number,
+ * then by column number, and finally by row number. 
+ * i.e. A = [A^{0}_{00}, A^{1}_{00}, A^{0}_{01},
+ *           A^{1}_{01}, A^{0}_{02}, A^{1}_{02},
+ *           A^{0}_{10}, A^{1}_{10}, A^{0}_{11},
+ *           A^{1}_{11}, A^{0}_{12}, A^{1}_{12},
+ *           A^{0}_{20}, A^{1}_{20}, A^{0}_{21},
+ *           A^{1}_{21}, A^{0}_{22}, A^{1}_{22}];
  *
- * Layout 2: Multiplies matrices assuming matrix entries are grouped together
- * allowing for coalesced reads and writes.
- * i.e. [A^{0}_{00}, A^{1}_{00}, A^{2}_{00}, \dots]
- *
- * We expect that layout 1 will perform better on the CPU
- * and layout 2 would perform better on the GPU.
+ * Since layout 1 has the entries for a matrix
+ * close in memory it simplifies vector operations. 
+ * Thus we would expect improved performance on the CPU 
+ * over layout 2.
+ * Layout 2 is ideal for having consecutive threads
+ * operate on consecutive elements. Which is favorable
+ * for a GPUs. 
  *
  *  RAJA features shown:
  *    -  RAJA View
@@ -65,7 +82,7 @@ const int CUDA_BLOCK_SIZE = 256;
 // Dimensions of matrices
 const int NCOLS = 3;
 const int NROWS = 3;
-const int NMAT = 12000000;
+const int NMAT = 120000;
 
 // Number of iterations
 const int NITER = 20;
@@ -99,9 +116,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // make_permuted_layout takes the number of entries in each dimension and an
   // array indicating slowest to fastest stride
   // Indexing is equivalent to A(e,r,c) A[c + NCOLS*(r + NROWS*e)]
-  // e - 0th index
-  // r - 1st index
-  // c - 2nd index
   auto layout =
       RAJA::make_permuted_layout({{NMAT, NROWS, NCOLS}},
                                  RAJA::as_array<RAJA::Perm<0, 1, 2> >::get());
@@ -122,9 +136,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Permuted layout - equivalent to indexing via
   // A[e + NELEM*(r + NROWS*c)]
-  // r - 1st index
-  // c - 2nd index
-  // e - 0th index
   auto layout2 =
       RAJA::make_permuted_layout({{NMAT, NROWS, NCOLS}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0> >::get());
