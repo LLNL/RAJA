@@ -179,8 +179,6 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
         CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 
 
-    printf("Max: blocks=%d, threads=%d\n", (int)max_physical.blocks, (int)max_physical.threads);
-
     // Privatize the LoopData, using make_launch_body to setup reductions
     auto cuda_data = RAJA::cuda::make_launch_body(
         max_physical.blocks, max_physical.threads, shmem, stream, data);
@@ -195,14 +193,11 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
 
-    printf("Logical: blocks=%d, threads=%d\n", (int)logical_dims.blocks, (int)logical_dims.threads);
-
     // Compute the actual physical kernel dimensions
     LaunchDim launch_dims;
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-    printf("Launch: blocks=%d, threads=%d\n", (int)launch_dims.blocks, (int)launch_dims.threads);
 
     // Only launch kernel if we have something to iterate over
     bool at_least_one_iter = launch_dims.blocks > 0 || launch_dims.threads > 0;
