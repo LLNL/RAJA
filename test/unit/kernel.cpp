@@ -156,6 +156,34 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
+
+  std::vector<Idx0> idx_x;
+  std::vector<Idx1> idx_y;
+
+  for(int i=0; i<x_len; ++i) idx_x.push_back(static_cast<Idx0>(i));
+  for(int i=0; i<y_len; ++i) idx_y.push_back(static_cast<Idx1>(i));
+
+  tsum.reset(0.0);
+  total = 0.0;
+  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
+  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
+  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
+
+  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+    // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;      
+      v(get_val(i), j) = get_val(i) * x_len + j;
+      tsum += get_val(i) * 1.1 + j;
+  });
+
+
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(this->view(i, j), i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  ASSERT_FLOAT_EQ(total, tsum.get());
+
  
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
