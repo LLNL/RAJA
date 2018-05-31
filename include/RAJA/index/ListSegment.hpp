@@ -155,7 +155,8 @@ public:
                                     Index_type length) 
     : m_data{const_cast<value_type*>(values)}, m_size{length}, m_owned{Unowned}
   {
-#if !defined(RAJA_DEVICE_CODE)
+    
+#if !defined(RAJA_DEVICE_CODE) && defined(RAJA_ENABLE_CUDA)
     // Deep copy may only take place on the host. 
     initIndexData(values, length, Owned);
 #endif
@@ -287,14 +288,13 @@ public:
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    * 
-   * Current status: Tiling may not be distributing data correctly
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment slice(Index_type begin,
                                                       Index_type length) const
   {
     Index_type end = begin+length > m_size ? (m_size-begin) : length;
 #if !defined(RAJA_DEVICE_CODE)
-    return TypedListSegment(&m_data[begin], end, Unowned);
+    return TypedListSegment(&m_data[begin], end);
 #else
     return TypedListSegment(&m_data[begin], end);
 #endif
