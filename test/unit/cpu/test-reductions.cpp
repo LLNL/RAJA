@@ -413,6 +413,7 @@ protected:
 };
 TYPED_TEST_CASE_P(NestedReductionCorrectnessTest);
 
+#if defined (RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
@@ -498,3 +499,4 @@ using nested_types = ::testing::Types<std::tuple<
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce,
                               NestedReductionCorrectnessTest,
                               nested_types);
+#endif

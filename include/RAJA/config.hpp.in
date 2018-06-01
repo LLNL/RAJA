@@ -56,6 +56,11 @@
 #cmakedefine RAJA_ENABLE_CHAI
 
 /*
+ * Deprecated tests
+ */
+#cmakedefine RAJA_DEPRECATED_TESTS
+
+/*
  * Timer options
  */
 
@@ -169,10 +174,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -191,10 +196,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -217,7 +222,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
+#define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
 
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -237,10 +242,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -262,7 +267,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
 
 #define RAJA_INLINE inline
-#define RAJA_ALIGN_DATA(d)
+#define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
 
@@ -272,6 +277,25 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
 #cmakedefine RAJA_HAVE_MM_MALLOC
 
+//
+//Creates a general framework for compiler alignment hints
+//
+// Example usage:
+// double *a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,10*sizeof(double));
+// double *y = RAJA::align_hint
+
+template<typename T>
+RAJA_INLINE
+T * align_hint(T * x)
+{
+#if defined (RAJA_COMPILER_INTEL)
+  RAJA_ALIGN_DATA(x);
+  return x;
+#else
+  return static_cast<T *>(RAJA_ALIGN_DATA(x));
+#endif
+}
+    
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard
