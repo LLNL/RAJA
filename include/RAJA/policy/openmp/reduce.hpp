@@ -38,7 +38,6 @@
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
 
 #include <omp.h>
 

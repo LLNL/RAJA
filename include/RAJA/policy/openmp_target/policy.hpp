@@ -1,4 +1,6 @@
-#ifndef policy
+#ifndef RAJA_policy_openmp_target_HPP
+#define RAJA_policy_openmp_target_HPP
+
 #include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA {
@@ -56,3 +58,5 @@ using policy::omp::omp_target_parallel_collapse_exec;
 #endif
 
 } // closing brace for RAJA namespace
+
+#endif // RAJA_policy_openmp_target_HPP

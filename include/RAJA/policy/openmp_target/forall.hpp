@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for OpenMP.
- *
- *          These methods should work on any platform that supports OpenMP.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -26,8 +13,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_target_forall_openmp_HXX
-#define RAJA_target_forall_openmp_HXX
+#ifndef RAJA_target_forall_openmp_HPP
+#define RAJA_target_forall_openmp_HPP
 
 #include "RAJA/config.hpp"
 
