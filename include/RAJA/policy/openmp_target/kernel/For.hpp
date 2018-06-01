@@ -12,8 +12,8 @@
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-#ifndef RAJA_policy_openmp_kernel_For_HPP
-#define RAJA_policy_openmp_kernel_For_HPP
+#ifndef RAJA_policy_openmp_target_kernel_For_HPP
+#define RAJA_policy_openmp_target_kernel_For_HPP
 
 #include "RAJA/pattern/kernel/internal.hpp"
 
@@ -26,6 +26,9 @@ struct OpenMPTargetForWrapper : public GenericWrapperBase {
 
   data_t data;
 
+  /*! 
+   * \brief Deferences data so that it can be mapped to the device
+   */
   RAJA_INLINE
   constexpr explicit OpenMPTargetForWrapper(data_t &d) : 
     data{d}  {}
@@ -56,33 +59,6 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
 
     forall_impl(omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
-};
-
-template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
-struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
-                                             ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>> {
-
-
-  template <typename Data>
-  static RAJA_INLINE void exec(Data&& data)
-  {
-    using data_t = camp::decay<Data>;
-    data_t private_data{data};
-
-    auto l0 = segment_length<Arg0>(data);
-    auto l1 = segment_length<Arg1>(data);
-
-#pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to : private_data) collapse(2)
-      for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
-        for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
-          private_data.template assign_offset<Arg0>(i0);
-          private_data.template assign_offset<Arg1>(i1);
-          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
-        }
-      }
-    }
 };
 
 }
