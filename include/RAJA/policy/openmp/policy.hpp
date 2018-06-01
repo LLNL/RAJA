@@ -143,6 +143,14 @@ struct omp_target_parallel_for_exec_nt
                             omp::Target,
                             omp::Distribute> {
 };
+
+struct omp_target_parallel_collapse_exec
+    : make_policy_pattern_t<Policy::target_openmp,
+                            Pattern::forall,
+                            omp::Target,
+                            omp::Collapse> {
+};
+
 #endif
 
 ///

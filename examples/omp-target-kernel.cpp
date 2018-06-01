@@ -5,10 +5,12 @@ using namespace RAJA::statement;
 
 int main(int argc, char* argv[]) {
 
+  // using Pol = KernelPolicy<
+  //               For<1, RAJA::loop_exec>,
+  //               For<0, RAJA::omp_target_parallel_for_exec<1>, Lambda<0> >
+  //             >;
   using Pol = KernelPolicy<
-                //For<1, RAJA::loop_exec>,
-                For<0, RAJA::omp_target_parallel_for_exec<1>, Lambda<0> >
-              >;
+    Collapse<omp_target_parallel_collapse_exec, ArgList<0,1>, Lambda<0> > >;
 
   double* array = new double[25*25];
 
@@ -18,7 +20,7 @@ int main(int argc, char* argv[]) {
 #if 1
   RAJA::kernel<Pol>(
       RAJA::make_tuple(
-        //RAJA::RangeSegment(0,25),
+        RAJA::RangeSegment(0,25),
         RAJA::RangeSegment(0,25)),
       [=] (int i) {
       //array[i + (25*j)] = i*j;
