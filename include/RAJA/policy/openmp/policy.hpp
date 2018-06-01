@@ -223,6 +223,7 @@ using policy::omp::omp_synchronize;
 using policy::omp::omp_target_parallel_for_exec;
 using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
+using policy::omp::omp_target_parallel_collapse_exec;
 #endif
 
 

@@ -59,7 +59,7 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
 };
 
 template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
-struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
+struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1>,
                                              EnclosedStmts...>> {
 
@@ -67,22 +67,22 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-    OpenMPTargetForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
+    using data_t = camp::decay<Data>;
+    data_t private_data{data};
 
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
 
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to : for_wrapper) collapse(2)
+    map(to : private_data) collapse(2)
       for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
-          execute_statement_list<camp::list<EnclosedStmts...>>(for_wrapper);
+          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
         }
       }
     }
-  }
 };
 
 }

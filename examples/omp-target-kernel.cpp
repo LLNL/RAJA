@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
       RAJA::make_tuple(
         RAJA::RangeSegment(0,25),
         RAJA::RangeSegment(0,25)),
-      [=] (int i) {
+      [=] (int i, int) {
       //array[i + (25*j)] = i*j;
   //    int idx = i;
       //array[0] = i*j;
