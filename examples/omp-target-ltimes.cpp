@@ -298,14 +298,14 @@ void runLTimesRajaKernel(bool debug,
 
 
 
-  //using Pol = RAJA::KernelPolicy<
-  //    Collapse<omp_target_parallel_collapse_exec,
-  //      ArgList<0, 1, 2>,
-  //      For<3, RAJA::loop_exec, Lambda<0>>>>;
-
   using Pol = RAJA::KernelPolicy<
       Collapse<omp_target_parallel_collapse_exec,
-        ArgList<0, 1, 2, 3>, Lambda<0>>>;
+        ArgList<0, 1, 2>,
+        For<3, RAJA::seq_exec, Lambda<0>>>>;
+
+  //using Pol = RAJA::KernelPolicy<
+  //    Collapse<omp_target_parallel_collapse_exec,
+  //      ArgList<0, 1, 2, 3>, Lambda<0>>>;
 
 
   RAJA::Timer timer;
