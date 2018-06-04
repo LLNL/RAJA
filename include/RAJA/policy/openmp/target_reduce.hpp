@@ -214,41 +214,38 @@ struct TargetReduce {
   {
     if (!info.isMapped) {
 
-        int n = omp::omp_thread_block_max;
-        int m = Teams; 
-
+	int nTeams = Teams;
+	int n = omp::omp_thread_block_max;
+	int lim = Teams * n;
+	
 	// do reduction on gpu
-     #pragma omp target map(to: m,n) 
+	
+     #pragma omp target teams num_teams(nTeams) map(to:nTeams,n,lim) 
      {
 
-	// sum all teams into first two teams, unrolled this just to test best config
-	for(int j=2; j<m; j+=2)
+        int teamid = omp_get_team_num();
+        int idx1 = teamid*n;
+        int nn = n;
+
+	while( nn >= 2 )
 	{
-	    #pragma omp parallel for
-	    for(int i=0; i<n; ++i )
-	    {
-		int idx1 = i;
-		int idx2 = n + i;
-		int jdx1 = j*n + i;
-		int jdx2 = jdx1 + n;
-		Reducer{}(val.device[idx1], val.device[jdx1]);	
-                Reducer{}(val.device[idx2], val.device[jdx2]);
-	    }
-		
+            int jdx1 = idx1 + nn/2;	
+	   #pragma omp parallel for
+	    for( int i=0; i<nn/2; ++i )
+               Reducer{}(val.device[idx1+i], val.device[jdx1+i]);
+	    nn /= 2;
 	}
 
-	// sum last two teams
-	#pragma omp parallel for
-	for( int i=0; i<n; ++i ){
-           Reducer{}(val.device[i], val.device[n+i]);
 	}
-	
-	// serial summation of all elements in last team, can improve 
-        for( int i=1; i<n; ++i ){
-           Reducer{}(val.device[0], val.device[i]);
-        }	
 
-     }
+	#pragma omp target teams  num_teams(1) map(to:nTeams,n) 
+	{	
+		for( int i=1; i<nTeams; ++i )
+		{
+               		Reducer{}(val.device[0], val.device[i*n]);			
+		}
+	}
+
 
 	// changed deviceToHost to only send back one element rather than all.
       val.deviceToHost(info);
@@ -256,6 +253,7 @@ struct TargetReduce {
       val.cleanup(info);
       info.isMapped = true;
     }
+
     finalVal = Reducer::identity();
     Reducer{}(finalVal, initVal);
     Reducer{}(finalVal, val.value);
@@ -311,14 +309,6 @@ struct TargetReduceLoc {
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-/*    if (!omp_is_initial_device()) {
-#pragma omp critical
-      {
-        int tid = omp_get_team_num();
-        Reducer{}(val.device[tid], loc.device[tid], val.value, loc.value);
-      }
-    }
-*/
   }
 
   //! map result value back to host if not done already; return aggregate value
@@ -326,48 +316,39 @@ struct TargetReduceLoc {
   {
     if (!info.isMapped) {
 
+        int nTeams = Teams;
         int n = omp::omp_thread_block_max;
-        int m = Teams;
+        int lim = Teams * n;
 
         // do reduction on gpu
-     #pragma omp target map(to: m,n)
+
+     #pragma omp target teams num_teams(nTeams) map(to:nTeams,n,lim)
      {
 
-        // sum all teams into first two teams, unrolled this just to test best config
-        for(int j=2; j<m; j+=2)
+        int teamid = omp_get_team_num();
+        int idx1 = teamid*n;
+        int nn = n;
+
+        while( nn >= 2 )
         {
-            #pragma omp parallel for
-            for(int i=0; i<n; ++i )
-            {
-                int idx1 = i;
-                int idx2 = n + i;
-                int jdx1 = j*n + i;
-                int jdx2 = jdx1 + n;
-                Reducer{}(val.device[idx1], loc.device[idx1], val.device[jdx1], loc.device[jdx1]);
-                Reducer{}(val.device[idx2], loc.device[idx2], val.device[jdx2], loc.device[jdx2]);
-            }
-
+            int jdx1 = idx1 + nn/2;
+           #pragma omp parallel for
+            for( int i=0; i<nn/2; ++i )
+               Reducer{}(val.device[idx1+i], loc.device[idx1+i], val.device[jdx1+i], loc.device[jdx1+i]);
+            nn /= 2;
         }
 
-        // sum last two teams
-        #pragma omp parallel for
-        for( int i=0; i<n; ++i ){
-           Reducer{}(val.device[i], loc.device[i], val.device[n+i], loc.device[n+i]);
-        }
+     } // end of target
 
-        // serial summation of all elements in last team, can improve
-        for( int i=1; i<n; ++i ){
-           Reducer{}(val.device[0], loc.device[0], val.device[i], loc.device[i]);
-        }
+        #pragma omp target map(to:nTeams,n)
+        {
+                for( int i=1; i<nTeams; ++i )
+                    Reducer{}(val.device[0], loc.device[0],val.device[i*n],loc.device[i*n]);
+        } // end of target
+      
 
-     }
-
-//////////////////////////////////////
       val.deviceToHost(info);
       loc.deviceToHost(info);
-//      for (int i = 0; i < Teams; ++i) {
-//        Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
-//      }
       val.value = val.host[0];
       loc.value = loc.host[0];
       val.cleanup(info);
