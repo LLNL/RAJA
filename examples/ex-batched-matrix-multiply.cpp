@@ -99,7 +99,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int NROWS = 3;
 
   // Number of matrices
-  const Index_type N = 3600000;
+  const Index_type N = 8000000;
 
   // Number of iterations
   const int NITER = 20;
@@ -159,11 +159,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Initialize data
 //
-#if defined(RAJA_ENABLE_OPENMP)
+//#if defined(RAJA_ENABLE_OPENMP)
   using INIT_POL = RAJA::omp_parallel_for_exec;
-#else
-  using INIT_POL = RAJA::loop_exec;
-#endif
+  //#else
+  //  using INIT_POL = RAJA::loop_exec;
+  //#endif
 
   RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
     for (Index_type row = 0; row < NROWS; ++row) {
