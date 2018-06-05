@@ -15,10 +15,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using namespace RAJA;
 
   kernel_param<
-    KernelPolicy< 
+    KernelPolicy<
       statement::Tile<1, tile_dynamic<1>, seq_exec,
         statement::Tile<0, tile_dynamic<0>, seq_exec,
-          statement::For<1, seq_exec, 
+          statement::For<1, seq_exec,
              statement::For<0, seq_exec, statement::Lambda<0>>
           >
         >

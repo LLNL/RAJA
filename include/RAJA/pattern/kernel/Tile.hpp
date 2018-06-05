@@ -39,7 +39,7 @@ struct TileSize {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  constexpr TileSize(camp::idx_t size_) : size{size_} 
+  constexpr TileSize(camp::idx_t size_) : size{size_}
   {
   }
 };
@@ -255,7 +255,7 @@ template<camp::idx_t ArgumentId,
   typename Types>
 struct StatementExecutor<
     statement::Tile<ArgumentId, tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>, Types> {
-  
+
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
