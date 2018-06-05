@@ -103,7 +103,7 @@
 
 /*
  * Define number of threads in x and y dimensions of a CUDA thread block
-*/
+ */
 #if defined(RAJA_ENABLE_CUDA)
 #define CUDA_BLOCK_SIZE 16
 #endif
@@ -119,26 +119,26 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA five-cell stencil example...\n";
 
-  //
-  // Define num of interior cells in row/cols in a lattice
-  //
+//
+// Define num of interior cells in row/cols in a lattice
+//
   const int iCellsInRow = 3;
   const int iCellsInCol = 3;
 
-  //
-  // Define tot num of cells in rows/cols in a lattice
-  //
+//
+// Define total num of cells in rows/cols in a lattice
+//
   const int totCellsInRow = iCellsInRow + 2;
   const int totCellsInCol = iCellsInCol + 2;
 
-  //
-  // Define total num of cells in a lattice
-  //
+//
+// Define total num of cells in a lattice
+//
   const int totCells = totCellsInRow * totCellsInCol;
 
-  //
-  // Allocate and initialize lattice
-  //
+//
+// Allocate and initialize lattice
+//
   int* input_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
   int* output_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
   int* lattice_ref = memoryManager::allocate<int>(totCells * sizeof(int));
@@ -147,20 +147,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(output_lattice, 0, totCells * sizeof(int));
   std::memset(lattice_ref, 0, totCells * sizeof(int));
 
-  //
-  // C-Style intialization
-  //
+//
+// C-Style intialization
+//
   for (int row = 1; row <= iCellsInRow; ++row) {
     for (int col = 1; col <= iCellsInCol; ++col) {
       int id = col + totCellsInCol * row;
       input_lattice[id] = 1;
     }
   }
-  // printLattice(input_lattice, totCellsInRow, totCellsInCol);
+// printLattice(input_lattice, totCellsInRow, totCellsInCol);
 
-  //
-  // Generate reference solution
-  //
+//
+// Generate reference solution
+//
   for (int row = 1; row <= iCellsInRow; ++row) {
     for (int col = 1; col <= iCellsInCol; ++col) {
 
@@ -171,36 +171,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                         + input_lattice[id - totCellsInCol];
     }
   }
-  // printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-  //----------------------------------------------------------------------------//
+// printLattice(lattice_ref, totCellsInRow, totCellsInCol);
 
-  //
-  // Create loop bounds
-  //
+//----------------------------------------------------------------------------//
+
+//
+// Create loop bounds
+//
   RAJA::RangeSegment col_range(0, iCellsInRow);
   RAJA::RangeSegment row_range(0, iCellsInCol);
 
-  //
-  // Specify the dimension of the lattice
-  //
+//
+// Specify the dimension of the lattice
+//
   const int DIM = 2;
 
-  // The following code illustrates pairing an offset layout and a RAJA view
-  // object to simplify multidimensional indexing.
-  // An offset layout is constructed by using the make_offset_layout method.
-  // The first argument of the layout is an array object with the coordinates of
-  // the bottom left corner of the lattice, and the second argument is an array 
-  // object of the coordinates of the top right corner.
-  // The example uses double braces to initiate the array object and its
-  // subobjects.
-  //
+// The following code illustrates pairing an offset layout and a RAJA view
+// object to simplify multidimensional indexing.
+// An offset layout is constructed by using the make_offset_layout method.
+// The first argument of the layout is an array object with the coordinates of
+// the bottom left corner of the lattice, and the second argument is an array 
+// object of the coordinates of the top right corner.
+// The example uses double braces to initiate the array object and its
+// subobjects.
+//
   RAJA::OffsetLayout<DIM> layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{iCellsInRow, iCellsInCol}});
   RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
 
-  //----------------------------------------------------------------------------//
-  std::cout << "\n Running five-cell-stencil (RAJA-Kernel - "
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
                "sequential)...\n";
 
   using NESTED_EXEC_POL1 =
@@ -225,6 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
   checkResult(output_lattice, lattice_ref, totCells);
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -266,8 +269,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_exec,
-          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+        RAJA::statement::For<1, RAJA::cuda_block_exec, //row
+          RAJA::statement::For<0, RAJA::cuda_thread_exec, //col
             RAJA::statement::Lambda<0>
           >
         >
@@ -287,12 +290,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //printLattice(output_lattice, totCellsInRow, totCellsInCol);
   checkResult(output_lattice, lattice_ref, totCells);
-//----------------------------------------------------------------------------//
 #endif
 
-  //
-  // Clean up.
-  //
+//----------------------------------------------------------------------------//
+
+//
+// Clean up.
+//
   memoryManager::deallocate(input_lattice);
   memoryManager::deallocate(output_lattice);
   memoryManager::deallocate(lattice_ref);

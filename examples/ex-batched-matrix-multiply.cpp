@@ -84,7 +84,7 @@ const int CUDA_BLOCK_SIZE = 256;
 using RAJA::Index_type;
 
 //
-// Function for comparing outputs
+//Function for checking results
 //
 template <typename T>
 void checkResult(T C, Index_type noMat, int nRows, int nCols);
@@ -94,61 +94,61 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA batched matrix multiplication example...\n";
 
-  // Dimensions of matrices
+// Dimensions of matrices
   const int NCOLS = 3;
   const int NROWS = 3;
 
-  // Number of matrices
+// Number of matrices
   const Index_type N = 8000000;
 
-  // Number of iterations
+// Number of iterations
   const int NITER = 20;
 
-  std::cout << "Number of matrices to be multiplied: " << N << " \n";
+  std::cout << "\n Number of matrices to be multiplied: " << N << " \n \n";
 
-  //
-  // Initialize a RAJA timer object
-  // and variable to store minimum run time
-  //
+//
+// Initialize a RAJA timer object
+// and variable to store minimum run time
+//
   auto timer = RAJA::Timer();
   double minRun;
 
-  //
-  // Allocate space for data in layout 1
-  //
+//
+// Allocate space for data in layout 1
+//
   double *A = memoryManager::allocate<double>(NCOLS * NROWS * N);
   double *B = memoryManager::allocate<double>(NCOLS * NROWS * N);
   double *C = memoryManager::allocate<double>(NCOLS * NROWS * N);
 
-  //
-  // Layout 1
-  //
-  // make_permuted_layout takes the number of entries in each dimension and a
-  // templated array indicating slowest to fastest stride. Dimensions are stored
-  // in an array object. Here double braces are used to initialize the array and its
-  // subobjects (number of entries in each component).
-  // The layout generates an indexing equivalent to
-  // A(e,r,c) A[c + NCOLS*(r + NROWS*e)]
+//
+// Layout 1
+//
+// make_permuted_layout takes the number of entries in each dimension and a
+// templated array indicating slowest to fastest stride. Dimensions are stored
+// in an array object. Here double braces are used to initialize the array and its
+// subobjects (number of entries in each component).
+// The layout generates an indexing equivalent to
+// A(e,r,c) A[c + NCOLS*(r + NROWS*e)]
   auto layout =
       RAJA::make_permuted_layout({{N, NROWS, NCOLS}},
                                  RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
 
-  // RAJA::Layout is templated on dimension, argument type, and index with unit
-  // stride (in this case argument 2 has unit stride)
+// RAJA::Layout is templated on dimension, argument type, and index with unit
+// stride (in this case argument 2 has unit stride)
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout);
 
-  //
-  // Allocate space for data in layout 2
-  //
+//
+// Allocate space for data in layout 2
+//
   double *A2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
   double *B2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
   double *C2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
 
-  //
-  // Permuted layout - equivalent to indexing via
-  // A[e + N*(r + NROWS*c)]
+//
+// Permuted layout - equivalent to indexing via
+// A[e + N*(r + NROWS*c)]
   auto layout2 =
       RAJA::make_permuted_layout({{N, NROWS, NCOLS}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
@@ -159,11 +159,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Initialize data
 //
-//#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   using INIT_POL = RAJA::omp_parallel_for_exec;
-  //#else
-  //  using INIT_POL = RAJA::loop_exec;
-  //#endif
+#else
+  using INIT_POL = RAJA::loop_exec;
+#endif
 
   RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
     for (Index_type row = 0; row < NROWS; ++row) {
@@ -179,11 +179,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   });
 
-//-------------------------------------------
-// Matrix multiply with layout 1 on the CPU using omp_parallel_for_exec
-//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 1 (RAJA - omp parallel for) ... " << std::endl;
+
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -228,16 +230,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Performing batched matrix multiplication with layout 1 using "
-               "RAJA::omp_parallel_for_exec ... "
-               "run time : "
-            << minRun << " seconds" << std::endl;
+  
+  std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview, N, NROWS, NCOLS);
-  //-------------------------------------------
 
-  //-------------------------------------------
-  // Matrix multiply with layout 2 on the CPU using omp_parallel_for_exec
-  //
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 2 (RAJA - omp parallel for) ... " << std::endl;
+
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -282,17 +283,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Performing batched matrix multiplication with layout 2 using "
-               "RAJA::omp_parallel_for_exec ... "
-               "run time : "
-            << minRun << " seconds" << std::endl;
+  std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview2, N, NROWS, NCOLS);
-//---------------------------------------------
+
 #endif
 
-  //-------------------------------------------
-  // Matrix multiply with layout 1 on the CPU with loop_exec policy
-  //
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 1 (RAJA - sequential) ... " << std::endl;
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
@@ -336,16 +335,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Performing batched matrix multiplication with layout 1 using "
-               "RAJA::loop_exec ... "
-               "run time : "
-            << minRun << " seconds" << std::endl;
+    
+  std::cout << "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview, N, NROWS, NCOLS);
-  //-------------------------------------------
 
-  //-------------------------------------------
-  // Matrix multiply with layout 2 on the CPU
-  //
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 2 (RAJA - sequential) ... " << std::endl;
+
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -389,17 +387,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Performing batched matrix multiplication with layout 2 using "
-               "RAJA::loop_exec ... "
-               "run time : "
-            << minRun << " seconds" << std::endl;
+  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
   checkResult(Cview2, N, NROWS, NCOLS);
-//---------------------------------------------
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
-  //-------------------------------------------
-  // Matrix multiply with layout 1 on the GPU
-  //
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 1 (RAJA - cuda) ... " << std::endl;
+
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -444,15 +441,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Matrix Multiplication with layout 1 on GPU with "
-               "RAJA::cuda_exec ... "
-            << minRun << " seconds" << std::endl;
-  checkResult(Cview, N, NROWS, NCOLS);
-  //---------------------------------------------
 
-  //-------------------------------------------
-  // Matrix multiply with layout 2 on the GPU
-  //
+  std::cout<< "\trun time: "<< minRun << " seconds" << std::endl;
+  checkResult(Cview, N, NROWS, NCOLS);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 2 (RAJA - cuda) ... " << std::endl;
+
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -497,15 +494,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (tMin < minRun) minRun = tMin;
     timer.reset();
   }
-  std::cout << "Matrix Multiplication with layout 2 on GPU with "
-               "RAJA::cuda_exec ... "
-            << minRun << " seconds" << std::endl;
-  checkResult(Cview, N, NROWS, NCOLS);
-//---------------------------------------------
+  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
+  checkResult(Cview2, N, NROWS, NCOLS);
 #endif
-  //
-  // Clean up.
-  //
+
+//----------------------------------------------------------------------------//
+
+//
+// Clean up.
+//
   memoryManager::deallocate(A);
   memoryManager::deallocate(B);
   memoryManager::deallocate(C);
@@ -533,9 +530,9 @@ void checkResult(T C, Index_type noMat, int nRows, int nCols)
     }
   }
 
-  if (status == false) {
-    std::cout << "Batched Matrix Multiply - fail" << std::endl;
+  if ( status ) {
+    std::cout << "\tresult -- PASS\n";
   } else {
-    std::cout << "Batched Matrix Multiply - pass" << std::endl;
+    std::cout << "\tresult -- FAIL\n";
   }
 }
