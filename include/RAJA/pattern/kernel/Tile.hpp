@@ -62,6 +62,11 @@ struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 };
 
+template <camp::idx_t ArgumentId>
+struct tile_dynamic {
+  static constexpr camp::idx_t id = ArgumentId;
+};
+
 
 }  // end namespace statement
 
@@ -200,8 +205,6 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts>
 struct StatementExecutor<statement::
                              Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
-
-
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
@@ -224,6 +227,37 @@ struct StatementExecutor<statement::
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }
 };
+
+template<camp::idx_t ArgumentId,
+  typename EPol,
+  typename... EnclosedStmts>
+struct StatementExecutor<statement::
+                             Tile<ArgumentId, statement::tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>> {
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &data)
+  {
+    // Get the segment we are going to tile
+    auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Get the tiling policies chunk size
+    auto chunk_size = camp::get<ArgumentId>(data.param_tuple);
+    std::cout << "Tile size is " << chunk_size << std::endl;
+
+    // Create a tile iterator
+    IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
+
+    // Wrap in case forall_impl needs to thread_privatize
+    TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);
+
+    // Loop over tiles, executing enclosed statement list
+    forall_impl(EPol{}, tiled_iterable, tile_wrapper);
+
+    // Set range back to original values
+    camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
+  }
+};
+
+
 }  // end namespace internal
 }  // end namespace RAJA
 

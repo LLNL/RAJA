@@ -84,3 +84,7 @@ endif()
 raja_add_executable(
   NAME cpu-shmem-ltimes
   SOURCES cpu-shmem-ltimes.cpp)
+
+raja_add_executable(
+  NAME kernel-dynamic-tile
+  SOURCES kernel-dynamic-tile.cpp)
