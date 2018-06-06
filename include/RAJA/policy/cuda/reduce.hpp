@@ -597,7 +597,7 @@ struct Reduce_Data {
 
   Reduce_Data()
     : Reduce_Data(T(),T()){};
-  
+
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
@@ -630,6 +630,14 @@ struct Reduce_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
+  void init_grid_val(T* output)
+  {
+    *output = identity;
+  }
+
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -684,7 +692,7 @@ struct ReduceAtomic_Data {
 
   ReduceAtomic_Data()
     : ReduceAtomic_Data(T(),T()) {};
-  
+
   ReduceAtomic_Data(T initValue, T identity_)
     : value{initValue},
     identity{identity_},
@@ -713,6 +721,14 @@ struct ReduceAtomic_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
+  void init_grid_val(T* output)
+  {
+    *output = identity;
+  }
+
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -777,6 +793,8 @@ public:
   }
 
   //! copy and on host attempt to setup for device
+  //  init val_ptr to avoid uninitialized read caused by host copy of
+  //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
 #if !defined(__CUDA_ARCH__)
@@ -792,6 +810,7 @@ public:
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
             tally_or_val_ptr.list->new_value(currentStream());
+        val.init_grid_val(tally_or_val_ptr.val_ptr);
         parent = nullptr;
       }
     }

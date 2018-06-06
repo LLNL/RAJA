@@ -137,7 +137,7 @@ static void runLTimesTest(Index_type num_moments,
       RangeSegment(0, num_directions),
       RangeSegment(0, num_groups),
       RangeSegment(0, num_zones),
-      [=] __device__(IMoment m, IDirection d, IGroup g, IZone z) {
+      [=] RAJA_HOST_DEVICE(IMoment m, IDirection d, IGroup g, IZone z) {
         // printf("%d,%d,%d,%d\n", *m, *d, *g, *z);
         double val = ell(m, d) * psi(d, g, z);
         phi(m, g, z) += val;
@@ -373,7 +373,7 @@ CUDA_TEST(NestedCUDA, PositiveRange)
 
   forallN<NestedPolicy<
       ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(2, 12), RangeSegment(2, 12), [=] RAJA_DEVICE(int k, int j) {
+      RangeSegment(2, 12), RangeSegment(2, 12), [=] RAJA_HOST_DEVICE(int k, int j) {
         const int idx = ((k - 2) * 10) + (j - 2);
         data[idx] = idx * 1.0;
       });
