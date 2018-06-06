@@ -147,33 +147,20 @@ public:
 
   ///
   /// \brief Construct list segment from given array with specified length.
-  ///
-  /// By default the ctor on the host performs deep copy of array elements.
-  /// By default the ctor on the device does not perform a copy of array of elements. 
-  ///
-  RAJA_HOST_DEVICE TypedListSegment(const value_type* values,
-                                    Index_type length) 
-    : m_data{const_cast<value_type*>(values)}, m_size{length}, m_owned{Unowned}
-  {
-#if !defined(RAJA_DEVICE_CODE)
-    // Deep copy may only take place on the host. 
-    initIndexData(values, length, Owned);
-#endif
-  }
-
-  ///
-  /// \brief Construct list segment from given array with specified length.
   /// If 'Unowned' is passed as last argument, the constructed object
   /// does not own the segment data and will hold a pointer to given data.
   /// In this case, caller must manage object lifetimes properly.
   /// This constructor is host only since ownership may only be specified 
   /// on the host.
-  TypedListSegment(const value_type* values,
+  RAJA_HOST_DEVICE TypedListSegment(const value_type* values,
                    Index_type length,
-                   IndexOwnership owned)
+                   IndexOwnership owned = Owned)
+    : m_data{const_cast<value_type*>(values)}, m_size{length}, m_owned{Unowned}
   {
     // future TODO -- change to initializer list somehow
+#if !defined(RAJA_DEVICE_CODE)
     initIndexData(values, length, owned);
+#endif
   }
 
   ///
@@ -293,11 +280,7 @@ public:
                                                       Index_type length) const
   {
     Index_type end = begin+length > m_size ? (m_size-begin) : length;
-#if !defined(RAJA_DEVICE_CODE)
-    return TypedListSegment(&m_data[begin], end, Unowned);
-#else
     return TypedListSegment(&m_data[begin], end);
-#endif
   }
 
   //! get ownership of the data (Owned/Unowned)
