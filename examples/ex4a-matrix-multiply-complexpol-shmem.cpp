@@ -268,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // shared memory.
   // 
 
-#if 0 // WORK-IN-PROGRESS-1
+#if 1 // WORK-IN-PROGRESS-1
   std::cout << "\n Running sequential mat-mult multiple lambdas (RAJA-POL1)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
@@ -286,10 +286,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using NESTED_EXEC_POL1 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<0, RAJA::seq_exec,
+      RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
           RAJA::statement::Lambda<0>,  // dot = 0.0
-          RAJA::statement::For<2, RAJA::seq_exec,
+          RAJA::statement::For<2, RAJA::loop_exec,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
           RAJA::statement::Lambda<2>   // set C(row, col) = dot
@@ -302,15 +302,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::tuple<double>{0.0},
 
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] (int col, int row, int k, double& dot) {
        dot = 0.0;
     },
 
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] (int col, int row, int k, double& dot) {
        dot += Aview(row, k) * Bview(k, col);
     },
 
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] (int col, int row, int k, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -500,7 +500,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
-#endif // WORK-IN-PROGRESS
+#endif // WORK-IN-PROGRESS-3
 
 //----------------------------------------------------------------------------//
 

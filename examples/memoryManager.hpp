@@ -18,6 +18,10 @@
 
 #include "RAJA/RAJA.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#endif
+
 /*
   As RAJA does not manage memory we include a general purpose memory
   manager which may be used to perform c++ style allocation/deallocation 
@@ -31,7 +35,7 @@ namespace memoryManager{
   {
     T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal);
+    cudaErrchk(cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
 #else
     ptr = new T[size];
 #endif
@@ -43,7 +47,7 @@ namespace memoryManager{
   {
     if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaFree(ptr);
+      cudaErrchk(cudaFree(ptr));
 #else
       delete[] ptr;
 #endif
