@@ -13,197 +13,228 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <cmath>
 
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
 /*
  *  Offset example
- *  Example uses a 5-box stencil
- *  to compute the sum of interior boxes.
- *  We assume N x N interior nodes and
- *  a padded edge of zeros for a box of
- *  size (N+2) x (N+2)
  *
- * Input: 
- *  -----------------
- *  | 0 | 0 | 0 | 0 |
- *  -----------------
- *  | 0 | 1 | 1 | 0 |
- *  -----------------
- *  | 0 | 1 | 1 | 0 |
- *  -----------------
- *  | 0 | 0 | 0 | 0 |   
- *  -----------------
+ *  This example applies a five-cell stencil to the
+ *  interior cells of a lattice and stores the 
+ *  resulting sums in a second lattice of equal size.
  *
- * Expected output for N = 2:
- *  -----------------
- *  | 0 | 0 | 0 | 0 |
- *  -----------------
- *  | 0 | 3 | 3 | 0 |
- *  -----------------
- *  | 0 | 3 | 3 | 0 |
- *  -----------------
- *  | 0 | 0 | 0 | 0 |   
- *  -----------------
- *
- * We simplify index calculuations by using 
- * RAJA::make_offset_layout and RAJA::Views.
- * RAJA::make_offset_layout enables developers 
- * to adjust the start and end values of the array.
+ *  The five-cell stencil accumulates values of a cell 
+ *  and its four neighbors. Assuming the cells of a 
+ *  lattice may be accessed through a row/col fashion, 
+ *  the stencil may be expressed as the following sum
  * 
- * Here we chose to enumerate our interior in the 
- * following manner. 
+ *  output_lattice(row, col)
+ *         = input_lattice(row, col)
+ *         + input_lattice(row - 1, col) + input_lattice(row + 1, col)
+ *         + input_lattice(row, col - 1) + input_lattice(row, col + 1)
  *
- *  ---------------------------------------
- *  | (-1, 2) | (0, 2)  | (1, 2)  | (2, 2)|   
- *  ---------------------------------------
- *  | (-1, 1) | (0, 1)  | (1, 1)  | (2, 1) |   
- *  ---------------------------------------
- *  | (-1, 0) | (0, 0)  | (1, 0)  | (2, 0) |   
- *  ---------------------------------------
- *  | (-1,-1) | (0, -1) | (1, -1) | (2, -1)|   
- *  ---------------------------------------
+ *  We assume a lattice has N x N interior nodes 
+ *  and a padded edge of zeros for a lattice
+ *  of size (N + 2) x (N + 2).  
  *
- *  Notably (0, 0) corresponds
- *  to the bottom left corner of the region we wish to 
- *  apply our stencil to.
- *  
+ *  In the case of N = 3, the input lattice generated
+ *  takes the form
+ *
+ *  ---------------------
+ *  | 0 | 0 | 0 | 0 | 0 |
+ *  ---------------------
+ *  | 0 | 1 | 1 | 1 | 0 |
+ *  ---------------------
+ *  | 0 | 1 | 1 | 1 | 0 |
+ *  ---------------------
+ *  | 0 | 1 | 1 | 1 | 0 |
+ *  ---------------------
+ *  | 0 | 0 | 0 | 0 | 0 |
+ *  ---------------------
+ *
+ *  after the computation, we expect the output
+ *  lattice to take the form
+ *
+ *  ---------------------
+ *  | 0 | 0 | 0 | 0 | 0 |
+ *  ---------------------
+ *  | 0 | 3 | 4 | 3 | 0 |
+ *  ---------------------
+ *  | 0 | 4 | 5 | 4 | 0 |
+ *  ---------------------
+ *  | 0 | 3 | 4 | 3 | 0 |
+ *  ---------------------
+ *  | 0 | 0 | 0 | 0 | 0 |
+ *  ---------------------
+ *
+ * In this example, we use RAJA's make_offset_layout
+ * method and view object to simplify applying
+ * the stencil to interior cells.
+ * A make_offset_layout enables developers to offset
+ * the enumeration of values in an array. Here we
+ * choose to enumerate the lattice in the following manner:
+ *
+ *  --------------------------------------------------
+ *  | (-1, 3) | (0, 3)  | (1, 3)  | (2, 3)  | (3, 3)  |
+ *  --------------------------------------------------
+ *  | (-1, 2) | (0, 2)  | (1, 2)  | (2, 2)  | (3, 2)  |
+ *  --------------------------------------------------
+ *  | (-1, 1) | (0, 1)  | (1, 1)  | (2, 1)  | (3, 1)  |
+ *  --------------------------------------------------
+ *  | (-1, 0) | (0, 0)  | (1, 0)  | (2, 0)  | (3, 0)  |
+ *  ---------------------------------------------------
+ *  | (-1,-1) | (0, -1) | (1, -1) | (2, -1) | (3, -1) |
+ *  ---------------------------------------------------
+ *
+ *  Notably (0, 0) corresponds to the bottom left
+ *  corner of the region to which we wish to apply stencil.
+ *
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    -  Offset-layouts for RAJA Views
- *    -  Index range segment 
+ *    -  Index range segment
  *    -  Execution policies
  */
 
 /*
  * Define number of threads in x and y dimensions of a CUDA thread block
-*/
+ */
 #if defined(RAJA_ENABLE_CUDA)
 #define CUDA_BLOCK_SIZE 16
 #endif
 
-//C-Style macros with offsets
-#define box0(row,col) box0[(col-offset) + (N+2)*(row-offset)]
-#define box_ref(row,col) box_ref[(col-offset) + (N+2)*(row-offset)]
-
 //
 // Functions for printing and checking results
 //
-void printBox(int * Box, int boxN); 
-void checkResult(int * compBox, int * refBox, int boxSize);
+void printLattice(int* lattice, int iCellsInRow, int iCellsInCol);
+void checkResult(int* compLattice, int* refLattice, int totCells);
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA box-stencil example...\n";
+  std::cout << "\n\nRAJA five-cell stencil example...\n";
 
 //
-// Define vector length
+// Define num of interior cells in row/cols in a lattice
 //
-  const int N = 4; 
-  const int boxN = N+2;
-  const int boxSize = boxN*boxN;
+  const int iCellsInRow = 3;
+  const int iCellsInCol = 3;
 
 //
-// Allocate and initialize vector data
+// Define total num of cells in rows/cols in a lattice
 //
-  int * box0    = memoryManager::allocate<int>(boxSize*sizeof(int));
-  int * box1    = memoryManager::allocate<int>(boxSize*sizeof(int));
-  int * box_ref = memoryManager::allocate<int>(boxSize*sizeof(int));
+  const int totCellsInRow = iCellsInRow + 2;
+  const int totCellsInCol = iCellsInCol + 2;
 
-  std::memset(box0,0,boxSize*sizeof(int));
-  std::memset(box1,0,boxSize*sizeof(int));
-  std::memset(box_ref,0,boxSize*sizeof(int));
+//
+// Define total num of cells in a lattice
+//
+  const int totCells = totCellsInRow * totCellsInCol;
+
+//
+// Allocate and initialize lattice
+//
+  int* input_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* output_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* lattice_ref = memoryManager::allocate<int>(totCells * sizeof(int));
+
+  std::memset(input_lattice, 0, totCells * sizeof(int));
+  std::memset(output_lattice, 0, totCells * sizeof(int));
+  std::memset(lattice_ref, 0, totCells * sizeof(int));
 
 //
 // C-Style intialization
 //
-  const int offset = -1;
-  for(int row=0; row<N; ++row){
-    for(int col=0; col<N; ++col){
-      box0(row,col) = 1;
+  for (int row = 1; row <= iCellsInRow; ++row) {
+    for (int col = 1; col <= iCellsInCol; ++col) {
+      int id = col + totCellsInCol * row;
+      input_lattice[id] = 1;
     }
   }
-  
-  //prints intial box
-  //printBox(box0,boxN);
-//----------------------------------------------------------------------------//
+// printLattice(input_lattice, totCellsInRow, totCellsInCol);
 
-  std::cout << "\n Running C-version of five-box-stencil...\n";
 //
-// Perform five-box stencil sum
+// Generate reference solution
 //
-  for(int row=0; row<N; ++row){
-    for(int col=0; col<N; ++col){    
-      
-      box_ref(row,col) = box0(row,col) + box0(row-1,col)         
-                       + box0(row+1,col) + box0(row,col-1) + box0(row,col+1);
-      
+  for (int row = 1; row <= iCellsInRow; ++row) {
+    for (int col = 1; col <= iCellsInCol; ++col) {
+
+      int id = col + totCellsInCol * row;
+      lattice_ref[id] = input_lattice[id] + input_lattice[id + 1]
+                        + input_lattice[id - 1]
+                        + input_lattice[id + totCellsInCol]
+                        + input_lattice[id - totCellsInCol];
     }
   }
-  
-  //printBox(box_ref,boxN);
+// printLattice(lattice_ref, totCellsInRow, totCellsInCol);
+
 //----------------------------------------------------------------------------//
 
 //
-//RAJA versions
+// Create loop bounds
 //
+  RAJA::RangeSegment col_range(0, iCellsInRow);
+  RAJA::RangeSegment row_range(0, iCellsInCol);
 
 //
-//Create loop bounds
-//
-  RAJA::RangeSegment col_range(0,N);
-  RAJA::RangeSegment row_range(0,N); 
-  
-//
-// Here we replace the macros with RAJA views and make utility of offset-layouts.
-//
-
-//
-//Dimension of the array
+// Specify the dimension of the lattice
 //
   const int DIM = 2;
 
+// The following code illustrates pairing an offset layout and a RAJA view
+// object to simplify multidimensional indexing.
+// An offset layout is constructed by using the make_offset_layout method.
+// The first argument of the layout is an array object with the coordinates of
+// the bottom left corner of the lattice, and the second argument is an array 
+// object of the coordinates of the top right corner.
+// The example uses double braces to initiate the array object and its
+// subobjects.
 //
-//The first array corresponds to the coordinates of the bottom left corner
-//and the second array corresponds to the coordinates of the top right corner.
-//
-  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{-1,-1}}, {{N,N}});
-  RAJA::View<int, RAJA::OffsetLayout<DIM>>box0view(box0,layout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>>box1view(box1,layout);
-  
+  RAJA::OffsetLayout<DIM> layout =
+      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{iCellsInRow, iCellsInCol}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
+
 //----------------------------------------------------------------------------//
-  std::cout << "\n Running sequential box-stencil (RAJA-Kernel - sequential)...\n";  
-  using NESTED_EXEC_POL = 
+
+  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
+               "sequential)...\n";
+
+  using NESTED_EXEC_POL1 =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,    // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >
       >  
-    >;
+    >;  
 
-  RAJA::kernel<NESTED_EXEC_POL>
-    (RAJA::make_tuple(col_range, row_range), 
-     [=](int col, int row) {
-      
-      box1view(row,col) = box0view(row,col) + box0view(row-1,col) 
-                        + box0view(row+1,col) + box0view(row,col-1) + box0view(row,col+1);
-    });
+  RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
+                                 [=](int col, int row) {
 
-  //printBox(box1,boxN);
-  checkResult(box1, box_ref, boxSize);
+                                   output_latticeView(row, col) =
+                                       input_latticeView(row, col)
+                                       + input_latticeView(row - 1, col)
+                                       + input_latticeView(row + 1, col)
+                                       + input_latticeView(row, col - 1)
+                                       + input_latticeView(row, col + 1);
+                                 });
+
+  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
+  checkResult(output_lattice, lattice_ref, totCells);
 
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  std::cout << "\n Running sequential box-stencil (RAJA-Kernel - omp parallel for)...\n";  
+  std::cout << "\n Running five-cell stencil (RAJA-Kernel - omp "
+               "parallel for)...\n";
+
   using NESTED_EXEC_POL2 = 
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec, // row
@@ -213,91 +244,97 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       > 
     >;
 
-  RAJA::kernel<NESTED_EXEC_POL2>
-    (RAJA::make_tuple(col_range, row_range), 
-     [=](int col, int row) {
-      
-      box1view(row,col) = box0view(row,col) + box0view(row-1,col) 
-                        + box0view(row+1,col) + box0view(row,col-1) + box0view(row,col+1);
-    });
+  RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
+                                 [=](int col, int row) {
 
-  //printBox(box1,N);
-  checkResult(box1, box_ref, boxSize);
+                                   output_latticeView(row, col) =
+                                       input_latticeView(row, col)
+                                       + input_latticeView(row - 1, col)
+                                       + input_latticeView(row + 1, col)
+                                       + input_latticeView(row, col - 1)
+                                       + input_latticeView(row, col + 1);
+                                 });
+
+  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
+  checkResult(output_lattice, lattice_ref, totCells);
 #endif
 
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  std::cout << "\n Running sequential box-stencil (RAJA-Kernel - cuda)...\n";
+  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
+               "cuda)...\n";
 
-  using NESTED_EXEC_POL5 =
+  using NESTED_EXEC_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,   //row
-          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>, //col
+        RAJA::statement::For<1, RAJA::cuda_block_exec, //row
+          RAJA::statement::For<0, RAJA::cuda_thread_exec, //col
             RAJA::statement::Lambda<0>
-           >
           >
         >
-      >;
+      >
+    >;                                                     
 
-  RAJA::kernel<NESTED_EXEC_POL5>
-    (RAJA::make_tuple(col_range, row_range), 
-     [=] RAJA_DEVICE (int col, int row) {
-      
-      box1view(row,col) = box0view(row,col) + box0view(row-1,col) 
-                        + box0view(row+1,col) + box0view(row,col-1) + box0view(row,col+1);
-    });
+  RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
+                                 [=] RAJA_DEVICE(int col, int row) {
 
-  //printBox(box1,boxN);
-  checkResult(box1, box_ref, boxSize);
-//----------------------------------------------------------------------------//
+                                   output_latticeView(row, col) =
+                                       input_latticeView(row, col)
+                                       + input_latticeView(row - 1, col)
+                                       + input_latticeView(row + 1, col)
+                                       + input_latticeView(row, col - 1)
+                                       + input_latticeView(row, col + 1);
+                                 });
+
+  //printLattice(output_lattice, totCellsInRow, totCellsInCol);
+  checkResult(output_lattice, lattice_ref, totCells);
 #endif
 
+//----------------------------------------------------------------------------//
+
 //
-// Clean up. 
+// Clean up.
 //
-  memoryManager::deallocate(box0);
-  memoryManager::deallocate(box1);
-  memoryManager::deallocate(box_ref);
-  
+  memoryManager::deallocate(input_lattice);
+  memoryManager::deallocate(output_lattice);
+  memoryManager::deallocate(lattice_ref);
+
   std::cout << "\n DONE!...\n";
   return 0;
 }
 
 //
-// Print Box
+// Print Lattice
 //
-void printBox(int* box, int boxN)
+void printLattice(int* lattice, int totCellsInRow, int totCellsInCol)
 {
   std::cout << std::endl;
-  for(int row=0; row < boxN; ++row){
-    for(int col=0; col< boxN; ++col){
+  for (int row = 0; row < totCellsInRow; ++row) {
+    for (int col = 0; col < totCellsInCol; ++col) {
 
-      const int id = col + boxN*row;
-      std::cout <<box[id] <<" ";
-
+      const int id = col + totCellsInCol * row;
+      std::cout << lattice[id] << " ";
     }
     std::cout << " " << std::endl;
   }
   std::cout << std::endl;
-
 }
 
 //
-//Check Result
+// Check Result
 //
-void checkResult(int * compBox, int * refBox, int len)
+void checkResult(int* compLattice, int* refLattice, int totCells)
 {
 
   bool pass = true;
-  
-  for(int i = 0; i <len; ++i ){
-    if(compBox[i] != refBox[i]) pass = false;
+
+  for (int i = 0; i < totCells; ++i) {
+    if (compLattice[i] != refLattice[i]) pass = false;
   }
 
-  if ( pass ) {
+  if (pass) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
