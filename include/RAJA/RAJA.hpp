@@ -90,6 +90,8 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
+#include "RAJA/index/RangeTuple.hpp"
+
 //
 // Strongly typed index class
 //

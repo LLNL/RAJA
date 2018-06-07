@@ -8,6 +8,7 @@
  */
 
 #include "camp/camp.hpp"
+#include "camp/concepts.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -36,6 +37,9 @@ template <typename T, typename Tuple>
 using tuple_ebt_t =
     typename tuple_element<camp::at_key<typename Tuple::TMap, T>::value,
                            Tuple>::type;
+
+template <typename T, typename Tuple>
+using tuple_ibt_t = camp::at_key<typename Tuple::TMap, T>;
 
 
 namespace internal
@@ -172,16 +176,44 @@ private:
   CAMP_HOST_DEVICE constexpr friend auto get(Tuple& t) noexcept
       -> tuple_ebt_t<T, Tuple>&;
 
+  template <bool make_dependent, class dummy = void>
+  struct ConstructorChecker {
+  };
+  template <class dummy>
+  struct ConstructorChecker<true, dummy> {
+    template <class... _Args>
+    static constexpr bool __enable_default()
+    {
+      return camp::concepts::all_of<
+          typename std::is_default_constructible<_Args>::type...>::value;
+    }
+  };
+
 public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
-  CAMP_HOST_DEVICE constexpr tuple() : base() {}
+  template <
+      bool dummy = true,
+      class = typename concepts::enable_if<camp::integral_constant<
+          bool,
+          ConstructorChecker<dummy>::template __enable_default<Elements...>()>>>
+  CAMP_HOST_DEVICE constexpr tuple() : base()
+  {
+  }
   CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : base(o.base) {}
 
   CAMP_HOST_DEVICE constexpr tuple(tuple&& o) : base(std::move(o.base)) {}
 
-  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs) { base = rhs.base; return *this; }
-  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs) { base = std::move(rhs.base); return *this; }
+  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
+  {
+    base = rhs.base;
+    return *this;
+  }
+  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
+  {
+    base = std::move(rhs.base);
+    return *this;
+  }
 
   CAMP_HOST_DEVICE constexpr explicit tuple(Elements const&... rest)
       : base{rest...}
@@ -200,7 +232,7 @@ public:
 // causes nvcc9.1 to die in EDG. As soon as nvcc9.1 goes away, this should be
 // reduced to just a public derivation of tuple that overrides TMap.
 template <typename TagList, typename... Elements>
-class tagged_tuple : public tuple<Elements...>
+class tagged_tuple
 {
   using Self = tagged_tuple;
   using Base = internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
@@ -229,27 +261,56 @@ private:
   CAMP_HOST_DEVICE constexpr friend auto get(Tuple& t) noexcept
       -> tuple_ebt_t<T, Tuple>&;
 
-public:
-  // Constructors
-
+  template <bool make_dependent, class dummy = void>
+  struct ConstructorChecker {
+  };
+  template <class dummy>
+  struct ConstructorChecker<true, dummy> {
+    template <class... _Args>
+    static constexpr bool __enable_default()
+    {
+      return camp::concepts::all_of<
+          typename std::is_default_constructible<_Args>::type...>::value;
+    }
+  };
 
 public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
-  CAMP_HOST_DEVICE constexpr tagged_tuple() : base() {}
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) : base(o.base) {}
+  template <
+      bool dummy = true,
+      class = typename concepts::enable_if<camp::integral_constant<
+          bool,
+          ConstructorChecker<dummy>::template __enable_default<Elements...>()>>>
+  CAMP_HOST_DEVICE constexpr tagged_tuple() : base()
+  {
+  }
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) : base(o.base)
+  {
+  }
 
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) : base(std::move(o.base)) {}
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o)
+      : base(std::move(o.base))
+  {
+  }
 
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) { base = rhs.base; return *this;}
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) { base = std::move(rhs.base); return *this;}
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs)
+  {
+    base = rhs.base;
+    return *this;
+  }
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs)
+  {
+    base = std::move(rhs.base);
+    return *this;
+  }
 
   CAMP_HOST_DEVICE constexpr explicit tagged_tuple(Elements const&... rest)
       : base{rest...}
   {
   }
 
-  template <template<typename...> class T, typename... RTypes>
+  template <template <typename...> class T, typename... RTypes>
   CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(const T<RTypes...>& rhs)
   {
     base.operator=(rhs);
@@ -278,7 +339,7 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
 {
   using internal::tpl_get_store;
   static_assert(tuple_size<Tuple>::value > index, "index out of range");
-  return static_cast<tpl_get_store<Tuple, index> const &>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index> const&>(t.base).get_inner();
 }
 
 template <camp::idx_t index, class Tuple>
@@ -300,7 +361,8 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base)
+      .get_inner();
 }
 
 template <typename T, class Tuple>
@@ -311,7 +373,8 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple& t) noexcept -> tuple_ebt_t<T, Tuple>&
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base)
+      .get_inner();
 }
 
 template <typename... Args>

@@ -57,6 +57,21 @@ struct For : public internal::ForList,
   using execution_policy_t = ExecPolicy;
 };
 
+/*!
+ * A nested::forall statement that implements a single loop.
+ *
+ *
+ */
+template <typename IdxT,
+          typename ExecPolicy = camp::nil,
+          typename... EnclosedStmts>
+struct ForT : public internal::ForList,
+              public internal::Statement<ExecPolicy, EnclosedStmts...> {
+
+  // TODO: add static_assert for valid policy in Pol
+  using execution_policy_t = ExecPolicy;
+};
+
 }  // end namespace statement
 
 namespace internal
@@ -81,8 +96,8 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 template <camp::idx_t ArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
 
 
   template <typename Data>
@@ -96,6 +111,24 @@ struct StatementExecutor<statement::
     using len_t = decltype(len);
 
     forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+  }
+};
+
+template <typename IdxT, typename ExecPolicy, typename... EnclosedStmts>
+struct StatementExecutor<statement::ForT<IdxT, ExecPolicy, EnclosedStmts...>> {
+
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+    using IndexType = camp::tuple_ibt_t<IdxT, decltype(data.segment_tuple)>;
+    constexpr camp::idx_t index = IndexType::value;
+    using ForType = statement::For<
+        index,
+        ExecPolicy,
+        EnclosedStmts...>;
+    StatementExecutor<ForType> se;
+    se.exec(data);
   }
 };
 

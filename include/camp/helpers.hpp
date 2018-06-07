@@ -181,6 +181,9 @@ template <typename T>
 using decay = type::cv::rem<type::ref::rem<T>>;
 
 template <typename T>
+using decay_t = typename type::cv::rem<type::ref::rem<T>>;
+
+template <typename T>
 using plain = type::ref::rem<T>;
 
 template <typename T>
