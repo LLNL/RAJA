@@ -249,7 +249,6 @@ public:
 #endif
   }
 
-
   ///
   /// Swap function for copy-and-swap idiom.
   ///
@@ -268,21 +267,7 @@ public:
   //! accessor to retrieve the total number of elements in a TypedListSegment
   RAJA_HOST_DEVICE Index_type size() const { return m_size; }
 
-  //! Create a slice of this instance as a new instance but with no ownership
-  //! of the data it points to.
-  /*!
-   * \return A new instance spanning *begin() + begin to *begin() + begin +
-   * length
-   * 
-   * Current status: Tiling may not be distributing data correctly
-   */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment slice(Index_type begin,
-                                                      Index_type length) const
-  {
-    Index_type end = begin+length > m_size ? (m_size-begin) : length;
-    return TypedListSegment(&m_data[begin], end);
-  }
-
+ 
   //! get ownership of the data (Owned/Unowned)
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
