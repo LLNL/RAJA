@@ -37,7 +37,7 @@ namespace detail
 /*!
  ******************************************************************************
  *
- * \brief  IterableWrapper struct holds iterators forany iterable type.
+ * \brief  IterableWrapper struct holds iterators for any iterable type.
  *         Introduced to avoid deep copying data in iterables.
  *
  * \tparam T is the underlying data type for the iterable.
