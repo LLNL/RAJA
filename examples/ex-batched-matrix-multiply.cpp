@@ -61,12 +61,12 @@
  * The extension to N > 2 matrices follows by direct
  * extension. By exploring different data layouts,
  * we can assess which performs best under a given
- * execution policy and architure.
+ * execution policy and architecture.
  *
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    -  RAJA View
- *    -  RAJA make_permuted_layout method
+ *    -  RAJA make_permuted_layout
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -100,7 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int N_r = 3;
 
 // Number of matrices
-  const Index_type N = 4000000;
+  const Index_type N = 8000000;
 
 // Number of iterations
   const int NITER = 20;
