@@ -125,9 +125,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Layout 1
 //
 // make_permuted_layout takes the number of entries in each dimension and a
-// templated array indicating slowest to fastest stride. Dimensions are stored
-// in an array object. Here double braces are used to initialize the array and its
-// subobjects (number of entries in each component).
+// templated array indicating index arguments with slowest to fastest stride.
+// Standard C++ arrays are used to hold the number of entries in each component.
+// This example uses double braces to initalize the array and its subobjects.
 // The layout object will index into the array as the following C macro would
 // #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
 //
@@ -136,7 +136,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                  RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
 //
 // RAJA::Layout objects may be templated on dimension, argument type, and index with unit
-// stride (in this case argument 2 has unit stride)
+// stride. In this case the column index has unit stride (argument 2). 
 //  
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout);
@@ -150,8 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *C2 = memoryManager::allocate<double>(N_c * N_r * N);
 
 //
-// Permuted layout - equivalent to indexing via
+// Permuted layout - equivalent to indexing using the following macro
 // #define Aview2(e, r, c) A2[e + N*(c + N_c*r)]
+// In this case the element index has unit stride (argument 0). 
 //
   auto layout2 =
       RAJA::make_permuted_layout({{N, N_r, N_c}},
