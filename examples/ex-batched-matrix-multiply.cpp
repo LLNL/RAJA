@@ -128,14 +128,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // templated array indicating slowest to fastest stride. Dimensions are stored
 // in an array object. Here double braces are used to initialize the array and its
 // subobjects (number of entries in each component).
-// The layout generates an indexing equivalent to
-// A(e,r,c) A[c + N_c*(r + N_r*e)]
+// The layout object will index into the array as the following C macro would
+// #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
+//
   auto layout =
       RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
-
-// RAJA::Layout is templated on dimension, argument type, and index with unit
+//
+// RAJA::Layout objects may be templated on dimension, argument type, and index with unit
 // stride (in this case argument 2 has unit stride)
+//  
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout);
@@ -149,7 +151,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //
 // Permuted layout - equivalent to indexing via
-// A[e + N*(c + N_c*r)]
+// #define Aview2(e, r, c) A2[e + N*(c + N_c*r)]
+//
   auto layout2 =
       RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
