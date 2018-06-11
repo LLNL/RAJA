@@ -40,7 +40,7 @@
  *
  *  We assume a lattice has N x N interior nodes 
  *  and a padded edge of zeros for a lattice
- *  of size (N + 2) x (N + 2).  
+ *  of size (N_r + 2) x (N_c + 2).  
  *
  *  In the case of N = 3, the input lattice generated
  *  takes the form
@@ -75,7 +75,8 @@
  * In this example, we use RAJA's make_offset_layout
  * method and view object to simplify applying
  * the stencil to interior cells.
- * A make_offset_layout enables developers to offset
+ * The make_offset_layout method enables developers
+ * to create layouts which offset
  * the enumeration of values in an array. Here we
  * choose to enumerate the lattice in the following manner:
  *
@@ -111,7 +112,7 @@
 //
 // Functions for printing and checking results
 //
-void printLattice(int* lattice, int iCellsInRow, int iCellsInCol);
+void printLattice(int* lattice, int N_r, int N_c);
 void checkResult(int* compLattice, int* refLattice, int totCells);
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -122,14 +123,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Define num of interior cells in row/cols in a lattice
 //
-  const int iCellsInRow = 3;
-  const int iCellsInCol = 3;
+  const int N_r = 3;
+  const int N_c = 3;
 
 //
 // Define total num of cells in rows/cols in a lattice
 //
-  const int totCellsInRow = iCellsInRow + 2;
-  const int totCellsInCol = iCellsInCol + 2;
+  const int totCellsInRow = N_r + 2;
+  const int totCellsInCol = N_c + 2;
 
 //
 // Define total num of cells in a lattice
@@ -150,8 +151,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // C-Style intialization
 //
-  for (int row = 1; row <= iCellsInRow; ++row) {
-    for (int col = 1; col <= iCellsInCol; ++col) {
+  for (int row = 1; row <= N_r; ++row) {
+    for (int col = 1; col <= N_c; ++col) {
       int id = col + totCellsInCol * row;
       input_lattice[id] = 1;
     }
@@ -161,8 +162,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Generate reference solution
 //
-  for (int row = 1; row <= iCellsInRow; ++row) {
-    for (int col = 1; col <= iCellsInCol; ++col) {
+  for (int row = 1; row <= N_r; ++row) {
+    for (int col = 1; col <= N_c; ++col) {
 
       int id = col + totCellsInCol * row;
       lattice_ref[id] = input_lattice[id] + input_lattice[id + 1]
@@ -178,8 +179,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Create loop bounds
 //
-  RAJA::RangeSegment col_range(0, iCellsInRow);
-  RAJA::RangeSegment row_range(0, iCellsInCol);
+  RAJA::RangeSegment col_range(0, N_r);
+  RAJA::RangeSegment row_range(0, N_c);
 
 //
 // Specify the dimension of the lattice
@@ -196,7 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // subobjects.
 //
   RAJA::OffsetLayout<DIM> layout =
-      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{iCellsInRow, iCellsInCol}});
+      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r, N_c}});
   RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
 
