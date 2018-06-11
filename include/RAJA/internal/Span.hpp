@@ -30,6 +30,7 @@
 #include <type_traits>
 
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/defines.hpp"
 
 namespace RAJA
 {
@@ -60,26 +61,43 @@ struct Span {
   static_assert(type_traits::is_random_access_iterator<ValueType>::value,
                 "ValueType must model RandomAccessIterator");
 
-  iterator begin() { return _data; }
-  iterator end() { return _data + _length; }
-  const_iterator begin() const { return _data; }
-  const_iterator end() const { return _data + _length; }
-  const_iterator cbegin() const { return _data; }
-  const_iterator cend() const { return _data + _length; }
+  RAJA_HOST_DEVICE Span(iterator data, iterator end)
+    : _data{data}, _length{static_cast<IndexType>(end - data)}, _end{end}
+  {}
 
-  ValueType data() const { return _data; }
-  IndexType size() const { return _length; }
-  IndexType max_size() const { return _length; }
-  bool empty() const { return _length == 0; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return _data; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return _end; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return _data; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return _end; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return _data; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cend() const { return _end; }
+
+  RAJA_HOST_DEVICE RAJA_INLINE ValueType data() const { return _data; }
+  RAJA_HOST_DEVICE RAJA_INLINE IndexType size() const { return _length; }
+  RAJA_HOST_DEVICE RAJA_INLINE IndexType max_size() const { return _length; }
+  RAJA_HOST_DEVICE RAJA_INLINE bool empty() const { return _length == 0; }
+
+  //returns a span wrapper starting at begin with length ``length``
+  RAJA_HOST_DEVICE RAJA_INLINE
+  Span slice(size_type begin,size_type length) const
+  {
+
+    auto start = _data + begin;
+    auto end = start + length > _end ? _end : start + length;
+
+    return Span(start,end);
+  }
 
   iterator _data;
   IndexType _length;
+  iterator _end;
 };
 
 template <typename ValueType, typename IndexType>
+RAJA_HOST_DEVICE RAJA_INLINE
 Span<ValueType, IndexType> make_span(ValueType data, IndexType size)
 {
-  return {data, size};
+  return Span<ValueType,IndexType>(data, data + size);
 }
 
 }  // end namespace impl
