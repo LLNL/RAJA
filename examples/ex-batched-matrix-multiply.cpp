@@ -31,7 +31,7 @@
  *  for matrices of dimension 3 x 3 using two different
  *  data layouts.
  *
- *  Matrices are stored in arrays A, and B. Results
+ *  Matrices are stored in arrays A and B. Results
  *  are stored in a third array, C.
  *  We introduce the notation A^{e}_rc
  *  to correspond to the matrix entry in the row, r,
@@ -64,8 +64,9 @@
  * execution policy and architure.
  *
  *  RAJA features shown:
+ *    - `forall` loop iteration template method
  *    -  RAJA View
- *    -  RAJA make_permuted_layout
+ *    -  RAJA make_permuted_layout method
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -95,11 +96,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA batched matrix multiplication example...\n";
 
 // Dimensions of matrices
-  const int NCOLS = 3;
-  const int NROWS = 3;
+  const int N_c = 3;
+  const int N_r = 3;
 
 // Number of matrices
-  const Index_type N = 8000000;
+  const Index_type N = 4000000;
 
 // Number of iterations
   const int NITER = 20;
@@ -116,9 +117,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate space for data in layout 1
 //
-  double *A = memoryManager::allocate<double>(NCOLS * NROWS * N);
-  double *B = memoryManager::allocate<double>(NCOLS * NROWS * N);
-  double *C = memoryManager::allocate<double>(NCOLS * NROWS * N);
+  double *A = memoryManager::allocate<double>(N_c * N_r * N);
+  double *B = memoryManager::allocate<double>(N_c * N_r * N);
+  double *C = memoryManager::allocate<double>(N_c * N_r * N);
 
 //
 // Layout 1
@@ -128,9 +129,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // in an array object. Here double braces are used to initialize the array and its
 // subobjects (number of entries in each component).
 // The layout generates an indexing equivalent to
-// A(e,r,c) A[c + NCOLS*(r + NROWS*e)]
+// A(e,r,c) A[c + N_c*(r + N_r*e)]
   auto layout =
-      RAJA::make_permuted_layout({{N, NROWS, NCOLS}},
+      RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
 
 // RAJA::Layout is templated on dimension, argument type, and index with unit
@@ -142,15 +143,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate space for data in layout 2
 //
-  double *A2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
-  double *B2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
-  double *C2 = memoryManager::allocate<double>(NCOLS * NROWS * N);
+  double *A2 = memoryManager::allocate<double>(N_c * N_r * N);
+  double *B2 = memoryManager::allocate<double>(N_c * N_r * N);
+  double *C2 = memoryManager::allocate<double>(N_c * N_r * N);
 
 //
 // Permuted layout - equivalent to indexing via
-// A[e + N*(r + NROWS*c)]
+// A[e + N*(c + N_c*r)]
   auto layout2 =
-      RAJA::make_permuted_layout({{N, NROWS, NCOLS}},
+      RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
@@ -166,8 +167,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
-    for (Index_type row = 0; row < NROWS; ++row) {
-      for (Index_type col = 0; col < NCOLS; ++col) {
+    for (Index_type row = 0; row < N_r; ++row) {
+      for (Index_type col = 0; col < N_c; ++col) {
         Aview(e, row, col) = row;
         Bview(e, row, col) = col;
         Cview(e, row, col) = 0;
@@ -232,7 +233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   
   std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
-  checkResult(Cview, N, NROWS, NCOLS);
+  checkResult(Cview, N, N_r, N_c);
 
 //----------------------------------------------------------------------------//
 
@@ -284,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
   std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
-  checkResult(Cview2, N, NROWS, NCOLS);
+  checkResult(Cview2, N, N_r, N_c);
 
 #endif
 
@@ -337,7 +338,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
     
   std::cout << "\trun time : " << minRun << " seconds" << std::endl;
-  checkResult(Cview, N, NROWS, NCOLS);
+  checkResult(Cview, N, N_r, N_c);
 
 //----------------------------------------------------------------------------//
 
@@ -388,7 +389,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
   std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
-  checkResult(Cview2, N, NROWS, NCOLS);
+  checkResult(Cview2, N, N_r, N_c);
 
 //----------------------------------------------------------------------------//
 
@@ -443,7 +444,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   std::cout<< "\trun time: "<< minRun << " seconds" << std::endl;
-  checkResult(Cview, N, NROWS, NCOLS);
+  checkResult(Cview, N, N_r, N_c);
 
 //----------------------------------------------------------------------------//
 
@@ -495,7 +496,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
   std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
-  checkResult(Cview2, N, NROWS, NCOLS);
+  checkResult(Cview2, N, N_r, N_c);
 #endif
 
 //----------------------------------------------------------------------------//
