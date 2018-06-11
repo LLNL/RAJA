@@ -15,146 +15,97 @@
 .. _permuted-layout-label:
 
 ---------------------------------------------
-Batch Matrix-Multiply 
+Batch Matrix-Multiply
 ---------------------------------------------
 
 Key RAJA features shown in the following example:
 
-  * ``RAJA::forall`` loop traversal template 
+  * ``RAJA::forall`` loop traversal template
   * RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
-  * ``RAJA::make_permuted_layout`` permutes how data is accessed through the view paranthesis operator
+  * ``RAJA::make_permuted_layout`` permutes how data is accessed through the view parentheses operator
 
-In this section, we present examples which carryout matrix multiplication for 
-a batch of matrices each of dimension :math:`3 x 3`. More precisely we 
-multiply :math:`A^e` :math:`\times` :math:`B^e` where :math:`e` enumerates a matrix in our batch. The 
-result is then stored in :math:`C^e`.
+This example carries out batched matrix multiplication
+for matrices of dimension 3 x 3 using two different
+data layouts.
 
-The focus of this example is to illustrate how ``RAJA::layouts`` may be paired with ``RAJA::Views``
-to swap between different layouts for the entries in :math:`A^e` and :math:`B^e`. We introduce
-the notation :math:`A^{e}_{rc}` to correspond to the entry in the row - :math:`r` , and column - :math:`c`
-of the matrix - :math:`A^e`. Futhermore we alternate between two potential layouts to study their impact on
-performance.
+Matrices are stored in arrays A and B. Results
+are stored in a third array, C.
+The notation :math:`A^{e}_{rc}` is introduced
+to correspond to the matrix entry in the row, r,
+column, c, of matrix, e. Below we describe the two
+layouts for the case of two (N=2) 3 x 3 matrices.
 
-Layout 1: Assumes matrices are contiguous in memory thus enabling vectorizable operations
-
-.. math::
-
-   [A^{0}_{00}, A^{0}_{01}, A^{0}_{02}, \dots] .
-
-Layout 2: Assumes matrix entries are grouped by matrix number for coalesced memory reads and writes.
+Layout 1:
+Matrix entries are grouped together so that each
+matrix is in a row major ordering, i.e.
 
 .. math::
+  A = [A^{0}_{00}, A^{0}_{01}, A^{0}_{02},
+       A^{0}_{10}, A^{0}_{11}, A^{0}_{12},
+       A^{0}_{20}, A^{0}_{21}, A^{0}_{22},\\
+       A^{1}_{00}, A^{1}_{01}, A^{1}_{02},
+       A^{1}_{10}, A^{1}_{11}, A^{1}_{12},
+       A^{1}_{20}, A^{1}_{21}, A^{1}_{22}];
 
-   [A^{0}_{00}, A^{1}_{00}, A^{2}_{00}, \dots] .
+Layout 2:
+Matrix entries are first ordered by matrix number,
+then by column number, and finally by row number.
 
-^^^^^^^^^^
-RAJA Timer
-^^^^^^^^^^
-To evaluate performance between layouts we mutiply a batch of matrices for a set number of iterations
-and compare the minimum run time. Performance is measured by using the ``RAJA timer``. Basic usage of the RAJA timer
-is illustrated below::
+.. math::
+  A = [A^{0}_{00}, A^{1}_{00}, A^{0}_{01},
+       A^{1}_{01}, A^{0}_{02}, A^{1}_{02},
+       A^{0}_{10}, A^{1}_{10}, A^{0}_{11},\\
+       A^{1}_{11}, A^{0}_{12}, A^{1}_{12},
+       A^{0}_{20}, A^{1}_{20}, A^{0}_{21},
+       A^{1}_{21}, A^{0}_{22}, A^{1}_{22}];
 
-    auto timer = RAJA::Timer(); 
-    
-    timer.start(); //start recording time
-
-    //run kernel
-
-    timer.stop();  //stop recording time
-    
-    auto elapsedTime = timer.elapsed(); //report total amount elapsed time
-    timer.reset()  //time is aggregated and the timer must be reset
-
+The extension to N > 2 matrices follows by direct
+extension. By exploring different data layouts,
+we can assess which performs best under a given
+execution policy and computing environment.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Batched Matrix Multiplication with RAJA
+RAJA Permuted Layouts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Having introduced basic RAJA concepts in the previous sections, we dive into the RAJA forall method which multiplies a pair of matrices at each 
-iteration. The snippet below unrolls the computation for each matrix multiply. The iteration space spans between :math:`0 ... NMAT` where :math:`NMAT` is the 
-total number of matrices to be multiplied. Furthermore, the arrays which hold matrix data :math:`A`, :math:`B` and :math:`C` have been wrapped using a 
-``RAJA::View`` to simplify dimensional indexing. 
+The following code snippet constructs layout objects for the first data layout
+we are considering.
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 153-167
+                    :lines: 97-100, 132-140
 
-The outermost index of the view corresponds to a column number, the second entry corresponds to a row number, and the inner most index corresponds to 
-the matrix number in the batch. For the construction of the views we take an additional step to construct  a``RAJA::layout`` which will hold information about
-number of entries in each component and stride order. 
-
-.. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 103-108
-
-This particular version of the layout is made by the ``RAJA::make_permuted_layout`` method. The method takes in the number of entries in each component
-and a desired ordering for the indices in the paranthesis operator. To construct a ``RAJA::layout`` corresponding to the first layout
-we use the following permutation ``RAJA::Perm<0, 1, 2>::get()``. The permutation corresponds to the paranthesis operator ``Aview(e,r,c)`` indexing 
-the array in the following manner::
-
-            A[c + NCOLS*(r + NROWS*e)]
-
-In particular ``c`` (the second entry in the view) is denoted to have the shortest stride by the layout, ``r`` (the first entry) has the second shortest stride, and ``e`` (the zeroth entry) is marked to have the longest stride. Lastly, we template the ``RAJA::Layout`` inside the ``RAJA::View`` on dimension, input type, and component with unit stride (in this case the second entry). By exposing unit stride the compiler may identify opportunities to generate
-vector instructions. The ``RAJA::layout`` corresponding to the second desired layout may be constructed in the following manner
+The first argument in the ``RAJA::make_permuted_layout`` is a C++ array
+whose entries correspond to the dimensionality of each component.
+The array is initialized using double braces as it enables initiation of the object
+and its subobjects. The second argument is a ``RAJA::as_array`` object
+templated on a RAJA permutation ``RAJA::Perm`` object. The template arguments
+in ``RAJA::Perm``, :math:`0,1,2`, is used to to specify order of indices with the longest
+to shortest stride, while ``RAJA::as_array::get()``
+returns indices in the specified order. Indices are always enumerated with the left most as
+:math:`0` and right most as the :math:`n^{th}` index. The example above uses the default
+striding order in which the left most index (element number) has the longest stride and the right
+most (column index) has unit stride. The following code example permutes the ordering
+so that the element index (index :math:`0`) has unit stride, and the row index has the
+longest stride (index :math:`1`).
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 123-126
-
-The permutation ``RAJA::Perm<1, 2, 0>`` permutes the ordering of the indices such that the shortest stride is now held by ``e``, then ``c``, and finally ``r``. This is equivalent to indexing the array in the following manner::
-
-     A[e + NELEM*(r + NROWS*c)]. 
+                    :lines: 149-157
 
 
-Run Time Comparison
--------------------
-We report run time for various matrix-multiplication batch numbers. The experiments here are carried out 
-on a Tesla K80 NVIDIA GPU, Intel Xeon CPU E5-2667 using the GNU 4.9 C++ compiler and CUDA 9. ::
+We refer the reader to the :ref:`view-label` section
+for a complete description of ``RAJA::View`` and ``RAJA::Layout`` objects.
 
+^^^^^^^^^^^^^^^^^^^
+RAJA Implementation
+^^^^^^^^^^^^^^^^^^^
+The complete example ``RAJA/examples/ex-offset.cpp`` compares batched matrix multiplication
+using three different RAJA backends (Sequential, OpenMP, and CUDA) using the RAJA forall method.
+Each version maintains the same loop body and compares run time with one of the possible layouts.
+Additionally, timers are included in order to compare run time. The code example
+below shows one of the RAJA variants:
 
-   Number of matrices to be multiplied: 7000000 
+.. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
+                    :lines: 193-226
 
-   Matrix Multiplication with layout 1 on CPU with loop policy run time : 0.120773 seconds
-   Matrix Multiplication with layout 2 on CPU with loop policy run time : 0.246547 seconds
-   
-   Matrix Multiplication with layout 1 on CPU with OpenMP parallel policy run time : 0.0380581 seconds
-   Matrix Multiplication with layout 2 on CPU with OpenMP parallel policy run time : 0.0383805 seconds
-   
-   Matrix Multiplication with layout 1 on GPU with Cuda policy run time : 0.134659 seconds
-   Matrix Multiplication with layout 2 on GPU with Cuda policy run time : 0.0176018 seconds
-
-   Number of matrices to be multiplied: 12000000
-   
-   Matrix Multiplication with layout 1 on CPU with loop policy run time : 0.218981 seconds
-   Matrix Multiplication with layout 2 on CPU with loop policy run time : 0.529489 seconds
-
-   Matrix Multiplication with layout 1 on CPU with OpenMP parallel policy run time : 0.0652577 seconds
-   Matrix Multiplication with layout 2 on CPU with OpenMP parallel policy run time : 0.0652921 seconds
-
-   Matrix Multiplication with layout 1 on GPU with Cuda policy run time : 0.231011 seconds
-   Matrix Multiplication with layout 2 on GPU with Cuda policy run time : 0.0298882 seconds
-
-Here we observe that the first layout realizes better performance under a ``RAJA::loop_exec`` policy while the second
-layout relizes better performance on the GPU. The file ``RAJA/examples/ex-offset.cpp`` contains the complete working example code.
-
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Three-dimensional Permuted Layouts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For completeness, we provide the analogues between C-style macros and RAJA permuted layouts for this example::
-  
-  #define A(elem, row, col) A[elem + Nelem*(col  + row*NCOLS)]
-  auto layout = RAJA::make_permuted_layout({{Nelem,NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<1,2,0> >::get() );
-       
-  #define A(elem, row, col) A[elem + Nelem*(row + NROWS*col)
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<2,1,0> >::get() );
-
-  #define A(elem, row, col) A[col + NCOLS*(row + NROWS*elem)]
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<0,1,2> >::get() );
-
-  #define A(elem, row, col) A[col + NCOLS*(elem + Nelem*row)]
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<1,0,2> >::get() );
-
-  #define A(elem, row, col) A[row + NROWS*(elem + Nelem*col)]
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<2,0,1> >::get() );
-
-  #define A(elem, row, col) A[row + NROWS*(col + NCOLS*elem)]
-  auto layout = RAJA::make_permuted_layout({{Nelem, NROWS, NCOLS}}, RAJA::as_array<RAJA::Perm<0,2,1> >::get() );
-
+As results will be platform specific, we invite readers to compare run-times in
+their computing environments.
