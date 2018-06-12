@@ -23,7 +23,7 @@ Key RAJA features shown in the following example:
   * ``RAJA::Kernel`` loop traversal template
   *  RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
-  * ``RAJA:make_offset_layout`` Method which returns a layout with offset enumeration for each index
+  * ``RAJA:make_offset_layout`` Method which returns a layout with index offsets
 
 This example applies a five-cell stencil to the
 interior cells of a lattice and stores the

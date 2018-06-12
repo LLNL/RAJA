@@ -60,7 +60,7 @@ data access in a row-major fashion through the parenthesis operator::
 
      //r - row of a matrix
      //c - column of a matrix
-     //equivalent indexing A[c + r*NCOLS]
+     //equivalent indexing as A[c + r*NCOLS]
      Aview(r,c)
 
 Furthermore, the ``RAJA::View`` constructor is variadic and can support an
@@ -83,10 +83,10 @@ dimensionality. A ``RAJA::Layout`` object may also be used as
 an argument for a ``RAJA::View`` as well as to store dimension sizes,
 striding order, and offsets for index enumeration. RAJA has four methods to create a layout object:
 
-* ``RAJA::Layout<DIM> layout(N0, ..., Nn)`` - Default constructor
-* ``RAJA::make_permuted_layout`` - Method which returns a layout with custom striding order
-* ``RAJA::make_offset_layout``   - Method which returns a layout with offset enumeration for each index
-* ``RAJA::make_permuted_offset_layout`` - Method which returns a layout with offset enumeration for each index and a custom striding order
+* ``RAJA::Layout<DIM> layout(N0, ..., Nn)``  Default constructor
+* ``RAJA::make_permuted_layout`` Method which returns a layout with custom striding order
+* ``RAJA::make_offset_layout``   Method which returns a layout with offset enumeration for each index
+* ``RAJA::make_permuted_offset_layout`` Method which returns a layout with offset enumeration for each index and a custom striding order
 
 At its core, a ``RAJA::Layout`` object is used for mapping multi-dimensional indices to
 a one-dimensional index and vice versa. The default
@@ -115,11 +115,11 @@ An example of a projected Layout::
    // Create a layout with a degenerate dimensions
    RAJA::Layout<3> layout(3, 0, 5);
 
-   // The second (J) index is projected out
+   // The second (j) index is projected out
    int lin1 = layout(0, 10, 0);   // lin1 = 0
    int lin2 = layout(0, 5, 1);    // lin2 = 1
 
-   // The inverse mapping always produces a 0 for J
+   // The inverse mapping always produces a 0 for j
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
@@ -140,13 +140,13 @@ longest stride and the right-most index having unit stride::
 The first argument in the ``RAJA::make_permuted_layout`` is a C++ array
 in which the entries correspond to the dimensionality of each component.
 The array is initialized using double braces as it enables initiation of the object
-and its subobjects. The second argument is a ``RAJA::as_array`` object
-templated on a RAJA permutation, ``RAJA::Perm``, object. The template arguments
-in ``RAJA::Perm``, :math:`0,1,2`, are used to specify the striding order of the indices;
-left most having the longest stride and the right most unit stride.
+and its subobjects. The second argument is a ``RAJA::as_array`` which is templated on
+a ``RAJA::Perm`` object. The template arguments in ``RAJA::Perm``, :math:`0,1,2`,
+are used to specify the striding order of the indices;
+left most index corresponds to having the longest stride and the right most has unit stride.
 The ``RAJA::as_array::get()`` method returns indices in the specified order. For clarity, the following example
-illustrates using a layout objects to define index striding order, expose index with unit
-stride and the use of templated ``RAJA::View`` arguments::
+illustrates using layout objects to define index striding order, expose index with unit
+stride and template ``RAJA::View`` arguments::
 
   const int s0 = 5;  //stride of dimension 0
   const int s1 = 7;  //stride of dimension 1
@@ -161,7 +161,7 @@ stride and the use of templated ``RAJA::View`` arguments::
   RAJA::View<double, RAJA::Layout<DIM, RAJA::Index_type, 3> > Bview(B, layout);
 
   //Equivalent to indexing as
-  //B[i + j*s2 + k*s2*s1]
+  //B[i + j * s2 + k * s2 * s1]
    Bview(k, j, i)
 
 Templating on unit stride sets a stride associated with an index to one.
@@ -196,7 +196,7 @@ The example below illustrates basic usage and templates index :math:`0` as havin
   RAJA::View<double, RAJA::Layout<DIM,RAJA::Index_type,0> > Bview(B, layout);
 
   //Equivalent to indexing as
-  //B[k + s0*i + j*s0*s2]
+  //B[k + s0 * i + j * s0 * s2]
   Bview(k, j, i)
 
 The third approach to constructing a layout has the capability to offset index

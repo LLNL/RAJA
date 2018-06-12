@@ -21,20 +21,20 @@ Batch Matrix-Multiply
 Key RAJA features shown in the following example:
 
   * ``RAJA::forall`` loop traversal template
-  * RAJA execution policies
+  *  RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA::make_permuted_layout`` permutes how data is accessed through the view parentheses operator
 
 This example carries out batched matrix multiplication
-for matrices of dimension 3 x 3 using two different
+for matrices of dimension :math:`3 \times 3` using two different
 data layouts.
 
-Matrices are stored in arrays A and B. Results
+Matrices are stored in arrays :math:`A` and :math:`B`. Results
 are stored in a third array, C.
 The notation :math:`A^{e}_{rc}` is introduced
 to correspond to the matrix entry in the row, r,
 column, c, of matrix, e. Below we describe the two
-layouts for the case of two (N=2) 3 x 3 matrices.
+layouts for the case of two (:math:`N=2`) :math:`3 \times 3` matrices.
 
 Layout 1:
 Matrix entries are grouped together so that each
@@ -60,7 +60,7 @@ then by column number, and finally by row number.
        A^{0}_{20}, A^{1}_{20}, A^{0}_{21},
        A^{1}_{21}, A^{0}_{22}, A^{1}_{22}];
 
-The extension to N > 2 matrices follows by direct
+The extension to :math:`N > 2` matrices follows by direct
 extension. By exploring different data layouts,
 we can assess which performs best under a given
 execution policy and computing environment.
@@ -68,29 +68,28 @@ execution policy and computing environment.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Permuted Layouts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The following code snippet constructs layout objects for the first data layout
+The following code snippet constructs layout and view objects for the first data layout
 we are considering.
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 97-100, 132-140
+                    :lines: 98-101, 134-143
 
 The first argument in the ``RAJA::make_permuted_layout`` is a C++ array
 whose entries correspond to the dimensionality of each component.
 The array is initialized using double braces as it enables initiation of the object
 and its subobjects. The second argument is a ``RAJA::as_array`` object
-templated on a RAJA permutation ``RAJA::Perm`` object. The template arguments
+templated on a ``RAJA::Perm`` object. The template arguments
 in ``RAJA::Perm``, :math:`0,1,2`, is used to to specify order of indices with the longest
 to shortest stride, while ``RAJA::as_array::get()``
 returns indices in the specified order. Indices are always enumerated with the left most as
-:math:`0` and right most as the :math:`n^{th}` index. The example above uses the default
+index :math:`0` and right most as the :math:`n^{th}` index. The example above uses the default
 striding order in which the left most index (element number) has the longest stride and the right
 most (column index) has unit stride. The following code example permutes the ordering
 so that the element index (index :math:`0`) has unit stride, and the row index has the
 longest stride (index :math:`1`).
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 149-157
-
+                    :lines: 157-162
 
 We refer the reader to the :ref:`view-label` section
 for a complete description of ``RAJA::View`` and ``RAJA::Layout`` objects.
@@ -100,12 +99,11 @@ RAJA Implementation
 ^^^^^^^^^^^^^^^^^^^
 The complete example ``RAJA/examples/ex-offset.cpp`` compares batched matrix multiplication
 using three different RAJA backends (Sequential, OpenMP, and CUDA) using the RAJA forall method.
-Each version maintains the same loop body and compares run time with one of the possible layouts.
-Additionally, timers are included in order to compare run time. The code example
-below shows one of the RAJA variants:
+Each version includes timers and maintains the same loop body and compares run time with one of the possible layouts.
+The code example below shows one of the RAJA variants:
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 193-226
+                    :lines: 198-231
 
 As results will be platform specific, we invite readers to compare run-times in
 their computing environments.
