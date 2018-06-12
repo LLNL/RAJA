@@ -31,7 +31,6 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/IterableWrapper.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
 
@@ -73,16 +72,20 @@ struct IterableWrapperTuple<camp::tuple<Ts...>>
 {
 
   using type = camp::tuple<
-    RAJA::detail::IterableWrapper<camp::decay<Ts>> ...>;
+    RAJA::impl::Span<typename camp::decay<Ts>::iterator, typename camp::decay<Ts>::IndexType> ...>;
+  
 };
 
 
 namespace internal {
 template <class Tuple, camp::idx_t ... I>
 RAJA_INLINE constexpr auto make_wrapped_tuple_impl( Tuple&& t, camp::idx_seq<I...> )
--> camp::tuple<RAJA::detail::IterableWrapper<camp::decay<camp::tuple_element_t<I, camp::decay<Tuple>>>> ...>
+-> camp::tuple<RAJA::impl::Span<typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::iterator,
+                                typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::IndexType> ...>  
 {
-  return camp::make_tuple( RAJA::detail::IterableWrapper<camp::decay<camp::tuple_element_t<I, camp::decay<Tuple>>>>{camp::get<I>(std::forward<Tuple>(t))}...);
+  return camp::make_tuple( RAJA::impl::Span<typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::iterator,
+                           typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::IndexType>
+                           {camp::get<I>(std::forward<Tuple>(t)).begin(), camp::get<I>(std::forward<Tuple>(t)).end() }...); 
 }
 } 
 
