@@ -90,6 +90,9 @@ struct CudaStatementExecutor<Data,
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
 
+      // Reinitialize thread calculations (TODO: optimize this)
+      enclosed_stmts.initThread(data);
+
       // execute enclosed statements
       enclosed_stmts.exec(data, num_logical_blocks, block_carry);
     }
@@ -100,11 +103,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
 

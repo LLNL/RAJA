@@ -2142,7 +2142,7 @@ TEST(Kernel, IndexCalc_seq){
   for(int init = 1;init < 5;++ init){
     int i = 0;
 
-    ASSERT_EQ(ic.setInitial(data, init) > 0, init > 0);
+    ASSERT_EQ(ic.reset(data, init) > 0, init > 0);
     ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 7;++ inc){
@@ -2179,11 +2179,15 @@ TEST(Kernel, IndexCalc_thread){
 
   RAJA::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
 
+
+
   for(int init = 1;init < 5;++ init){
     //printf("init=%d\n", init);
     int i = init;
 
-    ASSERT_EQ(ic.setInitial(data, init) > 0, false);
+    ic.initIteration(data, init);
+
+    ASSERT_EQ(ic.reset(data, init) > 0, false);
     ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 3*N;++ inc){

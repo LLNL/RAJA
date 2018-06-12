@@ -60,35 +60,37 @@ namespace internal
   /*!
    * CUDA global function for launching CudaKernel policies
    */
-  template <typename StmtList, typename Data>
-  __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
+  template <typename StmtList, typename Data, typename Exec>
+  __global__ void CudaKernelLauncher(Data data, Exec executor, int num_logical_blocks)
   {
     using data_t = camp::decay<Data>;
     data_t private_data = data;
 
-    // Instantiate an executor object
-    using executor_t = cuda_statement_list_executor_t<StmtList, Data>;
-    executor_t executor;
+    using exec_t = camp::decay<Exec>;
+    exec_t private_executor = executor;
+
+    private_executor.initThread(data);
 
     // execute the the object
-    executor.exec(private_data, num_logical_blocks, -1);
+    private_executor.exec(private_data, num_logical_blocks, -1);
   }
 
 
-  template <size_t BlockSize, typename StmtList, typename Data>
+  template <size_t BlockSize, typename StmtList, typename Data, typename Exec>
   __launch_bounds__(BlockSize, 1)
   __global__
-  void CudaKernelLauncherFixed(Data data, int num_logical_blocks)
+  void CudaKernelLauncherFixed(Data data, Exec executor, int num_logical_blocks)
   {
     using data_t = camp::decay<Data>;
     data_t private_data = data;
 
-    // Instantiate an executor object
-    using executor_t = cuda_statement_list_executor_t<StmtList, Data>;
-    executor_t executor;
+    using exec_t = camp::decay<Exec>;
+    exec_t private_executor = executor;
+
+    private_executor.initThread(data);
 
     // execute the the object
-    executor.exec(private_data, num_logical_blocks, -1);
+    private_executor.exec(private_data, num_logical_blocks, -1);
   }
 
 } //namespace internal
@@ -116,8 +118,8 @@ struct cuda_explicit_launch {
   }
 
 
-  template<typename StmtList, typename Data>
-  static void launch(Data const &cuda_data, internal::LaunchDim launch_dims,
+  template<typename StmtList, typename Data, typename Exec>
+  static void launch(Data const &cuda_data, Exec &exec, internal::LaunchDim launch_dims,
                      internal::LaunchDim logical_dims,
                      size_t shmem, cudaStream_t stream)
   {
@@ -126,7 +128,7 @@ struct cuda_explicit_launch {
     // that will fit in a block of num_threads.
     RAJA::internal::CudaKernelLauncherFixed<num_threads, StmtList>
         <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
-            cuda_data, logical_dims.blocks);
+            cuda_data, exec, logical_dims.blocks);
   }
 };
 
@@ -157,14 +159,14 @@ struct cuda_occ_calc_launch {
     return internal::LaunchDim(occ_blocks, occ_threads);
   }
 
-  template<typename StmtList, typename Data>
-  static void launch(Data const &cuda_data, internal::LaunchDim launch_dims,
+  template<typename StmtList, typename Data, typename Exec>
+  static void launch(Data const &cuda_data, Exec &exec, internal::LaunchDim launch_dims,
                      internal::LaunchDim logical_dims,
                      size_t shmem, cudaStream_t stream)
   {
     RAJA::internal::CudaKernelLauncher<StmtList>
           <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
-              cuda_data, logical_dims.blocks);
+              cuda_data, exec, logical_dims.blocks);
   }
 
 };
@@ -235,73 +237,70 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
   static RAJA_INLINE void exec(Data &&data)
   {
 
-    int shmem = (int)RAJA::internal::shmem_setup_buffers(data.param_tuple);
-    //    printf("Shared memory size=%d\n", (int)shmem);
+    using data_t = camp::decay<Data>;
+    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
 
+
+    int shmem = (int)RAJA::internal::shmem_setup_buffers(data.param_tuple);
     cudaStream_t stream = 0;
+
+
+    //
+    // Instantiate an executor object
+    //
+    executor_t executor;
+
 
 
     //
     // Compute the MAX physical kernel dimensions
     //
-
-    using data_t = camp::decay<Data>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(
-        CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
+        CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t, executor_t>, shmem);
 
-    //    printf("Physical limits: %d blocks, %d threads\n",
-    //        (int)max_physical.blocks, (int)max_physical.threads);
+
+
+    //
+    // Privatize the LoopData, using make_launch_body to setup reductions
+    //
+    auto cuda_data = RAJA::cuda::make_launch_body(
+        max_physical.blocks, max_physical.threads, shmem, stream, data);
+
 
 
     //
     // Compute the Logical kernel dimensions
     //
-
-    // Privatize the LoopData, using make_launch_body to setup reductions
-    auto cuda_data = RAJA::cuda::make_launch_body(
-        max_physical.blocks, max_physical.threads, shmem, stream, data);
-    //    printf("Data size=%d\n", (int)sizeof(cuda_data));
-
-
-    // Compute logical dimensions
-    using SegmentTuple = decltype(data.segment_tuple);
-
-    // Instantiate an executor object
-    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
-    executor_t executor;
-
-    // Compute logical dimensions
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
-
-    //    printf("Logical dims: %d blocks, %d threads\n",
-    //        (int)logical_dims.blocks, (int)logical_dims.threads);
 
 
     //
     // Compute the actual physical kernel dimensions
     //
-
     LaunchDim launch_dims;
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-    //    printf("Launch dims: %d blocks, %d threads\n",
-    //        (int)launch_dims.blocks, (int)launch_dims.threads);
 
 
     //
     // Launch the kernels
     //
 
-
     LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
-        cuda_data, launch_dims, logical_dims, shmem, stream);
+        cuda_data, executor, launch_dims, logical_dims, shmem, stream);
 
 
+    //
     // Check for errors
+    //
     RAJA::cuda::peekAtLastError();
 
+
+    //
+    // Synchronize
+    //
     RAJA::cuda::launch(stream);
 
     if (!LaunchConfig::async) {
