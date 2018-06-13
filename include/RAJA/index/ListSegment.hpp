@@ -153,8 +153,6 @@ public:
   /// If 'Unowned' is passed as last argument, the constructed object
   /// does not own the segment data and will hold a pointer to given data.
   /// In this case, caller must manage object lifetimes properly.
-  /// This constructor is host only since ownership may only be specified 
-  /// on the host.
   RAJA_HOST_DEVICE TypedListSegment(const value_type* values,
                    Index_type length,
                    IndexOwnership owned = Owned)
