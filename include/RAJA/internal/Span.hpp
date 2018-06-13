@@ -49,7 +49,7 @@ struct rm_ptr<T*> {
 
 template <typename ValueType, typename IndexType>
 struct Span {
-  using value_type = typename rm_ptr<ValueType>::type;
+  using value_type = typename std::iterator_traits<ValueType>::value_type;
   using reference = value_type&;
   using iterator = ValueType;
   using const_iterator = ValueType const;
@@ -61,43 +61,50 @@ struct Span {
   static_assert(type_traits::is_random_access_iterator<ValueType>::value,
                 "ValueType must model RandomAccessIterator");
 
-  RAJA_HOST_DEVICE Span(iterator data, iterator end)
-    : _data{data}, _length{static_cast<IndexType>(end - data)}, _end{end}
+  RAJA_HOST_DEVICE Span(iterator begin, iterator end)
+    : m_begin{begin}, m_end{end}
   {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return _data; }
-  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return _end; }
-  RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return _data; }
-  RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return _end; }
-  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return _data; }
-  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cend() const { return _end; }
+  RAJA_HOST_DEVICE Span(iterator begin, IndexType size)
+    : m_begin{begin}, m_end{begin + size}
+  {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE ValueType data() const { return _data; }
-  RAJA_HOST_DEVICE RAJA_INLINE IndexType size() const { return _length; }
-  RAJA_HOST_DEVICE RAJA_INLINE IndexType max_size() const { return _length; }
-  RAJA_HOST_DEVICE RAJA_INLINE bool empty() const { return _length == 0; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator cend() const { return m_end; }
+
+  RAJA_HOST_DEVICE RAJA_INLINE ValueType data() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE IndexType size() const { return static_cast<IndexType>(m_end - m_begin);}
+  RAJA_HOST_DEVICE RAJA_INLINE IndexType max_size() const { return static_cast<IndexType>(m_end - m_begin);}
+  RAJA_HOST_DEVICE RAJA_INLINE bool empty() const { return static_cast<IndexType>(m_end - m_begin) == 0; }
 
   //returns a span wrapper starting at begin with length ``length``
   RAJA_HOST_DEVICE RAJA_INLINE
   Span slice(size_type begin,size_type length) const
   {
-
-    auto start = _data + begin;
-    auto end = start + length > _end ? _end : start + length;
-
+    auto start = m_begin + begin;
+    auto end = start + length > m_end ? m_end : start + length;
     return Span(start,end);
   }
-
-  iterator _data;
-  IndexType _length;
-  iterator _end;
+  iterator m_begin;
+  iterator m_end;
 };
 
 template <typename ValueType, typename IndexType>
 RAJA_HOST_DEVICE RAJA_INLINE
-Span<ValueType, IndexType> make_span(ValueType data, IndexType size)
-{
-  return Span<ValueType,IndexType>(data, data + size);
+Span<ValueType, IndexType> make_span(ValueType begin, IndexType size)
+{  
+  return Span<ValueType,IndexType>(begin, begin + size);
+}
+
+template <typename ValueType, typename IndexType>
+RAJA_HOST_DEVICE RAJA_INLINE
+Span<ValueType, IndexType> make_span(ValueType begin, ValueType end)
+{  
+  return Span<ValueType,IndexType>(begin, end);
 }
 
 }  // end namespace impl
