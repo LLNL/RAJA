@@ -15,7 +15,7 @@
 .. _offset-label:
 
 ---------------------------------------------
-RAJA View Offsets
+Stencil Computations (RAJA View Offsets)
 ---------------------------------------------
 
 Key RAJA features shown in the following example:
