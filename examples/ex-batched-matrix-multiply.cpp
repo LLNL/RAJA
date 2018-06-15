@@ -131,16 +131,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The layout object will index into the array as the following C macro would
 // #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
 //
-  auto layout =
+  auto layout1 =
       RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
 //
-// RAJA::Layout objects may be templated on dimension, argument type, and index with unit
-// stride. In this case the column index has unit stride (argument 2). 
+// RAJA::Layout objects may be templated on dimension, argument type, and 
+// index with unit stride. Here, the column index has unit stride (argument 2). 
 //  
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout1);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout1);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout1);
 
 //
 // Allocate space for data in layout 2
@@ -157,6 +157,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   auto layout2 =
       RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
+
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Cview2(C2, layout2);

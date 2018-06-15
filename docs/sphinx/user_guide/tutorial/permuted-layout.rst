@@ -15,7 +15,7 @@
 .. _permuted-layout-label:
 
 ---------------------------------------------
-Batch Matrix-Multiply
+Batched Matrix-Multiply (Permuted Layouts)
 ---------------------------------------------
 
 Key RAJA features shown in the following example:
@@ -23,22 +23,21 @@ Key RAJA features shown in the following example:
   * ``RAJA::forall`` loop traversal template
   *  RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
-  * ``RAJA::make_permuted_layout`` permutes how data is accessed through the view parentheses operator
+  * ``RAJA::make_permuted_layout`` method to permute data ordering
 
-This example carries out batched matrix multiplication
-for matrices of dimension :math:`3 \times 3` using two different
-data layouts.
+This example performs out batched matrix multiplication for 
+:math:`3 \times 3` matrices using two different data layouts.
 
-Matrices are stored in arrays :math:`A` and :math:`B`. Results
-are stored in a third array, C.
-The notation :math:`A^{e}_{rc}` is introduced
-to correspond to the matrix entry in the row, r,
-column, c, of matrix, e. Below we describe the two
-layouts for the case of two (:math:`N=2`) :math:`3 \times 3` matrices.
+Matrices :math:`A` and :math:`B` are multiplied with their products stored in
+matrix :math:`C`. The notation :math:`A^{e}_{rc}` indicates the row r, column
+c entry of matrix e. We describe the two data layouts we use for two
+matrices. The extension to more than two matrices is straightforward. Using
+different data layouts, we can assess which performs best for a given
+execution policy and computing environment.
 
 Layout 1:
-Matrix entries are grouped together so that each
-matrix is in a row major ordering, i.e.
+Entries in each matrix are grouped together with each each having row major 
+ordering; i.e.,
 
 .. math::
   A = [A^{0}_{00}, A^{0}_{01}, A^{0}_{02},
@@ -49,8 +48,8 @@ matrix is in a row major ordering, i.e.
        A^{1}_{20}, A^{1}_{21}, A^{1}_{22}];
 
 Layout 2:
-Matrix entries are first ordered by matrix number,
-then by column number, and finally by row number.
+Matrix entries are first ordered by matrix index,
+then by column index, and finally by row index; i.e.,
 
 .. math::
   A = [A^{0}_{00}, A^{1}_{00}, A^{0}_{01},
@@ -60,50 +59,61 @@ then by column number, and finally by row number.
        A^{0}_{20}, A^{1}_{20}, A^{0}_{21},
        A^{1}_{21}, A^{0}_{22}, A^{1}_{22}];
 
-The extension to :math:`N > 2` matrices follows by direct
-extension. By exploring different data layouts,
-we can assess which performs best under a given
-execution policy and computing environment.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Permuted Layouts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RAJA Permuted Layouts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The following code snippet constructs layout and view objects for the first data layout
-we are considering.
+First, we show how to construct the two data layouts using ``RAJA::View`` and
+``RAJA::Layout`` objects. For more details on these RAJA concepts, please
+refer to :ref:`view-label`.
+
+Layout 1 is constructed as follows:
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
                     :lines: 98-101, 134-143
 
-The first argument in the ``RAJA::make_permuted_layout`` is a C++ array
-whose entries correspond to the dimensionality of each component.
-The array is initialized using double braces as it enables initiation of the object
-and its subobjects. The second argument is a ``RAJA::as_array`` object
-templated on a ``RAJA::Perm`` object. The template arguments
-in ``RAJA::Perm``, :math:`0,1,2`, is used to to specify order of indices with the longest
-to shortest stride, while ``RAJA::as_array::get()``
-returns indices in the specified order. Indices are always enumerated with the left most as
-index :math:`0` and right most as the :math:`n^{th}` index. The example above uses the default
-striding order in which the left most index (element number) has the longest stride and the right
-most (column index) has unit stride. The following code example permutes the ordering
-so that the element index (index :math:`0`) has unit stride, and the row index has the
-longest stride (index :math:`1`).
+The first argument to ``RAJA::make_permuted_layout`` is a C++ array
+whose entries correspond to the size of each array dimension; i.e., we have
+'N' :math:`N_r \times N_c` matrices. The second argument describes the
+striding order of the array dimensions. Note that since this case follows
+the default RAJA ordering convention (see :ref:`view-label`), we use the 
+identity permutation::
+
+  RAJA::Perm<0, 1, 2>
+
+For each matrix, the column index (index 2) has unit stride and the row index
+(index 1) has stride 3 (number of columns). The matrix index (index 0) has
+stride 9 (= N_c * N_r).
+
+Layout 2 is constructed as follows:
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 157-162
+                    :lines: 157-163
 
-We refer the reader to the :ref:`view-label` section
-for a complete description of ``RAJA::View`` and ``RAJA::Layout`` objects.
+Note that first argument to ``RAJA::make_permuted_layout`` is the same as in
+Layout 1 since we have the same number of matrices, matrix dimensions and we
+will use the same indexing scheme to access the matrix entries. However, the
+permutation we use is::
+
+  RAJA::Perm<1, 2, 0>
+ 
+This makes the matrix index (index 0) have unit stride, the column index 
+(index 2) for each matrix has stride N, which is the number of matrices, and
+the row index (index 1) has stride N * 3.
 
 ^^^^^^^^^^^^^^^^^^^
-RAJA Implementation
+Example Code
 ^^^^^^^^^^^^^^^^^^^
-The complete example ``RAJA/examples/ex-offset.cpp`` compares batched matrix multiplication
-using three different RAJA backends (Sequential, OpenMP, and CUDA) using the RAJA forall method.
-Each version includes timers and maintains the same loop body and compares run time with one of the possible layouts.
-The code example below shows one of the RAJA variants:
+
+A complete working example that runs the batched matrix-multiplication 
+computation for both layouts and various RAJA execution policies is located
+in the file ``RAJA/examples/ex-offset.cpp``. It compares the execution run 
+times of the two layouts using three RAJA back-ends (Sequential, OpenMP, and 
+CUDA). The code example below shows the OpenMP version:
 
 .. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
-                    :lines: 198-231
+                    :lines: 199-232
 
-As results will be platform specific, we invite readers to compare run-times in
-their computing environments.
+All versions use the exact same lambda loop body showing that data orderings
+using RAJA can be altered similarly to execution policies without modifying
+application source code directly.
