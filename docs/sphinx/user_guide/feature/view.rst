@@ -232,7 +232,7 @@ three-dimensional index space to a one-dimensional linear space::
    int i, j, k;
    layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
 
-``RAJA::Layout`` also support projections; i.e., where one or more dimension
+``RAJA::Layout`` also supports projections; i.e., where one or more dimension
 sizes is zero. In this case, the linear index space is invariant for 
 those dimensions, and toIndicies(...) will always produce a zero for that 
 dimension's index. An example of a projected Layout::
