@@ -39,9 +39,9 @@ other matrices, requires additional macro definitions. To simplify
 multi-dimensional indexing and different indexing layouts, RAJA provides 
 ``RAJA::View`` and ``RAJA::Layout`` classes.
 
----------
+----------
 RAJA View
----------
+----------
 
 A ``RAJA::View`` object wraps a pointer and enables various indexing schemes
 based on the definition of a ``RAJA::Layout`` object. Here, we 
@@ -89,7 +89,7 @@ accesses array entries with unit stride. The loop::
 access array entries with stride :math:`Nn * N(n-1) * ... * N(i+1)`.
 
 ------------
-RAJA Layouts
+RAJA Layout
 ------------
 
 ``RAJA::Layout`` objects support other indexing patterns with different
@@ -97,7 +97,7 @@ striding orders, offsets, and permutations. In addition to layouts created
 using the Layout constructor, as shown above, RAJA provides other methods
 to generate layouts for different indexing patterns. We describe these next.
 
-Permuted Layouts
+Permuted Layout
 ^^^^^^^^^^^^^^^^
 
 The ``RAJA::make_permuted_layout`` method creates a ``RAJA::Layout`` object 
@@ -156,7 +156,7 @@ unit stride::
           so that the layout permutation and unit-stride index specification
           are the same to prevent incorrect indexing.**
 
-Offset Layouts
+Offset Layout
 ^^^^^^^^^^^^^^^^
 
 The ``RAJA::make_offset_layout`` method creates a ``RAJA::Layout`` object 
@@ -191,7 +191,7 @@ defines a layout that enables one to index into a view using the range
 needed to prevent compilation errors/warnings about issues trying to 
 initialize a sub-object.
 
-Permuted Offset Layouts
+Permuted Offset Layout
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``RAJA::make_permuted_offset_layout`` method creates a ``RAJA::Layout`` 
@@ -212,7 +212,7 @@ be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
 tutorial sections.
 
 -------------------
-RAJA Index Mappings
+RAJA Index Mapping
 -------------------
 
 ``RAJA::Layout`` objects are used to map multi-dimensional indices 
