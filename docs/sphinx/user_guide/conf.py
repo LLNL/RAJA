@@ -117,18 +117,18 @@ todo_include_todos = False
 
 # -- Options for HTML output ----------------------------------------------
 
-try:
-    import sphinx_rtd_theme
-except:
-    html_theme = 'classic'
-    html_theme_options = {
-        'codebgcolor': 'lightgrey',
-        'stickysidebar': 'true'
-    }
-    html_theme_path = []
-else:
+#try:
+#    import sphinx_rtd_theme
+#except:
+#    html_theme = 'classic'
+#    html_theme_options = {
+#        'codebgcolor': 'lightgrey',
+#        'stickysidebar': 'true'
+#    }
+#    html_theme_path = []
+#else:
     html_theme = 'sphinx_rtd_theme'
-    html_theme_options = {}
+    html_theme_options = {'codebgcolor': 'lightgrey'}
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -138,7 +138,7 @@ else:
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'codebgcolor': 'lightgrey'}
+#html_theme_options = {'codebgcolor': 'lightgrey'}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
