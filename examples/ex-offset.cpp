@@ -182,11 +182,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment col_range(0, N_r);
   RAJA::RangeSegment row_range(0, N_c);
 
-//
-// Specify the dimension of the lattice
-//
-  const int DIM = 2;
-
 // The following code illustrates pairing an offset layout and a RAJA view
 // object to simplify multidimensional indexing.
 // An offset layout is constructed by using the make_offset_layout method.
@@ -196,8 +191,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // The example uses double braces to initiate the array object and its
 // subobjects.
 //
+  const int DIM = 2;
+
   RAJA::OffsetLayout<DIM> layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r, N_c}});
+
   RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
 

@@ -15,7 +15,7 @@
 .. _offset-label:
 
 ---------------------------------------------
-Offsets for RAJA Views
+RAJA View Offsets
 ---------------------------------------------
 
 Key RAJA features shown in the following example:
@@ -23,24 +23,23 @@ Key RAJA features shown in the following example:
   * ``RAJA::Kernel`` loop traversal template
   *  RAJA execution policies
   * ``RAJA::View`` multi-dimensional data access
-  * ``RAJA:make_offset_layout`` Method which returns a layout with index offsets
+  * ``RAJA:make_offset_layout`` method to apply index offsets
 
-This example applies a five-cell stencil to the
-interior cells of a lattice and stores the
-resulting sums in a second lattice of equal size.
-The five-cell stencil accumulates values of a cell
-and its four neighbors. Assuming the cells of a
-lattice may be accessed in a row/col fashion through a parenthesis operator,
-the stencil may be expressed as the following sum::
+This example applies a five-cell stencil sum to the interior cells of a 
+two-dimensional square lattice and stores the resulting sums in a second 
+lattice of equal size. The five-cell stencil accumulates values from each
+interior cell and its four neighbors. We use ``RAJA::View`` and 
+``RAJA::Layout`` constructs to simplify the multi-dimensional indexing so 
+that we can write the stencil operation as follows::
 
-  output_lattice(row, col)
-    = input_lattice(row, col)
-    + input_lattice(row - 1, col) + input_lattice(row + 1, col)
-    + input_lattice(row, col - 1) + input_lattice(row, col + 1)
+  output(row, col) = input(row, col)
+    + input(row - 1, col) + input(row + 1, col)
+    + input(row, col - 1) + input(row, col + 1)
 
-A lattice is assumed to have :math:`N_r \times N_c` interior nodes with unit values and a padded edge
-of zeros for a total dimension of :math:`(N_r + 2) \times (N_c + 2)`. In the case of
-:math:`N_r = N_c = 3`, the input lattice generated takes the form:
+A lattice is assumed to have :math:`N_r \times N_c` interior cells with unit 
+values surrounded by a halo of cells containing zero values for a total 
+dimension of :math:`(N_r + 2) \times (N_c + 2)`. For example, when
+:math:`N_r = N_c = 3`, the input lattice and values are:
 
   +---+---+---+---+---+
   | 0 | 0 | 0 | 0 | 0 |
@@ -54,8 +53,7 @@ of zeros for a total dimension of :math:`(N_r + 2) \times (N_c + 2)`. In the cas
   | 0 | 0 | 0 | 0 | 0 |
   +---+---+---+---+---+
 
-After applying the stencil, the output lattice is expected to
-take the form:
+After applying the stencil, the output lattice and values are:
 
   +---+---+---+---+---+
   | 0 | 0 | 0 | 0 | 0 |
@@ -69,11 +67,8 @@ take the form:
   | 0 | 0 | 0 | 0 | 0 |
   +---+---+---+---+---+
 
-In this example, the ``RAJA::make_offset_layout``
-method and ``RAJA::View`` object are used to simplify applying
-the stencil to interior cells. The make_offset_layout method
-enables developers to offset the enumeration of values in an array.
-Here we choose to enumerate the lattice in the following manner:
+For this :math:`(N_r + 2) \times (N_c + 2)` lattice case, here is our 
+(row, col) indexing scheme.
 
   +----------+---------+---------+---------+---------+
   | (-1, 3)  | (0, 3)  | (1, 3)  | (2, 3)  | (3, 3)  |
@@ -87,42 +82,48 @@ Here we choose to enumerate the lattice in the following manner:
   | (-1, -1) | (0, -1) | (1, -1) | (2, -1) | (3, -1) |
   +----------+---------+---------+---------+---------+
 
-Notably :math:`[0, N_r) \times [0, N_c)` corresponds to the index
-range we wish to apply the stencil to, and :math:`[-1,N_r] \times [-1, N_c]`
-are the range of coordinates of the lattice.
+Notably :math:`[0, N_r) \times [0, N_c)` corresponds to the interior index
+range over which we apply the stencil, and :math:`[-1,N_r] \times [-1, N_c]`
+is the full lattice index range.
 
-^^^^^^^^^^^^^^^^^^
-RAJA Offset Layout
-^^^^^^^^^^^^^^^^^^
-As a first step, the code below uses the make_offset_layout method to construct a layout
-to create a new enumeration for the two-dimensional array which represents the lattice.
-In particular, the row index is chosen to be within the inclusive range of :math:`[-1, N_r]`,
-and the column index is chosen to be within the inclusive range of :math:`[-1, N_c]`:
+^^^^^^^^^^^^^^^^^^^
+RAJA Offset Layouts
+^^^^^^^^^^^^^^^^^^^
+
+First, we use the ``RAJA::make_offset_layout`` method to construct a 
+``RAJA::OffsetLayout`` object that defines our two-dimensional indexing scheme.
+Then, we create two ``RAJA::View`` objects for each of the input and output
+lattice arrays.
 
 .. literalinclude:: ../../../../examples/ex-offset.cpp
-                    :lines: 199-202
+                    :lines: 194-200
 
-The arguments of the layout method are standard C++ arrays with the coordinates of
-the bottom left corner of the lattice and the coordinates of the top right
-corner of the lattice. The example uses double braces as it enables proper initiation
-of the object and subobjects. We refer the reader to the :ref:`view-label` section
-for a complete description of ``RAJA::View`` and ``RAJA::Layout`` objects.
+Here, the row index range is :math:`[-1, N_r]`, and the column index 
+range is :math:`[-1, N_c]`. The first argument to the call to the 
+``RAJA::View`` constructor are pointers to arrays that hold the data for the
+input and output lattices, which we assume are properly allocated.
 
-^^^^^^^^^^^^^^^^^^^^
-RAJA Kernel Variants
-^^^^^^^^^^^^^^^^^^^^
-For the RAJA variants of the stencil examples, two ``RAJA::Range Segment`` objects
-are used to define the row and column iteration spaces for the interior of the cell:
+For more details on the ``RAJA::View`` and ``RAJA::Layout`` concepts we use 
+in this example, please refer to :ref:`view-label`.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+RAJA Kernel Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For the RAJA implementation of the example computation, we use two 
+``RAJA::Range Segment`` objects to define the row and column iteration 
+spaces for the interior cells:
 
 .. literalinclude:: ../../../../examples/ex-offset.cpp
                     :lines: 182-183
 
-As the stencil operation is data parallel, any ``RAJA::Kernel`` policy may be expected to
-work with the loop body. The example below illustrates the computation within
-the RAJA programming model. We refer the reader to :ref:`loop_elements-label`
-and :ref:`matmultkernel-label` for an introduction and examples for the kernel framework.
+Here, is an implementation using ``RAJA::kernel`` multi-dimensional loop
+execution with a sequential execution policy.
 
 .. literalinclude:: ../../../../examples/ex-offset.cpp
-                    :lines: 209-227
+                    :lines: 207-225
 
-The file ``RAJA/examples/ex-offset.cpp`` contains the complete working example code.
+Since the stencil operation is data parallel, any parallel execution policy 
+may be used. The file ``RAJA/examples/ex-offset.cpp`` contains a complete 
+working example code with parallel implementations. For more details 
+about ``RAJA::kernel`` concepts, please see :ref:`loop_elements-nested-label`. 
