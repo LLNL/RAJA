@@ -103,8 +103,10 @@ range is :math:`[-1, N_c]`. The first argument to the call to the
 ``RAJA::View`` constructor are pointers to arrays that hold the data for the
 input and output lattices, which we assume are properly allocated.
 
-For more details on the ``RAJA::View`` and ``RAJA::Layout`` concepts we use 
-in this example, please refer to :ref:`view-label`.
+Basically, the offset layout mechanics of RAJA allow us to write loops over
+data arrays using non-zero based indexing and use the proper offsets into
+the arrays. For more details on the ``RAJA::View`` and ``RAJA::Layout`` 
+concepts we use in this example, please refer to :ref:`view-label`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Kernel Implementation
