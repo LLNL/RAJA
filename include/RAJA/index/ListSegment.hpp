@@ -142,7 +142,7 @@ public:
   //! iterator type for storage (will be a pointer)
   using iterator = T*;
 
-  //! Underlying index type
+  //! expose underlying index type
   using IndexType = RAJA::Index_type;
 
   //! prevent compiler from providing a default constructor
@@ -150,18 +150,18 @@ public:
 
   ///
   /// \brief Construct list segment from given array with specified length.
+  ///
+  /// By default the ctor performs deep copy of array elements.
   /// If 'Unowned' is passed as last argument, the constructed object
   /// does not own the segment data and will hold a pointer to given data.
   /// In this case, caller must manage object lifetimes properly.
-  RAJA_HOST_DEVICE TypedListSegment(const value_type* values,
+  ///
+  TypedListSegment(const value_type* values,
                    Index_type length,
                    IndexOwnership owned = Owned)
-    : m_data{const_cast<value_type*>(values)}, m_size{length}, m_owned{Unowned}
   {
     // future TODO -- change to initializer list somehow
-#if !defined(RAJA_DEVICE_CODE)
     initIndexData(values, length, owned);
-#endif
   }
 
   ///
@@ -182,38 +182,15 @@ public:
   ///
   /// Copy-constructor for list segment.
   ///
-  RAJA_HOST_DEVICE
   TypedListSegment(const TypedListSegment& other)
-    : m_data{other.m_data}, m_size{other.m_size}, m_owned{Unowned}
   {
-#if !defined(RAJA_DEVICE_CODE)    
-    // Deep copy may only take place on the host. 
+    // future TODO: switch to member initialization list ... somehow
     initIndexData(other.m_data, other.m_size, other.m_owned);
-#endif
-  }
-
-  ///
-  /// Assignment operetor for list segment.
-  ///  
-  RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment& operator=(TypedListSegment const & other)
-  {        
-#if !defined(RAJA_DEVICE_CODE)
-    // Deep copy may only take place on the host. 
-    if (this != &other) {
-      initIndexData(other.m_data, other.m_size, other.m_owned);
-    }
-#else
-    m_data = other.m_data;
-    m_size = other.m_size;    
-    m_owned = Unowned;
-#endif
-    return *this;
   }
 
   ///
   /// Move-constructor for list segment.
   ///
-  RAJA_HOST_DEVICE
   TypedListSegment(TypedListSegment&& rhs)
       : m_data(rhs.m_data), m_size(rhs.m_size), m_owned(rhs.m_owned)
   {
@@ -222,33 +199,14 @@ public:
   }
 
   ///
-  /// Move operator for list segment.
-  ///  
-  RAJA_HOST_DEVICE RAJA_INLINE TypedListSegment& operator=(TypedListSegment&& other)
-  {        
-
-    m_data = other.m_data;
-    m_size = other.m_size;    
-    m_owned = other.m_owned;
-
-    // make the rhs non-owning so it's destructor won't have any side effects
-    other.m_owned = Unowned;
-
-    return *this;
-  }
-
-  ///
   /// Destroy segment including its contents
   ///
-  RAJA_HOST_DEVICE
   ~TypedListSegment()
   {
-#if !defined(RAJA_DEVICE_CODE)
-    // Deallocation may only take place on the host
     if (m_data == nullptr || m_owned != Owned) return;
     deallocate(std::integral_constant<bool, Has_CUDA>());
-#endif
   }
+
 
   ///
   /// Swap function for copy-and-swap idiom.
@@ -268,7 +226,6 @@ public:
   //! accessor to retrieve the total number of elements in a TypedListSegment
   RAJA_HOST_DEVICE Index_type size() const { return m_size; }
 
- 
   //! get ownership of the data (Owned/Unowned)
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
@@ -305,7 +262,7 @@ private:
   //
   // Initialize segment data properly based on whether object
   // owns the index data.
-  //  
+  //
   void initIndexData(const value_type* container,
                      Index_type len,
                      IndexOwnership container_own)
