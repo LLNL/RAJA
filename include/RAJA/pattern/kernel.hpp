@@ -114,9 +114,6 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   //       index_tuple
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
-  //using segment_tuple_t = camp::decay<SegmentTuple>;
-
-  
   using segment_tuple_t = typename IterableWrapperTuple<camp::decay<SegmentTuple> >::type;
 
 
