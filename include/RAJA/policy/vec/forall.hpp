@@ -69,8 +69,8 @@ RAJA_INLINE void forall_impl(const vec_exec<VecType> &,
 
   using IdxType = decltype(*begin);
 
-  using value_type = typename VecType::value_type;
-  using ScalarType = RAJA::vec::Vector<value_type, 1, 1>;
+  using scalar_type = typename VecType::scalar_type;
+  using ScalarType = RAJA::vec::Vector<scalar_type, 1, 1>;
 
   // vector-width loop
   distance_t vec_remainder = distance % element_width;

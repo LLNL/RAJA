@@ -24,21 +24,22 @@
 using namespace RAJA;
 using namespace RAJA::statement;
 
-
-void myfunc(){
+TEST(Vec, simple_1d_strided){
 
   int N = 33;
 
-  std::vector<double> a_data(N*2);
+  std::vector<double> a_data(N+1);
   std::vector<double> b_data(N);
   std::vector<double> c_data(N);
 
-  View<double, Layout<1>> a(&a_data[0], N);
+  View<double, Layout<1>> a(&a_data[0], N+1);
   View<double, Layout<1>> b(&b_data[0], N);
   View<double, Layout<1>> c(&c_data[0], N);
 
-  for(int i = 0;i < N; ++ i){
+  for(int i = 0;i < N+1; ++ i){
     a_data[i] = i;
+  } 
+  for(int i = 0;i < N; ++ i){
     b_data[i] = i*i;
     c_data[i] = i*i*i;
   }
@@ -46,35 +47,82 @@ void myfunc(){
   using VecType = vec::Vector<double, 2, 1>;
 
   using policy = vec_exec<VecType>;
-  //using policy = seq_exec;
 
-  auto va = make_vector_view<VecType, 0>(a);
-  auto vb = make_vector_view<VecType, 0>(b);
-  auto vc = make_vector_view<VecType, 0>(c);
-
-  printf("START\n");
+  // create strided VectorViewWrappers 
+  // (none of the Layouts have stride1_dim set)
+  auto va = make_vector_view(a);
+  auto vb = make_vector_view(b);
+  auto vc = make_vector_view(c);
 
   forall<policy>(RangeSegment(0, N),
       [&] (auto i){
 
-        //vec::StridedVector<double, 2, 1> vs{&a_data[i.value], 2};
-
-        //vs = a(i) + b(i)*c(i);
-
-        //va(i) = (vb(i))*((VecType)vc(i));
-        va(i) = vb(i)*vc(i);
+        va(i) += vb(i)*vc(i);
 
       });
+  
 
-  printf("DONE\n");
-
+  // check results
   for(int i = 0;i < N;++ i){
-    printf("a[%d] = %lf\n", i, a_data[i]);
-    //ASSERT_EQ(a_data[i], (double)(i + i*i*i*i*i));
+    ASSERT_EQ(a_data[i], (double)(i + i*i*i*i*i));
   }
 
+  // make sure we didn't run off the end
+  ASSERT_EQ(a_data[N], N);
+
  }
-TEST(Vec, simple){
-myfunc();
 
 }
+
+
+
+TEST(Vec, simple_1d_packed){
+
+  int N = 33;
+
+  std::vector<double> a_data(N+1);
+  std::vector<double> b_data(N);
+  std::vector<double> c_data(N);
+
+  View<double, Layout<1>> a(&a_data[0], N+1);
+  View<double, Layout<1>> b(&b_data[0], N);
+  View<double, Layout<1>> c(&c_data[0], N);
+
+  for(int i = 0;i < N+1; ++ i){
+    a_data[i] = i;
+  } 
+  for(int i = 0;i < N; ++ i){
+    b_data[i] = i*i;
+    c_data[i] = i*i*i;
+  }
+
+  using VecType = vec::Vector<double, 2, 1>;
+
+  using policy = vec_exec<VecType>;
+
+  // using pointers should enfore stride1
+  auto va = make_vector_view(a);
+  auto vb = make_vector_view(b);
+  auto vc = make_vector_view(c);
+  
+  forall<policy>(RangeSegment(0, N),
+      [&] (auto i){
+
+        va(i) += vb(i)*vc(i);
+
+      });
+  
+
+  // check results
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(a_data[i], (double)(i + i*i*i*i*i));
+  }
+
+  // make sure we didn't run off the end
+  ASSERT_EQ(a_data[N], N);
+
+ }
+
+}
+
+

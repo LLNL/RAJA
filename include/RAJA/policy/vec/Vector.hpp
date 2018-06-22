@@ -53,7 +53,7 @@ struct Vector
 {
     using self_t = Vector<T, N, U>;
     using strided_type = StridedVector<T,N,U>;
-    using scalar_type = Vector<T,1,1>;
+    using scalar_type = T;
 
     static constexpr size_t num_vec_elements = N;
     static constexpr size_t num_vec_bytes = N*sizeof(T);
@@ -61,6 +61,7 @@ struct Vector
 
     static constexpr size_t num_total_elements = N*U;
     static constexpr size_t num_total_bytes = N*U*sizeof(T);
+
 
     // Make sure we use a non-vector type for a scalar in the case we have
     // a vector width of 1

@@ -46,7 +46,7 @@ struct MakeVectorHelper<RAJA::vec::Vector<T, N, U>&> {
     RAJA_INLINE
     static
     vector_type &make_vector(T &ref, size_t ) {
-      reinterpret_cast<vector_type &>(ref);
+      return reinterpret_cast<vector_type &>(ref);
     }
 };
 
@@ -99,19 +99,64 @@ auto strip_vector_index(T const &idx) ->
 
 
 
+template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I, typename ... Args>
+struct GetVectorTypeHelper; 
+
+template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I, typename IdxType, typename VecType, typename ... Rest>
+struct GetVectorTypeHelper<T, Stride1Dim, I, RAJA::vec::VectorIndex<IdxType, VecType>, Rest...>{ 
+
+  // next dimension helper
+  using next_t = GetVectorTypeHelper<T, Stride1Dim, I+1, Rest...>;
+
+  // is this dimension requesting a vector type?
+  static constexpr bool is_this_vector = VecType::num_total_elements > 1; 
+
+  // IF this dimension is a vector type, is it packed or strided?
+  using vector_type = typename std::conditional<Stride1Dim==I, VecType &, typename VecType::strided_type>::type;
+
+  // Assign either a vector type, or defer to the next dimension
+  using type = typename std::conditional<is_this_vector, vector_type, typename next_t::type>::type;
+  static constexpr bool is_vector = is_this_vector || next_t::is_vector;
+  static constexpr RAJA::idx_t vector_dim = is_this_vector ? I : next_t::vector_dim;
+  
+  // check that we have at most one vector index
+  static_assert(next_t::is_vector == false, "VectorView can only be indexed by a single vector index");
+};
+
+/**
+* Termination case, assume its scalar
+*/
+template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I>
+struct GetVectorTypeHelper<T, Stride1Dim, I>{
+  using type = RAJA::vec::Vector<T, 1, 1> &;
+  static constexpr bool is_vector = false;
+  static constexpr RAJA::idx_t vector_dim = 0;
+};
+
+
+template<typename T, RAJA::idx_t Stride1Dim, typename ... Args>
+using getVectorType = typename GetVectorTypeHelper<T, Stride1Dim, 0, Args...>::type;
+
+template<typename T, RAJA::idx_t Stride1Dim, typename ... Args>
+RAJA_INLINE
+constexpr
+RAJA::idx_t getVectorDim(){
+  return GetVectorTypeHelper<T, Stride1Dim, 0, Args...>::vector_dim;
+}
+
+
 } // namespace internal
 
-template <typename ViewType, typename VectorType, RAJA::idx_t VectorDim>
+template <typename ViewType>
 struct VectorViewWrapper{
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
 
-  // Choose a vector or strided vector type based on what the stride1 dim is
+  // Determine the stride1 dimension of this views layout so we know when to return
+  // a packed vs strided vector object
   static constexpr RAJA::idx_t stride1_dim = ViewType::layout_type::stride1_dim;
 
-  using vector_type = typename std::conditional<stride1_dim == VectorDim, VectorType&, typename VectorType::strided_type>::type;
-  using scalar_type = typename VectorType::scalar_type;
 
   base_type base_;
 
@@ -121,23 +166,47 @@ struct VectorViewWrapper{
   RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
 
   template <typename... ARGS>
-  RAJA_HOST_DEVICE RAJA_INLINE vector_type operator()(ARGS &&... args) const
-  {
+  RAJA_HOST_DEVICE RAJA_INLINE auto operator()(ARGS &&... args) const ->
+    internal::getVectorType<value_type, stride1_dim, camp::decay<ARGS>...>
+  {   
+    // Figure out the type of vector object to be returned: scalar vector, packed vector, or strided vector
+    using vector_type = internal::getVectorType<value_type, stride1_dim, camp::decay<ARGS>...>;
+
+    // determine which dimension is getting packed into a vector
+    static constexpr RAJA::idx_t vector_dim = internal::getVectorDim<value_type, stride1_dim, camp::decay<ARGS>...>();
+
+    // get the actual value/pointer from the underlying view
     auto &val = base_.operator()(internal::strip_vector_index(args)...);
-    return internal::MakeVectorHelper<vector_type>::make_vector(val, base_.layout.strides[VectorDim]);
+
+    // Create a vector reference or object depeding on the vector_type
+    return internal::MakeVectorHelper<vector_type>::make_vector(val, base_.layout.strides[vector_dim]);
   }
 
 
 };
 
-template < typename VectorType, RAJA::idx_t VectorDim, typename ViewType>
-RAJA_INLINE VectorViewWrapper<ViewType, VectorType, VectorDim> make_vector_view(
+
+/**
+  Convenience function that produces a VectorView wrapper around an existing view.
+*/
+template <typename ViewType>
+RAJA_INLINE VectorViewWrapper<ViewType> make_vector_view(
     ViewType const &view)
 {
-
-  return RAJA::VectorViewWrapper<ViewType, VectorType, VectorDim>(view);
+  return RAJA::VectorViewWrapper<ViewType>(view);
 }
 
+/**
+  Convenience function that produces a VectorView from a raw pointer.
+*/
+template<typename T>
+RAJA_INLINE
+VectorViewWrapper<RAJA::View<T, RAJA::Layout<1, RAJA::Index_type, 0> > > make_vector_view(T *data)
+{
+  using ViewType = RAJA::View<T, RAJA::Layout<1, RAJA::Index_type, 0> >;
+  ViewType view(data, 1);
+  return RAJA::VectorViewWrapper<ViewType>(view);
+}
 
 
 }  // namespace RAJA
