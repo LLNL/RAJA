@@ -88,6 +88,11 @@
 #include "RAJA/policy/openmp.hpp"
 #endif
 
+//
+// Explicit SIMD vectorization policies
+//
+#include "RAJA/policy/vec.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 
 //
