@@ -53,8 +53,23 @@ using VectorRegister = T __attribute__((ext_vector_type(N)));
 
 #if defined(RAJA_COMPILER_GNU)
 
+/**
+ * We have to play this game with a helper class because GNU has an issue
+ * with the sizeof(T) in a type alias, but no it a typedef :(
+ *
+ * This bug dates back to at least 2013:
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58855
+ */
 template<typename T, size_t N>
-using VectorRegister = T __attribute__((vector_size(N*sizeof(T))));
+struct VectorRegisterHelper
+{
+  typedef T __attribute__((vector_size(N*sizeof(T)))) type;
+
+};
+
+template<typename T, size_t N>
+using VectorRegister = typename VectorRegisterHelper<T, N>::type;
+
 
 #endif
 
@@ -63,8 +78,10 @@ using VectorRegister = T __attribute__((vector_size(N*sizeof(T))));
 
 #if defined(RAJA_COMPILER_INTEL)
 
+
 template<typename T, size_t N>
 using VectorRegister = T __attribute__((vector_size(N*sizeof(T))));
+
 
 #endif
 
