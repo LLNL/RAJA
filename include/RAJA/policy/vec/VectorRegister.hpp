@@ -43,9 +43,33 @@ namespace vec
 namespace internal {
 
 
+#if defined(RAJA_COMPILER_CLANG) 
 
 template<typename T, size_t N>
 using VectorRegister = T __attribute__((ext_vector_type(N)));
+
+#endif
+
+
+#if defined(RAJA_COMPILER_GNU)
+
+template<typename T, size_t N>
+using VectorRegister = T __attribute__((vector_size(N*sizeof(T))));
+
+#endif
+
+
+
+
+#if defined(RAJA_COMPILER_INTEL)
+
+template<typename T, size_t N>
+using VectorRegister = T __attribute__((vector_size(N*sizeof(T))));
+
+#endif
+
+
+
 
 
 } // namespace internal
