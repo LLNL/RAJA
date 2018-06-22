@@ -61,13 +61,13 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>, IndexCalc> {
     if (block_carry <= 0) {
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
-      bool done = index_calc.reset(data, threadIdx.x);
+      bool done = index_calc.reset(data);
 
       while (!done) {
 
         invoke_lambda<LoopIndex>(data);
 
-        done = index_calc.increment(data, blockDim.x);
+        done = index_calc.increment(data);
       }
     }
   }
@@ -82,7 +82,7 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>, IndexCalc> {
 
   inline RAJA_DEVICE void initThread(Data &data)
   {
-    index_calc.initThread(data, threadIdx.x);
+    index_calc.initThread(data, threadIdx.x, blockDim.x);
   }
 
 

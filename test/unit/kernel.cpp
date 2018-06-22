@@ -2142,7 +2142,9 @@ TEST(Kernel, IndexCalc_seq){
   for(int init = 1;init < 5;++ init){
     int i = 0;
 
-    ASSERT_EQ(ic.reset(data, init) > 0, init > 0);
+    ic.initIteration(data, init);
+
+    ASSERT_EQ(ic.reset(data), init <= 0);
     ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 7;++ inc){
@@ -2187,13 +2189,13 @@ TEST(Kernel, IndexCalc_thread){
 
     ic.initIteration(data, init);
 
-    ASSERT_EQ(ic.reset(data, init) > 0, false);
+    ASSERT_EQ(ic.reset(data), false);
     ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 3*N;++ inc){
       //printf("  inc=%d\n", inc);
 
-      ic.initIteration(data, inc);
+      ic.initThread(data, inc);
 
       for(int iter = 0;iter < N;++ iter){
 

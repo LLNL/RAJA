@@ -156,7 +156,7 @@ struct CudaStatementExecutor<Data,
     if (block_carry <= 0) {
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
-      bool done = index_calc.reset(data, threadIdx.x);
+      bool done = index_calc.reset(data);
 
       while (!done) {
 
@@ -179,7 +179,7 @@ struct CudaStatementExecutor<Data,
         }
 
 
-        done = index_calc.increment(data, blockDim.x);
+        done = index_calc.increment(data);
       }
     }
   }
@@ -195,7 +195,7 @@ struct CudaStatementExecutor<Data,
 
   inline RAJA_DEVICE void initThread(Data &data)
   {
-    index_calc.initThread(data, threadIdx.x);
+    index_calc.initThread(data, threadIdx.x, blockDim.x);
     enclosed_stmts.initThread(data);
   }
 

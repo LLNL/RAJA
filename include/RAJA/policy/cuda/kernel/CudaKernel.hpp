@@ -283,11 +283,14 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
 
+    //
+    // Configure as much of the indexing scheme as possible on the CPU
+    //
+    executor.initThread(cuda_data, threadIdx.x, blockDim.x);
 
     //
     // Launch the kernels
     //
-
     LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
         cuda_data, executor, launch_dims, logical_dims, shmem, stream);
 

@@ -164,22 +164,29 @@ template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
   int i;
 
+
+
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int reset(Data &data, int carry_init)
+  RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &data, int carry_init, int carry_incr)
   {
-    data.template assign_offset<ArgumentId>(0);
-    i = 0;
     return carry_init;
   }
 
-  template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int initIteration(Data &data, int carry_iter)
-  {
-    return carry_iter;
-  }
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry)
+  RAJA_INLINE RAJA_DEVICE bool reset(Data &data)
+  {
+    data.template assign_offset<ArgumentId>(0);
+    i = 0;
+
+    // return true if there are no iterations
+    return segment_length<ArgumentId>(data) == 0;
+  }
+
+
+
+  template <typename Data>
+  RAJA_INLINE RAJA_DEVICE int increment(Data &data, int carry)
   {
     ++i;
 
@@ -200,9 +207,9 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
-  int i0;
-  int i;
-  int co;
+  int i0; // initial value upon reset
+  int i;  // current value
+  int co; //
 
 
   /*
@@ -211,15 +218,32 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
    * This sets up the striding and initial values for a thread.  This only
    * needs to be called once.
    *
+   * carry_thread = threadIdx.x  // what our starting offset is
+   * carry_incr = blockDim.x     // what our block-stride increment is
+   *
+   * co = carry_thread / len     number initial iterations we skip
+   *                           (also, how many initial iterations do we pass
+   *                           on the next loop level up)
+   *
+   * i0 = carry_thread % len     our starting i
+   *
+   *
+   *
+   *
    */
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int initIteration(Data &data, int carry_iter)
+  RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &data, int carry_init, int carry_incr)
   {
 
     int len = segment_length<ArgumentId>(data);
 
     co = carry_iter / len;
     i0 = carry_iter - co * len;  // equiv:  carry_iter % len
+
+    // set i0 to -1 if we have no iterations
+    if(i0 >= len){
+      i0 = -1;
+    }
 
     return co;
   }
@@ -229,19 +253,20 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
    * This should be called each time a nested-loop structure is executed.
    */
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int reset(Data &data, int) // carry_init)
+  RAJA_INLINE RAJA_DEVICE bool reset(Data &data)
   {
     i = i0;
 
     data.template assign_offset<ArgumentId>(i);
 
-    return co;
+    // return TRUE if there are no iterations for us
+    return i0 < 0;
   }
 
 
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry_in)
+  RAJA_INLINE RAJA_DEVICE int increment(Data &data, int carry_in)
   {
     int len = segment_length<ArgumentId>(data);
 
@@ -264,36 +289,35 @@ template <camp::idx_t Idx>
 struct IndexCalcHelper {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &data,
+  static RAJA_INLINE RAJA_HOST_DEVICE std::pair<int, int> initThread(Data &data,
                                                      CalcList &calc_list,
-                                                     int carry_init)
+                                                     int carry_init,
+                                                     int carry_incr)
   {
-    int carry_init_next = camp::get<Idx>(calc_list).initIteration(data, carry_init);
+    auto carry_next = camp::get<Idx>(calc_list).initThread(data,
+                                                           carry_init,
+                                                           carry_incr);
 
     return IndexCalcHelper<Idx - 1>::initThread(data,
                                                 calc_list,
-                                                carry_init_next);
+                                                carry_next.first,
+                                                carry_next.second);
   }
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE int reset(Data &data,
-                                                     CalcList &calc_list,
-                                                     int carry_init)
+  static RAJA_INLINE RAJA_DEVICE bool reset(Data &data,
+                                                     CalcList &calc_list)
   {
-    int carry_init_next =
-        camp::get<Idx>(calc_list).reset(data, carry_init);
 
-    //camp::get<Idx>(calc_list).initIteration(data, carry_init);
+    bool done = camp::get<Idx>(calc_list).reset(data);
 
-    return IndexCalcHelper<Idx - 1>::reset(data,
-                                                calc_list,
-                                                carry_init_next);
+    return done || IndexCalcHelper<Idx - 1>::reset(data, calc_list);
   }
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data,
+  static RAJA_INLINE RAJA_DEVICE int increment(Data &data,
                                                     CalcList &calc_list,
                                                     int carry_in)
   {
@@ -309,24 +333,24 @@ template <>
 struct IndexCalcHelper<-1> {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &,
+  static RAJA_INLINE RAJA_HOST_DEVICE std::pair<int, int> initThread(Data &,
                                                      CalcList &,
-                                                     int carry_init)
+                                                     int carry_init,
+                                                     int carry_incr)
   {
-    return carry_init;
+    return std::pair<int, int>(carry_init, carry_incr);
   }
 
   template <typename Data, typename CalcList>
-    static RAJA_INLINE RAJA_HOST_DEVICE int reset(Data &,
-                                                   CalcList &,
-                                                   int carry_init)
+    static RAJA_INLINE RAJA_DEVICE bool reset(Data &,
+                                                   CalcList &)
   {
-    return carry_init;
+    return false;
   }
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &,
+  static RAJA_INLINE RAJA_DEVICE int increment(Data &,
                                                     CalcList &,
                                                     int carry_in)
   {
@@ -352,37 +376,39 @@ struct CudaIndexCalc<SegmentTuple,
 
 
   /**
-   * Assigns beginning index for all arguments in the calc list
+   * Computes indexing for each loop, must be called any time the loop
+   * dimensions change.
    */
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool initThread(Data &data,
-                                               int carry_init)
+  RAJA_INLINE RAJA_HOST_DEVICE void initThread(Data &data, int thread, int num_threads)
   {
-    return IndexCalcHelper<sizeof...(RangeInts) - 1>::initThread(data,
-                                                                 calc_list,
-                                                                 carry_init)
-           > 0;
-  }
-
-
-  template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data,
-                                                int carry_init)
-  {
-    return IndexCalcHelper<sizeof...(RangeInts) - 1>::reset(data,
-                                                                 calc_list,
-                                                                 carry_init)
-           > 0;
+    IndexCalcHelper<sizeof...(RangeInts) - 1>::initThread(data,
+                                                          calc_list,
+                                                          thread,
+                                                          num_threads);
   }
 
 
   /**
-   * Increment calc list by the increment amount
+   * Assigns beginning index for all arguments in the calc list
    */
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool increment(Data &data, int carry)
+  RAJA_INLINE RAJA_DEVICE bool reset(Data &data)
   {
+    return IndexCalcHelper<sizeof...(RangeInts) - 1>::reset(data, calc_list);
+  }
+
+
+  /**
+   * Increment calc list by the increment amount.
+   *
+   * The loop is "done" when we get something carried out of the top-level loop
+   */
+  template <typename Data>
+  RAJA_INLINE RAJA_DEVICE bool increment(Data &data)
+  {
+    int carry = blockDim.x;
     return IndexCalcHelper<sizeof...(RangeInts) - 1>::increment(data,
                                                                 calc_list,
                                                                 carry)
@@ -406,14 +432,14 @@ struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>> {
   }
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &, int)
+  RAJA_INLINE RAJA_DEVICE bool reset(Data &)
   {
     // each physical thread will execute
     return false;
   }
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool increment(Data &, int)
+  RAJA_INLINE RAJA_DEVICE bool increment(Data &, int)
   {
     // only one execution per physical thread
     return true;
