@@ -70,7 +70,6 @@ TEST(Vec, simple_1d_strided){
   // make sure we didn't run off the end
   ASSERT_EQ(a_data[N], N);
 
- }
 
 }
 
@@ -121,7 +120,6 @@ TEST(Vec, simple_1d_packed){
   // make sure we didn't run off the end
   ASSERT_EQ(a_data[N], N);
 
- }
 
 }
 
