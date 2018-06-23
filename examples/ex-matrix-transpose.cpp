@@ -13,41 +13,44 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cstdlib>
-#include <iostream>
-#include <cstring>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Tiled Matrix Tranpose Example
+ *  Tiled Matrix Transpose Example
  *
  *  Example takes an input matrix A of dimension N x N and
- *  produces a second matrix AT with the rows of matrix A as 
- *  the columns and vice-versa. 
+ *  produces a second matrix AT with the rows of matrix A as
+ *  the columns and vice-versa.
  *
  *  This example caries out the tranpose by using a tiling algorithm.
- *  The algorithm tranposes the matrix by first loading a block
- *  of the matrix into a tile. The algorithm then reads
- *  from the local tile swapping the row and column indicies 
+ *  The algorithm first loads matrix entries into a tile
+ *  (a small two-dimensional array). The algorithm then reads
+ *  from the tile swapping the row and column indicies
  *  to write into an ouput matrix.
  *
- *  The algorithm may be viewed as a collection of ``inner``
- *  and ``outer`` loops. Iterations of the inner loop will load/read 
- *  data into the tile, while outer loops will iterate over the number
+ *  The algorithm is expressed as a collection of ``outer``
+ *  and ``inner`` for loops. Iterations of the inner loop will load/read
+ *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose. For simplicity we assume
- *  that the tile size divide the number of rows and columns of the matrix.
- * 
- *  For CPU execution, RAJA shared memory windows can be used to improve 
- *  performance via cache blocking. For CUDA GPU execution, CUDA shared 
- *  memory can be used to improve performance. 
- *  
+ *  the tile size divide the number of rows and columns of the matrix.
+ *
+ *  For the RAJA variants, a tile is constructed using a RAJA shared memory
+ * window.
+ *  For CPU execution, RAJA shared memory windows can be used to improve
+ *  performance via cache blocking. For CUDA GPU execution, RAJA shared memory
+ *  is mapped to CUDA shared memory.
+ *
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *    - Basic usage of  RAJA shared memory
+ *       - Multiple lambdas
+ *       - Shared memory tiling windows
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -75,337 +78,276 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA tiled matrix transpose example...\n";
 
-//
-// Define num rows/cols in matrix
-//
+  //
+  // Define num rows/cols in matrix
+  //
   const int N = 256;
 
-//
-// Allocate matrix data
-//
+  //
+  // Allocate matrix data
+  //
   int *A = memoryManager::allocate<int>(N * N);
   int *At = memoryManager::allocate<int>(N * N);
 
-//
-// In the following implementations of tiled matrix transpose, we 
-// use RAJA 'View' objects to access the matrix data. A RAJA view
-// holds a pointer to a data array and enables multi-dimensional indexing 
-// into the data.
-//
+  //
+  // In the following implementations of tiled matrix transpose, we
+  // use RAJA 'View' objects to access the matrix data. A RAJA view
+  // holds a pointer to a data array and enables multi-dimensional indexing
+  // into the data.
+  //
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, N);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N, N);
 
-//
-//Initialize matrix data
-//
+  //
+  // Define TILE dimensions
+  //
+  const int TILE_DIM = 16;
+
+  //
+  // Define bounds for inner and outer loops
+  //
+  const int inner_Dim0 = TILE_DIM;
+  const int inner_Dim1 = TILE_DIM;
+
+  const int outer_Dim0 = RAJA_DIVIDE_CEILING_INT(N, TILE_DIM);
+  const int outer_Dim1 = RAJA_DIVIDE_CEILING_INT(N, TILE_DIM);
+
+  //
+  // Initialize matrix data
+  //
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
       Aview(row, col) = col;
     }
   }
+
+
   //----------------------------------------------------------------------------//
-  
-//
-// Define TILE dimensions
-//
-  const int TILE_DIM = 16;
-
-//
-//Define iteration spaces for inner and outer loops
-//
-  const int inner_Dim0 = TILE_DIM;
-  const int inner_Dim1 = TILE_DIM;
-
-  const int outer_Dim0 = RAJA_DIVIDE_CEILING_INT(N,TILE_DIM);
-  const int outer_Dim1 = RAJA_DIVIDE_CEILING_INT(N,TILE_DIM);
-
-
-//----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of tiled matrix transpose...\n";
-  
-  std::memset(At, 0, N*N * sizeof(int)); 
+
+  std::memset(At, 0, N * N * sizeof(int));
 
   //
-  // (0) Outer loop: loops over tiles
+  // (0) Outer loops to iterate over tiles
   //
   for (int by = 0; by < outer_Dim1; ++by) {
     for (int bx = 0; bx < outer_Dim0; ++bx) {
-      
-      
+
+
       int TILE[TILE_DIM][TILE_DIM];
-      
+
       //
-      // (1) Inner loops - load data into tile
+      // (1) Inner loops to load data into the tile
       //
-      for ( int ty = 0; ty < inner_Dim1; ++ty) {
-        for ( int tx = 0; tx < inner_Dim0; ++tx) {
-                    
-          int col = bx * TILE_DIM + tx; //Matrix column index
-          int row = by * TILE_DIM + ty; //Matrix row index
-          
+      for (int ty = 0; ty < inner_Dim1; ++ty) {
+        for (int tx = 0; tx < inner_Dim0; ++tx) {
+
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
+
           TILE[ty][tx] = Aview(row, col);
         }
       }
+      //
+      // (2) Inner loops to read data from the tile
+      //
+      for (int ty = 0; ty < inner_Dim1; ++ty) {
+        for (int tx = 0; tx < inner_Dim0; ++tx) {
 
-      //
-      // (2) Inner loops read data from tile
-      //
-      for ( int ty = 0; ty < inner_Dim1; ++ty) {
-        for ( int tx = 0; tx < inner_Dim0; ++tx) {
-          
-          int col = by * TILE_DIM + tx; //Transposed matrix column index
-          int row = bx * TILE_DIM + ty; //Transposed matrix row index
-          
+          int col = by * TILE_DIM + tx;  // Transposed matrix column index
+          int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+
           Atview(row, col) = TILE[tx][ty];
         }
       }
-
-
     }
   }
 
   checkResult<int>(Atview, N);
-  //printResult<int>(At, N);  
-//----------------------------------------------------------------------------//
+  // printResult<int>(At, N);
+  //----------------------------------------------------------------------------//
 
-//
-// The following RAJA variants will use the RAJA::kernel method to carryout the
-// transpose. The tile array within iterations of the inner loop is represented
-// using a RAJA shared memory object. 
-//
-
-//
-// Here, we define RAJA range segments to establish the iteration spaces for the 
-// inner and outer loops.
-//
+  //
+  // The following RAJA variants use the RAJA::kernel method to carryout the
+  // transpose. A RAJA shared memory object is used to create the two
+  // dimensional
+  // tile array.
+  //
+  // Here, we define RAJA range segments to establish the iteration spaces for
+  // the
+  // inner and outer loops.
+  //
   RAJA::RangeSegment inner_Range0(0, inner_Dim0);
   RAJA::RangeSegment inner_Range1(0, inner_Dim1);
   RAJA::RangeSegment outer_Range0(0, outer_Dim0);
   RAJA::RangeSegment outer_Range1(0, outer_Dim1);
 
-//
-// Iteration spaces are stored within a RAJA tuple
-//
-  auto segments = RAJA::make_tuple(inner_Range0, inner_Range1, outer_Range0, outer_Range1);
+  //
+  // Iteration spaces are stored within a RAJA tuple
+  //
+  auto segments =
+      RAJA::make_tuple(inner_Range0, inner_Range1, outer_Range0, outer_Range1);
 
-//----------------------------------------------------------------------------//  
+  //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential tiled matrix transpose ...\n";
-  std::memset(At, 0, N*N * sizeof(int));
+  std::memset(At, 0, N * N * sizeof(int));
 
-  using KERNEL_EXEC_POL = 
-    RAJA::KernelPolicy<
-     //              
-     // (0) Execution policies for outer loops -
-     //     Loops over tiles
-     //
-     RAJA::statement::For<3, RAJA::loop_exec,
-       RAJA::statement::For<2, RAJA::loop_exec,
-        RAJA::statement::Lambda<0>,
+  using NESTED_EXEC_POL = RAJA::KernelPolicy<
+      //
+      // (0) Execution policies for outer loops
+      //
+      RAJA::statement::For<3, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,                             
+          RAJA::statement::Lambda<0>,
           //
-          // Creates a shared memory window for
+          // Create a shared memory window for
           // usage within inner loops
           //
-          RAJA::statement::SetShmemWindow< 
-            //              
-            // (1) Execution policies for first set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::loop_exec, 
-              RAJA::statement::For<0, RAJA::loop_exec, 
-               RAJA::statement::Lambda<1>
-                                   >
-                                 >, 
-            //              
-            // (2) Execution policies for second set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
-               RAJA::statement::Lambda<2>
-                                     > 
-                                   >
-               > //close shared memory window
-              > //closes outer loop 2
-             > //closes outer loop 3
-    >; //close policy list
-
+          RAJA::statement::SetShmemWindow<
+          //
+          // (1) Execution policies for the first set of inner
+          // loops
+          //
+          RAJA::statement::For<1, RAJA::loop_exec,
+           RAJA::statement::For<0, RAJA::loop_exec,
+                                RAJA::statement::Lambda<1>
+                                >
+                               >,
+          //
+          // (2) Execution policies for second set of inner
+          // loops
+          //
+          RAJA::statement::For<1, RAJA::loop_exec,
+           RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::Lambda<2>
+                                >
+                               >            
+                              > // closes shared memory window
+                             > // closes outer loop 2
+                            > // closes outer loop 3
+                          >; // close policy list
   //
-  // Create a shared memory object type. The shared memory object
-  // constructor is templated on: 
-  // 1. shared memory type
-  // 2. data type
-  // 3. list of lambda arguments which will be accessing the data
-  // 4. dimension of the objects
-  // 5. the type of the tuple holding the iterations spaces 
+  // For the RAJA variants, we introduce a shared memory object
+  // to represent the tile load/read matrix entries.
+  // The shared memory object constructor is templated on:
+  // 1) Shared memory type
+  // 2) Data type
+  // 3) List of lambda arguments which will be accessing the data
+  // 4) Dimension of the objects
+  // 5) The type of the tuple holding the iterations spaces
   //    (for simplicity decltype is used to infer the type)
   //
-  using cpu_shmem_t = RAJA::ShmemTile< RAJA::seq_shmem,double, RAJA::ArgList<0,1>,
-                                       RAJA::SizeList<TILE_DIM,TILE_DIM>,decltype(segments)>;
+  using cpu_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+                                      double,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                                      decltype(segments)>;
   cpu_shmem_t RAJA_CPU_TILE;
 
-  RAJA::kernel_param<KERNEL_EXEC_POL> (
-                                     
-        segments, RAJA::make_tuple(RAJA_CPU_TILE),        
-        //
-        // (0) Lambda for the outer loops
-        //
-        [=] (int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
+  RAJA::kernel_param<NESTED_EXEC_POL>(
 
-        }, 
+      segments,
+      
+      RAJA::make_tuple(RAJA_CPU_TILE),
+      //
+      // (0) Lambda for outer loop to iterate over tiles
+      //
+      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
 
-        //
-        // (1) Lambda for the first set of inner loops which loads data
-        //     into the tile from the input matrix
-        //
-        [=] (int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
-          int col = bx * TILE_DIM + tx; //Matrix column index
-          int row = by * TILE_DIM + ty; //Matrix row index          
-          RAJA_CPU_TILE(ty,tx) = Aview(row,col);
-        }, 
+      },
+      //
+      // (1) Lambda for inner loops to load data into the tile
+      //
+      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
 
-        //
-        // (2) Lambda for the second set of inner loops which loads data
-        // from the tile to the output matrix
-        //
-        [=] (int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
-          int col = by * TILE_DIM + tx; //Transposed matrix column index
-          int row = bx * TILE_DIM + ty; //Transposed matrix row index
-          Atview(row,col) = RAJA_CPU_TILE(tx,ty);
-        }
+        int col = bx * TILE_DIM + tx;  // Matrix column index
+        int row = by * TILE_DIM + ty;  // Matrix row index
 
-  );
+        RAJA_CPU_TILE(ty, tx) = Aview(row, col);
+      },
+
+      //
+      // (2) Lambda for inner loops to read data from the tile
+      //
+      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
+
+        int col = by * TILE_DIM + tx;  // Transposed matrix column index
+        int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+
+        Atview(row, col) = RAJA_CPU_TILE(tx, ty);
+      }
+
+      );
 
   checkResult<int>(Atview, N);
-//printResult<int>(Atview, N);
+// printResult<int>(Atview, N);
 
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
 
 
   //
-  // Creates an omp shared memory object for the following two examples
+  // The following creates an OpenMP shared memory object to be used by the
+  // following two examples.
   //
-  using omp_shmem_t = RAJA::ShmemTile< RAJA::omp_shmem,double, RAJA::ArgList<0,1>,
-                                       RAJA::SizeList<TILE_DIM,TILE_DIM>,decltype(segments)>;
+  using omp_shmem_t = RAJA::ShmemTile<RAJA::omp_shmem,
+                                      double,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                                      decltype(segments)>;
   omp_shmem_t RAJA_OMP_TILE;
 
   //----------------------------------------------------------------------------//
-  std::cout << "\n Running sequential tiled mat-trans openmp ver 1...\n";
-  
-  std::memset(At, 0, N*N * sizeof(int));
+  std::cout << "\n Running openmp tiled matrix transpose ver 1...\n";
+
+  std::memset(At, 0, N * N * sizeof(int));
 
   //
-  //This policy loops over tiles sequentially while collapsing inner loops
-  //into openmp parallel region. 
-  //  
-  using NESTED_EXEC_POL_OMP = 
-    RAJA::KernelPolicy<
-     //              
-     // (0) Execution policies for outer loops -
-     //     Loops over tiles
-     //
-     RAJA::statement::For<3, RAJA::loop_exec,
-       RAJA::statement::For<2, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>,
+  // This policy loops over tiles sequentially while collapsing inner loops
+  // into a single OpenMP parallel for loop enabling parallel reads and writes
+  // to the tile.
+  //
+  using NESTED_EXEC_POL_OMP = RAJA::KernelPolicy<
+    //
+    // (0) Execution policies for outer loops
+    //
+    RAJA::statement::For<3, RAJA::loop_exec,
+      RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::Lambda<0>,
+        //
+        // Create a shared memory window for
+        // usage within inner loops
+        //
+        RAJA::statement::SetShmemWindow<
           //
-          // (1) Execution policies for first set of inner loops -
-          //     Loads data into tile
+          // (1) Execution policies for the first set of inner
+          //     loops. Loop 1 is carried out in parallel while
+          //     loop 0 is executed sequentially.
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<1>
+                                 >
+                               >,
           //
-          RAJA::statement::SetShmemWindow<
-            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                      RAJA::ArgList<0,1>,
-                                      RAJA::statement::Lambda<1>
-                                      >,
+          // (2) Execution policies for the second set of inner
+          //     loops. Loop 1 is carried out in parallel while
+          //     loop 0 is executed sequentially.
           //
-          // (2) Execution policies for second set of inner loops -
-          //     Loads data into tile
-          //
-            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                      RAJA::ArgList<0,1>,
-                                      RAJA::statement::Lambda<2>
-                                   > 
-              > //closes shared memory window
-            > //closes outer loop 1
-          > //closes outer loop 0
-    >; //closes policy list
-
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<2>
+                                 >
+                               >
+                             > // closes shared memory window
+                           > // closes outer loop 2
+                         > // closes outer loop 3
+                       >;// closes policy list
 
   RAJA::kernel_param<NESTED_EXEC_POL_OMP> (
                                      
-        segments, RAJA::make_tuple(RAJA_OMP_TILE),
-        
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+        segments,
 
-        }, 
-
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
-          
-          int col = bx * TILE_DIM + tx; //Matrix column index
-          int row = by * TILE_DIM + ty; //Matrix row index          
-          RAJA_OMP_TILE(ty,tx) = Aview(row,col);
-        }, 
-
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
-
-          int col = by * TILE_DIM + tx; //Transposed matrix column index
-          int row = bx * TILE_DIM + ty; //Transposed matrix row index
-          Atview(row, col) = RAJA_OMP_TILE(tx,ty);
-        }
-
-  );
-
-  checkResult<int>(Atview, N);
-  //printResult<int>(Atview, N);
-
-  //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running sequential tiled mat-trans openmp ver 2...\n";  
-  std::memset(At, 0, N*N * sizeof(int));
-
-  //
-  //This policy loops over tiles sequentially while exposing parallism on 
-  //one of the inner loops.
-  //  
-  using NESTED_EXEC_POL_OMP2 = 
-    RAJA::KernelPolicy<
-     //              
-     // (0) Execution policies for outer loops -
-     //     Loops over tiles
-     //
-    RAJA::statement::For<3, RAJA::loop_exec,
-       RAJA::statement::For<2, RAJA::loop_exec,
-        RAJA::statement::Lambda<0>,
-          //
-          // Creates a shared memory window for
-          // usage within inner loops
-          //
-          RAJA::statement::SetShmemWindow< 
-            //              
-            // (1) Execution policies for first set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::loop_exec, 
-               RAJA::statement::Lambda<1>
-                                   >
-                                 >, 
-            //              
-            // (2) Execution policies for second set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
-               RAJA::statement::Lambda<2>
-                                     > 
-                                   >
-               > //close shared memory window
-              > //closes outer loop 2
-             > //closes outer loop 3
-    >; //close policy list
-
-  RAJA::kernel_param<NESTED_EXEC_POL_OMP2> (
-                                     
-        segments, RAJA::make_tuple(RAJA_OMP_TILE),
+        RAJA::make_tuple(RAJA_OMP_TILE),
 
         [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
 
@@ -425,112 +367,212 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           Atview(row,col) = RAJA_OMP_TILE(tx, ty);
         }
 
-  );
+   );
+  
+  checkResult<int>(Atview, N);
+  // printResult<int>(Atview, N);
+
+  //----------------------------------------------------------------------------//
+
+  std::cout << "\n Running openmp tiled matrix transpose ver 2...\n";
+  std::memset(At, 0, N * N * sizeof(int));
+
+  //
+  // This policy loops over tiles sequentially while exposing parallism on
+  // one of the inner loops.
+  //
+  using NESTED_EXEC_POL_OMP2 = RAJA::KernelPolicy<
+      //
+      // (0) Execution policies for outer loops
+      //
+      RAJA::statement::For<3, RAJA::loop_exec,                           
+        RAJA::statement::For<2, RAJA::loop_exec,
+          RAJA::statement::Lambda<0>,
+          //
+          // Creates a shared memory window for
+          // usage within inner loops
+          //
+            RAJA::statement::SetShmemWindow<
+            //
+            // (1) Execution policies for the first set of inner
+            //     loops. Loops are collapsed into a single
+            //     parallel for loop.
+            //
+           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,            
+                                       RAJA::ArgList<0, 1>,
+                                       RAJA::statement::Lambda<1>
+                                     >,
+          //
+          // (2) Execution policies for second set of inner
+          // loops. Loops are collapsed into a single parallel
+          // for loops.
+          //
+          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,              
+                                    RAJA::ArgList<0, 1>,
+                                    RAJA::statement::Lambda<2>
+                                    >
+                                  > // closes shared memory window
+                                 > // closes outer loop 2
+                               > // closes outer loop 3
+                             >; // close policy list
+
+  RAJA::kernel_param<NESTED_EXEC_POL_OMP2>(
+
+      segments,
+      
+      RAJA::make_tuple(RAJA_OMP_TILE),
+      //
+      // (0) Lambda for outer loop to iterate over tiles
+      //
+      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+
+      },
+      //
+      // (1) Lambda for inner loops to load data into the tile
+      //
+      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+
+        int col = bx * TILE_DIM + tx;  // Matrix column index
+        int row = by * TILE_DIM + ty;  // Matrix row index
+        RAJA_OMP_TILE(ty, tx) = Aview(row, col);
+      },
+      //
+      // (2) Lambda for inner loops to read data from the tile
+      //
+      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+
+        int col = by * TILE_DIM + tx;  // Transposed matrix column index
+        int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+        Atview(row, col) = RAJA_OMP_TILE(tx, ty);
+      }
+
+      );
 
   checkResult<int>(Atview, N);
-//printResult<int>(Atview, N);
-#endif
+// printResult<int>(Atview, N);
+#endif  
 
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
-  std::memset(At, 0, N*N * sizeof(int));
+  std::memset(At, 0, N * N * sizeof(int));
 
   //
-  //This policy loops over tiles assings tiles to cuda thread blocks while 
-  //assigning iterations of inner loop to threads in a cuda thread block. 
-  //  
-  using NESTED_EXEC_POL_CUDA = 
-    RAJA::KernelPolicy<
+  // This policy list assigns iterates of the outer loops to cuda thread blocks
+  // and assigns iterations of the inner loops to threads in a cuda thread
+  // block.
+  //
+  using NESTED_EXEC_POL_CUDA = RAJA::KernelPolicy<
 
-    //
-    //Maps the following policies into cuda thread blocks and threads. 
-    //
-    RAJA::statement::CudaKernel<
+      //
+      // Collapses policy list into a single cuda kernel
+      //
+      RAJA::statement::CudaKernel<
 
-     //              
-     // (0) Execution policies for outer loops -
-     //     Maps outer loops to cuda thread blocks
-     //
-     RAJA::statement::For<3, RAJA::cuda_block_exec,
-       RAJA::statement::For<2, RAJA::cuda_block_exec,
-          RAJA::statement::Lambda<0>,
+          //
+          // (0) Execution policies for outer loops.
+          //     Maps iterations from the outer loop
+          //     to cuda thread blocks.
+          //
+          RAJA::statement::For<3, RAJA::cuda_block_exec,
+            RAJA::statement::For<2, RAJA::cuda_block_exec,
+                                 RAJA::statement::Lambda<0>,
           //
           // Creates a shared memory window for
-          // usage within threads
+          // usage within threads in a thread block
           //
           RAJA::statement::SetShmemWindow<
-            //              
-            // (1) Execution policies for first set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
-                RAJA::statement::Lambda<1>
-                                   >
+          //
+          // (1) Execution policies for the first set of
+          // inner loops.
+          //     Each thread in a cuda block loads an entry
+          //     of the matrix
+          //     into the tile.
+          //
+          RAJA::statement::For<1, RAJA::cuda_thread_exec,
+            RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                                 RAJA::statement::Lambda<1>
                                  >
-            //              
-            // - Place a barrier to synchronize cuda threads
-            //
+                               >
+         //
+         // Places a barrier to synchronize cuda threads
+         // within a block.  Necessary to ensure data has
+         // been loaded into the tile before reading from
+         // the tile.
             ,RAJA::statement::CudaSyncThreads,
-            //              
-            // (2) Execution policies for second set of inner loops -
-            //     Loads data into tile
-            //
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
-               RAJA::statement::Lambda<2>
-                                     >
-                                   >
-               > //close shared memory window
-             > //close outer loop 2 
-            > //close outer loop 1
-          > //close cuda Kernel
-       >; //close policy list
+         //
+         // (2) Execution policies for second set of inner
+         //     loops. Each thread in a cuda block reads an entry
+         //     of the tile into the matrix. 
+         RAJA::statement::For<1, RAJA::cuda_thread_exec,
+          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::Lambda<2>
+                               >
+                              >
+                             > // closes shared memory window
+                           > // closes outer loop 2
+                         > // close outer loop 1
+                       > // closes cuda Kernel
+                     >; // close policy list
 
-  
+
   //
-  //Allocate cuda shared memory
+  // Allocate cuda shared memory
   //
-  using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem, double,RAJA::ArgList<0,1>,RAJA::SizeList<TILE_DIM,TILE_DIM>, decltype(segments)>;
-  cuda_shmem_t RAJA_CUDA_TILE; 
-  
+  using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem,
+                                       double,
+                                       RAJA::ArgList<0, 1>,
+                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                                       decltype(segments)>;
+  cuda_shmem_t RAJA_CUDA_TILE;
 
-  RAJA::kernel_param<NESTED_EXEC_POL_CUDA> (
-                                     
-        segments, RAJA::make_tuple(RAJA_CUDA_TILE),
-        
-        [=] RAJA_DEVICE (int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-        }, 
+  RAJA::kernel_param<NESTED_EXEC_POL_CUDA>(
 
-        [=] RAJA_DEVICE (int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
-     
-          int col = bx * TILE_DIM + tx;
-          int row = by * TILE_DIM + ty;          
-          RAJA_CUDA_TILE(ty,tx) = Aview(row, col);
-        }, 
+      segments,
+      
+      RAJA::make_tuple(RAJA_CUDA_TILE),
+      //
+      // (0) Lambda for outer loop to iterate over tiles
+      //
+      [=] RAJA_DEVICE(
+          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-        [=] RAJA_DEVICE (int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+      },
+      //
+      // (1) Lambda for inner loops to load data into the tile
+      //
+      [=] RAJA_DEVICE(
+          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-          int col = by * TILE_DIM + tx;
-          int row = bx * TILE_DIM + ty;
-          Atview(row, col) = RAJA_CUDA_TILE(tx, ty);
+        int col = bx * TILE_DIM + tx;
+        int row = by * TILE_DIM + ty;
+        RAJA_CUDA_TILE(ty, tx) = Aview(row, col);
+      },
+      //
+      // (2) Lambda for inner loops to read data from the tile
+      //
+      [=] RAJA_DEVICE(
+          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-        }
+        int col = by * TILE_DIM + tx;
+        int row = bx * TILE_DIM + ty;
+        Atview(row, col) = RAJA_CUDA_TILE(tx, ty);
 
-  );
+      }
+
+      );
 
   checkResult<int>(Atview, N);
-//printResult<int>(Atview, N);
-#endif  
-//----------------------------------------------------------------------------//
+// printResult<int>(Atview, N);
+#endif
+  //----------------------------------------------------------------------------//
 
 
-//
-// Clean up.
-//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(A);
   memoryManager::deallocate(At);
 
@@ -543,35 +585,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Functions to check result and report P/F.
 //
 template <typename T>
-void checkResult(T* At, int N)
-{
-  bool match = true;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
-      if ( At(col, row) != col ) { 
-        match = false; 
-      }
-    }
-  }
-  if ( match ) {
-    std::cout << "\n\t result -- PASS\n";
-  } else {
-    std::cout << "\n\t result -- FAIL\n";
-  }
-};
-
-template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
 {
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( Atview(col, row) != col ) { 
-        match = false; 
+      if (Atview(col, row) != col) {
+        match = false;
       }
     }
   }
-  if ( match ) {
+  if (match) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
@@ -582,26 +606,13 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
 // Functions to print result.
 //
 template <typename T>
-void printResult(T* C, int N)
+void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
 {
   std::cout << std::endl;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      std::cout << "C(" << row << "," << col << ") = "
-                << C(row, col) << std::endl;
-    }
-  }
-  std::cout << std::endl;
-}
-
-template <typename T>
-void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
-{
-  std::cout << std::endl;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
-      std::cout << "C(" << row << "," << col << ") = "
-                << Cview(row, col) << std::endl;
+      std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
+                << std::endl;
     }
   }
   std::cout << std::endl;
