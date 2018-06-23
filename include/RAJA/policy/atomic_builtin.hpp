@@ -96,7 +96,11 @@ namespace detail
 {
 
 template <size_t BYTES>
+struct BuiltinAtomicCAS;
+template <size_t BYTES>
 struct BuiltinAtomicCAS {
+  static_assert(!(BYTES == 4 || BYTES == 8),
+                "builtin atomic cas assumes 4 or 8 byte targets");
 };
 
 
@@ -108,8 +112,10 @@ struct BuiltinAtomicCAS<4> {
    * Implementation uses the existing builtin unsigned 32-bit CAS operator.
    * Returns the OLD value that was replaced by the result of this operation.
    */
-  template <typename T, typename OPER>
-  RAJA_INLINE T operator()(T volatile *acc, OPER const &oper) const
+  template <typename T, typename OPER, typename ShortCircuit>
+  RAJA_INLINE T operator()(T volatile *acc,
+                           OPER const &oper,
+                           ShortCircuit const &sc) const
   {
     unsigned oldval, newval, readback;
 
@@ -120,6 +126,7 @@ struct BuiltinAtomicCAS<4> {
     while ((readback = RAJA::atomic::atomicCAS(
                 builtin_atomic{}, (unsigned *)acc, oldval, newval))
            != oldval) {
+      if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
           oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
@@ -136,8 +143,10 @@ struct BuiltinAtomicCAS<8> {
    * Implementation uses the existing builtin unsigned 64-bit CAS operator.
    * Returns the OLD value that was replaced by the result of this operation.
    */
-  template <typename T, typename OPER>
-  RAJA_INLINE T operator()(T volatile *acc, OPER const &oper) const
+  template <typename T, typename OPER, typename ShortCircuit>
+  RAJA_INLINE T operator()(T volatile *acc,
+                           OPER const &oper,
+                           ShortCircuit const &sc) const
   {
     unsigned long long oldval, newval, readback;
 
@@ -148,6 +157,7 @@ struct BuiltinAtomicCAS<8> {
     while ((readback = RAJA::atomic::atomicCAS(
                 builtin_atomic{}, (unsigned long long *)acc, oldval, newval))
            != oldval) {
+      if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
           oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
@@ -167,7 +177,16 @@ template <typename T, typename OPER>
 RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc, OPER &&oper)
 {
   BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper));
+  return cas(acc, std::forward<OPER>(oper), [](T const &) { return false; });
+}
+
+template <typename T, typename OPER, typename ShortCircuit>
+RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
+                                         OPER &&oper,
+                                         ShortCircuit const &sc)
+{
+  BuiltinAtomicCAS<sizeof(T)> cas;
+  return cas(acc, std::forward<OPER>(oper), sc);
 }
 
 
@@ -190,17 +209,31 @@ RAJA_INLINE T atomicSub(builtin_atomic, T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE T atomicMin(builtin_atomic, T volatile *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) {
-    return a < value ? a : value;
-  });
+  if (*acc < value) {
+    return *acc;
+  }
+  return detail::builtin_atomic_CAS_oper_sc(acc,
+                                            [=](T a) {
+                                              return a < value ? a : value;
+                                            },
+                                            [=](T current) {
+                                              return current < value;
+                                            });
 }
 
 template <typename T>
 RAJA_INLINE T atomicMax(builtin_atomic, T volatile *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) {
-    return a > value ? a : value;
-  });
+  if (*acc > value) {
+    return *acc;
+  }
+  return detail::builtin_atomic_CAS_oper_sc(acc,
+                                            [=](T a) {
+                                              return a > value ? a : value;
+                                            },
+                                            [=](T current) {
+                                              return current > value;
+                                            });
 }
 
 template <typename T>

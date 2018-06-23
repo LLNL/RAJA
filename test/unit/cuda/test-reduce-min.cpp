@@ -91,7 +91,7 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
         dcurrentMin = RAJA_MIN(dcurrentMin, droll);
       }
 
-      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
         dmin0.min(dvalue[i]);
         dmin1.min(2 * dvalue[i]);
         dmin2.min(dvalue[i]);
@@ -116,7 +116,7 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
         dcurrentMin = RAJA_MIN(dcurrentMin, droll);
       }
 
-      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
         dmin0.min(dvalue[i]);
         dmin1.min(2 * dvalue[i]);
         dmin2.min(dvalue[i]);
@@ -166,7 +166,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
     }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-        iset, [=] __device__(int i) {
+        iset, [=] RAJA_DEVICE(int i) {
           dmin0.min(dvalue[i]);
           dmin1.min(2 * dvalue[i]);
         });
@@ -222,7 +222,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
     }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-        iset, [=] __device__(int i) {
+        iset, [=] RAJA_HOST_DEVICE(int i) {
           dmin0.min(dvalue[i]);
           dmin1.min(2 * dvalue[i]);
         });
