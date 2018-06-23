@@ -36,5 +36,6 @@
 #include "RAJA/policy/vec/VectorView.hpp"
 #include "RAJA/policy/vec/policy.hpp"
 #include "RAJA/policy/vec/forall.hpp"
+#include "RAJA/policy/vec/reduce.hpp"
 
 #endif  // closing endif for header file include guard

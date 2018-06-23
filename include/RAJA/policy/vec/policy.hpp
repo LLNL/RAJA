@@ -55,11 +55,14 @@ struct vec_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
   using type = VecType;
 };
 
-}  // end of namespace simd
+struct vec_reduce{};
+
+}  // end of namespace vec
 
 }  // end of namespace policy
 
 using policy::vec::vec_exec;
+using policy::vec::vec_reduce;
 
 }  // end of namespace RAJA
 

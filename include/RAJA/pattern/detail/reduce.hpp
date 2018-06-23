@@ -202,7 +202,7 @@ public:
   T get() const { return c.get(); }
 };
 
-template <typename T, typename Reduce, typename Derived>
+template <typename T, typename Reduce, typename Derived, typename Result=T>
 class BaseCombinable
 {
 protected:
@@ -255,7 +255,8 @@ public:
   /*!
    *  \return the calculated reduced value
    */
-  T get() const { return derived().get_combined(); }
+  //T get() const { return derived().get_combined(); }
+  Result get() const { return derived().get_combined(); }
 
   /*!
    *  \return reference to the local value
