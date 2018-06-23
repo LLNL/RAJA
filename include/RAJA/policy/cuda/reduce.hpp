@@ -604,22 +604,24 @@ struct Reduce_Data {
   bool own_device_ptr;
 
   Reduce_Data()
-  {
-    reset(T(), T());
-  }
+    : Reduce_Data(T(),T()){};
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
+
   Reduce_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{},
+    own_device_ptr{false}
   {
-    reset(initValue, identity_);
   }
 
   void reset(T initValue, T identity_ = T())
   {
-    cudaDeviceSynchronize();
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -636,6 +638,14 @@ struct Reduce_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
+  void init_grid_val(T* output)
+  {
+    *output = identity;
+  }
+
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -689,18 +699,19 @@ struct ReduceAtomic_Data {
   bool own_device_ptr;
 
   ReduceAtomic_Data()
-  {
-    reset(T(), T());
-  }
-  
+    : ReduceAtomic_Data(T(),T()) {};
+
   ReduceAtomic_Data(T initValue, T identity_)
+    : value{initValue},
+    identity{identity_},
+    device_count{nullptr},
+    device{nullptr},
+    own_device_ptr{false}
   {
-    reset(initValue, identity_);
   }
 
   void reset(T initValue, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
     value = initValue;
     identity = identity_;
     device_count = nullptr;
@@ -718,6 +729,14 @@ struct ReduceAtomic_Data {
   {
   }
 
+  //! initialize output to identity to ensure never read
+  //  uninitialized memory
+  void init_grid_val(T* output)
+  {
+    *output = identity;
+  }
+
+  //! reduce values in grid to single value, store in output
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
@@ -766,28 +785,24 @@ class Reduce
 public:
 
   Reduce()
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(T(), Combiner::identity());
-  }
+    : Reduce(T (),  Combiner::identity()){}
 
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
     : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>}
-  {
-    reset(init_val, identity_);
-  }
+    tally_or_val_ptr{new PinnedTally<T>},
+    val(init_val, identity_){}
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
-    cudaDeviceSynchronize();
+    operator T(); //syncs device
     val = reduce_data_type(in_val, identity_);
   }
 
   //! copy and on host attempt to setup for device
+  //  init val_ptr to avoid uninitialized read caused by host copy of
+  //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
 #if !defined(__CUDA_ARCH__)
@@ -803,6 +818,7 @@ public:
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
             tally_or_val_ptr.list->new_value(currentStream());
+        val.init_grid_val(tally_or_val_ptr.val_ptr);
         parent = nullptr;
       }
     }
@@ -964,7 +980,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMinLoc(T init_val, Index_type init_idx)
+  ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
@@ -1002,7 +1018,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit ReduceMaxLoc(T init_val, Index_type init_idx)
+  ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }

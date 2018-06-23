@@ -17,7 +17,7 @@
 /// Source file containing tests for Span
 ///
 
-#include "RAJA/index/IndexValue.hpp"
+#include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
 RAJA_INDEX_VALUE(StrongTypeIndex, "Strong Type")
