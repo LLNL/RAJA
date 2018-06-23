@@ -29,14 +29,16 @@
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 
-#define RAJA_DECLARE_REDUCER(OP, POL, COMBINER)               \
-  template <typename T>                                       \
-  class Reduce##OP<POL, T>                                    \
-      : public reduce::detail::BaseReduce##OP<T, COMBINER>    \
-  {                                                           \
-  public:                                                     \
-    using Base = reduce::detail::BaseReduce##OP<T, COMBINER>; \
-    using Base::Base;                                         \
+#define RAJA_DECLARE_REDUCER(OP, POL, COMBINER)                \
+  template <typename T>                                        \
+  class Reduce##OP<POL, T>                                     \
+      : public reduce::detail::BaseReduce##OP<T, COMBINER,     \
+        typename RAJA::reduce::detail::result_traits<T>::type> \
+  {                                                            \
+  public:                                                      \
+    using Base = reduce::detail::BaseReduce##OP<T, COMBINER,              \
+                 typename RAJA::reduce::detail::result_traits<T>::type>;  \
+    using Base::Base;                                                     \
   };
 
 #define RAJA_DECLARE_ALL_REDUCERS(POL, COMBINER) \
@@ -58,6 +60,12 @@ namespace reduce
 
 namespace detail
 {
+
+template<typename T>
+struct result_traits {
+  using type = T;
+};
+
 
 template <typename T, template <typename...> class Op>
 struct op_adapter : private Op<T, T, T> {
@@ -142,7 +150,8 @@ namespace detail
 
 template <typename T,
           template <typename> class Reduce_,
-          template <typename, typename> class Combiner_>
+          template <typename, typename> class Combiner_,
+          typename Result=T>
 class BaseReduce
 {
   using Reduce = Reduce_<T>;
@@ -153,6 +162,7 @@ class BaseReduce
 public:
   using value_type = T;
   using reduce_type = Reduce;
+  using result_type = Result;
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
@@ -196,10 +206,10 @@ public:
   T &local() const { return c.local(); }
 
   //! Get the calculated reduced value
-  operator T() const { return c.get(); }
+  operator Result() const { return c.get(); }
 
   //! Get the calculated reduced value
-  T get() const { return c.get(); }
+  Result get() const { return c.get(); }
 };
 
 template <typename T, typename Reduce, typename Derived, typename Result=T>
@@ -255,7 +265,6 @@ public:
   /*!
    *  \return the calculated reduced value
    */
-  //T get() const { return derived().get_combined(); }
   Result get() const { return derived().get_combined(); }
 
   /*!
@@ -283,11 +292,11 @@ private:
  *
  ******************************************************************************
  */
-template <typename T, template <typename, typename> class Combiner>
-class BaseReduceMin : public BaseReduce<T, RAJA::reduce::min, Combiner>
+template <typename T, template <typename, typename> class Combiner, typename Result=T>
+class BaseReduceMin : public BaseReduce<T, RAJA::reduce::min, Combiner, Result>
 {
 public:
-  using Base = BaseReduce<T, RAJA::reduce::min, Combiner>;
+  using Base = BaseReduce<T, RAJA::reduce::min, Combiner, Result>;
   using Base::Base;
 
   //! reducer function; updates the current instance's state
@@ -305,12 +314,12 @@ public:
  *
  **************************************************************************
  */
-template <typename T, template <typename, typename> class Combiner>
+template <typename T, template <typename, typename> class Combiner, typename Result=T>
 class BaseReduceMinLoc
-    : public BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner>
+    : public BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner, ValueLoc<T>>
 {
 public:
-  using Base = BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner>;
+  using Base = BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner, ValueLoc<T>>;
   using value_type = typename Base::value_type;
   using Base::Base;
 
@@ -342,11 +351,11 @@ public:
  *
  **************************************************************************
  */
-template <typename T, template <typename, typename> class Combiner>
-class BaseReduceMax : public BaseReduce<T, RAJA::reduce::max, Combiner>
+template <typename T, template <typename, typename> class Combiner, typename Result=T>
+class BaseReduceMax : public BaseReduce<T, RAJA::reduce::max, Combiner, Result>
 {
 public:
-  using Base = BaseReduce<T, RAJA::reduce::max, Combiner>;
+  using Base = BaseReduce<T, RAJA::reduce::max, Combiner, Result>;
   using Base::Base;
 
   //! reducer function; updates the current instance's state
@@ -364,11 +373,11 @@ public:
  *
  **************************************************************************
  */
-template <typename T, template <typename, typename> class Combiner>
-class BaseReduceSum : public BaseReduce<T, RAJA::reduce::sum, Combiner>
+template <typename T, template <typename, typename> class Combiner, typename Result=T>
+class BaseReduceSum : public BaseReduce<T, RAJA::reduce::sum, Combiner, Result>
 {
 public:
-  using Base = BaseReduce<T, RAJA::reduce::sum, Combiner>;
+  using Base = BaseReduce<T, RAJA::reduce::sum, Combiner, Result>;
   using Base::Base;
 
   //! reducer function; updates the current instance's state
@@ -388,12 +397,12 @@ public:
  *
  **************************************************************************
  */
-template <typename T, template <typename, typename> class Combiner>
+template <typename T, template <typename, typename> class Combiner, typename Result=T>
 class BaseReduceMaxLoc
-    : public BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>
+    : public BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner, ValueLoc<T, false>>
 {
 public:
-  using Base = BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>;
+  using Base = BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner, ValueLoc<T, false>>;
   using value_type = typename Base::value_type;
   using Base::Base;
 

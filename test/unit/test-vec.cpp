@@ -55,7 +55,7 @@ TEST(Vec, simple_1d_strided){
   auto vc = make_vector_view(c);
 
   forall<policy>(RangeSegment(0, N),
-      [&] (auto i){
+      [=] (auto i){
 
         va(i) += vb(i)*vc(i);
 
@@ -105,7 +105,7 @@ TEST(Vec, simple_1d_packed){
   auto vc = make_vector_view(c);
   
   forall<policy>(RangeSegment(0, N),
-      [&] (auto i){
+      [=] (auto i){
 
         va(i) += vb(i)*vc(i);
 
@@ -124,3 +124,40 @@ TEST(Vec, simple_1d_packed){
 }
 
 
+TEST(Vec, simple_reduce_sum){
+
+  int N = 137;
+
+  std::vector<double> a_data(N);
+
+
+  View<double, Layout<1>> a(&a_data[0], N);
+
+  for(int i = 0;i < N; ++ i){
+    a_data[i] = 1;
+  }
+
+  using VecType = vec::Vector<double, 2, 1>;
+
+  using policy = vec_exec<VecType>;
+
+  // using pointers should enfore stride1
+  auto va = make_vector_view(a);
+
+  ReduceSum<vec_reduce, VecType> sum(0.0);
+  ReduceSum<seq_reduce, int> trip_count(0);
+
+  forall<policy>(RangeSegment(0, N),
+      [=] (auto i){
+
+        sum += va(i);
+        trip_count += 1;
+
+      });
+
+
+  ASSERT_EQ((double)sum, 137.0);
+  ASSERT_EQ((int)trip_count, 69);
+
+
+}

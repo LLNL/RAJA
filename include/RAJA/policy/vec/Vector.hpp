@@ -81,6 +81,14 @@ struct Vector
       }
     }
 
+    RAJA_INLINE
+    Vector(Vector<T,1,1> val){
+      for(size_t i = 0;i < U;++ i){
+        value[i] = 0;
+      }
+      value[0][0] = val.value[0];
+    }
+
 
     RAJA_INLINE
     self_t &operator=(self_t const &a){
@@ -103,9 +111,21 @@ struct Vector
       return *this;
     }
 
+    RAJA_INLINE
+    bool operator!=(self_t const &a) const{
+      bool equals = false;
+
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          equals = equals && (value[u][n] == a.value[u][n]);
+        }
+      }
+
+      return !equals;
+    }
 
     RAJA_INLINE
-    self_t operator+(self_t const &a){
+    self_t operator+(self_t const &a) const{
       self_t result;
 
       for(size_t i = 0;i < U;++ i){
@@ -116,7 +136,7 @@ struct Vector
     }
 
     RAJA_INLINE
-    self_t operator-(self_t const &a){
+    self_t operator-(self_t const &a) const{
       self_t result;
 
       for(size_t i = 0;i < U;++ i){
@@ -127,7 +147,7 @@ struct Vector
     }
 
     RAJA_INLINE
-    self_t operator*(self_t const &a){
+    self_t operator*(self_t const &a) const{
       self_t result;
 
       for(size_t i = 0;i < U;++ i){
@@ -138,7 +158,7 @@ struct Vector
     }
 
     RAJA_INLINE
-    self_t operator/(self_t const &a){
+    self_t operator/(self_t const &a) const{
       self_t result;
 
       for(size_t i = 0;i < U;++ i){
