@@ -45,6 +45,11 @@ matrix:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc16
     - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
+  - compiler: intel-18
+    env:
+    - COMPILER=/opt/intel/bin/icpc
+    - IMG=icc18
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: nvcc
     env:
     - COMPILER=g++
