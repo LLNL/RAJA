@@ -69,6 +69,26 @@ using loop_segit = loop_exec;
 ///
 using loop_reduce = seq_reduce;
 
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Loop unrolled execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+template<bool ExplicitUnroll, size_t ... unroll_lengths>
+struct unroll_exec :
+    make_policy_pattern_launch_platform_t<Policy::loop,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::host> {
+
+};
+
+
 }  // end namespace loop
 
 }  // end namespace policy
@@ -76,6 +96,24 @@ using loop_reduce = seq_reduce;
 using policy::loop::loop_exec;
 using policy::loop::loop_segit;
 using policy::loop::loop_reduce;
+
+/*!
+ * Unrolls loops with given (strictly descending) list of unroll lengths.
+ *
+ * Uses fixed-length bare for-loops to implement unrolling, letting compiler
+ * determine optimal unroll implementation
+ */
+template<size_t ... unroll_lengths>
+using unroll_loop_exec = policy::loop::unroll_exec<false, unroll_lengths ...>;
+
+
+/*!
+ * Unrolls loops with given (strictly descending) list of unroll lengths.
+ *
+ * Uses explicit unrolling mechanics to force loop unrolling
+ */
+template<size_t ... unroll_lengths>
+using unroll_explicit_exec = policy::loop::unroll_exec<true, unroll_lengths ...>;
 
 }  // closing brace for RAJA namespace
 
