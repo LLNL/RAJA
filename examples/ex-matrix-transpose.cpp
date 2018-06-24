@@ -110,8 +110,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int inner_Dim0 = TILE_DIM;
   const int inner_Dim1 = TILE_DIM;
 
-  const int outer_Dim0 = RAJA_DIVIDE_CEILING_INT(N, TILE_DIM);
-  const int outer_Dim1 = RAJA_DIVIDE_CEILING_INT(N, TILE_DIM);
+  const int outer_Dim0 = N/TILE_DIM;
+  const int outer_Dim1 = N/TILE_DIM;
 
   //
   // Initialize matrix data
@@ -197,8 +197,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Execution policies for outer loops
       //
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,                             
+      RAJA::statement::For<3, RAJA::seq_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,                             
           RAJA::statement::Lambda<0>,
           //
           // Create a shared memory window for
@@ -209,8 +209,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // (1) Execution policies for the first set of inner
           // loops
           //
-          RAJA::statement::For<1, RAJA::loop_exec,
-           RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<1, RAJA::seq_exec,
+           RAJA::statement::For<0, RAJA::seq_exec,
                                 RAJA::statement::Lambda<1>
                                 >
                                >,
@@ -218,8 +218,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // (2) Execution policies for second set of inner
           // loops
           //
-          RAJA::statement::For<1, RAJA::loop_exec,
-           RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<1, RAJA::seq_exec,
+           RAJA::statement::For<0, RAJA::seq_exec,
             RAJA::statement::Lambda<2>
                                 >
                                >            
@@ -238,12 +238,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 5) The type of the tuple holding the iterations spaces
   //    (for simplicity decltype is used to infer the type)
   //
-  using cpu_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
-                                      double,
+  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+                                      int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(segments)>;
-  cpu_shmem_t RAJA_SEQ_TILE;
+  seq_shmem_t RAJA_SEQ_TILE;
 
   RAJA::kernel_param<NESTED_EXEC_POL>(
 
@@ -253,13 +253,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Lambda for outer loop to iterate over tiles
       //
-      [=](int , int, int, int, cpu_shmem_t &) {
+      [=](int, int, int, int, seq_shmem_t &) {
 
       },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_SEQ_TILE) {
+      [=](int tx, int ty, int bx, int by, seq_shmem_t &RAJA_SEQ_TILE) {
 
         int col = bx * TILE_DIM + tx;  // Matrix column index
         int row = by * TILE_DIM + ty;  // Matrix row index
@@ -270,7 +270,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_SEQ_TILE) {
+      [=](int tx, int ty, int bx, int by, seq_shmem_t &RAJA_SEQ_TILE) {
 
         int col = by * TILE_DIM + tx;  // Transposed matrix column index
         int row = bx * TILE_DIM + ty;  // Transposed matrix row index
@@ -292,7 +292,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // following two examples.
   //
   using omp_shmem_t = RAJA::ShmemTile<RAJA::omp_shmem,
-                                      double,
+                                      int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(segments)>;
@@ -523,7 +523,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Allocate cuda shared memory
   //
   using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem,
-                                       double,
+                                       int,
                                        RAJA::ArgList<0, 1>,
                                        RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                        decltype(segments)>;
