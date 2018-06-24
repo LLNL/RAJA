@@ -42,8 +42,7 @@
  *  the tile size divide the number of rows and columns of the matrix.
  *
  *  For the RAJA variants, a tile is constructed using a RAJA shared memory
- * window.
- *  For CPU execution, RAJA shared memory windows can be used to improve
+ *  window. For CPU execution, RAJA shared memory windows can be used to improve
  *  performance via cache blocking. For CUDA GPU execution, RAJA shared memory
  *  is mapped to CUDA shared memory.
  *
@@ -54,6 +53,8 @@
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
+
+//#define OMP_EX_1 //Breaks kernel
 
 //
 // Define dimensionality of matrices
@@ -242,39 +243,39 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(segments)>;
-  cpu_shmem_t RAJA_CPU_TILE;
+  cpu_shmem_t RAJA_SEQ_TILE;
 
   RAJA::kernel_param<NESTED_EXEC_POL>(
 
       segments,
       
-      RAJA::make_tuple(RAJA_CPU_TILE),
+      RAJA::make_tuple(RAJA_SEQ_TILE),
       //
       // (0) Lambda for outer loop to iterate over tiles
       //
-      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
+      [=](int , int, int, int, cpu_shmem_t &) {
 
       },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
+      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_SEQ_TILE) {
 
         int col = bx * TILE_DIM + tx;  // Matrix column index
         int row = by * TILE_DIM + ty;  // Matrix row index
 
-        RAJA_CPU_TILE(ty, tx) = Aview(row, col);
+        RAJA_SEQ_TILE(ty, tx) = Aview(row, col);
       },
 
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_CPU_TILE) {
+      [=](int tx, int ty, int bx, int by, cpu_shmem_t &RAJA_SEQ_TILE) {
 
         int col = by * TILE_DIM + tx;  // Transposed matrix column index
         int row = bx * TILE_DIM + ty;  // Transposed matrix row index
 
-        Atview(row, col) = RAJA_CPU_TILE(tx, ty);
+        Atview(row, col) = RAJA_SEQ_TILE(tx, ty);
       }
 
       );
@@ -298,6 +299,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   omp_shmem_t RAJA_OMP_TILE;
 
   //----------------------------------------------------------------------------//
+#if defined(OMP_EX_1)
   std::cout << "\n Running openmp tiled matrix transpose ver 1...\n";
 
   std::memset(At, 0, N * N * sizeof(int));
@@ -349,7 +351,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
         RAJA::make_tuple(RAJA_OMP_TILE),
 
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+        [=] (int ,int ,int ,int ,omp_shmem_t &) {
 
         }, 
 
@@ -371,7 +373,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   checkResult<int>(Atview, N);
   // printResult<int>(Atview, N);
-
+#endif
   //----------------------------------------------------------------------------//
 
   std::cout << "\n Running openmp tiled matrix transpose ver 2...\n";
@@ -424,7 +426,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Lambda for outer loop to iterate over tiles
       //
-      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+      [=](int ,int ,int ,int ,omp_shmem_t &) {
 
       },
       //
@@ -536,16 +538,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Lambda for outer loop to iterate over tiles
       //
-      [=] RAJA_DEVICE(
-          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+      [=] RAJA_DEVICE (int, int, int, int, cuda_shmem_t &) {
 
       },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=] RAJA_DEVICE(
-          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
-
+      [=] RAJA_DEVICE(int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+                      
         int col = bx * TILE_DIM + tx;
         int row = by * TILE_DIM + ty;
         RAJA_CUDA_TILE(ty, tx) = Aview(row, col);
@@ -553,9 +553,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=] RAJA_DEVICE(
-          int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
-
+      [=] RAJA_DEVICE(int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+        
         int col = by * TILE_DIM + tx;
         int row = bx * TILE_DIM + ty;
         Atview(row, col) = RAJA_CUDA_TILE(tx, ty);
