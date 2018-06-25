@@ -102,6 +102,22 @@ auto strip_vector_index(T const &idx) ->
 template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I, typename ... Args>
 struct GetVectorTypeHelper; 
 
+// overload for non-vector index
+template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I, typename Next, typename ... Rest>
+struct GetVectorTypeHelper<T, Stride1Dim, I, Next, Rest...>{ 
+
+  // next dimension helper
+  using next_t = GetVectorTypeHelper<T, Stride1Dim, I+1, Rest...>;
+
+  // Assign vector info to assume remaining in Rest...
+  using type = typename next_t::type;
+  static constexpr bool is_vector = next_t::is_vector;
+  static constexpr RAJA::idx_t vector_dim = next_t::vector_dim;
+  
+};
+
+
+// overload for vector index
 template<typename T, RAJA::idx_t Stride1Dim, RAJA::idx_t I, typename IdxType, typename VecType, typename ... Rest>
 struct GetVectorTypeHelper<T, Stride1Dim, I, RAJA::vec::VectorIndex<IdxType, VecType>, Rest...>{ 
 
@@ -152,6 +168,7 @@ struct VectorViewWrapper{
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
+  using layout_type = typename base_type::layout_type;
 
   // Determine the stride1 dimension of this views layout so we know when to return
   // a packed vs strided vector object
@@ -162,6 +179,8 @@ struct VectorViewWrapper{
 
   RAJA_INLINE
   constexpr explicit VectorViewWrapper(ViewType const &view) : base_{view} {}
+
+  RAJA_INLINE layout_type const &get_layout() const { return base_.get_layout(); }
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
 
@@ -179,7 +198,7 @@ struct VectorViewWrapper{
     auto &val = base_.operator()(internal::strip_vector_index(args)...);
 
     // Create a vector reference or object depeding on the vector_type
-    return internal::MakeVectorHelper<vector_type>::make_vector(val, base_.layout.strides[vector_dim]);
+    return internal::MakeVectorHelper<vector_type>::make_vector(val, get_layout().strides[vector_dim]);
   }
 
 

@@ -83,6 +83,8 @@ struct View {
       : layout(rhs.layout), data(rhs.data)
   {
   }
+  
+  RAJA_INLINE layout_type const &get_layout() const { return layout; }
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
@@ -104,6 +106,9 @@ template <typename ValueType,
           typename... IndexTypes>
 struct TypedViewBase {
   using Base = View<ValueType, LayoutType, PointerType>;
+  using value_type = typename Base::value_type;
+  using pointer_type = typename Base::pointer_type;
+  using layout_type = typename Base::layout_type;
 
   Base base_;
 
@@ -119,6 +124,8 @@ struct TypedViewBase {
       : base_(data_ptr, std::forward<CLayoutType>(layout))
   {
   }
+
+  RAJA_INLINE layout_type const &get_layout() const { return base_.get_layout(); }
 
   RAJA_INLINE void set_data(PointerType data_ptr) { base_.set_data(data_ptr); }
 
