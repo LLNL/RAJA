@@ -51,20 +51,18 @@ namespace detail
 template <ptrdiff_t i, ptrdiff_t exclude_i>
 struct ConditionalMultiply {
 
-  template <typename A, typename B, size_t n_dims>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a,
-                                                           B const (&b)[n_dims])
+  template <typename A, typename B>
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a, B b)
   {
     // regular product term
-    return a * b[i];
+    return a * b;
   }
 };
 
 template <ptrdiff_t i>
 struct ConditionalMultiply<i, i> {
-  template <typename A, typename B, size_t n_dims>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a,
-                                                           B const (&)[n_dims])
+  template <typename A, typename B>
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a, B)
   {
     // assume b[i]==1
     return a;
@@ -140,8 +138,7 @@ public:
         inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
   {
     static_assert(n_dims == sizeof...(Types),
-                  "number of dimensions must "
-                  "match");
+                  "number of dimensions must match");
   }
 
   /*!
@@ -186,9 +183,16 @@ public:
       Indices... indices) const
   {
     // dot product of strides and indices
+#ifdef RAJA_COMPILER_INTEL
+    // Intel compiler has issues with Condition
+    return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
+
+#else
     return VarOps::sum<IdxLin>(
-        ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
-            indices, strides))...);
+      ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
+          indices, strides[RangeInts]))...);
+#endif
+
   }
 
 

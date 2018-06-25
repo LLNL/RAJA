@@ -229,6 +229,38 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #if defined(RAJA_ENABLE_CUDA)
 
 
+
+CUDA_TEST(Kernel, CudaZeroIter)
+{
+  using Pol = KernelPolicy<
+      CudaKernel<
+        statement::Collapse<RAJA::cuda_thread_exec, ArgList<0,1,2>, Lambda<0>>>>;
+
+  int *x = nullptr;
+  cudaMallocManaged(&x, 3*2*5*sizeof(int));
+
+  for(int i = 0;i < 3*2*5;++ i){
+    x[i] = 123;
+  }
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(2, 2),  // should do 0 iterations
+                       RAJA::RangeSegment(0, 5)),
+      [=] __device__ (Index_type i, Index_type j, Index_type k) {
+        x[i + j*3 + k*3*2] = 321;
+       });
+
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < 3*2*5;++ i){
+    ASSERT_EQ(x[i], 123);
+  }
+
+  cudaFree(x);
+}
+
+
 CUDA_TEST(Kernel, CudaCollapse1a)
 {
   using Pol = KernelPolicy<
