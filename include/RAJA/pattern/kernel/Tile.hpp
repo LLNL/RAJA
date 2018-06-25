@@ -39,6 +39,17 @@
 
 namespace RAJA
 {
+
+struct TileSize {
+  const camp::idx_t size;
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr TileSize(camp::idx_t size_) : size{size_} 
+  {
+  }
+};
+
 namespace statement
 {
 
@@ -241,10 +252,10 @@ struct StatementExecutor<statement::
 
     // Get the tiling policies chunk size
     auto chunk_size = camp::get<ArgumentId>(data.param_tuple);
-    std::cout << "Tile size is " << chunk_size << std::endl;
+    static_assert(camp::concepts::metalib::is_same<TileSize, decltype(chunk_size)>::value);
 
     // Create a tile iterator
-    IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
+    IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size.size);
 
     // Wrap in case forall_impl needs to thread_privatize
     TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);

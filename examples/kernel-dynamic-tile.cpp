@@ -15,15 +15,19 @@ int main(int argc, char* argv[])
 
   kernel_param<
     KernelPolicy< 
-      statement::Tile<0, statement::tile_dynamic<0>, seq_exec,
-        statement::For<0, seq_exec, statement::Lambda<0> > 
+      statement::Tile<1, statement::tile_dynamic<1>, seq_exec,
+        statement::Tile<0, statement::tile_dynamic<0>, seq_exec,
+          statement::For<1, seq_exec, 
+             statement::For<0, seq_exec, statement::Lambda<0> >
+          >
+        >
       >
     >
-  >(make_tuple(RangeSegment{0,25}),
-      make_tuple(5),
+  >(make_tuple(RangeSegment{0,25}, RangeSegment{0,25}),
+      make_tuple(TileSize{5}, TileSize{10}),
      //make_tuple(TileSize(10)), // not sure we need this, good for static_assert
-     [=](int i, int){
-       std::cout << "Running index " << i << std::endl;
-});
+     [=](int i, int j, TileSize x, TileSize y){
+       std::cout << "Running index (" << i << "," << j << ") of " << x.size << "x" << y.size << " tile." << std::endl;
+  });
 
 }
