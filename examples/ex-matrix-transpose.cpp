@@ -25,9 +25,10 @@
 /*
  *  Tiled Matrix Transpose Example
  *
- *  Example takes an input matrix A of dimension N x N and
- *  produces a second matrix At with the rows of matrix A as
- *  the columns and vice-versa.
+ *  In this example, an input matrix A of dimension N x N is
+ *  reconfigured as a second matrix At with the rows of 
+ *  matrix A reorganized as the columns of At and the columns
+ *  of matrix A becoming be the rows of matrix At. 
  *
  *  This operation is carried out using a tiling algorithm.
  *  The algorithm first loads matrix entries into a tile,
@@ -37,7 +38,7 @@
  *  The algorithm is expressed as a collection of ``outer``
  *  and ``inner`` for loops. Iterations of the inner loop will load/read
  *  data into the tile; while outer loops will iterate over the number
- *  of tiles needed to carry out the transpose. For simplicity we assume
+ *  of tiles needed to carry out the transposition. For simplicity we assume
  *  the tile size divides the number of rows and columns of the matrix.
  *
  *  RAJA variants of the example construct a tile object using a RAJA shared memory
@@ -53,7 +54,7 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-//#define OMP_EX_1 //Breaks kernel
+#define OMP_EX_1 //Breaks kernel
 
 //
 // Define dimensionality of matrices
@@ -206,7 +207,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // The following policy carries out the transpose
-  // using loops carried out sequentially.
+  // using sequential loops.
   //
 
   using NESTED_EXEC_POL = RAJA::KernelPolicy<
@@ -458,7 +459,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N * N * sizeof(int));
 
   //
-  // Allocate cuda shared memory
+  // Allocate CUDA shared memory
   //
   using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem,
                                        int,
@@ -467,20 +468,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                        decltype(segments)>;
   cuda_shmem_t RAJA_CUDA_TILE;
 
-  //
-  // This policy list will generate a cuda kernel.
-  //
   using NESTED_EXEC_POL_CUDA = RAJA::KernelPolicy<
 
       //
-      // Collapses policy list into a single cuda kernel
+      // Collapses policy list into a single CUDA kernel
       //
       RAJA::statement::CudaKernel<
 
           //
           // (0) Execution policies for outer loops.
           //     Maps iterations from the outer loop
-          //     to cuda thread blocks.
+          //     to CUDA thread blocks.
           //
           RAJA::statement::For<3, RAJA::cuda_block_exec,
             RAJA::statement::For<2, RAJA::cuda_block_exec,
@@ -493,7 +491,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           // (1) Execution policies for the first set of
           // inner loops. Each iteration is assigned to
-          // a thread in a cuda thread block.
+          // a thread in a CUDA thread block.
           //
           RAJA::statement::For<1, RAJA::cuda_thread_exec,
             RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -501,7 +499,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                  >
                                >
          //
-         // Places a barrier to synchronize cuda threads
+         // Places a barrier to synchronize CUDA threads
          // within a block. Necessary to ensure data has
          // been loaded into the tile before reading from
          // the tile.
@@ -510,7 +508,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          //
          // (2) Execution policies for second set of inner
          //     loops. Each iteration is assigned to a
-         //     thread in a cuda thread block.
+         //     thread in a CUDA thread block.
          //
          RAJA::statement::For<1, RAJA::cuda_thread_exec,
           RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -520,7 +518,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                              > // closes shared memory window
                            > // closes outer loop 2
                          > // closes outer loop 3
-                       > // closes cuda Kernel
+                       > // closes CUDA Kernel
                      >; // closes policy list
 
   RAJA::kernel_param<NESTED_EXEC_POL_CUDA>(
