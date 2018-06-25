@@ -54,7 +54,7 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-#define OMP_EX_1 //Breaks kernel
+//#define OMP_EX_1 //Breaks kernel
 
 //
 // Define dimensionality of matrices
