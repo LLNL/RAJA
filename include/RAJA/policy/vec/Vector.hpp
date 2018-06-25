@@ -65,8 +65,8 @@ struct Vector
 
     // Make sure we use a non-vector type for a scalar in the case we have
     // a vector width of 1
-    using value_type =
-        typename std::conditional<N==1, T, internal::VectorRegister<T,N>>::type;
+    using value_type = internal::VectorRegister<T,N>;
+       // typename std::conditional<N==1, T, internal::VectorRegister<T,N>>::type;
 
     value_type value[U];
 
@@ -76,17 +76,22 @@ struct Vector
 
     RAJA_INLINE
     Vector(T val){
-      for(size_t i = 0;i < U;++ i){
-        value[i] = val;
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          value[u][n] = val;
+        }
       }
     }
 
     RAJA_INLINE
-    Vector(Vector<T,1,1> val){
-      for(size_t i = 0;i < U;++ i){
-        value[i] = 0;
+    Vector(Vector<T,1,1> const &val){
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          value[u][n] = static_cast<T>(0);
+        }
       }
-      value[0][0] = val.value[0];
+
+      value[0][0] = val.value[0][0];
     }
 
 
