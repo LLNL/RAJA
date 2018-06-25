@@ -172,70 +172,56 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     cudaStream_t stream = 0;
 
 
-    //
     // Compute the MAX physical kernel dimensions
-    //
-
     using data_t = camp::decay<Data>;
     LaunchDim max_physical = LaunchConfig::calc_max_physical(
         CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t>, shmem);
 
-    //    printf("Physical limits: %d blocks, %d threads\n",
-    //        (int)max_physical.blocks, (int)max_physical.threads);
-
-
-    //
-    // Compute the Logical kernel dimensions
-    //
 
     // Privatize the LoopData, using make_launch_body to setup reductions
     auto cuda_data = RAJA::cuda::make_launch_body(
         max_physical.blocks, max_physical.threads, shmem, stream, data);
-    //    printf("Data size=%d\n", (int)sizeof(cuda_data));
 
-
-    // Compute logical dimensions
-    using SegmentTuple = decltype(data.segment_tuple);
 
     // Instantiate an executor object
     using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
     executor_t executor;
 
+
     // Compute logical dimensions
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
 
-    //    printf("Logical dims: %d blocks, %d threads\n",
-    //        (int)logical_dims.blocks, (int)logical_dims.threads);
-
-
-    //
     // Compute the actual physical kernel dimensions
-    //
-
     LaunchDim launch_dims;
     launch_dims.blocks = std::min(max_physical.blocks, logical_dims.blocks);
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
-    //    printf("Launch dims: %d blocks, %d threads\n",
-    //        (int)launch_dims.blocks, (int)launch_dims.threads);
+
+    // Only launch kernel if we have something to iterate over
+    bool at_least_one_iter = launch_dims.blocks > 0 || launch_dims.threads > 0;
+    bool is_degenerate =     launch_dims.blocks < 0 || launch_dims.threads < 0;
+    if (at_least_one_iter && !is_degenerate) {
+
+      // Make sure that having either 0 blocks or 0 threads get bumped to 1
+      launch_dims.blocks = std::max(launch_dims.blocks, (int)1);
+      launch_dims.threads = std::max(launch_dims.threads, (int)1);
 
 
-    //
-    // Launch the kernels
-    //
-    CudaKernelLauncher<StatementList<EnclosedStmts...>>
-        <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
-            cuda_data, logical_dims.blocks);
+      // Launch the kernels
+      CudaKernelLauncher<StatementList<EnclosedStmts...>>
+          <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
+              cuda_data, logical_dims.blocks);
 
 
-    // Check for errors
-    RAJA::cuda::peekAtLastError();
+      // Check for errors
+      RAJA::cuda::peekAtLastError();
 
-    RAJA::cuda::launch(stream);
+      RAJA::cuda::launch(stream);
 
-    if (!LaunchConfig::async) {
-      RAJA::cuda::synchronize(stream);
+      if (!LaunchConfig::async) {
+        RAJA::cuda::synchronize(stream);
+      }
     }
   }
 };
