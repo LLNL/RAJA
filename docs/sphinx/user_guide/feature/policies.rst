@@ -75,7 +75,11 @@ the following policy may be used with the ``RAJA::forall`` method:
 * ``cuda_exec<STRIDE_SIZE>`` - Map a loop to thread blocks with ``STRIDE_SIZE`` threads.
 
 The ``cuda_exec`` policy defines a default thread block size of 256 threads, if no
-argument is provided. For better control of mapping blocks and block local threads to 
+argument is provided.
+
+.. note:: * The following policies are not compatible with RAJA's forall method.
+
+For better control of mapping blocks and block local threads to 
 loop levels we recommend using the ``RAJA::kernel`` method. Mapping blocks and block local
 threads to a loop level may be accomplished using the following policies:
 
