@@ -84,7 +84,7 @@ struct CudaStatementExecutor<Data,
 
     LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 
-    dim.threads *= segment_length<ArgumentId>(data);
+    dim.addThreads(segment_length<ArgumentId>(data));
 
     return dim;
   }
@@ -135,7 +135,7 @@ struct CudaStatementExecutor<Data,
 
     LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 
-    dim.blocks *= segment_length<ArgumentId>(data);
+    dim.addBlocks(segment_length<ArgumentId>(data));
 
     return dim;
   }
@@ -197,8 +197,8 @@ struct CudaStatementExecutor<Data,
       num_blocks++;
     }
 
-    dim.blocks *= num_blocks;
-    dim.threads *= max_threads;
+    dim.addBlocks(num_blocks);
+    dim.addThreads(max_threads);
 
     return dim;
   }
