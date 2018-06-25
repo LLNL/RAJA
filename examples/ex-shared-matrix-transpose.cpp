@@ -23,17 +23,18 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Tiled Matrix Transpose Example
+ *  Shared Memory Matrix Transpose Example
  *
  *  In this example, an input matrix A of dimension N x N is
  *  reconfigured as a second matrix At with the rows of 
  *  matrix A reorganized as the columns of At and the columns
  *  of matrix A becoming be the rows of matrix At. 
  *
- *  This operation is carried out using a tiling algorithm.
- *  The algorithm first loads matrix entries into a tile,
- *  a small two-dimensional array, and then reads from the tile
- *  swapping the row and column indices for the output matrix.
+ *  This operation is carried out using a shared memory tiling 
+ *  algorithm. The algorithm first loads matrix entries into a 
+ *  thread shared tile, a small two-dimensional array, and then 
+ *  reads from the tile swapping the row and column indices for 
+ *  the output matrix.
  *
  *  The algorithm is expressed as a collection of ``outer``
  *  and ``inner`` for loops. Iterations of the inner loop will load/read
@@ -77,7 +78,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA tiled matrix transpose example...\n";
+  std::cout << "\n\nRAJA shared matrix transpose example...\n";
 
   //
   // Define num rows/cols in matrix
@@ -91,7 +92,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int *At = memoryManager::allocate<int>(N * N);
 
   //
-  // In the following implementations of tiled matrix transpose, we
+  // In the following implementations of shared matrix transpose, we
   // use RAJA 'View' objects to access the matrix data. A RAJA view
   // holds a pointer to a data array and enables multi-dimensional indexing
   // into the data.
@@ -107,8 +108,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define bounds for inner and outer loops
   //
-  const int inner_Dim0 = TILE_DIM;
-  const int inner_Dim1 = TILE_DIM;
+  const int inner_Dim0 = TILE_DIM; 
+  const int inner_Dim1 = TILE_DIM; 
 
   const int outer_Dim0 = N/TILE_DIM;
   const int outer_Dim1 = N/TILE_DIM;
@@ -124,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   //----------------------------------------------------------------------------//
-  std::cout << "\n Running C-version of tiled matrix transpose...\n";
+  std::cout << "\n Running C-version of shared matrix transpose...\n";
 
   std::memset(At, 0, N * N * sizeof(int));
 
@@ -184,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::make_tuple(inner_Range0, inner_Range1, outer_Range0, outer_Range1);
 
   //----------------------------------------------------------------------------//
-  std::cout << "\n Running sequential tiled matrix transpose ...\n";
+  std::cout << "\n Running sequential shared matrix transpose ...\n";
   std::memset(At, 0, N * N * sizeof(int));
 
   //
@@ -297,7 +298,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //----------------------------------------------------------------------------//
 #if defined(OMP_EX_1)
-  std::cout << "\n Running openmp tiled matrix transpose ver 1...\n";
+  std::cout << "\n Running openmp shared matrix transpose -  parallel top inner loop...\n";
 
   std::memset(At, 0, N * N * sizeof(int));
 
@@ -373,7 +374,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
   //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running openmp tiled matrix transpose ver 2...\n";
+  std::cout << "\n Running openmp shared matrix transpose - collapsed inner loops...\n";
   std::memset(At, 0, N * N * sizeof(int));
 
   //
@@ -455,7 +456,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running cuda tiled matrix transpose ...\n";
+  std::cout << "\n Running cuda shared matrix transpose ...\n";
   std::memset(At, 0, N * N * sizeof(int));
 
   //

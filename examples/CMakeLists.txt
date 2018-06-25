@@ -94,5 +94,9 @@ raja_add_executable(
   SOURCES ex-offset.cpp)
 
 raja_add_executable(
-  NAME ex-matrix-transpose
-  SOURCES ex-matrix-transpose.cpp)
+  NAME ex-shared-matrix-transpose
+  SOURCES ex-shared-matrix-transpose.cpp)
+
+raja_add_executable(
+  NAME ex-tiled-matrix-transpose
+  SOURCES ex-tiled-matrix-transpose.cpp)
