@@ -37,5 +37,6 @@
 #include "RAJA/policy/vec/policy.hpp"
 #include "RAJA/policy/vec/forall.hpp"
 #include "RAJA/policy/vec/reduce.hpp"
+#include "RAJA/policy/vec/kernel/For.hpp"
 
 #endif  // closing endif for header file include guard

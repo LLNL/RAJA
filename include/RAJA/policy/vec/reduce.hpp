@@ -70,7 +70,7 @@ public:
 
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceVec& operator+=(VecType rhs) const
+  const ReduceVec& operator+=(VecType const &rhs) const
   {
     Base::my_data += rhs;
     return *this;
@@ -79,7 +79,7 @@ public:
 
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceVec& operator+=(result_type rhs) const
+  const ReduceVec& operator+=(result_type const &rhs) const
   {
     Base::my_data += VecType(rhs);
     return *this;

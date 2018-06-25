@@ -110,6 +110,8 @@ using index_tuple_from_segments =
                            value_type_list_from_segments<Segments>>::type;
 
 
+
+
 template <typename Policy>
 struct StatementExecutor {
 };
@@ -118,10 +120,11 @@ struct StatementExecutor {
 template <typename PolicyType,
           typename SegmentTuple,
           typename ParamTuple,
-          typename... Bodies>
+          typename BodiesTuple,
+          typename ArgumentTypes = typename index_tuple_from_segments<typename SegmentTuple::TList>::TList>
 struct LoopData {
 
-  using Self = LoopData<PolicyType, SegmentTuple, ParamTuple, Bodies...>;
+  using Self = LoopData<PolicyType, SegmentTuple, ParamTuple, BodiesTuple>;
 
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
@@ -131,19 +134,57 @@ struct LoopData {
   using policy_t = PolicyType;
 
 
+  /*
+   * Segment tuple.
+   *
+   * These are the segments that define the loop iteration space.
+   */
   using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
+
+
+  /*
+   * Parameter tuple.
+   *
+   * These are the extra parameters that are passed to the lambdas after
+   * the loop iterates.
+   */
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
-  using BodiesTuple = camp::tuple<Bodies...>;
+
+
+  // Tuple of lambda loop bodies
   const BodiesTuple bodies;
+
+
+
+  /*
+   * Tuple of argument offsets.
+   *
+   * This are the current loop iterates, relative to each segments begin().
+   *
+   * The actual value passed to the lambdas are segment.begin()+offset,
+   * so these offsets are from [0,N)
+   */
   offset_tuple_t offset_tuple;
 
+
+
+  /* Types of each argument to the lambdas
+     By default they are the same as the value_type's of the segments,
+     but can be overridden: for example the vec_exec policy needs to
+     change the argument type depending upon vector vs. scalar calling context
+   */
+  using argument_types = ArgumentTypes;
+
+
+
+
   RAJA_INLINE
-  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
-      : segment_tuple(s), param_tuple(p), bodies(b...)
+  LoopData(SegmentTuple const &s, ParamTuple const &p, BodiesTuple const &b)
+      : segment_tuple(s), param_tuple(p), bodies(b)
   {
     assign_begin_all();
   }
@@ -151,9 +192,9 @@ struct LoopData {
   template <typename PolicyType0,
             typename SegmentTuple0,
             typename ParamTuple0,
-            typename... Bodies0>
+            typename BodiesTuple0>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
-      LoopData<PolicyType0, SegmentTuple0, ParamTuple0, Bodies0...> &c)
+      LoopData<PolicyType0, SegmentTuple0, ParamTuple0, BodiesTuple0> &c)
       : segment_tuple(c.segment_tuple),
         param_tuple(c.param_tuple),
         bodies(c.bodies),
@@ -208,6 +249,49 @@ struct LoopData {
 };
 
 
+template<typename L, typename Idx, camp::idx_t i, typename NewT>
+struct replace_helper;
+
+template<typename ... Types, camp::idx_t ... Idx, camp::idx_t I, typename NewT>
+struct replace_helper<camp::list<Types...>, camp::idx_seq<Idx...>, I, NewT>
+{
+    using type = camp::list<
+        typename std::conditional<Idx==I, NewT, Types>::type...
+        >;
+};
+
+template<typename Data, camp::idx_t ArgId, typename NewType>
+struct OverrideArgumentTypeHelper;
+
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename BodiesTuple,
+          typename ArgumentTypes,
+          camp::idx_t ArgId,
+          typename NewType>
+struct OverrideArgumentTypeHelper<LoopData<PolicyType, SegmentTuple, ParamTuple, BodiesTuple, ArgumentTypes>, ArgId, NewType> {
+
+    using seq_list_t = typename camp::make_idx_seq_t<camp::size<ArgumentTypes>::value>;
+
+    using argument_types = typename replace_helper<ArgumentTypes, seq_list_t, ArgId, NewType>::type;
+
+    using type = LoopData<PolicyType, SegmentTuple, ParamTuple, BodiesTuple, argument_types>;
+
+};
+
+
+template<typename Data, camp::idx_t ArgId, typename NewType>
+RAJA_INLINE
+auto overrideArgumentType(Data &data) ->
+ typename OverrideArgumentTypeHelper<Data, ArgId, NewType>::type &
+{
+  using type = typename OverrideArgumentTypeHelper<Data, ArgId, NewType>::type &;
+
+  return reinterpret_cast<type>(data);
+}
+
+
 RAJA_SUPPRESS_HD_WARN
 template <camp::idx_t LoopIndex,
           camp::idx_t... OffsetIdx,
@@ -218,9 +302,19 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &data)
 {
+  /* Invoke the lambda LoopIndex,
+   *  lambda(arguments..., params...)
+   *
+   * each argument is computed as:
+   *   argument_type( segment.begin() + offset )
+   *
+   * each parameter is just passed in
+   */
   camp::get<LoopIndex>(
-      data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
-                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
+      data.bodies)(
+          (camp::at_v<typename Data::argument_types, OffsetIdx>)
+          {camp::get<OffsetIdx>(data.segment_tuple)
+                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)]}...,
                    camp::get<ParamIdx>(data.param_tuple)...);
 }
 

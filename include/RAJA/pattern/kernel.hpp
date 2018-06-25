@@ -81,11 +81,12 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
 
   using segment_tuple_t = camp::decay<SegmentTuple>;
   using param_tuple_t = camp::decay<ParamTuple>;
+  using bodies_tuple_t = camp::tuple<camp::decay<Bodies>...>;
 
   using loop_data_t = internal::LoopData<PolicyType,
                                          segment_tuple_t,
                                          param_tuple_t,
-                                         camp::decay<Bodies>...>;
+                                         bodies_tuple_t>;
 
 
   // Create the LoopData object, which contains our policy object,
@@ -94,7 +95,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   // and only copied to provide thread-private instances.
   loop_data_t loop_data(std::forward<SegmentTuple>(segments),
                         std::forward<ParamTuple>(params),
-                        std::forward<Bodies>(bodies)...);
+                        bodies_tuple_t(std::forward<Bodies>(bodies)...));
 
   // Setup shared memory objects passed in through parameter tuple
   RAJA::internal::shmem_setup_buffers(loop_data.param_tuple);
