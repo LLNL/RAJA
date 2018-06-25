@@ -39,7 +39,7 @@ OpenMP Policies
 ---------------
 
 * ``omp_parallel_for_exec`` - Create a parallel region and distributes loop iterations across threads.
-* ``omp_parallel_exec`` - Create a parallel region.
+* ``omp_parallel_region_exec`` - Create a parallel region.
 * ``omp_for_exec`` - Distribute loop iterations across threads within a parallel region.
 * ``omp_for_static`` - Distribute loop iterations across threads using a static schedule.
 * ``omp_for_nowait_exec`` - Execute loop in parallel region and removes synchronization via `nowait` clause.
@@ -68,23 +68,21 @@ CUDA Policies
 -------------
 
 Following the CUDA nomenclature, GPU computations are performed on a
-grid of threads. Each unit of the grid is referred to as a thread and
-threads can be further grouped into thread blocks. As a starting point,
-the following policy may be used with the ``RAJA::forall`` loop
+grid of computation units. Each unit of the grid is referred to as a thread 
+and threads can be further grouped into thread blocks. As a starting point,
+the following policy may be used with the ``RAJA::forall`` method:
 
 * ``cuda_exec<STRIDE_SIZE>`` - Map a loop to thread blocks with ``STRIDE_SIZE`` threads.
 
 The ``cuda_exec`` policy defines a default thread block size of 256 threads, if no
-argument is provided. For better control of mapping blocks and block local threads
-to loop levels we recommend using the ``RAJA::kernel`` method. A kernel policy list
-can map thread blocks and threads to arbitrary loop levels. Mapping global
-threads to a loop level is accomplished using the following execution policy:
+argument is provided. For better control of mapping blocks and block local threads to 
+loop levels we recommend using the ``RAJA::kernel`` method. Mapping blocks and block local
+threads to a loop level may be accomplished using the following policies:
 
-* ``cuda_threadblock_exec<STRIDE_SIZE>`` - Map a loop nest to thread blocks with ``STRIDE_SIZE`` threads to a loop level.
+* ``cuda_block_exec`` - Map a loop level to CUDA thread blocks.
+* ``cuda_thread_exec`` - Map a loop level to block local CUDA threads.
 
-Finally, mapping a thread block and block local threads to loop levels is done using the
-following execution policies:
+Finally, mapping global threads to a ``RAJA::Kernel`` loop level is accomplished using the following
+execution policy:
 
-* ``cuda_block_exec`` - Map a nested loop level to a CUDA thread blocks.
-
-* ``cuda_thread_exec`` - Map a nested loop level to a block local CUDA threads.
+* ``cuda_threadblock_exec<STRIDE_SIZE>`` - Map a loop level to thread blocks with ``STRIDE_SIZE`` threads.
