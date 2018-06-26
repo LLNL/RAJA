@@ -122,7 +122,7 @@ TEST(Vec, simple_1d_packed){
 
 
 }
-TEST(Vec, simple_reduce_sum){
+TEST(Vec, simple_reduce_sum_min_max){
 
   int N = 137;
 
@@ -132,7 +132,7 @@ TEST(Vec, simple_reduce_sum){
   View<double, Layout<1>> a(&a_data[0], N);
 
   for(int i = 0;i < N; ++ i){
-    a_data[i] = 1;
+    a_data[i] = i+1;
   }
 
   using VecType = vec::Vector<double, 2, 1>;
@@ -143,20 +143,28 @@ TEST(Vec, simple_reduce_sum){
   auto va = make_vector_view(a);
 
   ReduceSum<vec_reduce, VecType> sum(0.0);
+  ReduceMin<vec_reduce, VecType> min;
+  ReduceMax<vec_reduce, VecType> max;
   ReduceSum<seq_reduce, int> trip_count(0);
 
   forall<policy>(RangeSegment(0, N),
       [=] (auto i){
 
+        min.min(va(i));
+        
+        max.max(va(i));
+        
         sum += va(i);
+        
         trip_count += 1;
 
       });
 
 
-  ASSERT_EQ((double)sum, 137.0);
+  ASSERT_EQ((double)sum, (double)(N*(N+1)/2));
+  ASSERT_EQ((double)min, 1.0);
+  ASSERT_EQ((double)max, (double)N);
   ASSERT_EQ((int)trip_count, 69);
-
 
 }
 

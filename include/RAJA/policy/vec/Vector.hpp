@@ -92,6 +92,16 @@ struct Vector
 #endif
 
     RAJA_INLINE
+    T &get_lower(){
+      return value[0][0];
+    }
+    
+    RAJA_INLINE
+    T const &get_lower() const {
+      return value[0][0];
+    }
+
+    RAJA_INLINE
     static Vector load_lower(T val){
       Vector v;
       for(size_t u = 0;u < U;++ u){
@@ -104,15 +114,16 @@ struct Vector
     }
 
     RAJA_INLINE
-    static Vector load_lower(Vector<T,1,1> const &val){
-      Vector v;
+    //Vector 
+    void load_lower(Vector<T,1,1> const &val){
+      /*Vector v;
       for(size_t u = 0;u < U;++ u){
         for(size_t n = 0;n < N;++ n){
           v.value[u][n] = 0;
         }
-      }
-      v.value[0][0] = val.value[0][0]; 
-      return v;
+      }*/
+      value[0][0] = val.value[0][0]; 
+      //return v;
     }
 
 
@@ -263,6 +274,7 @@ struct Vector
       return x;
     }
 
+
     RAJA_INLINE
     T min() const {
 
@@ -278,6 +290,15 @@ struct Vector
     }
 
     RAJA_INLINE
+    void min(Vector const &a) const {
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          value[u][n] = value[u][n] < a.value[u][n] ? value[u][n] : a.value[u][n];
+        }
+      }
+    }
+
+    RAJA_INLINE
     T max() const {
 
       T x = value[0][0];
@@ -289,6 +310,15 @@ struct Vector
       }
 
       return x;
+    }
+
+    RAJA_INLINE
+    void max(Vector const &a) const {
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          value[u][n] = value[u][n] > a.value[u][n] ? value[u][n] : a.value[u][n];
+        }
+      }
     }
 
 };

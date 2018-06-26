@@ -55,6 +55,47 @@ struct result_traits<RAJA::vec::Vector<T,N,U> > {
 };
 
 
+template<typename R>
+struct vector_final_reduce_traits;
+
+template<typename T>
+struct vector_final_reduce_traits<RAJA::reduce::sum<T>>
+{
+  using scalar_type = typename T::scalar_type;
+  
+  static
+  scalar_type vec_reduce(T v)
+  {
+    return v.sum();
+  }
+};
+
+template<typename T>
+struct vector_final_reduce_traits<RAJA::reduce::min<T>>
+{
+  using scalar_type = typename T::scalar_type;
+  
+  static
+  scalar_type vec_reduce(T v)
+  {
+    return v.min();
+  }
+};
+
+template<typename T>
+struct vector_final_reduce_traits<RAJA::reduce::max<T>>
+{
+  using scalar_type = typename T::scalar_type;
+  
+  static
+  scalar_type vec_reduce(T v)
+  {
+    return v.max();
+  }
+};
+
+
+
 //! specialization of ReduceSum for cuda_reduce
 template <typename VecType, typename Reduce>
 class ReduceVec :
@@ -78,9 +119,18 @@ public:
   
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void combine(RAJA::vec::Vector<double,1,1> const &other) const { Base::my_data += VecType::load_lower(other); }
+  void combine(RAJA::vec::Vector<double,1,1> const &other) const { 
+    // Get the reduction identity vector, and load just the first element with other
+    VecType ext_other = Base::identity;
+    ext_other.load_lower(other);
 
-  result_type get() const { return Base::my_data.sum(); }
+    // Reduce as normal
+    Reduce{}(Base::my_data, ext_other);
+  }
+
+  result_type get() const { 
+    return vector_final_reduce_traits<Reduce>::vec_reduce(Base::my_data); 
+  }
 
 
 };

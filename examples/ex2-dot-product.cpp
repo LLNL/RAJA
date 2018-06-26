@@ -60,11 +60,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   const int N = 1000000;
 
+  RAJA::Timer timer;
+
 //
 // Allocate and initialize vector data
 //
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
+  double *a = memoryManager::allocate<double>(N);
+  double *b = memoryManager::allocate<double>(N);
 
   for (int i = 0; i < N; ++i) {
     a[i] = 1.0;
@@ -80,9 +82,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   double dot = 0.0;
 
+  timer.reset();
+  timer.start();
+ 
   for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];
   }
+
+  timer.stop();
+  std::cout << "\t time = " << timer.elapsed() << std::endl;
 
   std::cout << "\t (a, b) = " << dot << std::endl;
 
@@ -93,12 +101,45 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential dot product...\n";
 
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
+  
+  timer.reset();
+  timer.start();
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     seqdot += a[i] * b[i]; 
   });
-
+  
   dot = seqdot.get();
+  
+  timer.stop();
+  std::cout << "\t time = " << timer.elapsed() << std::endl;
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA vectorized dot product...\n";
+
+  using vec_type = RAJA::vec::Vector<double, 2, 1>;
+
+  RAJA::ReduceSum<RAJA::vec_reduce, vec_type> vecdot(0.0);
+
+  auto va = RAJA::make_vector_view(a);
+  auto vb = RAJA::make_vector_view(b);
+  
+  timer.reset();
+  timer.start();
+
+  RAJA::forall<RAJA::vec_exec<vec_type>>(RAJA::RangeSegment(0, N), [=] (auto i) { 
+    vecdot += va(i) * vb(i); 
+  });
+  
+  dot = vecdot.get();
+  
+  timer.stop();
+  std::cout << "\t time = " << timer.elapsed() << std::endl;
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -110,12 +151,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
+  
+  timer.reset();
+  timer.start();
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     ompdot += a[i] * b[i]; 
   });    
-
+  
   dot = ompdot.get();
+  
+  timer.stop();
+  std::cout << "\t time = " << timer.elapsed() << std::endl;
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -135,6 +182,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = cudot.get();
+  
+  timer.stop();
+  std::cout << "\t time = " << timer.elapsed() << std::endl;
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);

@@ -171,4 +171,9 @@
 
 #include "RAJA/pattern/scan.hpp"
 
+
+
+// timers
+#include "RAJA/util/Timer.hpp"
+
 #endif  // closing endif for header file include guard

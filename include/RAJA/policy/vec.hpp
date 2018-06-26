@@ -35,6 +35,7 @@
 #include "RAJA/policy/vec/StridedVector.hpp"
 #include "RAJA/policy/vec/VectorView.hpp"
 #include "RAJA/policy/vec/policy.hpp"
+#include "RAJA/policy/vec/operators.hpp"
 #include "RAJA/policy/vec/forall.hpp"
 #include "RAJA/policy/vec/reduce.hpp"
 #include "RAJA/policy/vec/kernel/For.hpp"
