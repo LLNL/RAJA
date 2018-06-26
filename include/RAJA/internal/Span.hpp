@@ -100,13 +100,6 @@ Span<ValueType, IndexType> make_span(ValueType begin, IndexType size)
   return Span<ValueType,IndexType>(begin, begin + size);
 }
 
-template <typename ValueType, typename IndexType>
-RAJA_HOST_DEVICE RAJA_INLINE
-Span<ValueType, IndexType> make_span(ValueType begin, ValueType end)
-{  
-  return Span<ValueType,IndexType>(begin, end);
-}
-
 }  // end namespace impl
 }  // end namespace RAJA
 
