@@ -63,10 +63,7 @@ struct Vector
     static constexpr size_t num_total_bytes = N*U*sizeof(T);
 
 
-    // Make sure we use a non-vector type for a scalar in the case we have
-    // a vector width of 1
     using value_type = internal::VectorRegister<T,N>;
-       // typename std::conditional<N==1, T, internal::VectorRegister<T,N>>::type;
 
     value_type value[U];
 
@@ -83,16 +80,41 @@ struct Vector
       }
     }
 
+#if 1 
     RAJA_INLINE
     Vector(Vector<T,1,1> const &val){
       for(size_t u = 0;u < U;++ u){
         for(size_t n = 0;n < N;++ n){
-          value[u][n] = static_cast<T>(0);
+          value[u][n] = val.value[0][0]; 
         }
       }
-
-      value[0][0] = val.value[0][0];
     }
+#endif
+
+    RAJA_INLINE
+    static Vector load_lower(T val){
+      Vector v;
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          v.value[u][n] = 0;
+        }
+      }
+      v.value[0][0] = val;
+      return v;
+    }
+
+    RAJA_INLINE
+    static Vector load_lower(Vector<T,1,1> const &val){
+      Vector v;
+      for(size_t u = 0;u < U;++ u){
+        for(size_t n = 0;n < N;++ n){
+          v.value[u][n] = 0;
+        }
+      }
+      v.value[0][0] = val.value[0][0]; 
+      return v;
+    }
+
 
 
     RAJA_INLINE

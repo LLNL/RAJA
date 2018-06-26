@@ -68,22 +68,17 @@ public:
   //! prohibit compiler-generated default ctor
   ReduceVec() = delete;
 
-  //! enable operator+= for ReduceSum -- alias for combine()
-  RAJA_HOST_DEVICE
-  const ReduceVec& operator+=(VecType const &rhs) const
-  {
-    Base::my_data += rhs;
-    return *this;
-  }
 
-
-  //! enable operator+= for ReduceSum -- alias for combine()
+  /*
+   Combine a vector
+  */
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  const ReduceVec& operator+=(result_type const &rhs) const
-  {
-    Base::my_data += VecType(rhs);
-    return *this;
-  }
+  void combine(VecType const &other) const { Reduce{}(Base::my_data, other); }
+  
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  void combine(RAJA::vec::Vector<double,1,1> const &other) const { Base::my_data += VecType::load_lower(other); }
 
   result_type get() const { return Base::my_data.sum(); }
 

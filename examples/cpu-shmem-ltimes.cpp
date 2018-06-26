@@ -408,7 +408,7 @@ void runLTimesRajaKernelVec(bool debug,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
 
-  using VecType = RAJA::vec::Vector<double, 2, 4>;
+  using VecType = RAJA::vec::Vector<double, 4, 4>;
 
   using Pol = RAJA::KernelPolicy<
     For<0, loop_exec,
@@ -439,7 +439,7 @@ void runLTimesRajaKernelVec(bool debug,
 
       // Lambda_CalcPhi
       [=] (IMoment m, IDirection d, IGroup g, auto z) {
-        vphi(m, g, z) +=  vpsi(d, g, z) * ell(m, d);
+        vphi(m, g, z) +=  vpsi(d, g, z) * vell(m, d);
       });
 
 

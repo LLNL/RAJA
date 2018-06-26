@@ -199,9 +199,10 @@ public:
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
+  template<typename T2>
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void combine(T const &other) const { c.combine(other); }
+  void combine(T2 const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
 
@@ -381,9 +382,10 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  template<typename T2>
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  const BaseReduceSum &operator+=(T rhs) const
+  const BaseReduceSum &operator+=(T2 rhs) const
   {
     this->combine(rhs);
     return *this;
