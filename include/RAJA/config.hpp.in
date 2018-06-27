@@ -74,7 +74,7 @@
  */
 #if defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
-#elif defined(__xlc__)
+#elif defined(__xlC__)
 #define RAJA_COMPILER_XLC
 #elif defined(__clang__)
 #define RAJA_COMPILER_CLANG
@@ -288,7 +288,7 @@ template<typename T>
 RAJA_INLINE
 T * align_hint(T * x)
 {
-#if defined (RAJA_COMPILER_INTEL)
+#if defined (RAJA_COMPILER_INTEL) || defined(RAJA_COMPILER_XLC)
   RAJA_ALIGN_DATA(x);
   return x;
 #else
