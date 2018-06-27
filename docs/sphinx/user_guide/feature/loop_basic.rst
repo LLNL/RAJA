@@ -18,7 +18,7 @@
 Elements of Loop Execution
 ==============================================
 
-The ``RAJA::forall`` and ``RAJA::kernel`` template methods comprise the
+``RAJA::forall`` and ``RAJA::kernel`` template methods comprise the
 RAJA interface for loop execution. ``RAJA::forall`` methods execute simple 
 loops (e.g., non-nested loops). ``RAJA::kernel`` methods support nested loops 
 and other complex loop kernels.
