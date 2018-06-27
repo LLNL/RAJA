@@ -26,7 +26,7 @@ Key RAJA features shown in this example:
   * Nested loop reordering (i.e., loop interchange)
   * RAJA strongly-types indices
 
-In :ref:`loop_elements-nested-label`, we introduced the basic mechanics in
+In :ref:`loop_elements-kernel-label`, we introduced the basic mechanics in
 RAJA for representing nested loops. In :ref:`matrixmultiply-label`, we 
 presented a complete example using RAJA nested loop features. The following 
 example shows the nested loop interchange process in more detail. 
