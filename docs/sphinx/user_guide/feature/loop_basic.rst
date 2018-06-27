@@ -248,7 +248,7 @@ statement types:
   * ``RAJA::statement::Collapse`` collapses multiple perfectly nested loops
   * ``RAJA::statement::Conditional`` allows run-time selection of portions of a policy
   * ``RAJA::statement::CudaKernel`` launches its contents as a CUDA kernel
-  * ``RAJA::statement::CudaSyncThreads provides CUDA '__syncthreads' -- a similar thread barrier for OpenMP will be added soon.
+  * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' -- a similar thread barrier for OpenMP will be added soon.
   * ``RAJA::statement::Hyperplane`` provides N-dimensional hyperplane iteration patterns
   * ``RAJA::statement::ShmemWindow`` allows windowed interaction with shared memory buffers
   * ``RAJA::statement::Tile`` creates outer tiling (or cache blocking) of loops

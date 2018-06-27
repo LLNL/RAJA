@@ -12,16 +12,17 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _complex_intro-label:
+.. _complex_loops-label:
 
 ---------------------------------
-Introduction to Complex Loops
+Complex Loop Examples
 ---------------------------------
 
 .. warning:: **This section is a work-in-progress!!**
 
-Introduce concepts and semantics of complex loop execution using 
-``RAJA::kernel`` and ``RAJA:KernelPolicy`` constructs....
+Describe and illustrate various complex loop kernels using ``RAJA::kernel`` 
+constructs; e.g., shared memory window concepts. Motivate for 
+performance: cache-blocking on CPU, CUDA shared memory on GPU.
 
 Add example codes to the examples directory and reference here to provide 
 working examples to support the discussion.
