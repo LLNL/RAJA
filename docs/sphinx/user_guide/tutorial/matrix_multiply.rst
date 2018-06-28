@@ -45,8 +45,8 @@ RAJA::forall Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 In the RAJA variants of the matrix multiple example, we use two 
-``RAJA::Range Segment`` objects to define the matrix row and column iteration 
-spaces:
+``RAJA::Range Segment`` objects to define the matrix row and column and dot
+product iteration spaces:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
                     :lines: 163-165
@@ -75,7 +75,7 @@ In the first RAJA variant, we convert the outermost C-style 'row' loop to
 use the ``RAJA::forall`` traversal method with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 190-203
+                    :lines: 191-204
 
 Here, the lambda expression for the loop body contains the 'col' and 'k' loops.
 
@@ -90,7 +90,7 @@ For the second RAJA variant, we nest a ``RAJA::forall`` traversal method
 call for the 'column' loop inside the outer 'row' traversal:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 225-238
+                    :lines: 226-239
 
 Here, the innermost lambda expression contains the inner 'k' loop. The 'col' 
 loop is executed via the ``RAJA::forall`` method call within the 
@@ -121,7 +121,7 @@ then describe its key elements, noting important differences between
 the ``RAJA::kernel`` and ``RAJA::forall`` loop constructs. 
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 270-290
+                    :lines: 276-295
 
 Here, we use ``RAJA::kernel`` to express the outer 'row' and 'col' loops; 
 the inner 'k' loop is represented by the lambda expression. Note that 
@@ -158,7 +158,7 @@ If we want to execute the row loop using OpenMP multi-threaded parallelism
 and keep the column loop sequential, the policy we would use is:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 302-309
+                    :lines: 307-314
 
 To swap the loop nest ordering and keep the same execution policy on each loop,
 we would use the following policy, which swaps the ``RAJA::statement::For`` 
@@ -166,7 +166,7 @@ types. The inner loop is now the 'row' loop and is run in parallel;
 the outer loop is now the 'col' loop and is still sequential:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-		    :lines: 339-346
+		    :lines: 343-350
 
 . note:: It is important to note that these kernel transformations, and others,
          can be done by switching the ``RAJA::KernelPolicy`` type with no
@@ -188,7 +188,7 @@ complex policy examples and use additional RAJA kernel features.
 The first example uses sequential execution for all loops:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 511-541
+                    :lines: 512-545
 
 Here, we use the ``RAJA::kernel_param`` method to execute the kernel since
 we pass in an object to hold a scalar thread-local variable for the dot product 
@@ -216,7 +216,7 @@ allows multiple levels in a loop nest to be parallelized using OpenMP
 directives. For example, the following policy will collapse the two outer loops:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 557-567
+                    :lines: 558-568
 
 The ``RAJA::ArgList`` type indicates which loops in the nest are to be 
 collapsed and their nesting order within the collapse region. Note that there 
@@ -239,7 +239,7 @@ CUDA thread blocks and all column indices across threads in each
 block:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 603-616
+                    :lines: 604-617
 
 This is equivalent to defining a CUDA kernel with the lambda body inside
 it and defining row and column indices as::
@@ -254,7 +254,7 @@ CUDA thread blocks with 'x' and 'y' dimensions defined by the 'CUDA_BLOCK_SIZE'
 parameter.
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 649-662
+                    :lines: 650-663
 
 The file ``RAJA/examples/tut_matrix-multiply.cpp``
 contains the complete working example code for the examples described in this
