@@ -243,14 +243,14 @@ would be represented using the RAJA kernel API as::
 The following list summarizes the current collection of ``RAJA::kernel``
 statement types:
 
-  * ``RAJA::statement::For`` abstracts a for-loop containing a statement list
-  * ``RAJA::statement::Lambda`` invokes a lambda expression
-  * ``RAJA::statement::Collapse`` collapses multiple perfectly nested loops
-  * ``RAJA::statement::Conditional`` allows run-time selection of portions of a policy
-  * ``RAJA::statement::CudaKernel`` launches its contents as a CUDA kernel
-  * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' -- a similar thread barrier for OpenMP will be added soon.
-  * ``RAJA::statement::Hyperplane`` provides N-dimensional hyperplane iteration patterns
-  * ``RAJA::statement::ShmemWindow`` allows windowed interaction with shared memory buffers
-  * ``RAJA::statement::Tile`` creates outer tiling (or cache blocking) of loops
+  * ``RAJA::statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space with tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
+  * ``RAJA::statement::Lambda< LambdaId >`` invokes the lambda expression that appears at index 'LambdaId' in the sequence of lambda arguments to a kernel.
+  * ``RAJA::statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration.
+  * ``RAJA::statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc. 
+  * ``RAJA::statement::CudaKernel< EnclosedStatements> `` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where iteration space of each loop level are associated to threads and/or thread blocks. 
+  * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier; a similar thread barrier for OpenMP will be added soon.
+  * ``RAJA::statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane iteration pattern over multiple indices.
+  * ``RAJA::statement::SetShmemWindow< EnclosedStatements >`` sets a window into a shared memory buffer for loops described by 'EnclosedStatements'.
+  * ``RAJA::statement::Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` creates tiling (or cache blocking) of outer loop associated with kernel iteration space with tuple index 'ArgId' for inner loops described by 'EnclosedStatements' using given 'TilePolicy' (e.g., fixed tile size) and 'ExecPolicy' execution policy
 
 
