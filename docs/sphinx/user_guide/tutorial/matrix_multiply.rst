@@ -194,7 +194,7 @@ Here, we use the ``RAJA::kernel_param`` method to execute the kernel since
 we pass in an object to hold a scalar thread-local variable for the dot product 
 sum as the second argument. It is passed as a single-valued tuple object since,
 in general, we can pass in any number of variables to the method. The first
-argument is a tupe of iteration spaces for the loop levels. The remaining
+argument is a tuple of iteration spaces for the loop levels. The remaining
 arguments include a sequence of lambda expressions representing different
 parts of the inner loop body. We use three lambda expressions that: initialize 
 the dot product variable (lambda 0), define the 'k' inner loop row-col dot 
@@ -207,7 +207,7 @@ by all three lambdas. However, also note that not all lambda expressions use
 all three index variables.
 
 The execution policy type passed to the ``RAJA::kernel_param`` method as a 
-template paremter describes how the nested loops and lambda expressions are
+template parameter describes how the nested loops and lambda expressions are
 assembled to for the complete kernel.
 
 The RAJA framework can also collapse nested loops in an OpenMP parallel region
