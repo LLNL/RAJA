@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
@@ -49,7 +49,7 @@ namespace statement
 {
 
 /*!
- * A kernel::forall statement that performs a CUDA __syncthreads().
+ * A RAJA::kernel statement that performs a CUDA __syncthreads().
  *
  *
  */

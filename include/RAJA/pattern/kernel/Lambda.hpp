@@ -50,7 +50,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that executes a lambda function.
+ * A RAJA::kernel statement that invokes a lambda function.
  *
  * The lambda is specified by its index in the sequence of lambda arguments
  * to a RAJA::kernel method.
