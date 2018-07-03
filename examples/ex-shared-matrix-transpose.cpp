@@ -55,7 +55,7 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-//#define OMP_EX_1 //Breaks kernel
+#define OMP_EX_1 //Breaks kernel
 
 //
 // Define dimensionality of matrices
@@ -218,33 +218,32 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       RAJA::statement::For<3, RAJA::seq_exec,
         RAJA::statement::For<2, RAJA::seq_exec,
-          RAJA::statement::Lambda<0>,
+          //
+          // Creates a shared memory window for
+          // usage within inner loops
+          //
+          RAJA::statement::SetShmemWindow<
             //
-            // Creates a shared memory window for
-            // usage within inner loops
+            // (1) Execution policies for the first set of inner
+            // loops
             //
-            RAJA::statement::SetShmemWindow<
-              //
-              // (1) Execution policies for the first set of inner
-              // loops
-              //
-              RAJA::statement::For<1, RAJA::seq_exec,
-                RAJA::statement::For<0, RAJA::seq_exec,
-                  RAJA::statement::Lambda<1>
-                >
-              >,
-              //
-              // (2) Execution policies for second set of inner
-              // loops
-              //
-              RAJA::statement::For<1, RAJA::seq_exec,
-                RAJA::statement::For<0, RAJA::seq_exec,
-                  RAJA::statement::Lambda<2>
-                >
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
+                RAJA::statement::Lambda<0>
               >
-            > // closes shared memory window
-          > // closes outer loop 2
-         > // closes outer loop 3
+            >,
+            //
+            // (2) Execution policies for second set of inner
+            // loops
+            //
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
+                RAJA::statement::Lambda<1>
+              >
+            >
+          > // closes shared memory window
+        > // closes outer loop 2
+       > // closes outer loop 3
     >; // closes policy list
 
   RAJA::kernel_param<KERNEL_EXEC_POL>(
@@ -252,12 +251,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       segments,
 
       RAJA::make_tuple(RAJA_SEQ_TILE),
-      //
-      // (0) Lambda for outer loop to iterate over tiles
-      //
-      [=](int, int, int, int, seq_shmem_t &) {
-
-      },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
@@ -314,32 +307,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>,
+          //
+          // Creates a shared memory window for
+          // usage within inner loops
+          //
+          RAJA::statement::SetShmemWindow<
             //
-            // Creates a shared memory window for
-            // usage within inner loops
+            // (1) Lambda for inner loops to load data into the tile
             //
-            RAJA::statement::SetShmemWindow<
-              //
-              // (1) Execution policies for the first set of inner
-              //     loops. Loop 1 is carried out in parallel while
-              //     loop 0 is executed sequentially.
-              //
-              RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-                RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1>
+            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<0>
                 >
               >,
               //
-              // (2) Execution policies for the second set of inner
-              //     loops. Loop 1 is carried out in parallel while
-              //     loop 0 is executed sequentially.
+              // (2) Lambda for inner loops to read data from the tile
               //
-              RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-                RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<2>
-                >
-               >
+            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<1>
+              >
+             >
             > // closes shared memory window
           > // closes outer loop 2
          > // closes outer loop 3
@@ -350,11 +338,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         segments,
 
         RAJA::make_tuple(RAJA_OMP_TILE),
-
-        [=] (int ,int ,int ,int ,omp_shmem_t &) {
-
-        },
-
+        //
+        // (1) Lambda for inner loops to read data from the tile
+        //
         [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
@@ -362,6 +348,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA_OMP_TILE(ty,tx) = Aview(row, col);
         },
 
+        //
+        // (2) Lambda for inner loops to read data from the tile
+        //
         [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
 
           int col = by * TILE_DIM + tx;  // Transposed matrix column index
@@ -391,46 +380,39 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>,
           //
           // Creates a shared memory window for
           // usage within inner loops
           //
-            RAJA::statement::SetShmemWindow<
-              //
-              // (1) Execution policies for the first set of inner
-              //     loops. Loops are collapsed into a single
-              //     parallel for loop.
-              //
-              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                        RAJA::ArgList<0, 1>,
-                                        RAJA::statement::Lambda<1>
-              >,
-               //
-               // (2) Execution policies for second set of inner
-               // loops. Loops are collapsed into a single parallel
-               // for loops.
-               //
-              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                        RAJA::ArgList<0, 1>,
-                                        RAJA::statement::Lambda<2>
-              >
-            > // closes shared memory window
-          > // closes outer loop 2
-        > // closes outer loop 3
-      >; // closes policy list
+          RAJA::statement::SetShmemWindow<
+            //
+            // (1) Execution policies for the first set of inner
+            //     loops. Loops are collapsed into a single
+            //     parallel for loop.
+            //
+            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::statement::Lambda<0>
+            >,
+            //
+            // (2) Execution policies for second set of inner
+            // loops. Loops are collapsed into a single parallel
+            // for loops.
+            //
+            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::statement::Lambda<1>
+            >
+          > // closes shared memory window
+        > // closes outer loop 2
+      > // closes outer loop 3
+    >; // closes policy list
 
   RAJA::kernel_param<KERNEL_EXEC_POL_OMP2>(
 
       segments,
 
       RAJA::make_tuple(RAJA_OMP_TILE),
-      //
-      // (0) Lambda for outer loop to iterate over tiles
-      //
-      [=](int ,int ,int ,int ,omp_shmem_t &) {
-
-      },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
@@ -485,7 +467,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         //
         RAJA::statement::For<3, RAJA::cuda_block_exec,
           RAJA::statement::For<2, RAJA::cuda_block_exec,
-                               RAJA::statement::Lambda<0>,
             //
             // Creates a shared memory window for
             // usage within threads in a thread block.
@@ -498,7 +479,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               //
               RAJA::statement::For<1, RAJA::cuda_thread_exec,
                 RAJA::statement::For<0, RAJA::cuda_thread_exec,
-                                     RAJA::statement::Lambda<1>
+                  RAJA::statement::Lambda<0>
                 >
               >,
                //
@@ -515,7 +496,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                //
                RAJA::statement::For<1, RAJA::cuda_thread_exec,
                  RAJA::statement::For<0, RAJA::cuda_thread_exec,
-                   RAJA::statement::Lambda<2>
+                   RAJA::statement::Lambda<1>
                  >
                >
             >// closes shared memory window
@@ -529,12 +510,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       segments,
 
       RAJA::make_tuple(RAJA_CUDA_TILE),
-      //
-      // (0) Lambda for outer loop to iterate over tiles
-      //
-      [=] RAJA_DEVICE (int, int, int, int, cuda_shmem_t &) {
-
-      },
       //
       // (1) Lambda for inner loops to load data into the tile
       //
