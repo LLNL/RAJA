@@ -113,7 +113,7 @@ RAJA Kernel Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For the RAJA implementation of the example computation, we use two 
-``RAJA::Range Segment`` objects to define the row and column iteration 
+``RAJA::RangeSegment`` objects to define the row and column iteration 
 spaces for the interior cells:
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
