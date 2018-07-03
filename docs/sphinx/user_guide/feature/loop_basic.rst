@@ -62,7 +62,7 @@ may be written in a RAJA form as::
     c[i] = a[i] + b[i];
   });
 
-A ``RAJA::forall`` template is templated on an execution policy type and takes
+A ``RAJA::forall`` method is templated on an execution policy type and takes
 two arguments: an object describing the loop iteration space, such as a RAJA 
 segment or index set, and a lambda expression for the loop body. Applying 
 different loop execution policies enables the loop to run in different ways; 
