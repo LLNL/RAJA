@@ -160,26 +160,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // using sequential loops. The template parameter inside 
   // tile_fixed corresponds to the dimension size of the tile.
   //
-  using NESTED_EXEC_POL = 
-  RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::For<1, RAJA::seq_exec, 
-          RAJA::statement::For<0, RAJA::seq_exec,
-            RAJA::statement::Lambda<0>
-          > //closes For 0
-         > //closes For 1
+  using KERNEL_EXEC_POL = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::seq_exec, 
+            RAJA::statement::For<0, RAJA::seq_exec,
+              RAJA::statement::Lambda<0>
+            > //closes For 0
+          > //closes For 1
         > // closes Tile 0
       > // closes Tile 1
     >; // closes policy list
 
-  RAJA::kernel<NESTED_EXEC_POL>(
-                                RAJA::make_tuple(col_Range, row_Range),
-                                [=](int col, int row) {
+  RAJA::kernel<KERNEL_EXEC_POL>(
+                         RAJA::make_tuple(col_Range, row_Range),
+                         [=](int col, int row) {
 
-      Atview(col, row) = Aview(row, col);
+    Atview(col, row) = Aview(row, col);
 
-    });
+  });
 
   checkResult<int>(Atview, N);
   //printResult<int>(Atview, N);
@@ -194,26 +194,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using NESTED_EXEC_POL_OMP = 
-  RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
-          RAJA::statement::For<0, RAJA::loop_exec,
-            RAJA::statement::Lambda<0>
-          > //close For 0
-         > //closes For 1
+  using KERNEL_EXEC_POL_OMP = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<0>
+            > //close For 0
+          > //closes For 1
         > // closes Tile 0
       > // closes Tile 1
     >; // closes policy list
 
-  RAJA::kernel<NESTED_EXEC_POL_OMP>(
-                                    RAJA::make_tuple(col_Range, row_Range), 
-                                    [=](int col, int row) {
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
+                          RAJA::make_tuple(col_Range, row_Range), 
+                          [=](int col, int row) {
 
-      Atview(col, row) = Aview(row, col);
+    Atview(col, row) = Aview(row, col);
 
-    });
+  });
 
   checkResult<int>(Atview, N);
   // printResult<int>(Atview, N);
@@ -227,25 +227,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // into a single OpenMP parallel for loop enabling parallel loads/reads
   // to/from the tile.
   //
-  using NESTED_EXEC_POL_OMP2 = 
-  RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                       RAJA::ArgList<0, 1>,
-                                       RAJA::statement::Lambda<0>
-         > //closes collapse
+  using KERNEL_EXEC_POL_OMP2 = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                    RAJA::ArgList<0, 1>,
+                                    RAJA::statement::Lambda<0>
+          > //closes collapse
         > // closes Tile 0
       > // closes Tile 1
     >; // closes policy list
       
-  RAJA::kernel<NESTED_EXEC_POL_OMP2>(
-                                     RAJA::make_tuple(col_Range, row_Range), 
-                                     [=](int col, int row) {
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
+                        RAJA::make_tuple(col_Range, row_Range), 
+                        [=](int col, int row) {
 
-      Atview(col, row) = Aview(row, col);
+    Atview(col, row) = Aview(row, col);
 
-    });
+  });
 
   checkResult<int>(Atview, N);
 // printResult<int>(Atview, N);
@@ -258,25 +258,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
   std::memset(At, 0, N * N * sizeof(int));
   
-  using NESTED_EXEC_POL_CUDA = 
-  RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::For<1, RAJA::cuda_thread_exec,
-          RAJA::statement::For<0, RAJA::cuda_thread_exec, 
-                               RAJA::statement::Lambda<0> 
+  using KERNEL_EXEC_POL_CUDA = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::cuda_thread_exec,
+            RAJA::statement::For<0, RAJA::cuda_thread_exec, 
+                                    RAJA::statement::Lambda<0> 
+            >
           >
-         >
         >
       >
     >;
 
-  RAJA::kernel<NESTED_EXEC_POL_CUDA>
-    (RAJA::make_tuple(col_Range, col_Range), [=] RAJA_DEVICE (int col, int row) {
+  RAJA::kernel<KERNEL_EXEC_POL_CUDA>(
+                           RAJA::make_tuple(col_Range, col_Range), 
+                           [=] RAJA_DEVICE (int col, int row) {
 
-      Atview(col, row) = Aview(row, col);
+    Atview(col, row) = Aview(row, col);
       
-    });
+  });
   checkResult<int>(Atview, N);
 // printResult<int>(Atview, N);
 #endif

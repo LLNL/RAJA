@@ -211,42 +211,43 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // using sequential loops.
   //
 
-  using NESTED_EXEC_POL = RAJA::KernelPolicy<
+  using KERNEL_EXEC_POL = 
+    RAJA::KernelPolicy<
       //
       // (0) Execution policies for outer loops
       //
       RAJA::statement::For<3, RAJA::seq_exec,
         RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0>,
-          //
-          // Creates a shared memory window for
-          // usage within inner loops
-          //
-          RAJA::statement::SetShmemWindow<
-          //
-          // (1) Execution policies for the first set of inner
-          // loops
-          //
-          RAJA::statement::For<1, RAJA::seq_exec,
-           RAJA::statement::For<0, RAJA::seq_exec,
-                                RAJA::statement::Lambda<1>
-                                >
-                               >,
-          //
-          // (2) Execution policies for second set of inner
-          // loops
-          //
-          RAJA::statement::For<1, RAJA::seq_exec,
-           RAJA::statement::For<0, RAJA::seq_exec,
-            RAJA::statement::Lambda<2>
-                                >
-                               >
-                              > // closes shared memory window
-                             > // closes outer loop 2
-                            > // closes outer loop 3
-                          >; // closes policy list
+            //
+            // Creates a shared memory window for
+            // usage within inner loops
+            //
+            RAJA::statement::SetShmemWindow<
+              //
+              // (1) Execution policies for the first set of inner
+              // loops
+              //
+              RAJA::statement::For<1, RAJA::seq_exec,
+                RAJA::statement::For<0, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1>
+                >
+              >,
+              //
+              // (2) Execution policies for second set of inner
+              // loops
+              //
+              RAJA::statement::For<1, RAJA::seq_exec,
+                RAJA::statement::For<0, RAJA::seq_exec,
+                  RAJA::statement::Lambda<2>
+                >
+              >
+            > // closes shared memory window
+          > // closes outer loop 2
+         > // closes outer loop 3
+    >; // closes policy list
 
-  RAJA::kernel_param<NESTED_EXEC_POL>(
+  RAJA::kernel_param<KERNEL_EXEC_POL>(
 
       segments,
 
@@ -306,44 +307,45 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using NESTED_EXEC_POL_OMP = RAJA::KernelPolicy<
-    //
-    // (0) Execution policies for outer loops
-    //
-    RAJA::statement::For<3, RAJA::loop_exec,
-      RAJA::statement::For<2, RAJA::loop_exec,
-        RAJA::statement::Lambda<0>,
-        //
-        // Creates a shared memory window for
-        // usage within inner loops
-        //
-        RAJA::statement::SetShmemWindow<
-          //
-          // (1) Execution policies for the first set of inner
-          //     loops. Loop 1 is carried out in parallel while
-          //     loop 0 is executed sequentially.
-          //
-          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
-                                 >
-                               >,
-          //
-          // (2) Execution policies for the second set of inner
-          //     loops. Loop 1 is carried out in parallel while
-          //     loop 0 is executed sequentially.
-          //
-          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<2>
-                                 >
-                               >
-                             > // closes shared memory window
-                           > // closes outer loop 2
-                         > // closes outer loop 3
-                       >; // closes policy list
+  using KERNEL_EXEC_POL_OMP = 
+    RAJA::KernelPolicy<  
+      //
+      // (0) Execution policies for outer loops
+      //
+      RAJA::statement::For<3, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,
+          RAJA::statement::Lambda<0>,
+            //
+            // Creates a shared memory window for
+            // usage within inner loops
+            //
+            RAJA::statement::SetShmemWindow<
+              //
+              // (1) Execution policies for the first set of inner
+              //     loops. Loop 1 is carried out in parallel while
+              //     loop 0 is executed sequentially.
+              //
+              RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<1>
+                >
+              >,
+              //
+              // (2) Execution policies for the second set of inner
+              //     loops. Loop 1 is carried out in parallel while
+              //     loop 0 is executed sequentially.
+              //
+              RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<2>
+                >
+               >
+            > // closes shared memory window
+          > // closes outer loop 2
+         > // closes outer loop 3
+    >; // closes policy list
 
-  RAJA::kernel_param<NESTED_EXEC_POL_OMP> (
+  RAJA::kernel_param<KERNEL_EXEC_POL_OMP> (
 
         segments,
 
@@ -382,7 +384,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // into a single OpenMP parallel for loop enabling parallel loads/reads
   // to/from the tile.
   //
-  using NESTED_EXEC_POL_OMP2 = RAJA::KernelPolicy<
+  using KERNEL_EXEC_POL_OMP2 = 
+    RAJA::KernelPolicy<
       //
       // (0) Execution policies for outer loops
       //
@@ -394,30 +397,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // usage within inner loops
           //
             RAJA::statement::SetShmemWindow<
-            //
-            // (1) Execution policies for the first set of inner
-            //     loops. Loops are collapsed into a single
-            //     parallel for loop.
-            //
-           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                       RAJA::ArgList<0, 1>,
-                                       RAJA::statement::Lambda<1>
-                                     >,
-          //
-          // (2) Execution policies for second set of inner
-          // loops. Loops are collapsed into a single parallel
-          // for loops.
-          //
-          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                    RAJA::ArgList<0, 1>,
-                                    RAJA::statement::Lambda<2>
-                                    >
-                                  > // closes shared memory window
-                                 > // closes outer loop 2
-                               > // closes outer loop 3
-                             >; // closes policy list
+              //
+              // (1) Execution policies for the first set of inner
+              //     loops. Loops are collapsed into a single
+              //     parallel for loop.
+              //
+              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                        RAJA::ArgList<0, 1>,
+                                        RAJA::statement::Lambda<1>
+              >,
+               //
+               // (2) Execution policies for second set of inner
+               // loops. Loops are collapsed into a single parallel
+               // for loops.
+               //
+              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                        RAJA::ArgList<0, 1>,
+                                        RAJA::statement::Lambda<2>
+              >
+            > // closes shared memory window
+          > // closes outer loop 2
+        > // closes outer loop 3
+      >; // closes policy list
 
-  RAJA::kernel_param<NESTED_EXEC_POL_OMP2>(
+  RAJA::kernel_param<KERNEL_EXEC_POL_OMP2>(
 
       segments,
 
@@ -469,60 +472,59 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                        decltype(segments)>;
   cuda_shmem_t RAJA_CUDA_TILE;
 
-  using NESTED_EXEC_POL_CUDA = RAJA::KernelPolicy<
-
+  using KERNEL_EXEC_POL_CUDA = 
+    RAJA::KernelPolicy<   
       //
       // Collapses policy list into a single CUDA kernel
       //
       RAJA::statement::CudaKernel<
+        //
+        // (0) Execution policies for outer loops.
+        //     Maps iterations from the outer loop
+        //     to CUDA thread blocks.
+        //
+        RAJA::statement::For<3, RAJA::cuda_block_exec,
+          RAJA::statement::For<2, RAJA::cuda_block_exec,
+                               RAJA::statement::Lambda<0>,
+            //
+            // Creates a shared memory window for
+            // usage within threads in a thread block.
+            //
+            RAJA::statement::SetShmemWindow<
+              //
+              // (1) Execution policies for the first set of
+              // inner loops. Each iteration is assigned to
+              // a thread in a CUDA thread block.
+              //
+              RAJA::statement::For<1, RAJA::cuda_thread_exec,
+                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                                     RAJA::statement::Lambda<1>
+                >
+              >,
+               //
+               // Places a barrier to synchronize CUDA threads
+               // within a block. Necessary to ensure data has
+               // been loaded into the tile before reading from
+               // the tile.
+               //
+               RAJA::statement::CudaSyncThreads,
+               //
+               // (2) Execution policies for second set of inner
+               //     loops. Each iteration is assigned to a
+               //     thread in a CUDA thread block.
+               //
+               RAJA::statement::For<1, RAJA::cuda_thread_exec,
+                 RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                   RAJA::statement::Lambda<2>
+                 >
+               >
+            >// closes shared memory window
+          > // closes outer loop 2
+        > // closes outer loop 3
+      > // closes CUDA Kernel
+    >; // closes policy list
 
-          //
-          // (0) Execution policies for outer loops.
-          //     Maps iterations from the outer loop
-          //     to CUDA thread blocks.
-          //
-          RAJA::statement::For<3, RAJA::cuda_block_exec,
-            RAJA::statement::For<2, RAJA::cuda_block_exec,
-                                 RAJA::statement::Lambda<0>,
-          //
-          // Creates a shared memory window for
-          // usage within threads in a thread block.
-          //
-          RAJA::statement::SetShmemWindow<
-          //
-          // (1) Execution policies for the first set of
-          // inner loops. Each iteration is assigned to
-          // a thread in a CUDA thread block.
-          //
-          RAJA::statement::For<1, RAJA::cuda_thread_exec,
-            RAJA::statement::For<0, RAJA::cuda_thread_exec,
-                                 RAJA::statement::Lambda<1>
-                                 >
-                               >
-         //
-         // Places a barrier to synchronize CUDA threads
-         // within a block. Necessary to ensure data has
-         // been loaded into the tile before reading from
-         // the tile.
-         //
-            ,RAJA::statement::CudaSyncThreads,
-         //
-         // (2) Execution policies for second set of inner
-         //     loops. Each iteration is assigned to a
-         //     thread in a CUDA thread block.
-         //
-         RAJA::statement::For<1, RAJA::cuda_thread_exec,
-          RAJA::statement::For<0, RAJA::cuda_thread_exec,
-            RAJA::statement::Lambda<2>
-                               >
-                              >
-                             > // closes shared memory window
-                           > // closes outer loop 2
-                         > // closes outer loop 3
-                       > // closes CUDA Kernel
-                     >; // closes policy list
-
-  RAJA::kernel_param<NESTED_EXEC_POL_CUDA>(
+  RAJA::kernel_param<KERNEL_EXEC_POL_CUDA>(
 
       segments,
 
