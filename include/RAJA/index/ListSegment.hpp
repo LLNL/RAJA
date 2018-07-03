@@ -142,6 +142,9 @@ public:
   //! iterator type for storage (will be a pointer)
   using iterator = T*;
 
+  //! expose underlying index type
+  using IndexType = RAJA::Index_type;
+
   //! prevent compiler from providing a default constructor
   TypedListSegment() = delete;
 
