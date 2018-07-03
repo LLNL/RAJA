@@ -156,12 +156,86 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
+
+  std::vector<Idx0> idx_x;
+  std::vector<Idx1> idx_y;
+
+  for(int i=0; i<x_len; ++i) idx_x.push_back(static_cast<Idx0>(i));
+  for(int i=0; i<y_len; ++i) idx_y.push_back(static_cast<Idx1>(i));
+
+  tsum.reset(0.0);
+  total = 0.0;
+  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
+  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
+  auto rangeList = RAJA::make_tuple(idx_list, idy_list);
+
+  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+    // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;      
+      v(get_val(i), j) = get_val(i) * x_len + j;
+      tsum += get_val(i) * 1.1 + j;
+  });
+
+
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(this->view(i, j), i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  ASSERT_FLOAT_EQ(total, tsum.get());
+
+  total=0.0;
+  tsum.reset(0.0); 
+  double *idx_test; 
+#if defined(RAJA_ENABLE_CUDA)
+    cudaMallocManaged(&idx_test,
+                      sizeof(double) * x_len * y_len,
+                      cudaMemAttachGlobal);
+#else
+  idx_test = new double[x_len*y_len];
+#endif
+
+  auto iterSpace2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list);
+  RAJA::kernel<Pol>(iterSpace2, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j) {
+      Index_type id = get_val(i)*x_len + get_val(j);
+      idx_test[id] = get_val(i) * x_len + get_val(j);
+      tsum += get_val(i) * 1.1 + get_val(j);
+  });
+
+
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
+  ASSERT_FLOAT_EQ(total, tsum.get());  
+
+
+  total=0.0;
+  tsum.reset(0.0); 
+  auto iterSpace3 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list,RAJA::TypedRangeSegment<Idx1>(0,10));
+  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j, Idx1 k) {
+      Index_type id = get_val(i)*x_len + get_val(j);
+      idx_test[id] = get_val(i) * x_len + get_val(j) + get_val(k) - get_val(k);
+    tsum += get_val(i) * 1.1 + get_val(j);
+  });
+
+  for (Index_type i = 0; i < x_len; ++i) {
+    for (Index_type j = 0; j < y_len; ++j) {
+      ASSERT_EQ(idx_test[i*x_len+j], i * x_len + j);
+      total += i * 1.1 + j;
+    }
+  }
   
+  ASSERT_FLOAT_EQ(total, tsum.get());  
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(arr);
+  cudaFree(idx_test);
 #else
   delete[] arr;
+  delete[] idx_test;
 #endif
 
 }
@@ -221,14 +295,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
 
-
-
-
-
-
 #if defined(RAJA_ENABLE_CUDA)
-
-
 
 CUDA_TEST(Kernel, CudaZeroIter)
 {
@@ -259,7 +326,6 @@ CUDA_TEST(Kernel, CudaZeroIter)
 
   cudaFree(x);
 }
-
 
 CUDA_TEST(Kernel, CudaCollapse1a)
 {
@@ -368,6 +434,10 @@ CUDA_TEST(Kernel, CudaCollapse2)
 
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
+
+  //Initialize data to zero
+  sum1[0] = 0; 
+  sum2[0] = 0; 
 
   int N = 41;
   RAJA::kernel<Pol>(

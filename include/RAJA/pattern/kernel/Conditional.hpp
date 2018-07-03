@@ -39,7 +39,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that implements conditional control logic
+ * A RAJA::kernel statement that implements conditional control logic
  *
  */
 template <typename Condition, typename... EnclosedStmts>
@@ -48,11 +48,11 @@ struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 
 
 /*!
- * An expression that returns the value of the specified kernel::forall
+ * An expression that returns the value of the specified RAJA::kernel
  * parameter.
  *
  * This allows run-time values to affect the control logic within
- * kernel::forall policies.
+ * RAJA::kernel execution policies.
  */
 template <camp::idx_t ParamId>
 struct Param {
