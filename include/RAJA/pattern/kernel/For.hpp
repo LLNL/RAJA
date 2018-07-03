@@ -41,7 +41,7 @@ namespace statement
 
 
 /*!
- * A nested::forall statement that implements a single loop.
+ * A RAJA::kernel statement that implements a single loop.
  *
  *
  */

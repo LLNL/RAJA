@@ -84,9 +84,11 @@ struct TypedRangeSegment {
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
   //! the underlying value_type type
   /*!
-   * this corresponds to the template parameter
+   * these corresponds to the template parameter
    */
   using value_type = StorageT;
+
+  using IndexType  = StorageT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
@@ -258,6 +260,7 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
+  using IndexType  = StorageT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range

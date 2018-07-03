@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
@@ -103,7 +103,7 @@ namespace statement
 {
 
 /*!
- * A kernel::forall statement that launches a CUDA kernel.
+ * A RAJA::kernel statement that launches a CUDA kernel.
  *
  *
  */
@@ -114,7 +114,7 @@ struct CudaKernelExt
 
 
 /*!
- * A kernel::forall statement that launches a CUDA kernel.
+ * A RAJA::kernel statement that launches a CUDA kernel.
  *
  *
  */
@@ -152,7 +152,7 @@ __global__ void CudaKernelLauncher(Data data, int num_logical_blocks)
 
 
 /*!
- * Specialization that launches CUDA kernels for kernel::forall from host code
+ * Specialization that launches CUDA kernels for RAJA::kernel from host code
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
