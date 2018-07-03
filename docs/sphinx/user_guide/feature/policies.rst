@@ -32,17 +32,19 @@ Serial/SIMD Policies
 
 * ``seq_exec``  - Strictly sequential loop execution.
 * ``simd_exec`` - Forced SIMD execution by adding vectorization hints.
-* ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD that it thinks are appropriate).
+* ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD) that it thinks are appropriate.
 
 ---------------
 OpenMP Policies
 ---------------
 
+* ``omp_parallel_region_exec`` - Create a parallel region. May only be used with the ``RAJA::region`` method.
 * ``omp_parallel_for_exec`` - Create a parallel region and distributes loop iterations across threads.
-* ``omp_parallel_region_exec`` - Create a parallel region.
 * ``omp_for_exec`` - Distribute loop iterations across threads within a parallel region.
-* ``omp_for_static`` - Distribute loop iterations across threads using a static schedule.
-* ``omp_for_nowait_exec`` - Execute loop in parallel region and removes synchronization via `nowait` clause.
+* ``omp_for_static`` - Distribute loop iterations across threads using a static schedule within a parallel region.
+* ``omp_for_nowait_exec`` - Execute loop in a parallel region and removes synchronization via `nowait` clause.
+
+.. note:: * The following policies are not compatible with RAJA's kernel method.
 
 * ``omp_parallel_segit`` - Iterate over a index set segments in parallel.
 * ``omp_parallel_for_segit`` - Same as above.
@@ -51,6 +53,7 @@ OpenMP Policies
 OpenMP Target Policies
 ----------------------
 
+.. note:: * The following policies are not compatible with RAJA's kernel method.
 * ``omp_target_parallel_for_exec`` - Execute loop body in a device (e.g., GPU) environment. Takes a parameter for number of thread teams.
 
 ----------------------------------------------
@@ -61,6 +64,7 @@ Intel Threading Building Blocks (TBB) Policies
 * ``tbb_for_static`` - Implement the parallel_for method using a static scheduler.
 * ``tbb_for_dynamic`` - Implement the parallel_for method and uses a dynamic scheduler.
 
+.. note:: * The following policies are not compatible with RAJA's kernel method.
 * ``tbb_segit`` - Iterate over a index set segments in parallel.
 
 -------------
