@@ -22,7 +22,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Offset example
+ *  Offset Layout example
  *
  *  This example applies a five-cell stencil to the
  *  interior cells of a lattice and stores the 

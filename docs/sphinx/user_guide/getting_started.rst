@@ -133,12 +133,12 @@ Learning to Use RAJA
 ======================
 
 If you want to view and run a very simple RAJA example code, a good place to
-start is located in the file: ``RAJA/examples/ex0-daxpy.cpp``. After building 
+start is located in the file: ``RAJA/examples/daxpy.cpp``. After building 
 RAJA with the options you select, the executable for this code will reside 
-in the file: ``<build-dir>/examples/bin/ex0-daxpy``. Simply type the name
+in the file: ``<build-dir>/examples/bin/daxpy``. Simply type the name
 of the executable in your build directory to run it; i.e.,::
 
-  $ ./examples/bin/ex0-daxpy 
+  $ ./examples/bin/daxpy 
 
 For an overview of all the main RAJA features, see :ref:`features-label`.
 A full tutorial with a variety of examples showing how to use RAJA features

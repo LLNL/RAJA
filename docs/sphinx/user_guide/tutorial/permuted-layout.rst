@@ -69,7 +69,7 @@ refer to :ref:`view-label`.
 
 Layout 1 is constructed as follows:
 
-.. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
+.. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
                     :lines: 98-101, 134-143
 
 The first argument to ``RAJA::make_permuted_layout`` is a C++ array
@@ -87,7 +87,7 @@ stride 9 (= N_c * N_r).
 
 Layout 2 is constructed as follows:
 
-.. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
+.. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
                     :lines: 157-163
 
 Note that first argument to ``RAJA::make_permuted_layout`` is the same as in
@@ -107,11 +107,11 @@ Example Code
 
 A complete working example that runs the batched matrix-multiplication 
 computation for both layouts and various RAJA execution policies is located
-in the file ``RAJA/examples/ex-offset.cpp``. It compares the execution run 
+in the file ``RAJA/examples/offset-layout.cpp``. It compares the execution run 
 times of the two layouts using three RAJA back-ends (Sequential, OpenMP, and 
 CUDA). The code example below shows the OpenMP version:
 
-.. literalinclude:: ../../../../examples/ex-batched-matrix-multiply.cpp
+.. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
                     :lines: 199-232
 
 All versions use the exact same lambda loop body showing that data orderings

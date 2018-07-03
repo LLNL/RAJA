@@ -95,7 +95,7 @@ First, we use the ``RAJA::make_offset_layout`` method to construct a
 Then, we create two ``RAJA::View`` objects for each of the input and output
 lattice arrays.
 
-.. literalinclude:: ../../../../examples/ex-offset.cpp
+.. literalinclude:: ../../../../examples/tut_offset-layout.cpp
                     :lines: 194-200
 
 Here, the row index range is :math:`[-1, N_r]`, and the column index 
@@ -113,19 +113,19 @@ RAJA Kernel Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For the RAJA implementation of the example computation, we use two 
-``RAJA::Range Segment`` objects to define the row and column iteration 
+``RAJA::RangeSegment`` objects to define the row and column iteration 
 spaces for the interior cells:
 
-.. literalinclude:: ../../../../examples/ex-offset.cpp
+.. literalinclude:: ../../../../examples/tut_offset-layout.cpp
                     :lines: 182-183
 
 Here, is an implementation using ``RAJA::kernel`` multi-dimensional loop
 execution with a sequential execution policy.
 
-.. literalinclude:: ../../../../examples/ex-offset.cpp
+.. literalinclude:: ../../../../examples/tut_offset-layout.cpp
                     :lines: 207-225
 
 Since the stencil operation is data parallel, any parallel execution policy 
-may be used. The file ``RAJA/examples/ex-offset.cpp`` contains a complete 
-working example code with parallel implementations. For more details 
-about ``RAJA::kernel`` concepts, please see :ref:`loop_elements-nested-label`. 
+may be used. The file ``RAJA/examples/tut_offset-layout.cpp`` contains a 
+complete working example code with parallel implementations. For more details 
+about ``RAJA::kernel`` concepts, please see :ref:`loop_elements-kernel-label`. 

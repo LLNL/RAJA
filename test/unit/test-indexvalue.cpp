@@ -13,10 +13,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for Span
-///
-
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
