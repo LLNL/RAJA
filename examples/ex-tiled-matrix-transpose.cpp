@@ -254,17 +254,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
-#if 0 // WIP - What is tiling in a GPU? 
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
   std::memset(At, 0, N * N * sizeof(int));
   
   using KERNEL_EXEC_POL_CUDA = 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-          RAJA::statement::For<1, RAJA::cuda_thread_exec,
-            RAJA::statement::For<0, RAJA::cuda_thread_exec, 
-                                    RAJA::statement::Lambda<0> 
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_exec,
+              RAJA::statement::For<0, RAJA::cuda_thread_exec, 
+                                      RAJA::statement::Lambda<0> 
+              >
             >
           >
         >
@@ -280,7 +281,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
   checkResult<int>(Atview, N);
 // printResult<int>(Atview, N);
-#endif
 #endif
   //----------------------------------------------------------------------------//
 
