@@ -50,13 +50,13 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that executes a lambda function.
+ * A RAJA::kernel statement that invokes a lambda function.
  *
- * The lambda is specified by it's index, which is defined by the order in
- * which it was specified in the call to kernel::forall.
+ * The lambda is specified by its index in the sequence of lambda arguments
+ * to a RAJA::kernel method.
  *
  * for example:
- * RAJA::kernel::forall(pol{}, make_tuple{s0, s1, s2}, lambda0, lambda1);
+ * RAJA::kernel<exec_pol>(make_tuple{s0, s1, s2}, lambda0, lambda1);
  *
  */
 template <camp::idx_t BodyIdx>

@@ -56,7 +56,7 @@ In earlier examples, we have seen how to define a contiguous range of loop
 indices [0, N) with a ``RAJA::RangeSegment`` object and use it in a RAJA
 loop execution template to run a loop kernel over the range. For example:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 122-124
 
 We can accomplish the same result by enumerating the indices in a 
@@ -64,12 +64,12 @@ We can accomplish the same result by enumerating the indices in a
 vector, create a list segment from it, and then pass the list segment to the 
 forall template:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
 		    :lines: 140-149
 
 Note that we are using the following type aliases these examples:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
 		    :lines: 58-59
 
 Recall from discussion in ::ref:`index-label` that ``RAJA::Index_type`` is
@@ -84,13 +84,13 @@ the indirection array does not appear in the loop body. For example, we can
 reverse the order of the indices, run the loop with a new list segment object, 
 and get the same result since the loop is `data-parallel`:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 165-171
 
 Alternatively, we can also use a RAJA strided range segment to run the loop 
 in reverse by giving it a stride of -1. For example:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 188-190
 
 ^^^^^^^^^^^^^^^^^^^^^
@@ -112,7 +112,7 @@ as template arguments. For example, here we create an index set that can
 hold list segments. Then, we add the first list segment from above to it, 
 and run the loop:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 211-217
 
 You are probably asking: What is the 'SEQ_ISET_EXECPOL' type used for the 
@@ -124,13 +124,13 @@ segments and one for executing each segment. In the example, we specify
 that we should do each of these operations sequentially by defining the
 policy as follows:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 202-203
 
 Next, we perform the daxpy operation by partitioning the iteration space into
 two range segments:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 229-235
 
 The first range segment is used to run the index range [0, N/2) and the
@@ -139,7 +139,7 @@ second is used to run the range [N/2, N).
 We can also break up the iteration space into three segments, 2 ranges 
 and 1 list:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 250-264
 
 The first range segment runs the index range [0, N/3), the list segment
@@ -153,21 +153,21 @@ example by iterating over the segments sequentially and executing each
 segment in parallel using OpenMP multi-threading, we would use this policy 
 definition:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 283-284
 
 If we wanted to iterate over the segments in parallel using OpenMP 
 multi-threading and execute each segment sequentially, we would use a 
 policy like this:
 
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 302-303
 
 Finally, to iterate over the segments sequentially and execute each segment in
 parallel on a GPU by launching a CUDA kernel, we would define this policy:
  
-.. literalinclude:: ../../../../examples/ex3-indexset-segments.cpp
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 320-321
 
-The file ``RAJA/examples/ex3-indexset-segments.cpp`` contains working code
+The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
 for these examples.

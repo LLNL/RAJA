@@ -43,7 +43,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that sets the shared memory window.
+ * A RAJA::kernel statement that sets the shared memory window.
  *
  *
  */

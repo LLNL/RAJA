@@ -45,7 +45,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that implements a tiling (or blocking) loop.
+ * A RAJA::kernel statement that implements a tiling (or blocking) loop.
  *
  */
 template <camp::idx_t ArgumentId,

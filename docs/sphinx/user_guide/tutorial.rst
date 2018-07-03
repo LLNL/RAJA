@@ -209,5 +209,4 @@ This is done in the example code files, but is not discussed further here.
    tutorial/permuted-layout.rst
    tutorial/offset-layout.rst
    tutorial/nested_loop_reorder.rst
-   tutorial/complex_loops-intro.rst
-   tutorial/complex_loops-shmem.rst
+   tutorial/complex_loop_examples.rst

@@ -44,7 +44,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that performs hyperplane iteration over multiple
+ * A RAJA::kernel statement that performs hyperplane iteration over multiple
  * indices.
  *
  * Given segments S0, S1, ...

@@ -26,7 +26,7 @@ Key RAJA features shown in this example:
   * Nested loop reordering (i.e., loop interchange)
   * RAJA strongly-types indices
 
-In :ref:`loop_elements-nested-label`, we introduced the basic mechanics in
+In :ref:`loop_elements-kernel-label`, we introduced the basic mechanics in
 RAJA for representing nested loops. In :ref:`matrixmultiply-label`, we 
 presented a complete example using RAJA nested loop features. The following 
 example shows the nested loop interchange process in more detail. 
@@ -61,13 +61,13 @@ represent the main differences between nested-loop RAJA and the
 We begin by defining three named **strongly-typed** variables for the loop 
 index variables.
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 40-42
 
 We also define three **typed** range segments which bind the ranges to the
 index variable types via template specialization:
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 53-55
 
 When these features are used as in this example, the compiler will 
@@ -76,7 +76,7 @@ and types do not match the index ordering in the tuple.
 
 We present a complete example, and then describe its key elements:
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 62-75
 
 Here, the ``RAJA::kernel`` execution template takes two arguments: a tuple of 
@@ -118,7 +118,7 @@ Next we permute the loop nest ordering so that the 'j' loop is the outermost,
 the 'i' loop is in the middle, and the 'k' loop is the innermost with the 
 following policy:
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 83-91
 
 Note that we have simply reordered the nesting of the ``RAJA::statement::For``
@@ -137,7 +137,7 @@ Finally, we permute the loops again so that the 'i' loop is the outermost,
 the 'k' loop is in the middle, and the 'j' loop is the innermost with the 
 following policy:
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 104-112
 
 For completeness,  analogous C-style loop nest would appear as::
@@ -157,7 +157,7 @@ at compile-time.
 For example, this version of the loop will generate a compilation error
 (note that the kernel execution policy is the same as in the previous example): 
 
-.. literalinclude:: ../../../../examples/ex5-nested-loop-reorder.cpp
+.. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
                     :lines: 126-129
 
 If you carefully compare the range ordering in the tuple to the
@@ -165,5 +165,5 @@ lambda argument types, you will see what's wrong.
 
 Do you see the issue?
 
-The file ``RAJA/examples/ex5-nested-loop-reorder.CPU`` contains the complete 
+The file ``RAJA/examples/tut_nested-loop-reorder.CPU`` contains the complete 
 working example code.
