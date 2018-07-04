@@ -55,7 +55,7 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-#define OMP_EX_1 //Breaks kernel
+//#define OMP_EX_1 //Breaks kernel
 
 //
 // Define dimensionality of matrices
@@ -345,7 +345,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
-          RAJA_OMP_TILE(ty,tx) = Aview(row, col);
+          RAJA_OMP_TILE(ty, tx) = Aview(row, col);
         },
 
         //
@@ -355,7 +355,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = by * TILE_DIM + tx;  // Transposed matrix column index
           int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-          Atview(row,col) = RAJA_OMP_TILE(tx, ty);
+          Atview(row, col) = RAJA_OMP_TILE(tx, ty);
         }
 
    );

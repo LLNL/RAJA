@@ -77,7 +77,14 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
-  
+
+raja_add_executable(
+  NAME ex-shared-matrix-transpose
+  SOURCES ex-shared-matrix-transpose.cpp)
+
+raja_add_executable(
+  NAME ex-tiled-matrix-transpose
+  SOURCES ex-tiled-matrix-transpose.cpp)
   
 if(ENABLE_CUDA)
 raja_add_executable(
@@ -88,21 +95,3 @@ endif()
 raja_add_executable(
   NAME cpu-shmem-ltimes
   SOURCES cpu-shmem-ltimes.cpp)
-
-
-raja_add_executable(
-  NAME ex-batched-matrix-multiply
-  SOURCES ex-batched-matrix-multiply.cpp)
-
-raja_add_executable(
-  NAME ex-offset
-  SOURCES ex-offset.cpp)
-
-raja_add_executable(
-  NAME ex-shared-matrix-transpose
-  SOURCES ex-shared-matrix-transpose.cpp)
-
-raja_add_executable(
-  NAME ex-tiled-matrix-transpose
-  SOURCES ex-tiled-matrix-transpose.cpp)
-
