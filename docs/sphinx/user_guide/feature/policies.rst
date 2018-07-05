@@ -20,16 +20,16 @@ Execution Policies
 
 This section describes the execution policies that ``RAJA`` provides and 
 indicates which policies may be used with ``RAJA::forall``, ``RAJA::kernel``,
-and/or RAJA::scan methods.
+and/or ``RAJA::scan`` methods.
 
 .. note:: All RAJA execution policies are in the namespace ``RAJA``.
 
 .. note:: As RAJA functionality is expanded, new policies may be added and
           existing ones may be enabled to work with other RAJA loop constructs.
 
-----------------------------------------
-RAJA::forall and RAJA::kernel Policies
-----------------------------------------
+-----------------------------------------------------
+RAJA::forall, RAJA::kernel, and RAJA::scan Policies
+-----------------------------------------------------
 
 The following list of policies may be used with either ``RAJA::forall``, 
 ``RAJA::kernel``, or ``RAJA::scan`` methods.
@@ -52,8 +52,8 @@ OpenMP Policies
 .. note:: To control the number of OpenMP threads used by these policies:
           set the value of the environment variable 'OMP_NUM_THREADS' (which is
           fixed for duration of run), or call the OpenMP routine 
-          'omp_set_num_threads()' (which allows changing number of threads at
-          runtime).
+          'omp_set_num_threads(nthreads)' (which allows changing number of 
+          threads at runtime).
 
 OpenMP Target Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -124,7 +124,7 @@ CUDA Policies
 
 * ``cuda_block_exec`` - Map loop iterations to CUDA thread blocks.
 * ``cuda_thread_exec`` - Map loop iterations to CUDA threads in a thread block.
-* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with ``BLOCK_SIZE`` threads.
+* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with given block size number of threads.
 
 ----------------------
 RAJA::region Policies
