@@ -26,71 +26,74 @@ This section describes the various execution policies that ``RAJA`` provides.
 
 .. note:: * All RAJA execution policies are in the namespace ``RAJA``.
 
---------------------
-Serial/SIMD Policies
---------------------
+
+-------------------------------
+RAJA Forall and Kernel Policies
+-------------------------------
+The following list of policies may be used with either ``RAJA::forall`` or ``RAJA::kernel`` methods.
+
+
+**Serial/SIMD Policies**
+
 
 * ``seq_exec``  - Strictly sequential loop execution.
 * ``simd_exec`` - Forced SIMD execution by adding vectorization hints.
 * ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD) that it thinks are appropriate.
 
----------------
-OpenMP Policies
----------------
+**OpenMP Policies**
 
-* ``omp_parallel_region_exec`` - Create a parallel region. May only be used with the ``RAJA::region`` method.
 * ``omp_parallel_for_exec`` - Create a parallel region and distributes loop iterations across threads.
 * ``omp_for_exec`` - Distribute loop iterations across threads within a parallel region.
 * ``omp_for_static`` - Distribute loop iterations across threads using a static schedule within a parallel region.
 * ``omp_for_nowait_exec`` - Execute loop in a parallel region and removes synchronization via `nowait` clause.
 
-.. note:: * The following policies are not compatible with RAJA's kernel method.
-
-* ``omp_parallel_segit`` - Iterate over a index set segments in parallel.
-* ``omp_parallel_for_segit`` - Same as above.
-
-----------------------
-OpenMP Target Policies
-----------------------
-
-.. note:: * The following policies are not compatible with RAJA's kernel method.
-* ``omp_target_parallel_for_exec`` - Execute loop body in a device (e.g., GPU) environment. Takes a parameter for number of thread teams.
-
-----------------------------------------------
-Intel Threading Building Blocks (TBB) Policies
-----------------------------------------------
+**Intel Threading Building Blocks (TBB) Policies**
 
 * ``tbb_for_exec`` - Schedule tasks to operate in parallel.
 * ``tbb_for_static`` - Implement the parallel_for method using a static scheduler.
 * ``tbb_for_dynamic`` - Implement the parallel_for method and uses a dynamic scheduler.
 
-.. note:: * The following policies are not compatible with RAJA's kernel method.
-* ``tbb_segit`` - Iterate over a index set segments in parallel.
+-------------------------------
+RAJA Forall Policies
+-------------------------------
+The following list of policies may only be used with the ``RAJA::forall`` method.
 
--------------
-CUDA Policies
--------------
+**Serial Policies**
+* ``seq_segit`` - Iterate over an index set segment sequentially.
 
-Following the CUDA nomenclature, GPU computations are performed on a
-grid of computation units. Each unit of the grid is referred to as a thread 
-and threads can be further grouped into thread blocks. As a starting point,
-the following policy may be used with the ``RAJA::forall`` method:
+**OpenMP Policies**
+
+* ``omp_parallel_segit`` - Iterate over an index set segments in parallel.
+* ``omp_parallel_for_segit`` - Same as above.
+
+**Intel Threading Building Blocks (TBB) Policies**
+
+* ``tbb_segit`` - Iterate over an index set segments in parallel.
+
+**CUDA Policies**
 
 * ``cuda_exec<STRIDE_SIZE>`` - Map a loop to thread blocks with ``STRIDE_SIZE`` threads.
 
 The ``cuda_exec`` policy defines a default thread block size of 256 threads, if no
 argument is provided.
 
-.. note:: * The following policies are not compatible with RAJA's forall method.
+--------------------
+RAJA Kernel Policies
+--------------------
 
-For better control of mapping blocks and block local threads to 
-loop levels we recommend using the ``RAJA::kernel`` method. Mapping blocks and block local
-threads to a loop level may be accomplished using the following policies:
+The following list of policies may only be used with the ``RAJA::kernel`` method.
+
+**CUDA Policies**
 
 * ``cuda_block_exec`` - Map a loop level to CUDA thread blocks.
 * ``cuda_thread_exec`` - Map a loop level to block local CUDA threads.
-
-Finally, mapping global threads to a ``RAJA::Kernel`` loop level is accomplished using the following
-execution policy:
-
 * ``cuda_threadblock_exec<STRIDE_SIZE>`` - Map a loop level to thread blocks with ``STRIDE_SIZE`` threads.
+
+--------------------
+RAJA Region Policies
+--------------------
+
+The following list of policies may only be used with the ``RAJA::region`` method.
+
+* ``seq_region_exec`` - Creates a sequential region.
+* ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
