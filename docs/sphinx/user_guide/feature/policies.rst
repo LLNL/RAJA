@@ -18,82 +18,128 @@
 Execution Policies
 ==================
 
-.. warning:: **This section is a work-in-progress!! It needs to be updated
-             and reworked to be consistent with recent changes related to
-             new 'kernel' stuff.**
+This section describes the execution policies that ``RAJA`` provides and 
+indicates which policies may be used with ``RAJA::forall``, ``RAJA::kernel``,
+and/or RAJA::scan methods.
 
-This section describes the various execution policies that ``RAJA`` provides.
+.. note:: All RAJA execution policies are in the namespace ``RAJA``.
 
-.. note:: * All RAJA execution policies are in the namespace ``RAJA``.
+.. note:: As RAJA functionality is expanded, new policies may be added and
+          existing ones may be enabled to work with other RAJA loop constructs.
 
+----------------------------------------
+RAJA::forall and RAJA::kernel Policies
+----------------------------------------
 
--------------------------------
-RAJA Forall and Kernel Policies
--------------------------------
-The following list of policies may be used with either ``RAJA::forall`` or ``RAJA::kernel`` methods.
+The following list of policies may be used with either ``RAJA::forall``, 
+``RAJA::kernel``, or ``RAJA::scan`` methods.
 
-
-**Serial/SIMD Policies**
-
+Serial/SIMD Policies
+^^^^^^^^^^^^^^^^^^^^^^
 
 * ``seq_exec``  - Strictly sequential loop execution.
 * ``simd_exec`` - Forced SIMD execution by adding vectorization hints.
 * ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD) that it thinks are appropriate.
 
-**OpenMP Policies**
+OpenMP Policies
+^^^^^^^^^^^^^^^^
 
-* ``omp_parallel_for_exec`` - Create a parallel region and distributes loop iterations across threads.
-* ``omp_for_exec`` - Distribute loop iterations across threads within a parallel region.
-* ``omp_for_static`` - Distribute loop iterations across threads using a static schedule within a parallel region.
-* ``omp_for_nowait_exec`` - Execute loop in a parallel region and removes synchronization via `nowait` clause.
+* ``omp_parallel_for_exec`` - Execute a loop in parallel using an ``omp parallel for`` pragma; i.e., create a parallel region and distribute loop iterations across threads.
+* ``omp_for_exec`` - Execute a loop in parallel using an ``omp for`` pragma within an exiting parallel region. 
+* ``omp_for_static<CHUNK_SIZE>`` - Execute a loop in parallel using a static schedule with given chunk size within an existing parallel region; i.e., use an ``omp parallel for schedule(static, CHUNK_SIZE>`` pragma.
+* ``omp_for_nowait_exec`` - Execute loop in an existing parallel region without synchronization after the loop; i.e., use an ``omp for nowait`` clause.
 
-**Intel Threading Building Blocks (TBB) Policies**
+.. note:: To control the number of OpenMP threads used by these policies:
+          set the value of the environment variable 'OMP_NUM_THREADS' (which is
+          fixed for duration of run), or call the OpenMP routine 
+          'omp_set_num_threads()' (which allows changing number of threads at
+          runtime).
 
-* ``tbb_for_exec`` - Schedule tasks to operate in parallel.
-* ``tbb_for_static`` - Implement the parallel_for method using a static scheduler.
-* ``tbb_for_dynamic`` - Implement the parallel_for method and uses a dynamic scheduler.
+OpenMP Target Policies
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Intel Threading Building Blocks (TBB) Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``tbb_for_exec`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method.
+* ``tbb_for_static<CHUNK_SIZE>`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a static partitioner using given chunk size.
+* ``tbb_for_dynamic`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a dynamic scheduler.
+
+.. note:: To control the number of TBB worker threads used by these policies:
+          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
+          fixed for duration of run), or create a 'task_scheduler_init' object::
+
+            tbb::task_scheduler_init TBBinit( nworkers );
+
+            // do some parallel work
+
+            TBBinit.terminate();
+            TBBinit.initialize( new_nworkers );
+
+            // do some more parallel work
+
+          This allows changing number of workers at runtime.
 
 -------------------------------
-RAJA Forall Policies
+RAJA::forall Policies
 -------------------------------
-The following list of policies may only be used with the ``RAJA::forall`` method.
 
-**Serial Policies**
-* ``seq_segit`` - Iterate over an index set segment sequentially.
+The following list of policies may only be used with a ``RAJA::forall`` method.
 
-**OpenMP Policies**
+CUDA Policies 
+^^^^^^^^^^^^^^^^^^
 
-* ``omp_parallel_segit`` - Iterate over an index set segments in parallel.
+* ``cuda_exec<BLOCK_SIZE>`` - Execute a loop in a CUDA kernel launched with given thread block size. If no thread block size is given, a default size of 256 is used.
+
+IndexSet Policies
+^^^^^^^^^^^^^^^^^^
+
+When a ``RAJA::forall`` method is used with a ``RAJA::IndexSet`` object, an
+index set execution policy must be used to guarantee correct behavior. An 
+index set execution policy is a two-level policy: an 'outer' policy for 
+iterating over segments in the index set, and an 'inner' policy for executing
+each segment. An index set execution policy type has the form::
+
+  RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy>
+
+See :ref:`indexsets-label` for more information.
+
+Generally, any policy that can be used with a ``RAJA::forall`` method
+can be used as the segment execution policy. The following policies are
+available to use for the segment iteration policy:
+
+* ``seq_segit`` - Iterate over index set segments sequentially.
+* ``omp_parallel_segit`` - Iterate over index set segments in parallel using an OpenMP parallel loop.
 * ``omp_parallel_for_segit`` - Same as above.
+* ``tbb_segit`` - Iterate over an index set segments in parallel using a TBB 'parallel_for' method.
 
-**Intel Threading Building Blocks (TBB) Policies**
+-----------------------
+RAJA::kernel Policies
+-----------------------
 
-* ``tbb_segit`` - Iterate over an index set segments in parallel.
+The following policies may only be used with the ``RAJA::kernel`` method.
 
-**CUDA Policies**
+CUDA Policies
+^^^^^^^^^^^^^^
 
-* ``cuda_exec<STRIDE_SIZE>`` - Map a loop to thread blocks with ``STRIDE_SIZE`` threads.
+* ``cuda_block_exec`` - Map loop iterations to CUDA thread blocks.
+* ``cuda_thread_exec`` - Map loop iterations to CUDA threads in a thread block.
+* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with ``BLOCK_SIZE`` threads.
 
-The ``cuda_exec`` policy defines a default thread block size of 256 threads, if no
-argument is provided.
+----------------------
+RAJA::region Policies
+----------------------
 
---------------------
-RAJA Kernel Policies
---------------------
-
-The following list of policies may only be used with the ``RAJA::kernel`` method.
-
-**CUDA Policies**
-
-* ``cuda_block_exec`` - Map a loop level to CUDA thread blocks.
-* ``cuda_thread_exec`` - Map a loop level to block local CUDA threads.
-* ``cuda_threadblock_exec<STRIDE_SIZE>`` - Map a loop level to thread blocks with ``STRIDE_SIZE`` threads.
-
---------------------
-RAJA Region Policies
---------------------
-
-The following list of policies may only be used with the ``RAJA::region`` method.
+The following policies may only be used with the ``RAJA::region`` method.
 
 * ``seq_region_exec`` - Creates a sequential region.
 * ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+
+-------------------------
+RAJA Reduction Policies
+-------------------------
+
+Note that a RAJA reduction object must be defined with a 'reduction policy'
+type. Reduction policy types are distinct from loop execution policy types.
+A reduction policy type must be consistent with the loop execution policy
+that is used. See :ref:`reductions-label` for more information.
