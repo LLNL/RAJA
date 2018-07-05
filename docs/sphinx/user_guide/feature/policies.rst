@@ -28,11 +28,11 @@ and/or ``RAJA::scan`` methods.
           existing ones may be enabled to work with other RAJA loop constructs.
 
 -----------------------------------------------------
-RAJA::forall, RAJA::kernel, and RAJA::scan Policies
+RAJA::forall and RAJA::kernel Policies
 -----------------------------------------------------
 
-The following list of policies may be used with either ``RAJA::forall``, 
-``RAJA::kernel``, or ``RAJA::scan`` methods.
+The following list of policies may be used with either ``RAJA::forall`` and
+``RAJA::kernel`` methods.
 
 Serial/SIMD Policies
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -134,6 +134,14 @@ The following policies may only be used with the ``RAJA::region`` method.
 
 * ``seq_region_exec`` - Creates a sequential region.
 * ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+
+-------------------------
+RAJA::scan Policies
+-------------------------
+
+Generally, any execution policy that works with ``RAJA::forall`` methods will 
+also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
+about RAJA scan methods.
 
 -------------------------
 RAJA Reduction Policies
