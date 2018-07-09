@@ -119,7 +119,7 @@ struct LaunchDim {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr LaunchDim() : blocks(1), threads(1) {}
+  constexpr LaunchDim() : blocks(0), threads(0) {}
 
 
   RAJA_INLINE
@@ -135,11 +135,19 @@ struct LaunchDim {
 
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr LaunchDim maximum(LaunchDim const &c) const
+  LaunchDim maximum(LaunchDim const &c) const
   {
-    return LaunchDim{blocks > c.blocks ? blocks : c.blocks,
-                     threads > c.threads ? threads : c.threads};
+    LaunchDim result(-1, -1);
+
+    if(c.blocks > -1 && blocks > -1){
+      result.blocks = std::max(c.blocks, blocks);
+    }
+
+    if(c.threads > -1 && threads > -1){
+      result.threads = std::max(c.threads, threads);
+    }
+
+    return result;
   }
 
   RAJA_INLINE
@@ -148,11 +156,40 @@ struct LaunchDim {
   {
     return LaunchDim{blocks * c.blocks, threads * c.threads};
   }
+
+
+  RAJA_INLINE
+  void addThreads(int t){
+    // Create a trap for an argument with 0 threads
+    if(t == 0 || threads == -1){
+      threads = -1;
+    }
+    else{
+      threads = (threads == 0) ? t : threads*t;
+    }
+  }
+
+  RAJA_INLINE
+  void addBlocks(int b){
+    // Create a trap for an argument with 0 blocks
+    if(b == 0 || blocks == -1){
+      blocks = 1;
+    }
+    else{
+      blocks = (blocks == 0) ? b : blocks*b;
+    }
+  }
 };
 
 struct CudaLaunchLimits {
   LaunchDim max_dims;
   LaunchDim physical_dims;
+};
+
+
+struct CudaCarryPair {
+  int first;
+  int second;
 };
 
 
@@ -167,14 +204,17 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &data, int carry_init, int carry_incr)
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaCarryPair
+  initThread(Data &data, int carry_init, int carry_incr)
   {
-    return carry_init;
+    return CudaCarryPair{carry_init, carry_incr};
   }
 
 
   template <typename Data>
-  RAJA_INLINE RAJA_DEVICE bool reset(Data &data)
+  RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data)
   {
     data.template assign_offset<ArgumentId>(0);
     i = 0;
@@ -186,7 +226,7 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 
 
   template <typename Data>
-  RAJA_INLINE RAJA_DEVICE int increment(Data &data, int carry)
+  RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry)
   {
     ++i;
 
@@ -209,7 +249,7 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
   int i0; // initial value upon reset
   int i;  // current value
-  int co; //
+  //int co; //
 
 
   /*
@@ -232,20 +272,29 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
    *
    */
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE int initThread(Data &data, int carry_init, int carry_incr)
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaCarryPair
+  initThread(Data &data, int carry_thread, int carry_incr)
   {
-
     int len = segment_length<ArgumentId>(data);
 
-    co = carry_iter / len;
-    i0 = carry_iter - co * len;  // equiv:  carry_iter % len
+    //co = carry_thread / len;
+    //i0 = carry_thread - co * len;  // equiv:  carry_incr % len
+
+    i0 = carry_thread % len;
+    i = i0;
+    /*co =
+    if(co <= 0){
+      co = 1;
+    }*/
 
     // set i0 to -1 if we have no iterations
     if(i0 >= len){
       i0 = -1;
     }
 
-    return co;
+    return CudaCarryPair{carry_thread/len, carry_incr/len};
   }
 
   /*
@@ -253,7 +302,7 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
    * This should be called each time a nested-loop structure is executed.
    */
   template <typename Data>
-  RAJA_INLINE RAJA_DEVICE bool reset(Data &data)
+  RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data)
   {
     i = i0;
 
@@ -266,13 +315,13 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
 
   template <typename Data>
-  RAJA_INLINE RAJA_DEVICE int increment(Data &data, int carry_in)
+  RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry_in)
   {
     int len = segment_length<ArgumentId>(data);
 
-    i += carry_in - co * len;
+    i += carry_in; // - co * len;
 
-    int carry_out = co;
+    int carry_out = 0;
     while (i >= len) {
       i -= len;
       ++carry_out;
@@ -289,7 +338,7 @@ template <camp::idx_t Idx>
 struct IndexCalcHelper {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE std::pair<int, int> initThread(Data &data,
+  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair initThread(Data &data,
                                                      CalcList &calc_list,
                                                      int carry_init,
                                                      int carry_incr)
@@ -306,7 +355,7 @@ struct IndexCalcHelper {
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_DEVICE bool reset(Data &data,
+  static RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data,
                                                      CalcList &calc_list)
   {
 
@@ -317,7 +366,7 @@ struct IndexCalcHelper {
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_DEVICE int increment(Data &data,
+  static RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data,
                                                     CalcList &calc_list,
                                                     int carry_in)
   {
@@ -333,16 +382,16 @@ template <>
 struct IndexCalcHelper<-1> {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE std::pair<int, int> initThread(Data &,
+  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair initThread(Data &,
                                                      CalcList &,
                                                      int carry_init,
                                                      int carry_incr)
   {
-    return std::pair<int, int>(carry_init, carry_incr);
+    return CudaCarryPair{carry_init, carry_incr};
   }
 
   template <typename Data, typename CalcList>
-    static RAJA_INLINE RAJA_DEVICE bool reset(Data &,
+    static RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &,
                                                    CalcList &)
   {
     return false;
@@ -350,7 +399,7 @@ struct IndexCalcHelper<-1> {
 
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_DEVICE int increment(Data &,
+  static RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &,
                                                     CalcList &,
                                                     int carry_in)
   {
@@ -425,10 +474,9 @@ template <typename SegmentTuple>
 struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>> {
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE bool initThread(Data &, int)
+  RAJA_INLINE RAJA_HOST_DEVICE void initThread(Data &, int, int)
   {
     // each physical thread will execute
-    return false;
   }
 
   template <typename Data>
@@ -439,7 +487,7 @@ struct CudaIndexCalc<SegmentTuple, camp::list<>, camp::idx_seq<>> {
   }
 
   template <typename Data>
-  RAJA_INLINE RAJA_DEVICE bool increment(Data &, int)
+  RAJA_INLINE RAJA_DEVICE bool increment(Data &)
   {
     // only one execution per physical thread
     return true;
@@ -675,7 +723,6 @@ struct CudaBlockLoop {
       block_i -= num_blocks;
     }
 
-
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
     using segment_t = camp::decay<decltype(segment)>;
 
@@ -691,6 +738,7 @@ struct CudaBlockLoop {
     // Reinitialize thread calculations (TODO: optimize this)
     enclosed_stmts.initThread(data);
 
+    // Execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, carry_out);
 
     // Replace original segment
@@ -738,8 +786,6 @@ struct CudaBlockLoop {
     }
   }
 };
-
-
 
 
 }  // namespace internal

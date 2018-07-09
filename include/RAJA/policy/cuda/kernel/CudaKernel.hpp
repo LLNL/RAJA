@@ -269,7 +269,7 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
 
 
     //
-    // Compute the Logical kernel dimensions
+    // Compute the logical kernel dimensions
     //
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
 
@@ -283,31 +283,42 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     launch_dims.threads = std::min(max_physical.threads, logical_dims.threads);
 
 
-    //
-    // Configure as much of the indexing scheme as possible on the CPU
-    //
-    executor.initThread(cuda_data, threadIdx.x, blockDim.x);
+    // Only launch kernel if we have something to iterate over
+    bool at_least_one_iter = launch_dims.blocks > 0 || launch_dims.threads > 0;
+    bool is_degenerate =     launch_dims.blocks < 0 || launch_dims.threads < 0;
+    if (at_least_one_iter && !is_degenerate) {
 
-    //
-    // Launch the kernels
-    //
-    LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
-        cuda_data, executor, launch_dims, logical_dims, shmem, stream);
+      //
+      // Configure as much of the indexing scheme as possible on the CPU
+      //
+      executor.initThread(cuda_data);
+
+      //
+      // Launch the kernels
+      //
+      printf("Launching kernel b=%d, t=%d\n",
+          (int)launch_dims.blocks, (int)launch_dims.threads);
+      LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
+          cuda_data, executor, launch_dims, logical_dims, shmem, stream);
 
 
-    //
-    // Check for errors
-    //
-    RAJA::cuda::peekAtLastError();
+      //
+      // Check for errors
+      //
+      RAJA::cuda::peekAtLastError();
 
 
-    //
-    // Synchronize
-    //
-    RAJA::cuda::launch(stream);
+      //
+      // Synchronize
+      //
+      RAJA::cuda::launch(stream);
 
-    if (!LaunchConfig::async) {
-      RAJA::cuda::synchronize(stream);
+      if (!LaunchConfig::async) {
+        RAJA::cuda::synchronize(stream);
+      }
+    }
+    else{
+      printf("NOT RUNNING KERNEL\n");
     }
   }
 };
