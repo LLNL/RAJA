@@ -245,6 +245,7 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     cudaStream_t stream = 0;
 
 
+
     //
     // Instantiate an executor object
     //
@@ -289,15 +290,16 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     if (at_least_one_iter && !is_degenerate) {
 
       //
-      // Configure as much of the indexing scheme as possible on the CPU
+      // Make sure that having either 0 blocks or 0 threads get bumped to 1
       //
-      executor.initThread(cuda_data);
+      launch_dims.blocks = std::max(launch_dims.blocks, (int)1);
+      launch_dims.threads = std::max(launch_dims.threads, (int)1);
 
       //
       // Launch the kernels
       //
-      printf("Launching kernel b=%d, t=%d\n",
-          (int)launch_dims.blocks, (int)launch_dims.threads);
+//      printf("Launching kernel b=%d, t=%d\n",
+//          (int)launch_dims.blocks, (int)launch_dims.threads);
       LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
           cuda_data, executor, launch_dims, logical_dims, shmem, stream);
 
@@ -317,9 +319,7 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
         RAJA::cuda::synchronize(stream);
       }
     }
-    else{
-      printf("NOT RUNNING KERNEL\n");
-    }
+
   }
 };
 

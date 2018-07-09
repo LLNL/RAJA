@@ -199,15 +199,13 @@ struct CudaIndexCalc_Policy;
 
 template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
-  int i;
-
 
 
   template <typename Data>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaCarryPair
-  initThread(Data &data, int carry_init, int carry_incr)
+  initThread(Data &data, int carry_init, int carry_incr, bool final = false)
   {
     return CudaCarryPair{carry_init, carry_incr};
   }
@@ -217,7 +215,6 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
   RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data)
   {
     data.template assign_offset<ArgumentId>(0);
-    i = 0;
 
     // return true if there are no iterations
     return segment_length<ArgumentId>(data) == 0;
@@ -228,6 +225,7 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
   template <typename Data>
   RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry)
   {
+    int i = camp::get<ArgumentId>(data.offset_tuple);
     ++i;
 
     int len = segment_length<ArgumentId>(data);
@@ -248,8 +246,7 @@ template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
   int i0; // initial value upon reset
-  int i;  // current value
-  //int co; //
+
 
 
   /*
@@ -275,24 +272,18 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
   RAJA_INLINE
   RAJA_HOST_DEVICE
   CudaCarryPair
-  initThread(Data &data, int carry_thread, int carry_incr)
+  initThread(Data &data, int carry_thread, int carry_incr, bool final = false)
   {
     int len = segment_length<ArgumentId>(data);
 
-    //co = carry_thread / len;
-    //i0 = carry_thread - co * len;  // equiv:  carry_incr % len
-
-    i0 = carry_thread % len;
-    i = i0;
-    /*co =
-    if(co <= 0){
-      co = 1;
-    }*/
-
     // set i0 to -1 if we have no iterations
-    if(i0 >= len){
+    if(final && carry_thread >= len){
       i0 = -1;
     }
+    else{
+      i0 = carry_thread % len;
+    }
+
 
     return CudaCarryPair{carry_thread/len, carry_incr/len};
   }
@@ -304,9 +295,7 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
   template <typename Data>
   RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data)
   {
-    i = i0;
-
-    data.template assign_offset<ArgumentId>(i);
+    data.template assign_offset<ArgumentId>(i0);
 
     // return TRUE if there are no iterations for us
     return i0 < 0;
@@ -317,9 +306,10 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
   template <typename Data>
   RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry_in)
   {
+    int i = camp::get<ArgumentId>(data.offset_tuple);
     int len = segment_length<ArgumentId>(data);
 
-    i += carry_in; // - co * len;
+    i += carry_in;
 
     int carry_out = 0;
     while (i >= len) {
@@ -345,7 +335,8 @@ struct IndexCalcHelper {
   {
     auto carry_next = camp::get<Idx>(calc_list).initThread(data,
                                                            carry_init,
-                                                           carry_incr);
+                                                           carry_incr,
+                                                           Idx == 0);
 
     return IndexCalcHelper<Idx - 1>::initThread(data,
                                                 calc_list,

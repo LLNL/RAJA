@@ -213,7 +213,7 @@ struct CudaStatementExecutor<Data,
     }
 
     dim.addBlocks(num_blocks);
-    dim.addThreads(max_threads);
+    dim.addThreads(std::min((int)max_threads, (int)len));
 
     return dim;
   }

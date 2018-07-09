@@ -435,9 +435,14 @@ CUDA_TEST(Kernel, CudaCollapse2)
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
 
+  int *err;
+  cudaMallocManaged(&err, 2*sizeof(int));
+
   //Initialize data to zero
   sum1[0] = 0; 
   sum2[0] = 0; 
+  err[0] = 0;
+  err[1] = 0;
 
   int N = 41;
   RAJA::kernel<Pol>(
@@ -448,15 +453,28 @@ CUDA_TEST(Kernel, CudaCollapse2)
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
 
+                         if(i >= 41){
+                           RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err,1);
+                         }
+                         if(j >= 41){
+                           RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err+1,1);
+                         }
+
+                         //printf("b=%d, t=%d: (%d,%d)\n", blockIdx.x, threadIdx.x, (int)i, (int)j);
+
                        });
 
   cudaDeviceSynchronize();
 
+  ASSERT_EQ( 0, err[0]);
+  ASSERT_EQ( 0, err[1]);
   ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum1);
   ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum2);
 
+
   cudaFree(sum1);
   cudaFree(sum2);
+  cudaFree(err);
 
 }
 
@@ -1498,17 +1516,13 @@ CUDA_TEST(Kernel, CudaComplexNested){
             >
           >;
 
-  printf("MALLOCING\n");
   int *ptr = nullptr;
   cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N) );
-
-  printf("SETTING VALUES in %p\n", ptr);
 
   for(long i = 0;i < N;++ i){
     ptr[i] = 0;
   }
 
-  printf("RUNNING KERNEL\n");
 
   auto segments = RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0, N));
 
@@ -2275,11 +2289,10 @@ TEST(Kernel, IndexCalc_seq){
 
 }
 
-#if 1
 TEST(Kernel, IndexCalc_thread){
 
 
-  constexpr long N = (long)5;
+  constexpr long N = (long)13;
 
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
@@ -2318,18 +2331,13 @@ TEST(Kernel, IndexCalc_thread){
         ASSERT_EQ(ic.increment(data, inc) > 0, carry);
         ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
-        printf("init=%d, inc=%d, iter=%d, i=%d, offset=%d\n",
-                            init, inc, iter, i, (int)RAJA::get<0>(data.offset_tuple));
       }
-      printf("\n");
-
 
     }
   }
 
 }
 
-#endif
 
 #endif
 
