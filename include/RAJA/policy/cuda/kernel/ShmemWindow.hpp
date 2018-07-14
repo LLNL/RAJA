@@ -66,7 +66,7 @@ struct CudaStatementExecutor<Data,
 
     // Call setWindow on all of our shmem objects
     RAJA::internal::shmem_set_windows(data.param_tuple,
-                                      data.get_begin_index_tuple());
+                                      data.get_minimum_index_tuple());
 
     // execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);

@@ -246,7 +246,7 @@ template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
   int i0; // initial value upon reset
-
+  int full_cycle; // minimum number of full trips per execution
 
 
   /*
@@ -279,13 +279,18 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
     // set i0 to -1 if we have no iterations
     if(final && carry_thread >= len){
       i0 = -1;
+      return CudaCarryPair{0, 0};
     }
     else{
-      i0 = carry_thread % len;
+			
+      int carry_out = carry_thread / len;
+      
+      i0 = carry_thread - (carry_out * len); // equiv: carry_thread % len
+
+      full_cycle = carry_incr/len;
+   		
+      return CudaCarryPair{carry_out, full_cycle};
     }
-
-
-    return CudaCarryPair{carry_thread/len, carry_incr/len};
   }
 
   /*
@@ -309,9 +314,9 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
     int i = camp::get<ArgumentId>(data.offset_tuple);
     int len = segment_length<ArgumentId>(data);
 
-    i += carry_in;
+    i += carry_in - len*full_cycle;
 
-    int carry_out = 0;
+    int carry_out = full_cycle;
     while (i >= len) {
       i -= len;
       ++carry_out;

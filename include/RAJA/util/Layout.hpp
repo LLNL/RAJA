@@ -130,7 +130,7 @@ public:
    */
   template <typename... Types>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(Types... ns)
-      : sizes{convertIndex<IdxLin>(ns)...},
+      : sizes{static_cast<IdxLin>(stripIndexType(ns))...},
         strides{(detail::stride_calculator<RangeInts + 1, n_dims, IdxLin>{}(
             sizes[RangeInts] ? 1 : 0,
             sizes))...},
@@ -148,10 +148,10 @@ public:
   constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(
       const LayoutBase_impl<camp::idx_seq<RangeInts...>, CIdxLin, CStrideOneDim>
           &rhs)
-      : sizes{rhs.sizes[RangeInts]...},
-        strides{rhs.strides[RangeInts]...},
-        inv_strides{rhs.inv_strides[RangeInts]...},
-        inv_mods{rhs.inv_mods[RangeInts]...}
+      : sizes{static_cast<IdxLin>(rhs.sizes[RangeInts])...},
+        strides{static_cast<IdxLin>(rhs.strides[RangeInts])...},
+        inv_strides{static_cast<IdxLin>(rhs.inv_strides[RangeInts])...},
+        inv_mods{static_cast<IdxLin>(rhs.inv_mods[RangeInts])...}
   {
   }
 
@@ -315,8 +315,7 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
-    return convertIndex<IdxLin>(
-        Base::operator()(convertIndex<Index_type>(indices)...));
+    return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
 
 
@@ -353,7 +352,7 @@ private:
                                                     Indices &... indices) const
   {
     Index_type locals[sizeof...(DimTypes)];
-    Base::toIndices(convertIndex<Index_type>(linear_index),
+    Base::toIndices(stripIndexType(linear_index),
                     locals[RangeInts]...);
     VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
   }

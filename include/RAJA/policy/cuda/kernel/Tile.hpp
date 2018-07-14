@@ -140,6 +140,71 @@ struct CudaStatementExecutor<Data,
 };
 
 
+
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          typename... EnclosedStmts,
+          typename IndexCalc>
+struct CudaStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::statement::tile_fixed<chunk_size>,
+                                             cuda_block_exec,
+                                             EnclosedStmts...>,
+                             IndexCalc>
+  : public CudaBlockLoop<ArgumentId, chunk_size>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+
+  inline RAJA_DEVICE void exec(Data &data,
+                               int num_logical_blocks,
+                               int block_carry)
+  {
+    execBlockLoop(*this, data, num_logical_blocks, block_carry);
+  }
+
+
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
+  {
+    int len = segment_length<ArgumentId>(data);
+    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+  }
+
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
+  }
+
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
+
+    LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
+
+    // Compute how many blocks
+    int len = segment_length<ArgumentId>(data);
+    int num_blocks = len / chunk_size;
+    if (num_blocks * chunk_size < len) {
+      num_blocks++;
+    }
+
+    dim.addBlocks(num_blocks);
+    dim.addThreads(std::min((int)chunk_size, (int)len));
+
+    return dim;
+  }
+};
+
+
+
 }  // end namespace internal
 }  // end namespace RAJA
 

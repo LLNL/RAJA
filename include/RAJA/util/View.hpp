@@ -91,7 +91,7 @@ struct View {
   template <typename... Args>
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
-    auto idx = convertIndex<Index_type>(layout(args...));
+    auto idx = stripIndexType(layout(args...));
     auto &value = data[idx];
     return value;
   }
@@ -123,7 +123,7 @@ struct TypedViewBase {
 
   RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
   {
-    return base_.operator()(convertIndex<Index_type>(args)...);
+    return base_.operator()(stripIndexType(args)...);
   }
 };
 

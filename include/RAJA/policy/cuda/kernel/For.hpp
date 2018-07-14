@@ -296,7 +296,7 @@ struct CudaStatementExecutor<Data,
   {
     int len = segment_length<ArgumentId>(data);
 
-    for (int i = 0; i < len; ++i) {
+    for (int i = 0;i < len;++ i) {
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
