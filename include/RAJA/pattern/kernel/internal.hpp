@@ -82,7 +82,7 @@ struct ForTraitBase : public ForBase {
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type; 
+  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -205,6 +205,27 @@ struct LoopData {
   index_tuple_t get_begin_index_tuple() const
   {
     return get_begin_index_tuple_expanded(
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
+  }
+
+
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple(
+        (
+         (*camp::get<Idx>(segment_tuple).begin() <= *camp::get<Idx>(segment_tuple).end()) ?
+         *camp::get<Idx>(segment_tuple).begin() :
+         *(camp::get<Idx>(segment_tuple).end()-1)
+        )...);
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_minimum_index_tuple() const
+  {
+    return get_minimum_index_tuple_expanded(
         camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
 };

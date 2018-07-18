@@ -30,14 +30,13 @@
 
 #include <string>
 
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
+
+struct IndexValueBase{};
 
 /*!
  * \brief Strongly typed "integer" class.
@@ -51,8 +50,11 @@ namespace RAJA
  *
  * Yes, this uses the curiously-recurring template pattern.
  */
-template <typename TYPE>
-struct IndexValue {
+template <typename TYPE, typename VALUE = RAJA::Index_type>
+struct IndexValue : public IndexValueBase {
+
+  using value_type = VALUE;
+
   //! Default constructor initializes value to 0.
   RAJA_HOST_DEVICE RAJA_INLINE constexpr IndexValue() : value(0) {}
 
@@ -66,10 +68,10 @@ struct IndexValue {
   }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() { return value; }
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator*() { return value; }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE const Index_type &operator*() const
+  RAJA_HOST_DEVICE RAJA_INLINE const value_type &operator*() const
   {
     return value;
   }
@@ -105,7 +107,7 @@ struct IndexValue {
   }
 
   //! addition to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(value_type a) const
   {
     return TYPE(value + a);
   }
@@ -117,7 +119,7 @@ struct IndexValue {
   }
 
   //! subtraction to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(value_type a) const
   {
     return TYPE(value - a);
   }
@@ -129,7 +131,7 @@ struct IndexValue {
   }
 
   //! multiplication to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(value_type a) const
   {
     return TYPE(value * a);
   }
@@ -141,7 +143,7 @@ struct IndexValue {
   }
 
   //! division to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(value_type a) const
   {
     return TYPE(value / a);
   }
@@ -153,7 +155,7 @@ struct IndexValue {
   }
 
   //! modulus to underlying index from an Index_type
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(Index_type a) const
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator%(value_type a) const
   {
     return TYPE(value % a);
   }
@@ -164,7 +166,7 @@ struct IndexValue {
     return TYPE(value % a.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(value_type x)
   {
     value += x;
     return static_cast<TYPE &>(*this);
@@ -176,7 +178,7 @@ struct IndexValue {
     return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(value_type x)
   {
     value -= x;
     return static_cast<TYPE &>(*this);
@@ -188,7 +190,7 @@ struct IndexValue {
     return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(value_type x)
   {
     value *= x;
     return static_cast<TYPE &>(*this);
@@ -200,7 +202,7 @@ struct IndexValue {
     return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(value_type x)
   {
     value /= x;
     return static_cast<TYPE &>(*this);
@@ -212,7 +214,7 @@ struct IndexValue {
     return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator<(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<(value_type x) const
   {
     return (value < x);
   }
@@ -222,7 +224,7 @@ struct IndexValue {
     return (value < x.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator<=(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<=(value_type x) const
   {
     return (value <= x);
   }
@@ -232,7 +234,7 @@ struct IndexValue {
     return (value <= x.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator>(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>(value_type x) const
   {
     return (value > x);
   }
@@ -242,7 +244,7 @@ struct IndexValue {
     return (value > x.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator>=(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>=(value_type x) const
   {
     return (value >= x);
   }
@@ -252,7 +254,7 @@ struct IndexValue {
     return (value >= x.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(value_type x) const
   {
     return (value == x);
   }
@@ -262,7 +264,7 @@ struct IndexValue {
     return (value == x.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(Index_type x) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(value_type x) const
   {
     return (value != x);
   }
@@ -277,10 +279,10 @@ struct IndexValue {
   static std::string getName();
 
 protected:
-  Index_type value;
+  value_type value;
 };
 
-namespace impl
+namespace internal
 {
 
 template <typename TO, typename FROM>
@@ -295,7 +297,9 @@ convertIndex_helper(typename FROM::IndexValueType const val)
   return static_cast<TO>(*val);
 }
 
-}  // closing brace for namespace impl
+
+
+}  // closing brace for namespace internal
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
@@ -305,8 +309,38 @@ convertIndex_helper(typename FROM::IndexValueType const val)
 template <typename TO, typename FROM>
 constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
 {
-  return impl::convertIndex_helper<TO, FROM>(val);
+  return internal::convertIndex_helper<TO, FROM>(val);
 }
+
+
+/*!
+ * \brief Function that strips the strongly typed Index<> and returns its
+ * underlying value_type value.
+ */
+// This version is enabled if FROM is a strongly typed class
+template<typename FROM>
+constexpr
+RAJA_HOST_DEVICE
+RAJA_INLINE
+typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
+                        typename FROM::value_type>::type
+stripIndexType(FROM const val)
+{
+  return *val;
+}
+/*
+ * enabled if FROM is not a strongly typed class
+ */
+template<typename FROM>
+constexpr
+RAJA_HOST_DEVICE
+RAJA_INLINE
+typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value, FROM>::type
+stripIndexType(FROM const val)
+{
+  return val;
+}
+
 
 }  // namespace RAJA
 
@@ -328,9 +362,26 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
     {                                                                \
     }                                                                \
     static inline std::string getName() { return NAME; }             \
-    using range = RAJA::TypedRangeSegment<TYPE>;                     \
-    using strided_range = RAJA::TypedRangeStrideSegment<TYPE>;       \
-    using list = RAJA::TypedListSegment<TYPE>;                       \
+  };
+
+/*!
+ * \brief Helper Macro to create new Index types.
+ * \param TYPE the name of the type
+ * \param NAME a string literal to identify this index type
+ */
+#define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
+  class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
+  {                                                                  \
+    using parent = ::RAJA::IndexValue<TYPE, IDXT>;                   \
+                                                                     \
+  public:                                                            \
+    using IndexValueType = TYPE;                                     \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
+        : parent::IndexValue(v)                                      \
+    {                                                                \
+    }                                                                \
+    static inline std::string getName() { return NAME; }             \
   };
 
 #endif

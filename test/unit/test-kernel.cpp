@@ -349,7 +349,6 @@ CUDA_TEST(Kernel, CudaCollapse1a)
   cudaDeviceSynchronize();
 
   for(int i = 0;i < 3*2*5;++ i){
-    //printf("x[%d]=%d\n", i, x[i]);
     ASSERT_EQ(x[i], 1);
   }
 
@@ -435,9 +434,14 @@ CUDA_TEST(Kernel, CudaCollapse2)
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
 
+  int *err;
+  cudaMallocManaged(&err, 2*sizeof(int));
+
   //Initialize data to zero
   sum1[0] = 0; 
   sum2[0] = 0; 
+  err[0] = 0;
+  err[1] = 0;
 
   int N = 41;
   RAJA::kernel<Pol>(
@@ -448,15 +452,26 @@ CUDA_TEST(Kernel, CudaCollapse2)
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
 
+                         if(i >= 41){
+                           RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err,1);
+                         }
+                         if(j >= 41){
+                           RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err+1,1);
+                         }
+
                        });
 
   cudaDeviceSynchronize();
 
+  ASSERT_EQ( 0, err[0]);
+  ASSERT_EQ( 0, err[1]);
   ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum1);
   ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum2);
 
+
   cudaFree(sum1);
   cudaFree(sum2);
+  cudaFree(err);
 
 }
 
@@ -478,9 +493,6 @@ CUDA_TEST(Kernel, CudaReduceA)
                        RAJA::RangeSegment(0, 2),
                        RAJA::RangeSegment(0, 5)),
       [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
-//        printf("b=%d,t=%d, i,j,k=%d,%d,%d\n",
-//            (int)blockIdx.x, (int)threadIdx.x,
-//            (int)i, (int)j, (int)k);
         reducer += 1;
        });
 
@@ -1291,7 +1303,6 @@ CUDA_TEST(Kernel, CudaExec1){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -1324,7 +1335,6 @@ CUDA_TEST(Kernel, CudaExec1a){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N/2);
 }
@@ -1358,7 +1368,6 @@ CUDA_TEST(Kernel, CudaExec1ab){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N/2);
 }
@@ -1392,7 +1401,6 @@ CUDA_TEST(Kernel, CudaExec1ac){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N/2);
 }
@@ -1421,13 +1429,11 @@ CUDA_TEST(Kernel, CudaExec1b){
       [=] __device__ (ptrdiff_t i){
 
         trip_count += 1;
-        //printf("[%d] %d\n", (int)threadIdx.x, (int)i);
       }
   );
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -1463,13 +1469,11 @@ CUDA_TEST(Kernel, CudaExec1c){
       [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k){
 
         trip_count += 1;
-        //printf("[%d,%d] %d,%d,%d\n", (int)blockIdx.x, (int)threadIdx.x, (int)i, (int)j, (int)k);
       }
   );
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N);
 }
@@ -1608,6 +1612,73 @@ CUDA_TEST(Kernel, CudaShmemWindow1d){
 }
 
 
+CUDA_TEST(Kernel, CudaShmemWindow1dReverse){
+  using namespace RAJA;
+
+
+  constexpr long N = (long)256;
+
+  using Pol = KernelPolicy<
+            CudaKernel<
+              statement::Tile<0, statement::tile_fixed<16>, seq_exec,
+                SetShmemWindow<
+                  For<0, cuda_thread_exec, Lambda<0>>,
+                  CudaSyncThreads,
+                  For<0, cuda_thread_exec, Lambda<1>>
+                >
+              >
+            >
+          >;
+
+  int *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N) );
+
+  for(long i = 0;i < N;++ i){
+    ptr[i] = 0;
+  }
+
+
+  auto segments = RAJA::make_tuple(RangeStrideSegment(N-1,-1,-1));
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0>, SizeList<16>, decltype(segments)>;
+  shmem_t shmem;
+
+  kernel_param<Pol>(
+
+      segments,
+
+      RAJA::make_tuple(shmem),
+
+      [=] __device__ (RAJA::Index_type i, shmem_t &sh){
+        trip_count += 1;
+        sh(i) = i;
+
+      },
+
+      [=] __device__ (RAJA::Index_type i, shmem_t &sh){
+
+        trip_count += 1;
+        ptr[i] = sh(i);
+
+      }
+  );
+  cudaDeviceSynchronize();
+
+  for(long i = 0;i < N;++ i){
+    ASSERT_EQ(ptr[i], (int)(i));
+  }
+
+  // check trip count
+  long result = (long)trip_count;
+  ASSERT_EQ(result, 2*N);
+
+
+  cudaFree(ptr);
+}
+
 
 CUDA_TEST(Kernel, CudaShmemWindow2d){
   using namespace RAJA;
@@ -1662,7 +1733,6 @@ CUDA_TEST(Kernel, CudaShmemWindow2d){
       RAJA::make_tuple(shmem_t(), shmem2_t()),
 
       [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, shmem_t &shmem, shmem2_t &shmem2){
-			//	printf("%d,%d\n", (int)i, (int)j);
         trip_count += 1;
         shmem(i,j) = i*j;
         shmem2(i,j) = 2*i*j;
@@ -1671,7 +1741,6 @@ CUDA_TEST(Kernel, CudaShmemWindow2d){
       [=] __device__ (RAJA::Index_type i, RAJA::Index_type j, shmem_t &shmem, shmem2_t &shmem2){
 
         trip_count += 1;
-        //ptr[i*M + j] = shmem(i,j);
         ptr[i*M + j] = shmem(i,j) + shmem2(i,j);
 
       }
@@ -1688,8 +1757,6 @@ CUDA_TEST(Kernel, CudaShmemWindow2d){
       //ASSERT_EQ(ptr[i*M+j], (int)(i*j));
     }
   }
-	//printf("errors=%ld of %ld\n", errors, (long)M*N);
-	//ASSERT_EQ(errors, 0);
 
   // check trip count
   long result = (long)trip_count;
@@ -1744,7 +1811,6 @@ CUDA_TEST(Kernel, CudaExec_1threadexec){
 
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N*N);
 }
@@ -1814,7 +1880,6 @@ CUDA_TEST(Kernel, CudaExec_1threadblockexec){
 
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -1848,7 +1913,6 @@ CUDA_TEST(Kernel, CudaExec_2threadexec){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N);
 }
@@ -1885,7 +1949,6 @@ CUDA_TEST(Kernel, CudaExec_1thread1blockexec){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -1924,7 +1987,6 @@ CUDA_TEST(Kernel, CudaExec_3threadexec){
   cudaDeviceSynchronize();
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N*N*N);
 }
@@ -1962,7 +2024,6 @@ CUDA_TEST(Kernel, CudaExec_tile1threadexec){
 
 
   long result = (long)trip_count;
-  //printf("result=%ld\n", result);
 
   ASSERT_EQ(result, N);
 }
@@ -2088,6 +2149,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
       RAJA::make_tuple(RAJA::RangeStrideSegment(N-1, -1, -1),
                        RAJA::RangeStrideSegment(M-1, -1, -1)),
       [=] __device__ (Index_type i, Index_type j) {
+
         int right = 1;
         if(i < N-1){
           right = xv(i+1,j);
@@ -2107,9 +2169,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
   for(int i = 0;i < N-1;++ i){
     for(int j = 0;j < M-1;++ j){
       ASSERT_EQ(xv(i,j), xv(i+1,j)+xv(i,j+1));
-      //printf("%d ", xv(i,j));
     }
-    //printf("\n");
   }
 
   cudaFree(x);
@@ -2122,16 +2182,19 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
 
   using Pol = RAJA::KernelPolicy<
             CudaKernel<
-              RAJA::statement::Tile<1, RAJA::statement::tile_fixed<13>, seq_exec,
-                RAJA::statement::Tile<2, RAJA::statement::tile_fixed<5>, seq_exec,
-                  Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1,2>, cuda_thread_exec,
-                    Lambda<0>
+              For<0, cuda_block_exec,
+                 RAJA::statement::Tile<2, RAJA::statement::tile_fixed<13>, seq_exec,
+                  RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
+                    Hyperplane<1, cuda_seq_syncthreads_exec, ArgList<2,3>, cuda_thread_exec,
+                      Lambda<0>
+                    >
                   >
                 >
               >
             >
           >;
 
+  constexpr long L = (long)1;
   constexpr long N = (long)11;
   constexpr long M = (long)27;
   constexpr long O = (long)13;
@@ -2143,13 +2206,26 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
   using myview = TypedView<long, Layout<3, RAJA::Index_type>, ZoneI, ZoneJ, ZoneK>;
   myview xv{x, N, M, O};
 
+  for(long i = 0;i < N*M*O;++ i){
+    x[i] = i;
+  }
+
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<1024>, long> oob_count(0);
 
   RAJA::kernel<Pol>(
-      RAJA::make_tuple(RAJA::TypedRangeStrideSegment<ZoneI>(0, N, 1),
-                       RAJA::TypedRangeStrideSegment<ZoneJ>(0, M, 1),
+      RAJA::make_tuple(RAJA::RangeSegment(0, L),
+                       RAJA::TypedRangeStrideSegment<ZoneI>(0, N, 1),
+                       RAJA::TypedRangeStrideSegment<ZoneJ>(M-1, -1, -1),
                        RAJA::TypedRangeStrideSegment<ZoneK>(0, O, 1)),
-      [=] __device__ (ZoneI i, ZoneJ j, ZoneK k) {
+      [=] __device__ (int g, ZoneI i, ZoneJ j, ZoneK k) {
+
+
+
+        if(i < 0 || i >= N || j < 0 || j >= M || k < 0 || k >= O){
+          oob_count += 1;
+
+        }
 
         long left = 1;
         if(i > 0){
@@ -2175,44 +2251,41 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
   cudaDeviceSynchronize();
 
 
-  ASSERT_EQ((long)trip_count, (long)N*M*O);
+  ASSERT_EQ((long)trip_count, (long)L*N*M*O);
+  ASSERT_EQ((long)oob_count, (long)0);
 
 
   long y[N][M][O];
-  for(int i = 0;i < N;++ i){
-    for(int j = 0;j < M;++ j){
-      for(int k = 0;k < O;++ k){
-        long left = 1;
-        if(i > 0){
-          left = y[i-1][j][k];
-        }
+  long *y_ptr = &y[0][0][0];
 
-        long up = 1;
-        if(j > 0){
-          up = y[i][j-1][k];
-        }
-
-        long back = 1;
-        if(k > 0){
-          back = y[i][j][k-1];
-        }
-
-        y[i][j][k] = left + up + back;
-      }
-    }
+  for(long i = 0;i < N*M*O;++ i){
+    y_ptr[i] = i;
   }
 
+	for(int l = 0;l < L;++ l){
+		for(int i = 0;i < N;++ i){
+			for(int j = M-1;j >= 0;-- j){
+				for(int k = 0;k < O;++ k){
+					long left = 1;
+					if(i > 0){
+						left = y[i-1][j][k];
+					}
 
-//  for(int i = 0;i < N;++ i){
-//    printf("\ni=%d:\n  ", i);
-//    for(int j = 0;j < M;++ j){
-//      for(int k = 0;k < O;++ k){
-//        printf("%ld(%ld) ", xv(i,j,k), y[i][j][k]);
-//      }
-//      printf("\n  ");
-//    }
-//  }
-//  printf("\n");
+					long up = 1;
+					if(j > 0){
+						up = y[i][j-1][k];
+					}
+
+					long back = 1;
+					if(k > 0){
+						back = y[i][j][k-1];
+					}
+
+					y[i][j][k] = left + up + back;
+				}
+			}
+		}
+	}
 
 
   for(ZoneI i(0);i < N;++ i){
@@ -2242,12 +2315,14 @@ TEST(Kernel, IndexCalc_seq){
   RAJA::internal::CudaIndexCalc_Policy<0, RAJA::seq_exec> ic;
 
   for(int init = 1;init < 5;++ init){
-    int i = 0;
-
-    ASSERT_EQ(ic.setInitial(data, init) > 0, init > 0);
-    ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
     for(int inc = 1;inc < 7;++ inc){
+
+      int i = 0;
+
+      ic.initThread(data, init, inc);
+      ASSERT_EQ(ic.reset(data), init <= 0);
+      ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
 
       for(int iter = 0;iter < N;++ iter){
 
@@ -2260,6 +2335,7 @@ TEST(Kernel, IndexCalc_seq){
 
         ASSERT_EQ(ic.increment(data, inc) > 0, carry);
         ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
+
       }
 
 
@@ -2267,10 +2343,11 @@ TEST(Kernel, IndexCalc_seq){
   }
 
 }
+
 TEST(Kernel, IndexCalc_thread){
 
 
-  constexpr long N = (long)16;
+  constexpr long N = (long)13;
 
   auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
   using segment_t = decltype(segments);
@@ -2281,17 +2358,20 @@ TEST(Kernel, IndexCalc_thread){
 
   RAJA::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
 
-  for(int init = 1;init < 5;++ init){
-    //printf("init=%d\n", init);
-    int i = init;
 
-    ASSERT_EQ(ic.setInitial(data, init) > 0, false);
-    ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
+
+  for(int init = 1;init < 5;++ init){
+
+
 
     for(int inc = 1;inc < 3*N;++ inc){
-      //printf("  inc=%d\n", inc);
 
-      ic.initIteration(data, inc);
+      int i = init;
+
+      ic.initThread(data, init, inc);
+      ASSERT_EQ(ic.reset(data), false);
+      ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
+
 
       for(int iter = 0;iter < N;++ iter){
 
@@ -2303,17 +2383,17 @@ TEST(Kernel, IndexCalc_thread){
           carry = true;
         }
 
-        //printf("    iter=%d, i=%d, carry=%d\n", iter, i, (int)carry);
-
         ASSERT_EQ(ic.increment(data, inc) > 0, carry);
         ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
-      }
 
+      }
 
     }
   }
 
 }
+
+
 #endif
 
 

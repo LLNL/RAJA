@@ -19,9 +19,8 @@ Major changes include:
     summarizes available 'statement' types. However, it remains a 
     work-in-progress and expanded documentation with more examples will be 
     available in future releases.
-  * Other documentation gaps have been filled and improved in this release,
-    including: improved execution policy documentation, RAJA Layout and View 
-    documentation, etc.
+  * Documentation of other RAJA features have been expanded and improved in
+    this release along with additional example codes.
 
 Other notable changes include:
 

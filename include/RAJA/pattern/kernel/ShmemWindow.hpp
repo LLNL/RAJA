@@ -69,7 +69,7 @@ struct StatementExecutor<statement::SetShmemWindow<EnclosedStmts...>> {
   {
 
     // Call setWindow on all of our shmem objects
-    shmem_set_windows(data.param_tuple, data.get_begin_index_tuple());
+    shmem_set_windows(data.param_tuple, data.get_minimum_index_tuple());
 
     // Invoke the enclosed statements
     execute_statement_list<camp::list<EnclosedStmts...>>(
