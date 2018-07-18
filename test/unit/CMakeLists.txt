@@ -59,12 +59,16 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
-  NAME kernel
-  SOURCES kernel.cpp)
+  NAME test-kernel
+  SOURCES test-kernel.cpp)
 
 raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
+
+raja_add_test(
+  NAME test-simd
+  SOURCES test-simd.cpp)
 
 add_subdirectory(cpu)
 
