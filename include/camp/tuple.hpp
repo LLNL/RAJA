@@ -77,8 +77,9 @@ namespace internal
 {
   template <camp::idx_t index, typename Type>
   struct tuple_storage {
-    CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
+    CAMP_HOST_DEVICE constexpr tuple_storage() : val() {};
 
+    template<typename T>
     CAMP_SUPPRESS_HD_WARN
     CAMP_HOST_DEVICE constexpr tuple_storage(Type const& v) :
     // initializing with (...) instead of {...} for compiler compatability
@@ -88,7 +89,7 @@ namespace internal
 
     CAMP_SUPPRESS_HD_WARN
     CAMP_HOST_DEVICE constexpr tuple_storage(Type&& v)
-        : val{std::move(static_cast<Type>(v))}
+        : val{std::forward<Type>(v)}
     {
     }
 
@@ -111,14 +112,17 @@ namespace internal
       : public internal::tuple_storage<Indices, Types>... {
     CAMP_HOST_DEVICE constexpr tuple_helper() {}
 
-    CAMP_HOST_DEVICE constexpr tuple_helper(Types const&... args)
-        : internal::tuple_storage<Indices, Types>(args)...
+    template<typename...Args>
+    CAMP_HOST_DEVICE constexpr tuple_helper(Args &&... args)
+        : tuple_storage<Indices, Types>(std::forward<Args>(args))...
     {
     }
 
-    CAMP_HOST_DEVICE constexpr tuple_helper(const tuple_helper& rhs)
+    template<typename Tuple>
+    CAMP_HOST_DEVICE constexpr tuple_helper(Tuple&& rhs)
         : tuple_storage<Indices, Types>(
-              rhs.tuple_storage<Indices, Types>::get_inner())...
+              std::forward<tuple_element_t<Indices, Tuple>>(
+                  rhs.tuple_storage<Indices, Types>::get_inner()))...
     {
     }
 
@@ -180,15 +184,30 @@ public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
   CAMP_HOST_DEVICE constexpr tuple() : base() {}
-  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : base(o.base) {}
 
-  CAMP_HOST_DEVICE constexpr tuple(tuple&& o) : base(std::move(o.base)) {}
+  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : base{o.base} {}
 
-  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs) { base = rhs.base; return *this; }
-  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs) { base = std::move(rhs.base); return *this; }
+  CAMP_HOST_DEVICE constexpr tuple(tuple&& o) : base{std::move(o.base)} {}
+
+  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
+  {
+    base = rhs.base;
+    return *this;
+  }
+  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
+  {
+    base = std::move(rhs.base);
+    return *this;
+  }
 
   CAMP_HOST_DEVICE constexpr explicit tuple(Elements const&... rest)
       : base{rest...}
+  {
+  }
+
+  template<typename...Args>
+  CAMP_HOST_DEVICE constexpr explicit tuple(Args &&... rest)
+      : base{std::forward<Args>(rest)...}
   {
   }
 
@@ -241,19 +260,32 @@ public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
   CAMP_HOST_DEVICE constexpr tagged_tuple() : base() {}
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) : base(o.base) {}
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) : base(o.base)
+  {
+  }
 
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) : base(std::move(o.base)) {}
+  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o)
+      : base(std::move(o.base))
+  {
+  }
 
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs) { base = rhs.base; return *this;}
-  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs) { base = std::move(rhs.base); return *this;}
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs)
+  {
+    base = rhs.base;
+    return *this;
+  }
+  CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple&& rhs)
+  {
+    base = std::move(rhs.base);
+    return *this;
+  }
 
   CAMP_HOST_DEVICE constexpr explicit tagged_tuple(Elements const&... rest)
       : base{rest...}
   {
   }
 
-  template <template<typename...> class T, typename... RTypes>
+  template <template <typename...> class T, typename... RTypes>
   CAMP_HOST_DEVICE CAMP_CONSTEXPR14 Self& operator=(const T<RTypes...>& rhs)
   {
     base.operator=(rhs);
@@ -282,7 +314,7 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
 {
   using internal::tpl_get_store;
   static_assert(tuple_size<Tuple>::value > index, "index out of range");
-  return static_cast<tpl_get_store<Tuple, index> const &>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index> const&>(t.base).get_inner();
 }
 
 template <camp::idx_t index, class Tuple>
@@ -304,7 +336,8 @@ CAMP_HOST_DEVICE constexpr auto get(const Tuple& t) noexcept
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base)
+      .get_inner();
 }
 
 template <typename T, class Tuple>
@@ -315,7 +348,8 @@ CAMP_HOST_DEVICE constexpr auto get(Tuple& t) noexcept -> tuple_ebt_t<T, Tuple>&
   static_assert(!std::is_same<camp::nil, index_type>::value,
                 "invalid type index");
 
-  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base).get_inner();
+  return static_cast<tpl_get_store<Tuple, index_type::value>&>(t.base)
+      .get_inner();
 }
 
 template <typename... Args>
