@@ -40,9 +40,9 @@ macro(raja_add_executable)
   endif ()
 
   if (${arg_TEST})
-    set (_output_dir test)
+    set (_output_dir ${CMAKE_BINARY_DIR}/test)
   else ()
-    set (_output_dir bin)
+    set (_output_dir ${CMAKE_BINARY_DIR}/bin)
   endif()
 
   blt_add_executable(
