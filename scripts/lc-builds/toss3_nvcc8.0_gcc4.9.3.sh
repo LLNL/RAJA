@@ -14,18 +14,19 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_lc_toss3-icpc-19.0-beta 2>/dev/null
-mkdir build_lc_toss3-icpc-19.0-beta && cd build_lc_toss3-icpc-19.0-beta
+rm -rf build_lc_toss3-nvcc8.0_gcc4.9.3 2>/dev/null
+mkdir build_lc_toss3-nvcc8.0_gcc4.9.3 && cd build_lc_toss3-nvcc8.0_gcc4.9.3
 
 module load cmake/3.9.2
-module load gcc/7.1.0
 
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/toss3/icpc_19_0_beta.cmake \
+  -C ${RAJA_DIR}/host-configs/lc-builds/toss3/nvcc_gcc4_9_3.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_toss3-icpc-19.0-beta \
+  -DENABLE_CUDA=On \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-8.0 \
+  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_toss3-nvcc8.0_gcc4.9.3 \
   "$@" \
   ${RAJA_DIR}

@@ -1,15 +1,15 @@
 ##
-## Copyright (c) 2017-18, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
-## LLNL-CODE-738930
+## LLNL-CODE-689114
 ##
 ## All rights reserved.
 ##
-## This file is part of the RAJA Performance Suite.
+## This file is part of RAJA.
 ##
-## For details about use and distribution, please read raja-perfsuite/LICENSE.
+## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
 set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
