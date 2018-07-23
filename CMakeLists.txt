@@ -53,6 +53,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+  option(ENABLE_BENCHMARKS "Build benchmarks" On)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
@@ -151,6 +152,10 @@ if (NOT RAJA_LOADED)
 
   if (ENABLE_DOCUMENTATION)
     add_subdirectory(docs)
+  endif ()
+
+  if (ENABLE_BENCHMARKS)
+    add_subdirectory(benchmarks)
   endif ()
 
 endif()
