@@ -154,7 +154,7 @@ if (NOT RAJA_LOADED)
   endif ()
 
   if (ENABLE_BENCHMARKS)
-    add_subdirectory(benchmarks)
+    add_subdirectory(benchmark)
   endif ()
 
 endif()
