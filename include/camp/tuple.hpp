@@ -80,7 +80,11 @@ namespace internal
     CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
 
     CAMP_SUPPRESS_HD_WARN
-    CAMP_HOST_DEVICE constexpr tuple_storage(Type const& v) : val{v} {}
+    CAMP_HOST_DEVICE constexpr tuple_storage(Type const& v) :
+    // initializing with (...) instead of {...} for compiler compatability
+    // some compilers complain when Type has no members and we use {...} to
+    // initialize val
+    val(v) {}
 
     CAMP_SUPPRESS_HD_WARN
     CAMP_HOST_DEVICE constexpr tuple_storage(Type&& v)
