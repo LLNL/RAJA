@@ -68,7 +68,14 @@ struct View {
   {
   }
 
-  RAJA_INLINE constexpr View(View const &) = default;
+  //We found the compiler-generated copy constructor does not actually copy-construct
+  //the object on the device in certain nvcc versions. 
+  //By explicitly defining the copy constructor we are able ensure proper behavior.
+  //Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
+      : layout(V.layout), data(V.data)
+  {
+  }
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
@@ -84,7 +91,7 @@ struct View {
   template <typename... Args>
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
-    auto idx = convertIndex<Index_type>(layout(args...));
+    auto idx = stripIndexType(layout(args...));
     auto &value = data[idx];
     return value;
   }
@@ -116,7 +123,7 @@ struct TypedViewBase {
 
   RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
   {
-    return base_.operator()(convertIndex<Index_type>(args)...);
+    return base_.operator()(stripIndexType(args)...);
   }
 };
 

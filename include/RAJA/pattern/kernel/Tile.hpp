@@ -181,11 +181,11 @@ struct IterableTiler {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  iterator begin() { return iterator(*this, 0); }
+  iterator begin() const { return iterator(*this, 0); }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  iterator end() { return iterator(*this, num_blocks); }
+  iterator end() const { return iterator(*this, num_blocks); }
 
   value_type it;
   camp::idx_t block_size;
@@ -211,7 +211,8 @@ struct StatementExecutor<statement::
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
 
-    // Create a tile iterator
+    // Create a tile iterator, needs to survive until the forall is 
+    // done executing. 
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize

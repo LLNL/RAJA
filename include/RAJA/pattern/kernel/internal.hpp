@@ -39,6 +39,7 @@
 #include "RAJA/util/chai_support.hpp"
 
 #include <type_traits>
+#include <iterator>
 
 namespace RAJA
 {
@@ -80,7 +81,7 @@ struct ForTraitBase : public ForBase {
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename Iterator::iterator::difference_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -96,7 +97,7 @@ using difftype_tuple_from_segments =
 
 template <typename Iterator>
 struct iterable_value_type_getter {
-  using type = typename Iterator::iterator::value_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
@@ -205,6 +206,27 @@ struct LoopData {
     return get_begin_index_tuple_expanded(
         camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
+
+
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple(
+        (
+         (*camp::get<Idx>(segment_tuple).begin() <= *camp::get<Idx>(segment_tuple).end()) ?
+         *camp::get<Idx>(segment_tuple).begin() :
+         *(camp::get<Idx>(segment_tuple).end()-1)
+        )...);
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_minimum_index_tuple() const
+  {
+    return get_minimum_index_tuple_expanded(
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
+  }
 };
 
 
@@ -239,8 +261,8 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator::difference_type
+    typename std::iterator_traits< typename camp::at_v<typename Data::segment_tuple_t::TList,
+                        ArgumentId>::iterator >::difference_type
 {
   return camp::get<ArgumentId>(data.segment_tuple).end()
          - camp::get<ArgumentId>(data.segment_tuple).begin();
