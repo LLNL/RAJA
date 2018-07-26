@@ -64,7 +64,6 @@ RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
-  RAJA_FORCEINLINE_RECURSIVE
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
