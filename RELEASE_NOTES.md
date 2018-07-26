@@ -27,6 +27,8 @@ Other notable changes include:
   * New or improved features: 
       * RAJA CUDA reductions now work with host/device lambdas 
       * List segments now work with RAJA::kernel loops.
+      * New and expanded collection of build files for LC and ALCF machines.
+        Hopefully, these will be helpful to folks getting started.
 
   * Performance improvements: 
       * Some RAJA::View use cases
