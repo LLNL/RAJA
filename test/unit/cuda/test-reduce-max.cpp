@@ -80,7 +80,7 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
     ReduceMax<cuda_reduce<block_size>, double> dmax0; dmax0.reset(DEFAULT_VAL);
     ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
     ReduceMax<cuda_reduce<block_size>, double> dmax2(BIG_VAL);
-    
+
     int loops = 16;
     for (int k = 0; k < loops; k++) {
 
@@ -91,7 +91,7 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
         dmax0.max(dvalue[i]);
         dmax1.max(2 * dvalue[i]);
         dmax2.max(dvalue[i]);
@@ -106,29 +106,29 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
     dmax0.reset(DEFAULT_VAL);
     dmax1.reset(DEFAULT_VAL);
     dmax2.reset(BIG_VAL);
-    
+
     loops = 16;
     for (int k = 0; k < loops; k++) {
-      
+
       double droll = dist(mt);
       int index = int(dist2(mt));
       if (droll > dvalue[index]) {
         dvalue[index] = droll;
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
-      
-      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
           dmax0.max(dvalue[i]);
           dmax1.max(2 * dvalue[i]);
           dmax2.max(dvalue[i]);
         });
-      
+
       ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
   }
-    
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
     }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-        iset, [=] __device__(int i) {
+        iset, [=] RAJA_HOST_DEVICE(int i) {
           dmax0.max(dvalue[i]);
           dmax1.max(2 * dvalue[i]);
         });
@@ -224,7 +224,7 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
     }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-        iset, [=] __device__(int i) {
+        iset, [=] RAJA_DEVICE(int i) {
           dmax0.max(dvalue[i]);
           dmax1.max(2 * dvalue[i]);
         });

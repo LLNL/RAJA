@@ -192,7 +192,7 @@ CUDA_TEST_F(ForallCUDA, forall_range)
   }
 
   RAJA::forall<RAJA::cuda_exec<block_size>>(
-      RAJA::make_range(0, array_length), [=] __device__(RAJA::Index_type idx) {
+      RAJA::make_range(0, array_length), [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
         test_array[idx] = parent[idx] * parent[idx];
       });
 
@@ -224,7 +224,7 @@ CUDA_TEST_F(ForallCUDA, forall_icount_range)
   RAJA::forall_Icount<RAJA::cuda_exec<block_size>>(
       RAJA::make_range(0, array_length),
       0,
-      [=] __device__(RAJA::Index_type icount, RAJA::Index_type idx) {
+      [=] RAJA_DEVICE(RAJA::Index_type icount, RAJA::Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
       });
 
@@ -254,7 +254,7 @@ CUDA_TEST_F(ForallCUDA, forall_indexset)
   }
 
   RAJA::forall<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<block_size>>>(
-      iset, [=] __device__(RAJA::Index_type idx) {
+      iset, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
         test_array[idx] = parent[idx] * parent[idx];
       });
 
@@ -282,7 +282,7 @@ CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
 
   RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit,
                                        RAJA::cuda_exec<block_size>>>(
-      iset, [=] __device__(RAJA::Index_type icount, RAJA::Index_type idx) {
+      iset, [=] RAJA_DEVICE(RAJA::Index_type icount, RAJA::Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
       });
 

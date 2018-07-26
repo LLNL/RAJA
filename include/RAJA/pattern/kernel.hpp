@@ -64,6 +64,41 @@ template <camp::idx_t... ArgumentId>
 using ArgList = camp::idx_seq<ArgumentId...>;
 
 
+template<typename T>
+struct IterableWrapperTuple;
+
+template<typename ... Ts>
+struct IterableWrapperTuple<camp::tuple<Ts...>>
+{
+
+  using type = camp::tuple<
+    RAJA::impl::Span<typename camp::decay<Ts>::iterator, typename camp::decay<Ts>::IndexType> ...>;
+  
+};
+
+
+namespace internal {
+template <class Tuple, camp::idx_t ... I>
+RAJA_INLINE constexpr auto make_wrapped_tuple_impl( Tuple&& t, camp::idx_seq<I...> )
+-> camp::tuple<RAJA::impl::Span<typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::iterator,
+                                typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::IndexType> ...>  
+{
+  return camp::make_tuple( RAJA::impl::Span<typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::iterator,
+                           typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple> > >::IndexType>
+                           {camp::get<I>(std::forward<Tuple>(t)).begin(), camp::get<I>(std::forward<Tuple>(t)).end() }...); 
+}
+} 
+
+template <class Tuple>
+RAJA_INLINE constexpr auto make_wrapped_tuple( Tuple&& t )
+-> decltype(internal::make_wrapped_tuple_impl(std::forward<Tuple>(t),
+      camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple>>::value>{}))
+{
+  return internal::make_wrapped_tuple_impl(std::forward<Tuple>(t),
+      camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple>>::value>{});
+}
+
+
 template <typename PolicyType,
           typename SegmentTuple,
           typename ParamTuple,
@@ -79,7 +114,9 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   //       index_tuple
   // TODO: add assert that all Lambda<i> match supplied loop bodies
 
-  using segment_tuple_t = camp::decay<SegmentTuple>;
+  using segment_tuple_t = typename IterableWrapperTuple<camp::decay<SegmentTuple> >::type;
+
+
   using param_tuple_t = camp::decay<ParamTuple>;
 
   using loop_data_t = internal::LoopData<PolicyType,
@@ -92,7 +129,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the kernel mechanics by-referenece,
   // and only copied to provide thread-private instances.
-  loop_data_t loop_data(std::forward<SegmentTuple>(segments),
+  loop_data_t loop_data(make_wrapped_tuple(std::forward<SegmentTuple>(segments)),
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 

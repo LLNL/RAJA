@@ -98,11 +98,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -151,7 +156,7 @@ struct CudaStatementExecutor<Data,
     if (block_carry <= 0) {
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
-      bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
+      bool done = index_calc.reset(data);
 
       while (!done) {
 
@@ -174,17 +179,24 @@ struct CudaStatementExecutor<Data,
         }
 
 
-        done = index_calc.increment(data, blockDim.x);
+        done = index_calc.increment(data);
       }
     }
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    index_calc.initThread(data, threadIdx.x, blockDim.x);
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE

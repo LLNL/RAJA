@@ -84,9 +84,11 @@ struct TypedRangeSegment {
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
   //! the underlying value_type type
   /*!
-   * this corresponds to the template parameter
+   * these corresponds to the template parameter
    */
   using value_type = StorageT;
+
+  using IndexType  = StorageT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
@@ -163,8 +165,9 @@ struct TypedRangeSegment {
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
-    return TypedRangeSegment{convertIndex<Index_type>(start),
-                             convertIndex<Index_type>(end)};
+
+    return TypedRangeSegment{stripIndexType(start),
+                             stripIndexType(end)};
   }
 
   //! equality comparison
@@ -258,6 +261,7 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
+  using IndexType  = StorageT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
@@ -360,8 +364,9 @@ struct TypedRangeStrideSegment {
     } else {
       end = end < m_end[0] ? m_end[0] : end;
     }
-    return TypedRangeStrideSegment{convertIndex<Index_type>(start),
-                                   convertIndex<Index_type>(end),
+
+    return TypedRangeStrideSegment{stripIndexType(start),
+                                   stripIndexType(end),
                                    m_begin.get_stride()};
   }
 
