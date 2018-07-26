@@ -14,9 +14,9 @@
 
 .. _configopt-label:
 
-***********************
-Configuration Options
-***********************
+****************************
+Build Configuration Options
+****************************
 
 RAJA uses `BLT <https://github.com/LLNL/blt>`_, a CMake-based build system .
 In :ref:`getting_started-label`, we described how to run CMake to configure

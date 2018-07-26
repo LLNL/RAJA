@@ -27,9 +27,11 @@
 #define RAJA_pattern_atomic_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/policy/atomic_auto.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {

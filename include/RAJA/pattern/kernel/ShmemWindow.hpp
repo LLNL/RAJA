@@ -28,12 +28,12 @@
 #ifndef RAJA_pattern_kernel_ShmemWindow_HPP
 #define RAJA_pattern_kernel_ShmemWindow_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/StaticLayout.hpp"
 
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/util/StaticLayout.hpp"
 
 namespace RAJA
 {
@@ -43,7 +43,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that sets the shared memory window.
+ * A RAJA::kernel statement that sets the shared memory window.
  *
  *
  */

@@ -29,11 +29,11 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+
+#include "RAJA/util/types.hpp"
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
     || defined(__MINGW32__) || defined(__BORLANDC__)

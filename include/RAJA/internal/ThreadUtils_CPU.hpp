@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file defining prototypes for routines used to manage
+ * \brief   Header file containing prototypes and methods for managing
  *          CPU threading operations.
  *
  ******************************************************************************
@@ -29,18 +29,31 @@
 
 #include "RAJA/config.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include <omp.h>
+#endif
+
 namespace RAJA
 {
 
 /*!
 *************************************************************************
 *
-* Return max number of available threads for code run on CPU.
+* Return max number of available OpenMP threads.
 *
 *************************************************************************
 */
-int getMaxReduceThreadsCPU();
-int getMaxOMPThreadsCPU();
+RAJA_INLINE
+int getMaxOMPThreadsCPU()
+{
+  int nthreads = 1;
+
+#if defined(RAJA_ENABLE_OPENMP)
+  nthreads = omp_get_max_threads();
+#endif
+
+  return nthreads;
+}
 
 }  // closing brace for RAJA namespace
 

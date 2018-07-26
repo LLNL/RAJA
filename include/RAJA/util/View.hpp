@@ -29,7 +29,9 @@
 #include <type_traits>
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/pattern/atomic.hpp"
+
 #include "RAJA/util/Layout.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)

@@ -29,20 +29,21 @@
 #define RAJA_policy_cuda_kernel_Tile_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/pattern/kernel/Tile.hpp"
-#include "RAJA/pattern/kernel/internal.hpp"
+#include <iostream>
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {

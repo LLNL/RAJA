@@ -1,4 +1,4 @@
-RAJA v0.5.3
+RAJA v0.6.0
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)

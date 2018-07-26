@@ -3,20 +3,11 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
  */
-
-#ifndef RAJA_policy_cuda_kernel_CudaKernel_HPP
-#define RAJA_policy_cuda_kernel_CudaKernel_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -33,14 +24,22 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_cuda_kernel_CudaKernel_HPP
+#define RAJA_policy_cuda_kernel_CudaKernel_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
@@ -175,7 +174,7 @@ namespace statement
 {
 
 /*!
- * A kernel::forall statement that launches a CUDA kernel.
+ * A RAJA::kernel statement that launches a CUDA kernel.
  *
  *
  */
@@ -186,7 +185,7 @@ struct CudaKernelExt
 
 
 /*!
- * A kernel::forall statement that launches a CUDA kernel.
+ * A RAJA::kernel statement that launches a CUDA kernel.
  *
  *
  */
@@ -223,7 +222,7 @@ namespace internal
 
 
 /*!
- * Specialization that launches CUDA kernels for kernel::forall from host code
+ * Specialization that launches CUDA kernels for RAJA::kernel from host code
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
