@@ -51,6 +51,8 @@ namespace omp
 #pragma omp declare target
 #endif
 
+const int omp_thread_block_max = 1024;
+
 template <typename T, typename I>
 struct minloc {
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
@@ -114,11 +116,11 @@ struct Reduce_Data {
    *  allocates data on the host and device and initializes values to default
    */
   explicit Reduce_Data(T defaultValue, T identityValue, Offload_Info &info)
-      : value(identityValue),
-        device{reinterpret_cast<T *>(
-            omp_target_alloc(Teams * sizeof(T), info.deviceID))},
-        host{new T[Teams]}
+      : value(identityValue)
   {
+
+    device = reinterpret_cast<T *>(omp_target_alloc( Teams * omp::omp_thread_block_max * sizeof(T), info.deviceID ));
+    host = new T[Teams * omp::omp_thread_block_max];
     if (!host) {
       printf("Unable to allocate space on host\n");
       exit(1);
@@ -127,8 +129,9 @@ struct Reduce_Data {
       printf("Unable to allocate space on device\n");
       exit(1);
     }
-    std::fill_n(host, Teams, identityValue);
+    std::fill_n(host, omp::omp_thread_block_max*Teams, identityValue);
     hostToDevice(info);
+
   }
 
   //! default copy constructor for POD
@@ -140,7 +143,7 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(device),
                           reinterpret_cast<void *>(host),
-                          Teams * sizeof(T),
+                          Teams * omp::omp_thread_block_max * sizeof(T),
                           0,
                           0,
                           info.deviceID,
@@ -157,7 +160,8 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(host),
                           reinterpret_cast<void *>(device),
-                          Teams * sizeof(T),
+//                          Teams * omp::omp_thread_block_max * sizeof(T),
+                          1*sizeof(T),
                           0,
                           0,
                           info.hostID,
@@ -203,26 +207,53 @@ struct TargetReduce {
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
-    if (!omp_is_initial_device()) {
-#pragma omp critical
-      {
-        int tid = omp_get_team_num();
-        Reducer{}(val.device[tid], val.value);
-      }
-    }
   }
 
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
     if (!info.isMapped) {
+
+	int nTeams = Teams;
+	int n = omp::omp_thread_block_max;
+	int lim = Teams * n;
+	
+	// do reduction on gpu
+	
+     #pragma omp target teams num_teams(nTeams) map(to:nTeams,n,lim) 
+     {
+
+        int teamid = omp_get_team_num();
+        int idx1 = teamid*n;
+        int nn = n;
+
+	while( nn >= 2 )
+	{
+            int jdx1 = idx1 + nn/2;	
+	   #pragma omp parallel for
+	    for( int i=0; i<nn/2; ++i )
+               Reducer{}(val.device[idx1+i], val.device[jdx1+i]);
+	    nn /= 2;
+	}
+
+	}
+
+	#pragma omp target teams  num_teams(1) map(to:nTeams,n) 
+	{	
+		for( int i=1; i<nTeams; ++i )
+		{
+               		Reducer{}(val.device[0], val.device[i*n]);			
+		}
+	}
+
+
+	// changed deviceToHost to only send back one element rather than all.
       val.deviceToHost(info);
-      for (int i = 0; i < Teams; ++i) {
-        Reducer{}(val.value, val.host[i]);
-      }
+      val.value = val.host[0];
       val.cleanup(info);
       info.isMapped = true;
     }
+
     finalVal = Reducer::identity();
     Reducer{}(finalVal, initVal);
     Reducer{}(finalVal, val.value);
@@ -241,7 +272,11 @@ struct TargetReduce {
   //! apply reduction (const version) -- still reduces internal values
   const TargetReduce &reduce(T rhsVal) const
   {
-    Reducer{}(val.value, rhsVal);
+    int tid = omp_get_team_num();
+    int thrid = omp_get_thread_num() ;
+    int idx = tid*omp::omp_thread_block_max + thrid;
+    Reducer{}(val.device[idx], rhsVal);
+//    Reducer{}(val.value, rhsVal);
     return *this;
   }
 
@@ -274,24 +309,48 @@ struct TargetReduceLoc {
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    if (!omp_is_initial_device()) {
-#pragma omp critical
-      {
-        int tid = omp_get_team_num();
-        Reducer{}(val.device[tid], loc.device[tid], val.value, loc.value);
-      }
-    }
   }
 
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
     if (!info.isMapped) {
+
+        int nTeams = Teams;
+        int n = omp::omp_thread_block_max;
+        int lim = Teams * n;
+
+        // do reduction on gpu
+
+     #pragma omp target teams num_teams(nTeams) map(to:nTeams,n,lim)
+     {
+
+        int teamid = omp_get_team_num();
+        int idx1 = teamid*n;
+        int nn = n;
+
+        while( nn >= 2 )
+        {
+            int jdx1 = idx1 + nn/2;
+           #pragma omp parallel for
+            for( int i=0; i<nn/2; ++i )
+               Reducer{}(val.device[idx1+i], loc.device[idx1+i], val.device[jdx1+i], loc.device[jdx1+i]);
+            nn /= 2;
+        }
+
+     } // end of target
+
+        #pragma omp target map(to:nTeams,n)
+        {
+                for( int i=1; i<nTeams; ++i )
+                    Reducer{}(val.device[0], loc.device[0],val.device[i*n],loc.device[i*n]);
+        } // end of target
+      
+
       val.deviceToHost(info);
       loc.deviceToHost(info);
-      for (int i = 0; i < Teams; ++i) {
-        Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
-      }
+      val.value = val.host[0];
+      loc.value = loc.host[0];
       val.cleanup(info);
       loc.cleanup(info);
       info.isMapped = true;
@@ -317,14 +376,19 @@ struct TargetReduceLoc {
   //! apply reduction
   TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
-    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
+//    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
 
   //! apply reduction (const version) -- still reduces internal values
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
-    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
+    int tid = omp_get_team_num();
+    int thrid = omp_get_thread_num();
+    int idx = tid*omp::omp_thread_block_max + thrid;
+    Reducer{}(val.device[idx], loc.device[idx], rhsVal, rhsLoc);
+
+//    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
 

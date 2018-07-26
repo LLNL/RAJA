@@ -101,33 +101,43 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA OpenMP pi approximation (reduction)...\n";
 
-  using EXEC_POL2   = RAJA::omp_parallel_for_exec;
-  using REDUCE_POL2 = RAJA::omp_reduce;
+  using EXEC_POL2   = RAJA::omp_target_parallel_for_exec<128>;
+  using REDUCE_POL2 = RAJA::omp_target_reduce<128>;
 
   RAJA::ReduceSum<REDUCE_POL2, double> omp_pi(0.0);
+  RAJA::ReduceMaxLoc<REDUCE_POL2, double> omp_maxloc(std::numeric_limits<double>::min(), -1);
+  RAJA::ReduceMinLoc<REDUCE_POL2, double> omp_minloc(std::numeric_limits<double>::max(), -1);
 
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) / num_bins;
       omp_pi += 4.0 / (1.0 + x * x);
+      omp_maxloc.maxloc(4.0 / (1.0 + x * x), i);
+      omp_minloc.minloc(4.0 / (1.0 + x * x), i);
   });
 
   std::cout << "\tpi = " << std::setprecision(prec)
             << omp_pi.get() / num_bins << std::endl;
-
+  std::cout << "\tmax, loc = " << omp_maxloc.get() << " , "
+                               << omp_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin, loc = " << omp_minloc.get() << " , "
+                               << omp_minloc.getLoc() << std::endl;
 
   std::cout << "\n Running RAJA OpenMP pi approximation (atomic)...\n";
 
   *atomic_pi = 0;
 
+  using EXEC2_POL2 = RAJA::omp_parallel_for_exec;
   using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
 
-  RAJA::forall<EXEC_POL2>(bins, [=](int i) {
+  RAJA::forall<EXEC2_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) / num_bins;
       RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 4.0 / (1.0 + x * x));
   });
 
   std::cout << "\tpi = " << std::setprecision(prec)
             << (*atomic_pi) / num_bins << std::endl;
+
+
 
 #endif
 
