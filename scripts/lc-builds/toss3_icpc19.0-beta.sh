@@ -14,18 +14,20 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_lc_toss3-icpc-19.0-beta 2>/dev/null
-mkdir build_lc_toss3-icpc-19.0-beta && cd build_lc_toss3-icpc-19.0-beta
+RAJA_DIR=$(git rev-parse --show-toplevel)
+
+BUILD_SUFFIX=lc_toss3-icpc-19.0-beta
+
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 module load gcc/7.1.0
-
-RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/lc-builds/toss3/icpc_19_0_beta.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_toss3-icpc-19.0-beta \
+  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_${BUILD_SUFFIX} \
   "$@" \
   ${RAJA_DIR}
