@@ -195,14 +195,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD                     \
-  _Pragma("omp simd")                 \
-  _Pragma("forceinline recursive")
+  _Pragma("omp simd")
 
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
 #define RAJA_SIMD                     \
-  _Pragma("simd")                     \
-  _Pragma("forceinline recursive")
+  _Pragma("simd")
 
 #define RAJA_NO_SIMD  _Pragma("novector")
 #endif
