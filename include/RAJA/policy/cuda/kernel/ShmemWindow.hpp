@@ -8,7 +8,6 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -28,16 +27,16 @@
 #ifndef RAJA_policy_cuda_kernel_ShmemWindow_HPP
 #define RAJA_policy_cuda_kernel_ShmemWindow_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include <iostream>
+#include <type_traits>
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/kernel/internal.hpp"
-
-#include <iostream>
-#include <type_traits>
 
 namespace RAJA
 {
@@ -66,19 +65,27 @@ struct CudaStatementExecutor<Data,
 
     // Call setWindow on all of our shmem objects
     RAJA::internal::shmem_set_windows(data.param_tuple,
-                                      data.get_begin_index_tuple());
+                                      data.get_minimum_index_tuple());
 
     // execute enclosed statements
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
+
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
+  }
+
+
 
   RAJA_INLINE
   LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)

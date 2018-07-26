@@ -17,7 +17,10 @@
 #define EXAMPLES_MEMORYMANAGER_HPP
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#endif
 
 /*
   As RAJA does not manage memory we include a general purpose memory
@@ -32,7 +35,7 @@ namespace memoryManager{
   {
     T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal);
+    cudaErrchk(cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
 #else
     ptr = new T[size];
 #endif
@@ -44,7 +47,7 @@ namespace memoryManager{
   {
     if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaFree(ptr);
+      cudaErrchk(cudaFree(ptr));
 #else
       delete[] ptr;
 #endif

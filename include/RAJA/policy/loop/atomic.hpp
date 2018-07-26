@@ -27,7 +27,8 @@
 #define RAJA_policy_loop_atomic_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/sequential/atomic.hpp"
 

@@ -27,6 +27,7 @@
 #define RAJA_forallN_permute_HPP
 
 #include "RAJA/config.hpp"
+
 #include "camp/camp.hpp"
 
 namespace RAJA

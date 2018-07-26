@@ -23,21 +23,21 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-
 #ifndef RAJA_scan_openmp_HPP
 #define RAJA_scan_openmp_HPP
 
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
-
-#include <omp.h>
+#include "RAJA/config.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <type_traits>
 #include <vector>
+
+#include <omp.h>
+
+#include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 
 namespace RAJA
 {

@@ -30,12 +30,13 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include <type_traits>
+
+#include <omp.h>
+
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/util/types.hpp"
-
-#include <omp.h>
-#include <type_traits>
 
 namespace RAJA
 {

@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining typed rangesegment classes.
+ * \brief   RAJA header file defining typed range segment classes.
  *
  ******************************************************************************
  */
@@ -28,13 +28,13 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+
 #include "RAJA/internal/Iterators.hpp"
 
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/index/IndexValue.hpp"
-
-#include <iostream>
 
 namespace RAJA
 {
@@ -165,8 +165,9 @@ struct TypedRangeSegment {
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
-    return TypedRangeSegment{convertIndex<Index_type>(start),
-                             convertIndex<Index_type>(end)};
+
+    return TypedRangeSegment{stripIndexType(start),
+                             stripIndexType(end)};
   }
 
   //! equality comparison
@@ -363,8 +364,9 @@ struct TypedRangeStrideSegment {
     } else {
       end = end < m_end[0] ? m_end[0] : end;
     }
-    return TypedRangeStrideSegment{convertIndex<Index_type>(start),
-                                   convertIndex<Index_type>(end),
+
+    return TypedRangeStrideSegment{stripIndexType(start),
+                                   stripIndexType(end),
                                    m_begin.get_stride()};
   }
 

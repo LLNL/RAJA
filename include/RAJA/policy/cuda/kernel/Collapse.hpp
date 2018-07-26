@@ -9,16 +9,6 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_cuda_kernel_Collapse_HPP
-#define RAJA_policy_cuda_kernel_Collapse_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "RAJA/policy/cuda/kernel/For.hpp"
-#include "camp/camp.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -34,15 +24,26 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_cuda_kernel_Collapse_HPP
+#define RAJA_policy_cuda_kernel_Collapse_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/pattern/kernel.hpp"
+#include "RAJA/pattern/kernel/Collapse.hpp"
+
+#include "RAJA/policy/cuda/kernel/For.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/kernel/Collapse.hpp"
-#include "RAJA/policy/cuda/kernel/For.hpp"
 
 
 namespace RAJA
@@ -80,11 +81,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -131,11 +137,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE

@@ -26,8 +26,9 @@
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
-#include <cstddef>
 #include "RAJA/util/concepts.hpp"
+
+#include <cstddef>
 
 namespace RAJA
 {

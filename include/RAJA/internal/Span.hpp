@@ -30,7 +30,7 @@
 #include <type_traits>
 
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -49,7 +49,7 @@ struct rm_ptr<T*> {
 
 template <typename ValueType, typename IndexType>
 struct Span {
-  using value_type = typename std::iterator_traits<ValueType>::value_type;
+  using value_type = camp::decay<typename std::iterator_traits<ValueType>::value_type>;
   using reference = value_type&;
   using iterator = ValueType;
   using const_iterator = ValueType const;

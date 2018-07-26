@@ -28,9 +28,10 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
@@ -81,7 +82,7 @@ struct ForTraitBase : public ForBase {
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type; 
+  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -204,6 +205,27 @@ struct LoopData {
   index_tuple_t get_begin_index_tuple() const
   {
     return get_begin_index_tuple_expanded(
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
+  }
+
+
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple(
+        (
+         (*camp::get<Idx>(segment_tuple).begin() <= *camp::get<Idx>(segment_tuple).end()) ?
+         *camp::get<Idx>(segment_tuple).begin() :
+         *(camp::get<Idx>(segment_tuple).end()-1)
+        )...);
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_minimum_index_tuple() const
+  {
+    return get_minimum_index_tuple_expanded(
         camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
 };
@@ -354,7 +376,7 @@ constexpr RAJA_INLINE typename std::
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {

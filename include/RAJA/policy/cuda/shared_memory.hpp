@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,14 +26,15 @@
 #ifndef RAJA_policy_cuda_shared_memory_HPP
 #define RAJA_policy_cuda_shared_memory_HPP
 
-
 #include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
 #include "RAJA/pattern/shared_memory.hpp"
+
 #include "RAJA/policy/cuda/policy.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
-
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
