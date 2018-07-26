@@ -19,7 +19,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -38,9 +38,10 @@
 
 #include "RAJA/config.hpp"
 
-#ifdef RAJA_ENABLE_FT
+#if defined(RAJA_ENABLE_FT)
 
-#ifdef RAJA_REPORT_FT
+#if defined(RAJA_REPORT_FT)
+
 #include <stdio.h>
 #include "cycle.h"
 

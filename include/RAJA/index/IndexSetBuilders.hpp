@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -29,6 +29,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
+
 #include "RAJA/util/types.hpp"
 
 namespace RAJA
@@ -53,8 +54,8 @@ namespace RAJA
  ******************************************************************************
  */
 void buildTypedIndexSetAligned(IndexSet& hiset,
-                          const Index_type* const indices_in,
-                          Index_type length);
+                               const Index_type* const indices_in,
+                               Index_type length);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,11 +82,13 @@ void buildTypedIndexSetAligned(IndexSet& hiset,
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim);
+void buildLockFreeBlockIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment,
+                        RAJA::ListSegment,
+                        RAJA::RangeStrideSegment>& iset,
+    int fastDim,
+    int midDim,
+    int slowDim);
 
 /*
  ******************************************************************************
@@ -98,14 +101,16 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset( RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
-                                Index_type const* domainToRange,
-                                int numEntity,
-                                int numRangePerDomain,
-                                int numEntityRange,
-                                Index_type* elemPermutation = 0l,
-                                Index_type* ielemPermutation = 0l);
+void buildLockFreeColorIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment,
+                        RAJA::ListSegment,
+                        RAJA::RangeStrideSegment>& iset,
+    Index_type const* domainToRange,
+    int numEntity,
+    int numRangePerDomain,
+    int numEntityRange,
+    Index_type* elemPermutation = 0l,
+    Index_type* ielemPermutation = 0l);
 
 }  // closing brace for RAJA namespace
 

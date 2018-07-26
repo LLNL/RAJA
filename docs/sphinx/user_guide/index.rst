@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -45,7 +45,8 @@ source code bases that can be readily ported to new architectures. RAJA is
 one C++-based programming model abstraction layer that can help to meet this 
 performance portability challenge.
 
-RAJA provides portable abstractions for single and nested loops, reductions,
+RAJA provides portable abstractions for singly-nested and multiply-nested 
+loops -- as well as a variety of loop transformations, reductions,
 scans, atomic operations, data layouts and views, iteration spaces, etc.
 Currently supported execution policies for different programming model 
 back-ends include: sequential, SIMD, CUDA, OpenMP multi-threading and target 
@@ -99,13 +100,18 @@ features.
 See :ref:`features-label` for a complete, high-level description of RAJA 
 features (akin to a reference guide).
 
+Additional information about things to think about when considering whether
+to use RAJA in an application can be found in :ref:`app-considerations-label`.
+
 .. toctree::
    :maxdepth: 2
 
    getting_started
-   tutorial
    features
-   plugins
+   app_considerations
+   tutorial
+   using_raja
    config_options
+   plugins
    contributing
    raja_license

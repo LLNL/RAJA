@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -27,11 +27,14 @@
 #ifndef RAJA_PERMUTEDLAYOUT_HPP
 #define RAJA_PERMUTEDLAYOUT_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iostream>
 
-#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
+
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"

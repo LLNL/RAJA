@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -36,10 +36,10 @@ const int N = 32000;
 
 using ExecTypes = std::tuple<
     RAJA::seq_exec
-#ifdef RAJA_ENABLE_OPENMP
+#if defined (RAJA_ENABLE_OPENMP)
     ,RAJA::omp_parallel_for_exec
 #endif
-#ifdef RAJA_ENABLE_TBB
+#if defined (RAJA_ENABLE_TBB)
     ,RAJA::tbb_for_exec
 #endif
 >;

@@ -22,7 +22,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -39,34 +39,66 @@
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Enable/disable exploratory fault tolerance mechanism.
+ *
+ ******************************************************************************
+ */
 #cmakedefine ENABLE_FT
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Default RAJA floating point scalar and pointer options.
+ *
+ ******************************************************************************
+ */
 #define @RAJA_FP@
 #define @RAJA_PTR@
 
-/*
- * Programming models
+/*!
+ ******************************************************************************
+ *
+ * \brief Deprecated tests
+ *
+ ******************************************************************************
  */
+#cmakedefine RAJA_DEPRECATED_TESTS
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Programming model back-ends, plus CHAI enable/disable.
+ *
+ ******************************************************************************
+ */
 #cmakedefine RAJA_ENABLE_OPENMP
 #cmakedefine RAJA_ENABLE_TARGET_OPENMP
 #cmakedefine RAJA_ENABLE_TBB
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_CHAI
-#cmakedefine RAJA_ENABLE_CUB
 
-/*
- * Timer options
+/*!
+ ******************************************************************************
+ *
+ * \brief Timer options.
+ *
+ ******************************************************************************
  */
-
 #cmakedefine RAJA_USE_CHRONO
 #cmakedefine RAJA_USE_GETTIME
 #cmakedefine RAJA_USE_CLOCK
 #cmakedefine RAJA_USE_CYCLE
 
-/*
- * Detect the host C++ compiler we are using.
+/*!
+ ******************************************************************************
+ *
+ * \brief Detect the host C++ compiler we are using.
+ *
+ ******************************************************************************
  */
 #if defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
@@ -84,6 +116,12 @@
 
 
 namespace RAJA {
+
+#if defined(RAJA_ENABLE_OPENMP)
+#if not defined(_OPENMP)
+#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler 
+#endif // _OPENMP
+#endif // RAJA_ENABLE_OPENMP
 
 
 /*!
@@ -164,10 +202,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -186,10 +224,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -212,7 +250,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
+#define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
 
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -232,10 +270,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
 #else
-#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
+#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
@@ -257,7 +295,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
 
 #define RAJA_INLINE inline
-#define RAJA_ALIGN_DATA(d)
+#define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
 
@@ -267,6 +305,25 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
 #cmakedefine RAJA_HAVE_MM_MALLOC
 
+//
+//Creates a general framework for compiler alignment hints
+//
+// Example usage:
+// double *a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,10*sizeof(double));
+// double *y = RAJA::align_hint
+
+template<typename T>
+RAJA_INLINE
+T * align_hint(T * x)
+{
+#if defined (RAJA_COMPILER_INTEL)
+  RAJA_ALIGN_DATA(x);
+  return x;
+#else
+  return static_cast<T *>(RAJA_ALIGN_DATA(x));
+#endif
+}
+    
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard

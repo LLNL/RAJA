@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,11 +26,11 @@
 #ifndef RAJA_FORALLN_PERMUTATIONS_HPP
 #define RAJA_FORALLN_PERMUTATIONS_HPP
 
-
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 
 #include <array>
+
+#include "camp/camp.hpp"
 
 namespace RAJA
 {

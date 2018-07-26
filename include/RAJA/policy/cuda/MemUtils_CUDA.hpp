@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,25 +31,25 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/util/basic_mempool.hpp"
-
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-
-#include "RAJA/util/mutex.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <type_traits>
 #include <unordered_map>
 
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/mutex.hpp"
+
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+
 namespace RAJA
 {
 
 namespace cuda
 {
+
+
 
 //! Allocator for pinned memory for use in basic_mempool
 struct PinnedAllocator {
@@ -247,8 +247,35 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
-  return {loop_body};
+  using return_type = typename std::remove_reference<LOOP_BODY>::type;
+  return return_type(std::forward<LOOP_BODY>(loop_body));
 }
+
+
+
+namespace internal
+{
+
+RAJA_INLINE
+int getMaxBlocks(){
+  static int max_blocks = -1;
+
+  if(max_blocks <= 0){
+    int cur_device = -1;
+    cudaGetDevice(&cur_device);
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, cur_device);
+    int s_num_sm = prop.multiProcessorCount;
+    int s_max_threads_per_sm = prop.maxThreadsPerMultiProcessor;
+    max_blocks = s_num_sm * (s_max_threads_per_sm/1024);
+    //printf("MAX_BLOCKS=%d\n", max_blocks);
+  }
+
+  return max_blocks;
+}
+
+} // namespace internal
+
 
 }  // closing brace for cuda namespace
 

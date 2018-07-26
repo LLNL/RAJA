@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -99,7 +99,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   int loops = 2;
   for (int k = 0; k < loops; k++) {
 
-    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
       dsum0 += dvalue[i];
       dsum1 += dvalue[i] * 2.0;
       dsum2 += dvalue[i] * 3.0;
@@ -123,6 +123,58 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   }
 }
 
+CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
+{
+  double* dvalue = ReduceSumCUDA::dvalue;
+
+  double dtinit = 5.0;
+
+  ReduceSum<cuda_reduce<block_size>, double> dsum0(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum1;
+  ReduceSum<cuda_reduce<block_size>, double> dsum2(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum3;
+  ReduceSum<cuda_reduce<block_size>, double> dsum4(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum5;
+  ReduceSum<cuda_reduce<block_size>, double> dsum6(5.0);
+  ReduceSum<cuda_reduce<block_size>, double> dsum7;
+
+  dsum0.reset(0.0);
+  dsum1.reset(dtinit * 1.0);
+  dsum2.reset(0.0);
+  dsum3.reset(dtinit * 3.0);
+  dsum4.reset(0.0);
+  dsum5.reset(dtinit * 5.0);
+  dsum6.reset(0.0);
+  dsum7.reset(dtinit * 7.0);
+
+  int loops = 2;
+  for (int k = 0; k < loops; k++) {
+
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
+      dsum0 += dvalue[i];
+      dsum1 += dvalue[i] * 2.0;
+      dsum2 += dvalue[i] * 3.0;
+      dsum3 += dvalue[i] * 4.0;
+      dsum4 += dvalue[i] * 5.0;
+      dsum5 += dvalue[i] * 6.0;
+      dsum6 += dvalue[i] * 7.0;
+      dsum7 += dvalue[i] * 8.0;
+    });
+
+    double base_chk_val = dinit_val * double(TEST_VEC_LEN) * (k + 1);
+
+    ASSERT_FLOAT_EQ(1 * base_chk_val, dsum0.get());
+    ASSERT_FLOAT_EQ(2 * base_chk_val + (dtinit * 1.0), dsum1.get());
+    ASSERT_FLOAT_EQ(3 * base_chk_val, dsum2.get());
+    ASSERT_FLOAT_EQ(4 * base_chk_val + (dtinit * 3.0), dsum3.get());
+    ASSERT_FLOAT_EQ(5 * base_chk_val, dsum4.get());
+    ASSERT_FLOAT_EQ(6 * base_chk_val + (dtinit * 5.0), dsum5.get());
+    ASSERT_FLOAT_EQ(7 * base_chk_val, dsum6.get());
+    ASSERT_FLOAT_EQ(8 * base_chk_val + (dtinit * 7.0), dsum7.get());
+  }
+}
+
+#if defined(RAJA_DEPRECATED_TESTS)
 CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
@@ -145,7 +197,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 
   forallN<NestedPolicy<ExecList<ExecPolicy<seq_segit,
                                            cuda_exec<block_size> > > > >(
-      iset, [=] __device__(int i) {
+      iset, [=] RAJA_HOST_DEVICE(int i) {
         dsum0 += dvalue[i];
         isum1 += 2 * ivalue[i];
         dsum2 += 3 * dvalue[i];
@@ -161,7 +213,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   ASSERT_EQ(4 * ibase_chk_val + (itinit * 4), isum3.get());
 
 }
-
+#endif
 //
 // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
 //        of the array using an indexset with four range segments
@@ -179,7 +231,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   RangeSegment seg2(4860, 10110);
   RangeSegment seg3(20490, 32003);
 
-  IndexSet iset;
+  UnitIndexSet iset;
   iset.push_back(seg0);
   iset.push_back(seg1);
   iset.push_back(seg2);
@@ -194,7 +246,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
   forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset, [=] __device__(int i) {
+      iset, [=] RAJA_DEVICE(int i) {
         dsum0 += dvalue[i];
         isum1 += 2 * ivalue[i];
         dsum2 += 3 * dvalue[i];
@@ -232,7 +284,7 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
         pos_chk_val += rand_dvalue[i];
       }
     }
-    forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+    forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
       if (rand_dvalue[i] < 0.0) {
         dsumN += rand_dvalue[i];
       } else {
@@ -255,7 +307,7 @@ CUDA_TEST_F(ReduceSumCUDA, increasing_size)
 
     ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
 
-    forall<cuda_exec<block_size, true> >(0, size, [=] __device__(int i) {
+    forall<cuda_exec<block_size, true> >(RangeSegment(0, size), [=] RAJA_DEVICE(int i) {
       dsum0 += dvalue[i];
     });
 

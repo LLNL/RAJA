@@ -1,7 +1,6 @@
 #ifndef CAMP_NUMBER_HPP
 #define CAMP_NUMBER_HPP
 
-#include "camp/list/list.hpp"
 #include "camp/number/if.hpp"
 #include "camp/number/number.hpp"
 
@@ -119,6 +118,22 @@ template <typename T>
 struct not_ {
   using type = typename if_s<T, false_type, true_type>::type;
 };
+
+
+template <idx_t N, typename IdxSeg>
+struct seq_at;
+
+template <idx_t N, idx_t Idx0, idx_t... IdxRest>
+struct seq_at<N, camp::idx_seq<Idx0, IdxRest...>> {
+  static constexpr idx_t value =
+      seq_at<N - 1, camp::idx_seq<IdxRest...>>::value;
+};
+
+template <idx_t Idx0, idx_t... IdxRest>
+struct seq_at<0, camp::idx_seq<Idx0, IdxRest...>> {
+  static constexpr idx_t value = Idx0;
+};
+
 
 }  // end namespace camp
 

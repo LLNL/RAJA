@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file defining typed rangesegment classes.
+ * \brief   RAJA header file defining typed range segment classes.
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -28,11 +28,13 @@
 
 #include "RAJA/config.hpp"
 
+#include <iostream>
+
 #include "RAJA/internal/Iterators.hpp"
 
 #include "RAJA/util/concepts.hpp"
 
-#include <iostream>
+#include "RAJA/index/IndexValue.hpp"
 
 namespace RAJA
 {
@@ -82,17 +84,19 @@ struct TypedRangeSegment {
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
   //! the underlying value_type type
   /*!
-   * this corresponds to the template parameter
+   * these corresponds to the template parameter
    */
   using value_type = StorageT;
+
+  using IndexType  = StorageT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE TypedRangeSegment(Index_type begin, Index_type end)
-      : m_begin(iterator{begin}), m_end(iterator{end}), m_size(end - begin)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Index_type begin, Index_type end)
+      : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
 
@@ -100,71 +104,70 @@ struct TypedRangeSegment {
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
   //! move constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment&& o)
-      : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end)),
-        m_size(std::move(o.m_size))
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment&& o)
+      : m_begin(std::move(o.m_begin)), m_end(std::move(o.m_end))
   {
   }
 
   //! copy constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end)
   {
   }
 
   //! copy assignment
-  RAJA_HOST_DEVICE TypedRangeSegment& operator=(TypedRangeSegment const& o)
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment& operator=(
+      TypedRangeSegment const& o)
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
-    m_size = o.m_size;
     return *this;
   }
 
   //! destructor
-  RAJA_HOST_DEVICE ~TypedRangeSegment() {}
+  RAJA_HOST_DEVICE RAJA_INLINE ~TypedRangeSegment() {}
 
   //! swap one TypedRangeSegment with another
   /*!
    * \param[in] other another TypedRangeSegment instance
    */
-  RAJA_HOST_DEVICE void swap(TypedRangeSegment& other)
+  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
   {
     camp::safe_swap(m_begin, other.m_begin);
     camp::safe_swap(m_end, other.m_end);
-    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeSegment
   /*!
    * \return an iterator corresponding to the beginning of the Segment
    */
-  RAJA_HOST_DEVICE iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return m_begin; }
 
   //! obtain an iterator to the end of this TypedRangeSegment
   /*!
    * \return an iterator corresponding to the end of the Segment
    */
-  RAJA_HOST_DEVICE iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return m_end; }
 
   //! obtain the size of this TypedRangeSegment
   /*!
    * \return the range (end - begin) of this Segment
    */
-  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+  RAJA_HOST_DEVICE RAJA_INLINE StorageT size() const { return m_end - m_begin; }
 
   //! Create a slice of this instance as a new instance
   /*!
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE TypedRangeSegment slice(Index_type begin,
-                                           Index_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(Index_type begin,
+                                                       Index_type length) const
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
-    return TypedRangeSegment{start, end};
+
+    return TypedRangeSegment{stripIndexType(start),
+                             stripIndexType(end)};
   }
 
   //! equality comparison
@@ -172,10 +175,10 @@ struct TypedRangeSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+    return m_begin == o.m_begin && m_end == o.m_end;
   }
 
 private:
@@ -184,9 +187,6 @@ private:
 
   //! member variable for end iterator
   iterator m_end;
-
-  //! member variable for size of segment
-  DiffT m_size;
 };
 
 
@@ -261,18 +261,22 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
+  using IndexType  = StorageT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin,
+                                           Index_type end,
+                                           Index_type stride)
       : m_begin(iterator(DiffT{begin}, DiffT{stride})),
         m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) + static_cast<value_type>(stride)
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin)
+                + static_cast<value_type>(stride)
                 - (stride > 0 ? value_type{1} : value_type{-1}))
                / static_cast<value_type>(stride))
   {
@@ -299,7 +303,8 @@ struct TypedRangeStrideSegment {
   }
 
   //! copy assignment
-  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o)
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(
+      TypedRangeStrideSegment const& o)
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
@@ -350,11 +355,18 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
                                                  Index_type length) const
   {
-    auto start = m_begin[0] + begin;
-    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+    auto stride = m_begin.get_stride();
+    auto start = m_begin[0] + begin * stride;
+    auto end = start + stride * length;
 
-    return TypedRangeStrideSegment{start,
-                                   end,
+    if (stride > 0) {
+      end = end > m_end[0] ? m_end[0] : end;
+    } else {
+      end = end < m_end[0] ? m_end[0] : end;
+    }
+
+    return TypedRangeStrideSegment{stripIndexType(start),
+                                   stripIndexType(end),
                                    m_begin.get_stride()};
   }
 

@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -29,11 +29,11 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+
+#include "RAJA/util/types.hpp"
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
     || defined(__MINGW32__) || defined(__BORLANDC__)

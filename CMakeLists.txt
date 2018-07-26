@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -14,8 +14,8 @@
 ###############################################################################
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 5)
-set(RAJA_VERSION_PATCHLEVEL 3)
+set(RAJA_VERSION_MINOR 6)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -23,6 +23,8 @@ endif()
 
 if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
+  set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+
   mark_as_advanced(RAJA_LOADED)
 
   cmake_minimum_required (VERSION 3.3)
@@ -45,13 +47,14 @@ if (NOT RAJA_LOADED)
   option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
-  option(ENABLE_CUB "Use cub for scans using CUDA" On)
   option(ENABLE_TESTS "Build tests" On)
   option(ENABLE_EXAMPLES "Build simple examples" On)
   option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+  option(ENABLE_BENCHMARKS "Build benchmarks" Off)
+  option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -81,8 +84,7 @@ if (NOT RAJA_LOADED)
     src/AlignedRangeIndexSetBuilders.cpp
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
-    src/MemUtils_CUDA.cpp
-    src/ThreadUtils_CPU.cpp)
+    src/MemUtils_CUDA.cpp)
 
   set (raja_depends)
 
@@ -95,14 +97,6 @@ if (NOT RAJA_LOADED)
     set (raja_depends
       ${raja_depends}
       cuda)
-  endif ()
-
-  if (ENABLE_CUDA)
-    if (ENABLE_CUB)
-      set (raja_depends
-        ${raja_depends}
-        cub)
-    endif ()
   endif ()
 
   if (ENABLE_CHAI)
@@ -135,9 +129,11 @@ if (NOT RAJA_LOADED)
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
     $<INSTALL_INTERFACE:include>)
 
   install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
 
   install(FILES
     ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
@@ -155,6 +151,10 @@ if (NOT RAJA_LOADED)
 
   if (ENABLE_DOCUMENTATION)
     add_subdirectory(docs)
+  endif ()
+
+  if (ENABLE_BENCHMARKS)
+    add_subdirectory(benchmark)
   endif ()
 
 endif()

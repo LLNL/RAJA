@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,9 +26,9 @@
 #ifndef policy_openmp_HPP
 #define policy_openmp_HPP
 
-#include "RAJA/policy/PolicyBase.hpp"
-
 #include <type_traits>
+
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
@@ -76,6 +76,13 @@ struct Distribute {
 //////////////////////////////////////////////////////////////////////
 //
 
+struct omp_parallel_region
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host> {
+};
+  
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
@@ -183,6 +190,11 @@ struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
 };
 
+struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
+                                                      Pattern::synchronize,
+                                                      Launch::sync> {
+};
+
 }  // closing brace for omp namespace
 }  // closing brace for policy namespace
 
@@ -190,18 +202,31 @@ using policy::omp::omp_for_exec;
 using policy::omp::omp_for_nowait_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
+using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_for_exec;
 using policy::omp::omp_parallel_segit;
 using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_collapse_nowait_exec;
 using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
+using policy::omp::omp_synchronize;
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using policy::omp::omp_target_parallel_for_exec;
 using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 #endif
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+using omp_shmem = seq_shmem;
 
 }  // closing brace for RAJA namespace
 

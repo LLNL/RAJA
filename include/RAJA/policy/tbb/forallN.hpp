@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -30,13 +30,16 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-#include "RAJA/internal/ForallNPolicy.hpp"
-#include "RAJA/policy/tbb/policy.hpp"
-#include "RAJA/util/types.hpp"
-
-#include <tbb/tbb.h>
 #include <cstddef>
 #include <type_traits>
+
+#include <tbb/tbb.h>
+
+#include "RAJA/internal/ForallNPolicy.hpp"
+
+#include "RAJA/policy/tbb/policy.hpp"
+
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

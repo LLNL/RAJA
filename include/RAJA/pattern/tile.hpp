@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -27,18 +27,15 @@
 #ifndef RAJA_forallN_tile_HPP
 #define RAJA_forallN_tile_HPP
 
-#include <type_traits>
-
 #include "RAJA/config.hpp"
+
+#include <type_traits>
 
 #include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
 
-/******************************************************************
- *  ForallN tiling policies
- ******************************************************************/
 
 // Policy for no tiling
 struct tile_none {

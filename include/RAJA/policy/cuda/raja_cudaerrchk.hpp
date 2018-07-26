@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -38,7 +38,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {

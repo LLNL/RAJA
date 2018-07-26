@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -27,7 +27,6 @@
 
 #ifndef RAJA_simd_HPP
 #define RAJA_simd_HPP
-
 
 #include "RAJA/policy/simd/forall.hpp"
 #include "RAJA/policy/simd/policy.hpp"

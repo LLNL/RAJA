@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -93,8 +93,8 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, 
-                typename PARENT::value_type>::value || T0_TypeId == 0,
+  static_assert(std::is_same<value_type, typename PARENT::value_type>::value
+                    || T0_TypeId == 0,
                 "All segments must have the same value_type");
 
   //! Construct empty index set
@@ -115,8 +115,7 @@ public:
   }
 
   //! Copy-assignment operator for index set
-  TypedIndexSet<T0, TREST...> &operator=(
-      const TypedIndexSet<T0, TREST...> &rhs)
+  TypedIndexSet<T0, TREST...> &operator=(const TypedIndexSet<T0, TREST...> &rhs)
   {
     if (&rhs != this) {
       TypedIndexSet<T0, TREST...> copy(rhs);
@@ -340,8 +339,9 @@ public:
   ///
   RAJA_SUPPRESS_HD_WARN
   template <typename BODY, typename... ARGS>
-  RAJA_HOST_DEVICE
-  void segmentCall(size_t segid, BODY&& body, ARGS&&... args) const
+  RAJA_HOST_DEVICE void segmentCall(size_t segid,
+                                    BODY &&body,
+                                    ARGS &&... args) const
   {
     if (getSegmentTypes()[segid] != T0_TypeId) {
       PARENT::segmentCall(segid,
@@ -677,9 +677,8 @@ protected:
   RAJA_INLINE void increaseTotalLength(int n) { m_len += n; }
 
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool compareSegmentById(
-      size_t,
-      const TypedIndexSet<P0, PREST...> &) const
+  RAJA_INLINE bool compareSegmentById(size_t,
+                                      const TypedIndexSet<P0, PREST...> &) const
   {
     return false;
   }
@@ -758,8 +757,12 @@ private:
 };
 
 
-RAJA_DEPRECATE_ALIAS("IndexSet will be deprecated soon. Please transition to TypedIndexSet")  
-typedef TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> IndexSet;
+RAJA_DEPRECATE_ALIAS(
+    "IndexSet will be deprecated soon. Please transition to TypedIndexSet")
+typedef TypedIndexSet<RAJA::RangeSegment,
+                      RAJA::ListSegment,
+                      RAJA::RangeStrideSegment>
+    IndexSet;
 
 namespace type_traits
 {

@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -29,12 +29,12 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include <atomic>
 #include <cstdlib>
 #include <iosfwd>
 #include <thread>
+
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

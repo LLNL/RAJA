@@ -11,7 +11,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -30,6 +30,7 @@
 
 #include "RAJA/policy/loop/atomic.hpp"
 #include "RAJA/policy/loop/forall.hpp"
+#include "RAJA/policy/loop/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
 

@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -57,3 +57,7 @@ raja_add_test(
 raja_add_test(
   NAME test-forall-view
   SOURCES test-forall-view.cpp)
+
+raja_add_test(
+  NAME test-synchronize
+  SOURCES test-synchronize.cpp)

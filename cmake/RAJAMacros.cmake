@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -15,7 +15,7 @@
 
 macro(raja_add_executable)
   set(options )
-  set(singleValueArgs NAME TEST)
+  set(singleValueArgs NAME TEST BENCHMARK)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -39,12 +39,12 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON tbb)
   endif ()
 
-  message(STATUS "${arg_NAME} building with depends: ${arg_DEPENDS_ON}")
-
   if (${arg_TEST})
-    set (_output_dir test)
+    set (_output_dir ${CMAKE_BINARY_DIR}/test)
+  elseif (${arg_BENCHMARK})
+    set (_output_dir ${CMAKE_BINARY_DIR}/benchmark)
   else ()
-    set (_output_dir bin)
+    set (_output_dir ${CMAKE_BINARY_DIR}/bin)
   endif()
 
   blt_add_executable(
@@ -76,3 +76,24 @@ macro(raja_add_test)
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_test)
+
+macro(raja_add_benchmark)
+  set(options )
+  set(singleValueArgs NAME)
+  set(multiValueArgs SOURCES DEPENDS_ON)
+
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  list (APPEND arg_DEPENDS_ON gbenchmark)
+
+  raja_add_executable(
+    NAME ${arg_NAME}.exe
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    BENCHMARK On)
+
+  blt_add_benchmark(
+    NAME ${arg_NAME}
+    COMMAND ${TEST_DRIVER} ${arg_NAME})
+endmacro(raja_add_benchmark)

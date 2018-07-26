@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -28,21 +28,21 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <type_traits>
+#include <utility>
 
 #include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(__cplusplus >= 201103L,
               "C++ standards below 2011 are not "
               "supported" RAJA_STRINGIFY_HELPER(__cplusplus));
 #endif
-
-#include <cstdint>
-#include <functional>
-#include <iostream>
-#include <type_traits>
-#include <utility>
 
 #if __cplusplus > 201400L
 #define RAJA_CXX14_CONSTEXPR constexpr

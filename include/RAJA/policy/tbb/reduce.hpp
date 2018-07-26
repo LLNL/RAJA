@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -33,15 +33,19 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-#include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/pattern/detail/reduce.hpp"
-#include "RAJA/pattern/reduce.hpp"
-#include "RAJA/policy/tbb/policy.hpp"
-#include "RAJA/util/types.hpp"
-
-#include <tbb/tbb.h>
 #include <memory>
 #include <tuple>
+
+#include <tbb/tbb.h>
+
+#include "RAJA/internal/MemUtils_CPU.hpp"
+
+#include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
+
+#include "RAJA/policy/tbb/policy.hpp"
+
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -55,14 +59,19 @@ class ReduceTBB
   std::shared_ptr<tbb::combinable<T>> data;
 
 public:
-  //! prohibit compiler-generated default ctor
-  ReduceTBB() = delete;
+  //! default constructor calls the reset method
+  ReduceTBB() { reset(T(), T()); }
 
   //! constructor requires a default value for the reducer
   explicit ReduceTBB(T init_val, T initializer)
-      : data(
-            std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
   {
+    reset(init_val, initializer);
+  }
+
+  void reset(T init_val, T initializer)
+  {
+    data = std::shared_ptr<tbb::combinable<T>>(
+        std::make_shared<tbb::combinable<T>>([=]() { return initializer; }));
     data->local() = init_val;
   }
 

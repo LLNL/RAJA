@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 #    
 # Produced at the Lawrence Livermore National Laboratory
 #    
@@ -15,7 +15,6 @@
 
 if (ENABLE_OPENMP)
   if(OPENMP_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     list(APPEND RAJA_EXTRA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
     message(STATUS "OpenMP Enabled")
   else()
@@ -23,21 +22,6 @@ if (ENABLE_OPENMP)
     set(ENABLE_OPENMP Off)
   endif()
 endif()
-
-if (ENABLE_CUDA)
-  if (ENABLE_CUB)
-    find_package(CUB)
-    if (CUB_FOUND)
-      blt_register_library(
-        NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
-    else()
-      message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
-  Please set CUB_DIR for better scan performance.")
-      set(ENABLE_CUB Off)
-    endif()
-  endif()
-endif ()
 
 if (ENABLE_TBB)
   find_package(TBB)
