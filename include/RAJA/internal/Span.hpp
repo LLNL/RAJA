@@ -30,7 +30,7 @@
 #include <type_traits>
 
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {

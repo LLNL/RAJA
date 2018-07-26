@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *
  ******************************************************************************
  */
@@ -33,10 +33,10 @@
 #include <cassert>
 #include <climits>
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"

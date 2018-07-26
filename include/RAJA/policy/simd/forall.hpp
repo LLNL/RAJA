@@ -34,10 +34,10 @@
 #ifndef RAJA_forall_simd_HPP
 #define RAJA_forall_simd_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iterator>
 #include <type_traits>
-
-#include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
 

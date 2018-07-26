@@ -26,37 +26,22 @@ Key RAJA features shown in this example:
   * ``RAJA::exclusive_scan_inplace`` operation
   * RAJA operators for different types of scans; e.g., plus, minimum, maximum, etc.
 
-In the example, we demonstrate a variety of scan operations supported by RAJA.
+In the examples, we demonstrate a variety of scan operations supported by RAJA.
 We show how different scan operations can be performed by passing different
 RAJA operators to the RAJA scan template methods. Each operator is a template
 type, where the template argument is the type of the values it operates on.
-
-This discussion assumes the reader is familiar with parallel scan operations
-and how they are applied. If you are unfamiliar with scan operations or need
-a refresher, a good explanation of what scan operations are why they are
-useful can be found here `Blelloch Scan Lecture Notes <https://www.cs.cmu.edu/~blelloch/papers/Ble93.pdf>`. A nice presentation that describes how scans are
-parallelized is `Va Tech Scan Lecture <http://people.cs.vt.edu/yongcao/teaching/cs5234/spring2013/slides/Lecture10.pdf>`_ 
-
-.. note:: For scans using the CUDA back-end, RAJA uses the implementations
-          provided by the NVIDIA Thrust library. For better performance, one
-          can enable the NVIDIA cub library for scans by setting the CMake
-          variable ``CUB_DIR`` to the location of the cub library on your
-          system when CUDA is enabled.
+For a summary of RAJA scan functionality, see :ref:`scan-label`. 
 
 In the following discussion, we present examples of RAJA sequential, OpenMP,
 and CUDA scan operations. All examples use the same integer arrays for input
 and output values. We set the input array as follows:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 67-83
 
 This generates the following sequence of values in the 'in' array::
 
    3 -1 2 15 7 5 17 9 6 18 1 10 0 14 13 4 11 12 8 16
-
-.. note:: If no operator is passed to a RAJA scan method, the operator
-          ``RAJA::operators::plus`` is used by default. The result is a 
-          `prefix-sum`.
 
 ^^^^^^^^^^^^^^^^
 Inclusive Scans
@@ -64,7 +49,7 @@ Inclusive Scans
 
 A sequential inclusive scan operation is performed by:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 93-93
 
 Note that entries of the 'out' array are set to a prefix-sum based on the 'in'
@@ -76,7 +61,7 @@ array contains the values::
 We can be explicit about the operation used in the scan by passing the 
 'plus' operator to the scan method:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 103-104
 
 The result in the 'out' array is the same.
@@ -84,7 +69,7 @@ The result in the 'out' array is the same.
 An inclusive parallel scan operation using OpenMP multi-threading is
 accomplished like this (we are explicit with the operation the scan will use):
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 156-157
 
 As is commonly done with RAJA, the only difference between this code and
@@ -98,7 +83,7 @@ Exclusive Scans
 
 A sequential exclusive scan (plus) operation is performed by:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 114-115
 
 This generates the following sequence of values in the output array::
@@ -112,7 +97,7 @@ that, the output sequence is shifted one position to the right.
 
 Running the same scan operation on a GPU using CUDA is done by:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 199-200
 
 Note that we pass the number of threads per CUDA thread block as the template
@@ -128,7 +113,7 @@ to in-place scan methods.
 
 Here is a sequential inclusive in-place scan that uses the 'minimum' operator:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 125-128
 
 Note that, before the scan, we copy the input array into the output array so 
@@ -141,7 +126,7 @@ This generates the following sequence in the output array::
 
 Here is a sequential exclusive in-place scan that uses the 'maximum' operator:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 138-141
 
 This generates the following sequence in the output array::
@@ -154,7 +139,7 @@ i.e., the identity of the maximum operator.
 As you may expect at this point, running an exclusive in-place prefix-sum
 operation using OpenMP is accomplished by: 
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 167-170
 
 This generates the following sequence in the output array (as expected)::
@@ -163,8 +148,8 @@ This generates the following sequence in the output array (as expected)::
 
 Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
 
-.. literalinclude:: ../../../../examples/ex9-scan.cpp
+.. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 187-190
 
-The file ``RAJA/examples/ex9-scan.cpp`` contains the complete 
+The file ``RAJA/examples/tut_scan.cpp`` contains the complete 
 working example code.

@@ -18,16 +18,22 @@
 Atomics
 ========
 
-To avoid race conditions at specific memory locations, RAJA provides 
-portable atomic operations, which are described in this section.
+RAJA provides portable atomic operations that can be used to update values
+at arbitrary memory locations while avoiding data races. They are described
+in this section.
+
+A complete working example code that shows RAJA atomic usage can be found in 
+:ref:`atomichist-label`.
+
+.. note:: * All RAJA atomic operations are in the namespace ``RAJA::atomic``.
 
 -----------------
 Atomic Operations
 -----------------
 
-.. note:: * All RAJA atomic operations are in the namespace ``RAJA::atomic``.
-          * Each RAJA atomic operation is templated on an *atomic policy*.
-            Atomic policies are described in the next section.
+RAJA atomic support includes a range of the most common atomic operations.
+
+.. note:: * Each RAJA atomic operation is templated on an *atomic policy*.
           * Each of methods below returns the value of the potentially modified
             argument (i.e., \*acc) immediately before the atomic operation is 
             applied.
@@ -57,8 +63,6 @@ Increment/decrement
 * ``atomicDec< atomic_policy >(T* acc)`` - Subtract 1 from \*acc.
 
 * ``atomicInc< atomic_policy >(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
-
-* ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
 * ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
@@ -97,7 +101,7 @@ a integral sum on a CUDA GPU device::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
+    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(&sum, 1);
 
   });
 
@@ -107,13 +111,13 @@ After this operation, 'sum' will be equal to 'N'.
 AtomicRef
 ^^^^^^^^^^^^^^^^^^^^
 
-RAJA also provides an atomic interface similar to C++ 'std::atomic', but for 
-arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` provides
-an object-oriented interface to the atomic methods described above. For 
-example, after the following operations:: 
+RAJA also provides an atomic interface similar to C++ 'std::atomic', but which
+works for arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` 
+provides an object-oriented interface to the atomic methods described above. 
+For example, after the following operations:: 
 
   double val = 2.0;
-  RAJA::atomic::AtomicRef<double,  RAJA::seq_atomic > sum(&val);
+  RAJA::atomic::AtomicRef<double,  RAJA::omp_atomic > sum(&val);
 
   sum++;
   ++sum;
@@ -121,10 +125,11 @@ example, after the following operations::
 
 the value of 'val' will be 5.
 
-Note that the operators that the 'AtomicRef' class provide return the object
-that holds the address of the data given passes the constructor. If you need 
-to keep the original value of the data before the atomic call, you need to 
-use the atomic methods listed above.
+Note that the operations provided by the 'AtomicRef' class return the object
+that holds the address of the data given to the constructor. It will likely 
+change with each atomic update call. If you need to keep the original value 
+of the data before an atomic call, you need to use the atomic methods described 
+earlier and not the ``RAJA::atomic::AtomicRef`` interface.
 
 ---------------
 Atomic Policies
@@ -132,7 +137,7 @@ Atomic Policies
 
 .. note:: * All RAJA atomic policies are in the namespace ``RAJA::atomic``.
           * There are no RAJA atomic policies for TBB (Intel Threading Building 
-            Blocks) execution contexts.
+            Blocks) execution contexts currently.
 
 * ``seq_atomic``     - Policy for use in sequential execution contexts, primarily for consistency with parallel policies. Note that sequential atomic operations are not protected and will likely produce incorrect results when used in a parallel execution context.
 
@@ -149,7 +154,7 @@ For example, we could use the 'auto_atomic' policy in the example above::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(sum, 1);
+    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(&sum, 1);
 
   });
 
@@ -157,6 +162,3 @@ Here, the atomic operation knows that it is used within a CUDA execution
 context and does the right thing. Similarly, if the 'forall' method used 
 an OpenMP execution policy, the OpenMP version of the atomic operation 
 would be used.
-
-A complete working code that shows RAJA atomic usage can be found in 
-``<build-dir>/examples/ex8-pi-reduce_vs_atomic.cpp``. 

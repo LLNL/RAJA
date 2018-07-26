@@ -28,9 +28,10 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
@@ -375,7 +376,7 @@ constexpr RAJA_INLINE typename std::
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {
