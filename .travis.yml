@@ -82,6 +82,8 @@ before_install: # don't try to build and run intel when it's impossible
   else
     export DO_TEST=no DO_BUILD=no
   fi
+- export LSAN_OPTIONS
+- export ASAN_OPTIONS
 
 script: 
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
