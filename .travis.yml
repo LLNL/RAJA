@@ -87,7 +87,7 @@ before_install: # don't try to build and run intel when it's impossible
 
 script: 
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
-- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
+- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
