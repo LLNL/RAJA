@@ -26,8 +26,8 @@ typically allocated as::
 
    double* A = new double [N_r * N_c];
 
-Using a one dimensional array makes it necessary to convert
-two-dimensional indices (rows and columns of a matrix) to a one dimensional
+Using a one-dimensional array makes it necessary to convert
+two-dimensional indices (rows and columns of a matrix) to a one-dimensional
 pointer offset index to access the array memory location. One could introduce
 a macro such as::
 
@@ -86,7 +86,7 @@ accesses array entries with unit stride. The loop::
      Aview(i0, i1, ..., i, ..., iN) = ...
    }
 
-access array entries with stride :math:`Nn * N(n-1) * ... * N(i+1)`.
+access array entries with stride :math:`N_n * N_(n-1) * ... * N_(i+1)`.
 
 ------------
 RAJA Layout
