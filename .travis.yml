@@ -65,7 +65,9 @@ matrix:
     env:
     - COMPILER=clang++
     - IMG=clang4
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address"
+    - ASAN_OPTIONS=detect_leaks=0
+    - "LSAN_OPTIONS=verbosity=1:log_threads=1"
   - compiler: nvcc-debug
     env:
     - COMPILER=g++
