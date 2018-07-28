@@ -247,7 +247,7 @@ statement types:
   * ``RAJA::statement::Lambda< LambdaId >`` invokes the lambda expression that appears at index 'LambdaId' in the sequence of lambda arguments to a kernel.
   * ``RAJA::statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration.
   * ``RAJA::statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc. 
-  * ``RAJA::statement::CudaKernel< EnclosedStatements> `` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where iteration space of each loop level are associated to threads and/or thread blocks. 
+  * ``RAJA::statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where iteration space of each loop level are associated to threads and/or thread blocks. 
   * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier; a similar thread barrier for OpenMP will be added soon.
   * ``RAJA::statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane iteration pattern over multiple indices.
   * ``RAJA::statement::SetShmemWindow< EnclosedStatements >`` sets a window into a shared memory buffer for loops described by 'EnclosedStatements'.

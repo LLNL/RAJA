@@ -31,6 +31,8 @@ More examples of RAJA iteration space usage can be found in the
 .. note:: All RAJA iteration space types described here are located in the 
           namespace ``RAJA``.
 
+.. _indices-label:
+
 -------
 Indices
 -------
@@ -49,6 +51,8 @@ optimizations.
 
 Users can change the type of ``RAJA::Index_type`` by editing the RAJA
 ``RAJA/include/RAJA/util/types.hpp`` header file.
+
+.. _segments-label:
 
 -------------
 Segments
@@ -139,7 +143,7 @@ Similar to range segment types, RAJA provides ``RAJA::ListSegment``, which is
 a type alias to ``RAJA::TypedListSegment`` using ``RAJA::Index_type`` as the
 template type parameter.
    
-Segment Type Iteration
+Segment Types and  Iteration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is worth noting that RAJA segment types model **C++ iterable interfaces**.
@@ -156,6 +160,8 @@ and two types:
 
 Thus, any iterable type that defines these methods and types appropriately
 can be used as a segment with RAJA traversal templates.
+
+.. _indexsets-label:
 
 --------------
 IndexSets

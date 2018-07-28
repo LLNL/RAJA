@@ -528,7 +528,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int col, int row, int k, double& dot) {
+    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
        dot = 0.0;
     },
 
@@ -538,7 +538,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int k, double& dot) {
+    [=] (int col, int row, int /* k */, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -573,7 +573,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int col, int row, int k, double& dot) {
+    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
        dot = 0.0;
     },
 
@@ -583,7 +583,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int k, double& dot) {
+    [=] (int col, int row, int /* k */, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -622,7 +622,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
        dot = 0.0;
     },
 
@@ -632,7 +632,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -668,7 +668,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
        dot = 0.0;
     },
 
@@ -678,7 +678,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
        Cview(row, col) = dot;
     }
 

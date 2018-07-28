@@ -18,7 +18,7 @@
 Reduction Operations
 ====================
 
-RAJA does not provide separate loop kernel execution methods for
+RAJA does not provide distinct loop kernel execution methods for
 reduction operations like some other C++ template-based programming models do.
 Instead RAJA provides reduction types that allow users to perform reduction 
 operations in ``RAJA::forall`` and ``RAJA::kernel`` methods in a portable, 
