@@ -1,3 +1,28 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for kernel conditional templates
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_pattern_kernel_Conditional_HPP
 #define RAJA_pattern_kernel_Conditional_HPP
 
@@ -14,7 +39,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that implements conditional control logic
+ * A RAJA::kernel statement that implements conditional control logic
  *
  */
 template <typename Condition, typename... EnclosedStmts>
@@ -23,11 +48,11 @@ struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 
 
 /*!
- * An expression that returns the value of the specified kernel::forall
+ * An expression that returns the value of the specified RAJA::kernel
  * parameter.
  *
  * This allows run-time values to affect the control logic within
- * kernel::forall policies.
+ * RAJA::kernel execution policies.
  */
 template <camp::idx_t ParamId>
 struct Param {

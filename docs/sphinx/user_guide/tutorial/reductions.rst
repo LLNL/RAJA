@@ -25,25 +25,24 @@ Key RAJA features shown in this example:
   * RAJA reduction types
   * RAJA reduction policies
 
-In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum reduction type.
-The example introduces all of the RAJA supported reduction types: min, max,
-sum, min-loc, max-loc, and shows how they are used. All RAJA reduction types
-are defined and used similarly.
+In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum 
+reduction type. The following example uses all supported RAJA reduction types: 
+min, max, sum, min-loc, max-loc.
 
-.. note:: Multiple RAJA reductions can be combined in any RAJA kernel execution
-          constructs, and the reductions can be combined with any other
-          kernel operations. 
+.. note:: Multiple RAJA reductions can be combined in any RAJA loop kernel 
+          execution method, and reduction operations can be combined with 
+          any other kernel operations. 
 
-We start by allocating an array, using CUDA Unified Memory if CUDA is enabled,
-and initializing its values in a manner that makes it easy to show what the
-different reduction types do:
+We start by allocating an array (the memory manager in the example uses 
+CUDA Unified Memory if CUDA is enabled) and initializing its values in a 
+manner that makes it easy to show what the different reduction types do:
 
-.. literalinclude:: ../../../../examples/ex7-reductions.cpp
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
                     :lines: 51-76
 
 We also define a range segment that defines the iteration space over the array:
 
-.. literalinclude:: ../../../../examples/ex7-reductions.cpp
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
                     :lines: 93-93
 
 With these parameters and data initialization, all the code examples 
@@ -61,30 +60,29 @@ presented below will generate the following results:
 
 A sequential kernel that exercises all RAJA sequential reduction types is:
  
-.. literalinclude:: ../../../../examples/ex7-reductions.cpp
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
                     :lines: 99-118
 
-Note that each reduction takes an initial value at construction and that 
-reduced values are retrieved after the kernel completes  by using an 
-appropriate 'get' method. The 'get()' method returns the reduced value for
-each reduction type; the 'getLoc()' method returns the index at which the 
-reduced value was observed for min-loc and max-loc reductions
+Note that each reduction takes an initial value at construction and the 
+reduced value for each type is retrieved after the kernel completes by calling 
+a 'get()' method. The min-loc/max-loc index values are retrived using
+'getLoc()' methods.
 
 For parallel multi-threading execution via OpenMP, the example can be run 
 by replacing the execution and reduction policies policies with:
 
-.. literalinclude:: ../../../../examples/ex7-reductions.cpp
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
                     :lines: 134-135
 
 Similarly, the kernel containing the reductions can be run in parallel
 on a CUDA GPU using these policies:
 
-.. literalinclude:: ../../../../examples/ex7-reductions.cpp
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
                     :lines: 170-171
 
 Note that for CUDA reductions to execute correctly, the thread block size 
 in the reduction policy must match that which is used in the CUDA 
 execution policy.
 
-The file ``RAJA/examples/ex7-reductions.cpp`` contains the complete 
+The file ``RAJA/examples/tut_reductions.cpp`` contains the complete 
 working example code.

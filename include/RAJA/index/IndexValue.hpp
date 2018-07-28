@@ -28,11 +28,10 @@
 
 #include "RAJA/config.hpp"
 
-
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
-
 #include <string>
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

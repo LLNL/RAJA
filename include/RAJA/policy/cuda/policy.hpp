@@ -26,11 +26,14 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#include "RAJA/config.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/config.hpp"
 #include "RAJA/pattern/reduce.hpp"
+
 #include "RAJA/policy/PolicyBase.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 

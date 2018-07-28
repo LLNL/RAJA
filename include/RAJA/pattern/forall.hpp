@@ -60,14 +60,15 @@
 #ifndef RAJA_forall_generic_HPP
 #define RAJA_forall_generic_HPP
 
+#include "RAJA/config.hpp"
+
 #include <functional>
 #include <iterator>
 #include <type_traits>
 
-#include "RAJA/config.hpp"
-
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/Span.hpp"
+
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
@@ -75,6 +76,7 @@
 #include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
+
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/types.hpp"
 

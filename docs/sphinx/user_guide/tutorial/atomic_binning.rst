@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _pi-label:
+.. _atomichist-label:
 
 --------------------------------------------------
 Computing a Histogram with Atomic Operations
@@ -34,7 +34,7 @@ description of supported RAJA atomic operations, please see
 
 All code snippets described below use the loop range:
 
-.. literalinclude:: ../../../../examples/ex10-binning.cpp
+.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
                     :lines: 57-57
 
 and the integer array 'bins' of length 'M' to accumulate the number of 
@@ -42,7 +42,7 @@ occurrences of each value in the array.
 
 Here is the OpenMP version:
 
-.. literalinclude:: ../../../../examples/ex10-binning.cpp
+.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
                     :lines: 90-97
 
 Each slot in the 'bins' array is incremented by one when a value associated 
@@ -52,7 +52,7 @@ loop execution policy.
 
 The CUDA version is similar:
 
-.. literalinclude:: ../../../../examples/ex10-binning.cpp
+.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
                     :lines: 126-133
 
 Here, the atomic add operation uses a CUDA atomic policy, which is compatible 
@@ -68,7 +68,7 @@ applied.
 
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
-.. literalinclude:: ../../../../examples/ex10-binning.cpp
+.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
                     :lines: 142-148
 
 The same CUDA loop execution policy as in the previous example is used.
@@ -76,5 +76,5 @@ The same CUDA loop execution policy as in the previous example is used.
 For information about the full range of RAJA atomic support, see
 :ref:`atomics-label`.
 
-The file ``RAJA/examples/ex10-binning.cpp`` contains the complete 
+The file ``RAJA/examples/tut_atomic-binning.cpp`` contains the complete 
 working example code.

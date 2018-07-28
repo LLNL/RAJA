@@ -15,64 +15,68 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME ex0-daxpy
-  SOURCES ex0-daxpy.cpp)
+  NAME tut_daxpy
+  SOURCES tut_daxpy.cpp)
 
 raja_add_executable(
-  NAME ex1-add-vectors
-  SOURCES ex1-add-vectors.cpp)
+  NAME tut_add-vectors
+  SOURCES tut_add-vectors.cpp)
 
 raja_add_executable(
-  NAME ex2-dot-product
-  SOURCES ex2-dot-product.cpp)
+  NAME tut_dot-product
+  SOURCES tut_dot-product.cpp)
 
 raja_add_executable(
-  NAME ex3-indexset-segments
-  SOURCES ex3-indexset-segments.cpp)
+  NAME tut_indexset-segments
+  SOURCES tut_indexset-segments.cpp)
 
 raja_add_executable(
-  NAME ex4-matrix-multiply
-  SOURCES ex4-matrix-multiply.cpp)
+  NAME tut_matrix-multiply
+  SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex4a-matrix-multiply-complexpol-shmem
-  SOURCES ex4a-matrix-multiply-complexpol-shmem.cpp)
+  NAME tut_nested-loop-reorder
+  SOURCES tut_nested-loop-reorder.cpp)
 
 raja_add_executable(
-  NAME ex5-nested-loop-reorder
-  SOURCES ex5-nested-loop-reorder.cpp)
+  NAME tut_vertexsum-coloring
+  SOURCES tut_vertexsum-coloring.cpp)
 
 raja_add_executable(
-  NAME ex6-vertexsum-coloring
-  SOURCES ex6-vertexsum-coloring.cpp)
-
-raja_add_executable(
-  NAME ex7-reductions
-  SOURCES ex7-reductions.cpp)
+  NAME tut_reductions
+  SOURCES tut_reductions.cpp)
   
 raja_add_executable(
-  NAME ex8-pi-reduce_vs_atomic
-  SOURCES ex8-pi-reduce_vs_atomic.cpp)
+  NAME tut_scan
+  SOURCES tut_scan.cpp)
 
 raja_add_executable(
-  NAME ex9-scan
-  SOURCES ex9-scan.cpp)
+  NAME tut_atomic-binning
+  SOURCES tut_atomic-binning.cpp)
 
 raja_add_executable(
-  NAME ex10-binning
-  SOURCES ex10-binning.cpp)
+  NAME tut_offset-layout
+  SOURCES tut_offset-layout.cpp)
 
 raja_add_executable(
-  NAME ex11-jacobi
-  SOURCES ex11-jacobi.cpp)
+  NAME tut_batched-matrix-multiply
+  SOURCES tut_batched-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex12-red-black-gauss-seidel
-  SOURCES ex12-red-black-gauss-seidel.cpp)
+  NAME pi-reduce_vs_atomic
+  SOURCES pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
-  NAME ex13-wave-eqn
-  SOURCES ex13-wave-eqn.cpp)
+  NAME jacobi
+  SOURCES jacobi.cpp)
+
+raja_add_executable(
+  NAME red-black-gauss-seidel
+  SOURCES red-black-gauss-seidel.cpp)
+
+raja_add_executable(
+  NAME wave-eqn
+  SOURCES wave-eqn.cpp)
   
   
 if(ENABLE_CUDA)

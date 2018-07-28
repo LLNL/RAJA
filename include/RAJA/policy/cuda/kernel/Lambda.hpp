@@ -3,20 +3,11 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
  */
-
-#ifndef RAJA_policy_cuda_kernel_Lambda_HPP
-#define RAJA_policy_cuda_kernel_Lambda_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -33,13 +24,22 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_cuda_kernel_Lambda_HPP
+#define RAJA_policy_cuda_kernel_Lambda_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
 

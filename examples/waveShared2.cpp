@@ -19,7 +19,6 @@
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
 
 /*
   Example 4: Time-Domain Finite Difference 

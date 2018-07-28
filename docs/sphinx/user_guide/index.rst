@@ -100,13 +100,18 @@ features.
 See :ref:`features-label` for a complete, high-level description of RAJA 
 features (akin to a reference guide).
 
+Additional information about things to think about when considering whether
+to use RAJA in an application can be found in :ref:`app-considerations-label`.
+
 .. toctree::
    :maxdepth: 2
 
    getting_started
-   tutorial
    features
-   plugins
+   app_considerations
+   tutorial
+   using_raja
    config_options
+   plugins
    contributing
    raja_license

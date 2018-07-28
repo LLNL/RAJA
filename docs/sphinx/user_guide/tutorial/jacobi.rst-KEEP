@@ -93,12 +93,12 @@ RAJA nested-loop implementation
 Here, we show a parallel implementation of the jacobi iteration using OpenMP
 and nested-loop RAJA capabilities:
 
-.. literalinclude:: ../../../../examples/example-jacobi.cpp
+.. literalinclude:: ../../../../examples/jacobi.cpp
                     :lines: 282-306
 
 The iteration spaces for the loops are defined using RAJA RangeSegment objects:
 
-.. literalinclude:: ../../../../examples/example-jacobi.cpp
+.. literalinclude:: ../../../../examples/jacobi.cpp
                     :lines: 200-201
  
 Here, the ``RAJA::nested::forall`` loop updates the solution variable at each grid
@@ -106,7 +106,7 @@ point.
 
 The ``jacobiompNestedPolicy`` type is defined as
 
-.. literalinclude:: ../../../../examples/example-jacobi.cpp
+.. literalinclude:: ../../../../examples/jacobi.cpp
                     :lines: 276-278
 
 The template parameter after the nested policy specifies that an OpenMP 

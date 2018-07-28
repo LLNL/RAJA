@@ -28,12 +28,12 @@
 
 #include "RAJA/config.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+
 // rely on builtin_atomic when OpenMP can't do the job
 #include "RAJA/policy/atomic_builtin.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
-
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 
 namespace RAJA
@@ -41,7 +41,7 @@ namespace RAJA
 namespace atomic
 {
 
-#ifdef RAJA_COMPILER_MSVC
+#if defined(RAJA_COMPILER_MSVC)
 
 
 // For MS Visual C, just default to builtin_atomic for everything

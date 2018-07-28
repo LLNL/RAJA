@@ -9,9 +9,6 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_openmp_kernel_HPP
-#define RAJA_policy_openmp_kernel_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -27,6 +24,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
+#ifndef RAJA_policy_openmp_kernel_HPP
+#define RAJA_policy_openmp_kernel_HPP
 
 #include "RAJA/policy/openmp/kernel/Collapse.hpp"
 

@@ -26,11 +26,12 @@
 #ifndef RAJA_policy_sequential_shared_memory_HPP
 #define RAJA_policy_sequential_shared_memory_HPP
 
+#include "RAJA/config.hpp"
 
 #include <stddef.h>
 #include <memory>
 #include <vector>
-#include "RAJA/config.hpp"
+
 #include "RAJA/pattern/shared_memory.hpp"
 
 namespace RAJA
