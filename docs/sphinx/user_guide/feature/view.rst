@@ -53,7 +53,7 @@ using a RAJA View and the simplest RAJA Layout::
    const int DIM = 2;
    RAJA::View<double, RAJA::Layout<DIM> > Aview(A, N_r, N_c);
 
-The ``RAJA::View`` constructor takes a pointer and the size of each dimension 
+The ``RAJA::View`` constructor takes a pointer and the extent of each dimension 
 as its arguments. The template parameters to the ``RAJA::View`` type define 
 the pointer type and the Layout type; here, the Layout just defines the 
 number of index dimensions. Using the resulting view object, one may 
@@ -72,7 +72,7 @@ A ``RAJA::View`` can support an arbitrary number of index dimensions::
 
 By default, entries corresponding to the right-most index are contiguous 
 in memory; i.e., unit-stride access. Each other index is offset by the 
-product of sizes of the dimensions to its right. For example, the loop::
+product of the extents of the dimensions to its right. For example, the loop::
 
    // iterate over index n and hold all other indices constant
    for (int in = 0; in < Nn; ++in) {
@@ -109,9 +109,9 @@ longest stride. For example,::
                                RAJA::as_array< RAJA::Perm<1,2,0> >::get() );
 
 creates a three-dimensional layout with index dimensions 5, 7, 11 with 
-indices permuted so that the first index (index 0 - size 5) has unit 
-stride, the third index (index 2 - size 11) has stride 5, and the 
-second index (index 1 - size 7) has stride 55 (= 5*11).
+indices permuted so that the first index (index 0 - extent 5) has unit 
+stride, the third index (index 2 - extent 11) has stride 5, and the 
+second index (index 1 - extent 7) has stride 55 (= 5*11).
 
 .. note:: If a permuted layout is created with the 'identity' permutation 
           (in this example RAJA::Perm<0,1,2>), the layout is the same as
@@ -119,7 +119,7 @@ second index (index 1 - size 7) has stride 55 (= 5*11).
           with no permutation.
 
 The first argument to ``RAJA::make_permuted_layout`` is a C++ array whose
-entries define the size of each index dimension. **The double braces are 
+entries define the extent of each index dimension. **The double braces are 
 required to prevent compilation errors/warnings about issues trying to 
 initialize a sub-object.** The second argument::
 
@@ -219,7 +219,7 @@ RAJA Index Mapping
 to a one-dimensional indices (i.e., pointer offsets) and vice versa. This
 section describes some Layout methods that are useful for converting between 
 such indices. Here, we create a three-dimensional layout 
-with dimension sizes 5, 7, and 11 and illustrate mapping between a 
+with dimension extents 5, 7, and 11 and illustrate mapping between a 
 three-dimensional index space to a one-dimensional linear space::
 
    // Create a 5 x 7 x 11 three-dimensional layout object
@@ -233,11 +233,11 @@ three-dimensional index space to a one-dimensional linear space::
    layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
 
 ``RAJA::Layout`` also supports projections; i.e., where one or more dimension
-sizes is zero. In this case, the linear index space is invariant for 
+extent is zero. In this case, the linear index space is invariant for 
 those dimensions, and toIndicies(...) will always produce a zero for that 
 dimension's index. An example of a projected Layout::
 
-   // Create a layout with second dimension size zero
+   // Create a layout with second dimension extent zero
    RAJA::Layout<3> layout(3, 0, 5);
 
    // The second (j) index is projected out
