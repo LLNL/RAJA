@@ -166,7 +166,7 @@ with offsets applied to the indices. For example,::
 
   RAJA::Layout<1> layout = RAJA::make_offset_layout<2>({{-5}}, {{5}});
 
-  RAJA::View<double, RAJA::Layout<3> > Cview(C, layout);
+  RAJA::View<double, RAJA::Layout<1> > Cview(C, layout);
 
 creates a one-dimensional view with a layout that allows one to index into
 it using the range :math:`[-5, 5]`. In other words, one can use the loop::
