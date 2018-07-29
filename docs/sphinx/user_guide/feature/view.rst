@@ -164,12 +164,12 @@ with offsets applied to the indices. For example,::
 
   double* C = new double[11]; 
 
-  RAJA::Layout<1> layout = RAJA::make_offset_layout<2>({{-5}}, {{5}});
+  RAJA::Layout<1> layout = RAJA::make_offset_layout<1>({{-5}}, {{5}});
 
   RAJA::View<double, RAJA::Layout<1> > Cview(C, layout);
 
 creates a one-dimensional view with a layout that allows one to index into
-it using the range :math:`[-5, 5]`. In other words, one can use the loop::
+it using the index space :math:`[-5, 5]`. In other words, one can use the loop::
 
   for (int i = -5; i < 6; ++i) {
     CView(i) = ...;
@@ -186,10 +186,11 @@ any number of dimensions; for example::
 
   RAJA::Layout<2> layout = RAJA::make_offset_layout<2>({{-1, -5}}, {{2, 5}});
 
-defines a layout that enables one to index into a view using the range
-:math:`[-1, -5] \times [2, 5]`. As we remarked earlier, double braces are
-needed to prevent compilation errors/warnings about issues trying to 
-initialize a sub-object.
+defines a two-dimensional layout that enables one to index into a view using 
+indices :math:`[-1, 2]` in the first dimension and indices :math:`[-5, 5]` in
+the second dimension. As we remarked earlier, double braces are needed to 
+prevent compilation errors/warnings about issues trying to initialize a 
+sub-object.
 
 Permuted Offset Layout
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -201,11 +202,10 @@ object with permutations and offsets applied to the indices. For example,::
     RAJA::make_permuted_offset_layout<2>({{-1, -5}}, {{2, 5}}, 
                                          RAJA::as_array<RAJA::Perm<1, 0>>::get());
 
-Here, the two-dimensional index range is :math:`[-1, -5] \times [2, 5]`, the
+Here, the two-dimensional index space is :math:`[-1, 2] \times [-5, 5]`, the
 same as above. However, the index stridings are permuted so that the first 
 index (index 0) has unit stride and the second index (index 1) has stride 4, 
-since the first index dimension has length 4; i.e., the index range for that 
-dimension is :math:`[-1, 2]`.  
+since the first index dimension has length 4.
 
 Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
 be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
