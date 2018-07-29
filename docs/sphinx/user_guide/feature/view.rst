@@ -75,18 +75,18 @@ in memory; i.e., unit-stride access. Each other index is offset by the
 product of sizes of the dimensions to its right. For example, the loop::
 
    // iterate over index n and hold all other indices constant
-   for (int i = 0; i < Nn; ++i) {
-     Aview(i0, i1, ..., i) = ...
+   for (int in = 0; in < Nn; ++in) {
+     Aview(i0, i1, ..., in) = ...
    }
 
 accesses array entries with unit stride. The loop::
 
-   // iterate over index i and hold all other indices constant
-   for (int i = 0; i < Ni; ++i) {
-     Aview(i0, i1, ..., i, ..., iN) = ...
+   // iterate over index j and hold all other indices constant
+   for (int j = 0; j < Nj; ++j) {
+     Aview(i0, i1, ..., j, ..., iN) = ...
    }
 
-access array entries with stride :math:`N_n * N_(n-1) * ... * N_(i+1)`.
+access array entries with stride :math:`N_n * N_(n-1) * ... * N_(j+1)`.
 
 ------------
 RAJA Layout
