@@ -419,8 +419,13 @@ struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
   }
 };
 
-// comparison
-
+// comparison 
+/*!
+ Checks if the candidate (rhs) value is strictly less than
+ the current value (lhs); if so the candidate is returned. 
+ When this operator is used to cycle through an array 
+ this ensures that the location of the first min/max is kept.
+*/
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag {
