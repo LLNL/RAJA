@@ -429,7 +429,7 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    return (lhs < rhs) ? lhs : rhs;
+    return (rhs < lhs) ? rhs : lhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
   {
