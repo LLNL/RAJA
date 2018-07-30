@@ -32,9 +32,12 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
+
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
+
 #include "RAJA/policy/sequential/policy.hpp"
+
 #include "RAJA/util/types.hpp"
 
 namespace RAJA

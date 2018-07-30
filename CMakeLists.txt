@@ -14,8 +14,8 @@
 ###############################################################################
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 5)
-set(RAJA_VERSION_PATCHLEVEL 3)
+set(RAJA_VERSION_MINOR 6)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -53,6 +53,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+  option(ENABLE_BENCHMARKS "Build benchmarks" Off)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
@@ -83,8 +84,7 @@ if (NOT RAJA_LOADED)
     src/AlignedRangeIndexSetBuilders.cpp
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
-    src/MemUtils_CUDA.cpp
-    src/ThreadUtils_CPU.cpp)
+    src/MemUtils_CUDA.cpp)
 
   set (raja_depends)
 
@@ -151,6 +151,10 @@ if (NOT RAJA_LOADED)
 
   if (ENABLE_DOCUMENTATION)
     add_subdirectory(docs)
+  endif ()
+
+  if (ENABLE_BENCHMARKS)
+    add_subdirectory(benchmark)
   endif ()
 
 endif()

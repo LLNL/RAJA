@@ -31,18 +31,16 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
-#include "RAJA/util/concepts.hpp"
-
 #include <stdint.h>
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 #include <limits>
 #endif
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/concepts.hpp"
 
 namespace RAJA
 {
@@ -285,7 +283,7 @@ struct limits
                       detail::floating_point_limits<T>>::type {
 };
 
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {

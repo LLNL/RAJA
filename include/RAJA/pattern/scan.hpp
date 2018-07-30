@@ -27,14 +27,15 @@
 #define RAJA_scan_HPP
 
 #include "RAJA/config.hpp"
+
+#include <iterator>
+#include <type_traits>
+
 #include "camp/concepts.hpp"
 #include "camp/helpers.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/Operators.hpp"
-
-#include <iterator>
-#include <type_traits>
 
 namespace RAJA
 {

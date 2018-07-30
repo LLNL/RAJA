@@ -28,7 +28,6 @@
 #ifndef RAJA_pattern_nested_For_HPP
 #define RAJA_pattern_nested_For_HPP
 
-
 #include "RAJA/config.hpp"
 
 #include <iostream>
@@ -42,7 +41,7 @@ namespace statement
 
 
 /*!
- * A nested::forall statement that implements a single loop.
+ * A RAJA::kernel statement that implements a single loop.
  *
  *
  */

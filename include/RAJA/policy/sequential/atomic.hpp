@@ -27,7 +27,8 @@
 #define RAJA_policy_sequential_atomic_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {

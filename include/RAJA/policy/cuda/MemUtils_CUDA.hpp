@@ -31,19 +31,17 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/util/basic_mempool.hpp"
-
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-
-#include "RAJA/util/mutex.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <type_traits>
 #include <unordered_map>
+
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/mutex.hpp"
+
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 namespace RAJA
 {

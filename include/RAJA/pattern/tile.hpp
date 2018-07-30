@@ -27,9 +27,9 @@
 #ifndef RAJA_forallN_tile_HPP
 #define RAJA_forallN_tile_HPP
 
-#include <type_traits>
-
 #include "RAJA/config.hpp"
+
+#include <type_traits>
 
 #include "RAJA/util/types.hpp"
 
