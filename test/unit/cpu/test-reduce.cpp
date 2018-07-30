@@ -307,13 +307,13 @@ TEST(Reduce, MinMaxLoc)
   const int N = 25;
   double *A = new double[N];
 
-  //generate random numbers between [1,100]
+  //generate random numbers between [1,10]
   for(int i=0; i<N; ++i){
-    A[i] = rand() % 100 +1; 
+    A[i] = rand() % 10 +1; 
   }
    
-  //Set minimum to be at index 0
-  A[0] = 0; A[5] = 0; 
+  //Set min to be at index 0
+  A[0] = 1; A[5] = 1; 
   RAJA::ReduceMinLoc<RAJA::seq_reduce, double> tmin(1000,2);
   RAJA::forall<RAJA::loop_exec>
     (RAJA::RangeSegment(0, N), [=] (RAJA::Index_type id) {
@@ -323,7 +323,7 @@ TEST(Reduce, MinMaxLoc)
 
 
   //Set max to be at index 0
-  A[0] = 100; A[5] = 100; 
+  A[0] = 10; A[5] = 10; 
   RAJA::ReduceMaxLoc<RAJA::seq_reduce, double> tmax(-1,1);
   RAJA::forall<RAJA::loop_exec>
     (RAJA::RangeSegment(0, N), [=] (RAJA::Index_type id) {
