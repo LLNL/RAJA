@@ -141,11 +141,11 @@ unit stride::
 
   RAJA::Layout<3> layout = 
     RAJA::make_permuted_layout({{s0, s1, s2}}, 
-                               RAJA::as_array<RAJA::Perm<1,2,0> >::get() );
+                               RAJA::as_array<RAJA::Perm<1, 2, 0> >::get() );
 
   // The Layout template parameters are dimension, index type, 
   // and the index with unit stride
-  RAJA::View<double, RAJA::Layout<3, RAJA::Index_type, 1> > Bview(B, layout);
+  RAJA::View<double, RAJA::Layout<3, RAJA::Index_type, 0> > Bview(B, layout);
 
   // Equivalent to indexing as: B[i + j * s0 * s2 + k * s0]
   Bview(i, j, k) = ...; 
