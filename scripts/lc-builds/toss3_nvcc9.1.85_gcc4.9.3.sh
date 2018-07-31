@@ -14,8 +14,6 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 BUILD_SUFFIX=lc_toss3-nvcc9.1.85_gcc4.9.3
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -25,10 +23,10 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/toss3/nvcc_gcc4_9_3.cmake \
+  -C ../host-configs/lc-builds/toss3/nvcc_gcc4_9_3.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.1.85 \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_${BUILD_SUFFIX} \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..

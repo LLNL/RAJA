@@ -14,16 +14,16 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_lc_chaos-icpc-17.0.174 2>/dev/null
-mkdir build_lc_chaos-icpc-17.0.174 && cd build_lc_chaos-icpc-17.0.174
-. /usr/local/tools/dotkit/init.sh && use cmake-3.4.1 && use gcc-4.9.3p
+BUILD_SUFFIX=lc_chaos-icpc-17.0.174
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
+. /usr/local/tools/dotkit/init.sh && use cmake-3.4.1 && use gcc-4.9.3p
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/chaos/icpc_17_0_174.cmake \
+  -C ../host-configs/lc-builds/chaos/icpc_17_0_174.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_chaos-icpc-17.0.174 \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..
