@@ -22,17 +22,15 @@
 ##  > soft add +gcc-7.1.0
 ##
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 BUILD_SUFFIX=alcf-cooley-gcc7.1.0
 
-rm -rf ${RAJA_DIR}/build-${BUILD_SUFFIX} 2>/dev/null
-mkdir ${RAJA_DIR}/build-${BUILD_SUFFIX} && cd ${RAJA_DIR}/build-${BUILD_SUFFIX}
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/alcf-builds/cooley_gcc7_1_0.cmake \
+  -C ../host-configs/alcf-builds/cooley_gcc7_1_0.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install-${BUILD_SUFFIX} \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..
