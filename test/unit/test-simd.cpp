@@ -52,4 +52,7 @@ TEST(SIMD, align){
       ASSERT_FLOAT_EQ(y[i], 1.0);
     }
 
+  free_aligned(a);
+  free_aligned(b);
+
 }
