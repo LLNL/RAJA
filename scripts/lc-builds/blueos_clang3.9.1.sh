@@ -23,8 +23,8 @@ RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/blueos/clang_3_9_1.cmake \
+  -C ../host-configs/lc-builds/blueos/clang_3_9_1.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_blueos-clang-3.9.1 \
+  -DCMAKE_INSTALL_PREFIX=../install_lc_blueos-clang-3.9.1 \
   "$@" \
-  ${RAJA_DIR} 
+  .. 

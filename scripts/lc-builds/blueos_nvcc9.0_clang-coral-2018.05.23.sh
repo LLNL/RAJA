@@ -14,19 +14,19 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_lc_blueos_nvcc9.0_clang-coral-2018.05.23 >/dev/null
-mkdir build_lc_blueos_nvcc9.0_clang-coral-2018.05.23 && cd build_lc_blueos_nvcc9.0_clang-coral-2018.05.23
+BUILD_SUFFIX=lc_blueos_nvcc9.0_clang-coral-2018.05.23
+
+rm -rf build_${BUILD_SUFFIX} >/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/blueos/nvcc_clang_coral_2018_05_23.cmake \
+  -C ../host-configs/lc-builds/blueos/nvcc_clang_coral_2018_05_23.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.0.184 \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_blueos_nvcc9.0_clang-coral-2018.05.23 \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..

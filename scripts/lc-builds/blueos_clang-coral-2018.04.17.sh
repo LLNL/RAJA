@@ -14,17 +14,17 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_lc_blueos-clang-coral-2018.04.17 2>/dev/null
-mkdir build_lc_blueos-clang-coral-2018.04.17 && cd build_lc_blueos-clang-coral-2018.04.17
+BUILD_SUFFIX=lc_blueos-clang-coral-2018.04.17
+
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/blueos/clang_coral_2018_04_17.cmake \
+  -C ../host-configs/lc-builds/blueos/clang_coral_2018_04_17.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_lc_blueos-clang-coral-2018.04.17 \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..
