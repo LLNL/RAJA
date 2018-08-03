@@ -14,8 +14,6 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 BUILD_SUFFIX=lc_bgqos-clang-4.0.0
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -24,8 +22,8 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/bgqos/clang_4_0_0.cmake \
+  -C ../host-configs/lc-builds/bgqos/clang_4_0_0.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_${BUILD_SUFFIX} \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..
