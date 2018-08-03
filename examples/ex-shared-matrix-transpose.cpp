@@ -55,8 +55,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-//#define OMP_EX_1 //Breaks kernel
-
 //
 // Define dimensionality of matrices
 //
@@ -163,7 +161,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   checkResult<int>(Atview, N);
-  // printResult<int>(At, N);
+  //printResult<int>(Atview, N);
   //----------------------------------------------------------------------------//
 
   //
@@ -181,9 +179,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Iteration spaces are stored within a RAJA tuple
   //
-  auto segments =
-      RAJA::make_tuple(inner_Range0, inner_Range1, outer_Range0, outer_Range1);
-
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0,N), RAJA::RangeSegment(0,N));
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential shared matrix transpose ...\n";
   std::memset(At, 0, N * N * sizeof(int));
@@ -201,9 +198,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
                                       int,
-                                      RAJA::ArgList<0, 1>,
+                                      RAJA::ArgList<1, 0>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                      decltype(segments)>;
+                                      decltype(iSpace)>;
   seq_shmem_t RAJA_SEQ_TILE;
 
   //
@@ -216,8 +213,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Execution policies for outer loops
       //
-      RAJA::statement::For<3, RAJA::seq_exec,
-        RAJA::statement::For<2, RAJA::seq_exec,
+
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           //
           // Creates a shared memory window for
           // usage within inner loops
@@ -236,8 +234,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             // (2) Execution policies for second set of inner
             // loops
             //
-            RAJA::statement::For<1, RAJA::seq_exec,
-              RAJA::statement::For<0, RAJA::seq_exec,
+            RAJA::statement::For<0, RAJA::seq_exec,
+              RAJA::statement::For<1, RAJA::seq_exec,
                 RAJA::statement::Lambda<1>
               >
             >
@@ -248,27 +246,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<KERNEL_EXEC_POL>(
 
-      segments,
+      iSpace,
 
       RAJA::make_tuple(RAJA_SEQ_TILE),
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](int tx, int ty, int bx, int by, seq_shmem_t &RAJA_SEQ_TILE) {
+      [=](int col, int row, seq_shmem_t &RAJA_SEQ_TILE) {
 
-        int col = bx * TILE_DIM + tx;  // Matrix column index
-        int row = by * TILE_DIM + ty;  // Matrix row index
-        RAJA_SEQ_TILE(ty, tx) = Aview(row, col);
+        RAJA_SEQ_TILE(row, col) = Aview(row, col);
+
       },
 
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=](int tx, int ty, int bx, int by, seq_shmem_t &RAJA_SEQ_TILE) {
+      [=](int col, int row, seq_shmem_t &RAJA_SEQ_TILE) {
 
-        int col = by * TILE_DIM + tx;  // Transposed matrix column index
-        int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-        Atview(row, col) = RAJA_SEQ_TILE(tx, ty);
+        Atview(col, row) = RAJA_SEQ_TILE(row, col);
+
       }
 
       );
@@ -285,86 +281,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using omp_shmem_t = RAJA::ShmemTile<RAJA::omp_shmem,
                                       int,
-                                      RAJA::ArgList<0, 1>,
+                                      RAJA::ArgList<1, 0>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                      decltype(segments)>;
+                                      decltype(iSpace)>;
   omp_shmem_t RAJA_OMP_TILE;
 
   //----------------------------------------------------------------------------//
-#if defined(OMP_EX_1)
-  std::cout << "\n Running openmp shared matrix transpose -  parallel top inner loop...\n";
-
-  std::memset(At, 0, N * N * sizeof(int));
-
-  //
-  // This policy loops over tiles sequentially while exposing parallelism on
-  // one of the inner loops.
-  //
-  using KERNEL_EXEC_POL_OMP = 
-    RAJA::KernelPolicy<  
-      //
-      // (0) Execution policies for outer loops
-      //
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
-          //
-          // Creates a shared memory window for
-          // usage within inner loops
-          //
-          RAJA::statement::SetShmemWindow<
-            //
-            // (1) Lambda for inner loops to load data into the tile
-            //
-            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0>
-                >
-              >,
-              //
-              // (2) Lambda for inner loops to read data from the tile
-              //
-            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
-                RAJA::statement::Lambda<1>
-              >
-             >
-            > // closes shared memory window
-          > // closes outer loop 2
-         > // closes outer loop 3
-    >; // closes policy list
-
-  RAJA::kernel_param<KERNEL_EXEC_POL_OMP> (
-
-        segments,
-
-        RAJA::make_tuple(RAJA_OMP_TILE),
-        //
-        // (1) Lambda for inner loops to read data from the tile
-        //
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
-
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
-          RAJA_OMP_TILE(ty, tx) = Aview(row, col);
-        },
-
-        //
-        // (2) Lambda for inner loops to read data from the tile
-        //
-        [=] (int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
-
-          int col = by * TILE_DIM + tx;  // Transposed matrix column index
-          int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-          Atview(row, col) = RAJA_OMP_TILE(tx, ty);
-        }
-
-   );
-
-  checkResult<int>(Atview, N);
-  // printResult<int>(Atview, N);
-#endif
-  //----------------------------------------------------------------------------//
-
   std::cout << "\n Running openmp shared matrix transpose - collapsed inner loops...\n";
   std::memset(At, 0, N * N * sizeof(int));
 
@@ -378,8 +300,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (0) Execution policies for outer loops
       //
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
           //
           // Creates a shared memory window for
           // usage within inner loops
@@ -390,18 +312,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //     loops. Loops are collapsed into a single
             //     parallel for loop.
             //
-            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                      RAJA::ArgList<0, 1>,
-                                      RAJA::statement::Lambda<0>
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
+                RAJA::statement::Lambda<0>
+              >
             >,
             //
             // (2) Execution policies for second set of inner
             // loops. Loops are collapsed into a single parallel
             // for loops.
             //
-            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                      RAJA::ArgList<0, 1>,
-                                      RAJA::statement::Lambda<1>
+            RAJA::statement::For<0, RAJA::seq_exec,
+              RAJA::statement::For<1, RAJA::seq_exec,
+                RAJA::statement::Lambda<1>
+              >
             >
           > // closes shared memory window
         > // closes outer loop 2
@@ -410,26 +334,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<KERNEL_EXEC_POL_OMP2>(
 
-      segments,
+      iSpace,
 
       RAJA::make_tuple(RAJA_OMP_TILE),
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+      [=](int col, int row, omp_shmem_t &RAJA_OMP_TILE) {
 
-        int col = bx * TILE_DIM + tx;  // Matrix column index
-        int row = by * TILE_DIM + ty;  // Matrix row index
-        RAJA_OMP_TILE(ty, tx) = Aview(row, col);
+        RAJA_OMP_TILE(row, col) = Aview(row, col);
+        
       },
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=](int tx, int ty, int bx, int by, omp_shmem_t &RAJA_OMP_TILE) {
+      [=](int col, int row, omp_shmem_t &RAJA_OMP_TILE) {
 
-        int col = by * TILE_DIM + tx;  // Transposed matrix column index
-        int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-        Atview(row, col) = RAJA_OMP_TILE(tx, ty);
+        Atview(col, row) = RAJA_OMP_TILE(row, col);
+
       }
 
       );
@@ -449,9 +371,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem,
                                        int,
-                                       RAJA::ArgList<0, 1>,
+                                       RAJA::ArgList<1, 0>,
                                        RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                       decltype(segments)>;
+                                       decltype(iSpace)>;
   cuda_shmem_t RAJA_CUDA_TILE;
 
   using KERNEL_EXEC_POL_CUDA = 
@@ -465,8 +387,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         //     Maps iterations from the outer loop
         //     to CUDA thread blocks.
         //
-        RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::For<2, RAJA::cuda_block_exec,
+       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
             //
             // Creates a shared memory window for
             // usage within threads in a thread block.
@@ -494,8 +416,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                //     loops. Each iteration is assigned to a
                //     thread in a CUDA thread block.
                //
-               RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                 RAJA::statement::For<0, RAJA::cuda_thread_exec,
+               RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                 RAJA::statement::For<1, RAJA::cuda_thread_exec,
                    RAJA::statement::Lambda<1>
                  >
                >
@@ -507,28 +429,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<KERNEL_EXEC_POL_CUDA>(
 
-      segments,
+      iSpace,
 
       RAJA::make_tuple(RAJA_CUDA_TILE),
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=] RAJA_DEVICE(int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+      [=] RAJA_DEVICE(int col, int row, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-        int col = bx * TILE_DIM + tx;
-        int row = by * TILE_DIM + ty;
+        RAJA_CUDA_TILE(row, col) = Aview(row, col);
 
-        RAJA_CUDA_TILE(ty, tx) = Aview(row, col);
       },
       //
       // (2) Lambda for inner loops to read data from the tile
       //
-      [=] RAJA_DEVICE(int tx, int ty, int bx, int by, cuda_shmem_t &RAJA_CUDA_TILE) {
+      [=] RAJA_DEVICE(int col, int row, cuda_shmem_t &RAJA_CUDA_TILE) {
 
-        int col = by * TILE_DIM + tx;
-        int row = bx * TILE_DIM + ty;
-
-        Atview(row, col) = RAJA_CUDA_TILE(tx, ty);
+        Atview(col, row) = RAJA_CUDA_TILE(row, col);
 
       }
 
