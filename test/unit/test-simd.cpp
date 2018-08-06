@@ -52,8 +52,8 @@ TEST(SIMD, Align){
       ASSERT_FLOAT_EQ(y[i], 1.0);
     }
 
-  delete[] a;
-  delete[] b;
+  delete[] y;
+  delete[] x;
 }
 
 #if defined(RAJA_ENABLE_OPENMP)
