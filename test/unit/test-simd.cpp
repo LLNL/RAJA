@@ -56,7 +56,8 @@ TEST(SIMD, Align){
   delete[] b;
 }
 
-TEST(SIMD, ThreadsAndSimd){
+#if defined(RAJA_ENABLE_OPENMP)
+TEST(SIMD, OMPAndSimd){
 
     using POL =
     RAJA::KernelPolicy<
@@ -96,3 +97,47 @@ TEST(SIMD, ThreadsAndSimd){
     delete[] b;
     delete[] c;
 }
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+TEST(SIMD, TBBAndSimd){
+
+    using POL =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::tbb_for_exec,
+        RAJA::statement::For<0, RAJA::simd_exec,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >;
+    
+    const RAJA::Index_type N = 32;
+    const RAJA::Index_type M = 32;
+
+    double *a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN, N*M*sizeof(double));
+    double *b = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN, N*M*sizeof(double));
+    double *c = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN, N*M*sizeof(double));
+
+    for(int i=0; i<N*M; ++i)
+      {      
+        a[i] = 1;
+        b[i] = 1;
+        c[i] = 0.0;
+      }
+    
+    RAJA::kernel<POL>
+    (RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M)),
+     [=](RAJA::Index_type i, RAJA::Index_type j) {
+        c[i + j*N] = a[i + j*N] + b[i + j*N];
+    });
+
+    for(int i=0; i<N*M; ++i)
+    {
+      ASSERT_FLOAT_EQ(c[i], 2.0);
+    }
+      
+    delete[] a;
+    delete[] b;
+    delete[] c;
+}
+#endif
