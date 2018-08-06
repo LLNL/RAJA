@@ -14,8 +14,6 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 BUILD_SUFFIX=lc_toss3-icpc-19.0-beta
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -26,8 +24,8 @@ module load gcc/7.1.0
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/toss3/icpc_19_0_beta.cmake \
+  -C ../host-configs/lc-builds/toss3/icpc_19_0_beta.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_${BUILD_SUFFIX} \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR}
+  ..

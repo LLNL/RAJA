@@ -14,8 +14,6 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-RAJA_DIR=$(git rev-parse --show-toplevel)
-
 BUILD_SUFFIX=lc_toss3-clang-3.9.1
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -25,8 +23,8 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ${RAJA_DIR}/host-configs/lc-builds/toss3/clang_3_9_1.cmake \
+  -C ../host-configs/lc-builds/toss3/clang_3_9_1.cmake \
   -DENABLE_OPENMP=On \
-  -DCMAKE_INSTALL_PREFIX=${RAJA_DIR}/install_${BUILD_SUFFIX} \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ${RAJA_DIR} 
+  ..
