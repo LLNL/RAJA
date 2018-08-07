@@ -28,6 +28,7 @@
 #define RAJA_policy_cuda_kernel_For_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 
@@ -70,11 +71,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -83,7 +89,7 @@ struct CudaStatementExecutor<Data,
 
     LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 
-    dim.threads *= segment_length<ArgumentId>(data);
+    dim.addThreads(segment_length<ArgumentId>(data));
 
     return dim;
   }
@@ -119,12 +125,17 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     int len = segment_length<ArgumentId>(data);
     initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
 
@@ -134,7 +145,7 @@ struct CudaStatementExecutor<Data,
 
     LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 
-    dim.blocks *= segment_length<ArgumentId>(data);
+    dim.addBlocks(segment_length<ArgumentId>(data));
 
     return dim;
   }
@@ -175,12 +186,18 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     int len = segment_length<ArgumentId>(data);
     initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+  }
+
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -196,8 +213,8 @@ struct CudaStatementExecutor<Data,
       num_blocks++;
     }
 
-    dim.blocks *= num_blocks;
-    dim.threads *= max_threads;
+    dim.addBlocks(num_blocks);
+    dim.addThreads(std::min((int)max_threads, (int)len));
 
     return dim;
   }
@@ -236,11 +253,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -275,7 +297,7 @@ struct CudaStatementExecutor<Data,
   {
     int len = segment_length<ArgumentId>(data);
 
-    for (int i = 0; i < len; ++i) {
+    for (int i = 0;i < len;++ i) {
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
@@ -284,11 +306,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE
@@ -338,11 +365,16 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
   }
 
   RAJA_INLINE

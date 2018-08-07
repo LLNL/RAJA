@@ -27,15 +27,16 @@
 #define RAJA_pattern_kernel_Tile_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
+
+#include <iostream>
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -44,7 +45,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that implements a tiling (or blocking) loop.
+ * A RAJA::kernel statement that implements a tiling (or blocking) loop.
  *
  */
 template <camp::idx_t ArgumentId,
@@ -211,7 +212,8 @@ struct StatementExecutor<statement::
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
 
-    // Create a tile iterator
+    // Create a tile iterator, needs to survive until the forall is 
+    // done executing. 
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize

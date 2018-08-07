@@ -27,9 +27,9 @@
 #define RAJA_policy_atomic_builtin_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/TypeConvert.hpp"
-#include "RAJA/util/defines.hpp"
 
+#include "RAJA/util/TypeConvert.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -42,7 +42,7 @@ struct builtin_atomic {
 };
 
 
-#ifdef RAJA_COMPILER_MSVC
+#if defined(RAJA_COMPILER_MSVC)
 
 template <typename T>
 RAJA_INLINE T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value);

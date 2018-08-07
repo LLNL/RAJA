@@ -33,6 +33,8 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
+#include <tbb/tbb.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/tbb/policy.hpp"
@@ -44,8 +46,6 @@
 #include "RAJA/internal/fault_tolerance.hpp"
 
 #include "RAJA/pattern/forall.hpp"
-
-#include <tbb/tbb.h>
 
 
 namespace RAJA

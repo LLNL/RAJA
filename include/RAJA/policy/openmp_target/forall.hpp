@@ -20,11 +20,11 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
+#include <omp.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-
-#include <omp.h>
 
 namespace RAJA
 {

@@ -28,7 +28,7 @@
 #ifndef RAJA_policy_sequential_kernel_Collapse_HPP
 #define RAJA_policy_sequential_kernel_Collapse_HPP
 
-#include <RAJA/pattern/kernel.hpp>
+#include "RAJA/pattern/kernel.hpp"
 
 namespace RAJA
 {

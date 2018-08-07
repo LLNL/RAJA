@@ -28,12 +28,13 @@
 #define RAJA_ITERATORS_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
 
 #include <iterator>
 #include <type_traits>
 #include <utility>
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -63,6 +64,9 @@ public:
       : val(rhs.val)
   {
   }
+
+  RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return 1; }
+
   RAJA_HOST_DEVICE inline bool operator==(const numeric_iterator& rhs) const
   {
     return val == rhs.val;
@@ -259,12 +263,12 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(val + rhs * stride);
+    return strided_numeric_iterator(val + rhs * stride, stride);
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(val - rhs * stride);
+    return strided_numeric_iterator(val - rhs * stride, stride);
   }
 
   // Specialized comparison to allow normal iteration to work on off-stride
@@ -319,6 +323,8 @@ private:
   DifferenceType val;
   DifferenceType stride;
 };
+
+
 
 }  // closing brace for namespace Iterators
 

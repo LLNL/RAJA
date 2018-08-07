@@ -18,83 +18,139 @@
 Execution Policies
 ==================
 
-.. warning:: **This section is a work-in-progress!! It needs to be updated 
-             and reworked to be consistent with recent changes related to 
-             new 'kernel' stuff.**
+This section describes the execution policies that ``RAJA`` provides and 
+indicates which policies may be used with ``RAJA::forall``, ``RAJA::kernel``,
+and/or ``RAJA::scan`` methods.
 
-This section describes the various execution policies that ``RAJA`` provides. 
+.. note:: All RAJA execution policies are in the namespace ``RAJA``.
 
-.. note:: * All RAJA execution policies are in the namespace ``RAJA``.
+.. note:: As RAJA functionality is expanded, new policies may be added and
+          existing ones may be enabled to work with other RAJA loop constructs.
 
---------------------
+-----------------------------------------------------
+RAJA::forall and RAJA::kernel Policies
+-----------------------------------------------------
+
+The following list of policies may be used with either ``RAJA::forall`` and
+``RAJA::kernel`` methods.
+
 Serial/SIMD Policies
---------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 * ``seq_exec``  - Strictly sequential loop execution.
 * ``simd_exec`` - Forced SIMD execution by adding vectorization hints.
-* ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD that it thinks are appropriate).
+* ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD) that it thinks are appropriate.
 
----------------
 OpenMP Policies
----------------
+^^^^^^^^^^^^^^^^
 
-* ``omp_parallel_for_exec`` - Create a parallel region and distributes loop iterations across threads.
-* ``omp_parallel_exec`` - Create a parallel region.
-* ``omp_for_exec`` - Distribute loop iterations across threads within a parallel region.
-* ``omp_for_static`` - Distribute loop iterations across threads using a static schedule.
-* ``omp_for_nowait_exec`` - Execute loop in parallel region and removes synchronization via `nowait` clause. 
+* ``omp_parallel_for_exec`` - Execute a loop in parallel using an ``omp parallel for`` pragma; i.e., create a parallel region and distribute loop iterations across threads.
+* ``omp_for_exec`` - Execute a loop in parallel using an ``omp for`` pragma within an exiting parallel region. 
+* ``omp_for_static<CHUNK_SIZE>`` - Execute a loop in parallel using a static schedule with given chunk size within an existing parallel region; i.e., use an ``omp parallel for schedule(static, CHUNK_SIZE>`` pragma.
+* ``omp_for_nowait_exec`` - Execute loop in an existing parallel region without synchronization after the loop; i.e., use an ``omp for nowait`` clause.
 
-* ``omp_parallel_segit`` - Iterate over a index set segments in parallel.
-* ``omp_parallel_for_segit`` - Same as above.
+.. note:: To control the number of OpenMP threads used by these policies:
+          set the value of the environment variable 'OMP_NUM_THREADS' (which is
+          fixed for duration of run), or call the OpenMP routine 
+          'omp_set_num_threads(nthreads)' (which allows changing number of 
+          threads at runtime).
 
-----------------------
 OpenMP Target Policies
+^^^^^^^^^^^^^^^^^^^^^^^^
+* ``omp_target_parallel_for_exec<NUMTEAMS>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of thread teams; e.g.,
+if a GPU device is available, this is similar to launching a CUDA kernel with 
+a thread block size of NUMTEAMS. 
+
+Intel Threading Building Blocks (TBB) Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``tbb_for_exec`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method.
+* ``tbb_for_static<CHUNK_SIZE>`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a static partitioner using given chunk size.
+* ``tbb_for_dynamic`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a dynamic scheduler.
+
+.. note:: To control the number of TBB worker threads used by these policies:
+          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
+          fixed for duration of run), or create a 'task_scheduler_init' object::
+
+            tbb::task_scheduler_init TBBinit( nworkers );
+
+            // do some parallel work
+
+            TBBinit.terminate();
+            TBBinit.initialize( new_nworkers );
+
+            // do some more parallel work
+
+          This allows changing number of workers at runtime.
+
+-------------------------------
+RAJA::forall Policies
+-------------------------------
+
+The following list of policies may only be used with a ``RAJA::forall`` method.
+
+CUDA Policies 
+^^^^^^^^^^^^^^^^^^
+
+* ``cuda_exec<BLOCK_SIZE>`` - Execute a loop in a CUDA kernel launched with given thread block size. If no thread block size is given, a default size of 256 is used.
+
+IndexSet Policies
+^^^^^^^^^^^^^^^^^^
+
+When a ``RAJA::forall`` method is used with a ``RAJA::IndexSet`` object, an
+index set execution policy must be used to guarantee correct behavior. An 
+index set execution policy is a two-level policy: an 'outer' policy for 
+iterating over segments in the index set, and an 'inner' policy for executing
+each segment. An index set execution policy type has the form::
+
+  RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy>
+
+See :ref:`indexsets-label` for more information.
+
+Generally, any policy that can be used with a ``RAJA::forall`` method
+can be used as the segment execution policy. The following policies are
+available to use for the segment iteration policy:
+
+* ``seq_segit`` - Iterate over index set segments sequentially.
+* ``omp_parallel_segit`` - Iterate over index set segments in parallel using an OpenMP parallel loop.
+* ``omp_parallel_for_segit`` - Same as above.
+* ``tbb_segit`` - Iterate over an index set segments in parallel using a TBB 'parallel_for' method.
+
+-----------------------
+RAJA::kernel Policies
+-----------------------
+
+The following policies may only be used with the ``RAJA::kernel`` method.
+
+CUDA Policies
+^^^^^^^^^^^^^^
+
+* ``cuda_block_exec`` - Map loop iterations to CUDA thread blocks.
+* ``cuda_thread_exec`` - Map loop iterations to CUDA threads in a thread block.
+* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with given block size number of threads.
+
+----------------------
+RAJA::region Policies
 ----------------------
 
-* ``omp_target_parallel_for_exec`` - Execute loop body in a device (e.g., GPU) environment. Takes a parameter for number of thread teams.
+The following policies may only be used with the ``RAJA::region`` method.
 
-----------------------------------------------
-Intel Threading Building Blocks (TBB) Policies
-----------------------------------------------
+* ``seq_region_exec`` - Creates a sequential region.
+* ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
 
-* ``tbb_for_exec`` - Schedule tasks to operate in parallel.
-* ``tbb_for_static`` - Implement the parallel_for method using a static scheduler.
-* ``tbb_for_dynamic`` - Implement the parallel_for method and uses a dynamic scheduler.
+-------------------------
+RAJA::scan Policies
+-------------------------
 
-* ``tbb_segit`` - Iterate over a index set segments in parallel.
+Generally, any execution policy that works with ``RAJA::forall`` methods will 
+also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
+about RAJA scan methods.
 
--------------
-CUDA Policies
--------------
+-------------------------
+RAJA Reduction Policies
+-------------------------
 
-Following the CUDA nomenclature, GPU computations are performed on a 
-grid of threads. Each unit of the grid is referred to as a thread and 
-threads are furthered grouped into thread blocks. Threads and thread blocks 
-may have one, two, or three-dimensional indexing. Each CUDA policy requires 
-the user to specify the number of threads in each dimension of a thread block.
-The total number of blocks needed are determined based on the size of a
-loop iteration space and the number of threads per block. As a starting point, 
-the following policy may be used with the ``RAJA::forall`` loop
-
-* ``cuda_exec<STRIDE_SIZE>`` where STRIDE_SIZE corresponds to the number of threads in a given block. 
-
-The ``cuda_exec`` policy defines a default thread block size of 256, if no 
-argument is provided.
-
-The nested version enables the user to map global threads in the x,y and z 
-components via the following execution policies:
-
-* ``cuda_threadblock_x_exec<X_STRIDE_SIZE>`` - Map a loop nest to the block with ``X_STRIDE_SIZE`` threads in the x-component.
-* ``cuda_threadblock_y_exec<Y_STRIDE_SIZE>`` - Map a loop nest to the block with ``Y_STRIDE_SIZE`` threads in the y-component.
-* ``cuda_threadblock_z_exec<Z_STRIDE_SIZE>`` - Map a loop nest to the block with ``Z_STRIDE_SIZE`` threads in the z-component.
-
-Lastly, under the ``RAJA::nested::forall`` method, the user may also map loop 
-nest to blocks and to block local threads using through following policies:
-
-* ``cuda_block_x_exec`` - Map a nested loop level to the x-component of a CUDA thread block.
-* ``cuda_block_y_exec`` - Map a nested loop level to the y-component of a CUDA thread block.
-* ``cuda_block_z_exec`` - Map a nested loop level to the z-component of a CUDA thread block.
-
-* ``cuda_thread_x_exec`` - Map a nested loop level to the x-component of a block local CUDA thread. 
-* ``cuda_thread_y_exec`` - Map a nested loop level to the y-component of a block local CUDA thread. 
-* ``cuda_thread_z_exec`` - Map a nested loop level to the z-component of a block local CUDA thread. 
+Note that a RAJA reduction object must be defined with a 'reduction policy'
+type. Reduction policy types are distinct from loop execution policy types.
+A reduction policy type must be consistent with the loop execution policy
+that is used. See :ref:`reductions-label` for more information.

@@ -29,6 +29,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
+
 #include "RAJA/util/types.hpp"
 
 namespace RAJA

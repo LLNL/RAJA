@@ -33,6 +33,11 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include <iostream>
+#include <type_traits>
+
+#include <omp.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
@@ -46,10 +51,6 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/region.hpp"
 
-#include <iostream>
-#include <type_traits>
-
-#include <omp.h>
 
 namespace RAJA
 {

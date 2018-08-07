@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,11 +26,15 @@
 #ifndef RAJA_util_static_layout_HPP
 #define RAJA_util_static_layout_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iostream>
 #include <limits>
-#include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexValue.hpp"
+
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
 
@@ -52,8 +56,8 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
                              camp::idx_seq<Sizes...>,
                              camp::idx_seq<Strides...>> {
 
-  using sizes = camp::idx_seq<Sizes...>;
-  using strides = camp::idx_seq<Strides...>;
+  using sizes = camp::int_seq<int, Sizes...>;
+  using strides = camp::int_seq<int, Strides...>;
 
   /*!
    * Default constructor.
@@ -77,20 +81,20 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
    * @return Linear space index.
    */
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr int operator()(
       Indices... indices) const
   {
     // dot product of strides and indices
-    return VarOps::sum<RAJA::Index_type>((indices * Strides)...);
+    return VarOps::sum<int>((indices * Strides)...);
   }
 
 
   template <typename... Indices>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type s_oper(
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr int s_oper(
       Indices... indices)
   {
     // dot product of strides and indices
-    return VarOps::sum<RAJA::Index_type>((indices * Strides)...);
+    return VarOps::sum<int>((indices * Strides)...);
   }
 
 
@@ -166,7 +170,7 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type s_oper(
       DimTypes... indices)
   {
-    return Layout::s_oper(convertIndex<Index_type>(indices)...);
+    return Layout::s_oper(stripIndexType(indices)...);
   }
 
 

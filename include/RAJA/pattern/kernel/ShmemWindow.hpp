@@ -28,12 +28,12 @@
 #ifndef RAJA_pattern_kernel_ShmemWindow_HPP
 #define RAJA_pattern_kernel_ShmemWindow_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/StaticLayout.hpp"
 
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/util/StaticLayout.hpp"
 
 namespace RAJA
 {
@@ -43,7 +43,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that sets the shared memory window.
+ * A RAJA::kernel statement that sets the shared memory window.
  *
  *
  */
@@ -69,7 +69,7 @@ struct StatementExecutor<statement::SetShmemWindow<EnclosedStmts...>> {
   {
 
     // Call setWindow on all of our shmem objects
-    shmem_set_windows(data.param_tuple, data.get_begin_index_tuple());
+    shmem_set_windows(data.param_tuple, data.get_minimum_index_tuple());
 
     // Invoke the enclosed statements
     execute_statement_list<camp::list<EnclosedStmts...>>(
