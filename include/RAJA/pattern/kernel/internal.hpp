@@ -317,13 +317,8 @@ RAJA_INLINE void execute_statement_list(Data &&data)
       std::forward<Data>(data));
 }
 
-// Gives all GenericWrapper derived types something to enable_if on
-// in our thread_privatizer
-struct GenericWrapperBase {
-};
-
 template <typename Data, typename... EnclosedStmts>
-struct GenericWrapper : public GenericWrapperBase {
+struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
@@ -358,19 +353,6 @@ struct NestedPrivatizer {
   reference_type get_priv() { return privatized_wrapper; }
 };
 
-
-/**
- * @brief specialization of internal::thread_privatize for any wrappers derived
- * from GenericWrapper
- */
-template <typename T>
-constexpr RAJA_INLINE typename std::
-    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
-              NestedPrivatizer<T>>::type
-    thread_privatize(T &wrapper)
-{
-  return NestedPrivatizer<T>{wrapper};
-}
 
 
 }  // end namespace internal
