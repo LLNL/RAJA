@@ -14,8 +14,10 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-rm -rf build_blueos_clang-coral-2017.10.13_omptarget >/dev/null
-mkdir build_blueos_clang-coral-2017.10.13_omptarget && cd build_blueos_clang-coral-2017.10.13_omptarget
+BUILD_SUFFIX=lc_blueos_clang-coral-2017.10.13_omptarget
+
+rm -rf build_${BUILD_SUFFIX} >/dev/null
+mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 
@@ -28,8 +30,7 @@ cmake \
   -DENABLE_CUDA=Off \
   -DENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -fopenmp-implicit-declare-target" \
-  -DPERFSUITE_ENABLE_WARNINGS=Off \
   -DENABLE_ALL_WARNINGS=Off \
-  -DCMAKE_INSTALL_PREFIX=../install_blueos_clang-coral-2017.10.13_omptarget \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
