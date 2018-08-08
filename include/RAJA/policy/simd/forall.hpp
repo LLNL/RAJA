@@ -52,9 +52,7 @@ namespace policy
 namespace simd
 {
 
-#if defined(RAJA_ENABLE_OPENMP) 
-#pragma omp declare simd
-#endif
+
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const simd_exec &,
                              Iterable &&iter,
@@ -63,9 +61,11 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  //RAJA_SIMD
+  RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+    body.get_priv()(*(begin + i));
   }
 }
 

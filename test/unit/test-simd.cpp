@@ -40,8 +40,8 @@ TEST(SIMD, Align){
     }
 
 
-  auto *y = RAJA::align_hint(a);
-  auto *x = RAJA::align_hint(b);
+  double *y = RAJA::align_hint(a);
+  double *x = RAJA::align_hint(b);
 
   RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
       y[i] += x[i] * c;
