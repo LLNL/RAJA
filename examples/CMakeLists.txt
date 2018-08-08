@@ -89,6 +89,7 @@ raja_add_executable(
   NAME cpu-shmem-ltimes
   SOURCES cpu-shmem-ltimes.cpp)
 
+if(ENABLE_TARGET_OPENMP)
 raja_add_executable(
   NAME target-kernel
   SOURCES omp-target-kernel.cpp)
@@ -96,3 +97,4 @@ raja_add_executable(
 raja_add_executable(
   NAME omp-target-ltimes-shmem-ltimes
   SOURCES omp-target-ltimes.cpp)
+endif()
