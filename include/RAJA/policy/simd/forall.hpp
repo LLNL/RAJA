@@ -63,7 +63,7 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  RAJA_SIMD
+  //RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(*(begin + i));
   }
