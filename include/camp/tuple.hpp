@@ -83,17 +83,12 @@ namespace internal
   struct tuple_storage {
     CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
 
-    template<typename T>
-    CAMP_SUPPRESS_HD_WARN
-    CAMP_HOST_DEVICE constexpr tuple_storage(Type const& v) :
-    // initializing with (...) instead of {...} for compiler compatability
-    // some compilers complain when Type has no members and we use {...} to
-    // initialize val
-    val(v) {}
-
-    CAMP_SUPPRESS_HD_WARN
-    CAMP_HOST_DEVICE constexpr tuple_storage(Type&& v)
-        : val{std::forward<Type>(v)}
+    template <typename T>
+    CAMP_SUPPRESS_HD_WARN CAMP_HOST_DEVICE constexpr tuple_storage(T&& v)
+        // initializing with (...) instead of {...} for compiler compatability
+        // some compilers complain when Type has no members and we use {...} to
+        // initialize val
+        : val(std::forward<T>(v))
     {
     }
 
@@ -413,9 +408,21 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
                                                camp::idx_seq<Lidx...>,
                                                tuple<Relem...>&& r,
                                                camp::idx_seq<Ridx...>) noexcept
-    -> tuple<Lelem..., Relem...>
+    -> tuple<camp::at_v<camp::list<Lelem...>, Lidx>...,
+             camp::at_v<camp::list<Relem...>, Ridx>...>
 {
   return make_tuple(get<Lidx>(l)..., get<Ridx>(r)...);
+}
+
+template <typename... Lelem, typename... Relem>
+CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
+                                               tuple<Relem...>&& r) noexcept
+    -> tuple<Lelem..., Relem...>
+{
+  return tuple_cat_pair(l,
+                        camp::idx_seq_for_t<Lelem...>{},
+                        r,
+                        camp::idx_seq_for_t<Relem...>{});
 }
 
 CAMP_SUPPRESS_HD_WARN
