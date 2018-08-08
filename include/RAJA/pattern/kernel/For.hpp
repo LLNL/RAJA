@@ -67,6 +67,7 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, EnclosedStmts...>;
   using Base::Base;
+  using privatizer = NestedPrivatizer<ForWrapper>;
 
   template <typename InIndexType>
   RAJA_INLINE void operator()(InIndexType i)

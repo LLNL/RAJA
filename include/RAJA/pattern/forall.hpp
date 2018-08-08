@@ -83,6 +83,7 @@
 #include "RAJA/policy/sequential/forall.hpp"
 
 #include "RAJA/pattern/detail/forall.hpp"
+#include "RAJA/pattern/detail/privatizer.hpp"
 
 #include "RAJA/util/chai_support.hpp"
 
@@ -102,46 +103,11 @@ namespace internal
 {
 
 template <typename T>
-struct Privatizer {
-  using value_type = camp::decay<T>;
-  using reference_type = value_type&;
-  value_type priv;
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
-};
-
-template <typename T>
 auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
 {
   return item;
 }
 
-/**
- * @brief Create a private copy of the argument to be stored on the current
- * thread's stack in a class of the Privatizer concept
- *
- * @param item data to privatize
- *
- * @return Privatizer<T>
- *
- * This function will be invoked such that ADL can be used to extend its
- * functionality.  Anywhere it is called it should be invoked by:
- *
- * `using RAJA::internal::thread_privatize; thread_privatize()`
- *
- * This allows other namespaces to add new versions to support functionality
- * that does not belong here.
- *
- */
-template <typename T>
-RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
-{
-  return Privatizer<T>{item};
-}
 
 }  // end namespace internal
 
