@@ -75,6 +75,7 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, EnclosedStmts...>;
   using Base::Base;
+  using privatizer = NestedPrivatizer<TileWrapper>;
 
   template <typename InSegmentType>
   RAJA_INLINE void operator()(InSegmentType s)
