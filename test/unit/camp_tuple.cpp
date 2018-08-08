@@ -66,6 +66,31 @@ TEST(CampTuple, GetByType)
   ASSERT_EQ(camp::get<char>(t), 'a');
 }
 
+TEST(CampTuple, CatPair)
+{
+  auto t1 = camp::make_tuple(5, 'a');
+  auto t2 = camp::make_tuple(5.1f, "meh");
+  auto t3 = tuple_cat_pair(t1,
+                           camp::make_idx_seq_t<2>{},
+                           t2,
+                           camp::make_idx_seq_t<2>{});
+  ASSERT_EQ(camp::get<1>(t3), 'a');
+  ASSERT_EQ(camp::get<2>(t3), 5.1f);
+
+  auto t4 = tuple_cat_pair(t1,
+                           t2);
+
+  ASSERT_EQ(camp::get<1>(t4), 'a');
+  ASSERT_EQ(camp::get<2>(t4), 5.1f);
+
+  auto t5 = tuple_cat_pair(t1,
+                           camp::idx_seq<1, 0>{},
+                           t2,
+                           camp::idx_seq<1, 0>{});
+  ASSERT_EQ(camp::get<0>(t5), 'a');
+  ASSERT_EQ(camp::get<3>(t5), 5.1f);
+}
+
 struct s1;
 struct s2;
 struct s3;

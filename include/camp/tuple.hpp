@@ -404,9 +404,9 @@ template <typename... Lelem,
           typename... Relem,
           camp::idx_t... Lidx,
           camp::idx_t... Ridx>
-CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
+CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...> const& l,
                                                camp::idx_seq<Lidx...>,
-                                               tuple<Relem...>&& r,
+                                               tuple<Relem...> const& r,
                                                camp::idx_seq<Ridx...>) noexcept
     -> tuple<camp::at_v<camp::list<Lelem...>, Lidx>...,
              camp::at_v<camp::list<Relem...>, Ridx>...>
@@ -414,15 +414,17 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
   return make_tuple(get<Lidx>(l)..., get<Ridx>(r)...);
 }
 
-template <typename... Lelem, typename... Relem>
-CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
-                                               tuple<Relem...>&& r) noexcept
-    -> tuple<Lelem..., Relem...>
+template <typename L, typename R>
+CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(L const& l, R const& r) noexcept
+    -> decltype(tuple_cat_pair(l,
+                               camp::idx_seq_from_t<L>{},
+                               r,
+                               camp::idx_seq_from_t<R>{}))
 {
   return tuple_cat_pair(l,
-                        camp::idx_seq_for_t<Lelem...>{},
+                        camp::idx_seq_from_t<L>{},
                         r,
-                        camp::idx_seq_for_t<Relem...>{});
+                        camp::idx_seq_from_t<R>{});
 }
 
 CAMP_SUPPRESS_HD_WARN
