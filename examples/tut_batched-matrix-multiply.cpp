@@ -512,6 +512,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate(A);
   memoryManager::deallocate(B);
   memoryManager::deallocate(C);
+  memoryManager::deallocate(A2);
+  memoryManager::deallocate(B2);
   memoryManager::deallocate(C2);
 
   std::cout << "\n DONE!...\n";

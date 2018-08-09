@@ -168,6 +168,8 @@ TEST(OffsetLayoutTest, View)
 
   ASSERT_EQ(data[0], view(1));
   ASSERT_EQ(data[9], view(10));
+
+  delete [] data;
 }
 
 
