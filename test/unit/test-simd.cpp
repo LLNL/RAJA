@@ -52,8 +52,8 @@ TEST(SIMD, Align){
       ASSERT_FLOAT_EQ(y[i], 1.0);
     }
 
-  free_aligned(a);
-  free_aligned(b);
+  RAJA::free_aligned(a);
+  RAJA::free_aligned(b);
 }
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -93,9 +93,9 @@ TEST(SIMD, OMPAndSimd){
       ASSERT_FLOAT_EQ(c[i], 2.0);
     }
 
-    free_aligned(a);
-    free_aligned(b);
-    free_aligned(c);
+    RAJA::free_aligned(a);
+    RAJA::free_aligned(b);
+    RAJA::free_aligned(c);
 }
 #endif
 
@@ -136,8 +136,8 @@ TEST(SIMD, TBBAndSimd){
       ASSERT_FLOAT_EQ(c[i], 2.0);
     }
 
-    free_aligned(a);
-    free_aligned(b);
-    free_aligned(c);
+    RAJA::free_aligned(a);
+    RAJA::free_aligned(b);
+    RAJA::free_aligned(c);
 }
 #endif

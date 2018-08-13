@@ -93,8 +93,8 @@ if (NOT RAJA_LOADED)
       openmp)
   endif()
 
-if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17 AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 15)
-     message(WARNING "RAJA::simd_exec not supported with Intel-16 compiler")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)
+     message(WARNING "RAJA::simd_exec support requires Intel-17 or greater")
   endif()
 
   if (ENABLE_CUDA)
