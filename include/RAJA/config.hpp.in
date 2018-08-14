@@ -211,7 +211,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #if defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER >= 1700)
 #define RAJA_SIMD  _Pragma("omp simd")
 #define RAJA_NO_SIMD _Pragma("novector")
-#elif defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER < 1700))
+#elif defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER < 1700)
 #define RAJA_SIMD
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
