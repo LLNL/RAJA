@@ -84,8 +84,9 @@ namespace internal
   struct tuple_storage {
     CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
 
+    CAMP_SUPPRESS_HD_WARN
     template <typename T>
-    CAMP_SUPPRESS_HD_WARN CAMP_HOST_DEVICE constexpr tuple_storage(T&& v)
+    CAMP_HOST_DEVICE constexpr tuple_storage(T&& v)
         // initializing with (...) instead of {...} for compiler compatability
         // some compilers complain when Type has no members and we use {...} to
         // initialize val

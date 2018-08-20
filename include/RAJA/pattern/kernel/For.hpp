@@ -29,7 +29,6 @@
 #define RAJA_pattern_nested_For_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/policy/simd.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -97,35 +96,6 @@ struct StatementExecutor<statement::
     using len_t = decltype(len);
 
     forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
-  }
-};
-
-template <camp::idx_t ArgumentId,
-          typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>> {
-
-
-  template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
-  {
-
-    // Create a wrapper, just in case forall_impl needs to thread_privatize
-    ForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
-
-    auto iter = get<ArgumentId>(data.segment_tuple);
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
-    auto distance = std::distance(begin, end);
-
-    #pragma omp simd
-    for (decltype(distance) i = 0; i < distance; ++i) {
-      data.template assign_offset<ArgumentId>(i);
-      execute_statement_list<camp::list<EnclosedStmts...>>(data);
-      /* loop_body(*(begin + i)); */
-    }
-
-    /* forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper); */
   }
 };
 
