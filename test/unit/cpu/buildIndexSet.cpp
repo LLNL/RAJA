@@ -165,14 +165,14 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
     case MakeSliceRange: {
       UnitIndexSet& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
-      UnitIndexSet* iset_slice
+      UnitIndexSet iset_slice
         = iset_master.createSlice(0, num_segs);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       break;
@@ -187,14 +187,14 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
         segIds[i] = i;
       }
 
-      UnitIndexSet* iset_slice
+      UnitIndexSet iset_slice
         = iset_master.createSlice(segIds, num_segs);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       delete[] segIds;
@@ -211,14 +211,14 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
         segIds[i] = i;
       }
 
-      UnitIndexSet* iset_slice
+      UnitIndexSet iset_slice
         = iset_master.createSlice(segIds);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       break;
