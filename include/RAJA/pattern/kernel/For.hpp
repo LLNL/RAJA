@@ -33,6 +33,8 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/policy/simd/policy.hpp"
+
 namespace RAJA
 {
 
@@ -77,7 +79,58 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   }
 };
 
+/*!
+ * RAJA::kernel forall_impl executor specialization.
+ * Assumptions: RAJA::simd_exec is the inner most policy, 
+ * only one lambda is used, no reductions are done within the lambda.
+ *
+ */
+template <camp::idx_t ArgumentId, typename... EnclosedStmts>
+struct StatementExecutor<
+    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>> {
 
+  template <camp::idx_t LoopIndex,
+            camp::idx_t... OffsetIdx,
+            camp::idx_t... ParamIdx,
+            typename Data,
+            typename Offs>
+  static RAJA_INLINE void invoke_lambda_special(
+      camp::idx_seq<OffsetIdx...> const &,
+      camp::idx_seq<ParamIdx...> const &,
+      Data &data,
+      Offs const &offset_tuple)
+  {
+    camp::get<LoopIndex>(
+        data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
+                          .begin()[camp::get<OffsetIdx>(offset_tuple)])...,
+                     camp::get<ParamIdx>(data.param_tuple)...);
+  }
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+    auto iter = get<ArgumentId>(data.segment_tuple);
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+    RAJA_SIMD
+    for (decltype(distance) i = 0; i < distance; ++i) {
+      auto offsets = data.offset_tuple;
+      get<ArgumentId>(offsets) = i;
+      invoke_lambda_special<0>(camp::idx_seq_from_t<decltype(offsets)>{},
+                               camp::idx_seq_from_t<decltype(data.param_tuple)>{},
+                               data,
+                               offsets);
+    }
+  }
+};
+  
+  
+/*!
+ * A generic RAJA::kernel forall_impl executor
+ * 
+ *
+ */
 template <camp::idx_t ArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>

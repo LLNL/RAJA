@@ -63,9 +63,7 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    body.get_priv()(*(begin + i));
+    loop_body(*(begin + i));
   }
 }
 
