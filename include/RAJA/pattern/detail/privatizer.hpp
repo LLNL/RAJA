@@ -91,6 +91,7 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
   return Privatizer<T>{item};
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename T,
           typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
