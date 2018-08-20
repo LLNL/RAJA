@@ -151,19 +151,23 @@ namespace test
 }
 #endif
 
+
+/**
+ * @brief Get the index of the first instance of T in L
+ */
 template<typename T, typename L>
 struct index_of;
 template<typename T, typename ...Elements>
 struct index_of<T, list<Elements...>> {
   template<typename Seq, typename Item>
   using inc_until = if_<typename std::is_same<T, Item>::type,
-                        if_c<Seq::size == 1,
+                        if_c<size<Seq>::value == 1,
                              typename prepend<Seq, num<first<Seq>::value>>::type,
                              Seq>,
                         list<num<first<Seq>::value + 1>>
                                >;
   using indices = typename accumulate<inc_until, list<num<0>>, list<Elements...>>::type;
-  using type = typename if_c<indices::size == 2, first<indices>, camp::nil>::type;
+  using type = typename if_c<size<indices>::value == 2, first<indices>, camp::nil>::type;
 };
 
 #if defined(CAMP_TEST)
