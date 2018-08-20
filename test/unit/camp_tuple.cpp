@@ -43,7 +43,7 @@ TEST(CampTuple, Assign)
 TEST(CampTuple, ForwardAsTuple)
 {
   int a, b;
-  [](camp::tuple<int&, int&, int&&> t) {
+  [](camp::tuple<int &, int &, int &&> t) {
     ASSERT_EQ(camp::get<2>(t), 5);
     camp::get<1>(t) = 3;
     camp::get<2>(t) = 3;
@@ -77,18 +77,28 @@ TEST(CampTuple, CatPair)
   ASSERT_EQ(camp::get<1>(t3), 'a');
   ASSERT_EQ(camp::get<2>(t3), 5.1f);
 
-  auto t4 = tuple_cat_pair(t1,
-                           t2);
+  auto t4 = tuple_cat_pair(t1, t2);
 
   ASSERT_EQ(camp::get<1>(t4), 'a');
   ASSERT_EQ(camp::get<2>(t4), 5.1f);
 
-  auto t5 = tuple_cat_pair(t1,
-                           camp::idx_seq<1, 0>{},
-                           t2,
-                           camp::idx_seq<1, 0>{});
+  auto t5 =
+      tuple_cat_pair(t1, camp::idx_seq<1, 0>{}, t2, camp::idx_seq<1, 0>{});
   ASSERT_EQ(camp::get<0>(t5), 'a');
   ASSERT_EQ(camp::get<3>(t5), 5.1f);
+}
+
+struct NoDefCon {
+  NoDefCon() = delete;
+  NoDefCon(int i) : num{i} {(void)num;}
+  NoDefCon(NoDefCon const &) = default;
+  private:
+  int num;
+};
+
+TEST(CampTuple, NoDefault)
+{
+  camp::tuple<NoDefCon> t(NoDefCon(1));
 }
 
 struct s1;

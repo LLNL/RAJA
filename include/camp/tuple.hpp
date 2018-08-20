@@ -8,6 +8,7 @@
  */
 
 #include "camp/camp.hpp"
+#include "camp/concepts.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -109,7 +110,22 @@ namespace internal
   template <typename... Types, camp::idx_t... Indices>
   struct tuple_helper<camp::idx_seq<Indices...>, camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
-    CAMP_HOST_DEVICE constexpr tuple_helper() {}
+    template <bool B = concepts::metalib::all_of<
+                  std::is_default_constructible<Types>::value...>::value,
+              typename std::enable_if<B, void>::type* = nullptr>
+    CAMP_HOST_DEVICE constexpr tuple_helper()
+    {
+    }
+    CAMP_HOST_DEVICE constexpr tuple_helper(tuple_helper const& rhs)
+        : tuple_storage<Indices, Types>(
+              rhs.tuple_storage<Indices, Types>::get_inner())...
+    {
+    }
+    CAMP_HOST_DEVICE constexpr tuple_helper(tuple_helper&& rhs)
+        : tuple_storage<Indices, Types>(
+              std::forward<Types>(rhs.tuple_storage<Indices, Types>::val))...
+    {
+    }
 
     template <typename... Args>
     CAMP_HOST_DEVICE constexpr tuple_helper(Args&&... args)
@@ -180,11 +196,16 @@ private:
 public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
-  CAMP_HOST_DEVICE constexpr tuple() : base() {}
+  template <bool B = concepts::metalib::all_of<
+                std::is_default_constructible<Elements>::value...>::value,
+            typename std::enable_if<B, void>::type* = nullptr>
+  CAMP_HOST_DEVICE constexpr tuple() : base()
+  {
+  }
 
-  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) = default;
+  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : base(o.base) {}
 
-  CAMP_HOST_DEVICE constexpr tuple(tuple&& o) = default;
+  CAMP_HOST_DEVICE constexpr tuple(tuple&& o) : base(move(o.base)) {}
 
   CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
   {
@@ -260,11 +281,16 @@ public:
 public:
   // NOTE: __host__ __device__ on constructors causes warnings, and nothing else
   // Constructors
-  CAMP_HOST_DEVICE constexpr tagged_tuple() : base() {}
+  template <bool B = concepts::metalib::all_of<
+                std::is_default_constructible<Elements>::value...>::value,
+            typename std::enable_if<B, void>::type* = nullptr>
+  CAMP_HOST_DEVICE constexpr tagged_tuple() : base()
+  {
+  }
 
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple const& o) = default;
+  constexpr tagged_tuple(tagged_tuple const& o) = default;
 
-  CAMP_HOST_DEVICE constexpr tagged_tuple(tagged_tuple&& o) = default;
+  constexpr tagged_tuple(tagged_tuple&& o) = default;
 
   CAMP_HOST_DEVICE tagged_tuple& operator=(tagged_tuple const& rhs)
   {
