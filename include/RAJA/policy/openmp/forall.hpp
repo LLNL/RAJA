@@ -33,6 +33,11 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include <iostream>
+#include <type_traits>
+
+#include <omp.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
@@ -44,11 +49,8 @@
 #include "RAJA/policy/openmp/policy.hpp"
 
 #include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/region.hpp"
 
-#include <iostream>
-#include <type_traits>
-
-#include <omp.h>
 
 namespace RAJA
 {
@@ -66,12 +68,15 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-#pragma omp parallel
-  {
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    forall_impl(InnerPolicy{}, std::forward<Iterable>(iter), body.get_priv());
-  }
+
+  RAJA::region<RAJA::omp_parallel_region>([&](){
+
+      using RAJA::internal::thread_privatize;
+      auto body = thread_privatize(loop_body);
+      forall_impl(InnerPolicy{}, iter, body.get_priv());
+
+    });
+
 }
 
 ///

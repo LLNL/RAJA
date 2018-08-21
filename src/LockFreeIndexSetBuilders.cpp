@@ -23,17 +23,17 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
 #include <iostream>
+
+#include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
+
+#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
 namespace RAJA
 {

@@ -15,12 +15,24 @@
 ###############################################################################
 
 raja_add_test(
+  NAME camp_tuple
+  SOURCES camp_tuple.cpp)
+
+raja_add_test(
   NAME test-atomic
   SOURCES test-atomic.cpp)
 
 raja_add_test(
+  NAME test-region
+  SOURCES test-region.cpp)
+
+raja_add_test(
   NAME test-layout
   SOURCES test-layout.cpp)
+
+raja_add_test(
+  NAME test-view
+  SOURCES test-view.cpp)
 
 raja_add_test(
   NAME test-timer
@@ -47,12 +59,16 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
-  NAME nested
-  SOURCES nested.cpp)
+  NAME test-kernel
+  SOURCES test-kernel.cpp)
 
 raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
+
+raja_add_test(
+  NAME test-simd
+  SOURCES test-simd.cpp)
 
 add_subdirectory(cpu)
 

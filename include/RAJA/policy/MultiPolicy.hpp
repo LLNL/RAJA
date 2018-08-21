@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA wrapper for multiple policies and dynamic selection
+ * \brief   RAJA wrapper for "multi-policy" and dynamic policy selection
  *
  ******************************************************************************
  */
@@ -26,9 +26,10 @@
 #ifndef RAJA_MultiPolicy_HPP
 #define RAJA_MultiPolicy_HPP
 
+#include "RAJA/config.hpp"
+
 #include <tuple>
 
-#include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
@@ -149,13 +150,13 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace detail
 {
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 // Top level MultiPolicy shouldn't select a CHAI execution space
 // Once a specific policy is selected, that policy will select the correct
 // policy... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
-struct get_space<RAJA::MultiPolicy<SELECTOR, POLICIES...>>
-    : public get_space_impl<Platform::undefined> {
+struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
+  static constexpr Platform value = Platform::undefined;
 };
 #endif
 

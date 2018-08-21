@@ -39,13 +39,13 @@
 
 #include "RAJA/policy/openmp/atomic.hpp"
 #include "RAJA/policy/openmp/forall.hpp"
+#include "RAJA/policy/openmp/region.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/openmp/reduce.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
-
+#include "RAJA/policy/openmp/synchronize.hpp"
 #include "RAJA/policy/openmp/forallN.hpp"
-#include "RAJA/policy/openmp/nested.hpp"
-
+#include "RAJA/policy/openmp/kernel.hpp"
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp/target_forall.hpp"
 #include "RAJA/policy/openmp/target_reduce.hpp"

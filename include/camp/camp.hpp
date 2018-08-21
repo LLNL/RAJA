@@ -4,11 +4,12 @@
 #include <array>
 #include <type_traits>
 
+#include "camp/size.hpp"
 #include "camp/defines.hpp"
 #include "camp/helpers.hpp"
 #include "camp/lambda.hpp"
-#include "camp/list/at.hpp"
-#include "camp/list/find_if.hpp"
+#include "camp/list.hpp"
+#include "camp/map.hpp"
 #include "camp/number.hpp"
 #include "camp/tuple.hpp"
 #include "camp/value.hpp"
@@ -18,10 +19,6 @@ namespace camp
 // Fwd
 template <typename... Ts>
 struct list;
-template <typename T>
-struct as_array;
-template <typename T>
-struct size;
 template <typename Seq>
 struct flatten;
 
@@ -154,6 +151,41 @@ namespace test
 }
 #endif
 
+
+/**
+ * @brief Get the index of the first instance of T in L
+ */
+template<typename T, typename L>
+struct index_of;
+template<typename T, typename ...Elements>
+struct index_of<T, list<Elements...>> {
+  template<typename Seq, typename Item>
+  using inc_until = if_<typename std::is_same<T, Item>::type,
+                        if_c<size<Seq>::value == 1,
+                             typename prepend<Seq, num<first<Seq>::value>>::type,
+                             Seq>,
+                        list<num<first<Seq>::value + 1>>
+                               >;
+  using indices = typename accumulate<inc_until, list<num<0>>, list<Elements...>>::type;
+  using type = typename if_c<size<indices>::value == 2, first<indices>, camp::nil>::type;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((index_of<int, list<>>), (nil));
+  CHECK_TSAME((index_of<int, list<float, double, int>>), (num<2>));
+  CHECK_TSAME((index_of<int, list<float, double, int, int, int, int>>), (num<2>));
+  // CHECK_TSAME((find_if<std::is_pointer, list<float, double>>), (nil));
+  // CHECK_TSAME((find_if_l<bind_front<std::is_same, For<num<1>, int>>,
+  //                        list<For<num<0>, int>, For<num<1>, int>>>),
+  //             (For<num<1>, int>));
+  // CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
+  //                        list<For<num<0>, int>, For<num<1>, int>>>),
+  //             (For<num<1>, int>));
+}
+#endif
+
 template <template <typename...> class Op, typename Seq>
 struct filter;
 
@@ -175,33 +207,7 @@ namespace test
 }
 #endif
 
-namespace detail
-{
-  template <typename T>
-  struct _as_list;
-  template <template <typename...> class T, typename... Args>
-  struct _as_list<T<Args...>> {
-    using type = list<Args...>;
-  };
-  template <typename T, T... Args>
-  struct _as_list<int_seq<T, Args...>> {
-    using type = list<integral_constant<T, Args>...>;
-  };
-} /* detail */
-
-template <typename T>
-struct as_list_s : detail::_as_list<T>::type {
-};
-
-template <typename T>
-using as_list = typename as_list_s<T>::type;
-
 //// size
-template <typename... Args>
-struct size<list<Args...>> {
-  constexpr static idx_t value{sizeof...(Args)};
-  using type = num<sizeof...(Args)>;
-};
 
 #if defined(CAMP_TEST)
 namespace test
@@ -226,6 +232,7 @@ namespace test
   CHECK_IEQ((size<idx_seq<0, 0, 0>>), (3));
 }
 #endif
+
 
 }  // end namespace camp
 

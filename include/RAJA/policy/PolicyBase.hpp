@@ -26,8 +26,9 @@
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
-#include <cstddef>
 #include "RAJA/util/concepts.hpp"
+
+#include <cstddef>
 
 namespace RAJA
 {
@@ -43,7 +44,7 @@ enum class Policy {
   tbb
 };
 
-enum class Pattern { undefined, forall, reduce, taskgraph };
+enum class Pattern { undefined, forall, region, reduce, taskgraph, synchronize };
 
 enum class Launch { undefined, sync, async };
 
@@ -137,11 +138,14 @@ namespace concepts
 
 template <typename Pol>
 struct ExecutionPolicy
-    : DefineConcept(
-          has_type<::RAJA::Policy>(camp::decay<decltype(Pol::policy)>()),
-          has_type<::RAJA::Pattern>(camp::decay<decltype(Pol::pattern)>()),
-          has_type<::RAJA::Launch>(camp::decay<decltype(Pol::launch)>()),
-          has_type<::RAJA::Platform>(camp::decay<decltype(Pol::platform)>())) {
+    : DefineConcept(::RAJA::concepts::has_type<::RAJA::Policy>(
+                        camp::decay<decltype(Pol::policy)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Pattern>(
+                        camp::decay<decltype(Pol::pattern)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Launch>(
+                        camp::decay<decltype(Pol::launch)>()),
+                    ::RAJA::concepts::has_type<::RAJA::Platform>(
+                        camp::decay<decltype(Pol::platform)>())) {
 };
 
 }  // end namespace concepts

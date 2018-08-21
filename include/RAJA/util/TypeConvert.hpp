@@ -31,7 +31,8 @@
 #define RAJA_util_TypeConvert_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 
 namespace RAJA

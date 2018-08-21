@@ -34,9 +34,11 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include <algorithm>
+
 #include "RAJA/pattern/forall.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
@@ -46,8 +48,6 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
-
-#include <algorithm>
 
 namespace RAJA
 {
@@ -145,7 +145,7 @@ __launch_bounds__(BlockSize, 1) __global__
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
-  auto &body = privatizer.get_priv();
+  auto& body = privatizer.get_priv();
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
     body(idx[ii]);
@@ -180,9 +180,19 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     cudaStream_t stream = 0;
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
-        RAJA::cuda::make_launch_body(
-            gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+    size_t shmem = 0;
+
+//  printf("gridsize = (%d,%d), blocksize = %d\n",
+//         (int)gridSize.x,
+//         (int)gridSize.y,
+//         (int)BlockSize);
+
+    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
+        RAJA::cuda::make_launch_body(gridSize,
+                                     BlockSize,
+                                     shmem,
+                                     stream,
+                                     std::forward<LoopBody>(loop_body)),
         std::move(begin),
         len);
     RAJA::cuda::peekAtLastError();
@@ -191,32 +201,6 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     if (!Async) RAJA::cuda::synchronize(stream);
 
     RAJA_FT_END;
-  }
-}
-
-
-//
-////////////////////////////////////////////////////////////////////////
-//
-// Function templates for CUDA execution over iterables for within
-// and device kernel.  Called from RAJA::nested::*
-//
-////////////////////////////////////////////////////////////////////////
-//
-
-template <typename Iterable, typename LoopBody>
-RAJA_INLINE RAJA_DEVICE void forall_impl(cuda_loop_exec,
-                                         Iterable&& iter,
-                                         LoopBody&& loop_body)
-{
-  // TODO: we need a portable std::begin, std::end, and std::distance
-  auto begin = iter.begin();  // std::begin(iter);
-  auto end = iter.end();      // std::end(iter);
-
-  auto len = end - begin;  // std::distance(begin, end);
-
-  for (decltype(len) i = 0; i < len; ++i) {
-    loop_body(*(begin + i));
   }
 }
 

@@ -60,14 +60,15 @@
 #ifndef RAJA_forall_generic_HPP
 #define RAJA_forall_generic_HPP
 
+#include "RAJA/config.hpp"
+
 #include <functional>
 #include <iterator>
 #include <type_traits>
 
-#include "RAJA/config.hpp"
-
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/Span.hpp"
+
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
@@ -75,12 +76,14 @@
 #include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
+
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/sequential/forall.hpp"
 
 #include "RAJA/pattern/detail/forall.hpp"
+#include "RAJA/pattern/detail/privatizer.hpp"
 
 #include "RAJA/util/chai_support.hpp"
 
@@ -100,46 +103,11 @@ namespace internal
 {
 
 template <typename T>
-struct Privatizer {
-  using value_type = camp::decay<T>;
-  using reference_type = value_type&;
-  value_type priv;
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
-};
-
-template <typename T>
 auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
 {
   return item;
 }
 
-/**
- * @brief Create a private copy of the argument to be stored on the current
- * thread's stack in a class of the Privatizer concept
- *
- * @param item data to privatize
- *
- * @return Privatizer<T>
- *
- * This function will be invoked such that ADL can be used to extend its
- * functionality.  Anywhere it is called it should be invoked by:
- *
- * `using RAJA::internal::thread_privatize; thread_privatize()`
- *
- * This allows other namespaces to add new versions to support functionality
- * that does not belong here.
- *
- */
-template <typename T>
-RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
-{
-  return Privatizer<T>{item};
-}
 
 }  // end namespace internal
 
@@ -211,6 +179,7 @@ RAJA_INLINE concepts::
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
               body);
@@ -234,6 +203,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 {
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   using std::begin;
   using std::end;
   using std::distance;
@@ -284,9 +254,9 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                         LoopBody loop_body)
 {
 
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
   });
@@ -307,7 +277,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
@@ -332,7 +303,8 @@ RAJA_INLINE concepts::
     forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using an "
+                "Expected an TypedIndexSet but did not get one. Are you using "
+                "an "
                 "TypedIndexSet policy by mistake?");
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
@@ -421,7 +393,9 @@ template <typename ExecutionPolicy,
           typename Iterator,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
+ concepts::
     enable_if<type_traits::is_integral<IndexType>,
               type_traits::is_iterator<Iterator>,
               concepts::negate<type_traits::is_integral<Iterator>>>
@@ -456,8 +430,9 @@ RAJA_INLINE concepts::
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Iterator, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_iterator<Iterator>,
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
+  concepts::enable_if<type_traits::is_iterator<Iterator>,
               concepts::negate<type_traits::is_integral<Iterator>>>
     forall(ExecutionPolicy&& p,
            Iterator begin,
@@ -500,7 +475,9 @@ template <typename ExecutionPolicy,
           typename IndexType1,
           typename IndexType2,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>>
 forall(ExecutionPolicy&& p,
        IndexType1 begin,
@@ -534,7 +511,9 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<OffsetType>>
 forall_Icount(ExecutionPolicy&& p,
@@ -577,9 +556,11 @@ template <typename ExecutionPolicy,
           typename IndexType2,
           typename IndexType3,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
-                                type_traits::is_integral<IndexType2>,
-                                type_traits::is_integral<IndexType3>>
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE
+concepts::enable_if<type_traits::is_integral<IndexType1>,
+                               type_traits::is_integral<IndexType2>,
+                               type_traits::is_integral<IndexType3>>
 forall(ExecutionPolicy&& p,
        IndexType1 begin,
        IndexType2 end,
@@ -623,7 +604,9 @@ template <typename ExecutionPolicy,
           typename IndexType3,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType1>,
+RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
+RAJA_INLINE 
+concepts::enable_if<type_traits::is_integral<IndexType1>,
                                 type_traits::is_integral<IndexType2>,
                                 type_traits::is_integral<IndexType3>,
                                 type_traits::is_integral<OffsetType>>

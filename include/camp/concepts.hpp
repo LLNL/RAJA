@@ -6,6 +6,7 @@
 
 #include "camp/helpers.hpp"
 #include "camp/number.hpp"
+#include "camp/list.hpp"
 
 namespace camp
 {
@@ -384,6 +385,6 @@ namespace type_traits
   };
 
 }  // end namespace type_traits
-}
+}  // namespace camp
 
 #endif /* CAMP_CONCEPTS_HPP */

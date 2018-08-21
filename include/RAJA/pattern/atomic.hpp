@@ -27,9 +27,11 @@
 #define RAJA_pattern_atomic_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/policy/atomic_auto.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -323,7 +325,11 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator=(T rhs) const { *m_value_ptr = rhs; return rhs; }
+  T operator=(T rhs) const
+  {
+    *m_value_ptr = rhs;
+    return rhs;
+  }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE

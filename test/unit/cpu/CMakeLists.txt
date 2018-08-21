@@ -31,7 +31,7 @@ raja_add_test(
 
 raja_add_test(
   NAME test-indexset
-  SOURCES test-indexsets.cpp
+  SOURCES test-indexset.cpp
   DEPENDS_ON bis)
 
 raja_add_test(
@@ -57,3 +57,7 @@ raja_add_test(
 raja_add_test(
   NAME test-forall-view
   SOURCES test-forall-view.cpp)
+
+raja_add_test(
+  NAME test-synchronize
+  SOURCES test-synchronize.cpp)

@@ -287,6 +287,8 @@ protected:
   RAJA::Index_type y_size;
   RAJA::Index_type z_size;
 };
+
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP);
 
 TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
@@ -346,3 +348,4 @@ using nested_types = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduceTargetOMP,
                               NestedReductionCorrectnessTestTargetOMP,
                               nested_types);
+#endif

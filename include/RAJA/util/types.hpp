@@ -29,13 +29,14 @@
 #define RAJA_Types_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/helpers.hpp"
 
 #include <cstddef>
 
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
+
+#include "camp/helpers.hpp"
 
 namespace RAJA
 {
@@ -56,6 +57,15 @@ using Index_type = std::ptrdiff_t;
 /// Although this is a magic value, it avoids sprinkling them throughout code.
 ///
 const int UndefinedValue = -9999999;
+
+
+///
+/// Template list of sizes
+///
+template <Index_type... Sizes>
+struct SizeList {
+};
+
 
 /*!
  ******************************************************************************

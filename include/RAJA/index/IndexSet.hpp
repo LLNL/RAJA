@@ -93,8 +93,8 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, 
-                typename PARENT::value_type>::value || T0_TypeId == 0,
+  static_assert(std::is_same<value_type, typename PARENT::value_type>::value
+                    || T0_TypeId == 0,
                 "All segments must have the same value_type");
 
   //! Construct empty index set
@@ -115,8 +115,7 @@ public:
   }
 
   //! Copy-assignment operator for index set
-  TypedIndexSet<T0, TREST...> &operator=(
-      const TypedIndexSet<T0, TREST...> &rhs)
+  TypedIndexSet<T0, TREST...> &operator=(const TypedIndexSet<T0, TREST...> &rhs)
   {
     if (&rhs != this) {
       TypedIndexSet<T0, TREST...> copy(rhs);
@@ -340,8 +339,9 @@ public:
   ///
   RAJA_SUPPRESS_HD_WARN
   template <typename BODY, typename... ARGS>
-  RAJA_HOST_DEVICE
-  void segmentCall(size_t segid, BODY&& body, ARGS&&... args) const
+  RAJA_HOST_DEVICE void segmentCall(size_t segid,
+                                    BODY &&body,
+                                    ARGS &&... args) const
   {
     if (getSegmentTypes()[segid] != T0_TypeId) {
       PARENT::segmentCall(segid,
@@ -433,14 +433,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(int begin, int end)
+  TypedIndexSet<T0, TREST...> createSlice(int begin, int end)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int minSeg = RAJA::operators::maximum<int>{}(0, begin);
     int maxSeg = RAJA::operators::minimum<int>{}(end, getNumSegments());
     for (int i = minSeg; i < maxSeg; ++i) {
-      segment_push_into(i, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      segment_push_into(i, retVal, PUSH_BACK, PUSH_NOCOPY);
     }
     return retVal;
   }
@@ -452,14 +452,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(const int *segIds, int len)
+  TypedIndexSet<T0, TREST...> createSlice(const int *segIds, int len)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int numSeg = getNumSegments();
     for (int i = 0; i < len; ++i) {
       if (segIds[i] >= 0 && segIds[i] < numSeg) {
-        segment_push_into(segIds[i], *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(segIds[i], retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
@@ -476,13 +476,13 @@ public:
   /// iterator type must de-reference to an integral value.
   ///
   template <typename T>
-  TypedIndexSet<T0, TREST...> *createSlice(const T &segIds)
+  TypedIndexSet<T0, TREST...> createSlice(const T &segIds)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
     int numSeg = getNumSegments();
     for (auto &seg : segIds) {
       if (seg >= 0 && seg < numSeg) {
-        segment_push_into(seg, *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(seg, retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
@@ -677,9 +677,8 @@ protected:
   RAJA_INLINE void increaseTotalLength(int n) { m_len += n; }
 
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool compareSegmentById(
-      size_t,
-      const TypedIndexSet<P0, PREST...> &) const
+  RAJA_INLINE bool compareSegmentById(size_t,
+                                      const TypedIndexSet<P0, PREST...> &) const
   {
     return false;
   }
@@ -758,8 +757,12 @@ private:
 };
 
 
-RAJA_DEPRECATE_ALIAS("IndexSet will be deprecated soon. Please transition to TypedIndexSet")  
-typedef TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> IndexSet;
+RAJA_DEPRECATE_ALIAS(
+    "IndexSet will be deprecated soon. Please transition to TypedIndexSet")
+typedef TypedIndexSet<RAJA::RangeSegment,
+                      RAJA::ListSegment,
+                      RAJA::RangeStrideSegment>
+    IndexSet;
 
 namespace type_traits
 {

@@ -29,7 +29,6 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/util/defines.hpp"
 
 #include "buildIndexSet.hpp"
 
@@ -40,12 +39,12 @@ using TestingTypes = ::testing::
     Types<
   std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
   std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
-#ifdef RAJA_ENABLE_OPENMP
+#if defined (RAJA_ENABLE_OPENMP)
   
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
   ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
 #endif
-#ifdef RAJA_ENABLE_TBB
+#if defined (RAJA_ENABLE_TBB)
           ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
            ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
 #endif
@@ -127,6 +126,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
  
 }
 
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
@@ -167,8 +167,8 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
   ASSERT_EQ(tmin1.getLoc(), -1);
-
 }
+#endif
 
 TYPED_TEST(IndexSetReduce, ReduceMaxTest)
 {
@@ -294,4 +294,41 @@ TYPED_TEST(IndexSetReduce, ReduceSumTest)
     ASSERT_FLOAT_EQ(Real_type(tsum0), Real_type(k * ref_sum));
     ASSERT_FLOAT_EQ(tsum1.get(), Real_type(k * this->iset.getLength() + 5.0));
   }
+}
+
+
+//
+//Test to make sure the first min/max location is returned
+//
+TEST(Reduce, MinMaxLoc)
+{
+
+  const int N = 25;
+  double *A = new double[N];
+
+  //generate random numbers between [1,10]
+  for(int i=0; i<N; ++i){
+    A[i] = rand() % 10 +1; 
+  }
+   
+  //Set min to be at index 0
+  A[0] = 1; A[5] = 1; 
+  RAJA::ReduceMinLoc<RAJA::seq_reduce, double> tmin(1000,2);
+  RAJA::forall<RAJA::loop_exec>
+    (RAJA::RangeSegment(0, N), [=] (RAJA::Index_type id) {
+      tmin.minloc(A[id],id); 
+    });
+  ASSERT_EQ(tmin.getLoc(), 0);
+
+
+  //Set max to be at index 0
+  A[0] = 10; A[5] = 10; 
+  RAJA::ReduceMaxLoc<RAJA::seq_reduce, double> tmax(-1,1);
+  RAJA::forall<RAJA::loop_exec>
+    (RAJA::RangeSegment(0, N), [=] (RAJA::Index_type id) {
+      tmax.maxloc(A[id],id); 
+    });
+  ASSERT_EQ(tmax.getLoc(), 0);
+
+  delete[] A;
 }

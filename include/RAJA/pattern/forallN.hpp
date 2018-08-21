@@ -27,10 +27,12 @@
 #define RAJA_forallN_generic_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Operators.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
@@ -248,6 +250,7 @@ RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
+RAJA_DEPRECATE("ForallN will be deprecated in next release")
 RAJA_INLINE void forallN(Ts &&... args)
 {
 

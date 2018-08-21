@@ -27,18 +27,15 @@
 #ifndef RAJA_forallN_tile_HPP
 #define RAJA_forallN_tile_HPP
 
-#include <type_traits>
-
 #include "RAJA/config.hpp"
+
+#include <type_traits>
 
 #include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
 
-/******************************************************************
- *  ForallN tiling policies
- ******************************************************************/
 
 // Policy for no tiling
 struct tile_none {
