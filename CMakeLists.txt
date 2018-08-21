@@ -53,6 +53,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+  option(RAJA_ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" Off)
   option(ENABLE_BENCHMARKS "Build benchmarks" Off)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
