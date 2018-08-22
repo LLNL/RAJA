@@ -87,6 +87,12 @@ public:
 
   using value_type = typename P::value_type;
 
+#if defined(RAJA_ENABLE_CUDA)
+  typedef typename RAJA::RAJAVec<value_type, managed_allocator<value_type> > RAJAVec_value_type;
+#else
+  typedef typename RAJA::RAJAVec<value_type> RAJAVec_value_type;
+#endif
+
   RAJA_INLINE GraphBuilder(Graph<P>& _g) : g(_g) {
     m_size = g.getNumTasks();
     m_starting_vertex = g.getStartingTask();
@@ -156,16 +162,21 @@ private:
   /// The graph is stored in CSR format, which stores m_vertex_degree and corresponding m_adjacency list
 
   //! vector m_vertex_degree - degree for each vertex (one per vertex)
-  RAJA::RAJAVec<value_type> m_vertex_degree;
-  RAJA::RAJAVec<value_type> m_vertex_degree_prefix_sum;
-  RAJA::RAJAVec<value_type> m_dependencies;
+  RAJAVec_value_type m_vertex_degree;
+  RAJAVec_value_type m_vertex_degree_prefix_sum;
+  RAJAVec_value_type m_dependencies;
 
   //! vector m_adjacency - edges for each vertex v, starting at m_vertex_degree_prefix_sum[v-1] (one per edge)
-  RAJA::RAJAVec<value_type> m_adjacency;
+  RAJAVec_value_type m_adjacency;
+
 
   //! When building the graph, use a map of adjacent edges per vertex
   // - rewrite in CSR format when GraphBuilder is destroyed
+#if defined(RAJA_ENABLE_CUDA)
+  std::vector<std::vector<value_type, managed_allocator<value_type> >, managed_allocator<value_type> > m_temp_adjacency;
+#else
   std::vector<std::vector<value_type> > m_temp_adjacency;
+#endif
 
   //! the graph we are building
   Graph<P>& g;
@@ -177,6 +188,3 @@ private:
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
-
-
-
