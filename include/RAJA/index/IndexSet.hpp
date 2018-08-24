@@ -30,9 +30,11 @@
 
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
+//#include "RAJA/index/Graph.hpp"
 
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
+#include "RAJA/internal/MemUtils_GPU.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -88,6 +90,12 @@ class TypedIndexSet<T0, TREST...> : public TypedIndexSet<TREST...>
   using PARENT = TypedIndexSet<TREST...>;
   static const int T0_TypeId = sizeof...(TREST);
 
+#if defined(RAJA_ENABLE_CUDA)
+  typedef typename RAJA::RAJAVec<Index_type, managed_allocator<Index_type> > RAJAVec_Index_type;
+#else
+  typedef typename RAJA::RAJAVec<Index_type> RAJAVec_Index_type;
+#endif
+
 public:
   // Adopt the value type of the first segment type
   using value_type = typename T0::value_type;
@@ -131,7 +139,7 @@ public:
     for (size_t i = 0; i < num_seg; ++i) {
       // Only free segment of we allocated it
       if (owner[i]) {
-        delete data[i];
+        //delete data[i];
       }
     }
   }
@@ -350,6 +358,10 @@ public:
       return;
     }
     Index_type offset = getSegmentOffsets()[segid];
+
+    //std::cout<<"in segmentCall, offset="<<offset<<std::endl;
+    //std::cout<<"in segmentCall, data[offset]->size()="<<data[offset]->size()<<std::endl;
+
     body(*data[offset], std::forward<ARGS>(args)...);
   }
 
@@ -509,37 +521,37 @@ public:
 
 protected:
   //! Returns the mapping of  segment_index -> segment_type
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentTypes()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentTypes()
   {
     return PARENT::getSegmentTypes();
   }
 
   //! Returns the mapping of  segment_index -> segment_type
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentTypes() const
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentTypes() const
   {
     return PARENT::getSegmentTypes();
   }
 
   //! Returns the mapping of  segment_index -> segment_offset
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentOffsets()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentOffsets()
   {
     return PARENT::getSegmentOffsets();
   }
 
   //! Returns the mapping of  segment_index -> segment_offset
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentOffsets() const
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentOffsets() const
   {
     return PARENT::getSegmentOffsets();
   }
 
   //! Returns the icount of segments
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentIcounts()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentIcounts()
   {
     return PARENT::getSegmentIcounts();
   }
 
   //! Returns the icount of segments
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentIcounts() const
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentIcounts() const
   {
     return PARENT::getSegmentIcounts();
   }
@@ -573,17 +585,23 @@ public:
   }
 
 private:
-  //! vector of TypedIndexSet data objects of type T0
-  RAJA::RAJAVec<T0 *> data;
 
+#if defined(RAJA_ENABLE_CUDA)
+  //! vector of IndexSet data objects of type T0
+  RAJA::RAJAVec<T0 *, managed_allocator<T0 *> > data;
+#else
+  //! vector of IndexSet data objects of type T0
+  RAJA::RAJAVec<T0 *> data;
+#endif
   //! vector indicating which segments are owned by the TypedIndexSet
-  RAJA::RAJAVec<Index_type> owner;
+  RAJAVec_Index_type owner;
 
   //! vector holding user defined begin segment intervals
-  RAJA::RAJAVec<Index_type> m_seg_interval_begin;
+  RAJAVec_Index_type m_seg_interval_begin;
 
   //! vector holding user defined end segment intervals
-  RAJA::RAJAVec<Index_type> m_seg_interval_end;
+  RAJAVec_Index_type m_seg_interval_end;
+
 };
 
 
@@ -593,6 +611,12 @@ class TypedIndexSet<>
 public:
   // termination case, just to make static_assert work
   using value_type = RAJA::Index_type;
+
+#if defined(RAJA_ENABLE_CUDA)
+  typedef typename RAJA::RAJAVec<Index_type, managed_allocator<Index_type> > RAJAVec_Index_type;
+#else
+  typedef typename RAJA::RAJAVec<Index_type> RAJAVec_Index_type;
+#endif
 
   //! create empty TypedIndexSet
   RAJA_INLINE TypedIndexSet() : m_len(0) {}
@@ -640,33 +664,30 @@ protected:
   {
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentTypes()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentTypes()
   {
     return segment_types;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentTypes() const
-  {
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentTypes() const {
     return segment_types;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentOffsets()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentOffsets()
   {
     return segment_offsets;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentOffsets() const
-  {
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentOffsets() const {
     return segment_offsets;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentIcounts()
+  RAJA_INLINE RAJAVec_Index_type &getSegmentIcounts()
   {
     return segment_icounts;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> const &getSegmentIcounts() const
-  {
+  RAJA_INLINE RAJAVec_Index_type const &getSegmentIcounts() const {
     return segment_icounts;
   }
 
@@ -743,14 +764,14 @@ public:
 
 private:
   //! Vector of segment types:    seg_index -> seg_type
-  RAJA::RAJAVec<Index_type> segment_types;
+  RAJAVec_Index_type segment_types;
 
   //! offsets into each segment vector:    seg_index -> seg_offset
   //! used as segment_data[seg_type][seg_offset]
-  RAJA::RAJAVec<Index_type> segment_offsets;
+  RAJAVec_Index_type segment_offsets;
 
   //! the icount of each segment
-  RAJA::RAJAVec<Index_type> segment_icounts;
+  RAJAVec_Index_type segment_icounts;
 
   //! Total length of all TypedIndexSet segments.
   Index_type m_len;

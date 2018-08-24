@@ -25,6 +25,10 @@ if (NOT ENABLE_CLANG_CUDA)
 endif()
 
 raja_add_test(
+  NAME main-cuda-index-set
+  SOURCES main-cuda-index-set.cpp)
+
+raja_add_test(
   NAME test-cuda-reduce-sum
   SOURCES test-reduce-sum.cpp)
 
