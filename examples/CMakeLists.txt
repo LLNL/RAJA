@@ -77,6 +77,10 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
+
+raja_add_executable(
+  NAME mat-transpose
+  SOURCES mat-transpose.cpp)
   
   
 if(ENABLE_CUDA)
