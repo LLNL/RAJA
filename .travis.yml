@@ -65,7 +65,9 @@ matrix:
     env:
     - COMPILER=clang++
     - IMG=clang4
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address"
+    - ASAN_OPTIONS=detect_leaks=0
+    - "LSAN_OPTIONS=verbosity=1:log_threads=1"
   - compiler: nvcc-debug
     env:
     - COMPILER=g++
@@ -80,10 +82,12 @@ before_install: # don't try to build and run intel when it's impossible
   else
     export DO_TEST=no DO_BUILD=no
   fi
+- export LSAN_OPTIONS
+- export ASAN_OPTIONS
 
 script: 
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
-- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
+- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi

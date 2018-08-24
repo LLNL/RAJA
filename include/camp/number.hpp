@@ -1,6 +1,7 @@
 #ifndef CAMP_NUMBER_HPP
 #define CAMP_NUMBER_HPP
 
+#include "camp/helpers.hpp"
 #include "camp/number/if.hpp"
 #include "camp/number/number.hpp"
 
@@ -102,7 +103,7 @@ struct idx_seq_from<int_seq<T, Args...>> : make_idx_seq<sizeof...(Args)> {
 
 // TODO: document
 template <typename T>
-using idx_seq_from_t = typename idx_seq_from<T>::type;
+using idx_seq_from_t = typename idx_seq_from<camp::decay<T>>::type;
 
 // TODO: document
 template <typename T, T Upper>

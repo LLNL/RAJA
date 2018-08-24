@@ -433,14 +433,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(int begin, int end)
+  TypedIndexSet<T0, TREST...> createSlice(int begin, int end)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int minSeg = RAJA::operators::maximum<int>{}(0, begin);
     int maxSeg = RAJA::operators::minimum<int>{}(end, getNumSegments());
     for (int i = minSeg; i < maxSeg; ++i) {
-      segment_push_into(i, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      segment_push_into(i, retVal, PUSH_BACK, PUSH_NOCOPY);
     }
     return retVal;
   }
@@ -452,14 +452,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(const int *segIds, int len)
+  TypedIndexSet<T0, TREST...> createSlice(const int *segIds, int len)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int numSeg = getNumSegments();
     for (int i = 0; i < len; ++i) {
       if (segIds[i] >= 0 && segIds[i] < numSeg) {
-        segment_push_into(segIds[i], *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(segIds[i], retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
@@ -476,13 +476,13 @@ public:
   /// iterator type must de-reference to an integral value.
   ///
   template <typename T>
-  TypedIndexSet<T0, TREST...> *createSlice(const T &segIds)
+  TypedIndexSet<T0, TREST...> createSlice(const T &segIds)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
     int numSeg = getNumSegments();
     for (auto &seg : segIds) {
       if (seg >= 0 && seg < numSeg) {
-        segment_push_into(seg, *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(seg, retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
