@@ -139,7 +139,7 @@ public:
     for (size_t i = 0; i < num_seg; ++i) {
       // Only free segment of we allocated it
       if (owner[i]) {
-        //delete data[i];
+        delete data[i];
       }
     }
   }
