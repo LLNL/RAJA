@@ -78,6 +78,7 @@ public:
         m_capacity(0),
         m_size(0)
   {
+    std::cout<<"RAJAVec copy ctor "<<this<<std::endl;
     copy(other);
   }
 
@@ -97,6 +98,7 @@ public:
   ///
   RAJAVec<T>& operator=(const RAJAVec<T>& rhs)
   {
+    std::cout<<"RAJAVec copy-assignment "<<this<<std::endl;
     if (&rhs != this) {
       RAJAVec<T> copy(rhs);
       this->swap(copy);
@@ -109,6 +111,7 @@ public:
   ///
   ~RAJAVec()
   {
+    std::cout<<"RAJAVec destructor "<<this<<std::endl;
     if (m_capacity > 0) m_allocator.deallocate(m_data, m_capacity);
   }
 

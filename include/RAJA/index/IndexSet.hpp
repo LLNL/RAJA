@@ -113,6 +113,8 @@ public:
   TypedIndexSet(TypedIndexSet<T0, TREST...> const &c)
       : PARENT((PARENT const &)c)
   {
+    std::cout<<"Calling copy constructor "<<this<<" "<<&c<<std::endl;
+
     size_t num = c.data.size();
     data.resize(num);
     for (size_t i = 0; i < num; ++i) {
@@ -125,6 +127,8 @@ public:
   //! Copy-assignment operator for index set
   TypedIndexSet<T0, TREST...> &operator=(const TypedIndexSet<T0, TREST...> &rhs)
   {
+    std::cout<<"Calling copy-assignment "<<this<<" "<<&rhs<<std::endl;
+
     if (&rhs != this) {
       TypedIndexSet<T0, TREST...> copy(rhs);
       this->swap(copy);
@@ -135,10 +139,13 @@ public:
   //! Destroy index set including all index set segments.
   RAJA_INLINE ~TypedIndexSet()
   {
+    std::cout<<"Calling destructor "<<this<<std::endl;
+
     size_t num_seg = data.size();
     for (size_t i = 0; i < num_seg; ++i) {
       // Only free segment of we allocated it
       if (owner[i]) {
+        std::cout<<"In destructor, deleting data["<<i<<"]="<<data[i]<<" "<<this<<std::endl;
         delete data[i];
       }
     }
@@ -147,6 +154,8 @@ public:
   //! Swap function for copy-and-swap idiom.
   void swap(TypedIndexSet<T0, TREST...> &other)
   {
+    std::cout<<"Calling internal swap function "<<this<<std::endl;
+
     // Swap parents data
     PARENT::swap((PARENT &)other);
     // Swap our data
@@ -797,8 +806,22 @@ template <typename T>
 struct is_indexset_policy
     : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
-}
+}  // closing brace for type_traits namespace
 
 }  // closing brace for RAJA namespace
+
+namespace std
+{
+//! specialization of swap for TypedIndexSet
+template <typename T>
+RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedIndexSet<T>& a,
+                                       RAJA::TypedIndexSet<T>& b)
+{
+  std::cout<<"Calling external swap function"<<std::endl;
+  a.swap(b);
+}
+}  // closing brace for std namespace
+
+
 
 #endif  // closing endif for header file include guard

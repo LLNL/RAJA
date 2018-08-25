@@ -79,7 +79,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout<<"Starting forall using CUDA"<<std::endl;
 
-  using cuda_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<num_segments>>;
+  using cuda_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_segit>;
+  //using cuda_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<num_segments>>;
   //using cuda_pol = RAJA::ExecPolicy<RAJA::cuda_exec<num_segments>, RAJA::seq_segit>;
 
 
@@ -105,7 +106,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   } std::cout<<std::endl;
 */
 
-  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<num_segments>>;"<<std::endl;
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_segit>;"<<std::endl;
+  //std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<num_segments>>;"<<std::endl;
   //  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
 
   cudaFree(::test_array);
