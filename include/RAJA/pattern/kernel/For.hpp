@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/pattern/kernel/Lambda.hpp"
 
 namespace RAJA
 {
@@ -79,6 +80,43 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   }
 };
 
+
+/*!
+ *Helper structs to check if we have a lambda
+ *
+ */
+template<class T>
+struct TypeIsLambda
+{  
+  static const bool value = false;
+};
+
+template <camp::idx_t BodyIdx>
+struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx> >
+{
+  static const bool value = true;
+};
+
+/*
+ *
+ */
+template <class... States>
+struct all {
+};
+
+template <>
+struct all<>{
+  static const bool value = true;
+};
+
+template<class State, class... States>
+struct all<State, States...> : all<States...>
+{
+  static const bool value = TypeIsLambda<camp::decay<State>>::value;  
+  static_assert((value && all<States ...>::value), "Lambdas are only supported post RAJA::simd_exec");
+};
+
+
 /*!
  * RAJA::kernel forall_impl executor specialization.
  * Assumptions: RAJA::simd_exec is the inner most policy, 
@@ -109,6 +147,10 @@ struct StatementExecutor<
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
+    
+    //assert we are only passing in Lambda objects
+    all<EnclosedStmts...>::value;
+
     auto iter = get<ArgumentId>(data.segment_tuple);
     auto begin = std::begin(iter);
     auto end = std::end(iter);
@@ -116,16 +158,16 @@ struct StatementExecutor<
     RAJA_SIMD
     for (decltype(distance) i = 0; i < distance; ++i) {
       auto offsets = data.offset_tuple;
+      auto param = data.param_tuple;
       get<ArgumentId>(offsets) = i;
       invoke_lambda_special<0>(camp::idx_seq_from_t<decltype(offsets)>{},
-                               camp::idx_seq_from_t<decltype(data.param_tuple)>{},
+                               camp::idx_seq_from_t<decltype(param)>{},
                                data,
                                offsets);
     }
   }
 };
-  
-  
+    
 /*!
  * A generic RAJA::kernel forall_impl executor
  * 

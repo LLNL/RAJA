@@ -282,7 +282,7 @@ void runLTimesRajaKernel(bool debug,
     For<0, loop_exec,
       For<1, loop_exec,
         For<2, loop_exec,
-          For<3, simd_exec, Lambda<0>>
+          For<3, loop_exec, Lambda<0>>
         >
       >
     >>;
@@ -425,22 +425,22 @@ void runLTimesRajaKernelShmem(bool debug,
         SetShmemWindow<
 
           // Load shmem L
-          For<0, simd_exec, For<1, simd_exec, Lambda_LoadEll>>,
+          For<0, loop_exec, For<1, loop_exec, Lambda_LoadEll>>,
 
           For<2, loop_exec,
             statement::Tile<3, statement::tile_fixed<tile_zones>, loop_exec,
               SetShmemWindow<
                 // Load Psi into shmem
-                For<1, simd_exec, For<3, simd_exec, Lambda_LoadPsi >>,
+                For<1, loop_exec, For<3, loop_exec, Lambda_LoadPsi >>,
 
                 For<0, loop_exec, //m
-                  For<3, simd_exec, Lambda_LoadPhi>, //z
+                  For<3, loop_exec, Lambda_LoadPhi>, //z
 
                   For<1, loop_exec, // d
-                    For<3, simd_exec, Lambda_CalcPhi>
+                    For<3, loop_exec, Lambda_CalcPhi>
                   >,
 
-                  For<3, simd_exec, Lambda_SavePhi>
+                  For<3, loop_exec, Lambda_SavePhi>
                 >  // m
               > // Shmem Window
             > // Tile zones
