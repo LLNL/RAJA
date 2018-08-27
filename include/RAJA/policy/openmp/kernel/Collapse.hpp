@@ -71,9 +71,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-
-    using data_t = camp::decay<Data>;
-
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
 
@@ -111,9 +108,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-
-    using data_t = camp::decay<Data>;
-
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
     auto l2 = segment_length<Arg2>(data);
