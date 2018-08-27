@@ -33,6 +33,8 @@
 #include <cassert>
 #include <climits>
 
+#include "RAJA/pattern/detail/privatizer.hpp"
+
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 
@@ -77,7 +79,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
 #pragma omp parallel
     {
-      data_t private_data = data;
+      auto privatizer = internal::thread_privatize(data);
+      auto &private_data = privatizer.get_priv();
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for collapse(2)
@@ -117,7 +120,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
 #pragma omp parallel
     {
-      data_t private_data = data;
+      auto privatizer = internal::thread_privatize(data);
+      auto &private_data = privatizer.get_priv();
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for collapse(3)
