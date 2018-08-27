@@ -25,6 +25,11 @@ matrix:
     - COMPILER=g++
     - IMG=gcc7
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+  - compiler: gcc8
+    env:
+    - COMPILER=g++
+    - IMG=gcc8
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
   - compiler: clang6
     env:
     - COMPILER=clang++
@@ -35,17 +40,7 @@ matrix:
     - COMPILER=clang++
     - IMG=clang5
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang4
-    env:
-    - COMPILER=clang++
-    - IMG=clang4
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: intel-16
-    env:
-    - COMPILER=/opt/intel/bin/icpc
-    - IMG=icc16
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: intel-18
+  - compiler: intel18
     env:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
@@ -61,10 +56,10 @@ matrix:
     - COMPILER=g++
     - IMG=gcc49
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
-  - compiler: clang-4-debug
+  - compiler: clang-6-debug
     env:
     - COMPILER=clang++
-    - IMG=clang4
+    - IMG=clang6
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address"
     - ASAN_OPTIONS=detect_leaks=0
     - "LSAN_OPTIONS=verbosity=1:log_threads=1"
