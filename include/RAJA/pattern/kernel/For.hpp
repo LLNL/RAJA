@@ -112,7 +112,7 @@ struct Invoke_all_Lambda {
            typename Offs, typename Params>
   static RAJA_INLINE void lambda_special(camp::idx_seq<OffsetIdx...> const &,
                                          camp::idx_seq<ParamIdx...> const &, 
-                                         Data& data, Offs const &offset_tuple, Params const &params) {};
+                                         Data&, Offs const &, Params const &) {};
 
 };
 
@@ -127,7 +127,7 @@ struct Invoke_all_Lambda<LoopIdx>{
            typename Offs, typename Params>
   static RAJA_INLINE void lambda_special(camp::idx_seq<OffsetIdx...> const &,
                              camp::idx_seq<ParamIdx...> const &, 
-                                    Data& data, Offs const &offset_tuple, Params const &params) {};
+                                    Data&, Offs const &, Params const &) {};
 
 };
 
