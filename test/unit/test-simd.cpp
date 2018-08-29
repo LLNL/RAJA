@@ -104,8 +104,8 @@ TEST(SIMD, OMPAndSimd_MultiLambda){
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
         RAJA::statement::For<0, RAJA::simd_exec,
-                             RAJA::statement::Lambda<0>,
-                             RAJA::statement::Lambda<1>
+          RAJA::statement::Lambda<0>,
+          RAJA::statement::Lambda<1>
         >
       >
     >;
@@ -163,8 +163,7 @@ TEST(SIMD, TBBAndSimd){
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::tbb_for_exec,
         RAJA::statement::For<0, RAJA::simd_exec,
-          RAJA::statement::Lambda<0>,
-            RAJA::statement::Lambda<1>
+          RAJA::statement::Lambda<0>
         >
       >
     >;
@@ -206,7 +205,8 @@ TEST(SIMD, TBBAndSimd_MultiLambda){
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::tbb_for_exec,
         RAJA::statement::For<0, RAJA::simd_exec,
-          RAJA::statement::Lambda<0>
+          RAJA::statement::Lambda<0>,
+            RAJA::statement::Lambda<1>
         >
       >
     >;
