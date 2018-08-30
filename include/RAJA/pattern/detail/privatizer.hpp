@@ -12,6 +12,8 @@
 // For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+#ifndef __RAJA_PRIVATIZER_HPP
+#define __RAJA_PRIVATIZER_HPP
 
 #include "RAJA/config.hpp"
 #include "camp/camp.hpp"
@@ -91,6 +93,7 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
   return Privatizer<T>{item};
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename T,
           typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
@@ -101,3 +104,6 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
 }  // namespace internal
 
 }  // namespace RAJA
+
+#endif /* __RAJA_PRIVATIZER_HPP */
+
