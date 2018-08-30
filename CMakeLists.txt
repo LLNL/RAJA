@@ -53,6 +53,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
   option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+  option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
   option(ENABLE_BENCHMARKS "Build benchmarks" Off)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
@@ -100,6 +101,10 @@ if (NOT RAJA_LOADED)
   if (ENABLE_OPENMP)
     set (raja_depends
       openmp)
+  endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)
+     message(WARNING "RAJA::simd_exec support requires Intel-17 or greater")
   endif()
 
   if (ENABLE_CUDA)

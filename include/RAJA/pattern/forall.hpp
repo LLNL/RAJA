@@ -719,6 +719,7 @@ RAJA_INLINE void forall(Args&&... args)
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
 
+  RAJA_FORCEINLINE_RECURSIVE
   forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
   detail::clearChaiExecutionSpace();
