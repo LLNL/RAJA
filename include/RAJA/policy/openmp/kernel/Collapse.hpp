@@ -33,6 +33,8 @@
 #include <cassert>
 #include <climits>
 
+#include "RAJA/pattern/detail/privatizer.hpp"
+
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 
@@ -43,6 +45,11 @@
 
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
+#if !defined(RAJA_COMPILER_MSVC)
+#define RAJA_COLLAPSE(X) collapse(X)
+#else
+#define RAJA_COLLAPSE(X)
+#endif
 
 namespace RAJA
 {
@@ -69,27 +76,26 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
+    const auto l0 = segment_length<Arg0>(data);
+    const auto l1 = segment_length<Arg1>(data);
+    // NOTE: these are here to avoid a use-after-scope detected by address
+    // sanitizer, probably a false positive, but the result should be
+    // essentially identical
+    auto i0 = l0;
+    auto i1 = l1;
 
-    using data_t = camp::decay<Data>;
-
-    auto l0 = segment_length<Arg0>(data);
-    auto l1 = segment_length<Arg1>(data);
-
-#pragma omp parallel
-    {
-      data_t private_data = data;
-
-#if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for collapse(2)
-#else
-#pragma omp for
-#endif
-      for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
-        for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
-          private_data.template assign_offset<Arg0>(i0);
-          private_data.template assign_offset<Arg1>(i1);
-          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
-        }
+    using RAJA::internal::thread_privatize;
+    auto privatizer = thread_privatize(data);
+#pragma omp parallel for \
+    private(i0,i1) \
+    firstprivate(privatizer) \
+    RAJA_COLLAPSE(2)
+    for (i0 = 0; i0 < l0; ++i0) {
+      for (i1 = 0; i1 < l1; ++i1) {
+        auto &private_data = privatizer.get_priv();
+        private_data.template assign_offset<Arg0>(i0);
+        private_data.template assign_offset<Arg1>(i1);
+        execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
       }
     }
   }
@@ -108,30 +114,27 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
+    const auto l0 = segment_length<Arg0>(data);
+    const auto l1 = segment_length<Arg1>(data);
+    const auto l2 = segment_length<Arg2>(data);
+    auto i0 = l0;
+    auto i1 = l1;
+    auto i2 = l2;
 
-    using data_t = camp::decay<Data>;
-
-    auto l0 = segment_length<Arg0>(data);
-    auto l1 = segment_length<Arg1>(data);
-    auto l2 = segment_length<Arg2>(data);
-
-#pragma omp parallel
-    {
-      data_t private_data = data;
-
-#if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for collapse(3)
-#else
-#pragma omp for
-#endif
-      for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
-        for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
-          for (auto i2 = (decltype(l2))0; i2 < l2; ++i2) {
-            private_data.template assign_offset<Arg0>(i0);
-            private_data.template assign_offset<Arg1>(i1);
-            private_data.template assign_offset<Arg2>(i2);
-            execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
-          }
+    using RAJA::internal::thread_privatize;
+    auto privatizer = thread_privatize(data);
+#pragma omp parallel for \
+    private(i0,i1,i2) \
+    firstprivate(privatizer) \
+    RAJA_COLLAPSE(3)
+    for (i0 = 0; i0 < l0; ++i0) {
+      for (i1 = 0; i1 < l1; ++i1) {
+        for (i2 = 0; i2 < l2; ++i2) {
+          auto &private_data = privatizer.get_priv();
+          private_data.template assign_offset<Arg0>(i0);
+          private_data.template assign_offset<Arg1>(i1);
+          private_data.template assign_offset<Arg2>(i2);
+          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
         }
       }
     }
@@ -144,6 +147,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
 }  // namespace internal
 }  // namespace RAJA
+
+#undef RAJA_COLLAPSE
 
 #endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
