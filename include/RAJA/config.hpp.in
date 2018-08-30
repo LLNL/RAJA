@@ -270,7 +270,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
 
-
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
 #define RAJA_NO_SIMD _Pragma("simd_level(0)")
