@@ -82,7 +82,7 @@ struct omp_parallel_region
                                             Launch::undefined,
                                             Platform::host> {
 };
-  
+
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
@@ -94,6 +94,15 @@ struct omp_for_nowait_exec
                                             Platform::host,
                                             omp::For,
                                             omp::NoWait> {
+};
+
+struct omp_for_dependence_graph
+  : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::host,
+                                          omp::For,
+                                          omp::Static<1>> {
 };
 
 template <unsigned int N>
