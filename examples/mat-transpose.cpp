@@ -33,13 +33,13 @@ const int DIM = 2;
 //
 // Define num rows/cols in matrix
 //
-const int N = 256;
+const int N = 4;
 
 
   //
   // Define TILE dimensions
   //
-  const int TILE_DIM = 16;
+//  const int TILE_DIM = 2;
 
   //
   // Define bounds for inner and outer loops
@@ -94,6 +94,9 @@ void forall(int obeg, int oend,
             int ibeg, int iend,
             LAMBDA0&& body0, LAMBDA1&& body1, LAMBDA2&& body2)
 {
+
+  std::cout<<"Running Art's forall"<<std::endl;
+
   for(int by=obeg; by<oend; ++by){
     for(int bx=obeg; bx<oend; ++bx){
 
@@ -120,7 +123,14 @@ void forall(int obeg, int oend,
 
 } 
 
-
+/*
+struct sharedMem{
+  int array[TILE_DIM][TILE_DIM];    
+  sharedMem(){ printf("Created shared memory \n");};
+  int &operator()(int row, int col)
+  { return array[row][col];};
+};
+*/
 
 
 
@@ -175,6 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
           TILE[ty][tx] = Aview(row, col);
+          //std::cout<<Aview(row,col)<<std::endl;
         }
       }
       //
@@ -256,6 +267,82 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
            Atview(row, col) = TILE[tx][ty];
 
         });   
+
+    checkResult<int>(Atview, N);
+  //printResult<int>(Atview, N);
+  //----------------------------------------------------------------------------//
+
+
+  std::memset(At, 0, N * N * sizeof(int));
+
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
+
+  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+                                      int,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                                      decltype(iSpace)>; 
+  seq_shmem_t RAJA_Shmem;
+
+  //int TILE 
+  using KERNEL_EXEC_POL = 
+    RAJA::KernelPolicy<      
+      RAJA::statement::For<3, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,
+                             RAJA::statement::Lambda<0>,
+
+                                                          
+         RAJA::statement::CreateShmem,
+
+           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+             RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+               RAJA::statement::Lambda<1>
+           > //0
+          >,//1
+
+
+           RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+             RAJA::statement::Lambda<2>
+          >// 0
+         >//1
+
+        >//for 2
+       >//for 3
+      >; //close policy list
+
+
+  PtrWrapper<sharedMem> myTile;
+
+  std::cout<<"launching raja kernel"<<std::endl;
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace, 
+                                      RAJA::make_tuple(myTile),
+
+      [=] (int , int , int , int , PtrWrapper<sharedMem> myTile ) {
+         printf("Create shared memory after here! \n");
+        },
+
+                                      
+     [=] (int tx, int ty, int bx, int by, PtrWrapper<sharedMem> myTile ) {
+         
+           int col = bx * TILE_DIM + tx;  // Matrix column index
+           int row = by * TILE_DIM + ty;  // Matrix row index
+           (*myTile.myData)(ty,tx) = Aview(row, col);
+        },
+
+      //read from shared mem
+       [=] (int tx, int ty, int bx, int by, PtrWrapper<sharedMem> myTile ) {
+           
+           int col = by * TILE_DIM + tx;  // Transposed matrix column index
+           int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+           //Atview(row, col) = myTile.myData(tx,ty);           
+           Atview(row, col) = (*myTile.myData)(tx,ty);
+        });                                         
+
+
+
 
     checkResult<int>(Atview, N);
   //printResult<int>(Atview, N);

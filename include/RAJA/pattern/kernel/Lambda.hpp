@@ -42,12 +42,31 @@
 
 #include "RAJA/pattern/kernel/internal.hpp"
 
+const int TILE_DIM = 2;
+
+template<typename Type>
+struct PtrWrapper
+{ 
+  Type * myData;
+};
+
+
+//myShared memory
+struct sharedMem{
+  int array[TILE_DIM][TILE_DIM] = {{0}};
+  sharedMem(){ printf("Created RAJA Shared Memory \n");};
+  int &operator()(int row, int col) 
+  { 
+    //printf("row = %d col = %d, data = %d \n",row, col, array[row][col]);   
+    return array[row][col];
+  };
+};
+
 namespace RAJA
 {
 
 namespace statement
 {
-
 
 /*!
  * A RAJA::kernel statement that invokes a lambda function.
@@ -64,6 +83,10 @@ struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
 
+//This statement will create shared memory
+struct CreateShmem : public internal::Statement<camp::nil> {
+};
+
 }  // end namespace statement
 
 namespace internal
@@ -78,6 +101,24 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
     invoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
+
+template<>
+struct StatementExecutor<statement::CreateShmem>{
+
+  template<typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+
+    printf("Creating RAJA shared memory.... \n");
+    sharedMem rajaShared;
+
+    camp::get<0>(data.param_tuple).myData = &rajaShared;
+    
+    #pragma omp barrier
+
+  }
+};
+
 
 }  // namespace internal
 
