@@ -39,28 +39,9 @@
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/ShmemTile.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
-
-const int TILE_DIM = 2;
-
-template<typename Type>
-struct PtrWrapper
-{ 
-  Type * myData;
-};
-
-
-//myShared memory
-struct sharedMem{
-  int array[TILE_DIM][TILE_DIM] = {{0}};
-  sharedMem(){ printf("Created RAJA Shared Memory \n");};
-  int &operator()(int row, int col) 
-  { 
-    //printf("row = %d col = %d, data = %d \n",row, col, array[row][col]);   
-    return array[row][col];
-  };
-};
 
 namespace RAJA
 {
@@ -103,18 +84,15 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
 };
 
 template<>
-struct StatementExecutor<statement::CreateShmem>{
+struct StatementExecutor<statement::CreateShmem >{
 
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
 
-    printf("Creating RAJA shared memory.... \n");
-    sharedMem rajaShared;
-
-    camp::get<0>(data.param_tuple).myData = &rajaShared;
-    
-    #pragma omp barrier
+    //How do I create an instance of this object? 
+    RAJA::SharedMem<double, 2, 2> rajaShared;
+    camp::get<0>(data.param_tuple).SharedMem = &rajaShared;
 
   }
 };

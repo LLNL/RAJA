@@ -39,6 +39,33 @@ namespace RAJA
 {
 
 /*!
+ * Shared memory Wrapper
+ */
+template<typename DataType>
+struct SharedMemWrapper
+{
+  DataType *SharedMem = nullptr;
+  typedef DataType value_type;
+  /*
+  static void createSharedMem()
+  {
+    DataType myShared;
+    SharedMem = &myShared;
+  }
+  */
+};
+
+/*!
+ * Simple shared memory object for proof of concept
+ */
+template<typename T,size_t DIM_X, size_t DIM_Y>
+struct SharedMem{  
+  T array[DIM_X][DIM_Y];
+  T &operator()(int row, int col){ return array[row][col]; };
+};
+
+
+/*!
  * Provides a multi-dimensional tiled View of shared memory data.
  *
  * IndexPolicies provide mappings of each dimension into shmem indicies.
