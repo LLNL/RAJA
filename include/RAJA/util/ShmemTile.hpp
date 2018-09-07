@@ -45,14 +45,8 @@ template<typename DataType>
 struct SharedMemWrapper
 {
   DataType *SharedMem = nullptr;
-  typedef DataType value_type;
-  /*
-  static void createSharedMem()
-  {
-    DataType myShared;
-    SharedMem = &myShared;
-  }
-  */
+  using type = DataType;
+
 };
 
 /*!

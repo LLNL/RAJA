@@ -42,6 +42,7 @@
 #include "RAJA/util/ShmemTile.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include <typeinfo>
 
 namespace RAJA
 {
@@ -90,13 +91,12 @@ struct StatementExecutor<statement::CreateShmem >{
   static RAJA_INLINE void exec(Data &&data)
   {
 
-    //How do I create an instance of this object? 
-    RAJA::SharedMem<double, 2, 2> rajaShared;
+    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
+    varType rajaShared;
     camp::get<0>(data.param_tuple).SharedMem = &rajaShared;
 
   }
 };
-
 
 }  // namespace internal
 
