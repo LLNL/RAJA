@@ -163,7 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   seq_shmem_t RAJA_Shmem;
   */
 
-  using SharedTile = RAJA::SharedMem<double, TILE_DIM, TILE_DIM>;
+  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
 
   //Create shared memory object
   using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
@@ -199,7 +199,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           (*myTile.SharedMem)(ty,tx) = Aview(row, col);
+           (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
            (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
         },
 
@@ -209,8 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
            Atview(row, col) = (*myTile.SharedMem)(tx,ty);
-           Btview(row, col) = (*myTile.SharedMem)(tx,ty);
-
+           Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
         });                                         
 
 
@@ -218,7 +217,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     checkResult<int>(Atview, N);
     checkResult<int>(Btview, N);
-  //printResult<int>(Atview, N);
+    //printResult<int>(Atview, N);
+    //printResult<int>(Btview, N);
   //----------------------------------------------------------------------------//
 
 
