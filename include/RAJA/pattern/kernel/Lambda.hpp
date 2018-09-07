@@ -50,6 +50,7 @@ namespace RAJA
 namespace statement
 {
 
+
 /*!
  * A RAJA::kernel statement that invokes a lambda function.
  *
