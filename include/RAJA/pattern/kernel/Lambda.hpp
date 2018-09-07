@@ -84,17 +84,61 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
+
+//Traverse Shared Memory
+template<camp::idx_t id_num, typename Data>
+RAJA_INLINE void createSharedMemory(Data &&data)
+{
+
+  auto tuple_size = camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
+
+  //const auto id_num = idx;
+  using varType = typename camp::tuple_element_t<id_num, typename camp::decay<Data>::param_tuple_t>::type;
+  varType rajaShared;
+  camp::get<id_num>(data.param_tuple).SharedMem = &rajaShared;
+
+}
+
+
+template<bool T, camp::idx_t id_num>
+struct SharedMemHelper
+{
+
+  template<typename Data>
+  static RAJA_INLINE void createShared(Data && data)
+  {  
+    using varType = typename camp::tuple_element_t<id_num, typename camp::decay<Data>::param_tuple_t>::type;
+    varType rajaShared;
+    camp::get<id_num>(data.param_tuple).SharedMem = &rajaShared;
+    
+    //Check contents of tuple
+    constexpr bool tcheck = (id_num+1) < camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
+    SharedMemHelper<tcheck,id_num+1>::createShared(data);
+  }
+
+};
+
+template<camp::idx_t id_num>
+struct SharedMemHelper<false, id_num>
+{
+  template<typename Data>
+  static RAJA_INLINE void createShared(Data && )
+  {
+    //do nothing...
+  }
+};
+
+
 template<>
 struct StatementExecutor<statement::CreateShmem >{
 
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-
-    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
-    varType rajaShared;
-    camp::get<0>(data.param_tuple).SharedMem = &rajaShared;
-
+    
+    //traverse the tuple and create instances of objects
+    constexpr bool tcheck = 0 < camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
+    SharedMemHelper<tcheck,0>::createShared(data);    
   }
 };
 
