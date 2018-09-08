@@ -52,7 +52,7 @@ struct SharedMemWrapper
 /*!
  * Simple shared memory object for proof of concept
  */
-template<typename T,size_t DIM_X, size_t DIM_Y>
+template<typename T,int DIM_X, int DIM_Y>
 struct SharedMem{  
   T array[DIM_X][DIM_Y];
   T &operator()(int row, int col){ return array[row][col]; };
