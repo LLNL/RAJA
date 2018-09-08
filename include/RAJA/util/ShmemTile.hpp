@@ -112,7 +112,7 @@ struct ShmemTile<ShmemPol,
   using element_t = T;
   shmem_t shmem;
 
-  int offsets[sizeof...(Segments)];
+  int offsets[sizeof...(Segments)] = {0}; //set to zero
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
