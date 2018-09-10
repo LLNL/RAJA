@@ -33,13 +33,13 @@ const int DIM = 2;
 //
 // Define num rows/cols in matrix
 //
-const int N = 4;
+const int N = 256;
 
 
 
 // Define TILE dimensions
 //
-const int TILE_DIM = 2;
+const int TILE_DIM = 16;
 
 //
 // Define bounds for inner and outer loops
@@ -155,13 +155,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
 
 
+  //Toy shared memory object - For proof of concept.
   using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
-
-  //Create shared memory object
   using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
   mySharedMemory myTile;
   mySharedMemory myTile2;
-
 
   using KERNEL_EXEC_POL = 
     RAJA::KernelPolicy<
@@ -215,13 +213,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("using existing RAJA shared memory... \n");
 
-  //Goal is to used this... 
+
+  //RAJA Shared Memory
   using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
                                       int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(iSpace)>; 
-  //seq_shmem_t RAJA_Shmem;
   using RAJAMemory = RAJA::SharedMemWrapper<seq_shmem_t>;
   RAJAMemory rajaTile;
       
@@ -229,6 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                       RAJA::make_tuple(rajaTile),
 
 
+      //Load shared memory
       [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
          
            int col = bx * TILE_DIM + tx;  // Matrix column index
@@ -236,14 +235,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
            (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
         },
 
-      //read from shared mem
+      //Read from shared mem
        [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
            
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
            Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
         });                                         
-
 
     checkResult<int>(Atview, N);
 

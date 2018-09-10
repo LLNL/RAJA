@@ -108,9 +108,13 @@ struct SharedMemHelper
   template<typename Data>
   static RAJA_INLINE void createShared(Data && data)
   {  
-    using varType = typename camp::tuple_element_t<id_num, typename camp::decay<Data>::param_tuple_t>::type;
-    varType rajaShared;
-    camp::get<id_num>(data.param_tuple).SharedMem = &rajaShared;
+
+    //If pointer is set to null, create shared memory
+    if(camp::get<id_num>(data.param_tuple).SharedMem ==nullptr){
+      using varType = typename camp::tuple_element_t<id_num, typename camp::decay<Data>::param_tuple_t>::type;
+      varType SharedM;
+      camp::get<id_num>(data.param_tuple).SharedMem = &SharedM;
+    }
     
     //Check contents of tuple
     constexpr bool tcheck = (id_num+1) < camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
