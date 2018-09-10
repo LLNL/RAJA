@@ -144,21 +144,12 @@ TEST(Shared, MatrixTranposeRAJAShared){
   int *A  = new int[N * N];
   int *At = new int[N * N];
 
-  int *B  = new int[N * N];
-  int *Bt = new int[N * N];
-
-
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, N);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N, N);
-
-  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, N, N);
-  RAJA::View<int, RAJA::Layout<DIM>> Btview(Bt, N, N);
-
 
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
       Aview(row, col) = col;
-      Bview(row, col) = col;
     }
   }
 
@@ -167,12 +158,15 @@ TEST(Shared, MatrixTranposeRAJAShared){
     RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
 
-
-  //Toy shared memory object - For proof of concept.                                                         
-  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
-  using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
-  mySharedMemory myTile;
-  mySharedMemory myTile2;
+  
+  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+                                      int,
+                                      RAJA::ArgList<0, 1>,
+                                      RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                                      decltype(iSpace)>;
+  using RAJAMemory = RAJA::SharedMemWrapper<seq_shmem_t>;
+  RAJAMemory rajaTile;
+  
 
   using KERNEL_EXEC_POL =
     RAJA::KernelPolicy<
@@ -195,38 +189,35 @@ TEST(Shared, MatrixTranposeRAJAShared){
       >; //close policy list        
 
   RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
-                                      RAJA::make_tuple(myTile, myTile2),
+                                      RAJA::make_tuple(rajaTile),
 
-  [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile,  mySharedMemory &myTile2) {
+
+      //Load shared memory                                                                                   
+      [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
 
            int col = bx * TILE_DIM + tx;  // Matrix column index                                             
            int row = by * TILE_DIM + ty;  // Matrix row index                                                
-           (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
-           (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+           (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
         },
 
-      //read from shared mem                                                                                 
-       [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile, mySharedMemory &myTile2) {
+      //Read from shared mem                                                                                 
+       [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
 
            int col = by * TILE_DIM + tx;  // Transposed matrix column index                                  
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index                                     
-           Atview(row, col) = (*myTile.SharedMem)(tx,ty);
-           Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
-        });
+           Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
+	});
+  
 
   //Check result
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
       ASSERT_FLOAT_EQ(Atview(col,row), col);
-      ASSERT_FLOAT_EQ(Btview(col,row), col);
     }
   }
    
   delete [] A;
   delete [] At;
-  delete [] B;
-  delete [] Bt;   
-
 }
 
 #endif
