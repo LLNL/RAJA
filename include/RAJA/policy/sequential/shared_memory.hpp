@@ -55,8 +55,6 @@ struct SharedMemory<seq_shmem, T, NumElem> : public internal::SharedMemoryBase {
   T *data;
   self const *parent;
 
-  //Could we make this an allocation on the heap?
-  //I run into early destructor issues on the clang compiler
   RAJA_INLINE
   constexpr SharedMemory() : data(new T[NumElem]), parent(nullptr) {}
 
