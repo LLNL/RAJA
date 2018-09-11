@@ -165,8 +165,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
-                                                          
-                             RAJA::statement::CreateShmem,
+                                                         
+                             RAJA::statement::CreateShmem<
 
          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                    RAJA::ArgList<0, 1>,
@@ -177,6 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::ArgList<0, 1>,
                                    RAJA::statement::Lambda<1>
                                    >
+                               > //Close shared memory scope
         >//for 2
        >//for 3
       >; //close policy list

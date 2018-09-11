@@ -28,7 +28,7 @@ using namespace RAJA::statement;
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-TEST(Shared, MatrixTranposeUserShared){
+TEST(Shared, MatrixTranposeUserSharedInnerCollapsed){
 
   const int DIM = 2;
   const int N = 256;
@@ -78,7 +78,7 @@ TEST(Shared, MatrixTranposeUserShared){
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-                             RAJA::statement::CreateShmem,
+                             RAJA::statement::CreateShmem<
 
          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                    RAJA::ArgList<0, 1>,
@@ -89,6 +89,7 @@ TEST(Shared, MatrixTranposeUserShared){
                                    RAJA::ArgList<0, 1>,
                                    RAJA::statement::Lambda<1>
                                    >
+                               >
         >//for 2                                                                                             
        >//for 3                                                                                              
       >; //close policy list        
@@ -128,8 +129,212 @@ TEST(Shared, MatrixTranposeUserShared){
 
 }
 
-//TODO: RE-ENABLE THIS! Just for testing.. (DO NOT MERGE!)
-#if 0
+TEST(Shared, MatrixTranposeUserSharedInner){
+
+  const int DIM = 2;
+  const int N = 256;
+  const int TILE_DIM = 16;
+
+  const int inner_Dim0 = TILE_DIM;
+  const int inner_Dim1 = TILE_DIM;
+  
+  const int outer_Dim0 = N/TILE_DIM;
+  const int outer_Dim1 = N/TILE_DIM;
+ 
+  int *A  = new int[N * N];
+  int *At = new int[N * N];
+
+  int *B  = new int[N * N];
+  int *Bt = new int[N * N];
+
+
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, N);
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N, N);
+
+  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, N, N);
+  RAJA::View<int, RAJA::Layout<DIM>> Btview(Bt, N, N);
+
+
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      Aview(row, col) = col;
+      Bview(row, col) = col;
+    }
+  }
+
+
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
+
+
+  //Toy shared memory object - For proof of concept.                                                         
+  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
+  using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
+  mySharedMemory myTile;
+  mySharedMemory myTile2;
+
+  using KERNEL_EXEC_POL =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<3, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,
+
+          RAJA::statement::CreateShmem<
+
+            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<0>
+              >
+             >,
+            RAJA::statement::For<1, RAJA::loop_exec,
+           RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+                                RAJA::statement::Lambda<1>
+           >
+          >
+         > //close shared mem window
+        > //2
+       >//3
+     >; //close policy list        
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
+                                      RAJA::make_tuple(myTile, myTile2),
+
+  [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile,  mySharedMemory &myTile2) {
+
+           int col = bx * TILE_DIM + tx;  // Matrix column index                                             
+           int row = by * TILE_DIM + ty;  // Matrix row index                                                
+           (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
+           (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+        },
+
+      //read from shared mem                                                                                 
+       [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile, mySharedMemory &myTile2) {
+
+           int col = by * TILE_DIM + tx;  // Transposed matrix column index                                  
+           int row = bx * TILE_DIM + ty;  // Transposed matrix row index                                     
+           Atview(row, col) = (*myTile.SharedMem)(tx,ty);
+           Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
+        });
+
+  //Check result
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      ASSERT_FLOAT_EQ(Atview(col,row), col);
+      ASSERT_FLOAT_EQ(Btview(col,row), col);
+    }
+  }
+   
+  delete [] A;
+  delete [] At;
+  delete [] B;
+  delete [] Bt;   
+
+}
+
+
+TEST(Shared, MatrixTranposeUserSharedOuter){
+
+  const int DIM = 2;
+  const int N = 256;
+  const int TILE_DIM = 16;
+
+  const int inner_Dim0 = TILE_DIM;
+  const int inner_Dim1 = TILE_DIM;
+  
+  const int outer_Dim0 = N/TILE_DIM;
+  const int outer_Dim1 = N/TILE_DIM;
+ 
+  int *A  = new int[N * N];
+  int *At = new int[N * N];
+
+  int *B  = new int[N * N];
+  int *Bt = new int[N * N];
+
+
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, N);
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N, N);
+
+  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, N, N);
+  RAJA::View<int, RAJA::Layout<DIM>> Btview(Bt, N, N);
+
+
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      Aview(row, col) = col;
+      Bview(row, col) = col;
+    }
+  }
+
+
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
+
+
+  //Toy shared memory object - For proof of concept.                                                         
+  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
+  using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
+  mySharedMemory myTile;
+  mySharedMemory myTile2;
+
+  using KERNEL_EXEC_POL =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<3, RAJA::omp_parallel_for_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,
+
+          RAJA::statement::CreateShmem<
+
+            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<0>
+              >
+             >,
+            RAJA::statement::For<1, RAJA::loop_exec,
+           RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+                                RAJA::statement::Lambda<1>
+           >
+          >
+         > //close shared mem window
+        > //2
+       >//3
+     >; //close policy list        
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
+                                      RAJA::make_tuple(myTile, myTile2),
+
+  [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile,  mySharedMemory &myTile2) {
+
+           int col = bx * TILE_DIM + tx;  // Matrix column index                                             
+           int row = by * TILE_DIM + ty;  // Matrix row index                                                
+           (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
+           (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+        },
+
+      //read from shared mem                                                                                 
+       [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile, mySharedMemory &myTile2) {
+
+           int col = by * TILE_DIM + tx;  // Transposed matrix column index                                  
+           int row = bx * TILE_DIM + ty;  // Transposed matrix row index                                     
+           Atview(row, col) = (*myTile.SharedMem)(tx,ty);
+           Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
+        });
+
+  //Check result
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      ASSERT_FLOAT_EQ(Atview(col,row), col);
+      ASSERT_FLOAT_EQ(Btview(col,row), col);
+    }
+  }
+   
+  delete [] A;
+  delete [] At;
+  delete [] B;
+  delete [] Bt;   
+
+}
+
+
 TEST(Shared, MatrixTranposeRAJAShared){
 
   const int DIM = 2;
@@ -174,18 +379,19 @@ TEST(Shared, MatrixTranposeRAJAShared){
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-                             RAJA::statement::CreateShmem,
+                             RAJA::statement::CreateShmem<
 
          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                    RAJA::ArgList<0, 1>,
                                    RAJA::statement::Lambda<0>
                                    >,
-
+                               
          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                    RAJA::ArgList<0, 1>,
                                    RAJA::statement::Lambda<1>
                                    >
-        >//for 2                                                                                             
+                               > //close shared memory scope
+        >//for 2                                                                         
        >//for 3                                                                                              
       >; //close policy list        
 
@@ -220,6 +426,6 @@ TEST(Shared, MatrixTranposeRAJAShared){
   delete [] A;
   delete [] At;
 }
-#endif
+
 
 #endif
