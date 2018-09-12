@@ -102,7 +102,7 @@ TEST(Shared, MatrixTranposeUserSharedInnerCollapsed){
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           if(row < N_rows and col < N_cols){
+           if(row < N_rows && col < N_cols){
              (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
              (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
            }
@@ -114,7 +114,7 @@ TEST(Shared, MatrixTranposeUserSharedInnerCollapsed){
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
 
-           if(row < N_cols and col < N_rows){
+           if(row < N_cols && col < N_rows){
              Atview(row, col) = (*myTile.SharedMem)(tx,ty);
              Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
            }
@@ -210,7 +210,7 @@ TEST(Shared, MatrixTranposeUserSharedInner){
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           if(row < N_rows and col < N_cols){
+           if(row < N_rows && col < N_cols){
              (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
              (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
            }
@@ -222,7 +222,7 @@ TEST(Shared, MatrixTranposeUserSharedInner){
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
 
-           if(row < N_cols and col < N_rows){
+           if(row < N_cols && col < N_rows){
              Atview(row, col) = (*myTile.SharedMem)(tx,ty);
              Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
            }
@@ -320,7 +320,7 @@ TEST(Shared, MatrixTranposeUserSharedOuter){
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           if(row < N_rows and col < N_cols){
+           if(row < N_rows && col < N_cols){
              (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
              (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
            }
@@ -332,7 +332,7 @@ TEST(Shared, MatrixTranposeUserSharedOuter){
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
 
-           if(row < N_cols and col < N_rows){
+           if(row < N_cols && col < N_rows){
              Atview(row, col) = (*myTile.SharedMem)(tx,ty);
              Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
            }
@@ -432,7 +432,7 @@ TEST(Shared, MatrixTranposeRAJAShared){
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           if(row < N_rows and col < N_cols){
+           if(row < N_rows && col < N_cols){
              (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
            }
         },
@@ -442,7 +442,7 @@ TEST(Shared, MatrixTranposeRAJAShared){
 
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-           if(row < N_cols and col < N_rows){
+           if(row < N_cols && col < N_rows){
              Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
            }
 	});

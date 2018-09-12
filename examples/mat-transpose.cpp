@@ -121,7 +121,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
-          if(row < N_rows and col < N_cols){
+          if(row < N_rows && col < N_cols){
             TILE[ty][tx] = Aview(row, col);
           }
           //std::cout<<Aview(row,col)<<std::endl;
@@ -135,7 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = by * TILE_DIM + tx;  // Transposed matrix column index
           int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-          if(row < N_cols and col < N_rows){
+          if(row < N_cols && col < N_rows){
             Atview(row, col) = TILE[tx][ty];
           }
 
@@ -194,7 +194,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-          if(row < N_rows and col < N_cols){
+          if(row < N_rows && col < N_cols){
             (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
             (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
           }
@@ -205,7 +205,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-           if(row < N_cols and col < N_rows){
+           if(row < N_cols && col < N_rows){
              Atview(row, col) = (*myTile.SharedMem)(tx,ty);
              Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
            }
@@ -242,7 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           if(row < N_rows and col < N_cols){
+           if(row < N_rows && col < N_cols){
              (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
            }
         },
@@ -252,7 +252,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-          if(row < N_cols and col < N_rows){
+          if(row < N_cols && col < N_rows){
             Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
           }
         });
