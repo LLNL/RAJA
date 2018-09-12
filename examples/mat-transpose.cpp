@@ -33,35 +33,36 @@ const int DIM = 2;
 //
 // Define num rows/cols in matrix
 //
-const int N = 256;
+const int N_rows = 144;
+const int N_cols = 154;
 
 
 
 // Define TILE dimensions
 //
-const int TILE_DIM = 16;
+const int TILE_DIM = 4;
 
 //
 // Define bounds for inner and outer loops
 //
-const int inner_Dim0 = TILE_DIM; 
-const int inner_Dim1 = TILE_DIM; 
+const int inner_Dim0 = TILE_DIM;
+const int inner_Dim1 = TILE_DIM;
 
-const int outer_Dim0 = N/TILE_DIM;
-const int outer_Dim1 = N/TILE_DIM;
+const int outer_Dim0 = (N_cols-1)/TILE_DIM+1;
+const int outer_Dim1 = (N_rows-1)/TILE_DIM+1;
 
 
 //
 // Function for checking results
 //
 template <typename T>
-void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N);
+void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_rows, int N_cols);
 
 //
 // Function for printing results
 //
 template <typename T>
-void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N);
+void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_rows, int N_cols);
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -72,11 +73,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A  = memoryManager::allocate<int>(N * N);
-  int *At = memoryManager::allocate<int>(N * N);
+  int *A  = memoryManager::allocate<int>(N_rows * N_cols);
+  int *At = memoryManager::allocate<int>(N_rows * N_cols);
 
-  int *B  = memoryManager::allocate<int>(N * N);
-  int *Bt = memoryManager::allocate<int>(N * N);
+  int *B  = memoryManager::allocate<int>(N_rows * N_cols);
+  int *Bt = memoryManager::allocate<int>(N_rows * N_cols);
 
   //
   // In the following implementations of shared matrix transpose, we
@@ -84,18 +85,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // holds a pointer to a data array and enables multi-dimensional indexing
   // into the data.
   //
-  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, N);
-  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N, N);
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_cols, N_rows);
 
-  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, N, N);
-  RAJA::View<int, RAJA::Layout<DIM>> Btview(Bt, N, N);
-
+  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, N_rows, N_cols);
+  RAJA::View<int, RAJA::Layout<DIM>> Btview(Bt, N_cols, N_rows);
 
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
       Aview(row, col) = col;
       Bview(row, col) = col;
     }
@@ -104,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix transpose...\n";
 
-  std::memset(At, 0, N * N * sizeof(int));
+  std::memset(At, 0, N_rows * N_cols * sizeof(int));
   //
   // (0) Outer loops to iterate over tiles
   //
@@ -121,7 +121,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
-          TILE[ty][tx] = Aview(row, col);
+          if(row < N_rows and col < N_cols){
+            TILE[ty][tx] = Aview(row, col);
+          }
           //std::cout<<Aview(row,col)<<std::endl;
         }
       }
@@ -133,22 +135,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int col = by * TILE_DIM + tx;  // Transposed matrix column index
           int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-          Atview(row, col) = TILE[tx][ty];
+          if(row < N_cols and col < N_rows){
+            Atview(row, col) = TILE[tx][ty];
+          }
+
         }
       }
     }
   }
 
-  checkResult<int>(Atview, N);
-  //printResult<int>(Atview, N);
+  checkResult<int>(Atview, N_rows, N_cols);
+  //printResult<int>(Atview, N_cols, N_rows);
   //----------------------------------------------------------------------------//
 
 
   //----------------------------------------------------------------------------//
-  //RAJA Shared memory version... 
+  //RAJA Shared memory version...
   printf("Run RAJA shared memory version \n");
-  
-  std::memset(At, 0, N * N * sizeof(int));
+
+  std::memset(At, 0, N_rows * N_cols * sizeof(int));
 
   auto iSpace =
     RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
@@ -161,11 +166,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   mySharedMemory myTile;
   mySharedMemory myTile2;
 
-  using KERNEL_EXEC_POL = 
+  using KERNEL_EXEC_POL =
     RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
-                                                         
+
                              RAJA::statement::CreateShmem<
 
          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
@@ -182,31 +187,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        >//for 3
       >; //close policy list
 
-  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace, 
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
                                       RAJA::make_tuple(myTile, myTile2),
 
       [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile,  mySharedMemory &myTile2) {
-         
+
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
-           (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+          if(row < N_rows and col < N_cols){
+            (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
+            (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+          }
         },
 
       //read from shared mem
        [=] (int tx, int ty, int bx, int by, mySharedMemory &myTile, mySharedMemory &myTile2) {
-           
+
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-           Atview(row, col) = (*myTile.SharedMem)(tx,ty);
-           Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
-        });                                         
+           if(row < N_cols and col < N_rows){
+             Atview(row, col) = (*myTile.SharedMem)(tx,ty);
+             Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
+           }
+        });
 
 
 
 
-    checkResult<int>(Atview, N);
-    checkResult<int>(Btview, N);
+    checkResult<int>(Atview, N_rows,N_cols);
+    checkResult<int>(Btview, N_rows,N_cols);
     //printResult<int>(Atview, N);
     //printResult<int>(Btview, N);
   //----------------------------------------------------------------------------//
@@ -220,31 +229,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                       int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                      decltype(iSpace)>; 
+                                      decltype(iSpace)>;
   using RAJAMemory = RAJA::SharedMemWrapper<seq_shmem_t>;
   RAJAMemory rajaTile;
-      
-  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace, 
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
                                       RAJA::make_tuple(rajaTile),
 
 
       //Load shared memory
       [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
-         
+
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
-           (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
+           if(row < N_rows and col < N_cols){
+             (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
+           }
         },
 
       //Read from shared mem
        [=] (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
-           
+
            int col = by * TILE_DIM + tx;  // Transposed matrix column index
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-           Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
-        });                                         
+          if(row < N_cols and col < N_rows){
+            Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
+          }
+        });
 
-    checkResult<int>(Atview, N);
+  checkResult<int>(Atview, N_rows, N_cols);
 
 
 
@@ -266,11 +279,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Function to check result and report P/F.
 //
 template <typename T>
-void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
+void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_rows, int N_cols)
 {
   bool match = true;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
       if (Atview(col, row) != col) {
         match = false;
       }
@@ -288,11 +301,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
 // Function to print result.
 //
 template <typename T>
-void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N)
+void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_rows, int N_cols)
 {
   std::cout << std::endl;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
       std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
                 << std::endl;
     }
