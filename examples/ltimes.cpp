@@ -192,10 +192,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        >
      >;
 
-  auto segments = RAJA::make_tuple(TypedRangeSegment<IM>(0, num_m),
-                                   TypedRangeSegment<ID>(0, num_d),
-                                   TypedRangeSegment<IG>(0, num_g),
-                                   TypedRangeSegment<IZ>(0, num_z));
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
   timer.start();
@@ -236,10 +236,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  auto segments = RAJA::make_tuple(TypedRangeSegment<IM>(0, num_m),
-                                   TypedRangeSegment<ID>(0, num_d),
-                                   TypedRangeSegment<IG>(0, num_g),
-                                   TypedRangeSegment<IZ>(0, num_z));
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
   timer.start();
@@ -302,10 +302,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >         
     >;          
                  
-  auto segments = RAJA::make_tuple(TypedRangeSegment<IM>(0, num_m),
-                                   TypedRangeSegment<ID>(0, num_d),
-                                   TypedRangeSegment<IG>(0, num_g),
-                                   TypedRangeSegment<IZ>(0, num_z));
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
   cudaErrchk( cudaDeviceSynchronize() );
@@ -400,7 +400,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               statement::For<2, cuda_thread_exec,  // d
                 statement::For<1, cuda_thread_exec,   // m
-                  statement::Lambda<2>
+                  statement::Lambda<1>
                 >
               >
             >,
@@ -414,7 +414,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 statement::SetShmemWindow< 
                   statement::For<3, cuda_thread_exec,  // z
                     statement::For<2, cuda_thread_exec, // d
-                      statement::Lambda<3>
+                      statement::Lambda<2>
                     >
                   >,
                   statement::CudaSyncThreads,
@@ -425,11 +425,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                       // Use thread-local storage for phi entry
                       statement::Thread< 
-                        statement::Lambda<4>,
+                        statement::Lambda<3>,
                         statement::For<2, seq_exec,  // d 
-                          statement::Lambda<5>
+                          statement::Lambda<4>
                         >,
-                        statement::Lambda<6>
+                        statement::Lambda<5>
                       >
 
                     >  // m
@@ -449,77 +449,83 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >;  // KernelPolicy
 
 
-  auto segments = RAJA::make_tuple(
-      TypedRangeSegment<IG, int>(0, num_g),
-      TypedRangeSegment<IM, int>(0, num_m),
-      TypedRangeSegment<ID, int>(0, num_d),
-      TypedRangeSegment<IZ, int>(0, num_z));
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
-  using shmem_L_t = ShmemTile<cuda_shmem, double, ArgList<2,1>, SizeList<tile_d, tile_m>, decltype(segments)>;
-  shmem_L_t shmem_L;
+  using shmem_L_T = RAJA::ShmemTile<RAJA::cuda_shmem, double, 
+                                    RAJA::ArgList<2,1>, 
+                                    RAJA::SizeList<tile_d, tile_m>, 
+                                    decltype(segments)>;
+  shmem_L_T shmem_L;
 
-  using shmem_psi_t = ShmemTile<cuda_shmem, double, ArgList<2,3>, SizeList<tile_d, tile_z>, decltype(segments)>;
-  shmem_psi_t shmem_psi; 
+  using shmem_psi_T = RAJA::ShmemTile<RAJA::cuda_shmem, double, 
+                                      RAJA::ArgList<2,3>, 
+                                      RAJA::SizeList<tile_d, tile_z>, 
+                                      decltype(segments)>;
+  shmem_psi_T shmem_psi; 
 
 
   RAJA::Timer timer;
-
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
-  kernel_param<EXECPOL>(
 
-    segments,
+  RAJA::kernel_param<EXECPOL>( segments,
 
+    // For kernel_param, second arg is a tuple of data objects used in lambdas.
+    // They are the last args in all lambdas (after indices).
+    // Here, the last entry '0.0' yields a thread-private temporary for
+    // computing a phi value, for shared memory before writing to phi array.
     RAJA::make_tuple( shmem_L,
                       shmem_psi,
-                      0.0), // thread private temp storage (last arg in lambdas)
+                      0.0),
 
-    // Lambda<0>
-     // Zero out phi
-    [=] RAJA_HOST_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t&, shmem_psi_t&, double&) {
-      phi(m, g, z) = 0.0;
-    },
-
-    // Lambda<1>
-    // Original single lambda implementation
-    [=] RAJA_HOST_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t&, shmem_psi_t&, double&) {
-      phi(m, g, z) += L(m, d) * psi(d,g,z);
+    // Lambda<0> : Single lambda version
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                     shmem_L_T&, shmem_psi_T&, double&) {
+      phi(m, g, z) += L(m, d) * psi(d, g, z);
     },
 
     // Lambda<2>
     // load L matrix into shmem
-    [=] RAJA_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t& sh_L, shmem_psi_t&, double&) {
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                     shmem_L_T& sh_L, shmem_psi_T&, double&) {
       sh_L(d, m) = L(m, d);
     },
 
     // Lambda<3>
     // load slice of psi into shared
-    [=] RAJA_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t&, shmem_psi_t& sh_psi, double&) {
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                    shmem_L_T&, shmem_psi_T& sh_psi, double&) {
       sh_psi(d,z) = psi(d,g,z);
     },
 
     // Lambda<4>
     // Load phi_m_g_z
-    [=] RAJA_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t&, shmem_psi_t&, double& phi_local) {
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                     shmem_L_T&, shmem_psi_T&, double& phi_local) {
       phi_local = phi(m, g, z);
     },
 
     // Lambda<5>
     // Compute phi_m_g_z
-    [=] RAJA_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local) {
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                     shmem_L_T& sh_L, shmem_psi_T& sh_psi, double& phi_local) {
       phi_local += sh_L(d, m) * sh_psi(d,z);
     },
 
     // Lambda<6>
     // Store phi_m_g_z
-    [=] RAJA_DEVICE  (IG g, IM m, ID d, IZ z, shmem_L_t&, shmem_psi_t&, double& phi_local) {
+    [=] RAJA_DEVICE (IG g, IM m, ID d, IZ z, 
+                     shmem_L_T&, shmem_psi_T&, double& phi_local) {
       phi(m, g, z) = phi_local;
     }
 
   );
+
   cudaDeviceSynchronize();
   timer.stop();
-
   std::cout << "  RAJA CUDA + shmem version of LTimes run time (sec.): "
             << timer.elapsed() << std::endl;
 
