@@ -47,6 +47,7 @@
  *  array data access in all variants.
  */
 
+
 #define DEBUG_LTIMES 
 //#undef DEBUG_LTIMES
 
@@ -63,24 +64,6 @@ RAJA_INDEX_VALUE(IM, "IM");
 RAJA_INDEX_VALUE(ID, "ID");
 RAJA_INDEX_VALUE(IG, "IG");
 RAJA_INDEX_VALUE(IZ, "IZ");
-
-//
-// View types for arrays used in most kernel variants.
-//
-// The Layout template parameter defines the indexing dimensionality, the
-// linear index type (when mutli-dimensional indices are converted to linear),
-// and which dimension is stride-1. The args that follow indicate the index
-// types used and order to index into the View.
-//
-
-// phi[m, g, z]
-using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
-
-// psi[d, g, z]
-using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
-
-// L[m, d]
-using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
 
 
 //
@@ -129,18 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     psi_data[i] = 2*i;
   }
 
-  // Create views on data
-  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
-  LView L( L_data,
-           RAJA::make_permuted_layout({num_m, num_d}, L_perm) );
-
-  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
-  PsiView psi( psi_data,
-               RAJA::make_permuted_layout({num_d, num_g, num_z}, psi_perm) );
-
-  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
-  PhiView phi( phi_data,
-               RAJA::make_permuted_layout({num_m, num_g, num_z}, phi_perm) );
+  // Note phi_data will be set to zero before each variant is run.
 
 
 //----------------------------------------------------------------------------//
@@ -149,6 +121,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
 
   RAJA::Timer timer;
   timer.start(); 
@@ -178,6 +175,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   using EXECPOL = 
     RAJA::KernelPolicy<
@@ -222,6 +243,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   using EXECPOL =
     RAJA::KernelPolicy<
@@ -282,10 +327,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice ) );
 
-  // Set data in Views to device data
-  L.set_data(dL_data); 
-  psi.set_data(dpsi_data); 
-  phi.set_data(dphi_data); 
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(dL_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(dpsi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(dphi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   using EXECPOL =
     RAJA::KernelPolicy<
@@ -334,7 +398,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   psi.set_data(psi_data); 
   phi.set_data(phi_data); 
 
-#if defined(DEBUG_LTIMES) && 0
+#if defined(DEBUG_LTIMES) && 1
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
@@ -342,7 +406,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) && 1
 {
   std::cout << "\n Running RAJA CUDA + shmem version of LTimes...\n";
 
@@ -362,16 +426,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice ) );
 
-  // psi[d, g, z]
-  using dPsiView = RAJA::TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
-
-  // phi[m, g, z]
-  using dPhiView = RAJA::TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
-
-  // L[m, d]
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
   using dLView = RAJA::TypedView<double, Layout<2, int, 1>, IM, ID>;
 
-  // Create views on data
+  // psi(d, g, z) : 0 -> d is stride-1 dimension 
+  using dPsiView = RAJA::TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 0 -> m is stride-1 dimension 
+  using dPhiView = RAJA::TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+
   std::array<RAJA::idx_t, 2> dL_perm {{0, 1}};
   dLView L( dL_data,
             RAJA::make_permuted_layout({num_m, num_d}, dL_perm) );
@@ -454,6 +520,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
+  //
+  // Define shared memory tile types for use in LTimes kernel
+  // 
   using shmem_L_T = RAJA::ShmemTile<RAJA::cuda_shmem, double, 
                                     RAJA::ArgList<2,1>, 
                                     RAJA::SizeList<tile_d, tile_m>, 
@@ -541,7 +610,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   psi.set_data(psi_data); 
   phi.set_data(phi_data); 
 
-#if defined(DEBUG_LTIMES)
+#if defined(DEBUG_LTIMES) && 1
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
