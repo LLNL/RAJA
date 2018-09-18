@@ -219,9 +219,13 @@ directives. For example, the following policy will collapse the two outer loops:
                     :lines: 558-568
 
 The ``RAJA::ArgList`` type indicates which loops in the nest are to be 
-collapsed and their nesting order within the collapse region. Note that there 
-are no policies for the individual loop levels inside the OpenMP collapse 
-policy. The result of using this policy is essentially the same as using an 
+collapsed and their nesting order within the collapse region. The integers
+passed to ``ArgList`` are indices of entries in the tuple of iteration spaces 
+and indicate inner to outer loop levels when read from right to left (i.e., 
+here '1, 0' indicates the column loop is the inner loop and the row loop is 
+the outer). Note that there are no policies for the individual loop levels 
+inside the OpenMP collapse region. The result of using the ``Collapse`` 
+statement with the OpenMP collapse policy is essentially the same as using an 
 OpenMP 'parallel for' directive with a 'collapse(2) clause on the outer loop 
 in the original C-style variant. This will distribute the iterations for 
 both loop levels across OpenMP threads, increasing the granularity of work 
