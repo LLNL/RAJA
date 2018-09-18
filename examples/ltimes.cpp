@@ -30,21 +30,11 @@
  *  LTimes Example
  *
  *  This example illustrates various ways to implement the LTimes kernel
- *  using RAJA. The reference implementation of the kernel is:
-
-    for (int m = 0; m < num_m; ++m) {
-      for (int d = 0; d < num_d; ++d) {
-        for (int g = 0; g < num_g; ++g) {
-          for (int z = 0; z < num_z; ++z) {
-            phi[m*num_g*num_z + g*num_z + z] +=
-              L[m*num_d + d] * psi[d*num_g*num_z + g*num_z + z];
-          }
-        }
-      }
-    }
- 
+ *  using RAJA. The reference implementation of the kernel is the first
+ *  version of the kernel below.
+ *
  *  Note that RAJA Views and Layouts are used for multi-dimensional
- *  array data access in all variants.
+ *  array data access in all other variants.
  *
  *  RAJA features shown include:
  *    - Strongly-typed indices and ranges
@@ -130,7 +120,44 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 {
-  std::cout << "\n Running C-version of LTimes...\n";
+  std::cout << "\n Running baseline C-version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  // Using restrict doesn't make much of a difference for most compilers.
+#if 1
+  double * RAJA_RESTRICT L = L_data;
+  double * RAJA_RESTRICT psi = psi_data;
+  double * RAJA_RESTRICT phi = phi_data;
+#else
+  double * L = L_data;
+  double * psi = psi_data;
+  double * phi = phi_data;
+#endif
+
+  RAJA::Timer timer;
+  timer.start();
+
+  for (int m = 0; m < num_m; ++m) {
+    for (int d = 0; d < num_d; ++d) {
+      for (int g = 0; g < num_g; ++g) {
+        for (int z = 0; z < num_z; ++z) {
+          phi[m*num_g*num_z + g*num_z + z] +=
+            L[m*num_d + d] * psi[d*num_g*num_z + g*num_z + z];
+        }
+      }
+    }
+  }
+
+  timer.stop();
+  std::cout << "  C-version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+}
+
+//----------------------------------------------------------------------------//
+
+{
+  std::cout << "\n Running C-version of LTimes (with Views)...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
 
