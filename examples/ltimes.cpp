@@ -420,19 +420,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }, 
 
     // Lambda<1> : Load L into shmem
-    [=] (IM m, ID d, IG g, IZ z,
+    [=] (IM m, ID d, IG /*g*/, IZ /*z*/,
          shmem_L_T& sh_L, shmem_psi_T&, shmem_phi_T&) {
       sh_L(m, d) = L(m, d);
     },
 
     // Lambda<2> : Load psi into shmem
-    [=] (IM m, ID d, IG g, IZ z,
+    [=] (IM /*m*/, ID d, IG g, IZ z,
          shmem_L_T&, shmem_psi_T& sh_psi, shmem_phi_T&) {
       sh_psi(d, g, z) = psi(d, g, z);
     },
 
     // Lambda<3> : Load phi into shmem
-    [=] (IM m, ID d, IG g, IZ z,
+    [=] (IM m, ID /*d*/, IG g, IZ z,
          shmem_L_T&, shmem_psi_T&, shmem_phi_T& sh_phi) {
       sh_phi(m, g, z) = phi(m, g, z);
     },
@@ -444,7 +444,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Lambda<5> : Store phi
-    [=] (IM m, ID d, IG g, IZ z,
+    [=] (IM m, ID /*d*/, IG g, IZ z,
          shmem_L_T&, shmem_psi_T&, shmem_phi_T& sh_phi) {
       phi(m, g, z) = sh_phi(m, g, z);
     }
@@ -491,6 +491,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
+
+#if 1
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::For<0, omp_parallel_for_exec,  // m
@@ -503,6 +505,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
+#else
+  //
+  // Benefits of using OpenMP collapse depends on compiler, platform,
+  // relative segment sizes.
+  //
+  using EXECPOL =
+    RAJA::KernelPolicy<
+      statement::Collapse<omp_parallel_collapse_exec,
+                          RAJA::ArgList<0, 2, 3>,   // m, g, z
+        statement::For<1, loop_exec,  // d 
+          statement::Lambda<0>
+        >
+      >
+    >;
+#endif
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
@@ -784,31 +801,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Lambda<1> : Load L into shmem
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
+    [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ /*z*/, 
                      shmem_L_T& sh_L, shmem_psi_T&, double&) {
       sh_L(d, m) = L(m, d);
     },
 
     // Lambda<2> : Load slice of psi into shmem
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
+    [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z, 
                     shmem_L_T&, shmem_psi_T& sh_psi, double&) {
       sh_psi(d, z) = psi(d, g, z);
     },
 
     // Lambda<3> : Load thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
                      shmem_L_T&, shmem_psi_T&, double& phi_local) {
       phi_local = phi(m, g, z);
     },
 
     // Lambda<4> Compute thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
+    [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ z, 
                      shmem_L_T& sh_L, shmem_psi_T& sh_psi, double& phi_local) {
       phi_local += sh_L(d, m) * sh_psi(d, z);
     },
 
     // Lambda<5> : Store phi
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
                      shmem_L_T&, shmem_psi_T&, double& phi_local) {
       phi(m, g, z) = phi_local;
     }
