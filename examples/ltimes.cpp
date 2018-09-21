@@ -383,19 +383,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define shared memory tiles used in kernel
   //
-  using shmem_L_T = RAJA::ShmemTile<RAJA::seq_shmem, double, 
+  using shmem_L_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
                                     RAJA::ArgList<0,1>, 
                                     RAJA::SizeList<tile_m, tile_d>, 
                                     decltype(segments)>;
   shmem_L_T sh_L;
 
-  using shmem_psi_T = RAJA::ShmemTile<RAJA::seq_shmem, double, 
+  using shmem_psi_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
                                       RAJA::ArgList<1,2,3>, 
                                       RAJA::SizeList<tile_d, tile_g, tile_z>, 
                                       decltype(segments)>;
   shmem_psi_T sh_psi;
 
-  using shmem_phi_T = RAJA::ShmemTile<RAJA::seq_shmem, double, 
+  using shmem_phi_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
                                       RAJA::ArgList<0,2,3>, 
                                       RAJA::SizeList<tile_m, tile_g, tile_z>, 
                                       decltype(segments)>;

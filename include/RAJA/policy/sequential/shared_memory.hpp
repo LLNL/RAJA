@@ -45,8 +45,8 @@ namespace RAJA
  * Data is accessible with const capture-by-value copies of this object.
  */
 template <typename T, size_t NumElem>
-struct SharedMemory<seq_shmem, T, NumElem> : public internal::SharedMemoryBase {
-  using self = SharedMemory<seq_shmem, T, NumElem>;
+struct SharedMemory<cpu_shmem, T, NumElem> : public internal::SharedMemoryBase {
+  using self = SharedMemory<cpu_shmem, T, NumElem>;
   using element_t = T;
 
   static constexpr size_t size = NumElem;
