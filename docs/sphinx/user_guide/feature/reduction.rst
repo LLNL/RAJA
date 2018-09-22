@@ -89,8 +89,8 @@ type and a min-loc reduction type::
 
   int my_vsum = static_cast<int>(vsum.get());
 
-  int my_vminloc = static_cast<int>(vminloc.get()));
-  int my_vminidx = static_cast<int>(vminloc.getLoc()));
+  int my_vminloc = static_cast<int>(vminloc.get());
+  int my_vminidx = static_cast<int>(vminloc.getLoc());
 
 The results of these operations will yield the following values:
 

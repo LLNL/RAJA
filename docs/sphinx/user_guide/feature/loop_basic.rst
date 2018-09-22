@@ -131,7 +131,7 @@ The loop nest may be written in a RAJA kernel form as::
                           > 
                         >;
   
-    RAJA::kernel< KERNEL_POLICY >(
+    RAJA::kernel< KERNEL_POL >(
       RAJA::make_tuple(iter_space IN, ..., iter_space I0),
 
       [=] (index_type iN, ... , index_type i0) {
