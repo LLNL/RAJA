@@ -173,7 +173,7 @@ TEST(Shared, MatrixMultiplication){
 
   },
 
- //If within range write out
+ //If in range write out
  [=] (int tx, int ty, int , int bx, int by, Shmem &, Shmem &, threadPriv &pValue) {
 
    int row = by * TILE_DIM + ty;  // Matrix row index                                                                                                                                                
@@ -193,6 +193,7 @@ TEST(Shared, MatrixMultiplication){
   delete [] A;
   delete [] B;
   delete [] C; 
+  delete [] C_sol;
 }
 
 
