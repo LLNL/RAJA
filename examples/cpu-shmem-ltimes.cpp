@@ -425,7 +425,7 @@ void runLTimesRajaKernelShmem(bool debug,
         SetShmemWindow<
 
           // Load shmem L
-          For<0, loop_exec, For<1, loop_exec, Lambda_LoadEll>>,
+          For<0, loop_exec, For<1, simd_exec, Lambda_LoadEll>>,
 
           For<2, loop_exec,
             statement::Tile<3, statement::tile_fixed<tile_zones>, loop_exec,
