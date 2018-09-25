@@ -106,6 +106,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
+
   detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept
@@ -140,6 +141,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                                     loop_data.get_begin_index_tuple());
 
   // Execute!
+  RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType>(loop_data);
 
 

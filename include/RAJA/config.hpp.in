@@ -70,6 +70,15 @@
 /*!
  ******************************************************************************
  *
+ * \brief Add forceinline recursive directive to Kernel and Forall (Intel only)
+ *
+ ******************************************************************************
+ */
+#cmakedefine ENABLE_FORCEINLINE_RECURSIVE
+
+/*!
+ ******************************************************************************
+ *
  * \brief Programming model back-ends, plus CHAI enable/disable.
  *
  ******************************************************************************
@@ -200,6 +209,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
+#if defined (ENABLE_FORCEINLINE_RECURSIVE)
+#define RAJA_FORCEINLINE_RECURSIVE  _Pragma("forceinline recursive")
+#else
+#define RAJA_FORCEINLINE_RECURSIVE
+#endif
+
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -208,12 +223,15 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
-#if defined(_OPENMP) && (_OPENMP >= 201307)
+#if defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER >= 1700)
 #define RAJA_SIMD  _Pragma("omp simd")
+#define RAJA_NO_SIMD _Pragma("novector")
+#elif defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER < 1700)
+#define RAJA_SIMD
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
 #define RAJA_SIMD _Pragma("simd")
-#define RAJA_NO_SIMD  _Pragma("novector")
+#define RAJA_NO_SIMD _Pragma("novector")
 #endif
 
 
@@ -221,7 +239,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for GNU compilers
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -247,7 +265,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
@@ -267,7 +285,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for clang compilers
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -293,7 +311,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
