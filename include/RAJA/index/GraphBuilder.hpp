@@ -57,6 +57,7 @@
 #include <cstdlib>
 #include <iosfwd>
 #include <thread>
+#include <numeric>
 
 #include "RAJA/config.hpp"
 
@@ -114,6 +115,7 @@ public:
   void createDependenceGraph() {
 
     std::partial_sum(m_vertex_degree.begin(),m_vertex_degree.end(),m_vertex_degree_prefix_sum.begin());
+
     int adj_size = m_vertex_degree_prefix_sum[m_vertex_degree_prefix_sum.size()-1];
     m_adjacency.resize(adj_size);
 
