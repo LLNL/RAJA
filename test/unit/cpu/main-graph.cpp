@@ -43,7 +43,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int starting_vertex = 0;
   int graph_size = 8;
   RAJA::RangeSegment r(starting_vertex,starting_vertex+graph_size);
-  RAJA::Graph<RangeSegment> g(r);
+  RAJA::Graph<RAJA::RangeSegment> g(r);
 
   //Execution order: indices
   //4343           : 4567
@@ -54,7 +54,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
   { //build the graph
-    RAJA::GraphBuilder<RangeSegment> gb(g);
+    RAJA::GraphBuilder<RAJA::RangeSegment> gb(g);
 
     std::vector<Index_type> v0_deps;
     v0_deps.push_back(starting_vertex+1);   //vertex 1 depends on vertex 0
