@@ -25,7 +25,7 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/blueos/clang_coral_2017_10_13.cmake \
+  -C ../host-configs/lc-builds/blueos/clang_coral_2017_10_13.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=Off \
   -DENABLE_TARGET_OPENMP=On \
