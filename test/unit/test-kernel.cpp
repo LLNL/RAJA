@@ -290,7 +290,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(TBB, Kernel, TBBTypes);
 using CUDATypes = ::testing::Types<
     list<KernelPolicy<For<1, s, CudaKernel<For<0, RAJA::cuda_threadblock_exec<128>, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
-         RAJA::cuda_reduce<1024>>>;
+         RAJA::cuda_reduce<>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
@@ -486,7 +486,7 @@ CUDA_TEST(Kernel, CudaReduceA)
         >
       >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<>, int> reducer(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
@@ -514,7 +514,7 @@ CUDA_TEST(Kernel, CudaReduceB)
           >
         >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<>, int> reducer(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
@@ -543,7 +543,7 @@ CUDA_TEST(Kernel, CudaReduceC)
           >
         >>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce<>, int> reducer(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 3),
@@ -1209,7 +1209,7 @@ CUDA_TEST(Kernel, CudaExec){
 //  cudaErrchk(cudaMalloc(&d_ptr, sizeof(double) * N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1247,7 +1247,7 @@ CUDA_TEST(Kernel, CudaConditional){
 
 	for(int param = 0;param < 2;++ param){
 
-		RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+		RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
 		kernel_param<Pol>(
 
@@ -1289,7 +1289,7 @@ CUDA_TEST(Kernel, CudaExec1){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1322,7 +1322,7 @@ CUDA_TEST(Kernel, CudaExec1a){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1355,7 +1355,7 @@ CUDA_TEST(Kernel, CudaExec1ab){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1388,7 +1388,7 @@ CUDA_TEST(Kernel, CudaExec1ac){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1420,7 +1420,7 @@ CUDA_TEST(Kernel, CudaExec1b){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1460,7 +1460,7 @@ CUDA_TEST(Kernel, CudaExec1c){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1513,7 +1513,7 @@ CUDA_TEST(Kernel, CudaComplexNested){
   auto segments = RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,N), RangeSegment(0, N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1572,7 +1572,7 @@ CUDA_TEST(Kernel, CudaShmemWindow1d){
   auto segments = RAJA::make_tuple(RangeSegment(0,N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0>, SizeList<16>, decltype(segments)>;
   shmem_t shmem;
@@ -1641,7 +1641,7 @@ CUDA_TEST(Kernel, CudaShmemWindow1dReverse){
   auto segments = RAJA::make_tuple(RangeStrideSegment(N-1,-1,-1));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0>, SizeList<16>, decltype(segments)>;
   shmem_t shmem;
@@ -1719,7 +1719,7 @@ CUDA_TEST(Kernel, CudaShmemWindow2d){
   auto segments = RAJA::make_tuple(RangeSegment(0,N), RangeSegment(0,M));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
 
   using shmem_t = ShmemTile<cuda_shmem, double, ArgList<0,1>, SizeList<tile_N, tile_M>, decltype(segments)>;
@@ -1795,7 +1795,7 @@ CUDA_TEST(Kernel, CudaExec_1threadexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1829,7 +1829,7 @@ CUDA_TEST(Kernel, CudaExec_1blockexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1864,7 +1864,7 @@ CUDA_TEST(Kernel, CudaExec_1threadblockexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1900,7 +1900,7 @@ CUDA_TEST(Kernel, CudaExec_2threadexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1933,7 +1933,7 @@ CUDA_TEST(Kernel, CudaExec_1thread1blockexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1972,7 +1972,7 @@ CUDA_TEST(Kernel, CudaExec_3threadexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -2008,7 +2008,7 @@ CUDA_TEST(Kernel, CudaExec_tile1threadexec){
         >;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -2210,8 +2210,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
     x[i] = i;
   }
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-  RAJA::ReduceSum<cuda_reduce<1024>, long> oob_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<>, long> oob_count(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, L),

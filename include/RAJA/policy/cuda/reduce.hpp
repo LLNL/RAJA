@@ -903,8 +903,8 @@ private:
 }  // end namespace cuda
 
 //! specialization of ReduceSum for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool Async, bool maybe_atomic, typename T>
+class ReduceSum<cuda_reduce<Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>
 {
 
@@ -921,8 +921,8 @@ public:
 };
 
 //! specialization of ReduceMin for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool Async, bool maybe_atomic, typename T>
+class ReduceMin<cuda_reduce<Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
 {
 
@@ -939,8 +939,8 @@ public:
 };
 
 //! specialization of ReduceMax for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool Async, bool maybe_atomic, typename T>
+class ReduceMax<cuda_reduce<Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
 {
 
@@ -957,8 +957,8 @@ public:
 };
 
 //! specialization of ReduceMinLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool Async, bool maybe_atomic, typename T>
+class ReduceMinLoc<cuda_reduce<Async, maybe_atomic>, T>
     : public cuda::Reduce<Async,
                           RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
                           RAJA::reduce::detail::ValueLoc<T>,
@@ -995,8 +995,8 @@ public:
 };
 
 //! specialization of ReduceMaxLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool Async, bool maybe_atomic, typename T>
+class ReduceMaxLoc<cuda_reduce<Async, maybe_atomic>, T>
     : public cuda::
           Reduce<Async,
                  RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,

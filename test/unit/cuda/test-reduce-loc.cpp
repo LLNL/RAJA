@@ -292,9 +292,9 @@ REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
                            indexset_noalign);
 
 using MinLocTypes =
-    ::testing::Types<ReduceMinLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMinLoc<cuda_reduce<>, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
 
 using MaxLocTypes =
-    ::testing::Types<ReduceMaxLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMaxLoc<cuda_reduce<>, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
