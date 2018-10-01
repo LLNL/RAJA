@@ -39,15 +39,50 @@
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Enable/disable exploratory fault tolerance mechanism.
+ *
+ ******************************************************************************
+ */
 #cmakedefine ENABLE_FT
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Default RAJA floating point scalar and pointer options.
+ *
+ ******************************************************************************
+ */
 #define @RAJA_FP@
 #define @RAJA_PTR@
 
-/*
- * Programming models
+/*!
+ ******************************************************************************
+ *
+ * \brief Deprecated tests
+ *
+ ******************************************************************************
  */
+#cmakedefine RAJA_DEPRECATED_TESTS
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Add forceinline recursive directive to Kernel and Forall (Intel only)
+ *
+ ******************************************************************************
+ */
+#cmakedefine ENABLE_FORCEINLINE_RECURSIVE
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Programming model back-ends, plus CHAI enable/disable.
+ *
+ ******************************************************************************
+ */
 #cmakedefine RAJA_ENABLE_OPENMP
 #cmakedefine RAJA_ENABLE_TARGET_OPENMP
 #cmakedefine RAJA_ENABLE_TBB
@@ -55,26 +90,28 @@
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_CHAI
 
-/*
- * Deprecated tests
+/*!
+ ******************************************************************************
+ *
+ * \brief Timer options.
+ *
+ ******************************************************************************
  */
-#cmakedefine RAJA_DEPRECATED_TESTS
-
-/*
- * Timer options
- */
-
 #cmakedefine RAJA_USE_CHRONO
 #cmakedefine RAJA_USE_GETTIME
 #cmakedefine RAJA_USE_CLOCK
 #cmakedefine RAJA_USE_CYCLE
 
-/*
- * Detect the host C++ compiler we are using.
+/*!
+ ******************************************************************************
+ *
+ * \brief Detect the host C++ compiler we are using.
+ *
+ ******************************************************************************
  */
 #if defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
-#elif defined(__xlc__)
+#elif defined(__ibmxl__)
 #define RAJA_COMPILER_XLC
 #elif defined(__clang__)
 #define RAJA_COMPILER_CLANG
@@ -172,6 +209,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
+#if defined (ENABLE_FORCEINLINE_RECURSIVE)
+#define RAJA_FORCEINLINE_RECURSIVE  _Pragma("forceinline recursive")
+#else
+#define RAJA_FORCEINLINE_RECURSIVE
+#endif
+
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -180,12 +223,15 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
-#if defined(_OPENMP) && (_OPENMP >= 201307)
+#if defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER >= 1700)
 #define RAJA_SIMD  _Pragma("omp simd")
+#define RAJA_NO_SIMD _Pragma("novector")
+#elif defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER < 1700)
+#define RAJA_SIMD
 #define RAJA_NO_SIMD _Pragma("novector")
 #else
 #define RAJA_SIMD _Pragma("simd")
-#define RAJA_NO_SIMD  _Pragma("novector")
+#define RAJA_NO_SIMD _Pragma("novector")
 #endif
 
 
@@ -193,7 +239,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for GNU compilers
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -219,7 +265,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
@@ -239,7 +285,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for clang compilers
 //
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -265,7 +311,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
-
+#define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
@@ -288,7 +334,7 @@ template<typename T>
 RAJA_INLINE
 T * align_hint(T * x)
 {
-#if defined (RAJA_COMPILER_INTEL)
+#if defined(RAJA_COMPILER_INTEL) || defined(RAJA_COMPILER_XLC)
   RAJA_ALIGN_DATA(x);
   return x;
 #else

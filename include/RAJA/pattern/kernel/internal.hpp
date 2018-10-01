@@ -28,9 +28,10 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
@@ -39,6 +40,7 @@
 #include "RAJA/util/chai_support.hpp"
 
 #include <type_traits>
+#include <iterator>
 
 namespace RAJA
 {
@@ -80,7 +82,7 @@ struct ForTraitBase : public ForBase {
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename Iterator::iterator::difference_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -96,7 +98,7 @@ using difftype_tuple_from_segments =
 
 template <typename Iterator>
 struct iterable_value_type_getter {
-  using type = typename Iterator::iterator::value_type;
+  using type = typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
@@ -205,6 +207,27 @@ struct LoopData {
     return get_begin_index_tuple_expanded(
         camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
+
+
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple(
+        (
+         (*camp::get<Idx>(segment_tuple).begin() <= *camp::get<Idx>(segment_tuple).end()) ?
+         *camp::get<Idx>(segment_tuple).begin() :
+         *(camp::get<Idx>(segment_tuple).end()-1)
+        )...);
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_minimum_index_tuple() const
+  {
+    return get_minimum_index_tuple_expanded(
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
+  }
 };
 
 
@@ -239,8 +262,8 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator::difference_type
+    typename std::iterator_traits< typename camp::at_v<typename Data::segment_tuple_t::TList,
+                        ArgumentId>::iterator >::difference_type
 {
   return camp::get<ArgumentId>(data.segment_tuple).end()
          - camp::get<ArgumentId>(data.segment_tuple).begin();
@@ -294,13 +317,8 @@ RAJA_INLINE void execute_statement_list(Data &&data)
       std::forward<Data>(data));
 }
 
-// Gives all GenericWrapper derived types something to enable_if on
-// in our thread_privatizer
-struct GenericWrapperBase {
-};
-
 template <typename Data, typename... EnclosedStmts>
-struct GenericWrapper : public GenericWrapperBase {
+struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
@@ -336,24 +354,11 @@ struct NestedPrivatizer {
 };
 
 
-/**
- * @brief specialization of internal::thread_privatize for any wrappers derived
- * from GenericWrapper
- */
-template <typename T>
-constexpr RAJA_INLINE typename std::
-    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
-              NestedPrivatizer<T>>::type
-    thread_privatize(T &wrapper)
-{
-  return NestedPrivatizer<T>{wrapper};
-}
-
 
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {

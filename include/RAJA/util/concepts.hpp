@@ -30,6 +30,7 @@
 
 #include <iterator>
 #include <type_traits>
+
 #include "camp/concepts.hpp"
 
 namespace RAJA

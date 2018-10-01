@@ -28,12 +28,12 @@
 #ifndef RAJA_util_ShmemTile_HPP
 #define RAJA_util_ShmemTile_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/StaticLayout.hpp"
 
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/util/StaticLayout.hpp"
 
 namespace RAJA
 {
@@ -115,7 +115,7 @@ struct ShmemTile<ShmemPol,
       OffsetTuple const &offset_tuple)
   {
     VarOps::ignore_args(
-        (offsets[Args] = convertIndex<int>(camp::get<Args>(offset_tuple)))...);
+        (offsets[Args] = stripIndexType (camp::get<Args>(offset_tuple)))...);
   }
 
 

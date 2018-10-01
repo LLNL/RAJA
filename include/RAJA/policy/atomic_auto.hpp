@@ -27,7 +27,8 @@
 #define RAJA_policy_atomic_auto_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/sequential/atomic.hpp"
 
@@ -43,17 +44,12 @@
  * Finally, we fallback on the seq_atomic, which performs non-atomic operations
  * because we assume there is no thread safety issues (no parallel model)
  */
-#ifdef __CUDA_ARCH__
-#define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::cuda_atomic {}
+#if defined(__CUDA_ARCH__)
+#define RAJA_AUTO_ATOMIC RAJA::atomic::cuda_atomic {}
+#elif defined(RAJA_ENABLE_OPENMP)
+#define RAJA_AUTO_ATOMIC RAJA::atomic::omp_atomic {}
 #else
-#ifdef RAJA_ENABLE_OPENMP
-#define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::omp_atomic {}
-#else
-#define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::seq_atomic {}
-#endif
+#define RAJA_AUTO_ATOMIC RAJA::atomic::seq_atomic {}
 #endif
 
 

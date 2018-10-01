@@ -3,20 +3,11 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
  */
-
-#ifndef RAJA_policy_cuda_kernel_Lambda_HPP
-#define RAJA_policy_cuda_kernel_Lambda_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
@@ -33,13 +24,22 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_cuda_kernel_Lambda_HPP
+#define RAJA_policy_cuda_kernel_Lambda_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
 
@@ -61,23 +61,28 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>, IndexCalc> {
     if (block_carry <= 0) {
       // set indices to beginning of each segment, and increment
       // to this threads first iteration
-      bool done = index_calc.assignBegin(data, threadIdx.x, blockDim.x);
+      bool done = index_calc.reset(data);
 
       while (!done) {
 
         invoke_lambda<LoopIndex>(data);
 
-        done = index_calc.increment(data, blockDim.x);
+        done = index_calc.increment(data);
       }
     }
   }
 
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
     // nop
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
+  {
+    index_calc.initThread(data, threadIdx.x, blockDim.x);
   }
 
 
@@ -105,9 +110,14 @@ struct CudaStatementExecutor<Data,
     }
   }
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
+  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
+  {
+    // nop
+  }
+
+  inline RAJA_DEVICE void initThread(Data &data)
   {
     // nop
   }

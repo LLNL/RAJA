@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,16 +26,19 @@
 #ifndef RAJA_pattern_shared_memory_HPP
 #define RAJA_pattern_shared_memory_HPP
 
+#include "RAJA/config.hpp"
 
 #include <stddef.h>
 #include <map>
 #include <memory>
-#include "RAJA/config.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/Operators.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
+
 #include "camp/camp.hpp"
+
+#include "RAJA/internal/LegacyCompatibility.hpp"
+
+#include "RAJA/util/Operators.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

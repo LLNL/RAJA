@@ -1,4 +1,4 @@
-RAJA v0.5.3
+RAJA v0.6.0
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -116,7 +116,7 @@ The original developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Please see the {RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
+Please see the [RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
 Release

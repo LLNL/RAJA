@@ -28,7 +28,7 @@ Key RAJA features shown in this example:
 In the example, we add two vectors 'a' and 'b' of length N and
 store the result in vector 'c'. A typical C-style that does this is:
 
-.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
                     :lines: 80-82
 
 ^^^^^^^^^^^^^^^^^^^^^
@@ -55,7 +55,7 @@ execution policy template type that specifies how the loop is to execute
 For the RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
 policy:
 
-.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
                     :lines: 94-96
 
 The RAJA sequential execution policy enforces strictly sequential execution; 
@@ -76,13 +76,13 @@ are not forced.
 To run the kernel with OpenMP multi-threaded parallelism on a CPU, we use the
 ``RAJA::omp_parallel_for_exec`` execution policy:
 
-.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
                     :lines: 137-139
 
 Finally, to run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
 
-.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
                     :lines: 151-154
 
 Note that the CUDA execution policy type accepts a template argument 
@@ -96,5 +96,5 @@ Since the lambda defining the loop body will be passed to a device kernel,
 it must be decorated with the ``__device__`` attribute when it is defined. 
 This can be done directly or by using the ``RAJA_DEVICE`` macro.
 
-The file ``RAJA/examples/ex1-add-vectors.cpp`` contains the complete 
+The file ``RAJA/examples/tut_add-vectors.cpp`` contains the complete 
 working example code.

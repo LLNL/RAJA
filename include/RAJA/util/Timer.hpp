@@ -28,7 +28,6 @@
 #ifndef RAJA_Timer_HPP
 #define RAJA_Timer_HPP
 
-
 #include "RAJA/config.hpp"
 
 #if defined(RAJA_USE_CALIPER)

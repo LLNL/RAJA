@@ -70,7 +70,6 @@ CAMP_HOST_DEVICE void sink(Ts...)
 {
 }
 
-
 // bring common utility routines into scope to allow ADL
 using std::begin;
 using std::swap;
@@ -126,7 +125,7 @@ namespace type
     /// add const qualifier to T
     template <class T>
     using add = const T;
-  }  // end namespace ref
+  }  // namespace c
 
   namespace v
   {
@@ -146,7 +145,7 @@ namespace type
     /// add volatile qualifier to T
     template <class T>
     using add = volatile T;
-  }  // end namespace ref
+  }  // namespace v
 
   namespace cv
   {
@@ -174,7 +173,7 @@ namespace type
     /// add const and volatile qualifiers to T
     template <class T>
     using add = const volatile T;
-  }  // end namespace ref
+  }  // namespace cv
 }  // end namespace type
 
 template <typename T>
@@ -203,6 +202,12 @@ CAMP_HOST_DEVICE constexpr T&& forward(type::ref::rem<T>&& t) noexcept
 }
 
 template <typename T>
+CAMP_HOST_DEVICE constexpr type::ref::rem<T>&& move(T&& t) noexcept
+{
+  return static_cast<type::ref::rem<T>&&>(t);
+}
+
+template <typename T>
 CAMP_HOST_DEVICE void safe_swap(T& t1, T& t2)
 {
 #if defined(__CUDA_ARCH__)
@@ -221,6 +226,6 @@ CAMP_HOST_DEVICE void safe_swap(T& t1, T& t2)
   using std::swap;
   swap(t1, t2);
 }
-}
+}  // namespace camp
 
 #endif /* CAMP_HELPERS_HPP */

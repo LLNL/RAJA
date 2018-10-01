@@ -28,17 +28,16 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
-#include "RAJA/util/concepts.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
-#include <tbb/tbb.h>
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
+
+#include <tbb/tbb.h>
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/concepts.hpp"
+
+#include "RAJA/policy/sequential/policy.hpp"
 
 namespace RAJA
 {

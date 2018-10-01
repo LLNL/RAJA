@@ -29,12 +29,12 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include <atomic>
 #include <cstdlib>
 #include <iosfwd>
 #include <thread>
+
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
