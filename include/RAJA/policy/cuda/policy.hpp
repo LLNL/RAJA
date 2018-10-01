@@ -165,13 +165,10 @@ struct cuda_reduce
                                                 RAJA::Platform::cuda> {
 };
 
-//RCC template <size_t BLOCK_SIZE>
 using cuda_reduce_async = cuda_reduce<true, false>;
 
-//template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic = cuda_reduce<false, true>;
 
-//template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce<true, true>;
 
 
