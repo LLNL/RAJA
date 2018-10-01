@@ -155,7 +155,7 @@ struct cuda_seq_syncthreads_exec
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool Async = false, bool maybe_atomic = false>
+template <bool Async, bool maybe_atomic = false>
 struct cuda_reduce
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
@@ -165,11 +165,13 @@ struct cuda_reduce
                                                 RAJA::Platform::cuda> {
 };
 
-using cuda_reduce_async = cuda_reduce<true, false>;
+using cuda_reduce_async = cuda_reduce<RAJA::casync, false>;
 
-using cuda_reduce_atomic = cuda_reduce<false, true>;
+using cuda_reduce_sync = cuda_reduce<RAJA::csync, false>;
 
-using cuda_reduce_atomic_async = cuda_reduce<true, true>;
+using cuda_reduce_atomic = cuda_reduce<RAJA::csync, true>;
+
+using cuda_reduce_atomic_async = cuda_reduce<RAJA::casync, true>;
 
 
 template <typename POL>
@@ -212,6 +214,7 @@ using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 using policy::cuda::cuda_seq_syncthreads_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;
+using policy::cuda::cuda_reduce_sync;
 using policy::cuda::cuda_reduce_atomic;
 using policy::cuda::cuda_reduce_atomic_async;
 using policy::cuda::CudaPolicy;

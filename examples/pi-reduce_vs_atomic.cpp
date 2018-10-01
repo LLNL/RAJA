@@ -139,7 +139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA pi approximation (reduction)...\n";
 
   using EXEC_POL3   = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
-  using REDUCE_POL3 = RAJA::cuda_reduce<>;
+  using REDUCE_POL3 = RAJA::cuda_reduce_sync;
 
   RAJA::ReduceSum<REDUCE_POL3, double> cuda_pi(0.0);
 

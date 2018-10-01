@@ -50,6 +50,11 @@ enum class Launch { undefined, sync, async };
 
 enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4 };
 
+enum CudaSync {
+  csync = false,
+  casync = true
+};
+
 struct PolicyBase {
 };
 
