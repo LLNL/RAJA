@@ -43,7 +43,66 @@ namespace RAJA
 namespace internal
 {
 
+//Create Shared memory window
+template <typename Data, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data,
+                             statement::CreateShmem<EnclosedStmts...>,
+                             IndexCalc> {
 
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+
+  IndexCalc index_calc;
+
+  RAJA_INLINE __device__ void exec(Data &data,
+                              int num_logical_blocks,
+                              int block_carry)
+  {
+
+    if(threadIdx.x==0) printf("created shared memory! \n");
+
+    //RAJA::internal::shmem_set_windows(data.param_tuple,
+    //data.get_minimum_index_tuple());
+
+
+    //Should be able to pull out shared memory type
+    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
+    __shared__ varType SharedM;
+
+    camp::get<0>(data.param_tuple).SharedMem = &SharedM;
+
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+  }
+
+  RAJA_INLINE RAJA_HOST_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+
+  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
+  }
+
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
+
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+  }
+
+};
+
+
+
+
+//Set Shared memory window
 template <typename Data, typename... EnclosedStmts, typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::SetShmemWindow<EnclosedStmts...>,
@@ -58,7 +117,7 @@ struct CudaStatementExecutor<Data,
   IndexCalc index_calc;
 
 
-  inline __device__ void exec(Data &data,
+  RAJA_INLINE __device__ void exec(Data &data,
                               int num_logical_blocks,
                               int block_carry)
   {
@@ -72,7 +131,7 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
+  RAJA_INLINE RAJA_HOST_DEVICE void initBlocks(Data &data,
                                      int num_logical_blocks,
                                      int block_stride)
   {
@@ -80,7 +139,7 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initThread(Data &data)
+  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
   {
     enclosed_stmts.initThread(data);
   }

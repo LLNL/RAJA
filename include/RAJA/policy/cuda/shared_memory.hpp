@@ -68,7 +68,7 @@ struct SharedMemory<cuda_shmem, T, NumElem>
   static constexpr size_t size = NumElem;
   static constexpr size_t num_bytes = NumElem * sizeof(T);
 
-  int offset;  // offset into dynamic shared memory, in bytes
+  int offset = {0};  // offset into dynamic shared memory, in bytes
 
   RAJA_INLINE
   RAJA_HOST_DEVICE

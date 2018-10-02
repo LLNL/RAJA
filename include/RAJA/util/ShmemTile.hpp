@@ -53,8 +53,10 @@ struct SharedMemWrapper
  * Simple shared memory object for proof of concept
  */
 template<typename T,int DIM_X, int DIM_Y>
-struct SharedMem{  
+struct SharedMem{ 
   T array[DIM_X][DIM_Y];
+
+  RAJA_HOST_DEVICE
   T &operator()(int row, int col){ return array[row][col]; };
 };
 

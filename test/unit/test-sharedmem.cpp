@@ -22,6 +22,9 @@
 #include <cmath>
 #include <cassert>
 
+#if defined(RAJA_ENABLE_CUDA)
+#include <cuda_runtime.h>
+#endif
 
 using namespace RAJA;
 using namespace RAJA::statement;
@@ -34,7 +37,7 @@ TEST(Shared, MatrixMultiplication){
   //Matrix A size: N x M
   //Matrix B size: M x P
   //Result C size: N x P
-  
+
   const int N = 9;
   const int M = 12;
   const int P = 15;
@@ -55,15 +58,15 @@ TEST(Shared, MatrixMultiplication){
 
 
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, M);
-  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, M, P);   
-  RAJA::View<int, RAJA::Layout<DIM>> Cview(C, N, P); 
-  RAJA::View<int, RAJA::Layout<DIM>> C_solView(C_sol, N, P); 
+  RAJA::View<int, RAJA::Layout<DIM>> Bview(B, M, P);
+  RAJA::View<int, RAJA::Layout<DIM>> Cview(C, N, P);
+  RAJA::View<int, RAJA::Layout<DIM>> C_solView(C_sol, N, P);
 
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < M; ++col) {
       Aview(row, col) = col;
     }
-  }  
+  }
 
   for (int row = 0; row < M; ++row) {
     for (int col = 0; col < P; ++col) {
@@ -99,7 +102,7 @@ TEST(Shared, MatrixMultiplication){
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-                                 
+
           RAJA::statement::CreateShmem<
 
             //Initalize thread private value
@@ -115,7 +118,7 @@ TEST(Shared, MatrixMultiplication){
                                      RAJA::ArgList<0, 1>,
                                      RAJA::statement::Lambda<1>
                                      >,
-                               
+
              //perform matrix multiplcation
              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                       RAJA::ArgList<0, 1>,
@@ -146,28 +149,28 @@ TEST(Shared, MatrixMultiplication){
 
    int row = by * TILE_DIM + ty;  // Matrix row index
    int col = bx * TILE_DIM + tx;  // Matrix column index
-   
+
    //Load tile for A
    if( row < N && ((i*TILE_DIM + tx) < M) ){
      (*aShared.SharedMem)(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
    }else{
      (*aShared.SharedMem)(ty,tx) = 0.0;
    }
-   
+
    //Load tile for B
    if( col < P && ((i*TILE_DIM + ty) < M) ){
      (*bShared.SharedMem)(ty, tx) = Bview((i*TILE_DIM + ty), col);
    }else{
      (*bShared.SharedMem)(ty, tx) = 0.0;
    }
-   
+
   },
 
   //read from shared mem
   [=] (int tx, int ty, int , int , int , Shmem &aShared,  Shmem &bShared, threadPriv & pVal) {
-    
-    //Matrix multiply 
-    for(int j=0; j<TILE_DIM; j++){      
+
+    //Matrix multiply
+    for(int j=0; j<TILE_DIM; j++){
       (*pVal.SharedMem)(ty,tx) += (*aShared.SharedMem)(ty,j) * (*bShared.SharedMem)(j, tx);
     }
 
@@ -176,7 +179,7 @@ TEST(Shared, MatrixMultiplication){
  //If in range write out
  [=] (int tx, int ty, int , int bx, int by, Shmem &, Shmem &, threadPriv &pValue) {
 
-   int row = by * TILE_DIM + ty;  // Matrix row index                                                                                                                                                
+   int row = by * TILE_DIM + ty;  // Matrix row index
    int col = bx * TILE_DIM + tx;  // Matrix column index
 
    if(row < N && col < P)
@@ -192,7 +195,7 @@ TEST(Shared, MatrixMultiplication){
 
   delete [] A;
   delete [] B;
-  delete [] C; 
+  delete [] C;
   delete [] C_sol;
 }
 
@@ -627,6 +630,205 @@ TEST(Shared, MatrixTranposeRAJAShared){
   delete [] A;
   delete [] At;
 }
+
+
+CUDA_TEST(Shared, MatrixTranposeCUDARAJAShared){
+#if 0
+  const int DIM = 2;
+  const int N_rows = 144;
+  const int N_cols = 255;
+  const int TILE_DIM = 16;
+
+  const int inner_Dim0 = TILE_DIM;
+  const int inner_Dim1 = TILE_DIM;
+
+  const int outer_Dim0 = (N_cols-1)/TILE_DIM+1;
+  const int outer_Dim1 = (N_rows-1)/TILE_DIM+1;
+
+  int *A;
+  int *At;
+
+  cudaMallocManaged(&A,  sizeof(int) * N_rows * N_cols);
+  cudaMallocManaged(&At, sizeof(int) * N_rows * N_cols);
+
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_cols, N_rows);
+
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      Aview(row, col) = col;
+    }
+  }
+
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
+
+  using RAJAMemory = RAJA::ShmemTile<RAJA::cuda_shmem, int, RAJA::ArgList<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>,decltype(iSpace)>;
+
+  RAJAMemory rajaTile;
+
+  using KERNEL_EXEC_POL =
+    RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<3, RAJA::cuda_block_exec,
+        RAJA::statement::For<2, RAJA::cuda_block_exec,
+
+          RAJA::statement::SetShmemWindow<
+
+            RAJA::statement::For<1, RAJA::cuda_thread_exec,
+              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::Lambda<0>
+                                   >
+                                 >,
+            RAJA::statement::CudaSyncThreads,
+              RAJA::statement::For<1, RAJA::cuda_thread_exec,
+                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                                   RAJA::statement::Lambda<1> > >
+              > //close shared memory scope
+            >//for 2
+        >//for 3
+        > //CudaKernel
+      >; //close policy list
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
+                                      RAJA::make_tuple(rajaTile),
+
+      //Load shared memory
+    [=] RAJA_DEVICE (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
+
+           int col = bx * TILE_DIM + tx;  // Matrix column index
+           int row = by * TILE_DIM + ty;  // Matrix row index
+           if(row < N_rows && col < N_cols){
+              rajaTile(ty,tx)  = Aview(row, col);
+           }
+     }
+      //Read from shared mem
+   ,[=] RAJA_DEVICE (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
+
+       int col = by * TILE_DIM + tx;  // Transposed matrix column index
+       int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+       if(row < N_cols && col < N_rows){
+         Atview(row, col) = rajaTile(tx,ty);
+       }
+     }
+	);
+
+
+  //Check result
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      ASSERT_FLOAT_EQ(Atview(col,row), col);
+    }
+  }
+  cudaFree(A);
+  cudaFree(At);
+#endif
+}
+
+
+
+CUDA_TEST(Shared, MatrixTranposeMyCUDAShared){
+
+  const int DIM = 2;
+  const int N_rows = 32;
+  const int N_cols = 32;
+  const int TILE_DIM = 16;
+
+  const int inner_Dim0 = TILE_DIM;
+  const int inner_Dim1 = TILE_DIM;
+
+  const int outer_Dim0 = (N_cols-1)/TILE_DIM+1;
+  const int outer_Dim1 = (N_rows-1)/TILE_DIM+1;
+
+  int *A;
+  int *At;
+
+  cudaMallocManaged(&A,  sizeof(int) * N_rows * N_cols);
+  cudaMallocManaged(&At, sizeof(int) * N_rows * N_cols);
+
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_cols, N_rows);
+
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      Aview(row, col) = col;
+    }
+  }
+
+  auto iSpace =
+    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
+
+  //using RAJAMemory = RAJA::ShmemTile<RAJA::cuda_shmem, int, RAJA::ArgList<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>,decltype(iSpace)>;
+
+
+  //using cuda_shmem_t = RAJA::ShmemTile<RAJA::cuda_shmem, int, RAJA::ArgList<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>,decltype(iSpace)>;
+  using SharedTile = RAJA::SharedMem<int,TILE_DIM,TILE_DIM>;
+  using RAJAMemory = RAJA::SharedMemWrapper<SharedTile>;
+
+  //Should always exist
+  RAJAMemory rajaTile;
+
+
+  using KERNEL_EXEC_POL =
+    RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<3, RAJA::cuda_block_exec,
+        RAJA::statement::For<2, RAJA::cuda_block_exec,
+
+
+          RAJA::statement::CreateShmem<
+
+            RAJA::statement::For<1, RAJA::cuda_thread_exec,
+              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::Lambda<0>
+                                   >
+                                 >,
+            RAJA::statement::CudaSyncThreads,
+              RAJA::statement::For<1, RAJA::cuda_thread_exec,
+                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                                   RAJA::statement::Lambda<1> > >
+              > //close shared memory scope
+            >//for 2
+        >//for 3
+        > //CudaKernel
+      >; //close policy list
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
+                                      RAJA::make_tuple(rajaTile),
+
+      //Load shared memory
+    [=] RAJA_DEVICE (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
+
+           int col = bx * TILE_DIM + tx;  // Matrix column index
+           int row = by * TILE_DIM + ty;  // Matrix row index
+           if(row < N_rows && col < N_cols){
+             (*rajaTile.SharedMem)(ty,tx)  = Aview(row, col);
+           }
+     }
+      //Read from shared mem
+   ,[=] RAJA_DEVICE (int tx, int ty, int bx, int by, RAJAMemory &rajaTile) {
+
+       int col = by * TILE_DIM + tx;  // Transposed matrix column index
+       int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+       if(row < N_cols && col < N_rows){
+         Atview(row, col) = (*rajaTile.SharedMem)(tx,ty);
+       }
+     }
+	);
+
+
+  //Check result
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      ASSERT_FLOAT_EQ(Atview(col,row), col);
+    }
+  }
+  cudaFree(A);
+  cudaFree(At);
+}
+
 
 
 #endif
