@@ -3,7 +3,7 @@
 using namespace RAJA;
 using namespace RAJA::statement;
 
-int main(int argc, char* argv[]) {
+int main(int /*argc*/, char** /*argv[]*/) {
 
   // using Pol = KernelPolicy<
   //               For<1, RAJA::loop_exec>,
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
       RAJA::make_tuple(
         RAJA::RangeSegment(0,25),
         RAJA::RangeSegment(0,25)),
-      [=] (int i, int) {
+      [=] (int /*i*/, int /*j*/) {
       //array[i + (25*j)] = i*j;
   //    int idx = i;
       //array[0] = i*j;

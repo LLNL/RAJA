@@ -21,7 +21,8 @@ namespace RAJA {
 namespace internal {
 
 template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
-struct OpenMPTargetForWrapper : public GenericWrapperBase {
+struct OpenMPTargetForWrapper : public GenericWrapperBase 
+{
   using data_t = camp::decay<Data>;
 
   data_t data;
@@ -47,7 +48,8 @@ struct OpenMPTargetForWrapper : public GenericWrapperBase {
 template <camp::idx_t ArgumentId,
           int N,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec<N>, EnclosedStmts...>> {
+struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec<N>, EnclosedStmts...>> 
+{
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -63,15 +65,13 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
 
 template <camp::idx_t ArgumentId,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>> {
+struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>>
+{
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    //OpenMPTargetForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
-
     auto len = segment_length<ArgumentId>(data);
-    using len_t = decltype(len);
 
     for (int i = 0; i < len; ++i) {
       data.template assign_offset<ArgumentId>(i);
@@ -81,7 +81,6 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>>
       execute_statement_list<camp::list<EnclosedStmts...>>(data);
     }
 
-    //forall_impl(omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
 };
 
