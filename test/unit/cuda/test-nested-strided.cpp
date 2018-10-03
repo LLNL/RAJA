@@ -42,44 +42,45 @@ static void stride_test(int stride, bool reverse = false)
   cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
   cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
 
-  RangeStrideSegment seg_x( reverse ? x-1     : 0,
-                            reverse ? -1      : x,
-                            reverse ? -stride : stride);
+  RangeStrideSegment seg_x(reverse ? x - 1 : 0,
+                           reverse ? -1 : x,
+                           reverse ? -stride : stride);
 
-  RangeStrideSegment seg_y( reverse ? y-1     : 0,
-                            reverse ? -1      : y,
-                            reverse ? -stride : stride);
+  RangeStrideSegment seg_y(reverse ? y - 1 : 0,
+                           reverse ? -1 : y,
+                           reverse ? -stride : stride);
 
-  RangeStrideSegment seg_z( reverse ? z-1     : 0,
-                            reverse ? -1      : z,
-                            reverse ? -stride : stride);
+  RangeStrideSegment seg_z(reverse ? z - 1 : 0,
+                           reverse ? -1 : z,
+                           reverse ? -stride : stride);
 
-  forallN<NestedPolicy<ExecList<seq_exec,
-                                cuda_block_x_exec,
-                                cuda_thread_y_exec>,
-                       Permute<PERM_IJK>>>(seg_x, seg_y, seg_z,
-                                           [=] RAJA_HOST_DEVICE(Index_type i,
-                                                           Index_type j,
-                                                           Index_type k) {
-                                             Index_type val = (i*y*z) + (j*z) + k;
-                                             arr[val] = val;
-                                           });
+  forallN<
+      NestedPolicy<ExecList<seq_exec, cuda_block_x_exec, cuda_thread_y_exec>,
+                   Permute<PERM_IJK>>>(
+      seg_x,
+      seg_y,
+      seg_z,
+      [=] RAJA_HOST_DEVICE(Index_type i, Index_type j, Index_type k) {
+        Index_type val = (i * y * z) + (j * z) + k;
+        arr[val] = val;
+      });
   cudaDeviceSynchronize();
 
 
-  for (Index_type i : RangeSegment(0,x)) {
-    for (Index_type j : RangeSegment(0,y)) {
-      for (Index_type k : RangeSegment(0,z)) {
+  for (Index_type i : RangeSegment(0, x)) {
+    for (Index_type j : RangeSegment(0, y)) {
+      for (Index_type k : RangeSegment(0, z)) {
 
-        Index_type val = (i*y*z) + (j*z) + k;
+        Index_type val = (i * y * z) + (j * z) + k;
 
         // Determine if this i,j,k was in the iteration space
         bool inclusive;
-        if(reverse){
-          inclusive = ((x-i-1)%stride==0) && ((y-j-1)%stride==0) && ((z-k-1)%stride==0);
-        }
-        else{
-          inclusive = (i%stride==0) && (j%stride==0) && (k%stride==0);
+        if (reverse) {
+          inclusive = ((x - i - 1) % stride == 0) && ((y - j - 1) % stride == 0)
+                      && ((z - k - 1) % stride == 0);
+        } else {
+          inclusive =
+              (i % stride == 0) && (j % stride == 0) && (k % stride == 0);
         }
 
         // Determine expected value
@@ -92,44 +93,20 @@ static void stride_test(int stride, bool reverse = false)
   cudaFree(arr);
 }
 
-CUDA_TEST(forallN, rangeStrides1)
-{
-  stride_test(1, false);
-}
+CUDA_TEST(forallN, rangeStrides1) { stride_test(1, false); }
 
-CUDA_TEST(forallN, rangeStrides2)
-{
-  stride_test(2, false);
-}
+CUDA_TEST(forallN, rangeStrides2) { stride_test(2, false); }
 
-CUDA_TEST(forallN, rangeStrides3)
-{
-  stride_test(3, false);
-}
+CUDA_TEST(forallN, rangeStrides3) { stride_test(3, false); }
 
-CUDA_TEST(forallN, rangeStrides4)
-{
-  stride_test(4, false);
-}
+CUDA_TEST(forallN, rangeStrides4) { stride_test(4, false); }
 
 
-CUDA_TEST(forallN, rangeStrides1_reverse)
-{
-  stride_test(1, true);
-}
+CUDA_TEST(forallN, rangeStrides1_reverse) { stride_test(1, true); }
 
-CUDA_TEST(forallN, rangeStrides2_reverse)
-{
-  stride_test(2, true);
-}
+CUDA_TEST(forallN, rangeStrides2_reverse) { stride_test(2, true); }
 
-CUDA_TEST(forallN, rangeStrides3_reverse)
-{
-  stride_test(3, true);
-}
+CUDA_TEST(forallN, rangeStrides3_reverse) { stride_test(3, true); }
 
-CUDA_TEST(forallN, rangeStrides4_reverse)
-{
-  stride_test(4, true);
-}
+CUDA_TEST(forallN, rangeStrides4_reverse) { stride_test(4, true); }
 #endif

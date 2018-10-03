@@ -82,8 +82,8 @@ private:
   second_type mem_idx[size];
 };
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif /* RAJA_SOA_ARRAY_HPP */

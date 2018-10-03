@@ -60,12 +60,10 @@ struct CudaStatementExecutor<Data,
 
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
-  using stmt_list_t =
-      StatementList<statement::Collapse<ExecPolicy,
-                                        ArgList<Args...>,
-                                        HyperplaneInner<HpArgumentId,
-                                                        ArgList<Args...>,
-                                                        EnclosedStmts...> > >;
+  using stmt_list_t = StatementList<statement::Collapse<
+      ExecPolicy,
+      ArgList<Args...>,
+      HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...> > >;
 
   using enclosed_stmts_t =
       CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
@@ -100,8 +98,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
@@ -125,11 +123,10 @@ template <typename Data,
           camp::idx_t... Args,
           typename... EnclosedStmts,
           typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             HyperplaneInner<HpArgumentId,
-                                             ArgList<Args...>,
-                                             EnclosedStmts...>,
-                             IndexCalc> {
+struct CudaStatementExecutor<
+    Data,
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>,
+    IndexCalc> {
 
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
@@ -163,8 +160,9 @@ struct CudaStatementExecutor<Data,
 
         // compute actual iterate for HpArgumentId
         // as:  i0 = h - (i1 + i2 + i3 + ...)
-        idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
-                                    camp::get<Args>(data.offset_tuple)...);
+        idx_t i = h
+                  - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                  camp::get<Args>(data.offset_tuple)...);
 
         // check bounds
         if (i >= 0 && i < len) {
@@ -187,8 +185,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }

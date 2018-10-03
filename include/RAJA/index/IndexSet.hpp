@@ -776,8 +776,8 @@ template <typename T>
 struct is_indexset_policy
     : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
-}
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

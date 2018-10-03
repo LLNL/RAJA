@@ -116,11 +116,11 @@ struct get_platform_from_list<> {
  * (not for MultiPolicy or nested::Policy)
  */
 template <typename T>
-struct get_platform<T,
-                    typename std::
-                        enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
-                                  && !RAJA::type_traits::is_indexset_policy<T>::
-                                         value>::type> {
+struct get_platform<
+    T,
+    typename std::enable_if<
+        std::is_base_of<RAJA::PolicyBase, T>::value
+        && !RAJA::type_traits::is_indexset_policy<T>::value>::type> {
 
   static constexpr Platform value = T::platform;
 };
@@ -149,8 +149,8 @@ struct get_platform<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
 
 template <typename T>
 using get_space = get_space_from_platform<get_platform<T>::value>;
-}
-}
+}  // namespace detail
+}  // namespace RAJA
 
 #endif  // RAJA_ENABLE_CHAI
 
@@ -192,8 +192,8 @@ void clearChaiExecutionSpace()
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
-}
-}
+}  // namespace detail
+}  // namespace RAJA
 
 
 #endif

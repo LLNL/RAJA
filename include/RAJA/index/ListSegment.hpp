@@ -298,7 +298,7 @@ private:
 //! alias for A TypedListSegment with storage type @Index_type
 using ListSegment = TypedListSegment<Index_type>;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 namespace std
 {
@@ -312,6 +312,6 @@ RAJA_INLINE void swap(RAJA::TypedListSegment<T>& a,
 {
   a.swap(b);
 }
-}
+}  // namespace std
 
 #endif  // closing endif for header file include guard

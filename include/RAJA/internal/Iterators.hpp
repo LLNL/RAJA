@@ -325,9 +325,8 @@ private:
 };
 
 
+}  // namespace Iterators
 
-}  // closing brace for namespace Iterators
-
-}  // closing brace for namespace RAJA
+}  // namespace RAJA
 
 #endif /* RAJA_ITERATORS_HPP */

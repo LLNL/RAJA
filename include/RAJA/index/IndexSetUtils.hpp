@@ -117,6 +117,6 @@ RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
   con = tcon;
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

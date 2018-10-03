@@ -171,8 +171,8 @@ struct IterableTiler {
       : it{it_}, block_size{block_size_}
   {
     using std::begin;
-    using std::end;
     using std::distance;
+    using std::end;
     dist = it.end() - it.begin();  // distance(begin(it), end(it));
     num_blocks = dist / block_size;
     // if (dist % block_size) num_blocks += 1;
@@ -200,8 +200,8 @@ template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
 
 
   template <typename Data>
@@ -213,8 +213,8 @@ struct StatementExecutor<statement::
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
 
-    // Create a tile iterator, needs to survive until the forall is 
-    // done executing. 
+    // Create a tile iterator, needs to survive until the forall is
+    // done executing.
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize

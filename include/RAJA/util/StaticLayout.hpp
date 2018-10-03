@@ -90,8 +90,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
 
 
   template <typename... Indices>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr int s_oper(
-      Indices... indices)
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr int s_oper(Indices... indices)
   {
     // dot product of strides and indices
     return VarOps::sum<int>((indices * Strides)...);
@@ -185,14 +184,11 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
 
 template <camp::idx_t... Sizes>
-using StaticLayout = detail::
-    StaticLayoutBase_impl<camp::make_idx_seq_t<sizeof...(Sizes)>,
-                          camp::idx_seq<Sizes...>,
-                          typename detail::
-                              StrideCalculator<camp::make_idx_seq_t<sizeof...(
-                                                   Sizes)>,
-                                               camp::idx_seq<Sizes...>>::
-                                  strides>;
+using StaticLayout = detail::StaticLayoutBase_impl<
+    camp::make_idx_seq_t<sizeof...(Sizes)>,
+    camp::idx_seq<Sizes...>,
+    typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>,
+                                      camp::idx_seq<Sizes...>>::strides>;
 
 
 template <typename TypeList, camp::idx_t... Sizes>

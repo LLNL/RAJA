@@ -276,11 +276,9 @@ struct PolLTimesC_GPU {
 #if defined(RAJA_ENABLE_TBB)
 struct PolLTimesD_GPU {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                tbb_for_exec,
-                                cuda_threadblock_y_exec<32>>,
-                       Permute<PERM_IJKL>>
+  typedef NestedPolicy<
+      ExecList<seq_exec, seq_exec, tbb_for_exec, cuda_threadblock_y_exec<32>>,
+      Permute<PERM_IJKL>>
       EXEC;
 
   // psi[direction, group, zone]
@@ -302,10 +300,12 @@ struct PolLTimesD_GPU {
 using LTimesPolicies = ::testing::Types<PolLTimesA_GPU,
                                         PolLTimesB_GPU
 #if defined(RAJA_ENABLE_OPENMP)
-                                        ,PolLTimesC_GPU
+                                        ,
+                                        PolLTimesC_GPU
 #endif
 #if defined(RAJA_ENABLE_TBB)
-                                        ,PolLTimesD_GPU
+                                        ,
+                                        PolLTimesD_GPU
 #endif
                                         >;
 
@@ -373,7 +373,9 @@ CUDA_TEST(NestedCUDA, PositiveRange)
 
   forallN<NestedPolicy<
       ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(2, 12), RangeSegment(2, 12), [=] RAJA_HOST_DEVICE(int k, int j) {
+      RangeSegment(2, 12),
+      RangeSegment(2, 12),
+      [=] RAJA_HOST_DEVICE(int k, int j) {
         const int idx = ((k - 2) * 10) + (j - 2);
         data[idx] = idx * 1.0;
       });

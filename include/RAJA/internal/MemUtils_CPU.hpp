@@ -100,6 +100,6 @@ inline void free_aligned(void* ptr)
 #endif
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

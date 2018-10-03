@@ -454,7 +454,7 @@ struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
 };
 
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_TARGET_OPENMP guard
 

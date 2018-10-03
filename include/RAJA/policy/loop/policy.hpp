@@ -74,9 +74,9 @@ using loop_reduce = seq_reduce;
 }  // end namespace policy
 
 using policy::loop::loop_exec;
-using policy::loop::loop_segit;
 using policy::loop::loop_reduce;
+using policy::loop::loop_segit;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif

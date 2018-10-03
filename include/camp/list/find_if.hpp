@@ -69,7 +69,7 @@ namespace detail
   struct _find_if<Cond> {
     using type = nil;
   };
-}
+}  // namespace detail
 /// \endcond
 
 template <template <typename...> class Cond, typename Seq>
@@ -104,7 +104,7 @@ namespace test
   CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
                          list<For<num<0>, int>, For<num<1>, int>>>),
               (For<num<1>, int>));
-}
+}  // namespace test
 #endif
 
 }  // end namespace camp

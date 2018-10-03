@@ -129,12 +129,10 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
-    using kernel_policy =
-        statement::Collapse<ExecPolicy,
-                            ArgList<Args...>,
-                            HyperplaneInner<HpArgumentId,
-                                            ArgList<Args...>,
-                                            EnclosedStmts...>>;
+    using kernel_policy = statement::Collapse<
+        ExecPolicy,
+        ArgList<Args...>,
+        HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
     ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);
@@ -161,9 +159,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 template <camp::idx_t HpArgumentId,
           camp::idx_t... Args,
           typename... EnclosedStmts>
-struct StatementExecutor<HyperplaneInner<HpArgumentId,
-                                         ArgList<Args...>,
-                                         EnclosedStmts...>> {
+struct StatementExecutor<
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>> {
 
 
   template <typename Data>
@@ -176,8 +173,9 @@ struct StatementExecutor<HyperplaneInner<HpArgumentId,
 
     // compute actual iterate for HpArgumentId
     // as:  i0 = h - (i1 + i2 + i3 + ...)
-    idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
-                                camp::get<Args>(data.offset_tuple)...);
+    idx_t i = h
+              - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                              camp::get<Args>(data.offset_tuple)...);
 
     // get length of Hp indexed argument
     auto len = segment_length<HpArgumentId>(data);
