@@ -57,24 +57,38 @@ struct CudaStatementExecutor<Data,
 
   IndexCalc index_calc;
 
+  template<camp::idx_t Pos>
+  void RAJA_INLINE __device__ createShared(Data &data, int num_logical_blocks, int block_carry, int_<Pos>)
+  {
+    
+    using varType = typename camp::tuple_element_t<Pos-1, typename camp::decay<Data>::param_tuple_t>::type;
+    __shared__ varType SharedM;
+    camp::get<Pos-1>(data.param_tuple).SharedMem = &SharedM;    
+    createShared(data, num_logical_blocks, block_carry, int_<Pos-1>());
+  }
+
+  void RAJA_INLINE __device__ createShared(Data &data, int num_logical_blocks, int block_carry, int_<static_cast<camp::idx_t>(1)>)
+  {
+    
+    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
+    __shared__ varType SharedM;
+    camp::get<0>(data.param_tuple).SharedMem = &SharedM;
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+  }
+  
   RAJA_INLINE __device__ void exec(Data &data,
                               int num_logical_blocks,
                               int block_carry)
   {
 
-    if(threadIdx.x==0) printf("created shared memory! \n");
-
-    //RAJA::internal::shmem_set_windows(data.param_tuple,
-    //data.get_minimum_index_tuple());
-
-
-    //Should be able to pull out shared memory type
-    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
-    __shared__ varType SharedM;
-
-    camp::get<0>(data.param_tuple).SharedMem = &SharedM;
-
-    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+    //if(threadIdx.x==0) printf("created shared memory! \n");
+    
+    const camp::idx_t N = camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
+    createShared(data, num_logical_blocks, block_carry, int_<N>());
+    
+    //Do we need this?
+    //RAJA::internal::shmem_set_windows(data.param_tuple,data.get_minimum_index_tuple());
+    
   }
 
   RAJA_INLINE RAJA_HOST_DEVICE void initBlocks(Data &data,
