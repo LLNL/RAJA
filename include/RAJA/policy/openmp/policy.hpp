@@ -226,7 +226,7 @@ using policy::omp::omp_target_reduce;
 ///////////////////////////////////////////////////////////////////////
 ///
 
-using omp_shmem = seq_shmem;
+using omp_shmem = cpu_shmem;
 
 }  // closing brace for RAJA namespace
 
