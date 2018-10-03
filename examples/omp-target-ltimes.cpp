@@ -197,7 +197,7 @@ int main(){
 
   printf("m=%d, d=%d, g=%d, z=%d\n", m, d, g, z);
 
-  runLTimesRajaKernel(false, m, d, g, z);
+  runLTimesRajaKernel(debug, m, d, g, z);
 
   return 0;
 }
