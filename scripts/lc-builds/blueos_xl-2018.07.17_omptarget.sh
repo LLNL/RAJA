@@ -14,23 +14,19 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos_clang-coral-2017.10.13_omptarget
+BUILD_SUFFIX=lc_blueos-xl_2018.07.17_omptarget
 
-rm -rf build_${BUILD_SUFFIX} >/dev/null
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 
-## NOTE: RAJA tests are turned off due to compilation issues.
-
 cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/clang_coral_2017_10_13.cmake \
+  -DCMAKE_BUILD_TYPE=Release\
+  -C ../host-configs/lc-builds/blueos/xl_2018_07_17.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=Off \
   -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -fopenmp-implicit-declare-target" \
-  -DENABLE_ALL_WARNINGS=Off \
+  -DOpenMP_CXX_FLAGS="-std=c++11 -qoffload -qsmp=omp -qnoeh -qnoinline -qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
