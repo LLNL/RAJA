@@ -88,6 +88,6 @@ raja_add_executable(
   SOURCES omp-target-kernel.cpp)
 
 raja_add_executable(
-  NAME omp-target-ltimes-shmem-ltimes
+  NAME omp-target-ltimes
   SOURCES omp-target-ltimes.cpp)
 endif()
