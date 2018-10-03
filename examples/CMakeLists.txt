@@ -78,16 +78,9 @@ raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
   
-  
-if(ENABLE_CUDA)
 raja_add_executable(
-  NAME cuda-shmem-ltimes
-  SOURCES cuda-shmem-ltimes.cpp)
-endif()
-
-raja_add_executable(
-  NAME cpu-shmem-ltimes
-  SOURCES cpu-shmem-ltimes.cpp)
+  NAME ltimes
+  SOURCES ltimes.cpp)
 
 if(ENABLE_TARGET_OPENMP)
 raja_add_executable(
