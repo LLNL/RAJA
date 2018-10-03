@@ -681,7 +681,7 @@ TEST(Kernel, Shmem1){
 
   auto loop_segments = RAJA::make_tuple(RangeSegment(0,N));
 
-  using shmem_t = ShmemTile<seq_shmem, int, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)>;
+  using shmem_t = ShmemTile<cpu_shmem, int, ArgList<0>, SizeList<TileSize>, decltype(loop_segments)>;
   shmem_t shmem;
 
 
