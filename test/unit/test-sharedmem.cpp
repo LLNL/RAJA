@@ -632,6 +632,7 @@ TEST(Shared, MatrixTranposeRAJAShared){
 }
 
 
+#if defined(RAJA_ENABLE_CUDA)
 //Exisiting version
 CUDA_TEST(Shared, MatrixTranposeCUDARAJAShared){
   const int DIM = 2;
@@ -758,7 +759,7 @@ CUDA_TEST(Shared, MatrixTranposeMyCUDAShared){
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
       Aview(row, col) = col;
-      Bview(row, col) = col;
+      Bview(row, col) = row;
     }
   }
 
@@ -827,7 +828,7 @@ CUDA_TEST(Shared, MatrixTranposeMyCUDAShared){
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
       ASSERT_FLOAT_EQ(Atview(col,row), col);
-      ASSERT_FLOAT_EQ(Btview(col,row), col);
+      ASSERT_FLOAT_EQ(Btview(col,row), row);
     }
   }
   cudaFree(A);
@@ -836,6 +837,7 @@ CUDA_TEST(Shared, MatrixTranposeMyCUDAShared){
   cudaFree(Bt);
 }
 
+#endif//CUDA bounds
 
 
 #endif
