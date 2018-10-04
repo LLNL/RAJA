@@ -444,8 +444,7 @@ struct CudaIndexCalc<SegmentTuple,
     int carry = blockDim.x;
     return IndexCalcHelper<sizeof...(RangeInts) - 1>::increment(data,
                                                                 calc_list,
-                                                                carry)
-           > 0;
+                                                                carry) > 0;
   }
 };
 

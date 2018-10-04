@@ -1688,9 +1688,7 @@ CUDA_TEST(Kernel, CudaExec_1blockexec)
 
       RAJA::make_tuple(RangeSegment(0, N)),
 
-      [=] __device__(int i) {
-        trip_count += 1;
-      });
+      [=] __device__(int i) { trip_count += 1; });
   cudaDeviceSynchronize();
 
 
@@ -1718,9 +1716,7 @@ CUDA_TEST(Kernel, CudaExec_1threadblockexec)
 
       RAJA::make_tuple(RangeSegment(0, N)),
 
-      [=] __device__(ptrdiff_t i) {
-        trip_count += 1;
-      });
+      [=] __device__(ptrdiff_t i) { trip_count += 1; });
   cudaDeviceSynchronize();
 
 
@@ -1840,9 +1836,7 @@ CUDA_TEST(Kernel, CudaExec_tile1threadexec)
 
       RAJA::make_tuple(RangeSegment(0, N)),
 
-      [=] __device__(ptrdiff_t i) {
-        trip_count += 1;
-      });
+      [=] __device__(ptrdiff_t i) { trip_count += 1; });
   cudaDeviceSynchronize();
 
 
@@ -1874,9 +1868,7 @@ TEST(Kernel, Hyperplane_seq)
       RAJA::make_tuple(TypedRangeSegment<int>(0, N),
                        TypedRangeSegment<int>(0, N)),
 
-      [=](int, int) {
-        trip_count += 1;
-      });
+      [=](int, int) { trip_count += 1; });
 
   long result = (long)trip_count;
 

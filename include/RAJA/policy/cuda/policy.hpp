@@ -282,8 +282,8 @@ struct CudaThreadBlock {
   __device__ inline RAJA::Index_type operator()(void)
   {
     RAJA::Index_type idx =
-        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block
-        + (RAJA::Index_type)view(threadIdx);
+        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block +
+        (RAJA::Index_type)view(threadIdx);
 
     if (idx >= distance) {
       idx = RAJA::operators::limits<RAJA::Index_type>::min();

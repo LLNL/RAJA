@@ -213,8 +213,8 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
-    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
-                                   % inv_mods[RangeInts])...);
+    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
+                                   inv_mods[RangeInts])...);
   }
 
   /*!

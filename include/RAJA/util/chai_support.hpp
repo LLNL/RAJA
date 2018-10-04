@@ -119,8 +119,8 @@ template <typename T>
 struct get_platform<
     T,
     typename std::enable_if<
-        std::is_base_of<RAJA::PolicyBase, T>::value
-        && !RAJA::type_traits::is_indexset_policy<T>::value>::type> {
+        std::is_base_of<RAJA::PolicyBase, T>::value &&
+        !RAJA::type_traits::is_indexset_policy<T>::value>::type> {
 
   static constexpr Platform value = T::platform;
 };

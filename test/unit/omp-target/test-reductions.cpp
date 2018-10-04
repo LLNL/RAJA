@@ -257,8 +257,8 @@ protected:
     z_size = 256;
 
     array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                x_size * y_size * z_size
-                                                    * sizeof(double));
+                                                x_size * y_size * z_size *
+                                                    sizeof(double));
 
     const double val = 4.0 / (x_size * y_size * z_size);
 

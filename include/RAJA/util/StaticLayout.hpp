@@ -126,8 +126,8 @@ struct StrideCalculatorIdx {
   static constexpr camp::idx_t size_last =
       StrideCalculatorIdx<N, Idx + 1, Sizes...>::size;
   static constexpr camp::idx_t value =
-      (size_last > 0 ? size_last : 1)
-      * StrideCalculatorIdx<N, Idx + 1, Sizes...>::value;
+      (size_last > 0 ? size_last : 1) *
+      StrideCalculatorIdx<N, Idx + 1, Sizes...>::value;
   static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 

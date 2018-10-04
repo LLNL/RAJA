@@ -129,9 +129,8 @@ class TypedListSegment
   {
     allocate(std::integral_constant<bool, GPU>());
     static constexpr bool use_cuda =
-        GPU && std::is_pointer<decltype(src.begin())>::value
-        && std::is_same<type_traits::IterableValue<Container>,
-                        value_type>::value;
+        GPU && std::is_pointer<decltype(src.begin())>::value &&
+        std::is_same<type_traits::IterableValue<Container>, value_type>::value;
     using TagType =
         typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
     copy(src, TagType());

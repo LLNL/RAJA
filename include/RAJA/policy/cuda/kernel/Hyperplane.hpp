@@ -75,9 +75,9 @@ struct CudaStatementExecutor<Data,
   {
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    int hp_len = segment_length<HpArgumentId>(data)
-                 + VarOps::foldl(RAJA::operators::plus<int>(),
-                                 segment_length<Args>(data)...);
+    int hp_len = segment_length<HpArgumentId>(data) +
+                 VarOps::foldl(RAJA::operators::plus<int>(),
+                               segment_length<Args>(data)...);
 
 
     /* Execute the outer loop over hyperplanes
@@ -160,9 +160,8 @@ struct CudaStatementExecutor<
 
         // compute actual iterate for HpArgumentId
         // as:  i0 = h - (i1 + i2 + i3 + ...)
-        idx_t i = h
-                  - VarOps::foldl(RAJA::operators::plus<idx_t>(),
-                                  camp::get<Args>(data.offset_tuple)...);
+        idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                    camp::get<Args>(data.offset_tuple)...);
 
         // check bounds
         if (i >= 0 && i < len) {

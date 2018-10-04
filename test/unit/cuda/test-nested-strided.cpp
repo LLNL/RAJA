@@ -76,8 +76,9 @@ static void stride_test(int stride, bool reverse = false)
         // Determine if this i,j,k was in the iteration space
         bool inclusive;
         if (reverse) {
-          inclusive = ((x - i - 1) % stride == 0) && ((y - j - 1) % stride == 0)
-                      && ((z - k - 1) % stride == 0);
+          inclusive = ((x - i - 1) % stride == 0) &&
+                      ((y - j - 1) % stride == 0) &&
+                      ((z - k - 1) % stride == 0);
         } else {
           inclusive =
               (i % stride == 0) && (j % stride == 0) && (k % stride == 0);

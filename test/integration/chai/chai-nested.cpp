@@ -306,9 +306,9 @@ void runLTimesTest(std::string const& policy,
         pdmin.min(val);
         pdmax.max(val);
 
-        int index = *d + (*m * num_directions)
-                    + (*g * num_directions * num_moments)
-                    + (*z * num_directions * num_moments * num_groups);
+        int index = *d + (*m * num_directions) +
+                    (*g * num_directions * num_moments) +
+                    (*z * num_directions * num_moments * num_groups);
 
         pdminloc.minloc(val, index);
         pdmaxloc.maxloc(val, index);
@@ -337,9 +337,9 @@ void runLTimesTest(std::string const& policy,
           total += val;
           *lmin = RAJA_MIN(*lmin, val);
           *lmax = RAJA_MAX(*lmax, val);
-          int index = *d + (*m * num_directions)
-                      + (*g * num_directions * num_moments)
-                      + (z * num_directions * num_moments * num_groups);
+          int index = *d + (*m * num_directions) +
+                      (*g * num_directions * num_moments) +
+                      (z * num_directions * num_moments * num_groups);
         }
         *lsum += total;
 

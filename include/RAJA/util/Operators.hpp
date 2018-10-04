@@ -286,8 +286,8 @@ struct limits : public std::conditional<
 template <typename T>
 constexpr bool check()
 {
-  return limits<T>::min() == std::numeric_limits<T>::min()
-         && limits<T>::max() == std::numeric_limits<T>::max();
+  return limits<T>::min() == std::numeric_limits<T>::min() &&
+         limits<T>::max() == std::numeric_limits<T>::max();
 }
 static_assert(check<char>(), "limits for char is broken");
 static_assert(check<unsigned char>(), "limits for unsigned char is broken");

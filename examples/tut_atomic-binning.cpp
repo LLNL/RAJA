@@ -59,9 +59,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* array = memoryManager::allocate<int>(N);
   int* bins = memoryManager::allocate<int>(M);
 
-  RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
-    array[i] = rand() % M;
-  });
+  RAJA::forall<RAJA::seq_exec>(array_range,
+                               [=](int i) { array[i] = rand() % M; });
   //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;

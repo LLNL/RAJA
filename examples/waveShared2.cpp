@@ -413,8 +413,8 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 
                                double lap = 0.0;
                                for (int i = 0; i < 2 * sr + 1; ++i) {
-                                 lap += coeff[i] * Lu((ly + sr), (lx + i))
-                                        + coeff[i] * Lu((ly + i), (lx + sr));
+                                 lap += coeff[i] * Lu((ly + sr), (lx + i)) +
+                                        coeff[i] * Lu((ly + i), (lx + sr));
                                }
 
                                // write out stencil

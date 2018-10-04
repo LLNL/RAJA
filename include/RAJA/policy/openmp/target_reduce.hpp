@@ -145,8 +145,7 @@ struct Reduce_Data {
                           0,
                           0,
                           info.deviceID,
-                          info.hostID)
-        != 0) {
+                          info.hostID) != 0) {
       printf("Unable to copy memory from host to device\n");
       exit(1);
     }
@@ -162,8 +161,7 @@ struct Reduce_Data {
                           0,
                           0,
                           info.hostID,
-                          info.deviceID)
-        != 0) {
+                          info.deviceID) != 0) {
       printf("Unable to copy memory from device to host\n");
       exit(1);
     }

@@ -143,8 +143,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       double x = gridx.o + m * gridx.h;
       double y = gridx.o + n * gridx.h;
 
-      double f = gridx.h * gridx.h
-                 * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
+      double f = gridx.h * gridx.h *
+                 (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
       double newI =
           -0.25 * (f - I[id - N - 2] - I[id + N + 2] - I[id - 1] - I[id + 1]);

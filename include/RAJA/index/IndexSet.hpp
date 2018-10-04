@@ -93,8 +93,8 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, typename PARENT::value_type>::value
-                    || T0_TypeId == 0,
+  static_assert(std::is_same<value_type, typename PARENT::value_type>::value ||
+                    T0_TypeId == 0,
                 "All segments must have the same value_type");
 
   //! Construct empty index set

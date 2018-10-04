@@ -245,8 +245,8 @@ void buildLockFreeColorIndexset(
     for (int j = 0; j < numRangePerDomain; ++j) {
       Index_type id = domainToRange[i * numRangePerDomain + j];
       Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
-      if (idx > numEntityRange * numRangePerDomain
-          || rangeToDomainCount[id] > numRangePerDomain) {
+      if (idx > numEntityRange * numRangePerDomain ||
+          rangeToDomainCount[id] > numRangePerDomain) {
         printf("foiled!\n");
         exit(-1);
       }

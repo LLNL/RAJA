@@ -68,10 +68,10 @@ public:
   void stop()
   {
     gettimeofday(&tstop, 0);
-    auto start = std::chrono::seconds(tstart.tv_sec)
-                 + std::chrono::microseconds(tstart.tv_usec);
-    auto stop = std::chrono::seconds(tstop.tv_sec)
-                + std::chrono::microseconds(tstop.tv_usec);
+    auto start = std::chrono::seconds(tstart.tv_sec) +
+                 std::chrono::microseconds(tstart.tv_usec);
+    auto stop = std::chrono::seconds(tstop.tv_sec) +
+                std::chrono::microseconds(tstop.tv_usec);
     telapsed += DurationType(stop - start).count();
   }
 

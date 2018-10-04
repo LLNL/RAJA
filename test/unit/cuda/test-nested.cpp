@@ -144,9 +144,9 @@ static void runLTimesTest(Index_type num_moments,
         pdsum += val;
         pdmin.min(val);
         pdmax.max(val);
-        int index = *d + (*m * num_directions)
-                    + (*g * num_directions * num_moments)
-                    + (*z * num_directions * num_moments * num_groups);
+        int index = *d + (*m * num_directions) +
+                    (*g * num_directions * num_moments) +
+                    (*z * num_directions * num_moments * num_groups);
         pdminloc.minloc(val, index);
         pdmaxloc.maxloc(val, index);
       });
@@ -176,9 +176,9 @@ static void runLTimesTest(Index_type num_moments,
           total += val;
           lmin = RAJA_MIN(lmin, val);
           lmax = RAJA_MAX(lmax, val);
-          int index = *d + (*m * num_directions)
-                      + (*g * num_directions * num_moments)
-                      + (*z * num_directions * num_moments * num_groups);
+          int index = *d + (*m * num_directions) +
+                      (*g * num_directions * num_moments) +
+                      (*z * num_directions * num_moments * num_groups);
           lminloc.minloc(val, index);
           lmaxloc.maxloc(val, index);
         }

@@ -69,8 +69,8 @@ struct View {
 
   // We found the compiler-generated copy constructor does not actually
   // copy-construct the object on the device in certain nvcc versions. By
-  // explicitly defining the copy constructor we are able ensure proper behavior.
-  // Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
+  // explicitly defining the copy constructor we are able ensure proper
+  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
   RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
       : layout(V.layout), data(V.data)
   {

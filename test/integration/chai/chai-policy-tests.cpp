@@ -25,13 +25,13 @@
 
 static_assert(RAJA::detail::get_space<RAJA::seq_exec>::value == chai::CPU, "");
 static_assert(RAJA::detail::get_space<
-                  RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>::value
-                  == chai::CPU,
+                  RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>::value ==
+                  chai::CPU,
               "");
 
 #if defined(RAJA_ENABLE_OPENMP)
-static_assert(RAJA::detail::get_space<RAJA::omp_parallel_for_exec>::value
-                  == chai::CPU,
+static_assert(RAJA::detail::get_space<RAJA::omp_parallel_for_exec>::value ==
+                  chai::CPU,
               "");
 #endif
 
@@ -43,37 +43,36 @@ static_assert(RAJA::detail::get_space<RAJA::cuda_exec<128>>::value == chai::GPU,
 #if defined(RAJA_ENABLE_CUDA)
 static_assert(
     RAJA::detail::get_space<
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>>::value
-        == chai::GPU,
+        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>>::value ==
+        chai::GPU,
     "");
 #endif
 
 static_assert(RAJA::detail::get_space<RAJA::NestedPolicy<
-                      RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>>::value
-                  == chai::CPU,
+                      RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>>::value ==
+                  chai::CPU,
               "");
 
 #if defined(RAJA_ENABLE_CUDA)
 static_assert(
     RAJA::detail::get_space<RAJA::NestedPolicy<
-            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_exec<16>>>>::value
-        == chai::GPU,
+            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_exec<16>>>>::value ==
+        chai::GPU,
     "");
 static_assert(
     RAJA::detail::get_space<RAJA::NestedPolicy<
-            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_thread_x_exec>>>::value
-        == chai::GPU,
+            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_thread_x_exec>>>::value ==
+        chai::GPU,
     "");
 
 static_assert(
     RAJA::detail::get_space<
-        RAJA::KernelPolicy<RAJA::statement::For<0, RAJA::seq_exec>>>::value
-        == chai::CPU,
+        RAJA::KernelPolicy<RAJA::statement::For<0, RAJA::seq_exec>>>::value ==
+        chai::CPU,
     "");
 static_assert(
     RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::CudaKernel<
-            RAJA::statement::For<0, RAJA::seq_exec>>>>::value
-        == chai::GPU,
+            RAJA::statement::For<0, RAJA::seq_exec>>>>::value == chai::GPU,
     "");
 #endif
 

@@ -128,8 +128,8 @@ struct IterableTiler {
     RAJA_HOST_DEVICE
     RAJA_INLINE difference_type operator-(const iterator &rhs) const
     {
-      return static_cast<difference_type>(block_id)
-             - static_cast<difference_type>(rhs.block_id);
+      return static_cast<difference_type>(block_id) -
+             static_cast<difference_type>(rhs.block_id);
     }
 
     RAJA_HOST_DEVICE

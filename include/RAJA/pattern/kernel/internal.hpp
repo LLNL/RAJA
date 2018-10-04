@@ -216,8 +216,8 @@ struct LoopData {
   get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
   {
     return camp::make_tuple(
-        ((*camp::get<Idx>(segment_tuple).begin()
-          <= *camp::get<Idx>(segment_tuple).end())
+        ((*camp::get<Idx>(segment_tuple).begin() <=
+          *camp::get<Idx>(segment_tuple).end())
              ? *camp::get<Idx>(segment_tuple).begin()
              : *(camp::get<Idx>(segment_tuple).end() - 1))...);
   }
@@ -267,8 +267,8 @@ RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
         typename camp::at_v<typename Data::segment_tuple_t::TList,
                             ArgumentId>::iterator>::difference_type
 {
-  return camp::get<ArgumentId>(data.segment_tuple).end()
-         - camp::get<ArgumentId>(data.segment_tuple).begin();
+  return camp::get<ArgumentId>(data.segment_tuple).end() -
+         camp::get<ArgumentId>(data.segment_tuple).begin();
 }
 
 

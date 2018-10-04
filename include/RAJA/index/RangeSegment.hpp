@@ -274,10 +274,10 @@ struct TypedRangeStrideSegment {
         m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin)
-                + static_cast<value_type>(stride)
-                - (stride > 0 ? value_type{1} : value_type{-1}))
-               / static_cast<value_type>(stride))
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
+                static_cast<value_type>(stride) -
+                (stride > 0 ? value_type{1} : value_type{-1})) /
+               static_cast<value_type>(stride))
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space

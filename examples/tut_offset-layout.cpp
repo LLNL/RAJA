@@ -166,10 +166,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int col = 1; col <= N_c; ++col) {
 
       int id = col + totCellsInCol * row;
-      lattice_ref[id] = input_lattice[id] + input_lattice[id + 1]
-                        + input_lattice[id - 1]
-                        + input_lattice[id + totCellsInCol]
-                        + input_lattice[id - totCellsInCol];
+      lattice_ref[id] =
+          input_lattice[id] + input_lattice[id + 1] + input_lattice[id - 1] +
+          input_lattice[id + totCellsInCol] + input_lattice[id - totCellsInCol];
     }
   }
   // printLattice(lattice_ref, totCellsInRow, totCellsInCol);
@@ -216,11 +215,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
                                    output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                       input_latticeView(row, col) +
+                                       input_latticeView(row - 1, col) +
+                                       input_latticeView(row + 1, col) +
+                                       input_latticeView(row, col - 1) +
+                                       input_latticeView(row, col + 1);
                                  });
 
   // printLattice(lattice_ref, totCellsInRow, totCellsInCol);
@@ -243,11 +242,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
                                    output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                       input_latticeView(row, col) +
+                                       input_latticeView(row - 1, col) +
+                                       input_latticeView(row + 1, col) +
+                                       input_latticeView(row, col - 1) +
+                                       input_latticeView(row, col + 1);
                                  });
 
   // printLattice(lattice_ref, totCellsInRow, totCellsInCol);
@@ -271,11 +270,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
                                  [=] RAJA_DEVICE(int col, int row) {
                                    output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                       input_latticeView(row, col) +
+                                       input_latticeView(row - 1, col) +
+                                       input_latticeView(row + 1, col) +
+                                       input_latticeView(row, col - 1) +
+                                       input_latticeView(row, col + 1);
                                  });
 
   // printLattice(output_lattice, totCellsInRow, totCellsInCol);

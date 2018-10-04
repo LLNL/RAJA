@@ -90,8 +90,8 @@ struct atomic<max<T>> {
 template <typename T>
 struct cuda_atomic_available {
   static constexpr const bool value =
-      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T)))
-      || std::is_same<T, float>::value || std::is_same<T, double>::value;
+      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T))) ||
+      std::is_same<T, float>::value || std::is_same<T, double>::value;
 };
 
 }  // namespace cuda
@@ -116,28 +116,28 @@ union AsIntegerArray {
   static_assert(min_integer_type_size <= max_integer_type_size,
                 "incompatible min and max integer type size");
   using integer_type = typename std::conditional<
-      ((alignof(T) >= alignof(long long)
-        && sizeof(long long) <= max_integer_type_size)
-       || sizeof(long) < min_integer_type_size),
+      ((alignof(T) >= alignof(long long) &&
+        sizeof(long long) <= max_integer_type_size) ||
+       sizeof(long) < min_integer_type_size),
       long long,
       typename std::conditional<
-          ((alignof(T) >= alignof(long)
-            && sizeof(long) <= max_integer_type_size)
-           || sizeof(int) < min_integer_type_size),
+          ((alignof(T) >= alignof(long) &&
+            sizeof(long) <= max_integer_type_size) ||
+           sizeof(int) < min_integer_type_size),
           long,
           typename std::conditional<
-              ((alignof(T) >= alignof(int)
-                && sizeof(int) <= max_integer_type_size)
-               || sizeof(short) < min_integer_type_size),
+              ((alignof(T) >= alignof(int) &&
+                sizeof(int) <= max_integer_type_size) ||
+               sizeof(short) < min_integer_type_size),
               int,
               typename std::conditional<
-                  ((alignof(T) >= alignof(short)
-                    && sizeof(short) <= max_integer_type_size)
-                   || sizeof(char) < min_integer_type_size),
+                  ((alignof(T) >= alignof(short) &&
+                    sizeof(short) <= max_integer_type_size) ||
+                   sizeof(char) < min_integer_type_size),
                   short,
                   typename std::conditional<
-                      ((alignof(T) >= alignof(char)
-                        && sizeof(char) <= max_integer_type_size)),
+                      ((alignof(T) >= alignof(char) &&
+                        sizeof(char) <= max_integer_type_size)),
                       char,
                       void>::type>::type>::type>::type>::type;
   static_assert(!std::is_same<integer_type, void>::value,
@@ -215,8 +215,8 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   int warpId = threadId % policy::cuda::WARP_SIZE;
   int warpNum = threadId / policy::cuda::WARP_SIZE;
@@ -290,11 +290,11 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
   unsigned int wrap_around = numBlocks - 1;
 
-  int blockId = blockIdx.x + gridDim.x * blockIdx.y
-                + (gridDim.x * gridDim.y) * blockIdx.z;
+  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
+                (gridDim.x * gridDim.y) * blockIdx.z;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   T temp = block_reduce<Combiner>(val, identity);
 
@@ -343,8 +343,8 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   unsigned int wrap_around = numBlocks + 1;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   // one thread in first block initializes device_mem
   if (threadId == 0) {

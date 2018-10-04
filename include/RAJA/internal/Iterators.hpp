@@ -246,15 +246,15 @@ public:
   RAJA_HOST_DEVICE inline difference_type operator+(
       const strided_numeric_iterator& rhs) const
   {
-    return (static_cast<difference_type>(val)
-            + (static_cast<difference_type>(rhs.val)))
-           / stride;
+    return (static_cast<difference_type>(val) +
+            (static_cast<difference_type>(rhs.val))) /
+           stride;
   }
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
-    difference_type diff = (static_cast<difference_type>(val)
-                            - (static_cast<difference_type>(rhs.val)));
+    difference_type diff = (static_cast<difference_type>(val) -
+                            (static_cast<difference_type>(rhs.val)));
 
     return (diff % stride != difference_type{0})
                ? (difference_type{1} + diff / stride)

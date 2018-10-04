@@ -107,9 +107,9 @@ __device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
 {
   unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-                          + (threadIdx.z * (blockDim.x * blockDim.y))
-                          + (threadIdx.y * blockDim.x) + threadIdx.x;
+  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) +
+                          (threadIdx.z * (blockDim.x * blockDim.y)) +
+                          (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
 __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
