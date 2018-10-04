@@ -13,12 +13,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cstdio>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 
-#include <cmath>
 #include <iostream>
+#include <cmath>
 
 #include "RAJA/RAJA.hpp"
 
@@ -70,7 +70,7 @@ struct grid_s {
  * solution      - Function for the analytic solution
  * computeErr    - Displays the maximum error in the solution
  * gsColorPolicy - Generates the custom index set for this example
- */
+*/
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
 RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
@@ -78,7 +78,7 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "Red-Black Gauss-Seidel Example" << std::endl;
+  std::cout<<"Red-Black Gauss-Seidel Example"<<std::endl;
 
   /*
    * ----[Solver Parameters]------------
@@ -133,7 +133,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //
     // Gauss-Seidel Iteration
     //
-    RAJA::forall<colorPolicy>(colorSet, [=](RAJA::Index_type id) {
+    RAJA::forall<colorPolicy>(colorSet, 
+      [=](RAJA::Index_type id) {
+        
       //
       // Compute x,y grid index
       //
@@ -143,20 +145,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       double x = gridx.o + m * gridx.h;
       double y = gridx.o + n * gridx.h;
 
-      double f = gridx.h * gridx.h *
+      double f = gridx.h * gridx.h * 
                  (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
-      double newI =
-          -0.25 * (f - I[id - N - 2] - I[id + N + 2] - I[id - 1] - I[id + 1]);
+      double newI = -0.25 * (f - I[id - N - 2] - I[id + N + 2] -
+                                 I[id - 1] - I[id + 1]);
 
       double oldI = I[id];
       RAJA_resI2 += (newI - oldI) * (newI - oldI);
       I[id] = newI;
+
     });
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter) {
-      std::cout << "Gauss-Seidel maxed out on iterations" << std::endl;
+      std::cout<<"Gauss-Seidel maxed out on iterations"<<std::endl;
       break;
     }
 
@@ -193,9 +196,9 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
   bool isRed = true;
 
   for (int n = 1; n <= N; ++n) {
-
+    
     for (int m = 1; m <= N; ++m) {
-
+      
       RAJA::Index_type id = n * (N + 2) + m;
       if (isRed) {
         Red[ib] = id;
@@ -206,6 +209,7 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
       }
       isRed = !isRed;
     }
+
   }
 
   // Create Index
@@ -235,19 +239,20 @@ void computeErr(double *I, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
-  using errPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::loop_exec,
-      RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>>>>;
+  using errPolicy = RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> > >;
 
-  RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                          [=](RAJA::Index_type tx, RAJA::Index_type ty) {
-                            int id = tx + grid.n * ty;
-                            double x = grid.o + tx * grid.h;
-                            double y = grid.o + ty * grid.h;
-                            double myErr = std::abs(I[id] - solution(x, y));
-                            tMax.max(myErr);
-                          });
+  RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
+                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
+    
+      int id = tx + grid.n * ty;
+      double x = grid.o + tx * grid.h;
+      double y = grid.o + ty * grid.h;
+      double myErr = std::abs(I[id] - solution(x, y));
+      tMax.max(myErr);
+
+    });
 
   double l2err = tMax;
   printf("Max error = %lg, h = %f \n", l2err, grid.h);

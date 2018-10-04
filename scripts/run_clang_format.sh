@@ -15,4 +15,4 @@
 #
 ###############################################################################
 
-find . -type f -iname '*.hpp' -o -iname '*.cpp' | grep -v -e blt -e tpl | xargs ./scripts/clang-format-linux -i 
+find . -type f -iname '*.hpp' -o -iname '*.cpp' | grep -v -e 'blt' -e 'tpl' -e 'RAJA/examples' | xargs ./scripts/clang-format-linux -i 

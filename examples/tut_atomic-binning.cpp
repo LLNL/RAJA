@@ -14,9 +14,9 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
-#include <cstring>
-#include <iomanip>
 #include <iostream>
+#include <iomanip>
+#include <cstring>
 
 #include "memoryManager.hpp"
 
@@ -59,8 +59,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* array = memoryManager::allocate<int>(N);
   int* bins = memoryManager::allocate<int>(M);
 
-  RAJA::forall<RAJA::seq_exec>(array_range,
-                               [=](int i) { array[i] = rand() % M; });
+  RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
+                               
+      array[i] = rand() % M;
+      
+    });
   //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;
@@ -70,12 +73,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using ATOMIC_POL1 = RAJA::atomic::seq_atomic;
 
   RAJA::forall<EXEC_POL1>(array_range, [=](int i) {
-    RAJA::atomic::atomicAdd<ATOMIC_POL1>(&bins[array[i]], 1);
-  });
+                                                      
+      RAJA::atomic::atomicAdd<ATOMIC_POL1>(&bins[array[i]], 1);
+
+    });
 
   printBins(bins, M);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -86,12 +91,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
 
   RAJA::forall<EXEC_POL2>(array_range, [=](int i) {
-    RAJA::atomic::atomicAdd<ATOMIC_POL2>(&bins[array[i]], 1);
-  });
+                          
+      RAJA::atomic::atomicAdd<ATOMIC_POL2>(&bins[array[i]], 1);
+                                           
+    });
 
   printBins(bins, M);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA OMP binning with auto atomic" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
@@ -100,13 +107,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using ATOMIC_POL3 = RAJA::atomic::auto_atomic;
 
   RAJA::forall<EXEC_POL2>(array_range, [=](int i) {
-    RAJA::atomic::atomicAdd<ATOMIC_POL3>(&bins[array[i]], 1);
-  });
+  
+      RAJA::atomic::atomicAdd<ATOMIC_POL3>(&bins[array[i]], 1);
+  
+    });
 
   printBins(bins, M);
 
 #endif
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -118,12 +127,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using ATOMIC_POL4 = RAJA::atomic::cuda_atomic;
 
   RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
-    RAJA::atomic::atomicAdd<ATOMIC_POL4>(&bins[array[i]], 1);
-  });
+                          
+      RAJA::atomic::atomicAdd<ATOMIC_POL4>(&bins[array[i]], 1);
+                                                 
+    });
 
   printBins(bins, M);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
   std::cout << "\n\nRunning RAJA CUDA binning with auto atomic" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
@@ -131,11 +142,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using ATOMIC_POL5 = RAJA::atomic::auto_atomic;
 
   RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
-    RAJA::atomic::atomicAdd<ATOMIC_POL5>(&bins[array[i]], 1);
-  });
+
+      RAJA::atomic::atomicAdd<ATOMIC_POL5>(&bins[array[i]], 1);
+
+    });
 
   printBins(bins, M);
-
+  
 #endif
   //----------------------------------------------------------------------------//
 
