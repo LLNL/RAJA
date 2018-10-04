@@ -565,12 +565,12 @@ TEST(Shared, MatrixTranposeRAJAShared){
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
 
 
-  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+  using cpu_shmem_t = RAJA::ShmemTile<RAJA::cpu_shmem,
                                       int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(iSpace)>;
-  using RAJAMemory = RAJA::SharedMemWrapper<seq_shmem_t>;
+  using RAJAMemory = RAJA::SharedMemWrapper<cpu_shmem_t>;
   RAJAMemory rajaTile;
 
 

@@ -225,12 +225,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   //RAJA Shared Memory
-  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+  using cpu_shmem_t = RAJA::ShmemTile<RAJA::cpu_shmem,
                                       int,
                                       RAJA::ArgList<0, 1>,
                                       RAJA::SizeList<TILE_DIM, TILE_DIM>,
                                       decltype(iSpace)>;
-  using RAJAMemory = RAJA::SharedMemWrapper<seq_shmem_t>;
+  using RAJAMemory = RAJA::SharedMemWrapper<cpu_shmem_t>;
   RAJAMemory rajaTile;
 
   RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
