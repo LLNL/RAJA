@@ -49,7 +49,7 @@ RAJA_INLINE RAJA_DEVICE T *cuda_get_shmem_ptr(size_t byte_offset = 0)
   extern __shared__ char my_ptr[];
   return reinterpret_cast<T *>(&my_ptr[byte_offset]);
 }
-}
+}  // namespace internal
 
 
 /*!

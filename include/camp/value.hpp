@@ -39,6 +39,6 @@ struct is_value_s {
 /// Test whether a type is a valid camp value
 template <typename Val>
 using is_value = typename is_value_s<Val>::type;
-}
+}  // namespace camp
 
 #endif /* __CAMP_value_hpp */

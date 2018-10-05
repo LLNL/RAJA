@@ -39,8 +39,8 @@
 #include <limits>
 #endif
 
-#include "RAJA/util/macros.hpp"
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -71,7 +71,7 @@ template <typename Arg1, typename Arg2>
 struct comparison_function : public binary_function<Arg1, Arg2, bool> {
 };
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
 namespace types
 {
@@ -168,7 +168,7 @@ template <typename T>
 struct largest<T, false, false, true, true> {
   using type = double;
 };
-}
+}  // namespace detail
 
 /*!
         \brief type lookup to return largest similar type. If running on GPU,
@@ -205,7 +205,7 @@ template <typename T, typename U>
 struct larger_of<T, U, false> {
   using type = U;
 };
-}
+}  // namespace detail
 
 template <typename T, typename U>
 struct larger_of {
@@ -213,7 +213,7 @@ struct larger_of {
       larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
 };
 
-}  // closing brace for types namespace
+}  // namespace types
 
 namespace detail
 {
@@ -274,21 +274,20 @@ struct floating_point_limits<long double> {
 }  // end namespace detail
 
 template <typename T>
-struct limits
-    : public std::
-          conditional<std::is_integral<T>::value,
-                      typename std::conditional<std::is_unsigned<T>::value,
-                                                detail::unsigned_limits<T>,
-                                                detail::signed_limits<T>>::type,
-                      detail::floating_point_limits<T>>::type {
+struct limits : public std::conditional<
+                    std::is_integral<T>::value,
+                    typename std::conditional<std::is_unsigned<T>::value,
+                                              detail::unsigned_limits<T>,
+                                              detail::signed_limits<T>>::type,
+                    detail::floating_point_limits<T>>::type {
 };
 
 #if defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {
-  return limits<T>::min() == std::numeric_limits<T>::min()
-         && limits<T>::max() == std::numeric_limits<T>::max();
+  return limits<T>::min() == std::numeric_limits<T>::min() &&
+         limits<T>::max() == std::numeric_limits<T>::max();
 }
 static_assert(check<char>(), "limits for char is broken");
 static_assert(check<unsigned char>(), "limits for unsigned char is broken");
@@ -419,11 +418,11 @@ struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
   }
 };
 
-// comparison 
+// comparison
 /*!
  Checks if the candidate (rhs) value is strictly less than
- the current value (lhs); if so the candidate is returned. 
- When this operator is used to cycle through an array 
+ the current value (lhs); if so the candidate is returned.
+ When this operator is used to cycle through an array
  this ensures that the location of the first min/max is kept.
 */
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -555,7 +554,7 @@ struct safe_plus
                       typename types::larger_of<Arg1, Arg2>::type>::type> {
 };
 
-}  // closing brace for operators namespace
+}  // namespace operators
 
 namespace concepts
 {
@@ -582,16 +581,16 @@ using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T>
 using is_unary_function = requires_<UnaryFunction, Ret, T>;
-}  // closing brace for detail
+}  // namespace detail
 
-}  // closing brace for concepts
+}  // namespace concepts
 
 namespace type_traits
 {
 DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
-}  // closing type_traits
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

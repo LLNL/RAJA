@@ -169,7 +169,7 @@ TEST(OffsetLayoutTest, View)
   ASSERT_EQ(data[0], view(1));
   ASSERT_EQ(data[9], view(10));
 
-  delete [] data;
+  delete[] data;
 }
 
 
@@ -239,7 +239,8 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_layout({{3, 5}},
+                                 RAJA::as_array<RAJA::PERM_JI>::get());
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -373,7 +374,8 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
 TEST(LayoutTest, 2D_StrideOne)
 {
   typedef RAJA::Layout<2> my_layout;
-  typedef RAJA::Layout<2, ptrdiff_t, 0> my_layout_s1; // first index is stride-1
+  typedef RAJA::Layout<2, ptrdiff_t, 0>
+      my_layout_s1;  // first index is stride-1
 
   /*
    * Construct a 2D layout:
@@ -385,7 +387,8 @@ TEST(LayoutTest, 2D_StrideOne)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_layout({{3, 5}},
+                                 RAJA::as_array<RAJA::PERM_JI>::get());
 
 
   /*
@@ -394,12 +397,11 @@ TEST(LayoutTest, 2D_StrideOne)
   const my_layout_s1 layout_s1 = layout;
 
 
-
   // Check that we get the same layout
-  for (int i = 0;i < 3;++ i){
+  for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 15; ++j) {
 
-      ASSERT_EQ(layout(i,j), layout_s1(i,j));
+      ASSERT_EQ(layout(i, j), layout_s1(i, j));
     }
   }
 }

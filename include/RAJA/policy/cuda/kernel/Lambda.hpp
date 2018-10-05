@@ -74,8 +74,8 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>, IndexCalc> {
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     // nop
   }
@@ -111,8 +111,8 @@ struct CudaStatementExecutor<Data,
   }
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     // nop
   }

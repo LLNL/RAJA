@@ -138,7 +138,7 @@ struct ShmemTile<ShmemPol,
       OffsetTuple const &offset_tuple)
   {
     VarOps::ignore_args(
-        (offsets[Args] = stripIndexType (camp::get<Args>(offset_tuple)))...);
+        (offsets[Args] = stripIndexType(camp::get<Args>(offset_tuple)))...);
   }
 
 

@@ -36,8 +36,8 @@
 #include "cub/device/device_scan.cuh"
 #include "cub/util_allocator.cuh"
 
-#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {
@@ -225,11 +225,11 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   if (!Async) cuda::synchronize(stream);
 }
 
-}  // closing brace for scan namespace
+}  // namespace scan
 
-}  // closing brace for impl namespace
+}  // namespace impl
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 

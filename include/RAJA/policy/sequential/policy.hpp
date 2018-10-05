@@ -76,13 +76,13 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
-}  // end namespace policy
-}  // end namespace sequential
+}  // namespace sequential
+}  // namespace policy
 
 using policy::sequential::seq_exec;
+using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
-using policy::sequential::seq_reduce;
 
 
 ///
@@ -96,6 +96,6 @@ using policy::sequential::seq_reduce;
 struct cpu_shmem {
 };
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif
