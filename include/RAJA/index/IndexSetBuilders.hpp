@@ -112,6 +112,6 @@ void buildLockFreeColorIndexset(
     Index_type* elemPermutation = 0l,
     Index_type* ielemPermutation = 0l);
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

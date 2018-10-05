@@ -20,7 +20,9 @@
 
 #include "RAJA/RAJA.hpp"
 
-using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                         RAJA::ListSegment,
+                                         RAJA::RangeStrideSegment>;
 
 //
 // Enum for different hybrid initialization procedures.

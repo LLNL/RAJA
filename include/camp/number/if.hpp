@@ -51,7 +51,9 @@ namespace camp
 {
 
 // TODO: document
-template <bool Cond, typename Then = camp::true_type, typename Else = camp::false_type>
+template <bool Cond,
+          typename Then = camp::true_type,
+          typename Else = camp::false_type>
 struct if_cs {
   using type = Then;
 };
@@ -62,11 +64,15 @@ struct if_cs<false, Then, Else> {
 };
 
 // TODO: document
-template <bool Cond, typename Then = camp::true_type, typename Else = camp::false_type>
+template <bool Cond,
+          typename Then = camp::true_type,
+          typename Else = camp::false_type>
 using if_c = typename if_cs<Cond, Then, Else>::type;
 
 // TODO: document
-template <typename Cond, typename Then = camp::true_type, typename Else = camp::false_type>
+template <typename Cond,
+          typename Then = camp::true_type,
+          typename Else = camp::false_type>
 struct if_s : if_cs<Cond::value, Then, Else> {
 };
 

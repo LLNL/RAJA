@@ -5,8 +5,8 @@
 #include <type_traits>
 
 #include "camp/helpers.hpp"
-#include "camp/number.hpp"
 #include "camp/list.hpp"
+#include "camp/number.hpp"
 
 namespace camp
 {
@@ -102,7 +102,8 @@ namespace concepts
 
     template <class Default,
               class /* always void*/,
-              template <class...> class Concept,
+              template <class...>
+              class Concept,
               class TArgs>
     struct detector {
       using value_t = false_type;
@@ -351,14 +352,16 @@ namespace type_traits
     };
 
     template <template <class...> class,
-              template <class...> class,
+              template <class...>
+              class,
               bool,
               class...>
     struct SpecializationOf : camp::false_type {
     };
 
     template <template <class...> class Expected,
-              template <class...> class Actual,
+              template <class...>
+              class Actual,
               class... Args>
     struct SpecializationOf<Expected, Actual, true, Args...>
         : camp::concepts::metalib::is_same<Expected<Args...>, Actual<Args...>> {
@@ -375,7 +378,8 @@ namespace type_traits
   };
 
   template <template <class...> class Expected,
-            template <class...> class Actual,
+            template <class...>
+            class Actual,
             class... Args>
   struct SpecializationOf<Expected, Actual<Args...>>
       : detail::SpecializationOf<Expected,

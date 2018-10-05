@@ -69,10 +69,10 @@ RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
   }
 }
 
-}  // closing brace for loop namespace
+}  // namespace loop
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

@@ -97,7 +97,7 @@ namespace detail
   struct get_bound_arg<arg<i>, Args...> {
     using type = typename arg<i>::template expr<Args...>;
   };
-}
+}  // namespace detail
 
 template <template <typename...> class Expr, typename... ArgBindings>
 struct bind {
