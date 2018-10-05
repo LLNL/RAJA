@@ -29,7 +29,9 @@
 using namespace RAJA;
 using namespace RAJA::statement;
 
-
+//
+//Matrix tranpose example
+//
 template <typename NestedPolicy>
 class Kernel : public ::testing::Test
 {
@@ -276,16 +278,19 @@ using CUDATypes =
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
+template <typename NestedPolicy>
+class MatMultiply : public ::testing::Test
+{
+  virtual void SetUp(){}  
+  virtual void TearDown(){}
+};
 
+TYPED_TEST_CASE_P(MatMultiply);
 
+CUDA_TYPED_TEST_P(MatMultiply, shmem)
+{
 
-
-
-//
-//Matrix Multiplication Example
-//
-#if defined(RAJA_ENABLE_OPENMP)
-TEST(Shared, MatrixMultiplication){
+  using Pol = at_v<TypeParam, 0>;
 
   const int DIM = 2;
 
@@ -306,11 +311,18 @@ TEST(Shared, MatrixMultiplication){
   const int outer_Dim0 = (P-1)/TILE_DIM+1;
   const int outer_Dim1 = (N-1)/TILE_DIM+1;
 
-  int *A  = new int[N * M];
-  int *B  = new int[M * P];
-  int *C  = new int[N * P];
-  int *C_sol  = new int[N * P];
-
+  int *A, *B, *C, *C_sol;
+#if defined(RAJA_ENABLE_CUDA)
+  A  = new int[N * M];
+  B  = new int[M * P];
+  C  = new int[N * P];
+  C_sol  = new int[N * P];
+#else
+  cudaMallocManaged(&A,  sizeof(int) * N * M);
+  cudaMallocManaged(&B,  sizeof(int) * M * P);
+  cudaMallocManaged(&C,  sizeof(int) * N * P);
+  cudaMallocManaged(&C_sol,  sizeof(int) * N * P);
+#endif
 
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N, M);
   RAJA::View<int, RAJA::Layout<DIM>> Bview(B, M, P);
@@ -344,7 +356,7 @@ TEST(Shared, MatrixMultiplication){
     RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
                      RAJA::RangeSegment(0, windowIter),
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
-
+  
   //Toy shared memory object - For proof of concept.
   using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
   using Shmem = RAJA::SharedMemWrapper<SharedTile>;
@@ -353,13 +365,126 @@ TEST(Shared, MatrixMultiplication){
   Shmem aShared, bShared; //memory to be shared between threads
   threadPriv pVal; //thread private value
 
-  using KERNEL_EXEC_POL =
+  RAJA::kernel_param<Pol>(iSpace,
+                          RAJA::make_tuple(aShared, bShared, pVal),
+
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &,  Shmem &, threadPriv &pVal) {
+
+       //I would like this to behave like a thread private variable
+       (*pVal.SharedMem)(ty,tx) = 0.0;
+
+     },
+
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int i, int bx, int by, Shmem &aShared,  Shmem &bShared, threadPriv &) {
+
+   int row = by * TILE_DIM + ty;  // Matrix row index
+   int col = bx * TILE_DIM + tx;  // Matrix column index
+
+   //Load tile for A
+   if( row < N && ((i*TILE_DIM + tx) < M) ){
+     (*aShared.SharedMem)(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
+   }else{
+     (*aShared.SharedMem)(ty,tx) = 0.0;
+   }
+
+   //Load tile for B
+   if( col < P && ((i*TILE_DIM + ty) < M) ){
+     (*bShared.SharedMem)(ty, tx) = Bview((i*TILE_DIM + ty), col);
+   }else{
+     (*bShared.SharedMem)(ty, tx) = 0.0;
+   }
+
+  },
+
+  //read from shared mem
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &aShared,  Shmem &bShared, threadPriv & pVal) {
+
+    //Matrix multiply
+    for(int j=0; j<TILE_DIM; j++){
+      (*pVal.SharedMem)(ty,tx) += (*aShared.SharedMem)(ty,j) * (*bShared.SharedMem)(j, tx);
+    }
+
+  },
+
+ //If in range write out
+ [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx, int by, Shmem &, Shmem &, threadPriv &pValue) {
+
+   int row = by * TILE_DIM + ty;  // Matrix row index
+   int col = bx * TILE_DIM + tx;  // Matrix column index
+
+   if(row < N && col < P)
+     Cview(row,col) = (*pValue.SharedMem)(ty,tx);
+
+  });
+
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < P; ++col) {
+      ASSERT_FLOAT_EQ(Cview(row,col), C_solView(row,col));
+    }
+  }
+
+
+  delete [] A;
+  delete [] B;
+  delete [] C;
+  delete [] C_sol;
+
+}
+
+REGISTER_TYPED_TEST_CASE_P(MatMultiply, shmem);
+
+using SeqTypes2 = 
+  ::testing::Types<
+  RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-
           RAJA::statement::CreateShmem<
+            //Initalize thread private value
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                                   RAJA::statement::Lambda<0> > >,
 
+            //Slide window across matrix
+             RAJA::statement::For<2, RAJA::loop_exec,
+
+               //Load matrix into tile
+               RAJA::statement::For<1, RAJA::loop_exec,
+                 RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<1>
+                >
+               >,
+
+               //Partial multiplication
+               RAJA::statement::For<1, RAJA::loop_exec,
+                 RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<2>
+                >
+               >
+            >, //sliding window
+
+            //Write memory out to global matrix
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                                   RAJA::statement::Lambda<3> > >
+         > //Create shared memory
+        >//For 3
+       >//For 4
+      > //close kernel policy
+    > //close list
+  >;//close types
+
+INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OmpTypes2 = 
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::For<4, RAJA::loop_exec,
+        RAJA::statement::For<3, RAJA::loop_exec,
+          RAJA::statement::CreateShmem<
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
@@ -388,74 +513,18 @@ TEST(Shared, MatrixMultiplication){
          > //Create shared memory
         >//For 3
        >//For 4
-      >; //close policy list
+      > //close kernel policy
+    > //close list
+  >;//close types
 
-  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
-                                      RAJA::make_tuple(aShared, bShared, pVal),
-
-  [=] (int tx, int ty, int , int , int , Shmem &,  Shmem &, threadPriv &pVal) {
-
-       //I would like this to behave like a thread private variable
-       (*pVal.SharedMem)(ty,tx) = 0.0;
-
-     },
-
-  [=] (int tx, int ty, int i, int bx, int by, Shmem &aShared,  Shmem &bShared, threadPriv &) {
-
-   int row = by * TILE_DIM + ty;  // Matrix row index
-   int col = bx * TILE_DIM + tx;  // Matrix column index
-
-   //Load tile for A
-   if( row < N && ((i*TILE_DIM + tx) < M) ){
-     (*aShared.SharedMem)(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
-   }else{
-     (*aShared.SharedMem)(ty,tx) = 0.0;
-   }
-
-   //Load tile for B
-   if( col < P && ((i*TILE_DIM + ty) < M) ){
-     (*bShared.SharedMem)(ty, tx) = Bview((i*TILE_DIM + ty), col);
-   }else{
-     (*bShared.SharedMem)(ty, tx) = 0.0;
-   }
-
-  },
-
-  //read from shared mem
-  [=] (int tx, int ty, int , int , int , Shmem &aShared,  Shmem &bShared, threadPriv & pVal) {
-
-    //Matrix multiply
-    for(int j=0; j<TILE_DIM; j++){
-      (*pVal.SharedMem)(ty,tx) += (*aShared.SharedMem)(ty,j) * (*bShared.SharedMem)(j, tx);
-    }
-
-  },
-
- //If in range write out
- [=] (int tx, int ty, int , int bx, int by, Shmem &, Shmem &, threadPriv &pValue) {
-
-   int row = by * TILE_DIM + ty;  // Matrix row index
-   int col = bx * TILE_DIM + tx;  // Matrix column index
-
-   if(row < N && col < P)
-     Cview(row,col) = (*pValue.SharedMem)(ty,tx);
-
-  });
-
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < P; ++col) {
-      ASSERT_FLOAT_EQ(Cview(row,col), C_solView(row,col));
-    }
-  }
-
-  delete [] A;
-  delete [] B;
-  delete [] C;
-  delete [] C_sol;
-}
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiply, OmpTypes2);
+#endif
 
 
-//Uses RAJA shared memory object
+//
+//Example with RAJA shared memory objects
+//
+#if defined(RAJA_ENABLE_OPENMP)
 TEST(Shared, MatrixTranposeRAJAShared){
 
   const int DIM = 2;
