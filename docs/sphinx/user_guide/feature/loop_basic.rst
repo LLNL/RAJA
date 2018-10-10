@@ -87,6 +87,12 @@ While loop execution using ``RAJA::forall`` methods is a subset of
 ``RAJA::forall`` interface for simple loop execution because the syntax is 
 simpler and less verbose.
 
+.. note:: Data arrays in lambda expressions used with RAJA are typically 
+          RAJA Views (see :ref:`view-label`) or bare pointers as shown in
+          the code snippets above. Using something like 'std::vector' is
+          non-portable (won't work in CUDA kernels) and would add excessive 
+          overhead for copying data into the lambda data environment.
+
 .. _loop_elements-kernel-label:
 
 ----------------------------
