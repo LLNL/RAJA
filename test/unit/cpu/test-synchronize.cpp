@@ -18,7 +18,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-TEST(SynchronizeTest, omp){
+TEST(SynchronizeTest, omp)
+{
 
   double test_val = 0.0;
 

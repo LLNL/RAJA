@@ -57,12 +57,11 @@ namespace RAJA
  * This does no (additional) work-sharing between thread blocks.
  */
 
-struct cuda_thread_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+struct cuda_thread_exec : public RAJA::make_policy_pattern_launch_platform_t<
+                              RAJA::Policy::cuda,
+                              RAJA::Pattern::forall,
+                              RAJA::Launch::undefined,
+                              RAJA::Platform::cuda> {
 };
 
 
@@ -71,12 +70,11 @@ struct cuda_thread_exec
  * exclusively over blocks.
  */
 
-struct cuda_block_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+struct cuda_block_exec : public RAJA::make_policy_pattern_launch_platform_t<
+                             RAJA::Policy::cuda,
+                             RAJA::Pattern::forall,
+                             RAJA::Launch::undefined,
+                             RAJA::Platform::cuda> {
 };
 
 
@@ -86,12 +84,11 @@ struct cuda_block_exec
  */
 
 template <size_t num_blocks>
-struct cuda_block_seq_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+struct cuda_block_seq_exec : public RAJA::make_policy_pattern_launch_platform_t<
+                                 RAJA::Policy::cuda,
+                                 RAJA::Pattern::forall,
+                                 RAJA::Launch::undefined,
+                                 RAJA::Platform::cuda> {
 };
 
 
@@ -101,11 +98,11 @@ struct cuda_block_seq_exec
  */
 template <size_t num_threads>
 struct cuda_threadblock_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+    : public RAJA::make_policy_pattern_launch_platform_t<
+          RAJA::Policy::cuda,
+          RAJA::Pattern::forall,
+          RAJA::Launch::undefined,
+          RAJA::Platform::cuda> {
 };
 
 
@@ -140,11 +137,11 @@ struct LaunchDim {
   {
     LaunchDim result(-1, -1);
 
-    if(c.blocks > -1 && blocks > -1){
+    if (c.blocks > -1 && blocks > -1) {
       result.blocks = std::max(c.blocks, blocks);
     }
 
-    if(c.threads > -1 && threads > -1){
+    if (c.threads > -1 && threads > -1) {
       result.threads = std::max(c.threads, threads);
     }
 
@@ -160,24 +157,24 @@ struct LaunchDim {
 
 
   RAJA_INLINE
-  void addThreads(int t){
+  void addThreads(int t)
+  {
     // Create a trap for an argument with 0 threads
-    if(t == 0 || threads == -1){
+    if (t == 0 || threads == -1) {
       threads = -1;
-    }
-    else{
-      threads = (threads == 0) ? t : threads*t;
+    } else {
+      threads = (threads == 0) ? t : threads * t;
     }
   }
 
   RAJA_INLINE
-  void addBlocks(int b){
+  void addBlocks(int b)
+  {
     // Create a trap for an argument with 0 blocks
-    if(b == 0 || blocks == -1){
+    if (b == 0 || blocks == -1) {
       blocks = 1;
-    }
-    else{
-      blocks = (blocks == 0) ? b : blocks*b;
+    } else {
+      blocks = (blocks == 0) ? b : blocks * b;
     }
   }
 };
@@ -203,9 +200,7 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 
 
   template <typename Data>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  CudaCarryPair
+  RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair
   initThread(Data &data, int carry_init, int carry_incr, bool final = false)
   {
     return CudaCarryPair{carry_init, carry_incr};
@@ -220,7 +215,6 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
     // return true if there are no iterations
     return segment_length<ArgumentId>(data) == 0;
   }
-
 
 
   template <typename Data>
@@ -246,8 +240,8 @@ struct CudaIndexCalc_Policy<ArgumentId, seq_exec> {
 template <camp::idx_t ArgumentId>
 struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
 
-  int i0; // initial value upon reset
-  int full_cycle; // minimum number of full trips per execution
+  int i0;          // initial value upon reset
+  int full_cycle;  // minimum number of full trips per execution
 
 
   /*
@@ -270,26 +264,23 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
    *
    */
   template <typename Data>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  CudaCarryPair
+  RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair
   initThread(Data &data, int carry_thread, int carry_incr, bool final = false)
   {
     int len = segment_length<ArgumentId>(data);
 
     // set i0 to -1 if we have no iterations
-    if(final && carry_thread >= len){
+    if (final && carry_thread >= len) {
       i0 = -1;
       return CudaCarryPair{0, 0};
-    }
-    else{
-			
-      int carry_out = carry_thread / len;
-      
-      i0 = carry_thread - (carry_out * len); // equiv: carry_thread % len
+    } else {
 
-      full_cycle = carry_incr/len;
-   		
+      int carry_out = carry_thread / len;
+
+      i0 = carry_thread - (carry_out * len);  // equiv: carry_thread % len
+
+      full_cycle = carry_incr / len;
+
       return CudaCarryPair{carry_out, full_cycle};
     }
   }
@@ -308,14 +299,13 @@ struct CudaIndexCalc_Policy<ArgumentId, cuda_thread_exec> {
   }
 
 
-
   template <typename Data>
   RAJA_INLINE RAJA_HOST_DEVICE int increment(Data &data, int carry_in)
   {
     int i = camp::get<ArgumentId>(data.offset_tuple);
     int len = segment_length<ArgumentId>(data);
 
-    i += carry_in - len*full_cycle;
+    i += carry_in - len * full_cycle;
 
     int carry_out = full_cycle;
     while (i >= len) {
@@ -334,10 +324,8 @@ template <camp::idx_t Idx>
 struct IndexCalcHelper {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair initThread(Data &data,
-                                                     CalcList &calc_list,
-                                                     int carry_init,
-                                                     int carry_incr)
+  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair
+  initThread(Data &data, CalcList &calc_list, int carry_init, int carry_incr)
   {
     auto carry_next = camp::get<Idx>(calc_list).initThread(data,
                                                            carry_init,
@@ -353,7 +341,7 @@ struct IndexCalcHelper {
 
   template <typename Data, typename CalcList>
   static RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &data,
-                                                     CalcList &calc_list)
+                                                 CalcList &calc_list)
   {
 
     bool done = camp::get<Idx>(calc_list).reset(data);
@@ -379,17 +367,14 @@ template <>
 struct IndexCalcHelper<-1> {
 
   template <typename Data, typename CalcList>
-  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair initThread(Data &,
-                                                     CalcList &,
-                                                     int carry_init,
-                                                     int carry_incr)
+  static RAJA_INLINE RAJA_HOST_DEVICE CudaCarryPair
+  initThread(Data &, CalcList &, int carry_init, int carry_incr)
   {
     return CudaCarryPair{carry_init, carry_incr};
   }
 
   template <typename Data, typename CalcList>
-    static RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &,
-                                                   CalcList &)
+  static RAJA_INLINE RAJA_HOST_DEVICE bool reset(Data &, CalcList &)
   {
     return false;
   }
@@ -427,7 +412,9 @@ struct CudaIndexCalc<SegmentTuple,
    */
 
   template <typename Data>
-  RAJA_INLINE RAJA_HOST_DEVICE void initThread(Data &data, int thread, int num_threads)
+  RAJA_INLINE RAJA_HOST_DEVICE void initThread(Data &data,
+                                               int thread,
+                                               int num_threads)
   {
     IndexCalcHelper<sizeof...(RangeInts) - 1>::initThread(data,
                                                           calc_list,
@@ -457,8 +444,7 @@ struct CudaIndexCalc<SegmentTuple,
     int carry = blockDim.x;
     return IndexCalcHelper<sizeof...(RangeInts) - 1>::increment(data,
                                                                 calc_list,
-                                                                carry)
-           > 0;
+                                                                carry) > 0;
   }
 };
 
@@ -539,9 +525,9 @@ struct CudaStatementListExecutorHelper {
 
   template <typename StmtTuple, typename Data>
   inline static RAJA_HOST_DEVICE void initBlocks(StmtTuple &stmts,
-                                           Data &data,
-                                           int num_logical_blocks,
-                                           int block_stride)
+                                                 Data &data,
+                                                 int num_logical_blocks,
+                                                 int block_stride)
   {
     // Execute stmt
     camp::get<cur_stmt>(stmts).initBlocks(data,
@@ -553,8 +539,7 @@ struct CudaStatementListExecutorHelper {
   }
 
   template <typename StmtTuple, typename Data>
-  inline static RAJA_DEVICE void initThread(StmtTuple &stmts,
-                                           Data &data)
+  inline static RAJA_DEVICE void initThread(StmtTuple &stmts, Data &data)
   {
     // Execute stmt
     camp::get<cur_stmt>(stmts).initThread(data);
@@ -639,8 +624,8 @@ struct CudaStatementListExecutor<Data, StatementList<Stmts...>, IndexCalc> {
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                    int num_logical_blocks,
-                                    int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
 
     // Execute statements in order with helper class
@@ -669,11 +654,10 @@ struct CudaStatementListExecutor<Data, StatementList<Stmts...>, IndexCalc> {
 
 
 template <typename StmtList, typename Data>
-using cuda_statement_list_executor_t =
-    CudaStatementListExecutor<Data,
-                              StmtList,
-                              CudaIndexCalc_Terminator<
-                                  typename Data::segment_tuple_t>>;
+using cuda_statement_list_executor_t = CudaStatementListExecutor<
+    Data,
+    StmtList,
+    CudaIndexCalc_Terminator<typename Data::segment_tuple_t>>;
 
 
 template <camp::idx_t ArgumentId, int threads_per_block>
@@ -684,10 +668,10 @@ struct CudaBlockLoop {
 
   template <typename Stmts, typename Data>
   inline RAJA_HOST_DEVICE void initBlockLoop(Stmts &enclosed_stmts,
-                                       Data &data,
-                                       int len,
-                                       int num_logical_blocks,
-                                       int block_stride)
+                                             Data &data,
+                                             int len,
+                                             int num_logical_blocks,
+                                             int block_stride)
   {
     num_blocks = len / threads_per_block;
     if (num_blocks * threads_per_block < len) {

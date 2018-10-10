@@ -337,7 +337,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator++(int)const
+  T operator++(int) const
   {
     return RAJA::atomic::atomicInc<Policy>(m_value_ptr);
   }
@@ -348,7 +348,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator--(int)const
+  T operator--(int) const
   {
     return RAJA::atomic::atomicDec<Policy>(m_value_ptr);
   }

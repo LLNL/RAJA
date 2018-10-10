@@ -35,8 +35,8 @@
 
 #include "RAJA/util/types.hpp"
 
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
-    || defined(__MINGW32__) || defined(__BORLANDC__)
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || \
+    defined(__MINGW32__) || defined(__BORLANDC__)
 #define RAJA_PLATFORM_WINDOWS
 #include <malloc.h>
 #endif
@@ -63,8 +63,8 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #else
   char *mem = (char *)malloc(size + alignment + sizeof(void *));
   if (nullptr == mem) return nullptr;
-  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *))
-                         & ~(alignment - 1));
+  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *)) &
+                         ~(alignment - 1));
   // Store the original address one position behind what we give the user.
   ptr[-1] = mem;
   return ptr;
@@ -100,6 +100,6 @@ inline void free_aligned(void* ptr)
 #endif
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

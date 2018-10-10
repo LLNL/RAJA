@@ -211,6 +211,6 @@ struct ExecList {
   typedef std::tuple<PLIST...> tuple;
 };
 
-}  // end of RAJA namespace
+}  // namespace RAJA
 
 #endif

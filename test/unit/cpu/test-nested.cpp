@@ -76,15 +76,17 @@ using TRANSFORMS =
 
 template <typename TRANSFORMS>
 using POLICIES =
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>
-               ,ExecInfo<TRANSFORMS, seq_exec, loop_exec>
-               ,ExecInfo<TRANSFORMS, loop_exec, loop_exec>
+    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, loop_exec>,
+               ExecInfo<TRANSFORMS, loop_exec, loop_exec>
 #if defined(RAJA_ENABLE_OPENMP)
-               ,ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>
-               ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
+               ,
+               ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
+               OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
 #endif
 #if defined(RAJA_ENABLE_TBB)
-               ,ExecInfo<TRANSFORMS, loop_exec, tbb_for_exec>
+               ,
+               ExecInfo<TRANSFORMS, loop_exec, tbb_for_exec>
 #endif
                >;
 
@@ -102,7 +104,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedTest);
 
-#if defined (RAJA_DEPRECATED_TESTS)
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedTest, Nested2DTest)
 {
   using POL = TypeParam;
@@ -194,7 +196,7 @@ struct PolLTimesC : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-#if defined (RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP : PolLTimesCommon {
@@ -278,7 +280,7 @@ public:
 
 TYPED_TEST_CASE_P(LTimesTest);
 
-#if defined (RAJA_DEPRECATED_TESTS)
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(LTimesTest, LTimesNestedTest)
 {
 

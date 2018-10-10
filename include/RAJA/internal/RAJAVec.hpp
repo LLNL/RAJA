@@ -256,6 +256,6 @@ private:
   size_t m_size;
 };
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

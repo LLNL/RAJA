@@ -59,7 +59,7 @@ RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A volatile const &val)
 }
 
 
-}  // closing brace for util namespace
-}  // closing brace for RAJA namespace
+}  // namespace util
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard
