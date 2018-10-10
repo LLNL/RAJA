@@ -52,13 +52,21 @@ Simple Loops (RAJA::forall)
 As noted earlier, a ``RAJA::forall`` template executes simple 
 (e.g., non-nested) loops. For example, a C-style loop like::
 
+  double* a = ...;
+  double* b = ...;
+  double* c = ...;
+  
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
 
 may be written in a RAJA form as::
 
-  RAJA::forall<exec_policy>(iter_space I, [=] (index_type i)) {
+  double* a = ...;
+  double* b = ...;
+  double* c = ...;
+  
+  RAJA::forall<exec_policy>(iter_space I, [=] (index_type i) {
     c[i] = a[i] + b[i];
   });
 
@@ -98,7 +106,7 @@ consider a (N+1)-level C-style loop nest::
 
 This could be written by nesting ``RAJA::forall`` statements::
 
-  RAJA::forall<exec_policyN>(IN, [=] (index_type iN)) {
+  RAJA::forall<exec_policyN>(IN, [=] (index_type iN) {
     ...
        RAJA::forall<exec_policy0>(I0, [=] (index_type i0)) {
          \\ inner loop body
