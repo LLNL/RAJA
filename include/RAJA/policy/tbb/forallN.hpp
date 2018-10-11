@@ -57,7 +57,7 @@ struct ForallN_TBB_Parallel_Tag {
 template <typename Iter, std::size_t GrainSize>
 using TBBCollapsePolPair = ForallN_PolicyPair<tbb_for_static<GrainSize>, Iter>;
 
-}  // closing brace for namespace detail
+}  // namespace detail
 
 template <typename NEXT = Execute>
 struct TBB_Parallel {

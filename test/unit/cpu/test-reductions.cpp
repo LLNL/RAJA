@@ -59,7 +59,7 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
 }
 
 TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor2)
-  {
+{
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
 
@@ -184,9 +184,9 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum2)
   // using NumericType = typename std::tuple_element<2, TypeParam>::type;
 
   RAJA::ReduceSum<ReducePolicy, double> sum_reducer;
-  
+
   sum_reducer.reset(5.0);
-  sum_reducer.reset(0.0); //reset the value
+  sum_reducer.reset(0.0);  // reset the value
 
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { sum_reducer += this->array[i]; });
@@ -287,8 +287,10 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc2)
 {
-  using ExecPolicy = RAJA::seq_exec;//typename std::tuple_element<0, TypeParam>::type;
-  using ReducePolicy = RAJA::seq_reduce;//typename std::tuple_element<1, TypeParam>::type;
+  using ExecPolicy =
+      RAJA::seq_exec;  // typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy =
+      RAJA::seq_reduce;  // typename std::tuple_element<1, TypeParam>::type;
   // using NumericType = typename std::tuple_element<2, TypeParam>::type;
 
 
@@ -389,8 +391,8 @@ protected:
     z_size = 16;
 
     array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                x_size * y_size * z_size
-                                                    * sizeof(double));
+                                                x_size * y_size * z_size *
+                                                    sizeof(double));
 
     const double val = 4.0 / (x_size * y_size * z_size);
 
@@ -413,7 +415,7 @@ protected:
 };
 TYPED_TEST_CASE_P(NestedReductionCorrectnessTest);
 
-#if defined (RAJA_DEPRECATED_TESTS)
+#if defined(RAJA_DEPRECATED_TESTS)
 TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
@@ -463,7 +465,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum2)
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
 }
 
-REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, 
+REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest,
                            NestedReduceSum,
                            NestedReduceSum2);
 

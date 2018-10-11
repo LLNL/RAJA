@@ -67,8 +67,8 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads, IndexCalc> {
   inline __device__ void exec(Data &, int, int) { __syncthreads(); }
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     // nop
   }

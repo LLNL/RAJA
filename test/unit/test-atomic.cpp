@@ -220,7 +220,7 @@ void testAtomicViewBasic()
 
 
   // Zero out dest using atomic view
-  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     sum_atomic_view(i) = (T)0;
   });
 

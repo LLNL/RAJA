@@ -68,7 +68,7 @@ inline void cudaAssert(cudaError_t code,
   }
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

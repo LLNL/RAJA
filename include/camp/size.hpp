@@ -7,6 +7,6 @@ namespace camp
 template <typename T>
 struct size;
 
-} /* camp */
+}  // namespace camp
 
 #endif /* __CAMP_SIZE_HPP */

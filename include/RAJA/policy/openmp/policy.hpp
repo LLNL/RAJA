@@ -82,7 +82,7 @@ struct omp_parallel_region
                                             Launch::undefined,
                                             Platform::host> {
 };
-  
+
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
@@ -195,18 +195,18 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
                                                       Launch::sync> {
 };
 
-}  // closing brace for omp namespace
-}  // closing brace for policy namespace
+}  // namespace omp
+}  // namespace policy
 
+using policy::omp::omp_collapse_nowait_exec;
 using policy::omp::omp_for_exec;
 using policy::omp::omp_for_nowait_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
-using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_for_exec;
-using policy::omp::omp_parallel_segit;
 using policy::omp::omp_parallel_for_segit;
-using policy::omp::omp_collapse_nowait_exec;
+using policy::omp::omp_parallel_region;
+using policy::omp::omp_parallel_segit;
 using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
 using policy::omp::omp_synchronize;
@@ -226,9 +226,9 @@ using policy::omp::omp_target_reduce;
 ///////////////////////////////////////////////////////////////////////
 ///
 
-using omp_shmem = seq_shmem;
+using omp_shmem = cpu_shmem;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #endif
