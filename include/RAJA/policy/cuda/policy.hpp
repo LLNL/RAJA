@@ -123,13 +123,11 @@ namespace cuda
 {
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                detail::get_launch<Async>::
-                                                    value,
-                                                RAJA::Platform::cuda> {
+struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::forall,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
 };
 
 
@@ -171,12 +169,11 @@ using cuda_reduce_atomic = cuda_reduce_base<true>;
 
 
 template <typename POL>
-struct CudaPolicy
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+struct CudaPolicy : public RAJA::make_policy_pattern_launch_platform_t<
+                        RAJA::Policy::cuda,
+                        RAJA::Pattern::forall,
+                        RAJA::Launch::undefined,
+                        RAJA::Platform::cuda> {
 
   using cuda_exec_policy = POL;
 };
@@ -281,8 +278,8 @@ struct CudaThreadBlock {
   __device__ inline RAJA::Index_type operator()(void)
   {
     RAJA::Index_type idx =
-        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block
-        + (RAJA::Index_type)view(threadIdx);
+        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block +
+        (RAJA::Index_type)view(threadIdx);
 
     if (idx >= distance) {
       idx = RAJA::operators::limits<RAJA::Index_type>::min();
@@ -428,7 +425,7 @@ using block_map_y_shmem = block_map_shmem<Dim3y>;
 using block_map_z_shmem = block_map_shmem<Dim3z>;
 
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // RAJA_ENABLE_CUDA
 #endif

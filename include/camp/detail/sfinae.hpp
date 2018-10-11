@@ -78,7 +78,7 @@ namespace detail
 
   template <template <typename...> class Expr, typename... Vals>
   using call = Expr<Vals...>;
-};
+};  // namespace detail
 /// \endcond
 
 }  // end namespace camp

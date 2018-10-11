@@ -87,15 +87,15 @@ struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
                                                           Platform::host> {
 };
 
-}  // closing brace for tbb
-}  // closing brace for policy
+}  // namespace tbb
+}  // namespace policy
 
+using policy::tbb::tbb_for_dynamic;
 using policy::tbb::tbb_for_exec;
 using policy::tbb::tbb_for_static;
-using policy::tbb::tbb_for_dynamic;
-using policy::tbb::tbb_segit;
 using policy::tbb::tbb_reduce;
+using policy::tbb::tbb_segit;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif

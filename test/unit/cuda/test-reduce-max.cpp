@@ -28,7 +28,9 @@
 
 using namespace RAJA;
 
-using UnitIndexSet = TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = TypedIndexSet<RAJA::RangeSegment,
+                                   RAJA::ListSegment,
+                                   RAJA::RangeStrideSegment>;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
@@ -76,7 +78,6 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-
     ReduceMax<cuda_reduce, double> dmax0; dmax0.reset(DEFAULT_VAL);
     ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
     ReduceMax<cuda_reduce, double> dmax2(BIG_VAL);
@@ -91,18 +92,19 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
-        dmax0.max(dvalue[i]);
-        dmax1.max(2 * dvalue[i]);
-        dmax2.max(dvalue[i]);
-      });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_HOST_DEVICE(int i) {
+                                       dmax0.max(dvalue[i]);
+                                       dmax1.max(2 * dvalue[i]);
+                                       dmax2.max(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
 
-    //Reset values and run again
+    // Reset values and run again
     dmax0.reset(DEFAULT_VAL);
     dmax1.reset(DEFAULT_VAL);
     dmax2.reset(BIG_VAL);
@@ -117,18 +119,18 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
-          dmax0.max(dvalue[i]);
-          dmax1.max(2 * dvalue[i]);
-          dmax2.max(dvalue[i]);
-        });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_DEVICE(int i) {
+                                       dmax0.max(dvalue[i]);
+                                       dmax1.max(2 * dvalue[i]);
+                                       dmax2.max(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////

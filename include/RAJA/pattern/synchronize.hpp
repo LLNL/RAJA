@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief  RAJA header for execution synchronization template.  
+ * \brief  RAJA header for execution synchronization template.
  *
  ******************************************************************************
  */
@@ -51,6 +51,6 @@ void synchronize()
 {
   synchronize_impl(Policy{});
 }
-}
+}  // namespace RAJA
 
 #endif  // RAJA_synchronize_HPP

@@ -56,43 +56,46 @@ namespace RAJA
 
 namespace internal
 {
-  /*!
-   * CUDA global function for launching CudaKernel policies
-   */
-  template <typename StmtList, typename Data, typename Exec>
-  __global__ void CudaKernelLauncher(Data data, Exec executor, int num_logical_blocks)
-  {
-    using data_t = camp::decay<Data>;
-    data_t private_data = data;
+/*!
+ * CUDA global function for launching CudaKernel policies
+ */
+template <typename StmtList, typename Data, typename Exec>
+__global__ void CudaKernelLauncher(Data data,
+                                   Exec executor,
+                                   int num_logical_blocks)
+{
+  using data_t = camp::decay<Data>;
+  data_t private_data = data;
 
-    using exec_t = camp::decay<Exec>;
-    exec_t private_executor = executor;
+  using exec_t = camp::decay<Exec>;
+  exec_t private_executor = executor;
 
-    private_executor.initThread(data);
+  private_executor.initThread(data);
 
-    // execute the the object
-    private_executor.exec(private_data, num_logical_blocks, -1);
-  }
+  // execute the the object
+  private_executor.exec(private_data, num_logical_blocks, -1);
+}
 
 
-  template <size_t BlockSize, typename StmtList, typename Data, typename Exec>
-  __launch_bounds__(BlockSize, 1)
-  __global__
-  void CudaKernelLauncherFixed(Data data, Exec executor, int num_logical_blocks)
-  {
-    using data_t = camp::decay<Data>;
-    data_t private_data = data;
+template <size_t BlockSize, typename StmtList, typename Data, typename Exec>
+__launch_bounds__(BlockSize, 1) __global__
+    void CudaKernelLauncherFixed(Data data,
+                                 Exec executor,
+                                 int num_logical_blocks)
+{
+  using data_t = camp::decay<Data>;
+  data_t private_data = data;
 
-    using exec_t = camp::decay<Exec>;
-    exec_t private_executor = executor;
+  using exec_t = camp::decay<Exec>;
+  exec_t private_executor = executor;
 
-    private_executor.initThread(data);
+  private_executor.initThread(data);
 
-    // execute the the object
-    private_executor.exec(private_data, num_logical_blocks, -1);
-  }
+  // execute the the object
+  private_executor.exec(private_data, num_logical_blocks, -1);
+}
 
-} //namespace internal
+}  // namespace internal
 
 /*!
  * CUDA kernel launch policy where the user specifies the number of physical
@@ -109,7 +112,7 @@ struct cuda_explicit_launch {
     int nblocks = num_blocks;
 
     // Use maximum number of blocks if user didn't specify
-    if(num_blocks <= 0){
+    if (num_blocks <= 0) {
       nblocks = RAJA::cuda::internal::getMaxBlocks();
     }
 
@@ -117,10 +120,13 @@ struct cuda_explicit_launch {
   }
 
 
-  template<typename StmtList, typename Data, typename Exec>
-  static void launch(Data const &cuda_data, Exec &exec, internal::LaunchDim launch_dims,
+  template <typename StmtList, typename Data, typename Exec>
+  static void launch(Data const &cuda_data,
+                     Exec &exec,
+                     internal::LaunchDim launch_dims,
                      internal::LaunchDim logical_dims,
-                     size_t shmem, cudaStream_t stream)
+                     size_t shmem,
+                     cudaStream_t stream)
   {
     // launch using global function that fixes the number of threads at
     // compile time.  This guarantees that the compiler will generate a kernel
@@ -158,16 +164,18 @@ struct cuda_occ_calc_launch {
     return internal::LaunchDim(occ_blocks, occ_threads);
   }
 
-  template<typename StmtList, typename Data, typename Exec>
-  static void launch(Data const &cuda_data, Exec &exec, internal::LaunchDim launch_dims,
+  template <typename StmtList, typename Data, typename Exec>
+  static void launch(Data const &cuda_data,
+                     Exec &exec,
+                     internal::LaunchDim launch_dims,
                      internal::LaunchDim logical_dims,
-                     size_t shmem, cudaStream_t stream)
+                     size_t shmem,
+                     cudaStream_t stream)
   {
     RAJA::internal::CudaKernelLauncher<StmtList>
-          <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
-              cuda_data, exec, logical_dims.blocks);
+        <<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(
+            cuda_data, exec, logical_dims.blocks);
   }
-
 };
 
 namespace statement
@@ -199,7 +207,8 @@ using CudaKernelOccAsync =
 
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixed =
-    CudaKernelExt<cuda_explicit_launch<false, 0, num_threads>, EnclosedStmts...>;
+    CudaKernelExt<cuda_explicit_launch<false, 0, num_threads>,
+                  EnclosedStmts...>;
 
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixedAsync =
@@ -217,16 +226,12 @@ namespace internal
 {
 
 
-
-
-
-
 /*!
  * Specialization that launches CUDA kernels for RAJA::kernel from host code
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
-                                                  EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
@@ -244,20 +249,18 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
     cudaStream_t stream = 0;
 
 
-
     //
     // Instantiate an executor object
     //
     executor_t executor;
 
 
-
     //
     // Compute the MAX physical kernel dimensions
     //
     LaunchDim max_physical = LaunchConfig::calc_max_physical(
-        CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t, executor_t>, shmem);
-
+        CudaKernelLauncher<StatementList<EnclosedStmts...>, data_t, executor_t>,
+        shmem);
 
 
     //
@@ -267,12 +270,10 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
         max_physical.blocks, max_physical.threads, shmem, stream, data);
 
 
-
     //
     // Compute the logical kernel dimensions
     //
     LaunchDim logical_dims = executor.calculateDimensions(data, max_physical);
-
 
 
     //
@@ -285,7 +286,7 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
 
     // Only launch kernel if we have something to iterate over
     bool at_least_one_iter = launch_dims.blocks > 0 || launch_dims.threads > 0;
-    bool is_degenerate =     launch_dims.blocks < 0 || launch_dims.threads < 0;
+    bool is_degenerate = launch_dims.blocks < 0 || launch_dims.threads < 0;
     if (at_least_one_iter && !is_degenerate) {
 
       //
@@ -297,8 +298,8 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
       //
       // Launch the kernels
       //
-//      printf("Launching kernel b=%d, t=%d\n",
-//          (int)launch_dims.blocks, (int)launch_dims.threads);
+      //      printf("Launching kernel b=%d, t=%d\n",
+      //          (int)launch_dims.blocks, (int)launch_dims.threads);
       LaunchConfig::template launch<StatementList<EnclosedStmts...>>(
           cuda_data, executor, launch_dims, logical_dims, shmem, stream);
 
@@ -318,7 +319,6 @@ struct StatementExecutor<statement::CudaKernelExt<LaunchConfig,
         RAJA::cuda::synchronize(stream);
       }
     }
-
   }
 };
 

@@ -45,7 +45,6 @@
 #include "RAJA/util/types.hpp"
 
 
-
 namespace RAJA
 {
 namespace internal
@@ -60,11 +59,10 @@ template <typename Data,
           typename ExecPolicy,
           typename... EnclosedStmts,
           typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             statement::Collapse<ExecPolicy,
-                                                 ArgList<>,
-                                                 EnclosedStmts...>,
-                             IndexCalc> {
+struct CudaStatementExecutor<
+    Data,
+    statement::Collapse<ExecPolicy, ArgList<>, EnclosedStmts...>,
+    IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -82,8 +80,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
@@ -138,8 +136,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }

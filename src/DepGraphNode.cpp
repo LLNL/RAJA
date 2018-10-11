@@ -23,8 +23,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <string>
 #include <iostream>
+#include <string>
 
 #include "RAJA/internal/DepGraphNode.hpp"
 
@@ -47,4 +47,4 @@ void DepGraphNode::print(std::ostream& os) const
   os << std::endl;
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA

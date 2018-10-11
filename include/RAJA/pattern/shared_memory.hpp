@@ -71,10 +71,10 @@ struct SharedMemoryBase {
  * This specialization allows for NOPs for non-shared memory objects.
  */
 template <typename T>
-RAJA_HOST_DEVICE RAJA_INLINE typename std::
-    enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
-              size_t>::type
-    shmem_setup_buffer(T &, size_t)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
+    !std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
+    size_t>::type
+shmem_setup_buffer(T &, size_t)
 {
   return 0;
 }
@@ -90,10 +90,10 @@ RAJA_HOST_DEVICE RAJA_INLINE typename std::
  * @return The number of bytes this shared memory object consumes.
  */
 template <typename T>
-RAJA_HOST_DEVICE RAJA_INLINE typename std::
-    enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
-              size_t>::type
-    shmem_setup_buffer(T &shmem, size_t offset)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
+    std::is_base_of<SharedMemoryBase, camp::decay<T>>::value,
+    size_t>::type
+shmem_setup_buffer(T &shmem, size_t offset)
 {
   return shmem.shmem_setup_buffer(offset);
 }
@@ -105,9 +105,9 @@ RAJA_HOST_DEVICE RAJA_INLINE typename std::
  * This specialization allows for NOPs for non-shared memory objects.
  */
 template <typename T, typename OffsetTuple>
-RAJA_HOST_DEVICE RAJA_INLINE typename std::
-    enable_if<!std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
-    shmem_set_window(T &, OffsetTuple const &)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
+    !std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
+shmem_set_window(T &, OffsetTuple const &)
 {
 }
 
@@ -119,9 +119,9 @@ RAJA_HOST_DEVICE RAJA_INLINE typename std::
  * These objects must derive from ShmemWindowBase.
  */
 template <typename T, typename OffsetTuple>
-RAJA_HOST_DEVICE RAJA_INLINE typename std::
-    enable_if<std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
-    shmem_set_window(T &shmem, OffsetTuple const &offset_tuple)
+RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
+    std::is_base_of<SharedMemoryBase, camp::decay<T>>::value>::type
+shmem_set_window(T &shmem, OffsetTuple const &offset_tuple)
 {
   shmem.shmem_set_window(offset_tuple);
 }

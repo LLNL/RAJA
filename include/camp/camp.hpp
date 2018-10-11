@@ -4,13 +4,13 @@
 #include <array>
 #include <type_traits>
 
-#include "camp/size.hpp"
 #include "camp/defines.hpp"
 #include "camp/helpers.hpp"
 #include "camp/lambda.hpp"
 #include "camp/list.hpp"
 #include "camp/map.hpp"
 #include "camp/number.hpp"
+#include "camp/size.hpp"
 #include "camp/tuple.hpp"
 #include "camp/value.hpp"
 
@@ -79,7 +79,7 @@ namespace detail
         typename extend<list<CurSeqElements...>, first_inner_flat>::type;
     using type = typename flatten_impl<cur_and_first, N - 1, Rest...>::type;
   };
-}
+}  // namespace detail
 
 template <typename... Elements>
 struct flatten<list<Elements...>>
@@ -95,7 +95,7 @@ namespace test
   CHECK_TSAME((flatten<list<list<list<int>>>>), (list<int>));
   CHECK_TSAME((flatten<list<float, list<int, double>, list<list<int>>>>),
               (list<float, int, double, int>));
-}
+}  // namespace test
 #endif
 
 template <template <typename...> class Op, typename T>
@@ -111,7 +111,7 @@ namespace test
   CHECK_TSAME((transform<std::add_cv, list<int>>), (list<const volatile int>));
   CHECK_TSAME((transform<std::remove_reference, list<int&, int&>>),
               (list<int, int>));
-}
+}  // namespace test
 #endif
 
 namespace detail
@@ -130,7 +130,7 @@ namespace detail
   struct accumulate_impl<Op, Current> {
     using type = Current;
   };
-}
+}  // namespace detail
 
 template <template <typename...> class Op, typename Initial, typename Seq>
 struct accumulate;
@@ -155,19 +155,21 @@ namespace test
 /**
  * @brief Get the index of the first instance of T in L
  */
-template<typename T, typename L>
+template <typename T, typename L>
 struct index_of;
-template<typename T, typename ...Elements>
+template <typename T, typename... Elements>
 struct index_of<T, list<Elements...>> {
-  template<typename Seq, typename Item>
-  using inc_until = if_<typename std::is_same<T, Item>::type,
-                        if_c<size<Seq>::value == 1,
-                             typename prepend<Seq, num<first<Seq>::value>>::type,
-                             Seq>,
-                        list<num<first<Seq>::value + 1>>
-                               >;
-  using indices = typename accumulate<inc_until, list<num<0>>, list<Elements...>>::type;
-  using type = typename if_c<size<indices>::value == 2, first<indices>, camp::nil>::type;
+  template <typename Seq, typename Item>
+  using inc_until =
+      if_<typename std::is_same<T, Item>::type,
+          if_c<size<Seq>::value == 1,
+               typename prepend<Seq, num<first<Seq>::value>>::type,
+               Seq>,
+          list<num<first<Seq>::value + 1>>>;
+  using indices =
+      typename accumulate<inc_until, list<num<0>>, list<Elements...>>::type;
+  using type =
+      typename if_c<size<indices>::value == 2, first<indices>, camp::nil>::type;
 };
 
 #if defined(CAMP_TEST)
@@ -175,7 +177,8 @@ namespace test
 {
   CHECK_TSAME((index_of<int, list<>>), (nil));
   CHECK_TSAME((index_of<int, list<float, double, int>>), (num<2>));
-  CHECK_TSAME((index_of<int, list<float, double, int, int, int, int>>), (num<2>));
+  CHECK_TSAME((index_of<int, list<float, double, int, int, int, int>>),
+              (num<2>));
   // CHECK_TSAME((find_if<std::is_pointer, list<float, double>>), (nil));
   // CHECK_TSAME((find_if_l<bind_front<std::is_same, For<num<1>, int>>,
   //                        list<For<num<0>, int>, For<num<1>, int>>>),
@@ -183,7 +186,7 @@ namespace test
   // CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
   //                        list<For<num<0>, int>, For<num<1>, int>>>),
   //             (For<num<1>, int>));
-}
+}  // namespace test
 #endif
 
 template <template <typename...> class Op, typename Seq>
@@ -215,7 +218,7 @@ namespace test
   CHECK_IEQ((size<list<int>>), (1));
   CHECK_IEQ((size<list<int, int>>), (2));
   CHECK_IEQ((size<list<int, int, int>>), (3));
-}
+}  // namespace test
 #endif
 
 template <typename T, T... Args>
@@ -230,7 +233,7 @@ namespace test
   CHECK_IEQ((size<idx_seq<0>>), (1));
   CHECK_IEQ((size<idx_seq<0, 0>>), (2));
   CHECK_IEQ((size<idx_seq<0, 0, 0>>), (3));
-}
+}  // namespace test
 #endif
 
 

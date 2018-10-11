@@ -124,8 +124,7 @@ struct BuiltinAtomicCAS<4> {
         oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
 
     while ((readback = RAJA::atomic::atomicCAS(
-                builtin_atomic{}, (unsigned *)acc, oldval, newval))
-           != oldval) {
+                builtin_atomic{}, (unsigned *)acc, oldval, newval)) != oldval) {
       if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
@@ -154,9 +153,10 @@ struct BuiltinAtomicCAS<8> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
         oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
 
-    while ((readback = RAJA::atomic::atomicCAS(
-                builtin_atomic{}, (unsigned long long *)acc, oldval, newval))
-           != oldval) {
+    while ((readback = RAJA::atomic::atomicCAS(builtin_atomic{},
+                                               (unsigned long long *)acc,
+                                               oldval,
+                                               newval)) != oldval) {
       if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
