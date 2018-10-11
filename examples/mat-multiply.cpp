@@ -186,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::RangeSegment(0, windowIter),
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
 
-  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
+  using SharedTile = RAJA::SharedMem<int, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   using Shmem = RAJA::SharedMemWrapper<SharedTile>;
   using threadPriv = RAJA::SharedMemWrapper<SharedTile>;
 
@@ -237,8 +237,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // (1) Intialize thread private value
     //
     [=] (int tx, int ty, int , int , int , Shmem &,  Shmem &, threadPriv &pVal) {
-
-       (*pVal.SharedMem)(ty,tx) = 0.0;
+                                        
+      pVal(ty,tx) = 0.0;
 
      },
 
@@ -252,16 +252,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    //Load tile for A
    if( row < N && ((i*TILE_DIM + tx) < M) ){
-     (*aShared.SharedMem)(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
+     aShared(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
    }else{
-     (*aShared.SharedMem)(ty,tx) = 0.0;
+     aShared(ty,tx) = 0.0;
    }
 
    //Load tile for B
    if( col < P && ((i*TILE_DIM + ty) < M) ){
-     (*bShared.SharedMem)(ty, tx) = Bview((i*TILE_DIM + ty), col);
+     bShared(ty, tx) = Bview((i*TILE_DIM + ty), col);
    }else{
-     (*bShared.SharedMem)(ty, tx) = 0.0;
+     bShared(ty, tx) = 0.0;
    }
 
   },
@@ -272,7 +272,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   [=] (int tx, int ty, int , int , int , Shmem &aShared,  Shmem &bShared, threadPriv & pVal) {
 
     for(int j=0; j<TILE_DIM; j++){
-      (*pVal.SharedMem)(ty,tx) += (*aShared.SharedMem)(ty,j) * (*bShared.SharedMem)(j, tx);
+      pVal(ty,tx) += aShared(ty,j) * bShared(j, tx);
     }
 
   },
@@ -286,7 +286,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    int col = bx * TILE_DIM + tx;  // Matrix column index
 
    if(row < N && col < P)
-     Cview(row,col) = (*pValue.SharedMem)(ty,tx);
+     Cview(row,col) = pValue(ty,tx);
 
   });
 

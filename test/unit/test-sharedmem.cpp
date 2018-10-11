@@ -92,7 +92,7 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
 
 
   //Toy shared memory object - For proof of concept.
-  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
+  using SharedTile = RAJA::SharedMem<int, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   using mySharedMemory = RAJA::SharedMemWrapper<SharedTile>;
   mySharedMemory myTile;
   mySharedMemory myTile2;
@@ -105,8 +105,8 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
            int col = bx * TILE_DIM + tx;  // Matrix column index
            int row = by * TILE_DIM + ty;  // Matrix row index
            if(row < N_rows && col < N_cols){
-             (*myTile.SharedMem)(ty,tx)  = Aview(row, col);
-             (*myTile2.SharedMem)(ty,tx) = Bview(row, col);
+             myTile(ty,tx)  = Aview(row, col);
+             myTile2(ty,tx) = Bview(row, col);
            }
         },
 
@@ -117,8 +117,8 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
            int row = bx * TILE_DIM + ty;  // Transposed matrix row index
 
            if(row < N_cols && col < N_rows){
-             Atview(row, col) = (*myTile.SharedMem)(tx,ty);
-             Btview(row, col) = (*myTile2.SharedMem)(tx,ty);
+             Atview(row, col) = myTile(tx,ty);
+             Btview(row, col) = myTile2(tx,ty);
            }
         });
 
@@ -358,7 +358,7 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
   
   //Toy shared memory object - For proof of concept.
-  using SharedTile = RAJA::SharedMem<int, TILE_DIM, TILE_DIM>;
+  using SharedTile = RAJA::SharedMem<int, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   using Shmem = RAJA::SharedMemWrapper<SharedTile>;
   using threadPriv = RAJA::SharedMemWrapper<SharedTile>;
 
@@ -371,7 +371,7 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &,  Shmem &, threadPriv &pVal) {
 
    //I would like this to behave like a thread private variable
-   (*pVal.SharedMem)(ty,tx) = 0.0;
+   pVal(ty,tx) = 0.0;
 
   },
 
@@ -383,16 +383,16 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
 
    //Load tile for A
    if( row < N && ((i*TILE_DIM + tx) < M) ){
-     (*aShared.SharedMem)(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
+     aShared(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
    }else{
-     (*aShared.SharedMem)(ty,tx) = 0.0;
+     aShared(ty,tx) = 0.0;
    }
 
    //Load tile for B
    if( col < P && ((i*TILE_DIM + ty) < M) ){
-     (*bShared.SharedMem)(ty, tx) = Bview((i*TILE_DIM + ty), col);
+     bShared(ty, tx) = Bview((i*TILE_DIM + ty), col);
    }else{
-     (*bShared.SharedMem)(ty, tx) = 0.0;
+     bShared(ty, tx) = 0.0;
    }
 
   },
@@ -402,7 +402,7 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
 
     //Matrix multiply
     for(int j=0; j<TILE_DIM; j++){
-      (*pVal.SharedMem)(ty,tx) += (*aShared.SharedMem)(ty,j) * (*bShared.SharedMem)(j, tx);
+      pVal(ty,tx) += aShared(ty,j) * bShared(j, tx);
     }
 
   },
@@ -414,7 +414,7 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
    int col = bx * TILE_DIM + tx;  // Matrix column index
 
    if(row < N && col < P){
-     Cview(row,col) = (*pValue.SharedMem)(ty,tx);
+     Cview(row,col) = pValue(ty,tx);
     } 
 
   });
