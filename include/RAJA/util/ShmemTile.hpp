@@ -71,6 +71,32 @@ struct SharedMem<T, RAJA::SizeList<Sizes ...> >
   T data[NoElem];
 };
 
+/*!
+ * Iteration specific memory / local thread memory 
+ * TODO: Extend this to the multi-dimensional case 
+ * We may need iteration specific arrays.
+*/
+struct cuda_priv_mem{};
+struct cpu_priv_mem{};
+
+template <typename Pol, typename T, typename Sizes>
+struct PrivMem{};
+
+template <typename T, camp::idx_t... Sizes>
+struct PrivMem<cpu_priv_mem, T, RAJA::SizeList<Sizes ...> >
+{
+  using self_t = SharedMem<T, SizeList<Sizes...> >;
+  using element_t = T;
+  using layout_t = StaticLayout<Sizes...>;
+  static const camp::idx_t NoElem = layout_t::size();
+  T data[NoElem];
+};
+
+template <typename T, camp::idx_t... Sizes>
+struct PrivMem<cuda_priv_mem, T, RAJA::SizeList<Sizes ...> >
+{
+  T data; //thread private memory
+};
 
 /*!
  * Provides a multi-dimensional tiled View of shared memory data.
