@@ -221,11 +221,11 @@ void runLTimesTest(std::string const &policy,
   chai::ManagedArray<double> phi_data(num_moments * num_groups * num_zones);
 
   // setup CUDA Reduction variables to be exercised
-  ReduceSum<cuda_reduce_sync, double> pdsum(0.0);
-  ReduceMin<cuda_reduce_sync, double> pdmin(DBL_MAX);
-  ReduceMax<cuda_reduce_sync, double> pdmax(-DBL_MAX);
-  ReduceMinLoc<cuda_reduce_sync, double> pdminloc(DBL_MAX, -1);
-  ReduceMaxLoc<cuda_reduce_sync, double> pdmaxloc(-DBL_MAX, -1);
+  ReduceSum<cuda_reduce, double> pdsum(0.0);
+  ReduceMin<cuda_reduce, double> pdmin(DBL_MAX);
+  ReduceMax<cuda_reduce, double> pdmax(-DBL_MAX);
+  ReduceMinLoc<cuda_reduce, double> pdminloc(DBL_MAX, -1);
+  ReduceMaxLoc<cuda_reduce, double> pdmaxloc(-DBL_MAX, -1);
 
 
   // data setup using RAJA to ensure that chai is activated

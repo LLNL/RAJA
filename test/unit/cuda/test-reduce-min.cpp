@@ -77,9 +77,9 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
 
-    ReduceMin<cuda_reduce_sync, double> dmin0; dmin0.reset(DEFAULT_VAL);
-    ReduceMin<cuda_reduce_sync, double> dmin1(DEFAULT_VAL);
-    ReduceMin<cuda_reduce_sync, double> dmin2(BIG_VAL);
+    ReduceMin<cuda_reduce, double> dmin0; dmin0.reset(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin2(BIG_VAL);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
@@ -155,8 +155,8 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMin<cuda_reduce_sync, double> dmin0(DEFAULT_VAL);
-    ReduceMin<cuda_reduce_sync, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
 
     double droll = dist(mt);
     int index = int(dist2(mt));
@@ -206,8 +206,8 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
 
     double dcurrentMin = DEFAULT_VAL;
 
-    ReduceMin<cuda_reduce_sync, double> dmin0(DEFAULT_VAL);
-    ReduceMin<cuda_reduce_sync, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0
