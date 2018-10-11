@@ -967,7 +967,7 @@ class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T>
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = cuda::
-      Reduce</*Async,*/ RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+      Reduce<RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer

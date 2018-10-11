@@ -128,8 +128,4 @@ There are some important constraints note about RAJA reduction usage.
 
 * ``cuda_reduce`` - Reduction policy for use with CUDA execution policies that uses CUDA device synchronization when finalizing reduction value.
 
-.. ## * ``cuda_reduce_async`` - Reduction policy for use with CUDA execution policies that may not use CUDA device synchronization when finalizing reduction value.
-
 * ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that may use CUDA atomic operations in the reduction.
-
-.. ## * ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use CUDA device synchronization when retrieving final reduction value and which may use CUDA atomic operations in the reduction.

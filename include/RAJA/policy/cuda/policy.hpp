@@ -160,8 +160,7 @@ struct cuda_reduce_base
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                 RAJA::Pattern::reduce,
-                                                detail::get_launch<false>::
-                                                    value,
+                                                detail::get_launch<false>::value,
                                                 RAJA::Platform::cuda> {
 };
 
