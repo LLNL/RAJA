@@ -45,17 +45,62 @@ template<typename DataType>
 struct SharedMemWrapper
 {
   DataType *SharedMem = nullptr;
-  using type = DataType;
+  using type = DataType; 
+  using element_t = typename DataType::element_t;
 
+  template<typename... Indices>  
+  element_t &operator()(Indices... indices) const
+  {
+    return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
+  }
 };
 
 /*!
- * Simple shared memory object for proof of concept
+ * Size Calculator - I suspect this is not needed....
+ */
+template<camp::idx_t... Sizes>
+struct ArraySz {};
+
+template<>
+struct ArraySz<>
+{
+  constexpr static RAJA_INLINE camp::idx_t get() { return 1;};
+};
+
+template<camp::idx_t Size, camp::idx_t... Sizes>
+struct ArraySz<Size, Sizes...> : ArraySz<Sizes...>
+{
+  constexpr static RAJA_INLINE camp::idx_t get()
+  {
+    return Size*static_cast<camp::idx_t>(ArraySz<Sizes...>::get());
+  }
+};
+
+
+/*!
+ * Shared memory version 2.0
+ */
+template <typename T, typename Sizes>
+struct SharedMem2{};
+
+template <typename T, camp::idx_t... Sizes>
+struct SharedMem2<T, RAJA::SizeList<Sizes ...> >
+{    
+  using self_t = SharedMem2<T, SizeList<Sizes...> >;
+  using element_t = T;
+  static const camp::idx_t NoElem = ArraySz<Sizes...>::get();
+  T data[NoElem];  
+  using layout_t = StaticLayout<Sizes...>;
+};
+
+
+/*!
+ * Simple shared memory object for proof of concept - REMOVE
  */
 template<typename T,int DIM_X, int DIM_Y>
 struct SharedMem{ 
   T array[DIM_X][DIM_Y];
-
+  using element_t = T;
   RAJA_HOST_DEVICE
   T &operator()(int row, int col){ return array[row][col]; };
 };

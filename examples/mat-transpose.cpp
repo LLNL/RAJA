@@ -33,8 +33,8 @@ const int DIM = 2;
 //
 // Define num rows/cols in matrix
 //
-const int N_rows = 144;
-const int N_cols = 154;
+const int N_rows = 12;
+const int N_cols = 12;
 
 
 
@@ -258,6 +258,73 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
 
   checkResult<int>(Atview, N_rows, N_cols);
+
+
+  //----------------------------------------------------------------------------//
+  //New shared memory object version
+  printf("Run new RAJA shared memory object version \n");
+  std::memset(At, 0, N_rows * N_cols * sizeof(int));
+
+
+  using SharedTile2 = RAJA::SharedMem2<int, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
+  SharedTile2::layout_t::print();
+
+  //Need a wrapper:
+  using SharedWrapperV2 = RAJA::SharedMemWrapper<SharedTile2>;
+  SharedWrapperV2 shmemMem;
+
+
+  using KERNEL_EXEC_POL =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<3, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::loop_exec,
+
+                             RAJA::statement::CreateShmem<
+
+         RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                   RAJA::ArgList<0, 1>,
+                                   RAJA::statement::Lambda<0>
+                                   >,
+
+         RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                   RAJA::ArgList<0, 1>,
+                                   RAJA::statement::Lambda<1>
+                                   >
+                               > //Close shared memory scope
+        >//for 2
+       >//for 3
+      >; //close policy list
+
+  RAJA::kernel_param<KERNEL_EXEC_POL>(iSpace,
+                                      RAJA::make_tuple(shmemMem),
+
+    [=] (int tx, int ty, int bx, int by, SharedWrapperV2 &shmemMem) {
+
+           int col = bx * TILE_DIM + tx;  // Matrix column index
+           int row = by * TILE_DIM + ty;  // Matrix row index
+         if(row < N_rows && col < N_cols){
+           shmemMem(ty,tx)  = Aview(row, col);
+          }
+        },
+
+      //read from shared mem
+    [=] (int tx, int ty, int bx, int by, SharedWrapperV2 &shmemMem) {
+
+           int col = by * TILE_DIM + tx;  // Transposed matrix column index
+           int row = bx * TILE_DIM + ty;  // Transposed matrix row index
+           if(row < N_cols && col < N_rows){
+             Atview(row, col) = shmemMem(tx,ty);
+           }
+        });
+
+
+
+
+    checkResult<int>(Atview, N_rows,N_cols);
+    checkResult<int>(Btview, N_rows,N_cols);
+    //printResult<int>(Atview, N);
+    //printResult<int>(Btview, N);
+  //----------------------------------------------------------------------------//
 
 
 
