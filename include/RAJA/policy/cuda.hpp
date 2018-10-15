@@ -39,9 +39,7 @@
 #include "RAJA/policy/cuda/forall.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
-#if defined(__NVCC__)
 #include "RAJA/policy/cuda/scan.hpp"
-#endif
 #include "RAJA/policy/cuda/forallN.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/shared_memory.hpp"
