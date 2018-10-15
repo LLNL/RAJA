@@ -163,7 +163,7 @@ union AsIntegerArray {
 
 // cuda 8 only has shfl primitives for 32 bits while cuda 9 has 32 and 64 bits
 constexpr const size_t min_shfl_int_type_size = sizeof(int);
-#if (__CUDACC_VER_MAJOR__ >= 9)
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
 constexpr const size_t max_shfl_int_type_size = sizeof(long long);
 #else
 constexpr const size_t max_shfl_int_type_size = sizeof(int);
@@ -184,8 +184,8 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < u.array_size(); ++i) {
-#if (__CUDACC_VER_MAJOR__ >= 9)
+  for (size_t i = 0; i < u.array_size(); ++i) {
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_xor_sync(0xffffffffu, u.array[i], laneMask);
 #else
     u.array[i] = ::__shfl_xor(u.array[i], laneMask);
@@ -199,8 +199,8 @@ RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < u.array_size(); ++i) {
-#if (__CUDACC_VER_MAJOR__ >= 9)
+  for (size_t i = 0; i < u.array_size(); ++i) {
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_sync(0xffffffffu, u.array[i], srcLane);
 #else
     u.array[i] = ::__shfl(u.array[i], srcLane);
@@ -208,6 +208,139 @@ RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
   }
   return u.value;
 }
+
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_xor_sync<unsigned int>(unsigned int var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long shfl_xor_sync<long>(long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_xor_sync<unsigned long>(unsigned long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_xor_sync<unsigned long long>(unsigned long long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE double shfl_xor_sync<double>(double var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+#else
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+#endif
+
+
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_sync<unsigned int>(unsigned int var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long shfl_sync<long>(long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_sync<unsigned long>(unsigned long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_sync<unsigned long long>(unsigned long long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE double shfl_sync<double>(double var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+#else
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
+{
+  return ::__shfl(var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
+{
+  return ::__shfl(var, srcLane);
+}
+
+#endif
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
