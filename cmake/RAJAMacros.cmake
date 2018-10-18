@@ -15,7 +15,7 @@
 
 macro(raja_add_executable)
   set(options )
-  set(singleValueArgs NAME TEST BENCHMARK)
+  set(singleValueArgs NAME TEST ISSUE BENCHMARK)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -41,6 +41,8 @@ macro(raja_add_executable)
 
   if (${arg_TEST})
     set (_output_dir ${CMAKE_BINARY_DIR}/test)
+  elseif (${arg_ISSUE})
+    set (_output_dir ${CMAKE_BINARY_DIR}/issues)
   elseif (${arg_BENCHMARK})
     set (_output_dir ${CMAKE_BINARY_DIR}/benchmark)
   else ()
@@ -76,6 +78,21 @@ macro(raja_add_test)
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_test)
+
+macro(raja_add_issue)
+  set(options )
+  set(singleValueArgs NAME)
+  set(multiValueArgs SOURCES DEPENDS_ON)
+
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  raja_add_executable(
+    NAME ${arg_NAME}.exe
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    ISSUE On)
+endmacro(raja_add_issue)
 
 macro(raja_add_benchmark)
   set(options )

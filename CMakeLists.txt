@@ -48,6 +48,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
   option(ENABLE_TESTS "Build tests" On)
+  option(ENABLE_ISSUES "Build issue reproducers" Off)
   option(ENABLE_EXAMPLES "Build simple examples" On)
   option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
@@ -157,6 +158,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 
   if(ENABLE_TESTS)
     add_subdirectory(test)
+  endif()
+
+  if(ENABLE_ISSUES)
+    add_subdirectory(issues)
   endif()
 
   if(ENABLE_EXAMPLES)
