@@ -90,8 +90,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }

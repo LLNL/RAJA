@@ -26,7 +26,8 @@ namespace internal
 {
 
 // template <typename T>
-// struct HasPrivatizer : DefineConcept(typename T::privatizer(camp::val<T>())) {
+// struct HasPrivatizer : DefineConcept(typename T::privatizer(camp::val<T>()))
+// {
 // };
 // DefineTypeTraitFromConcept(has_privatizer, HasPrivatizer);
 
@@ -48,7 +49,8 @@ public:
 
 static_assert(!has_privatizer<int>::value, "if this fires, abandon all hope");
 
-struct GenericWrapperBase {};
+struct GenericWrapperBase {
+};
 
 template <typename T>
 struct Privatizer {
@@ -106,4 +108,3 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
 }  // namespace RAJA
 
 #endif /* __RAJA_PRIVATIZER_HPP */
-

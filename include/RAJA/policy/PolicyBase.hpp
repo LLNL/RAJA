@@ -44,7 +44,14 @@ enum class Policy {
   tbb
 };
 
-enum class Pattern { undefined, forall, region, reduce, taskgraph, synchronize };
+enum class Pattern {
+  undefined,
+  forall,
+  region,
+  reduce,
+  taskgraph,
+  synchronize
+};
 
 enum class Launch { undefined, sync, async };
 
@@ -114,7 +121,7 @@ namespace reduce
 struct ordered {
 };
 
-}  // end namespace wrapper
+}  // namespace reduce
 
 
 template <Policy Pol, Pattern Pat, typename... Args>

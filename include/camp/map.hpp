@@ -21,8 +21,7 @@ namespace detail
   struct lookup_table;
 
   template <typename... Keys, typename... Values>
-  struct lookup_table<list<list<Keys, Values>...>>
-      : list<Keys, Values>... {
+  struct lookup_table<list<list<Keys, Values>...>> : list<Keys, Values>... {
   };
 }  // namespace detail
 

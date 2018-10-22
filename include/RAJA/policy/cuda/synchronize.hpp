@@ -52,7 +52,7 @@ void synchronize_impl(const cuda_synchronize&)
 
 
 }  // end of namespace cuda
-}  // end of namespace impl
+}  // namespace policy
 }  // end of namespace RAJA
 
 #endif  // defined(RAJA_ENABLE_CUDA)

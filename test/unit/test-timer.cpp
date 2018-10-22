@@ -36,11 +36,11 @@ TEST(TimerTest, No1)
   timer.start("test_timer");
 
   {
-      std::stringstream sink;
-      sink << "Printing 1000 stars...\n";
-      for (int i = 0; i < 1000; ++i)
-          sink << "*";
-      sink << std::endl;
+    std::stringstream sink;
+    sink << "Printing 1000 stars...\n";
+    for (int i = 0; i < 1000; ++i)
+      sink << "*";
+    sink << std::endl;
   }
 
   timer.stop();
@@ -70,5 +70,4 @@ TEST(TimerTest, No2)
 
   EXPECT_GT(elapsed, 0.02);
   EXPECT_LT(elapsed, 0.05);
-
 }

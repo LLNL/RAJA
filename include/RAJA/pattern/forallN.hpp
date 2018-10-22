@@ -204,7 +204,7 @@ template <typename T, size_t Unused>
 struct type_repeater {
   using type = T;
 };
-}
+}  // namespace detail
 
 template <typename POLICY,
           typename... Indices,
@@ -226,10 +226,10 @@ RAJA_INLINE void forallN_impl(camp::idx_seq<Range...>,
 
 
   // Make it look like variadics can have defaults
-  forallN_impl_extract<POLICY,
-                       Indices...,
-                       typename detail::type_repeater<Index_type,
-                                                      Unspecified>::type...>(
+  forallN_impl_extract<
+      POLICY,
+      Indices...,
+      typename detail::type_repeater<Index_type, Unspecified>::type...>(
       typename POLICY::ExecPolicies(), body, args...);
 }
 

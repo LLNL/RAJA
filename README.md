@@ -63,14 +63,11 @@ User Documentation
 The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
 is the best place to start learning about RAJA and how to use it.
 
-Other references that may be of interest include:
+To cite RAJA, please use the following references:
 
-  * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
-  * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
+* RAJA Performance Portability Layer. https://github.com/LLNL/RAJA
 
-To cite RAJA, please use the following reference:
-
-* R. D. Hornung and J. A. Keasler, [The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf), Tech Report, LLNL-TR-661403, Sep. 2014.
+* R. Hornung, H. Jones, J. Keasler, R. Neely, O. Pearce, S. Hammond, C. Trott, P. Lin, C. Vaughan, J. Cook, R. Hoekstra, B. Bergen, J. Payne, G. Womeldorff. ASC Tri-lab Co-design Level 2 Milestone Report 2015, Tech Report, LLNL-TR-677453, Sep. 2015.
 
 Related Software
 --------------------
