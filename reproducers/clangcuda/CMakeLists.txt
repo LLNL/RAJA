@@ -14,6 +14,6 @@
 #
 ###############################################################################
 
-raja_add_issue(
-  NAME issue-clangcuda-shuffle
-  SOURCES issue-shuffle.cpp)
+raja_add_reproducer(
+  NAME reproducer-clangcuda-shuffle
+  SOURCES reproducer-shuffle.cpp)
