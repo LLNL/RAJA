@@ -33,8 +33,8 @@
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/policy/simd/policy.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/policy/simd/policy.hpp"
 
 namespace RAJA
 {
@@ -86,15 +86,13 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
  * Helper structs to detect lambdas
  *
  */
-template<class T>
-struct TypeIsLambda
-{  
+template <class T>
+struct TypeIsLambda {
   static const bool value = false;
 };
 
 template <camp::idx_t BodyIdx>
-struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx> >
-{
+struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx>> {
   static const bool value = true;
 };
 
@@ -106,64 +104,77 @@ struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx> >
 template <camp::idx_t LoopIdx, class... States>
 struct Invoke_all_Lambda {
 
-  template<camp::idx_t... OffsetIdx,
-           camp::idx_t... ParamIdx,
-           typename Data,
-           typename Offs, typename Params>
+  template <camp::idx_t... OffsetIdx,
+            camp::idx_t... ParamIdx,
+            typename Data,
+            typename Offs,
+            typename Params>
   static RAJA_INLINE void lambda_special(camp::idx_seq<OffsetIdx...> const &,
-                                         camp::idx_seq<ParamIdx...> const &, 
-                                         Data&, Offs const &, Params const &) {};
-
+                                         camp::idx_seq<ParamIdx...> const &,
+                                         Data &,
+                                         Offs const &,
+                                         Params const &)
+  {
+  }
 };
 
 template <camp::idx_t LoopIdx>
-struct Invoke_all_Lambda<LoopIdx>{
+struct Invoke_all_Lambda<LoopIdx> {
 
   static const bool value = true;
 
-  template<camp::idx_t... OffsetIdx,
-           camp::idx_t... ParamIdx,
-           typename Data,
-           typename Offs, typename Params>
+  template <camp::idx_t... OffsetIdx,
+            camp::idx_t... ParamIdx,
+            typename Data,
+            typename Offs,
+            typename Params>
   static RAJA_INLINE void lambda_special(camp::idx_seq<OffsetIdx...> const &,
-                             camp::idx_seq<ParamIdx...> const &, 
-                                    Data&, Offs const &, Params const &) {};
-
+                                         camp::idx_seq<ParamIdx...> const &,
+                                         Data &,
+                                         Offs const &,
+                                         Params const &)
+  {
+  }
 };
 
-template<camp::idx_t LoopIdx, class State, class... States>
-struct Invoke_all_Lambda<LoopIdx, State, States...> : Invoke_all_Lambda<LoopIdx, States...>
-{
+template <camp::idx_t LoopIdx, class State, class... States>
+struct Invoke_all_Lambda<LoopIdx, State, States...>
+    : Invoke_all_Lambda<LoopIdx, States...> {
 
-  //Lambda check
-  static const bool value = TypeIsLambda<camp::decay<State>>::value;  
+  // Lambda check
+  static const bool value = TypeIsLambda<camp::decay<State>>::value;
   static_assert(value, "Lambdas are only supported post RAJA::simd_exec");
 
-  //Invoke the chain of lambdas  
-  template<camp::idx_t... OffsetIdx,
-           camp::idx_t... ParamIdx,
-           typename Data,
-           typename Offs, typename Params>
+  // Invoke the chain of lambdas
+  template <camp::idx_t... OffsetIdx,
+            camp::idx_t... ParamIdx,
+            typename Data,
+            typename Offs,
+            typename Params>
   static RAJA_INLINE void lambda_special(camp::idx_seq<OffsetIdx...> const &,
-                             camp::idx_seq<ParamIdx...> const &, 
-                                    Data& data, Offs const &offset_tuple, Params const &params) 
+                                         camp::idx_seq<ParamIdx...> const &,
+                                         Data &data,
+                                         Offs const &offset_tuple,
+                                         Params const &params)
   {
-    camp::get<LoopIdx>(data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)                       
-                                     .begin()[camp::get<OffsetIdx>(offset_tuple)])...,
-                                    camp::get<ParamIdx>(data.param_tuple)...);
+    camp::get<LoopIdx>(
+        data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
+                          .begin()[camp::get<OffsetIdx>(offset_tuple)])...,
+                     camp::get<ParamIdx>(data.param_tuple)...);
 
-    Invoke_all_Lambda<LoopIdx+1,States...>::lambda_special
-      (camp::idx_seq_from_t<decltype(offset_tuple)>{},
-       camp::idx_seq_from_t<decltype(params)>{},
-       data, offset_tuple, params);
+    Invoke_all_Lambda<LoopIdx + 1, States...>::lambda_special(
+        camp::idx_seq_from_t<decltype(offset_tuple)>{},
+        camp::idx_seq_from_t<decltype(params)>{},
+        data,
+        offset_tuple,
+        params);
   }
-
 };
 
 
 /*!
  * RAJA::kernel forall_impl executor specialization.
- * Assumptions: RAJA::simd_exec is the inner most policy, 
+ * Assumptions: RAJA::simd_exec is the inner most policy,
  * only one lambda is used, no reductions are done within the lambda.
  *
  */
@@ -174,7 +185,7 @@ struct StatementExecutor<
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    
+
     auto iter = get<ArgumentId>(data.segment_tuple);
     auto begin = std::begin(iter);
     auto end = std::end(iter);
@@ -182,31 +193,32 @@ struct StatementExecutor<
 
     RAJA_SIMD
     for (decltype(distance) i = 0; i < distance; ++i) {
-      
-      //Offsets and parameters need to be privatized
+
+      // Offsets and parameters need to be privatized
       auto offsets = data.offset_tuple;
       auto params = data.param_tuple;
       get<ArgumentId>(offsets) = i;
 
-      Invoke_all_Lambda<0,EnclosedStmts...>::lambda_special
-        (camp::idx_seq_from_t<decltype(offsets)>{},
-         camp::idx_seq_from_t<decltype(params)>{},
-         data, offsets, params);
-
+      Invoke_all_Lambda<0, EnclosedStmts...>::lambda_special(
+          camp::idx_seq_from_t<decltype(offsets)>{},
+          camp::idx_seq_from_t<decltype(params)>{},
+          data,
+          offsets,
+          params);
     }
   }
 };
-    
+
 /*!
  * A generic RAJA::kernel forall_impl executor
- * 
+ *
  *
  */
 template <camp::idx_t ArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
 
 
   template <typename Data>

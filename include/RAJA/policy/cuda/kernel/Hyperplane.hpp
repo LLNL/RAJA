@@ -60,12 +60,10 @@ struct CudaStatementExecutor<Data,
 
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
-  using stmt_list_t =
-      StatementList<statement::Collapse<ExecPolicy,
-                                        ArgList<Args...>,
-                                        HyperplaneInner<HpArgumentId,
-                                                        ArgList<Args...>,
-                                                        EnclosedStmts...> > >;
+  using stmt_list_t = StatementList<statement::Collapse<
+      ExecPolicy,
+      ArgList<Args...>,
+      HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...> > >;
 
   using enclosed_stmts_t =
       CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
@@ -77,9 +75,9 @@ struct CudaStatementExecutor<Data,
   {
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    int hp_len = segment_length<HpArgumentId>(data)
-                 + VarOps::foldl(RAJA::operators::plus<int>(),
-                                 segment_length<Args>(data)...);
+    int hp_len = segment_length<HpArgumentId>(data) +
+                 VarOps::foldl(RAJA::operators::plus<int>(),
+                               segment_length<Args>(data)...);
 
 
     /* Execute the outer loop over hyperplanes
@@ -100,8 +98,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
@@ -125,11 +123,10 @@ template <typename Data,
           camp::idx_t... Args,
           typename... EnclosedStmts,
           typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             HyperplaneInner<HpArgumentId,
-                                             ArgList<Args...>,
-                                             EnclosedStmts...>,
-                             IndexCalc> {
+struct CudaStatementExecutor<
+    Data,
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>,
+    IndexCalc> {
 
   // Add a Collapse policy around our enclosed statements that will handle
   // the inner hyperplane loop's execution
@@ -187,8 +184,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }

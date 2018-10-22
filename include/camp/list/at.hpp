@@ -54,7 +54,7 @@ namespace detail
                                   make_idx_seq_t<sizeof...(Rest)>,
                                   Idx>::type;
   };
-}
+}  // namespace detail
 
 // TODO: document
 template <typename Seq, typename Num>
@@ -78,7 +78,7 @@ using at_v = typename at<T, num<Idx>>::type;
 // TODO: document
 template <typename T, typename U>
 using at_t = typename at<T, U>::type;
-}
+}  // namespace camp
 
 
 #endif /* __CAMP_list_at_hpp */

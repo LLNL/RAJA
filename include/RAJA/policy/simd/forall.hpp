@@ -67,10 +67,10 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   }
 }
 
-}  // closing brace for simd namespace
+}  // namespace simd
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

@@ -90,11 +90,11 @@ public:
    */
   T& local() { return data->local(); }
 };
-}
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB)
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_TBB guard
 

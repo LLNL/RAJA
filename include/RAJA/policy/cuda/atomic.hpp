@@ -69,8 +69,8 @@ struct CudaAtomicCAS<4> {
     oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
     newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
         oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-    while ((readback = ::atomicCAS((unsigned *)acc, oldval, newval))
-           != oldval) {
+    while ((readback = ::atomicCAS((unsigned *)acc, oldval, newval)) !=
+           oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
           oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
@@ -97,8 +97,9 @@ struct CudaAtomicCAS<8> {
     oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
         oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
-    while ((readback = ::atomicCAS((unsigned long long *)acc, oldval, newval))
-           != oldval) {
+    while (
+        (readback = ::atomicCAS((unsigned long long *)acc, oldval, newval)) !=
+        oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
           oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));

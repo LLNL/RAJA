@@ -57,7 +57,7 @@ using CollapsePolPair = ForallN_PolicyPair<omp_collapse_nowait_exec, Iter>;
 template <typename T>
 using no_const = typename std::remove_const<T>::type;
 
-}  // closing brace for namespace detail
+}  // namespace detail
 
 template <typename NEXT = Execute>
 struct OMP_Parallel {
