@@ -38,6 +38,31 @@
 namespace RAJA
 {
 
+//RAJA memory policies
+struct cpu_priv_mem;
+struct cpu_shared_mem;
+
+struct cuda_priv_mem;
+struct cuda_shared_mem;
+
+/*!
+ * Memory Wrapper 2.0 
+ */
+template<typename Pol, typename DataType>
+struct MemWrapper
+{
+  DataType *SharedMem = nullptr;
+  using type = DataType; 
+  using element_t = typename DataType::element_t;
+  using pol_t = Pol;
+
+  template<typename... Indices>  
+  element_t &operator()(Indices... indices) const
+  {
+    return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
+  }
+};
+
 /*!
  * Shared memory Wrapper
  */
@@ -76,11 +101,9 @@ struct SharedMem<T, RAJA::SizeList<Sizes ...> >
  * TODO: Extend this to the multi-dimensional case 
  * We may need iteration specific arrays.
 */
-struct cuda_priv_mem{};
-struct cpu_priv_mem{};
-
+ /* - May not be needed - Delete potentially.
 template <typename Pol, typename T, typename Sizes>
-struct PrivMem{};
+struct PrivMem;
 
 template <typename T, camp::idx_t... Sizes>
 struct PrivMem<cpu_priv_mem, T, RAJA::SizeList<Sizes ...> >
@@ -97,6 +120,7 @@ struct PrivMem<cuda_priv_mem, T, RAJA::SizeList<Sizes ...> >
 {
   T data; //thread private memory
 };
+*/
 
 /*!
  * Provides a multi-dimensional tiled View of shared memory data.

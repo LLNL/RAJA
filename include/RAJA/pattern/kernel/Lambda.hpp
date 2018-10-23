@@ -117,6 +117,7 @@ struct StatementExecutor<statement::CreateShmem<EnclosedStmts...>>{
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {    
+    //kick off
     const camp::idx_t N = camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
     createShared(data,int_<N>());
   }
