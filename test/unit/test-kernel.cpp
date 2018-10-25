@@ -27,6 +27,8 @@ using namespace RAJA;
 using namespace RAJA::statement;
 
 
+#if 0
+
 using layout_2d = Layout<2, RAJA::Index_type>;
 using view_2d = View<Index_type, layout_2d>;
 static constexpr Index_type x_len = 5;
@@ -1635,41 +1637,7 @@ CUDA_TEST(Kernel, CudaShmemWindow2d)
 
 #if defined(RAJA_ENABLE_CUDA)
 
-CUDA_TEST(Kernel, CudaExec_1threadexec)
-{
-  using namespace RAJA;
 
-
-  constexpr long N = (long)256;
-
-  // Loop Fusion
-  using Pol = KernelPolicy<CudaKernel<
-      For<0,
-          cuda_block_exec,
-          For<1,
-              cuda_threadblock_exec<32>,
-              For<2, cuda_thread_exec, For<3, cuda_thread_exec, Lambda<0>>>>>>>;
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-  kernel<Pol>(
-
-      RAJA::make_tuple(RangeSegment(0, N),
-                       RangeSegment(0, N),
-                       RangeSegment(0, N),
-                       RangeSegment(0, N)),
-
-      [=] __device__(Index_type i, Index_type j, Index_type k, Index_type l) {
-        trip_count += 1;
-      });
-  cudaDeviceSynchronize();
-
-
-  long result = (long)trip_count;
-
-  ASSERT_EQ(result, N * N * N * N);
-}
 
 CUDA_TEST(Kernel, CudaExec_1blockexec)
 {
@@ -2189,3 +2157,42 @@ TEST(Kernel, IndexCalc_thread)
 
 
 #endif
+#endif
+
+
+CUDA_TEST(Kernel, CudaExec_1threadexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)200;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernel<
+      For<0, cuda_block_x_loop,
+       For<1, cuda_block_y_loop,
+         For<2, cuda_thread_x_loop,
+          For<3, cuda_thread_y_loop, Lambda<0> >>>> > >;
+
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N),
+                       RangeSegment(0, N),
+                       RangeSegment(0, N),
+                       RangeSegment(0, N)),
+
+      [=] __device__(Index_type i, Index_type j, Index_type k, Index_type l) {
+        trip_count += 1;
+      });
+
+  cudaDeviceSynchronize();
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N * N * N * N);
+}

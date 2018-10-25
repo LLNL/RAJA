@@ -28,16 +28,16 @@
 #ifndef RAJA_policy_cuda_kernel_HPP
 #define RAJA_policy_cuda_kernel_HPP
 
-#include "RAJA/policy/cuda/kernel/Collapse.hpp"
-#include "RAJA/policy/cuda/kernel/Conditional.hpp"
+//#include "RAJA/policy/cuda/kernel/Collapse.hpp"
+//#include "RAJA/policy/cuda/kernel/Conditional.hpp"
 #include "RAJA/policy/cuda/kernel/CudaKernel.hpp"
 #include "RAJA/policy/cuda/kernel/For.hpp"
-#include "RAJA/policy/cuda/kernel/Hyperplane.hpp"
+//#include "RAJA/policy/cuda/kernel/Hyperplane.hpp"
 #include "RAJA/policy/cuda/kernel/Lambda.hpp"
-#include "RAJA/policy/cuda/kernel/ShmemWindow.hpp"
-#include "RAJA/policy/cuda/kernel/Sync.hpp"
-#include "RAJA/policy/cuda/kernel/Thread.hpp"
-#include "RAJA/policy/cuda/kernel/Tile.hpp"
+//#include "RAJA/policy/cuda/kernel/ShmemWindow.hpp"
+//#include "RAJA/policy/cuda/kernel/Sync.hpp"
+//#include "RAJA/policy/cuda/kernel/Thread.hpp"
+//#include "RAJA/policy/cuda/kernel/Tile.hpp"
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 #endif  // closing endif for header file include guard
