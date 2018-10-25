@@ -39,13 +39,13 @@ const int DIM = 2;
 // Matrix B size : M x P
 // Matrix C size : N x P
 
-const int M = 16;
-const int N = 16;
-const int P = 16;
+const int M = 1536;
+const int N = 1536;
+const int P = 1536;
 
 // Define TILE dimensions
 //
-const int TILE_DIM = 16;
+const int TILE_DIM = 256;
 
 //
 // Define bounds for inner and outer loops
@@ -147,7 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of naive matrix multiplication "
                "algorithm...\n";
-
+#if 0
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
@@ -172,12 +172,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   std::cout << "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview, C_solview);
-
+#endif
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix multiplication with "
                "window algorithm with pValue as an array...\n";
 
-#if 1
+
   timer.reset();
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
@@ -261,12 +261,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview, C_solview);
-#endif
+
   //----------------------------------------------------------------------------//
 
   // With scalar values
-  std::cout << "\n Running C-version of shared matrix multiplication with 
-               window algorithm and pValue as a scalar...\n";
+  std::cout << "\n Running C-version of shared matrix multiplication with "
+                " window algorithm and pValue as a scalar...\n";
 
 
   timer.reset();
