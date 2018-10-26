@@ -68,11 +68,11 @@ static void runLTimesTest(Index_type num_moments,
   std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
 
   // setup CUDA Reduction variables to be exercised
-  ReduceSum<cuda_reduce<block_size>, double> pdsum(0.0);
-  ReduceMin<cuda_reduce<block_size>, double> pdmin(DBL_MAX);
-  ReduceMax<cuda_reduce<block_size>, double> pdmax(-DBL_MAX);
-  ReduceMinLoc<cuda_reduce<block_size>, double> pdminloc(DBL_MAX, -1);
-  ReduceMaxLoc<cuda_reduce<block_size>, double> pdmaxloc(-DBL_MAX, -1);
+  ReduceSum<cuda_reduce, double> pdsum(0.0);
+  ReduceMin<cuda_reduce, double> pdmin(DBL_MAX);
+  ReduceMax<cuda_reduce, double> pdmax(-DBL_MAX);
+  ReduceMinLoc<cuda_reduce, double> pdminloc(DBL_MAX, -1);
+  ReduceMaxLoc<cuda_reduce, double> pdmaxloc(-DBL_MAX, -1);
 
   // setup local Reduction variables as a crosscheck
   double lsum = 0.0;

@@ -570,7 +570,7 @@ private:
 
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device
 //! pointer
-template <bool Async, typename Combiner, typename T>
+template <typename Combiner, typename T>
 struct Reduce_Data {
 
   mutable T value;
@@ -661,7 +661,7 @@ struct Reduce_Data {
 
 
 //! Reduction data for Cuda Offload -- stores value, host pointer
-template <bool Async, typename Combiner, typename T>
+template <typename Combiner, typename T>
 struct ReduceAtomic_Data {
 
   mutable T value;
@@ -747,7 +747,7 @@ struct ReduceAtomic_Data {
 };
 
 //! Cuda Reduction entity -- generalize on reduction, and type
-template <bool Async, typename Combiner, typename T, bool maybe_atomic>
+template <typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
@@ -868,8 +868,8 @@ private:
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type = typename std::conditional<
       maybe_atomic && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
-      cuda::ReduceAtomic_Data<Async, Combiner, T>,
-      cuda::Reduce_Data<Async, Combiner, T>>::type;
+      cuda::ReduceAtomic_Data<Combiner, T>,
+      cuda::Reduce_Data<Combiner, T>>::type;
 
   //! storage for reduction data
   reduce_data_type val;
@@ -878,13 +878,13 @@ private:
 }  // end namespace cuda
 
 //! specialization of ReduceSum for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceSum<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::sum<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::sum<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
@@ -896,13 +896,13 @@ public:
 };
 
 //! specialization of ReduceMin for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceMin<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::min<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::min<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
@@ -914,13 +914,13 @@ public:
 };
 
 //! specialization of ReduceMax for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceMax<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::max<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::max<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
@@ -932,10 +932,9 @@ public:
 };
 
 //! specialization of ReduceMinLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async,
-                          RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+template <bool maybe_atomic, typename T>
+class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
                           RAJA::reduce::detail::ValueLoc<T>,
                           maybe_atomic>
 {
@@ -943,7 +942,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = cuda::
-      Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+      Reduce<RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -970,18 +969,17 @@ public:
 };
 
 //! specialization of ReduceMaxLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<
-          Async,
-          RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
-          RAJA::reduce::detail::ValueLoc<T, false>,
-          maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceMaxLoc<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::
+          Reduce<RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
+                 RAJA::reduce::detail::ValueLoc<T, false>,
+                 maybe_atomic>
 {
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
   using Base = cuda::
-      Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
+      Reduce<RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
