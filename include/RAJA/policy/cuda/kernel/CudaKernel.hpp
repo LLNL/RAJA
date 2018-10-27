@@ -226,6 +226,7 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads>,St
 };
 
 
+inline
 cuda_dim_t fitCudaDims(int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
 
 

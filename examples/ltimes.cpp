@@ -50,7 +50,7 @@
  */
 
 
-//#define DEBUG_LTIMES 
+//#define DEBUG_LTIMES
 #undef DEBUG_LTIMES
 
 using namespace RAJA;
@@ -594,9 +594,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<    
-        statement::For<0, cuda_block_exec,  // m
-          statement::For<2, cuda_block_exec,  // g
-            statement::For<3, cuda_thread_exec,  // z
+        statement::For<0, cuda_block_x_loop,  // m
+          statement::For<2, cuda_block_y_loop,  // g
+            statement::For<3, cuda_thread_x_loop,  // z
               statement::For<1, seq_exec,  // d
                 statement::Lambda<0>
               >
@@ -706,8 +706,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             statement::SetShmemWindow<
 
               // Load L for m,d tile into shmem 
-              statement::For<1, cuda_thread_exec,  // d
-                statement::For<0, cuda_thread_exec,   // m
+              statement::For<1, cuda_thread_y_loop,  // d
+                statement::For<0, cuda_thread_x_loop,   // m
                   statement::Lambda<1>
                 >
               >
@@ -715,32 +715,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             statement::CudaSyncThreads,
 
             // Distribute g, z across blocks and tile z
-            statement::For<2, cuda_block_exec, // g
-              statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_exec,  // z
+            statement::For<2, cuda_block_x_loop, // g
+              statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_y_loop,  // z
 
                 // Set shmem window for inner loops
                 statement::SetShmemWindow< 
 
                   // Load slice of psi into shmem
-                  statement::For<3, cuda_thread_exec,  // z
-                    statement::For<1, cuda_thread_exec, // d
+                  statement::For<3, cuda_thread_y_loop,  // z
+                    statement::For<1, cuda_thread_x_loop, // d
                       statement::Lambda<2>
                     >
                   >,
                   statement::CudaSyncThreads,
 
                   // Compute phi
-                  statement::For<3, cuda_thread_exec,  // z
-                    statement::For<0, cuda_thread_exec, // m
+                  statement::For<3, cuda_thread_y_loop,  // z
+                    statement::For<0, cuda_thread_x_loop, // m
 
                       // Compute thread-local Phi value and store
-                      statement::Thread< 
-                        statement::Lambda<3>,
-                        statement::For<1, seq_exec,  // d 
+                      statement::Lambda<3>,
+                      statement::For<1, seq_exec,  // d
                           statement::Lambda<4>
-                        >,
-                        statement::Lambda<5>
-                      >
+                      >,
+                      statement::Lambda<5>
 
                     >  // m
                   >,  // z
