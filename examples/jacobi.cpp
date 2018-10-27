@@ -361,7 +361,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //
     // Compute residual and update Iold
     //
-    RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> RAJA_resI2(0.0);
+    RAJA::ReduceSum<RAJA::cuda_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       gridRange, [=] RAJA_DEVICE (RAJA::Index_type k) {
       

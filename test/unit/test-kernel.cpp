@@ -299,7 +299,7 @@ using CUDATypes = ::testing::Types<
              s,
              CudaKernel<For<0, RAJA::cuda_thread_x_loop, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
-         RAJA::cuda_reduce<1024>>>;
+         RAJA::cuda_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
@@ -418,7 +418,7 @@ CUDA_TEST(Kernel, CudaReduceA)
          For<1, cuda_thread_z_loop,
            For<2, RAJA::seq_exec, Lambda<0>>>>>>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce, int> reducer(0);
 
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
@@ -443,7 +443,7 @@ CUDA_TEST(Kernel, CudaReduceB)
               Lambda<0>
             > > > > >;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce, int> reducer(0);
 
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
@@ -1034,7 +1034,7 @@ CUDA_TEST(Kernel, CudaExec)
          For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1066,7 +1066,7 @@ CUDA_TEST(Kernel, CudaConditional)
 
   for (int param = 0; param < 2; ++param) {
 
-    RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+    RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
     kernel_param<Pol>(
 
@@ -1100,7 +1100,7 @@ CUDA_TEST(Kernel, CudaExec1)
       KernelPolicy<CudaKernel<For<0, cuda_thread_x_loop, Lambda<0>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1134,7 +1134,7 @@ CUDA_TEST(Kernel, CudaExec1a)
 
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1169,7 +1169,7 @@ CUDA_TEST(Kernel, CudaExec1ab)
    >>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1206,7 +1206,7 @@ CUDA_TEST(Kernel, CudaExec1ac)
       >>>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1240,7 +1240,7 @@ CUDA_TEST(Kernel, CudaExec1b)
           For<0, cuda_thread_y_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1272,7 +1272,7 @@ CUDA_TEST(Kernel, CudaExec1c)
                             For<2, cuda_thread_z_loop, Lambda<0>>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1316,7 +1316,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
                                    RangeSegment(0, N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1369,7 +1369,7 @@ CUDA_TEST(Kernel, CudaShmemWindow1d)
   auto segments = RAJA::make_tuple(RangeSegment(0, N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   using shmem_t = ShmemTile<cuda_shmem,
                             double,
@@ -1435,7 +1435,7 @@ CUDA_TEST(Kernel, CudaShmemWindow1dReverse)
   auto segments = RAJA::make_tuple(RangeStrideSegment(N - 1, -1, -1));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   using shmem_t = ShmemTile<cuda_shmem,
                             double,
@@ -1509,7 +1509,7 @@ CUDA_TEST(Kernel, CudaShmemWindow2d)
   auto segments = RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, M));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
 
   using shmem_t = ShmemTile<cuda_shmem,
@@ -1580,7 +1580,7 @@ CUDA_TEST(Kernel, CudaExec_1blockexec)
   using Pol = KernelPolicy<CudaKernel<For<0, cuda_block_x_loop, Lambda<0>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1608,7 +1608,7 @@ CUDA_TEST(Kernel, CudaExec_2threadloop)
       For<0, cuda_thread_x_loop, For<1, cuda_thread_y_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1634,7 +1634,7 @@ CUDA_TEST(Kernel, CudaExec_1thread1block)
       CudaKernel<For<0, cuda_block_x_loop, For<1, cuda_thread_x_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1667,7 +1667,7 @@ CUDA_TEST(Kernel, CudaExec_3threadloop)
           For<1, cuda_thread_x_loop, For<2, cuda_thread_y_loop, Lambda<0>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1701,7 +1701,7 @@ CUDA_TEST(Kernel, CudaExec_tile1threaddirect)
                                  For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1879,8 +1879,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
     x[i] = i;
   }
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-  RAJA::ReduceSum<cuda_reduce<1024>, long> oob_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> oob_count(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, L),
@@ -1992,7 +1992,7 @@ CUDA_TEST(Kernel, CudaExec_1threadexec)
 
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
