@@ -44,23 +44,18 @@ namespace internal
 {
 
 
-template <typename Data, typename... EnclosedStmts, typename IndexCalc>
+template <typename Data, typename... EnclosedStmts>
 struct CudaStatementExecutor<Data,
-                             statement::SetShmemWindow<EnclosedStmts...>,
-                             IndexCalc> {
+                             statement::SetShmemWindow<EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
-
-  IndexCalc index_calc;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
 
 
-  inline __device__ void exec(Data &data,
-                              int num_logical_blocks,
-                              int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
   {
 
     // Call setWindow on all of our shmem objects
@@ -68,29 +63,17 @@ struct CudaStatementExecutor<Data,
                                       data.get_minimum_index_tuple());
 
     // execute enclosed statements
-    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+    enclosed_stmts_t::exec(data);
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                          int num_logical_blocks,
-                                          int block_stride)
+
+
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
   {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
-  }
-
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    enclosed_stmts.initThread(data);
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return enclosed_stmts.calculateDimensions(data, max_physical);
+    return enclosed_stmts_t::calculateDimensions(data);
   }
 };
 

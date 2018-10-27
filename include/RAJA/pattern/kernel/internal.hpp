@@ -215,11 +215,12 @@ struct LoopData {
   RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
   get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
   {
-    return camp::make_tuple(
+    auto x= camp::make_tuple(
         ((*camp::get<Idx>(segment_tuple).begin() <=
           *camp::get<Idx>(segment_tuple).end())
              ? *camp::get<Idx>(segment_tuple).begin()
              : *(camp::get<Idx>(segment_tuple).end() - 1))...);
+    return x;
   }
 
   RAJA_HOST_DEVICE

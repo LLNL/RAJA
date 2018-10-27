@@ -330,16 +330,16 @@ struct StatementExecutor<
       //
       // Fit the requested threads an blocks
       //
-      printf("Requested kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, min_threads=<%d,%d,%d>\n",
-          (int)launch_dims.blocks.x,
-          (int)launch_dims.blocks.y,
-          (int)launch_dims.blocks.z,
-          (int)launch_dims.threads.x,
-          (int)launch_dims.threads.y,
-          (int)launch_dims.threads.z,
-          (int)launch_dims.min_threads.x,
-          (int)launch_dims.min_threads.y,
-          (int)launch_dims.min_threads.z);
+//      printf("Requested kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, min_threads=<%d,%d,%d>\n",
+//          (int)launch_dims.blocks.x,
+//          (int)launch_dims.blocks.y,
+//          (int)launch_dims.blocks.z,
+//          (int)launch_dims.threads.x,
+//          (int)launch_dims.threads.y,
+//          (int)launch_dims.threads.z,
+//          (int)launch_dims.min_threads.x,
+//          (int)launch_dims.min_threads.y,
+//          (int)launch_dims.min_threads.z);
 
       launch_dims.blocks = fitCudaDims(max_blocks, launch_dims.blocks);
       launch_dims.threads = fitCudaDims(max_threads, launch_dims.threads, launch_dims.min_threads);
@@ -355,14 +355,14 @@ struct StatementExecutor<
       //
       // Launch the kernels
       //
-      printf("Launching kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, shmem=%d, stream=%p\n",
-          (int)launch_dims.blocks.x,
-          (int)launch_dims.blocks.y,
-          (int)launch_dims.blocks.z,
-          (int)launch_dims.threads.x,
-          (int)launch_dims.threads.y,
-          (int)launch_dims.threads.z,
-          (int)shmem, stream);
+//      printf("Launching kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, shmem=%d, stream=%p\n",
+//          (int)launch_dims.blocks.x,
+//          (int)launch_dims.blocks.y,
+//          (int)launch_dims.blocks.z,
+//          (int)launch_dims.threads.x,
+//          (int)launch_dims.threads.y,
+//          (int)launch_dims.threads.z,
+//          (int)shmem, stream);
 
       launch_t::launch(cuda_data, launch_dims, shmem, stream);
 
