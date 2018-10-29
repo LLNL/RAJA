@@ -22,6 +22,9 @@
 #include <cmath>
 #include <cassert>
 
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include <cuda_runtime.h>
 #endif
@@ -32,6 +35,7 @@ using namespace RAJA::statement;
 //
 //Matrix tranpose example
 //
+/*
 template <typename NestedPolicy>
 class Kernel : public ::testing::Test
 {
@@ -277,6 +281,8 @@ using CUDATypes =
   >; //types
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
+*/
+
 
 template <typename NestedPolicy>
 class MatMultiply : public ::testing::Test
@@ -351,7 +357,6 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
     }
   }
 
-
   auto iSpace =
     RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
                      RAJA::RangeSegment(0, windowIter),
@@ -365,6 +370,9 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   Shmem aShared, bShared; //memory to be shared between threads
   threadPriv pVal; //thread private value
 
+  //Identify shared memory
+  using sharedObj = camp::idx_seq<0,1,2>;
+  
   RAJA::kernel_param<Pol>(iSpace,
                           RAJA::make_tuple(aShared, bShared, pVal),
 
@@ -447,9 +455,10 @@ using SeqTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::CreateShmem<
+         RAJA::statement::CreateShmem2<camp::idx_seq<2,1,0>,
             //Initalize thread private value
-            RAJA::statement::For<1, RAJA::loop_exec,
+
+           RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
                                    RAJA::statement::Lambda<0> > >,
 
@@ -484,7 +493,7 @@ using SeqTypes2 =
 
 INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
 
-
+/*
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypes2 = 
   ::testing::Types<
@@ -572,11 +581,12 @@ using CudaTypes2 =
 
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatMultiply, CudaTypes2);
 #endif
-
+*/
 
 //
 //Example with RAJA shared memory objects
 //
+/*
 #if defined(RAJA_ENABLE_OPENMP)
 TEST(Shared, MatrixTranposeRAJAShared){
 
@@ -683,3 +693,4 @@ TEST(Shared, MatrixTranposeRAJAShared){
   delete [] At;
 }
 #endif
+*/

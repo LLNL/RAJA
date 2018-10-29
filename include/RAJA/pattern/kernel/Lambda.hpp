@@ -71,7 +71,18 @@ template<typename... EnclosedStmts>
 struct CreateShmem : public internal::Statement<camp::nil> {
 };
 
-}  // end namespace statement
+
+//Create Shared Memory Statement V2.0
+template<typename Indices,typename... EnclosedStmts>
+struct CreateShmem2 : public internal::Statement<camp::nil> {
+};
+
+template<camp::idx_t... Indices,typename... EnclosedStmts>
+struct CreateShmem2<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
+};
+
+
+}// end namespace statement
 
 namespace internal
 {
@@ -86,9 +97,11 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
+
 //Helper struct to help us count.
 template<camp::idx_t> struct int_{};
- 
+
+//Shared memory creator ver 1.0
 template<typename... EnclosedStmts>
 struct StatementExecutor<statement::CreateShmem<EnclosedStmts...>>{
 
@@ -122,6 +135,54 @@ struct StatementExecutor<statement::CreateShmem<EnclosedStmts...>>{
     createShared(data,int_<N>());
   }
 };
+
+//Shared memory creator version 2.0
+template<camp::idx_t... Indices, typename... EnclosedStmts>
+struct StatementExecutor<statement::CreateShmem2<camp::idx_seq<Indices...>, EnclosedStmts...> >{
+
+  //
+  //Intialize shared memory
+  //
+  template<class Data>
+  static void RAJA_INLINE createShared(Data && data)
+  {
+    //Execute Statement List
+    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+  }
+
+  template<camp::idx_t Pos, camp::idx_t... others, class Data>
+  static void RAJA_INLINE createShared(Data && data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    varType SharedM;
+    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    createShared<others...>(data);
+  }
+ 
+  //Set pointer to null
+  template<class Data>
+  static void RAJA_INLINE setPtrToNull(Data &&) {}
+
+  template<camp::idx_t Pos, camp::idx_t... others, class Data>
+  static void RAJA_INLINE setPtrToNull(Data && data)
+  {
+    camp::get<Pos>(data.param_tuple).SharedMem = nullptr;
+    setPtrToNull<others...>(data);
+  }  
+
+  template<typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {        
+    //Initalize shared memory + launch loops
+    createShared<Indices...>(data);
+
+    //Set wrapper pointers to null
+    setPtrToNull<Indices...>(data);
+  };
+};
+
+
+
 
 }  // namespace internal
 
