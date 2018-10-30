@@ -38,17 +38,14 @@
 namespace RAJA
 {
 
-//RAJA memory policies
-//struct cpu_priv_mem;
-//struct cpu_shared_mem;
+//RAJA memory objects
 struct cpu_tile_mem;
 
-  //struct cuda_shared_mem;
 struct cuda_shared_mem;
 struct cuda_priv_mem;
 
 /*!
- * Memory Wrapper 2.0
+ * Memory Wrapper
  */
 template<typename Pol, typename DataType>
 struct MemWrapper
@@ -65,6 +62,28 @@ struct MemWrapper
     return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
   }
 };
+
+
+/*!
+ * Memory Wrapper specialization 
+ * Stores data in thread register space
+ */
+template<typename DataType>
+struct MemWrapper<RAJA::cuda_priv_mem, DataType>
+{
+  DataType *SharedMem = nullptr;
+  using type = DataType;
+  using element_t = typename DataType::element_t;
+  using pol_t = RAJA::cuda_priv_mem;
+
+  template<typename... Indices>
+  RAJA_HOST_DEVICE
+  element_t &operator()(Indices... indices) const
+  {
+    return (*SharedMem).data[0];
+  }
+};
+
 
 /*!
  * Shared memory Wrapper
