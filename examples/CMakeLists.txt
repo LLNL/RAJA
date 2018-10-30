@@ -78,13 +78,13 @@ raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
 
-raja_add_executable(
-  NAME mat-transpose
-  SOURCES mat-transpose.cpp)
+#raja_add_executable(
+#  NAME mat-transpose
+#  SOURCES mat-transpose.cpp)
 
-raja_add_executable(
-  NAME run-mat-multiply
-  SOURCES run-mat-multiply.cpp)
+#raja_add_executable(
+#  NAME run-mat-multiply
+#  SOURCES run-mat-multiply.cpp)
   
 raja_add_executable(
   NAME ltimes

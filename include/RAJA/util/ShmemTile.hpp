@@ -39,24 +39,27 @@ namespace RAJA
 {
 
 //RAJA memory policies
-struct cpu_priv_mem;
-struct cpu_shared_mem;
+//struct cpu_priv_mem;
+//struct cpu_shared_mem;
+struct cpu_tile_mem;
 
-struct cuda_priv_mem;
+  //struct cuda_shared_mem;
 struct cuda_shared_mem;
+struct cuda_priv_mem;
 
 /*!
- * Memory Wrapper 2.0 
+ * Memory Wrapper 2.0
  */
 template<typename Pol, typename DataType>
 struct MemWrapper
 {
   DataType *SharedMem = nullptr;
-  using type = DataType; 
+  using type = DataType;
   using element_t = typename DataType::element_t;
   using pol_t = Pol;
 
-  template<typename... Indices>  
+  template<typename... Indices>
+  RAJA_HOST_DEVICE
   element_t &operator()(Indices... indices) const
   {
     return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
@@ -70,15 +73,34 @@ template<typename DataType>
 struct SharedMemWrapper
 {
   DataType *SharedMem = nullptr;
-  using type = DataType; 
+  using type = DataType;
   using element_t = typename DataType::element_t;
 
-  template<typename... Indices>  
+  template<typename... Indices>
   element_t &operator()(Indices... indices) const
   {
     return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
   }
 };
+
+
+/*!
+ * RAJA memory object (shared mem 3.0)
+ */
+template<typename T, typename Sizes>
+struct MemObj{};
+
+template<typename T, camp::idx_t ... Sizes>
+struct MemObj<T, RAJA::SizeList<Sizes...> >
+{
+  using self_t = MemObj<T, SizeList<Sizes...> >;
+  using element_t = T;
+  using layout_t = StaticLayout<Sizes...>;
+  static const camp::idx_t NoElem = layout_t::size();
+  T data[NoElem];
+};
+
+
 
 /*!
  * Shared memory version 2.0
@@ -88,7 +110,7 @@ struct SharedMem{};
 
 template <typename T, camp::idx_t... Sizes>
 struct SharedMem<T, RAJA::SizeList<Sizes ...> >
-{    
+{
   using self_t = SharedMem<T, SizeList<Sizes...> >;
   using element_t = T;
   using layout_t = StaticLayout<Sizes...>;
@@ -97,8 +119,8 @@ struct SharedMem<T, RAJA::SizeList<Sizes ...> >
 };
 
 /*!
- * Iteration specific memory / local thread memory 
- * TODO: Extend this to the multi-dimensional case 
+ * Iteration specific memory / local thread memory
+ * TODO: Extend this to the multi-dimensional case
  * We may need iteration specific arrays.
 */
  /* - May not be needed - Delete potentially.

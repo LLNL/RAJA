@@ -283,6 +283,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 */
 
+const int TILE_DIM = 4;
 
 template <typename NestedPolicy>
 class MatMultiply : public ::testing::Test
@@ -296,7 +297,10 @@ TYPED_TEST_CASE_P(MatMultiply);
 CUDA_TYPED_TEST_P(MatMultiply, shmem)
 {
 
-  using Pol = at_v<TypeParam, 0>;
+  using Tile_pol0 = at_v<TypeParam, 0>;
+  using Tile_pol1 = at_v<TypeParam, 1>;
+  using Tile_size = at_v<TypeParam, 2>;
+  using Pol = at_v<TypeParam, 3>;
 
   const int DIM = 2;
 
@@ -307,8 +311,6 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   const int N = 9;
   const int M = 12;
   const int P = 15;
-
-  const int TILE_DIM = 4;
 
   const int inner_Dim0 = TILE_DIM;
   const int inner_Dim1 = TILE_DIM;
@@ -361,18 +363,17 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
     RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
                      RAJA::RangeSegment(0, windowIter),
                      RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
-  
-  //Toy shared memory object - For proof of concept.
-  using SharedTile = RAJA::SharedMem<int, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
-  using Shmem = RAJA::SharedMemWrapper<SharedTile>;
-  using threadPriv = RAJA::SharedMemWrapper<SharedTile>;
 
+  using memObj = RAJA::MemObj<double, Tile_size>;
+  //using memObj = RAJA::MemObj<double, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  //using memObj = RAJA::MemObj<double, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
+  
+  using Shmem      = RAJA::MemWrapper<Tile_pol0, memObj>;
+  using threadPriv = RAJA::MemWrapper<Tile_pol1, memObj>;
+  
   Shmem aShared, bShared; //memory to be shared between threads
   threadPriv pVal; //thread private value
-
-  //Identify shared memory
-  using sharedObj = camp::idx_seq<0,1,2>;
-  
+ 
   RAJA::kernel_param<Pol>(iSpace,
                           RAJA::make_tuple(aShared, bShared, pVal),
 
@@ -433,6 +434,7 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
     }
   }
 
+
 #if defined(RAJA_ENABLE_CUDA)
   cudaFree(A);
   cudaFree(B);
@@ -452,6 +454,8 @@ REGISTER_TYPED_TEST_CASE_P(MatMultiply, shmem);
 using SeqTypes2 = 
   ::testing::Types<
   RAJA::list<
+    RAJA::cpu_tile_mem, RAJA::cpu_tile_mem,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
@@ -471,7 +475,6 @@ using SeqTypes2 =
                   RAJA::statement::Lambda<1>
                 >
                >,
-
                //Partial multiplication
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
@@ -493,15 +496,17 @@ using SeqTypes2 =
 
 INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
 
-/*
+
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypes2 = 
   ::testing::Types<
   RAJA::list<
+    RAJA::cpu_tile_mem, RAJA::cpu_tile_mem,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::CreateShmem<
+          RAJA::statement::CreateShmem2<camp::idx_seq<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
@@ -537,15 +542,18 @@ using OmpTypes2 =
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiply, OmpTypes2);
 #endif
 
+
 #if defined(RAJA_ENABLE_CUDA)
 using CudaTypes2 = 
   ::testing::Types<
   RAJA::list<
+    RAJA::cuda_shared_mem, RAJA::cuda_shared_mem,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::CreateShmem<
+          RAJA::statement::CreateShmem2<camp::idx_seq<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -581,7 +589,7 @@ using CudaTypes2 =
 
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatMultiply, CudaTypes2);
 #endif
-*/
+
 
 //
 //Example with RAJA shared memory objects

@@ -114,22 +114,22 @@ struct StatementExecutor<statement::CreateShmem<EnclosedStmts...>>{
 
     createShared( data, int_<Pos-1>());
   }
-  
+
   template<class Data>
   static void RAJA_INLINE createShared(Data &&data, int_<static_cast<camp::idx_t>(1)>){
-    
+
     using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
     varType SharedM;
-    
+
     camp::get<0>(data.param_tuple).SharedMem = &SharedM;
 
     //Execute Statement List
     execute_statement_list<camp::list<EnclosedStmts...>>(data);
-  }  
-  
+  }
+
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
-  {    
+  {
     //kick off
     const camp::idx_t N = camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
     createShared(data,int_<N>());
@@ -158,7 +158,7 @@ struct StatementExecutor<statement::CreateShmem2<camp::idx_seq<Indices...>, Encl
     camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
     createShared<others...>(data);
   }
- 
+
   //Set pointer to null
   template<class Data>
   static void RAJA_INLINE setPtrToNull(Data &&) {}
@@ -168,20 +168,18 @@ struct StatementExecutor<statement::CreateShmem2<camp::idx_seq<Indices...>, Encl
   {
     camp::get<Pos>(data.param_tuple).SharedMem = nullptr;
     setPtrToNull<others...>(data);
-  }  
+  }
 
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
-  {        
+  {
     //Initalize shared memory + launch loops
     createShared<Indices...>(data);
 
     //Set wrapper pointers to null
     setPtrToNull<Indices...>(data);
-  };
+  }
 };
-
-
 
 
 }  // namespace internal
