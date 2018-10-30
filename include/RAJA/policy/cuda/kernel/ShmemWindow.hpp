@@ -69,8 +69,8 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_priv_mem> ) {
 
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
-    varType SharedM;
-    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    varType PrivM;
+    camp::get<Pos>(data.param_tuple).m_MemObj = &PrivM;
     inspect(data, num_logical_blocks, block_carry);
   }
 
@@ -79,8 +79,8 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_priv_mem> ) {
 
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
-    varType SharedM;
-    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    varType PrivM;
+    camp::get<Pos>(data.param_tuple).m_MemObj = &PrivM;
     inspect<others...>(data, num_logical_blocks, block_carry);
   }
 
@@ -90,7 +90,7 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
 
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
     __shared__ varType SharedM;
-    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    camp::get<Pos>(data.param_tuple).m_MemObj = &SharedM;
     inspect(data, num_logical_blocks, block_carry);
   }
 
@@ -100,7 +100,7 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
 
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
     __shared__ varType SharedM;
-    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    camp::get<Pos>(data.param_tuple).m_MemObj = &SharedM;
     inspect<others...>(data, num_logical_blocks, block_carry);
   }
 
@@ -124,7 +124,7 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
   void RAJA_INLINE __device__ setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
   {
 
-    camp::get<Pos>(data.param_tuple).SharedMem = nullptr;
+    camp::get<Pos>(data.param_tuple).m_MemObj = nullptr;
   }
 
 
@@ -133,7 +133,7 @@ struct CudaStatementExecutor<Data, statement::CreateShmem<camp::idx_seq<Indices.
   void RAJA_INLINE __device__ setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
   {
 
-    camp::get<Pos>(data.param_tuple).SharedMem = nullptr;
+    camp::get<Pos>(data.param_tuple).m_MemObj = nullptr;
     setPtrToNull<others...>(data, num_logical_blocks, block_carry);
   }
   

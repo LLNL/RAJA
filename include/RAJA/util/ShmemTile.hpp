@@ -50,7 +50,7 @@ struct cuda_priv_mem;
 template<typename Pol, typename DataType>
 struct MemWrapper
 {
-  DataType *SharedMem = nullptr;
+  DataType *m_MemObj = nullptr;
   using type = DataType;
   using element_t = typename DataType::element_t;
   using pol_t = Pol;
@@ -59,7 +59,7 @@ struct MemWrapper
   RAJA_HOST_DEVICE
   element_t &operator()(Indices... indices) const
   {
-    return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
+    return (*m_MemObj).data[DataType::layout_t::s_oper(indices...)];
   }
 };
 
@@ -71,7 +71,7 @@ struct MemWrapper
 template<typename DataType>
 struct MemWrapper<RAJA::cuda_priv_mem, DataType>
 {
-  DataType *SharedMem = nullptr;
+  DataType *m_MemObj = nullptr;
   using type = DataType;
   using element_t = typename DataType::element_t;
   using pol_t = RAJA::cuda_priv_mem;
@@ -80,7 +80,7 @@ struct MemWrapper<RAJA::cuda_priv_mem, DataType>
   RAJA_HOST_DEVICE
   element_t &operator()(Indices... indices) const
   {
-    return (*SharedMem).data[0];
+    return (*m_MemObj).data[0];
   }
 };
 

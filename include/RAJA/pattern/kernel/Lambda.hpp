@@ -111,7 +111,7 @@ struct StatementExecutor<statement::CreateShmem<camp::idx_seq<Indices...>, Enclo
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
     varType SharedM;
-    camp::get<Pos>(data.param_tuple).SharedMem = &SharedM;
+    camp::get<Pos>(data.param_tuple).m_MemObj = &SharedM;
     createShared<others...>(data);
   }
 
@@ -122,7 +122,7 @@ struct StatementExecutor<statement::CreateShmem<camp::idx_seq<Indices...>, Enclo
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
   static void RAJA_INLINE setPtrToNull(Data && data)
   {
-    camp::get<Pos>(data.param_tuple).SharedMem = nullptr;
+    camp::get<Pos>(data.param_tuple).m_MemObj = nullptr;
     setPtrToNull<others...>(data);
   }
 
