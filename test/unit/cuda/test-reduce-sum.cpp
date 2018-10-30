@@ -89,14 +89,14 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
 
   double dtinit = 5.0;
 
-  ReduceSum<cuda_reduce<block_size>, double> dsum0(0.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum1(dtinit * 1.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum2(0.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum3(dtinit * 3.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum4(0.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum5(dtinit * 5.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum6(0.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum7(dtinit * 7.0);
+  ReduceSum<cuda_reduce, double> dsum0(0.0);
+  ReduceSum<cuda_reduce, double> dsum1(dtinit * 1.0);
+  ReduceSum<cuda_reduce, double> dsum2(0.0);
+  ReduceSum<cuda_reduce, double> dsum3(dtinit * 3.0);
+  ReduceSum<cuda_reduce, double> dsum4(0.0);
+  ReduceSum<cuda_reduce, double> dsum5(dtinit * 5.0);
+  ReduceSum<cuda_reduce, double> dsum6(0.0);
+  ReduceSum<cuda_reduce, double> dsum7(dtinit * 7.0);
 
   int loops = 2;
   for (int k = 0; k < loops; k++) {
@@ -132,14 +132,14 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
 
   double dtinit = 5.0;
 
-  ReduceSum<cuda_reduce<block_size>, double> dsum0(5.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum1;
-  ReduceSum<cuda_reduce<block_size>, double> dsum2(5.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum3;
-  ReduceSum<cuda_reduce<block_size>, double> dsum4(5.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum5;
-  ReduceSum<cuda_reduce<block_size>, double> dsum6(5.0);
-  ReduceSum<cuda_reduce<block_size>, double> dsum7;
+  ReduceSum<cuda_reduce, double> dsum0(5.0);
+  ReduceSum<cuda_reduce, double> dsum1;
+  ReduceSum<cuda_reduce, double> dsum2(5.0);
+  ReduceSum<cuda_reduce, double> dsum3;
+  ReduceSum<cuda_reduce, double> dsum4(5.0);
+  ReduceSum<cuda_reduce, double> dsum5;
+  ReduceSum<cuda_reduce, double> dsum6(5.0);
+  ReduceSum<cuda_reduce, double> dsum7;
 
   dsum0.reset(0.0);
   dsum1.reset(dtinit * 1.0);
@@ -194,10 +194,10 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   double dtinit = 5.0;
   int itinit = 4;
 
-  ReduceSum<cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
-  ReduceSum<cuda_reduce<block_size>, int> isum1(itinit * 2);
-  ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
-  ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
+  ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
+  ReduceSum<cuda_reduce, int> isum1(itinit * 2);
+  ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
+  ReduceSum<cuda_reduce, int> isum3(itinit * 4);
 
   forallN<
       NestedPolicy<ExecList<ExecPolicy<seq_segit, cuda_exec<block_size> > > > >(
@@ -243,10 +243,10 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   double dtinit = 5.0;
   int itinit = 4;
 
-  ReduceSum<cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
-  ReduceSum<cuda_reduce<block_size>, int> isum1(itinit * 2);
-  ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
-  ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
+  ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
+  ReduceSum<cuda_reduce, int> isum1(itinit * 2);
+  ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
+  ReduceSum<cuda_reduce, int> isum3(itinit * 4);
 
   forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
       iset, [=] RAJA_DEVICE(int i) {
@@ -269,8 +269,8 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
 {
   double* rand_dvalue = ReduceSumCUDA::rand_dvalue;
 
-  ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
-  ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
+  ReduceSum<cuda_reduce_atomic, double> dsumN(0.0);
+  ReduceSum<cuda_reduce_atomic, double> dsumP(0.0);
 
   double neg_chk_val = 0.0;
   double pos_chk_val = 0.0;
@@ -309,7 +309,7 @@ CUDA_TEST_F(ReduceSumCUDA, increasing_size)
 
   for (int size = block_size; size <= TEST_VEC_LEN; size += block_size) {
 
-    ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
+    ReduceSum<cuda_reduce, double> dsum0(dtinit);
 
     forall<cuda_exec<block_size, true> >(RangeSegment(0, size),
                                          [=] RAJA_DEVICE(int i) {
