@@ -66,19 +66,14 @@ struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
 
-//This statement will create shared memory
-template<typename... EnclosedStmts>
-struct CreateShmem : public internal::Statement<camp::nil> {
-};
-
 
 //Create Shared Memory Statement V2.0
 template<typename Indices,typename... EnclosedStmts>
-struct CreateShmem2 : public internal::Statement<camp::nil> {
+struct CreateShmem : public internal::Statement<camp::nil> {
 };
 
 template<camp::idx_t... Indices,typename... EnclosedStmts>
-struct CreateShmem2<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
+struct CreateShmem<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
 };
 
 
@@ -97,51 +92,12 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
-
-//Helper struct to help us count.
-template<camp::idx_t> struct int_{};
-
-//Shared memory creator ver 1.0
-template<typename... EnclosedStmts>
-struct StatementExecutor<statement::CreateShmem<EnclosedStmts...>>{
-
-  template<class Data, camp::idx_t Pos>
-  static RAJA_INLINE void createShared(Data &&data, int_<Pos>){
-
-    using varType = typename camp::tuple_element_t<Pos-1, typename camp::decay<Data>::param_tuple_t>::type;
-    varType SharedM;
-    camp::get<Pos-1>(data.param_tuple).SharedMem = &SharedM;
-
-    createShared( data, int_<Pos-1>());
-  }
-
-  template<class Data>
-  static void RAJA_INLINE createShared(Data &&data, int_<static_cast<camp::idx_t>(1)>){
-
-    using varType = typename camp::tuple_element_t<0, typename camp::decay<Data>::param_tuple_t>::type;
-    varType SharedM;
-
-    camp::get<0>(data.param_tuple).SharedMem = &SharedM;
-
-    //Execute Statement List
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
-  }
-
-  template<typename Data>
-  static RAJA_INLINE void exec(Data &&data)
-  {
-    //kick off
-    const camp::idx_t N = camp::tuple_size<typename camp::decay<Data>::param_tuple_t>::value;
-    createShared(data,int_<N>());
-  }
-};
-
 //Shared memory creator version 2.0
 template<camp::idx_t... Indices, typename... EnclosedStmts>
-struct StatementExecutor<statement::CreateShmem2<camp::idx_seq<Indices...>, EnclosedStmts...> >{
+struct StatementExecutor<statement::CreateShmem<camp::idx_seq<Indices...>, EnclosedStmts...> >{
 
   //
-  //Intialize shared memory
+  //Here we are out of objects that need to be intialized
   //
   template<class Data>
   static void RAJA_INLINE createShared(Data && data)
@@ -161,7 +117,7 @@ struct StatementExecutor<statement::CreateShmem2<camp::idx_seq<Indices...>, Encl
 
   //Set pointer to null
   template<class Data>
-  static void RAJA_INLINE setPtrToNull(Data &&) {}
+  static void RAJA_INLINE setPtrToNull(Data &&) {} 
 
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
   static void RAJA_INLINE setPtrToNull(Data && data)

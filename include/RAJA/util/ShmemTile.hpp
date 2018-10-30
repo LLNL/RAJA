@@ -38,7 +38,7 @@
 namespace RAJA
 {
 
-//RAJA memory objects
+//RAJA memory object wrapper policies
 struct cpu_tile_mem;
 
 struct cuda_shared_mem;
@@ -86,24 +86,6 @@ struct MemWrapper<RAJA::cuda_priv_mem, DataType>
 
 
 /*!
- * Shared memory Wrapper
- */
-template<typename DataType>
-struct SharedMemWrapper
-{
-  DataType *SharedMem = nullptr;
-  using type = DataType;
-  using element_t = typename DataType::element_t;
-
-  template<typename... Indices>
-  element_t &operator()(Indices... indices) const
-  {
-    return (*SharedMem).data[DataType::layout_t::s_oper(indices...)];
-  }
-};
-
-
-/*!
  * RAJA memory object (shared mem 3.0)
  */
 template<typename T, typename Sizes>
@@ -120,59 +102,6 @@ struct MemObj<T, RAJA::SizeList<Sizes...> >
 };
 
 
-
-/*!
- * Shared memory version 2.0
- */
-template <typename T, typename Sizes>
-struct SharedMem{};
-
-template <typename T, camp::idx_t... Sizes>
-struct SharedMem<T, RAJA::SizeList<Sizes ...> >
-{
-  using self_t = SharedMem<T, SizeList<Sizes...> >;
-  using element_t = T;
-  using layout_t = StaticLayout<Sizes...>;
-  static const camp::idx_t NoElem = layout_t::size();
-  T data[NoElem];
-};
-
-/*!
- * Iteration specific memory / local thread memory
- * TODO: Extend this to the multi-dimensional case
- * We may need iteration specific arrays.
-*/
- /* - May not be needed - Delete potentially.
-template <typename Pol, typename T, typename Sizes>
-struct PrivMem;
-
-template <typename T, camp::idx_t... Sizes>
-struct PrivMem<cpu_priv_mem, T, RAJA::SizeList<Sizes ...> >
-{
-  using self_t = SharedMem<T, SizeList<Sizes...> >;
-  using element_t = T;
-  using layout_t = StaticLayout<Sizes...>;
-  static const camp::idx_t NoElem = layout_t::size();
-  T data[NoElem];
-};
-
-template <typename T, camp::idx_t... Sizes>
-struct PrivMem<cuda_priv_mem, T, RAJA::SizeList<Sizes ...> >
-{
-  T data; //thread private memory
-};
-*/
-
-/*!
- * Provides a multi-dimensional tiled View of shared memory data.
- *
- * IndexPolicies provide mappings of each dimension into shmem indicies.
- * This is especially useful for mapping global loop indices into cuda block-
- * local indices.
- *
- * The dimension sizes specified are the block-local sizes, and define the
- * amount of shared memory to be requested.
- */
 template <typename ShmemPol,
           typename T,
           typename Args,
