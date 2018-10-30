@@ -567,7 +567,7 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
   RAJA::kernel_param<Pol>(iSpace,
                           RAJA::make_tuple(aShared, bShared, 0.0),
 
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int i, int bx, int by, Shmem &aShared,  Shmem &bShared, double & pVal) {
+  [=] RAJA_HOST_DEVICE (int, int, int, int, int, Shmem &,  Shmem &, double & pVal) {
 
    pVal = 0.0;
 
@@ -596,7 +596,7 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
   },
 
   //read from shared mem
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx , int by, Shmem &aShared,  Shmem &bShared, double & pVal) {
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int, Shmem &aShared,  Shmem &bShared, double & pVal) {
 
     //Matrix multiply
     for(int j=0; j<TILE_DIM; j++){
@@ -606,7 +606,7 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
   },
 
   //write out solution
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx , int by, Shmem &aShared,  Shmem &bShared, double & pVal) {
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx , int by, Shmem &,  Shmem &, double & pVal) {
 
     int row = by * TILE_DIM + ty;  // Matrix row index
     int col = bx * TILE_DIM + tx;  // Matrix column index
@@ -703,7 +703,7 @@ using SeqTypes2 =
                  RAJA::statement::For<0, RAJA::loop_exec,                                      
                   RAJA::statement::Lambda<0>, //set pVal = 0
                   RAJA::statement::Lambda<2>, //dot product
-                  RAJA::statement::Lambda<3>, //write partial product out
+                  RAJA::statement::Lambda<3> //write partial product out
                 >
                >
             > //sliding window
