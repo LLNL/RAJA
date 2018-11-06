@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "RAJA/RAJA.hpp"
+#include "memoryManager.hpp"
 #include "RAJA/util/Timer.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -50,8 +51,8 @@
  */
 
 
-//#define DEBUG_LTIMES 
-#undef DEBUG_LTIMES
+#define DEBUG_LTIMES 
+//#undef DEBUG_LTIMES
 
 using namespace RAJA;
 
@@ -155,7 +156,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 //----------------------------------------------------------------------------//
-
+#if 0
 {
   std::cout << "\n Running C-version of LTimes (with Views)...\n";
 
@@ -546,8 +547,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
+#endif
 
 #if defined(RAJA_ENABLE_CUDA)
+#if 0 //Comment out CUDA block
 {
   std::cout << "\n Running RAJA CUDA version of LTimes...\n";
 
@@ -736,7 +739,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       // Compute thread-local Phi value and store
                       statement::Thread< 
                         statement::Lambda<3>,
-                        statement::For<1, seq_exec,  // d 
+                        statement::For<1, seq_exec,  // d
                           statement::Lambda<4>
                         >,
                         statement::Lambda<5>
@@ -853,7 +856,153 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif//Comment out CUDA block
+//---------------------------------
+{
+
+  //std::cout << "\n Running RAJA CUDA + new shmem version of LTimes...\n";
+  std::cout << "\n Running Tiled C version...\n";
+
+  double *dL_data   = new double[L_size]; //memoryManager::allocate<double>(L_size);
+  double *dpsi_data = new double[psi_size]; //memoryManager::allocate<double>(psi_size);
+  double *dphi_data = new double[phi_size]; //memoryManager::allocate<double>(phi_size);
+
+  std::memcpy(dL_data,   L_data, L_size*sizeof(double)); //copy L data
+  std::memcpy(dpsi_data, psi_data, psi_size*sizeof(double)); //copy psi data
+  std::memset(dphi_data, 0, phi_size * sizeof(double)); //copy phi data
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  // 
+  // L(m, d) : 1 -> d is stride-1 dimension 
+  using LView = RAJA::TypedView<double, Layout<2, int, 1>, IM, ID>;
+
+  // psi(d, g, z) : 0 -> d is stride-1 dimension 
+  using PsiView = RAJA::TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 0 -> m is stride-1 dimension 
+  using PhiView = RAJA::TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> dL_perm {{0, 1}};
+  LView L( dL_data,
+           RAJA::make_permuted_layout({num_m, num_d}, dL_perm) );
+
+  std::array<RAJA::idx_t, 3> dpsi_perm {{2, 1, 0}};
+  PsiView psi( dpsi_data,
+               RAJA::make_permuted_layout({num_d, num_g, num_z}, dpsi_perm) );
+
+  std::array<RAJA::idx_t, 3> dphi_perm {{2, 1, 0}};
+  PhiView phi( dphi_data,
+               RAJA::make_permuted_layout({num_m, num_g, num_z}, dphi_perm) );
+  
+
+  //Tile Dimensions
+  static const int tile_m = 48;
+  static const int tile_d = 48;
+  static const int tile_z = 64;
+
+  //Loop bounds  
+  static const int num_m_tiles = (num_m - 1)/tile_m + 1;
+  static const int num_d_tiles = (num_d - 1)/tile_d + 1;
+  static const int num_z_tiles = (num_z - 1)/tile_z + 1;
+
+
+  auto segments = RAJA::make_tuple(RangeSegment(0, num_m_tiles), RangeSegment(0, tile_m), //0, 1
+                                   RangeSegment(0, num_d_tiles), RangeSegment(0, tile_d), //2, 3
+                                   RangeSegment(0, num_g),                          //4
+                                   RangeSegment(0, num_z_tiles), RangeSegment(0, tile_z));//5, 6
+
+  //
+  // Regular for loops
+  //
+  for(int m_bIdx=0; m_bIdx < num_m_tiles; ++m_bIdx) {
+    for(int d_bIdx=0; d_bIdx < num_d_tiles; ++d_bIdx) {
+    
+      
+      double sh_L[tile_d][tile_m];
+
+      //Lambda 1
+      for(int d_tid = 0; d_tid < tile_d; ++d_tid) {
+        for(int m_tid = 0; m_tid < tile_m; ++m_tid) {
+          
+          IM m_global = static_cast<IM>(m_tid + tile_m*m_bIdx);
+          ID d_global = static_cast<ID>(d_tid + tile_d*d_bIdx);
+          
+          if(m_global < num_m && d_global < num_d){
+            sh_L[d_tid][m_tid] = L(m_global, d_global);
+          }else{
+            sh_L[d_tid][m_tid] = 0.0;
+          }
+
+        }
+      }
+      
+      for(int g_bIdx=0; g_bIdx < num_g; ++g_bIdx) {
+        for(int z_bIdx=0; z_bIdx < num_z_tiles; ++z_bIdx) {
+
+          double sh_psi[tile_d][tile_z];
+          //Lambda 2
+          for(int z_tid=0; z_tid < tile_z; ++z_tid) {
+            for(int d_tid=0; d_tid < tile_d; ++d_tid) {
+
+              IG g        = static_cast<IG>(g_bIdx);
+              ID d_global = static_cast<ID>(d_tid + tile_d*d_bIdx);
+              IZ z_global = static_cast<IZ>(z_tid + tile_z*z_bIdx);
+
+              //Load slice of psi into shared mem
+              if(d_global < num_d && z_global < num_z) {
+                sh_psi[d_tid][z_tid] = psi(d_global, g, z_global);
+              }else{
+                sh_psi[d_tid][z_tid] = 0;
+              }
+
+            }//d - thread
+          }//z - thread
+          //syncthreads
+
+          //Compute Phi - 
+          //Compute thread local phi value;
+          //double phi_local[tile_m][num_g][tile_z];
+
+          for(int z_tid=0; z_tid < tile_z; ++z_tid) {
+            for(int m_tid=0; m_tid < tile_m; ++m_tid) {
+           
+              IM m_global = static_cast<IM>(m_tid + tile_m*m_bIdx);
+              IG g        = static_cast<IG>(g_bIdx);
+              IZ z_global = static_cast<IZ>(z_tid + tile_z*z_bIdx);
+              double phi_local = phi(m_global, g, z_global); 
+              
+              //Lambda 3
+              for(int d_tid=0; d_tid<tile_d; ++d_tid) { 
+                phi_local += sh_L[d_tid][m_tid] * sh_psi[d_tid][z_tid];
+              }
+
+              //lambda 4
+              //Store Phi
+              if(m_global < num_m && z_global < num_z)
+                phi(m_global,g,z_global) = phi_local;
+
+            }
+          } 
+                    
+
+        }//z - block
+      }//g - block
+
+    }//d - block
+  }//m - block
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
+
+
+
+
+
+
+ } //End of Kernel
+#endif //If CUDA is enabled
 
 //----------------------------------------------------------------------------//
 
