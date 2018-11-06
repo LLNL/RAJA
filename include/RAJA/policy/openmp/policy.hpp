@@ -60,6 +60,10 @@ template <unsigned int TeamSize>
 struct Teams : std::integral_constant<unsigned int, TeamSize> {
 };
 
+template <unsigned int ThreadCount>
+struct ThreadC : std::integral_constant<unsigned int, ThreadCount> {
+};
+
 struct Target {
 };
 
@@ -135,12 +139,12 @@ struct omp_collapse_nowait_exec
 };
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-template <size_t Teams>
+template <size_t Threads>
 struct omp_target_parallel_for_exec
     : make_policy_pattern_t<Policy::target_openmp,
                             Pattern::forall,
                             omp::Target,
-                            omp::Teams<Teams>,
+                            omp::ThreadC<Threads>,
                             omp::Distribute> {
 };
 
