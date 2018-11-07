@@ -95,11 +95,6 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
   }
 
 
-  auto iSpace =
-    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
-
-
   //Create a memory object type
   using memObj = RAJA::MemObj<int, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
 
@@ -107,7 +102,8 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
   using mySharedMemory = RAJA::MemWrapper<Tile_pol, memObj>;
   mySharedMemory myTile, myTile2;
 
-  RAJA::kernel_param<Pol>(iSpace,
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                                           RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
                           RAJA::make_tuple(myTile, myTile2),
 
   //Load data into shared memory
@@ -248,7 +244,7 @@ using TestTypes =
           RAJA::statement::CreateShmem<camp::idx_seq<1,0>,
 
            //Load data into shared memory
-            RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+           RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
                 RAJA::statement::Lambda<0>
               >
@@ -256,15 +252,39 @@ using TestTypes =
 
            //Read data from shared memory
             RAJA::statement::For<1, RAJA::loop_exec,
-           RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
-                                RAJA::statement::Lambda<1>
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<1>
            >
           >
          > //close shared mem window
         > //2
        >//3
       > //close policy list
-     >
+     > //close list
+  ,RAJA::list<RAJA::cpu_tile_mem,
+    RAJA::KernelPolicy<
+           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                     RAJA::ArgList<2, 3>,
+
+          RAJA::statement::CreateShmem<camp::idx_seq<1,0>,
+
+           //Load data into shared memory
+           RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<0>
+              >
+             >,
+
+           //Read data from shared memory
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::Lambda<1>
+           >
+          >
+         > //close shared mem window
+       >//outer collapsed
+      > //close policy list
+     > //close list
    >;
 
 
@@ -295,6 +315,7 @@ using CUDATypes =
                 RAJA::statement::For<1, RAJA::cuda_thread_exec,
                   RAJA::statement::For<0, RAJA::cuda_thread_exec,
                     RAJA::statement::Lambda<1> > >
+               ,RAJA::statement::CudaSyncThreads,
               > //close shared memory scope
             >//for 2
         >//for 3
@@ -382,11 +403,6 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
     }
   }
 
-  auto iSpace =
-    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                     RAJA::RangeSegment(0, windowIter),
-                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
-
   using memObj0 = RAJA::MemObj<double, Tile_size0>;
   using memObj1 = RAJA::MemObj<double, Tile_size1>;
 
@@ -397,7 +413,9 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   Shmem aShared, bShared; //memory to be shared between threads
   threadPriv pVal; //iteration dependent data
  
-  RAJA::kernel_param<Pol>(iSpace,
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                                           RAJA::RangeSegment(0, windowIter),
+                                           RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
                           RAJA::make_tuple(aShared, bShared, pVal),
 
   [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &,  Shmem &, threadPriv &pVal) {
@@ -554,17 +572,14 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
     }
   }
 
-  auto iSpace =
-    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                     RAJA::RangeSegment(0, windowIter),
-                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1));
-
   using memObj0 = RAJA::MemObj<double, Tile_size0>;
   using Shmem      = RAJA::MemWrapper<Tile_pol0, memObj0>;
   
   Shmem aShared, bShared; //memory to be shared between threads
 
-  RAJA::kernel_param<Pol>(iSpace,
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
+                                           RAJA::RangeSegment(0, windowIter),
+                                           RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
                           RAJA::make_tuple(aShared, bShared, 0.0),
 
   [=] RAJA_HOST_DEVICE (int, int, int, int, int, Shmem &,  Shmem &, double & pVal) {
