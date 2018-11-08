@@ -99,7 +99,6 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
   using SharedTile = RAJA::TypedScopedArray<Tile_pol, int, double, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
   SharedTile myTile, myTile2;
 
-
   RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
                                            RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
                           RAJA::make_tuple(myTile, myTile2),
@@ -160,7 +159,7 @@ using SeqTypes =
         RAJA::statement::For<3, RAJA::loop_exec,
           RAJA::statement::For<2, RAJA::loop_exec,
 
-            RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+            RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
@@ -190,7 +189,7 @@ using TestTypes =
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
            //Load data into shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
@@ -214,7 +213,7 @@ using TestTypes =
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
            //Load data into shared memory
             RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
@@ -239,7 +238,7 @@ using TestTypes =
       RAJA::statement::For<3, RAJA::omp_parallel_for_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
            //Load data into shared memory
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -264,7 +263,7 @@ using TestTypes =
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<2, 3>,
 
-          RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
            //Load data into shared memory
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -299,7 +298,7 @@ using CUDATypes =
         RAJA::statement::For<3, RAJA::cuda_block_exec,
           RAJA::statement::For<2, RAJA::cuda_block_exec,
 
-          RAJA::statement::InitScopedMem<camp::idx_seq<0,1>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
 
              //Load data into shared memory
               RAJA::statement::For<1, RAJA::cuda_thread_exec,
@@ -656,7 +655,7 @@ using SeqTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-         RAJA::statement::InitScopedMem<camp::idx_seq<2,1,0>,
+         RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
 
             //Initalize thread private value
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -694,7 +693,7 @@ using SeqTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
             //Initalize thread private value
 
             //Slide window across matrix
@@ -735,7 +734,7 @@ using OmpTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<2,1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
@@ -769,7 +768,7 @@ using OmpTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::loop_exec,
@@ -811,7 +810,7 @@ using CudaTypes2 =
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<2,1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -847,7 +846,7 @@ using CudaTypes2 =
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
 
             //Intialize thread private value to zero
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
@@ -889,13 +888,13 @@ using CudaTypes3 =
   ::testing::Types<
   RAJA::list<
     RAJA::cuda_shared_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
-    RAJA::cuda_thread_mem, RAJA::SizeList<1>,
+    RAJA::cuda_thread_mem, RAJA::SizeList<0,0>,
     //Policy for Matrix multiply with a scalar
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<camp::idx_seq<2,1,0>,
+          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,

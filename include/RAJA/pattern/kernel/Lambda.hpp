@@ -76,17 +76,6 @@ template<camp::idx_t... Indices,typename... EnclosedStmts>
 struct InitScopedMem<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
 };
 
-
-//Create Shared Memory Statement V2.0 - DELETE
-template<typename Indices,typename... EnclosedStmts>
-struct CreateShmem : public internal::Statement<camp::nil> {
-};
-
-template<camp::idx_t... Indices,typename... EnclosedStmts>
-struct CreateShmem<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
-};
-
-
 }// end namespace statement
 
 namespace internal
@@ -149,53 +138,6 @@ struct StatementExecutor<statement::InitScopedMem<camp::idx_seq<Indices...>, Enc
     setPtrToNull<Indices...>(data);
   }
 };
-
-
-//Shared memory creator version 2.0
-template<camp::idx_t... Indices, typename... EnclosedStmts>
-struct StatementExecutor<statement::CreateShmem<camp::idx_seq<Indices...>, EnclosedStmts...> >{
-
-  //
-  //Here we are out of objects that need to be intialized
-  //
-  template<class Data>
-  static void RAJA_INLINE createShared(Data && data)
-  {
-    //Execute Statement List
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
-  }
-
-  template<camp::idx_t Pos, camp::idx_t... others, class Data>
-  static void RAJA_INLINE createShared(Data && data)
-  {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
-    varType SharedM;
-    camp::get<Pos>(data.param_tuple).m_MemObj = &SharedM;
-    createShared<others...>(data);
-  }
-
-  //Set pointer to null
-  template<class Data>
-  static void RAJA_INLINE setPtrToNull(Data &&) {} 
-
-  template<camp::idx_t Pos, camp::idx_t... others, class Data>
-  static void RAJA_INLINE setPtrToNull(Data && data)
-  {
-    camp::get<Pos>(data.param_tuple).m_MemObj = nullptr;
-    setPtrToNull<others...>(data);
-  }
-
-  template<typename Data>
-  static RAJA_INLINE void exec(Data &&data)
-  {
-    //Initalize shared memory + launch loops
-    createShared<Indices...>(data);
-
-    //Set wrapper pointers to null
-    setPtrToNull<Indices...>(data);
-  }
-};
-
 
 }  // namespace internal
 

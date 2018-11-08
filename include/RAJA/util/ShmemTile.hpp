@@ -39,19 +39,16 @@ namespace RAJA
 {
 
 //New RAJA memory policies
-struct cpu_array_mem;
+struct cpu_tile_mem;
 struct cuda_thread_mem;
 struct cuda_shared_mem;
 
-//RAJA memory object wrapper policies
-struct cpu_tile_mem;
-
-struct cuda_priv_mem;
+template<camp::idx_t ... Sizes>
+using param_idx = camp::idx_seq<Sizes...>;
 
 /*!
  * RAJA scoped memory
  */
-
 template<typename Pol, typename IDXType, typename DataType, typename Sizes>
 struct TypedScopedArray
 {
@@ -69,94 +66,16 @@ struct TypedScopedArray<Pol, IDXType,  DataType, RAJA::SizeList<Sizes...>>
 
   template<typename... Indices>
   RAJA_HOST_DEVICE
-  element_t &operator()(Indices... indices) const
+  element_t &operator()(Indices ...indices) const
   {
     return m_arrayPtr[layout_t::s_oper(indices...)];
   }
 
 };
 
-//Cuda shared memory specialization - will be removed once projections are suported
-template<typename IDXType, typename DataType, camp::idx_t ...Sizes>
-struct TypedScopedArray<RAJA::cuda_thread_mem, IDXType, DataType, RAJA::SizeList<Sizes...>>
-{
-  DataType *m_arrayPtr = nullptr;
-  using type = DataType;
-  using element_t = DataType;
-  using layout_t = StaticLayout<Sizes...>;
-  using pol_t = cuda_thread_mem;
-  static const camp::idx_t NoElem = layout_t::size();
-
-  template<typename... Indices>
-  RAJA_HOST_DEVICE
-  element_t &operator()(Indices... indices) const
-  {
-    return m_arrayPtr[0];
-  }
-
-};
-
-
+//Type alias
 template <typename Pol, typename DataType, typename ...Sizes>
 using ScopedArray = TypedScopedArray<Pol, RAJA::Index_type, DataType, Sizes...>;
-
-/*!
- * Memory Wrapper
- */
-template<typename Pol, typename DataType>
-struct MemWrapper
-{
-  DataType *m_MemObj = nullptr;
-  using type = DataType;
-  using element_t = typename DataType::element_t;
-  using pol_t = Pol;
-
-  template<typename... Indices>
-  RAJA_HOST_DEVICE
-  element_t &operator()(Indices... indices) const
-  {
-    return (*m_MemObj).data[DataType::layout_t::s_oper(indices...)];
-  }
-};
-
-
-/*!
- * Memory Wrapper specialization 
- * Stores data in thread register space
- */
-template<typename DataType>
-struct MemWrapper<RAJA::cuda_priv_mem, DataType>
-{
-  DataType *m_MemObj = nullptr;
-  using type = DataType;
-  using element_t = typename DataType::element_t;
-  using pol_t = RAJA::cuda_priv_mem;
-
-  template<typename... Indices>
-  RAJA_HOST_DEVICE
-  element_t &operator()(Indices... indices) const
-  {
-    return (*m_MemObj).data[0];
-  }
-};
-
-
-/*!
- * RAJA memory object (shared mem 3.0)
- */
-template<typename T, typename Sizes>
-struct MemObj{};
-
-template<typename T, camp::idx_t ... Sizes>
-struct MemObj<T, RAJA::SizeList<Sizes...> >
-{
-  using self_t = MemObj<T, SizeList<Sizes...> >; 
-  using element_t = T;
-  using layout_t = StaticLayout<Sizes...>;
-  static const camp::idx_t NoElem = layout_t::size();
-  T data[NoElem];
-};
-
 
 template <typename ShmemPol,
           typename T,
