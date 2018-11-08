@@ -67,7 +67,17 @@ struct Lambda : internal::Statement<camp::nil> {
 };
 
 
-//Create Shared Memory Statement V2.0
+//Intialize Scoped Memory
+template<typename Indices,typename... EnclosedStmts>
+struct InitScopedMem : public internal::Statement<camp::nil> {
+};
+
+template<camp::idx_t... Indices,typename... EnclosedStmts>
+struct InitScopedMem<camp::idx_seq<Indices...>, EnclosedStmts...> : public internal::Statement<camp::nil> {
+};
+
+
+//Create Shared Memory Statement V2.0 - DELETE
 template<typename Indices,typename... EnclosedStmts>
 struct CreateShmem : public internal::Statement<camp::nil> {
 };
@@ -91,6 +101,55 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
     invoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
+
+
+//Statement executor to intialize scoped memory
+template<camp::idx_t... Indices, typename... EnclosedStmts>
+struct StatementExecutor<statement::InitScopedMem<camp::idx_seq<Indices...>, EnclosedStmts...> >{
+
+  
+  //Execute statement list
+  template<class Data>
+  static void RAJA_INLINE initMem(Data && data)
+  {
+    //Execute Statement List
+    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+  }
+
+  //Intialize scoped memory
+  template<camp::idx_t Pos, camp::idx_t... others, class Data>
+  static void RAJA_INLINE initMem(Data && data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    
+    varType ScopedArray[NoElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = ScopedArray;
+    initMem<others...>(data);
+  }
+
+  //Set pointer to null
+  template<class Data>
+  static void RAJA_INLINE setPtrToNull(Data &&) {} 
+
+  template<camp::idx_t Pos, camp::idx_t... others, class Data>
+  static void RAJA_INLINE setPtrToNull(Data && data)
+  {
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    setPtrToNull<others...>(data);
+  }
+
+  template<typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+    //Initalize scoped arrays + execute statements
+    initMem<Indices...>(data);
+
+    //set array pointers to null
+    setPtrToNull<Indices...>(data);
+  }
+};
+
 
 //Shared memory creator version 2.0
 template<camp::idx_t... Indices, typename... EnclosedStmts>

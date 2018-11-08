@@ -38,11 +38,67 @@
 namespace RAJA
 {
 
+//New RAJA memory policies
+struct cpu_array_mem;
+struct cuda_thread_mem;
+struct cuda_shared_mem;
+
 //RAJA memory object wrapper policies
 struct cpu_tile_mem;
 
-struct cuda_shared_mem;
 struct cuda_priv_mem;
+
+/*!
+ * RAJA scoped memory
+ */
+
+template<typename Pol, typename IDXType, typename DataType, typename Sizes>
+struct TypedScopedArray
+{
+};
+
+template<typename Pol, typename IDXType, typename DataType, camp::idx_t ...Sizes>
+struct TypedScopedArray<Pol, IDXType,  DataType, RAJA::SizeList<Sizes...>>
+{
+  DataType *m_arrayPtr = nullptr;
+  using type = DataType;
+  using element_t = DataType;
+  using layout_t = StaticLayout<Sizes...>;
+  using pol_t = Pol;
+  static const camp::idx_t NoElem = layout_t::size();
+
+  template<typename... Indices>
+  RAJA_HOST_DEVICE
+  element_t &operator()(Indices... indices) const
+  {
+    return m_arrayPtr[layout_t::s_oper(indices...)];
+  }
+
+};
+
+//Cuda shared memory specialization - will be removed once projections are suported
+template<typename IDXType, typename DataType, camp::idx_t ...Sizes>
+struct TypedScopedArray<RAJA::cuda_thread_mem, IDXType, DataType, RAJA::SizeList<Sizes...>>
+{
+  DataType *m_arrayPtr = nullptr;
+  using type = DataType;
+  using element_t = DataType;
+  using layout_t = StaticLayout<Sizes...>;
+  using pol_t = cuda_thread_mem;
+  static const camp::idx_t NoElem = layout_t::size();
+
+  template<typename... Indices>
+  RAJA_HOST_DEVICE
+  element_t &operator()(Indices... indices) const
+  {
+    return m_arrayPtr[0];
+  }
+
+};
+
+
+template <typename Pol, typename DataType, typename ...Sizes>
+using ScopedArray = TypedScopedArray<Pol, RAJA::Index_type, DataType, Sizes...>;
 
 /*!
  * Memory Wrapper
@@ -94,7 +150,7 @@ struct MemObj{};
 template<typename T, camp::idx_t ... Sizes>
 struct MemObj<T, RAJA::SizeList<Sizes...> >
 {
-  using self_t = MemObj<T, SizeList<Sizes...> >;
+  using self_t = MemObj<T, SizeList<Sizes...> >; 
   using element_t = T;
   using layout_t = StaticLayout<Sizes...>;
   static const camp::idx_t NoElem = layout_t::size();
