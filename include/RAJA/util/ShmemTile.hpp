@@ -47,12 +47,12 @@ template<camp::idx_t ... Sizes>
 using param_idx = camp::idx_seq<Sizes...>;
 
 /*!
- * RAJA scoped arrays:
- * Hold pointers and information necessary
+ * RAJA scoped arrays
+ * Holds a pointer and information necessary
  * to allocate a static array.
  *
- * Once intialized they can be treated N dimensional array
- * on the CPU statck, CUDA thread private memory,
+ * Once intialized they can be treated as an N dimensional array
+ * on the CPU stack, CUDA thread private memory,
  * or CUDA shared memory. Intialization occurs within
  * the RAJA::Kernel statement ``InitScopedArray"
  *

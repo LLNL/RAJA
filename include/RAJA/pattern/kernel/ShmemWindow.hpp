@@ -54,13 +54,13 @@ struct SetShmemWindow
 };
 
 /*!
- * RAJA::kernel statements that intialize scoped arrays.
+ * Kernel statements intialize scoped arrays
  * The statement takes parameter sequence to intialize
- * memory from the parameter tuple.
+ * memory from the parameter tuple and additional statements.
  *
  * For example:
  * IntiScopedMem<RAJA::param_idx<0>, statements...>
- * Will intialize the 0th array in the tuple
+ * Will intialize the 0th array in the param tuple
  */
 template<typename Indices,typename... EnclosedStmts>
 struct InitScopedMem : public internal::Statement<camp::nil> {
@@ -76,7 +76,7 @@ struct InitScopedMem<camp::idx_seq<Indices...>, EnclosedStmts...> : public inter
 namespace internal
 {
 
-//Statement executor to intialize scoped memory
+//Statement executor to intialize scoped array
 template<camp::idx_t... Indices, typename... EnclosedStmts>
 struct StatementExecutor<statement::InitScopedMem<camp::idx_seq<Indices...>, EnclosedStmts...> >{
 
@@ -87,7 +87,7 @@ struct StatementExecutor<statement::InitScopedMem<camp::idx_seq<Indices...>, Enc
     execute_statement_list<camp::list<EnclosedStmts...>>(data);
   }
 
-  //Intialize scoped memory
+  //Intialize scoped array
   //Identifies type + number of elements needed
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
   static void RAJA_INLINE initMem(Data && data)
