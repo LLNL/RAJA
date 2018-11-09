@@ -46,8 +46,8 @@ namespace RAJA
 namespace internal
 {
 
-//Struct to determine RAJA memory object behavior 
-//i.e. should it be a shared or thread private memory object
+//Struct to check whether a RAJA scoped array should be stored
+//in shared or thread private memory.
 template<typename pol>
 struct checkPol{};
 
@@ -64,11 +64,11 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
 
   IndexCalc index_calc;
 
-  //CUDA thread private memory
+  //Intialize array in CUDA thread private memory
   template<camp::idx_t Pos>
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_thread_mem> ) {
 
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
 
     varType ScopedArray[NoElem];
@@ -77,11 +77,11 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
     inspect(data, num_logical_blocks, block_carry);
   }
 
-  //CUDA thread private memory
+  //Intialize array in CUDA thread private memory
   template<camp::idx_t Pos, camp::idx_t... others>
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_thread_mem> ) {
 
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
 
     varType ScopedArray[NoElem];
@@ -90,11 +90,11 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
     inspect<others...>(data, num_logical_blocks, block_carry);
   }
 
-  //Create CUDA shared memory
+  //Intialize array in CUDA shared memory
   template<camp::idx_t Pos>
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_shared_mem> ) {
 
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
 
     __shared__ varType ScopedArray[NoElem];
@@ -103,11 +103,11 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
     inspect(data, num_logical_blocks, block_carry);
   }
 
-  //Create CUDA shared memory
+  //Intialize array in CUDA shared memory
   template<camp::idx_t Pos, camp::idx_t... others>
   void RAJA_INLINE __device__ initMem(Data &data, int num_logical_blocks, int block_carry, checkPol<RAJA::cuda_shared_mem> ) {
 
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::type;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
 
     __shared__ varType ScopedArray[NoElem];
@@ -116,6 +116,7 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
     inspect<others...>(data, num_logical_blocks, block_carry);
   }
 
+  //Inspects where the memory should be initalized
   template<camp::idx_t Pos, camp::idx_t... others>
   void RAJA_INLINE __device__ inspect(Data &data, int num_logical_blocks, int block_carry)
   {
@@ -125,13 +126,12 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
 
   }
   
-  
   void RAJA_INLINE __device__ inspect(Data &data, int num_logical_blocks, int block_carry)
   {
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
   }
 
-  //set pointer to null base case
+  //Set pointer to null base case
   template<camp::idx_t Pos>
   void RAJA_INLINE __device__ setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
   {
@@ -140,7 +140,7 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
   }
 
 
-  //set pointer to null recursive case
+  //Set pointer to null recursive case
   template<camp::idx_t Pos, camp::idx_t... others>
   void RAJA_INLINE __device__ setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
   {
@@ -157,6 +157,7 @@ struct CudaStatementExecutor<Data, statement::InitScopedMem<camp::idx_seq<Indice
     //Intialize scoped arrays + launch loops
     inspect<Indices...>(data, num_logical_blocks, block_carry);
     
+    //set pointers in scoped arrays to null
     setPtrToNull<Indices...>(data, num_logical_blocks, block_carry);
   }
 

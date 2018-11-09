@@ -38,7 +38,7 @@
 namespace RAJA
 {
 
-//New RAJA memory policies
+//Policies for RAJA scoped arrays
 struct cpu_tile_mem;
 struct cuda_thread_mem;
 struct cuda_shared_mem;
@@ -47,7 +47,18 @@ template<camp::idx_t ... Sizes>
 using param_idx = camp::idx_seq<Sizes...>;
 
 /*!
- * RAJA scoped memory
+ * RAJA scoped arrays:
+ * Hold pointers and information necessary
+ * to allocate a static array.
+ *
+ * Once intialized they can be treated N dimensional array
+ * on the CPU statck, CUDA thread private memory,
+ * or CUDA shared memory. Intialization occurs within
+ * the RAJA::Kernel statement ``InitScopedArray"
+ *
+ * An accessor is provided to enable multi-dimensional indexing.
+ * Two versions are created below, a strongly typed version and
+ * a non-strongly typed version.
  */
 template<typename Pol, typename DataType, typename Sizes, typename... IndexTypes>
 struct TypedScopedArray
@@ -55,10 +66,9 @@ struct TypedScopedArray
 };
 
 template<typename Pol, typename DataType, camp::idx_t ...Sizes, typename... IndexTypes>
-struct TypedScopedArray<Pol, DataType, RAJA::SizeList<Sizes...>,IndexTypes...>
+struct TypedScopedArray<Pol, DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
 {
   DataType *m_arrayPtr = nullptr;
-  using type = DataType;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
   using pol_t = Pol;
@@ -80,7 +90,6 @@ template<typename Pol, typename DataType, camp::idx_t ...Sizes>
 struct ScopedArray<Pol, DataType, RAJA::SizeList<Sizes...> >
 {
   DataType *m_arrayPtr = nullptr;
-  using type = DataType;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
   using pol_t = Pol;
@@ -95,7 +104,16 @@ struct ScopedArray<Pol, DataType, RAJA::SizeList<Sizes...> >
 
 };
 
-
+/*!
+ * Provides a multi-dimensional tiled View of shared memory data.
+ *
+ * IndexPolicies provide mappings of each dimension into shmem indicies.
+ * This is especially useful for mapping global loop indices into cuda block-
+ * local indices.
+ *
+ * The dimension sizes specified are the block-local sizes, and define the
+ * amount of shared memory to be requested.
+*/
 template <typename ShmemPol,
           typename T,
           typename Args,
@@ -139,7 +157,7 @@ struct ShmemTile<ShmemPol,
   using element_t = T;
   shmem_t shmem;
 
-  int offsets[sizeof...(Segments)] = {0}; //set to zero
+  int offsets[sizeof...(Segments)]; //set to zero
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
