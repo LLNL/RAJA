@@ -49,13 +49,13 @@ using param_idx = camp::idx_seq<Sizes...>;
 /*!
  * RAJA scoped memory
  */
-template<typename Pol, typename IDXType, typename DataType, typename Sizes>
+template<typename Pol, typename DataType, typename Sizes, typename... IndexTypes>
 struct TypedScopedArray
 {
 };
 
-template<typename Pol, typename IDXType, typename DataType, camp::idx_t ...Sizes>
-struct TypedScopedArray<Pol, IDXType,  DataType, RAJA::SizeList<Sizes...>>
+template<typename Pol, typename DataType, camp::idx_t ...Sizes, typename... IndexTypes>
+struct TypedScopedArray<Pol, DataType, RAJA::SizeList<Sizes...>,IndexTypes...>
 {
   DataType *m_arrayPtr = nullptr;
   using type = DataType;
@@ -64,7 +64,29 @@ struct TypedScopedArray<Pol, IDXType,  DataType, RAJA::SizeList<Sizes...>>
   using pol_t = Pol;
   static const camp::idx_t NoElem = layout_t::size();
 
-  template<typename... Indices>
+  RAJA_HOST_DEVICE
+  element_t &operator()(IndexTypes ...indices) const
+  {
+    return  m_arrayPtr[layout_t::s_oper(stripIndexType(indices)...)];
+  }
+};
+
+template<typename Pol, typename DataType, typename Sizes>
+struct ScopedArray
+{
+};
+
+template<typename Pol, typename DataType, camp::idx_t ...Sizes>
+struct ScopedArray<Pol, DataType, RAJA::SizeList<Sizes...> >
+{
+  DataType *m_arrayPtr = nullptr;
+  using type = DataType;
+  using element_t = DataType;
+  using layout_t = StaticLayout<Sizes...>;
+  using pol_t = Pol;
+  static const camp::idx_t NoElem = layout_t::size();
+
+  template<typename ...Indices>
   RAJA_HOST_DEVICE
   element_t &operator()(Indices ...indices) const
   {
@@ -73,9 +95,6 @@ struct TypedScopedArray<Pol, IDXType,  DataType, RAJA::SizeList<Sizes...>>
 
 };
 
-//Type alias
-template <typename Pol, typename DataType, typename ...Sizes>
-using ScopedArray = TypedScopedArray<Pol, RAJA::Index_type, DataType, Sizes...>;
 
 template <typename ShmemPol,
           typename T,
