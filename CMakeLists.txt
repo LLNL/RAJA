@@ -116,7 +116,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
   if (ENABLE_CHAI)
     set (raja_depends
       ${raja_depends}
-      chai)
+      chai
+      umpire)
   endif ()
 
   if (ENABLE_TBB)
