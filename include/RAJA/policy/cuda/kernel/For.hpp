@@ -119,7 +119,7 @@ struct CudaStatementExecutor<
                                int num_logical_blocks,
                                int block_carry)
   {
-    execBlockLoop(*this, data, num_logical_blocks, block_carry);
+    this->execBlockLoop(*this, data, num_logical_blocks, block_carry);
   }
 
 
@@ -128,7 +128,7 @@ struct CudaStatementExecutor<
                                           int block_stride)
   {
     int len = segment_length<ArgumentId>(data);
-    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+    this->initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
   }
 
   inline RAJA_DEVICE void initThread(Data &data)
@@ -180,7 +180,7 @@ struct CudaStatementExecutor<Data,
                                int num_logical_blocks,
                                int block_carry)
   {
-    execBlockLoop(*this, data, num_logical_blocks, block_carry);
+    this->execBlockLoop(*this, data, num_logical_blocks, block_carry);
   }
 
 
@@ -189,7 +189,7 @@ struct CudaStatementExecutor<Data,
                                           int block_stride)
   {
     int len = segment_length<ArgumentId>(data);
-    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+    this->initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
   }
 
 
