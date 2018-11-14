@@ -78,11 +78,9 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-
-    ReduceMax<cuda_reduce<block_size>, double> dmax0;
-    dmax0.reset(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax2(BIG_VAL);
+    ReduceMax<cuda_reduce, double> dmax0; dmax0.reset(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax2(BIG_VAL);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
@@ -160,8 +158,8 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax0(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
 
 
     double droll = dist(mt);
@@ -212,8 +210,8 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
 
     double dcurrentMax = DEFAULT_VAL;
 
-    ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax0(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0
