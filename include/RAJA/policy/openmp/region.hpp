@@ -47,7 +47,9 @@ RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
 {
 
 #pragma omp parallel
-  body();
+    { // curly brackets to ensure body() is encapsulated in omp parallel region
+    body();
+    }
 }
 
 }  // namespace omp

@@ -24,7 +24,7 @@ macro(raja_add_executable)
   list (APPEND arg_DEPENDS_ON RAJA)
 
   if (ENABLE_CHAI)
-    list (APPEND arg_DEPENDS_ON chai)
+    list (APPEND arg_DEPENDS_ON chai umpire)
   endif ()
 
   if (ENABLE_OPENMP)
