@@ -61,7 +61,7 @@ struct Teams : std::integral_constant<unsigned int, TeamSize> {
 };
 
 template <unsigned int ThreadCount>
-struct ThreadC : std::integral_constant<unsigned int, ThreadCount> {
+struct Threads : std::integral_constant<unsigned int, ThreadCount> {
 };
 
 struct Target {
@@ -144,7 +144,7 @@ struct omp_target_parallel_for_exec
     : make_policy_pattern_t<Policy::target_openmp,
                             Pattern::forall,
                             omp::Target,
-                            omp::ThreadC<Threads>,
+                            omp::Threads<Threads>,
                             omp::Distribute> {
 };
 
