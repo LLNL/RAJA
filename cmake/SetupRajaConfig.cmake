@@ -58,7 +58,7 @@ endif ()
 
 include(CheckFunctionExists)
 check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
-check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
+check_function_exists(std::aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
 check_function_exists(_mm_malloc RAJA_HAVE_MM_MALLOC)
 
 # Set up RAJA_ENABLE prefixed options
