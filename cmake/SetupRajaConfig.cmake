@@ -57,8 +57,8 @@ else ()
 endif ()
 
 include(CheckSymbolExists)
-check_symbol_exists(posix_memalign stdlib RAJA_HAVE_POSIX_MEMALIGN)
-check_symbol_exists(std::aligned_alloc cstdlib RAJA_HAVE_ALIGNED_ALLOC)
+check_symbol_exists(posix_memalign stdlib.h RAJA_HAVE_POSIX_MEMALIGN)
+check_symbol_exists(std::aligned_alloc stdlib.h RAJA_HAVE_ALIGNED_ALLOC)
 check_symbol_exists(_mm_malloc "" RAJA_HAVE_MM_MALLOC)
 
 # Set up RAJA_ENABLE prefixed options
