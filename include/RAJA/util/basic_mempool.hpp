@@ -86,8 +86,8 @@ public:
 
   size_t capacity()
   {
-    return static_cast<char*>(m_allocation.end)
-           - static_cast<char*>(m_allocation.begin);
+    return static_cast<char*>(m_allocation.end) -
+           static_cast<char*>(m_allocation.begin);
   }
 
   bool unused() { return m_used_space.empty(); }

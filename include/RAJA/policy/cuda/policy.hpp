@@ -123,13 +123,11 @@ namespace cuda
 {
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                detail::get_launch<Async>::
-                                                    value,
-                                                RAJA::Platform::cuda> {
+struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::forall,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
 };
 
 
@@ -155,33 +153,26 @@ struct cuda_seq_syncthreads_exec
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <size_t BLOCK_SIZE, bool Async = false, bool maybe_atomic = false>
-struct cuda_reduce
+template <bool maybe_atomic>
+struct cuda_reduce_base
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                 RAJA::Pattern::reduce,
-                                                detail::get_launch<Async>::
-                                                    value,
+                                                detail::get_launch<false>::value,
                                                 RAJA::Platform::cuda> {
 };
 
-template <size_t BLOCK_SIZE>
-using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true, false>;
+using cuda_reduce = cuda_reduce_base<false>;
 
-template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic = cuda_reduce<BLOCK_SIZE, false, true>;
-
-template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic_async = cuda_reduce<BLOCK_SIZE, true, true>;
+using cuda_reduce_atomic = cuda_reduce_base<true>;
 
 
 template <typename POL>
-struct CudaPolicy
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
+struct CudaPolicy : public RAJA::make_policy_pattern_launch_platform_t<
+                        RAJA::Policy::cuda,
+                        RAJA::Pattern::forall,
+                        RAJA::Launch::undefined,
+                        RAJA::Platform::cuda> {
 
   using cuda_exec_policy = POL;
 };
@@ -213,10 +204,9 @@ template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
 using policy::cuda::cuda_seq_syncthreads_exec;
+using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
-using policy::cuda::cuda_reduce_async;
 using policy::cuda::cuda_reduce_atomic;
-using policy::cuda::cuda_reduce_atomic_async;
 using policy::cuda::CudaPolicy;
 
 using policy::cuda::cuda_synchronize;
@@ -287,8 +277,8 @@ struct CudaThreadBlock {
   __device__ inline RAJA::Index_type operator()(void)
   {
     RAJA::Index_type idx =
-        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block
-        + (RAJA::Index_type)view(threadIdx);
+        (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block +
+        (RAJA::Index_type)view(threadIdx);
 
     if (idx >= distance) {
       idx = RAJA::operators::limits<RAJA::Index_type>::min();
@@ -434,7 +424,7 @@ using block_map_y_shmem = block_map_shmem<Dim3y>;
 using block_map_z_shmem = block_map_shmem<Dim3z>;
 
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // RAJA_ENABLE_CUDA
 #endif

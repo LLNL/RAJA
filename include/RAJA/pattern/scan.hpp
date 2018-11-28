@@ -378,6 +378,6 @@ inclusive_scan_inplace(Args &&... args)
   inclusive_scan_inplace(ExecPolicy{}, std::forward<Args>(args)...);
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

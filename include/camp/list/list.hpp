@@ -1,8 +1,8 @@
 #ifndef CAMP_LIST_LIST_HPP
 #define CAMP_LIST_LIST_HPP
 
-#include "camp/size.hpp"
 #include "camp/number.hpp"
+#include "camp/size.hpp"
 
 namespace camp
 {
@@ -25,7 +25,7 @@ namespace detail
   struct _as_list<int_seq<T, Args...>> {
     using type = list<integral_constant<T, Args>...>;
   };
-} /* detail */
+}  // namespace detail
 
 template <typename T>
 struct as_list_s : detail::_as_list<T>::type {

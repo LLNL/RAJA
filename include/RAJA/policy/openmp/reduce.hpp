@@ -71,7 +71,7 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
@@ -128,11 +128,11 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_OPENMP guard
 

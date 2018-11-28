@@ -57,7 +57,8 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
 //printf("%p\n", &body);
 
 #pragma omp target teams distribute parallel for num_teams(Teams) \
-    schedule(static, 1) map(to : body)
+    schedule(static, 1) map(to                                    \
+                            : body)
   for (Index_type i = 0; i < distance; ++i) {
 //  printf("Running index %d\n", i);
 //  printf("%p\n", &body);
@@ -81,8 +82,9 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-#pragma omp target teams distribute parallel for schedule(static, \
-                                                          1) map(to : body)
+#pragma omp target teams distribute parallel for schedule(static, 1) \
+    map(to                                                           \
+        : body)
   for (Index_type i = 0; i < distance; ++i) {
     Body ib = body;
     ib(begin[i]);
@@ -90,11 +92,11 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
 }
 
 
-}  // closing brace for omp namespace
+}  // namespace omp
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_TARGET_RAJA_ENABLE_OPENMP)
 

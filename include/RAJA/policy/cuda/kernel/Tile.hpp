@@ -56,12 +56,10 @@ template <typename Data,
           typename TPol,
           typename... EnclosedStmts,
           typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             TPol,
-                                             seq_exec,
-                                             EnclosedStmts...>,
-                             IndexCalc> {
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+    IndexCalc> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -105,8 +103,8 @@ struct CudaStatementExecutor<Data,
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
   }
@@ -141,20 +139,18 @@ struct CudaStatementExecutor<Data,
 };
 
 
-
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           typename... EnclosedStmts,
           typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::statement::tile_fixed<chunk_size>,
-                                             cuda_block_exec,
-                                             EnclosedStmts...>,
-                             IndexCalc>
-  : public CudaBlockLoop<ArgumentId, chunk_size>
-{
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId,
+                    RAJA::statement::tile_fixed<chunk_size>,
+                    cuda_block_exec,
+                    EnclosedStmts...>,
+    IndexCalc> : public CudaBlockLoop<ArgumentId, chunk_size> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -166,16 +162,16 @@ struct CudaStatementExecutor<Data,
                                int num_logical_blocks,
                                int block_carry)
   {
-    execBlockLoop(*this, data, num_logical_blocks, block_carry);
+    this->execBlockLoop(*this, data, num_logical_blocks, block_carry);
   }
 
 
   inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+                                          int num_logical_blocks,
+                                          int block_stride)
   {
     int len = segment_length<ArgumentId>(data);
-    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
+    this->initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
   }
 
 
@@ -203,7 +199,6 @@ struct CudaStatementExecutor<Data,
     return dim;
   }
 };
-
 
 
 }  // end namespace internal

@@ -68,10 +68,10 @@ public:
   void stop()
   {
     gettimeofday(&tstop, 0);
-    auto start = std::chrono::seconds(tstart.tv_sec)
-                 + std::chrono::microseconds(tstart.tv_usec);
-    auto stop = std::chrono::seconds(tstop.tv_sec)
-                + std::chrono::microseconds(tstop.tv_usec);
+    auto start = std::chrono::seconds(tstart.tv_sec) +
+                 std::chrono::microseconds(tstart.tv_usec);
+    auto stop = std::chrono::seconds(tstop.tv_sec) +
+                std::chrono::microseconds(tstop.tv_usec);
     telapsed += DurationType(stop - start).count();
   }
 
@@ -86,7 +86,7 @@ private:
 };
 
 using TimerBase = BGQTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_CHRONO)
@@ -137,7 +137,7 @@ private:
 };
 
 using TimerBase = ChronoTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_GETTIME)
@@ -197,7 +197,7 @@ private:
 };
 
 using TimerBase = GettimeTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #elif defined(RAJA_USE_CLOCK)
 
@@ -248,7 +248,7 @@ private:
 };
 
 using TimerBase = ClockTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #else
 
@@ -274,6 +274,6 @@ public:
 #endif
 };
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

@@ -49,11 +49,8 @@ struct View {
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = typename std::remove_const<value_type>::type;
-  using nc_pointer_type = typename std::add_pointer<
-                              typename std::remove_const<
-                                  typename std::remove_pointer<pointer_type>::type
-                              >::type
-                          >::type;
+  using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
+      typename std::remove_pointer<pointer_type>::type>::type>::type;
   using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
 
   layout_type const layout;
@@ -70,10 +67,10 @@ struct View {
   {
   }
 
-  //We found the compiler-generated copy constructor does not actually copy-construct
-  //the object on the device in certain nvcc versions. 
-  //By explicitly defining the copy constructor we are able ensure proper behavior.
-  //Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
+  // We found the compiler-generated copy constructor does not actually
+  // copy-construct the object on the device in certain nvcc versions. By
+  // explicitly defining the copy constructor we are able ensure proper
+  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
   RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
       : layout(V.layout), data(V.data)
   {
@@ -81,7 +78,7 @@ struct View {
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
-          typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
+      typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
       : layout(rhs.layout), data(rhs.data)
   {
   }
