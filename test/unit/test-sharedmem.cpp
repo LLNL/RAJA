@@ -64,8 +64,8 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
   const int outer_Dim1 = (N_rows-1)/TILE_DIM+1;
 
   double *A, *B;
-  size_t Arr_sz = N_rows * N_cols;
 #if defined(RAJA_ENABLE_CUDA)
+  size_t Arr_sz = N_rows * N_cols;
   cudaMallocManaged(&A,  sizeof(double) * Arr_sz);
   cudaMallocManaged(&B, sizeof(double)  * Arr_sz);
 #else
