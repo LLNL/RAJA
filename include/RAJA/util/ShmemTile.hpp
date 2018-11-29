@@ -38,40 +38,39 @@
 namespace RAJA
 {
 
-//Policies for RAJA scoped arrays
+//Policies for RAJA local arrays
 struct cpu_tile_mem;
 struct cuda_thread_mem;
 struct cuda_shared_mem;
 
 template<camp::idx_t ... Sizes>
-using param_idx = camp::idx_seq<Sizes...>;
+using ParamList = camp::idx_seq<Sizes...>;
 
 /*!
- * RAJA scoped arrays
+ * RAJA local array
  * Holds a pointer and information necessary
  * to allocate a static array.
  *
  * Once intialized they can be treated as an N dimensional array
  * on the CPU stack, CUDA thread private memory,
  * or CUDA shared memory. Intialization occurs within
- * the RAJA::Kernel statement ``InitScopedArray"
+ * the RAJA::Kernel statement ``InitLocalArray"
  *
  * An accessor is provided to enable multi-dimensional indexing.
  * Two versions are created below, a strongly typed version and
  * a non-strongly typed version.
  */
-template<typename Pol, typename DataType, typename Sizes, typename... IndexTypes>
-struct TypedScopedArray
+template<typename DataType, typename Sizes, typename... IndexTypes>
+struct TypedLocalArray
 {
 };
 
-template<typename Pol, typename DataType, camp::idx_t ...Sizes, typename... IndexTypes>
-struct TypedScopedArray<Pol, DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
+template<typename DataType, camp::idx_t ...Sizes, typename... IndexTypes>
+struct TypedLocalArray<DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
 {
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
-  using pol_t = Pol;
   static const camp::idx_t NoElem = layout_t::size();
 
   RAJA_HOST_DEVICE
@@ -81,18 +80,17 @@ struct TypedScopedArray<Pol, DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
   }
 };
 
-template<typename Pol, typename DataType, typename Sizes>
-struct ScopedArray
+template<typename DataType, typename Sizes>
+struct LocalArray
 {
 };
 
-template<typename Pol, typename DataType, camp::idx_t ...Sizes>
-struct ScopedArray<Pol, DataType, RAJA::SizeList<Sizes...> >
+template<typename DataType, camp::idx_t ...Sizes>
+struct LocalArray<DataType, RAJA::SizeList<Sizes...> >
 {
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
-  using pol_t = Pol;
   static const camp::idx_t NoElem = layout_t::size();
 
   template<typename ...Indices>

@@ -41,19 +41,17 @@ RAJA_INDEX_VALUE(TY, "TY");
 const int TILE_DIM = 16;
 
 template <typename NestedPolicy>
-class TypedScopedMem : public ::testing::Test
+class TypedLocalMem : public ::testing::Test
 {
 
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(TypedScopedMem);
+TYPED_TEST_CASE_P(TypedLocalMem);
 
-CUDA_TYPED_TEST_P(TypedScopedMem, Basic)
+CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
 {
-
-  using Tile_pol = at_v<TypeParam, 0>;
-  using Pol = at_v<TypeParam, 1>;
+  using Pol = at_v<TypeParam, 0>;
 
   const int DIM = 2;
   const int N_rows = 144;
@@ -84,7 +82,7 @@ CUDA_TYPED_TEST_P(TypedScopedMem, Basic)
     }
   }
 
-  using SharedTile = TypedScopedArray<Tile_pol, double, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
+  using SharedTile = TypedLocalArray<double, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
   RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
@@ -135,7 +133,7 @@ CUDA_TYPED_TEST_P(TypedScopedMem, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(TypedScopedMem, Basic);
+REGISTER_TYPED_TEST_CASE_P(TypedLocalMem, Basic);
 
 //
 //Matrix transpose example - test all variants
@@ -152,8 +150,7 @@ TYPED_TEST_CASE_P(MatTranspose);
 CUDA_TYPED_TEST_P(MatTranspose, Basic)
 {
 
-  using Tile_pol = at_v<TypeParam, 0>;
-  using Pol = at_v<TypeParam, 1>;
+  using Pol = at_v<TypeParam, 0>;
 
   const int DIM = 2;
   const int N_rows = 144;
@@ -194,7 +191,7 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
   }
 
 
-  using SharedTile = ScopedArray<Tile_pol, double, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
+  using SharedTile = LocalArray<double, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
 
   SharedTile myTile, myTile2;
 
@@ -252,14 +249,15 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
 
 REGISTER_TYPED_TEST_CASE_P(MatTranspose, Basic);
 
+
 using SeqTypes =
   ::testing::Types<
-  RAJA::list<RAJA::cpu_tile_mem,
+  RAJA::list<
     RAJA::KernelPolicy<
         RAJA::statement::For<3, RAJA::loop_exec,
           RAJA::statement::For<2, RAJA::loop_exec,
 
-            RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
@@ -280,18 +278,18 @@ using SeqTypes =
     > //list
   >; //types
 INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatTranspose, SeqTypes);
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, TypedScopedMem, SeqTypes);
+INSTANTIATE_TYPED_TEST_CASE_P(Seq, TypedLocalMem, SeqTypes);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
 using TestTypes =
   ::testing::Types<
-  RAJA::list<RAJA::cpu_tile_mem,
+  RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
@@ -310,12 +308,12 @@ using TestTypes =
        > //close policy
      > //close list
 
-  ,RAJA::list<RAJA::cpu_tile_mem,
+  ,RAJA::list<
       RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::loop_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
             RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
@@ -335,12 +333,12 @@ using TestTypes =
        >//3
      >//close policy
     > //close list
-  ,RAJA::list<RAJA::cpu_tile_mem,
+  ,RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::omp_parallel_for_exec,
         RAJA::statement::For<2, RAJA::loop_exec,
 
-          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -360,12 +358,12 @@ using TestTypes =
        >//3
       > //close policy list
      > //close list
-  ,RAJA::list<RAJA::cpu_tile_mem,
+  ,RAJA::list<
     RAJA::KernelPolicy<
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<2, 3>,
 
-          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem,RAJA::ParamList<0,1>,
 
            //Load data into shared memory
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -388,20 +386,20 @@ using TestTypes =
 
 
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatTranspose, TestTypes);
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, TypedScopedMem, TestTypes);
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, TypedLocalMem, TestTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 
 using CUDATypes =
   ::testing::Types<
-  RAJA::list<RAJA::cuda_shared_mem,
+  RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<3, RAJA::cuda_block_exec,
           RAJA::statement::For<2, RAJA::cuda_block_exec,
 
-          RAJA::statement::InitScopedMem<RAJA::param_idx<0,1>,
+           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
 
              //Load data into shared memory
               RAJA::statement::For<1, RAJA::cuda_thread_exec,
@@ -424,7 +422,8 @@ using CUDATypes =
     > //list
   >; //types
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
-INSTANTIATE_TYPED_TEST_CASE_P(CUDA, TypedScopedMem, CUDATypes);
+INSTANTIATE_TYPED_TEST_CASE_P(CUDA, TypedLocalMem, CUDATypes);
+
 #endif
 
 template <typename NestedPolicy>
@@ -439,12 +438,9 @@ TYPED_TEST_CASE_P(MatMultiply);
 CUDA_TYPED_TEST_P(MatMultiply, shmem)
 {
 
-  using Tile_pol0 = at_v<TypeParam, 0>;
-  using Tile_size0 = at_v<TypeParam, 1>;
-
-  using Tile_pol1 = at_v<TypeParam, 2>;
-  using Tile_size1 = at_v<TypeParam, 3>;
-  using Pol = at_v<TypeParam, 4>;
+  using Tile_size0 = at_v<TypeParam, 0>;
+  using Tile_size1 = at_v<TypeParam, 1>;
+  using Pol = at_v<TypeParam, 2>;
 
   const int DIM = 2;
 
@@ -504,8 +500,8 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   }
 
 
-  using Shmem      = RAJA::ScopedArray<Tile_pol0, double, Tile_size0>;
-  using ThreadPriv = RAJA::ScopedArray<Tile_pol1, double, Tile_size1>;
+  using Shmem      = RAJA::LocalArray<double, Tile_size0>;
+  using ThreadPriv = RAJA::LocalArray<double, Tile_size1>;
 
   Shmem aShared, bShared; //memory to be shared between threads
   ThreadPriv pVal; //iteration dependent data
@@ -606,10 +602,8 @@ TYPED_TEST_CASE_P(MatMultiplyScalar);
 CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
 {
 
-  using Tile_pol0 = at_v<TypeParam, 0>;
-  using Tile_size0 = at_v<TypeParam, 1>;
-
-  using Pol = at_v<TypeParam, 5>;
+  using Tile_size0 = at_v<TypeParam, 0>;
+  using Pol = at_v<TypeParam, 3>;
 
   const int DIM = 2;
 
@@ -669,7 +663,7 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
     }
   }
 
-  using Shmem = RAJA::ScopedArray<Tile_pol0, double, Tile_size0>;
+  using Shmem = RAJA::LocalArray<double, Tile_size0>;
 
   Shmem aShared, bShared; //memory to be shared between threads
 
@@ -754,12 +748,12 @@ REGISTER_TYPED_TEST_CASE_P(MatMultiplyScalar, shmem);
 using SeqTypes2 =
   ::testing::Types<
   RAJA::list<
-    RAJA::cpu_tile_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
-    RAJA::cpu_tile_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-         RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
 
             //Initalize thread private value
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -797,7 +791,7 @@ using SeqTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<1,0>,
             //Initalize thread private value
 
             //Slide window across matrix
@@ -833,12 +827,12 @@ INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiplyScalar, SeqTypes2);
 using OmpTypes2 =
   ::testing::Types<
   RAJA::list<
-    RAJA::cpu_tile_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
-    RAJA::cpu_tile_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
@@ -872,7 +866,7 @@ using OmpTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<1,0>,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::loop_exec,
@@ -908,13 +902,13 @@ INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiplyScalar, OmpTypes2);
 using CudaTypes2 =
   ::testing::Types<
   RAJA::list<
-    RAJA::cuda_shared_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
-    RAJA::cuda_shared_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -950,7 +944,7 @@ using CudaTypes2 =
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<1,0>,
 
             //Intialize thread private value to zero
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
@@ -991,14 +985,15 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiplyScalar, CudaTypes2);
 using CudaTypes3 =
   ::testing::Types<
   RAJA::list<
-    RAJA::cuda_shared_mem, RAJA::SizeList<TILE_DIM, TILE_DIM>,
-    RAJA::cuda_thread_mem, RAJA::SizeList<0,0>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<0,0>,
     //Policy for Matrix multiply with a scalar
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_exec,
         RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::InitScopedMem<RAJA::param_idx<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
+            RAJA::statement::InitLocalMem<RAJA::cuda_thread_mem, RAJA::ParamList<2>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,
@@ -1024,7 +1019,8 @@ using CudaTypes3 =
             RAJA::statement::For<1, RAJA::cuda_thread_exec,
               RAJA::statement::For<0, RAJA::cuda_thread_exec,
                                    RAJA::statement::Lambda<3> > >
-         > //Create shared memory
+         > //Create private memory
+        > //Create shared memory
         >//For 3
        >//For 4
        > //CudaKernel
