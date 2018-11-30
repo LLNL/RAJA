@@ -73,46 +73,45 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
   B  = new double[N_rows * N_cols];
 #endif
 
-  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
-  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N_rows, N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Aview(A, N_rows, N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Bview(B, N_rows, N_cols);
 
   for (int row = 0; row < N_rows; ++row) {
     for (int col= 0 ; col < N_cols; ++col) {
-      Aview(row, col) = col;
+      A[col + N_cols*row] = col;
     }
   }
 
   using SharedTile = TypedLocalArray<double, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
-  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                                           RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
+  const TX TX_TILE_DIM(16);
+  const TY TY_TILE_DIM(16);
+
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::TypedRangeSegment<TX>(0, inner_Dim0), RAJA::TypedRangeSegment<TY>(0,inner_Dim1),
+                                           RAJA::TypedRangeSegment<TX>(0, outer_Dim0), RAJA::TypedRangeSegment<TY>(0,outer_Dim1)),
                           RAJA::make_tuple(myTile, myTile2),
 
   //Load data into shared memory
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int bx, int by, SharedTile &myTile, SharedTile &) {
+  [=] RAJA_HOST_DEVICE (TX tx, TY ty, TX bx, TY by, SharedTile &myTile, SharedTile &) {
 
-    int col = bx * TILE_DIM + tx;  // Matrix column index
-    int row = by * TILE_DIM + ty;  // Matrix row index
+    TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
+    TY row = by * TY_TILE_DIM + ty;  // Matrix row index
 
     if(row < N_rows && col < N_cols){
-      TX idx = static_cast<TX>(tx);
-      TY idy = static_cast<TY>(ty);
-      myTile(idy,idx)   = Aview(row, col);
+      myTile(ty,tx)   = Aview(row, col);
     }
 
   },
 
   //read from shared mem
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int bx, int by, SharedTile &myTile, SharedTile &) {
+  [=] RAJA_HOST_DEVICE (TX tx, TY ty, TX bx, TY by, SharedTile &myTile, SharedTile &) {
 
-    int col = bx * TILE_DIM + tx;  // Matrix column index
-    int row = by * TILE_DIM + ty;  // Matrix row index
+    TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
+    TY row = by * TY_TILE_DIM + ty;  // Matrix row index
 
     if(row < N_rows && col < N_cols){
-      TX idx = static_cast<TX>(tx);
-      TY idy = static_cast<TY>(ty);
-      Bview(row, col) = myTile(idy, idx);
+      Bview(row, col) = myTile(ty, tx);
     }
 
   });
@@ -120,7 +119,7 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
   //Check result
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
-      ASSERT_FLOAT_EQ(Bview(row,col), Aview(row,col));
+      ASSERT_FLOAT_EQ(B[col + row*N_cols], A[col + row*N_cols]);
     }
   }
 

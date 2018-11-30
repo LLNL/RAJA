@@ -95,9 +95,9 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
   static void RAJA_INLINE initMem(Data && data)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
-    varType Array[NoElem];
+    varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
     initMem<others...>(data);
   }

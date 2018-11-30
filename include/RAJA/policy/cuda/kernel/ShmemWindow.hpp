@@ -64,9 +64,9 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
-    __shared__ varType Array[NoElem];
+    __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
@@ -78,9 +78,9 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
-    __shared__ varType Array[NoElem];
+    __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
     initMem<others...>(data, num_logical_blocks, block_carry);
   }
@@ -155,9 +155,9 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
-    varType Array[NoElem];
+    varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
     enclosed_stmts.exec(data, num_logical_blocks, block_carry);
@@ -169,9 +169,9 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NoElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NoElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
-    varType Array[NoElem];
+    varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
     initMem<others...>(data, num_logical_blocks, block_carry);
   }

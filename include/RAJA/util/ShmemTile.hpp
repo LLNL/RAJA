@@ -71,7 +71,7 @@ struct TypedLocalArray<DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
-  static const camp::idx_t NoElem = layout_t::size();
+  static const camp::idx_t NumElem = layout_t::size();
 
   RAJA_HOST_DEVICE
   element_t &operator()(IndexTypes ...indices) const
@@ -91,7 +91,7 @@ struct LocalArray<DataType, RAJA::SizeList<Sizes...> >
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
   using layout_t = StaticLayout<Sizes...>;
-  static const camp::idx_t NoElem = layout_t::size();
+  static const camp::idx_t NumElem = layout_t::size();
 
   template<typename ...Indices>
   RAJA_HOST_DEVICE
