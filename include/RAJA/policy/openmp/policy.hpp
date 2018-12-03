@@ -184,7 +184,7 @@ struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-template <size_t Teams>
+template <size_t Threads>
 struct omp_target_reduce
     : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
 };
