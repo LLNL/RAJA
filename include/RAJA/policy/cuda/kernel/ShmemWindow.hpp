@@ -43,6 +43,185 @@ namespace RAJA
 namespace internal
 {
 
+//Intialize thread shared array
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  
+  
+  //Launch loops
+  template<camp::idx_t Pos>
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    __shared__ varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+
+    enclosed_stmts_t::exec(data);
+  }
+  
+  //Intialize local array
+  //Identifies type + number of elements needed
+  template<camp::idx_t Pos, camp::idx_t... others>
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    __shared__ varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    initMem<others...>(data);
+  }
+
+  //Set pointer to null base case
+  template<camp::idx_t Pos>
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+  }
+
+
+  //Set pointer to null recursive case
+  template<camp::idx_t Pos, camp::idx_t... others>
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    setPtrToNull<others...>(data);
+  }
+
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
+  {
+    
+    //Intialize scoped arrays + launch loops
+    initMem<Indices...>(data);
+    
+    //set pointers in scoped arrays to null
+    setPtrToNull<Indices...>(data);
+  }
+
+
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    return enclosed_stmts_t::calculateDimensions(data);
+  }
+
+};
+
+//Intialize thread private array
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  
+  
+  //Launch loops
+  template<camp::idx_t Pos>
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+
+    enclosed_stmts_t::exec(data);
+  }
+  
+  //Intialize local array
+  //Identifies type + number of elements needed
+  template<camp::idx_t Pos, camp::idx_t... others>
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    initMem<others...>(data);
+  }
+
+  //Set pointer to null base case
+  template<camp::idx_t Pos>
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+  }
+
+
+  //Set pointer to null recursive case
+  template<camp::idx_t Pos, camp::idx_t... others>
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    setPtrToNull<others...>(data);
+  }
+
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
+  {
+    
+    //Intialize scoped arrays + launch loops
+    initMem<Indices...>(data);
+    
+    //set pointers in scoped arrays to null
+    setPtrToNull<Indices...>(data);
+  }
+
+
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    return enclosed_stmts_t::calculateDimensions(data);
+  }
+
+};
+
+
 
 template <typename Data, typename... EnclosedStmts>
 struct CudaStatementExecutor<Data,

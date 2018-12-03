@@ -117,16 +117,15 @@ public:
 
   IdxLin sizes[n_dims];
   IdxLin strides[n_dims];
-  //IdxLin inv_strides[n_dims];
-  //IdxLin inv_mods[n_dims];
+  IdxLin inv_strides[n_dims];
+  IdxLin inv_mods[n_dims];
 
 
   /*!
    * Default constructor with zero sizes and strides.
    */
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl()
-//      : sizes{0}, strides{0}, inv_strides{0}, inv_mods{0}
-  :  sizes{0}, strides{0}
+      : sizes{0}, strides{0}, inv_strides{0}, inv_mods{0}
   {
   }
 
@@ -138,9 +137,9 @@ public:
       : sizes{static_cast<IdxLin>(stripIndexType(ns))...},
         strides{(detail::stride_calculator<RangeInts + 1, n_dims, IdxLin>{}(
             sizes[RangeInts] ? 1 : 0,
-            sizes))...}//,
-        //inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
-        //inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
+            sizes))...},
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
   {
     static_assert(n_dims == sizeof...(Types),
                   "number of dimensions must match");
@@ -153,10 +152,10 @@ public:
   constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(
       const LayoutBase_impl<camp::idx_seq<RangeInts...>, CIdxLin, CStrideOneDim>
           &rhs)
-      : //sizes{static_cast<IdxLin>(rhs.sizes[RangeInts])...},
-        strides{static_cast<IdxLin>(rhs.strides[RangeInts])...}//,
-        //inv_strides{static_cast<IdxLin>(rhs.inv_strides[RangeInts])...},
-        //inv_mods{static_cast<IdxLin>(rhs.inv_mods[RangeInts])...}
+      : sizes{static_cast<IdxLin>(rhs.sizes[RangeInts])...},
+        strides{static_cast<IdxLin>(rhs.strides[RangeInts])...},
+        inv_strides{static_cast<IdxLin>(rhs.inv_strides[RangeInts])...},
+        inv_mods{static_cast<IdxLin>(rhs.inv_mods[RangeInts])...}
   {
   }
 
@@ -169,9 +168,9 @@ public:
       const std::array<IdxLin, n_dims> &sizes_in,
       const std::array<IdxLin, n_dims> &strides_in)
       : sizes{sizes_in[RangeInts]...},
-        strides{strides_in[RangeInts]...}//,
-        //inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
-        //inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
+        strides{strides_in[RangeInts]...},
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
   {
   }
 
@@ -210,13 +209,13 @@ public:
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
- /* template <typename... Indices>
+  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
                                    inv_mods[RangeInts])...);
-  }*/
+  }
 
   /*!
    * Computes a total size of the layout's space.
@@ -224,13 +223,13 @@ public:
    *
    * @return Total size spanned by indices
    */
- /* RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
     return VarOps::foldl(RAJA::operators::multiplies<IdxLin>(),
                          (sizes[RangeInts] == 0 ? 1 : sizes[RangeInts])...);
-  }*/
+  }
 };
 
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
