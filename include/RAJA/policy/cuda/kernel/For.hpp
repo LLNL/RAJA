@@ -62,7 +62,7 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data)
   {
-    int len = segment_length<ArgumentId>(data);
+    auto len = segment_length<ArgumentId>(data);
     auto i = get_cuda_dim<ThreadDim>(threadIdx);
 
     // assign thread id directly to offset
@@ -230,9 +230,13 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data)
   {
-    int len = segment_length<ArgumentId>(data);
 
-    for(int i = 0;i < len;++ i){
+    using idx_type = camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;
+
+    idx_type len = segment_length<ArgumentId>(data);
+
+    //idx_type &i = camp::get<ArgumentId>(data.offset_tuple);
+    for(idx_type i = 0;i < len;++ i){
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
 
