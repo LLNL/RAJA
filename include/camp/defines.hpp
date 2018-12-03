@@ -34,10 +34,14 @@ namespace camp
 #define CAMP_DEVICE __device__
 #define CAMP_HOST_DEVICE __host__ __device__
 
+#if defined(__NVCC__)
 #if defined(_WIN32)  // windows is non-compliant, yay
 #define CAMP_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
 #else
 #define CAMP_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#endif
+#else
+#define CAMP_SUPPRESS_HD_WARN
 #endif
 
 #else
