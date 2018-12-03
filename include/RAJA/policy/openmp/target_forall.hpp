@@ -64,6 +64,12 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Threads>&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   auto teamnum = RAJA_DIVIDE_CEILING_INT( (int)distance, (int)Threads );
+  if ( teamnum > Threads )
+  {
+    // Omp target reducers will write team # results, into Threads-sized array.
+    // Need to insure teams <= Threads to prevent array out of bounds access.
+    teamnum = Threads;
+  }
 #pragma omp target teams distribute parallel for num_teams(teamnum) \
     thread_limit(Threads) schedule(static, 1) map(to              \
                                                     : body)
