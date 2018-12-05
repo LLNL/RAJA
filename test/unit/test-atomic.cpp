@@ -106,7 +106,7 @@ struct PreIncCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (++counter) - (T)1;
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -118,7 +118,7 @@ struct PostIncCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter++);
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -130,7 +130,7 @@ struct AddEqCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter += (T)1) - (T)1;
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -142,7 +142,7 @@ struct FetchAddCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return counter.fetch_add((T)1);
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -155,7 +155,7 @@ struct PreDecCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (--counter);
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -167,7 +167,7 @@ struct PostDecCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter--) - (T)1;
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -179,7 +179,7 @@ struct SubEqCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter -= (T)1);
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -191,7 +191,7 @@ struct FetchSubCountOp {
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type i) const {
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return counter.fetch_sub((T)1) - (T)1;
   }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
@@ -394,19 +394,19 @@ struct LoadOtherOp {
       final_min(min), final_max(min)
   { count[0] = min; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type) const
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
   { return other.load(); }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 template < typename T, typename AtomicPolicy >
 struct OperatorTOtherOp {
-  OperatorTOtherOp(T* count, RAJA::RangeSegment seg)
+  OperatorTOtherOp(T* count, RAJA::RangeSegment RAJA_UNUSED_ARG(seg))
     : other(count), min(T(0)), max(min),
       final_min(min), final_max(min)
   { count[0] = min; }
   RAJA_HOST_DEVICE
-  T operator()(RAJA::Index_type) const
+  T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
   { return other; }
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
