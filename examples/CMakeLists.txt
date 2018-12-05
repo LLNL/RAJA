@@ -63,6 +63,10 @@ raja_add_executable(
   SOURCES tut_batched-matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME tut_matrix-transpose
+  SOURCES tut_matrix-transpose.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 
