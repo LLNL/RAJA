@@ -34,16 +34,201 @@
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/ShmemTile.hpp"
 
 #include "RAJA/pattern/kernel/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
 {
+
+
 namespace internal
 {
 
+//Intialize thread shared array
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, IndexCalc>
+{
 
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  
+  using enclosed_stmts_t =
+    CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+  
+  IndexCalc index_calc;
+  
+  //Launch loops
+  template<camp::idx_t Pos>
+  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    __shared__ varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+  }
+  
+  //Intialize local array
+  //Identifies type + number of elements needed
+  template<camp::idx_t Pos, camp::idx_t... others>
+  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    __shared__ varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    initMem<others...>(data, num_logical_blocks, block_carry);
+  }
+
+  //Set pointer to null base case
+  template<camp::idx_t Pos>
+  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+  }
+
+
+  //Set pointer to null recursive case
+  template<camp::idx_t Pos, camp::idx_t... others>
+  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    setPtrToNull<others...>(data, num_logical_blocks, block_carry);
+  }
+
+
+  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
+                                   int num_logical_blocks,
+                                   int block_carry)
+  {
+    
+    //Intialize scoped arrays + launch loops
+    initMem<Indices...>(data, num_logical_blocks, block_carry);
+    
+    //set pointers in scoped arrays to null
+    setPtrToNull<Indices...>(data, num_logical_blocks, block_carry);
+  }
+
+  RAJA_INLINE RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+
+  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
+  }
+
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+  }
+
+};
+
+//Intialize thread private array
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename IndexCalc>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, IndexCalc>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  
+  using enclosed_stmts_t =
+    CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
+  enclosed_stmts_t enclosed_stmts;
+  
+  IndexCalc index_calc;
+  
+  //Launch loops
+  template<camp::idx_t Pos>
+  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+
+    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+  }
+  
+  //Intialize local array
+  //Identifies type + number of elements needed
+  template<camp::idx_t Pos, camp::idx_t... others>
+  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  {
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    
+    varType Array[NumElem];
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    initMem<others...>(data, num_logical_blocks, block_carry);
+  }
+
+  //Set pointer to null base case
+  template<camp::idx_t Pos>
+  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+  }
+
+
+  //Set pointer to null recursive case
+  template<camp::idx_t Pos, camp::idx_t... others>
+  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  {
+
+    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    setPtrToNull<others...>(data, num_logical_blocks, block_carry);
+  }
+
+
+  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
+                                   int num_logical_blocks,
+                                   int block_carry)
+  {
+    
+    //Intialize scoped arrays + launch loops
+    initMem<Indices...>(data, num_logical_blocks, block_carry);
+    
+    //set pointers in scoped arrays to null
+    setPtrToNull<Indices...>(data, num_logical_blocks, block_carry);
+  }
+
+  RAJA_INLINE RAJA_DEVICE void initBlocks(Data &data,
+                                     int num_logical_blocks,
+                                     int block_stride)
+  {
+    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+  }
+
+
+  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
+  {
+    enclosed_stmts.initThread(data);
+  }
+
+  RAJA_INLINE
+  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  {
+    return enclosed_stmts.calculateDimensions(data, max_physical);
+  }
+
+};
+
+//Set Shared memory window
 template <typename Data, typename... EnclosedStmts, typename IndexCalc>
 struct CudaStatementExecutor<Data,
                              statement::SetShmemWindow<EnclosedStmts...>,
@@ -58,7 +243,7 @@ struct CudaStatementExecutor<Data,
   IndexCalc index_calc;
 
 
-  inline __device__ void exec(Data &data,
+  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
                               int num_logical_blocks,
                               int block_carry)
   {
@@ -80,7 +265,7 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  inline RAJA_DEVICE void initThread(Data &data)
+  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
   {
     enclosed_stmts.initThread(data);
   }
