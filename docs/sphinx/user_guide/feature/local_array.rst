@@ -18,9 +18,9 @@
 Local Array
 ===========
 
-In this section we introduce RAJA local arrays, which enable developers to construct arrays between
-subsequent loops. For clarity, the example below illustrates constructing an array between consecutive
-loops in C++::
+In this section we introduce RAJA local arrays. RAJA local arrays are initialized between consecutive
+loops and may be used within any proceeding loop body. For clarity, the following C++ example illustrates
+the construction and usage of an array between consecutive loops::
 
            for(int k = 0; k < 7; ++k) {
 
@@ -36,19 +36,19 @@ loops in C++::
 
            }
 
-Similary, RAJA offers constructs to intialize arrays between consecutive loops and have the array
-accessible to subsequent loops. A RAJA local array is defined outside of a RAJA kernel by specifying
+Similary, RAJA offers constructs to intialize arrays between consecutive loops and have the array be
+accessible to subsequent loop bodies. A RAJA local array is defined outside of a RAJA kernel by specifying
 the type of the data and the dimensions of the array as template arguments.
 
-In the example below we construct a two dimensional array of size 7 math:\times:5 ::
+In the example below we construct a two dimensional array of size 7 :math:`\times` 5 ::
 
     using RAJA_array = RAJA::LocalArray<int, RAJA::Sizes<5,7> >;
     RAJA_array kernel_array;
 
-.. note:: RAJA Local arrays support arbiratry dimensions and sizes.
+.. note:: RAJA local arrays support arbiratry dimensions and sizes.
 
 Although the object has been constructed its memory has not yet been initalized.
-Memory intialization for a RAJA local array is done through the ``InitLocalMem``
+Memory intialization for a RAJA local array is carried through the ``InitLocalMem``
 statement in a kernel policy ::
 
      RAJA::statement::InitLocalMem<array_policy, RAJA:ParamList<0>, statements...>
@@ -61,7 +61,7 @@ The current supported policies are listed below:
 *  ``RAJA::cuda_shared_mem`` - Allocates memory in cuda shared memory
 *  ``RAJA::cuda_thread_mem`` - Allocates memory in thread private memory
 
-For completeness the RAJA analog of the loops above is illustrates below::
+For completeness the RAJA analog of C++ loops is illustrates below::
 
   using Pol =  RAJA::KernelPolicy<
                  RAJA::statement::For<1, RAJA::loop_exec,
