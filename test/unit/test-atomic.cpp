@@ -572,7 +572,7 @@ void testAtomicRefFloating()
 #else
   T *count  = new T[1];
   T *list   = new T[N];
-  bool *hit = new T[N];
+  bool *hit = new bool[N];
 #endif
 
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, LoadOtherOp     >(seg, count, list);
