@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cmath>
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/Timer.hpp"
@@ -50,8 +51,8 @@
  */
 
 
-#define DEBUG_LTIMES
-//#undef DEBUG_LTIMES
+//#define DEBUG_LTIMES
+
 
 using namespace RAJA;
 
@@ -119,7 +120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-if(0){
+{
   std::cout << "\n Running baseline C-version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -156,7 +157,7 @@ if(0){
 
 //----------------------------------------------------------------------------//
 
-if(0){
+{
   std::cout << "\n Running C-version of LTimes (with Views)...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -210,7 +211,7 @@ if(0){
 
 //----------------------------------------------------------------------------//
 
-if(0){
+{
   std::cout << "\n Running RAJA sequential version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -277,7 +278,7 @@ if(0){
 
 //----------------------------------------------------------------------------//
 
-if(0){
+{
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -462,7 +463,7 @@ if(0){
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
-if(0){
+{
   std::cout << "\n Running RAJA OpenMP version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -548,7 +549,7 @@ if(0){
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
-if(0){
+{
   std::cout << "\n Running RAJA CUDA version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -690,87 +691,12 @@ if(0){
   PhiView phi( dphi_data,
                RAJA::make_permuted_layout({num_m, num_g, num_z}, dphi_perm) );
 
-#define CALC_EFF 1
 
 
+  // Setting this to 1 will enable counting of memory operations
+  #define CALC_EFF 0
 
-#if 0
-  static const int tile_m = 32;
-  static const int tile_d = 32;
-  static const int tile_z = 32;
 
-  using EXECPOL =
-    RAJA::KernelPolicy<
-      statement::CudaKernelAsync<
-
-        // Tile outer m,d loops
-        statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
-          statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
-
-            // Set shmem window for m,d tile
-            statement::SetShmemWindow<
-
-              // Load L for m,d tile into shmem
-              statement::For<1, cuda_thread_y_direct,  // d
-                statement::For<0, cuda_thread_x_direct,   // m
-                  statement::Lambda<1>
-                >
-              >
-            >,
-            statement::CudaSyncThreads,
-
-#if CALC_EFF
-            statement::Lambda<6>,
-#endif
-
-            // Distribute g, z across blocks and tile z
-            statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_x_loop,  // z
-              statement::For<2, cuda_block_y_loop, // g
-
-                // Set shmem window for inner loops
-                statement::SetShmemWindow<
-
-                  // Load slice of psi into shmem
-                  statement::For<3, cuda_thread_x_direct,  // z
-                    statement::For<1, cuda_thread_y_direct, // d
-                      statement::Lambda<2>
-                    >
-                  >,
-                  statement::CudaSyncThreads,
-#if CALC_EFF
-                  statement::Lambda<6>,
-#endif
-
-                  // Compute phi
-                  statement::For<3, cuda_thread_y_direct,  // z
-                    statement::For<0, cuda_thread_x_direct, // m
-
-                      // Compute thread-local Phi value and store
-                      statement::Lambda<3>,
-                      statement::For<1, seq_exec,  // d
-                          statement::Lambda<4>
-                      >,
-                      statement::Lambda<5>
-
-                    >  // m
-                  >,  // z
-                  statement::CudaSyncThreads
-#if CALC_EFF
-            , statement::Lambda<6>
-#endif
-
-                >  // SetShmemWindow
-
-              >  // Tile z
-            >  // g
-
-          >  // Tile d
-        >  // Tile m
-
-      >  // CudaKernelAsync
-
-    >;  // KernelPolicy
-#else
   static const int tile_m = 25;
   static const int tile_d = 90;
   static const int tile_z = 40;
@@ -857,7 +783,6 @@ statement::CudaSyncThreads,
       >  // CudaKernelAsync
 
     >;  // KernelPolicy
-#endif
 
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
