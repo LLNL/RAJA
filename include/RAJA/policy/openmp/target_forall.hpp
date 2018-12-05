@@ -52,9 +52,9 @@ namespace omp
 /// OpenMP target parallel for policy implementation
 ///
 
-template <size_t Threads, typename Iterable, typename Func>
+template <size_t ThreadsPerTeam, typename Iterable, typename Func>
 // RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
-RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Threads>&,
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
@@ -63,15 +63,15 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Threads>&,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  auto teamnum = RAJA_DIVIDE_CEILING_INT( (int)distance, (int)Threads );
-  if ( teamnum > Threads )
+  auto teamnum = RAJA_DIVIDE_CEILING_INT( (int)distance, (int)ThreadsPerTeam );
+  if ( teamnum > ThreadsPerTeam )
   {
     // Omp target reducers will write team # results, into Threads-sized array.
     // Need to insure teams <= Threads to prevent array out of bounds access.
-    teamnum = Threads;
+    teamnum = ThreadsPerTeam;
   }
 #pragma omp target teams distribute parallel for num_teams(teamnum) \
-    thread_limit(Threads) schedule(static, 1) map(to              \
+    thread_limit(ThreadsPerTeam) schedule(static, 1) map(to              \
                                                     : body)
   for (Index_type i = 0; i < distance; ++i) {
     Body ib = body;

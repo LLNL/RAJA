@@ -101,7 +101,7 @@ struct Offload_Info {
 };
 //! Reduction data for OpenMP Offload -- stores value, host pointer, and device
 //! pointer
-template <size_t Threads, typename T>
+template <size_t ThreadsPerTeam, typename T>
 struct Reduce_Data {
   mutable T value;
   T *device;
@@ -117,8 +117,8 @@ struct Reduce_Data {
   explicit Reduce_Data(T defaultValue, T identityValue, Offload_Info &info)
       : value(identityValue),
         device{reinterpret_cast<T *>(
-            omp_target_alloc(Threads * sizeof(T), info.deviceID))},
-        host{new T[Threads]}
+            omp_target_alloc(ThreadsPerTeam * sizeof(T), info.deviceID))},
+        host{new T[ThreadsPerTeam]}
   {
     if (!host) {
       printf("Unable to allocate space on host\n");
@@ -128,7 +128,7 @@ struct Reduce_Data {
       printf("Unable to allocate space on device\n");
       exit(1);
     }
-    std::fill_n(host, Threads, identityValue);
+    std::fill_n(host, ThreadsPerTeam, identityValue);
     hostToDevice(info);
   }
 
@@ -141,7 +141,7 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(device),
                           reinterpret_cast<void *>(host),
-                          Threads * sizeof(T),
+                          ThreadsPerTeam * sizeof(T),
                           0,
                           0,
                           info.deviceID,
@@ -157,7 +157,7 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(host),
                           reinterpret_cast<void *>(device),
-                          Threads * sizeof(T),
+                          ThreadsPerTeam * sizeof(T),
                           0,
                           0,
                           info.hostID,
@@ -185,7 +185,7 @@ struct Reduce_Data {
 
 //! OpenMP Target Reduction entity -- generalize on # of teams, reduction, and
 //! type
-template <size_t Threads, typename Reducer, typename T>
+template <size_t ThreadsPerTeam, typename Reducer, typename T>
 struct TargetReduce {
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
@@ -216,7 +216,7 @@ struct TargetReduce {
   {
     if (!info.isMapped) {
       val.deviceToHost(info);
-      for (int i = 0; i < Threads; ++i) {
+      for (int i = 0; i < ThreadsPerTeam; ++i) {
         Reducer{}(val.value, val.host[i]);
       }
       val.cleanup(info);
@@ -248,14 +248,14 @@ private:
   //! storage for offload information (host ID, device ID)
   omp::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
-  omp::Reduce_Data<Threads, T> val;
+  omp::Reduce_Data<ThreadsPerTeam, T> val;
   T initVal;
   T finalVal;
 };
 
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
-template <size_t Threads, typename Reducer, typename T, typename IndexType>
+template <size_t ThreadsPerTeam, typename Reducer, typename T, typename IndexType>
 struct TargetReduceLoc {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
@@ -288,7 +288,7 @@ struct TargetReduceLoc {
     if (!info.isMapped) {
       val.deviceToHost(info);
       loc.deviceToHost(info);
-      for (int i = 0; i < Threads; ++i) {
+      for (int i = 0; i < ThreadsPerTeam; ++i) {
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }
       val.cleanup(info);
@@ -331,9 +331,9 @@ private:
   //! storage for offload information
   omp::Offload_Info info;
   //! storage for reduction data for value
-  omp::Reduce_Data<Threads, T> val;
+  omp::Reduce_Data<ThreadsPerTeam, T> val;
   //! storage for redcution data for location
-  omp::Reduce_Data<Threads, IndexType> loc;
+  omp::Reduce_Data<ThreadsPerTeam, IndexType> loc;
   T initVal;
   T finalVal;
   IndexType initLoc;
@@ -342,11 +342,11 @@ private:
 
 
 //! specialization of ReduceSum for omp_target_reduce
-template <size_t Threads, typename T>
-struct ReduceSum<omp_target_reduce<Threads>, T>
-    : public TargetReduce<Threads, RAJA::reduce::sum<T>, T> {
-  using self = ReduceSum<omp_target_reduce<Threads>, T>;
-  using parent = TargetReduce<Threads, RAJA::reduce::sum<T>, T>;
+template <size_t ThreadsPerTeam, typename T>
+struct ReduceSum<omp_target_reduce<ThreadsPerTeam>, T>
+    : public TargetReduce<ThreadsPerTeam, RAJA::reduce::sum<T>, T> {
+  using self = ReduceSum<omp_target_reduce<ThreadsPerTeam>, T>;
+  using parent = TargetReduce<ThreadsPerTeam, RAJA::reduce::sum<T>, T>;
   using parent::parent;
   //! enable operator+= for ReduceSum -- alias for reduce()
   self &operator+=(T rhsVal)
@@ -364,11 +364,11 @@ struct ReduceSum<omp_target_reduce<Threads>, T>
 
 
 //! specialization of ReduceMin for omp_target_reduce
-template <size_t Threads, typename T>
-struct ReduceMin<omp_target_reduce<Threads>, T>
-    : public TargetReduce<Threads, RAJA::reduce::min<T>, T> {
-  using self = ReduceMin<omp_target_reduce<Threads>, T>;
-  using parent = TargetReduce<Threads, RAJA::reduce::min<T>, T>;
+template <size_t ThreadsPerTeam, typename T>
+struct ReduceMin<omp_target_reduce<ThreadsPerTeam>, T>
+    : public TargetReduce<ThreadsPerTeam, RAJA::reduce::min<T>, T> {
+  using self = ReduceMin<omp_target_reduce<ThreadsPerTeam>, T>;
+  using parent = TargetReduce<ThreadsPerTeam, RAJA::reduce::min<T>, T>;
   using parent::parent;
   //! enable min() for ReduceMin -- alias for reduce()
   self &min(T rhsVal)
@@ -386,11 +386,11 @@ struct ReduceMin<omp_target_reduce<Threads>, T>
 
 
 //! specialization of ReduceMax for omp_target_reduce
-template <size_t Threads, typename T>
-struct ReduceMax<omp_target_reduce<Threads>, T>
-    : public TargetReduce<Threads, RAJA::reduce::max<T>, T> {
-  using self = ReduceMax<omp_target_reduce<Threads>, T>;
-  using parent = TargetReduce<Threads, RAJA::reduce::max<T>, T>;
+template <size_t ThreadsPerTeam, typename T>
+struct ReduceMax<omp_target_reduce<ThreadsPerTeam>, T>
+    : public TargetReduce<ThreadsPerTeam, RAJA::reduce::max<T>, T> {
+  using self = ReduceMax<omp_target_reduce<ThreadsPerTeam>, T>;
+  using parent = TargetReduce<ThreadsPerTeam, RAJA::reduce::max<T>, T>;
   using parent::parent;
   //! enable max() for ReduceMax -- alias for reduce()
   self &max(T rhsVal)
@@ -407,12 +407,12 @@ struct ReduceMax<omp_target_reduce<Threads>, T>
 };
 
 //! specialization of ReduceMinLoc for omp_target_reduce
-template <size_t Threads, typename T>
-struct ReduceMinLoc<omp_target_reduce<Threads>, T>
-    : public TargetReduceLoc<Threads, omp::minloc<T, Index_type>, T, Index_type> {
-  using self = ReduceMinLoc<omp_target_reduce<Threads>, T>;
+template <size_t ThreadsPerTeam, typename T>
+struct ReduceMinLoc<omp_target_reduce<ThreadsPerTeam>, T>
+    : public TargetReduceLoc<ThreadsPerTeam, omp::minloc<T, Index_type>, T, Index_type> {
+  using self = ReduceMinLoc<omp_target_reduce<ThreadsPerTeam>, T>;
   using parent =
-      TargetReduceLoc<Threads, omp::minloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<ThreadsPerTeam, omp::minloc<T, Index_type>, T, Index_type>;
   using parent::parent;
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   self &minloc(T rhsVal, Index_type rhsLoc)
@@ -430,12 +430,12 @@ struct ReduceMinLoc<omp_target_reduce<Threads>, T>
 
 
 //! specialization of ReduceMaxLoc for omp_target_reduce
-template <size_t Threads, typename T>
-struct ReduceMaxLoc<omp_target_reduce<Threads>, T>
-    : public TargetReduceLoc<Threads, omp::maxloc<T, Index_type>, T, Index_type> {
-  using self = ReduceMaxLoc<omp_target_reduce<Threads>, T>;
+template <size_t ThreadsPerTeam, typename T>
+struct ReduceMaxLoc<omp_target_reduce<ThreadsPerTeam>, T>
+    : public TargetReduceLoc<ThreadsPerTeam, omp::maxloc<T, Index_type>, T, Index_type> {
+  using self = ReduceMaxLoc<omp_target_reduce<ThreadsPerTeam>, T>;
   using parent =
-      TargetReduceLoc<Threads, omp::maxloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<ThreadsPerTeam, omp::maxloc<T, Index_type>, T, Index_type>;
   using parent::parent;
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   self &maxloc(T rhsVal, Index_type rhsLoc)

@@ -57,8 +57,7 @@ OpenMP Policies
 
 OpenMP Target Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^
-* ``omp_target_parallel_for_exec<NUMTHREADS>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of threads per team; e.g.,
-if a GPU device is available, this is similar to launching a CUDA kernel with a thread block size of NUMTHREADS. 
+* ``omp_target_parallel_for_exec<NUMTHREADS>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of threads per team; e.g., if a GPU device is available, this is similar to launching a CUDA kernel with a thread block size of NUMTHREADS. 
 
 Intel Threading Building Blocks (TBB) Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
