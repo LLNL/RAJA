@@ -404,24 +404,6 @@ struct cuda_shmem {
 };
 
 
-/*!
- * CUDA shared memory that allows global indexing into a block's shmem
- */
-template <typename DimView>
-struct block_map_shmem {
-
-  template <typename T>
-  RAJA_INLINE RAJA_DEVICE static T apply(ptrdiff_t dim_size, T idx)
-  {
-    DimView dim_view;
-    ptrdiff_t block_offset = dim_view(blockIdx) * dim_size;
-    return idx - block_offset;
-  }
-};
-
-using block_map_x_shmem = block_map_shmem<Dim3x>;
-using block_map_y_shmem = block_map_shmem<Dim3y>;
-using block_map_z_shmem = block_map_shmem<Dim3z>;
 
 
 template<int dim>
@@ -439,13 +421,6 @@ struct cuda_thread_xyz_loop{};
 using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
 using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
 using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
-
-template<int min_threads>
-using cuda_thread_x_loop_min = cuda_thread_xyz_loop<0, min_threads>;
-template<int min_threads>
-using cuda_thread_y_loop_min = cuda_thread_xyz_loop<1, min_threads>;
-template<int min_threads>
-using cuda_thread_z_loop_min = cuda_thread_xyz_loop<2, min_threads>;
 
 
 template<int dim>

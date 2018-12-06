@@ -85,30 +85,53 @@ struct CudaKernelExt
 
 
 /*!
- * A RAJA::kernel statement that launches a CUDA kernel.
- *
- *
+ * A RAJA::kernel statement that launches a CUDA kernel using the
+ * CUDA occupancy calculator to determine the optimal number of threads.
+ * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernelOcc =
     CudaKernelExt<cuda_occ_calc_launch<1024, false>, EnclosedStmts...>;
 
+/*!
+ * A RAJA::kernel statement that launches a CUDA kernel using the
+ * CUDA occupancy calculator to determine the optimal number of threads.
+ * Thre kernel launch is asynchronous.
+ */
 template <typename... EnclosedStmts>
 using CudaKernelOccAsync =
     CudaKernelExt<cuda_occ_calc_launch<1024, true>, EnclosedStmts...>;
 
+/*!
+ * A RAJA::kernel statement that launches a CUDA kernel with a fixed
+ * number of threads (specified by num_threads)
+ * Thre kernel launch is synchronous.
+ */
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixed =
     CudaKernelExt<cuda_explicit_launch<false, 0, num_threads>,
                   EnclosedStmts...>;
 
+/*!
+ * A RAJA::kernel statement that launches a CUDA kernel with a fixed
+ * number of threads (specified by num_threads)
+ * Thre kernel launch is asynchronous.
+ */
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixedAsync =
     CudaKernelExt<cuda_explicit_launch<true, 0, num_threads>, EnclosedStmts...>;
 
+/*!
+ * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads 
+ * Thre kernel launch is synchronous.
+ */
 template <typename... EnclosedStmts>
 using CudaKernel = CudaKernelFixed<1024, EnclosedStmts...>;
 
+/*!
+ * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads 
+ * Thre kernel launch is asynchronous.
+ */
 template <typename... EnclosedStmts>
 using CudaKernelAsync = CudaKernelFixedAsync<1024, EnclosedStmts...>;
 
@@ -129,11 +152,16 @@ __global__ void CudaKernelLauncher(Data data)
   data_t private_data = data;
 
   Exec::exec(private_data);
-
-  //Exec::exec()
 }
 
 
+/*!
+ * CUDA global function for launching CudaKernel policies
+ * This is annotated to gaurantee that device code generated
+ * can be launched by a kernel with BlockSize number of threads.
+ *
+ * This launcher is used by the CudaKerelFixed policies.
+ */
 template <size_t BlockSize, typename Data, typename Exec>
 __launch_bounds__(BlockSize, 1) __global__
     void CudaKernelLauncherFixed(Data data)
@@ -144,8 +172,6 @@ __launch_bounds__(BlockSize, 1) __global__
 
   // execute the the object
   Exec::exec(private_data);
-
-  //Exec::exec(data);
 }
 
 /*!
@@ -231,7 +257,15 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads>,St
   }
 };
 
-
+/*!
+ * Helper function that is used to compute either the number of blocks
+ * or threads that get launched.
+ * It takes the max threads (limit), the requested number (result),
+ * and a minimum limit (minimum).
+ *
+ * The algorithm is greedy (and probably could be improved), and favors
+ * maximizing the number of threads (or blocks) in x, y, then z. 
+ */
 inline
 cuda_dim_t fitCudaDims(int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
 
@@ -308,14 +342,13 @@ struct StatementExecutor<
     cudaStream_t stream = 0;
 
 
-
     //
     // Compute the MAX physical kernel dimensions
     //
     int max_blocks, max_threads;
     launch_t::max_blocks_threads(shmem, max_blocks, max_threads);
 
-//max_blocks *= 2;
+
     //
     // Privatize the LoopData, using make_launch_body to setup reductions
     //
@@ -337,28 +370,8 @@ struct StatementExecutor<
       //
       // Fit the requested threads an blocks
       //
-//      printf("Requested kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, min_threads=<%d,%d,%d>\n",
-//          (int)launch_dims.blocks.x,
-//          (int)launch_dims.blocks.y,
-//          (int)launch_dims.blocks.z,
-//          (int)launch_dims.threads.x,
-//          (int)launch_dims.threads.y,
-//          (int)launch_dims.threads.z,
-//          (int)launch_dims.min_threads.x,
-//          (int)launch_dims.min_threads.y,
-//          (int)launch_dims.min_threads.z);
-
       launch_dims.blocks = fitCudaDims(max_blocks, launch_dims.blocks);
       launch_dims.threads = fitCudaDims(max_threads, launch_dims.threads, launch_dims.min_threads);
-
-      printf("Launching kernel blocks=<%d,%d,%d>, threads=<%d,%d,%d>, shmem=%d, stream=%p\n",
-          (int)launch_dims.blocks.x,
-          (int)launch_dims.blocks.y,
-          (int)launch_dims.blocks.z,
-          (int)launch_dims.threads.x,
-          (int)launch_dims.threads.y,
-          (int)launch_dims.threads.z,
-          (int)shmem, stream);
 
       // make sure that we fit
       if(launch_dims.num_blocks() > max_blocks){
@@ -371,8 +384,6 @@ struct StatementExecutor<
       //
       // Launch the kernels
       //
-
-
       launch_t::launch(cuda_data, launch_dims, shmem, stream);
 
 

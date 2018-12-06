@@ -40,8 +40,8 @@ namespace internal
 
 
 /*
- * Executor for thread work sharing loop inside a Cuda Kernel.
- *
+ * Executor for thread work sharing loop inside CudaKernel.
+ * Mapping directly from threadIdx.xyz to indices
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -96,8 +96,9 @@ struct CudaStatementExecutor<
 
 
 /*
- * Executor for thread work sharing loop inside a Cuda Kernel.
- *
+ * Executor for thread work sharing loop inside CudaKernel.
+ * Provides a block-stride loop (stride of blockDim.xyz) for 
+ * each thread in xyz.
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -155,8 +156,9 @@ struct CudaStatementExecutor<
 
 
 /*
- * Executor for block work sharing loop inside a Cuda Kernel.
- *
+ * Executor for block work sharing inside CudaKernel.
+ * Provides a grid-stride loop (stride of gridDim.xyz) for 
+ * each block in xyz.
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -208,7 +210,7 @@ struct CudaStatementExecutor<
 
 
 /*
- * Executor for sequential loops inside of a Cuda Kernel.
+ * Executor for sequential loops inside of a CudaKernel.
  *
  * This is specialized since it need to execute the loop immediately.
  */
@@ -235,7 +237,6 @@ struct CudaStatementExecutor<
 
     idx_type len = segment_length<ArgumentId>(data);
 
-    //idx_type &i = camp::get<ArgumentId>(data.offset_tuple);
     for(idx_type i = 0;i < len;++ i){
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);

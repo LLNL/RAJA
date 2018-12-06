@@ -90,7 +90,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const Index_type num_m = 25;
   const Index_type num_g = 48;
   const Index_type num_d = 80;
-  const Index_type num_z = 1; //*1024;
+  const Index_type num_z = 8*1024;
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g << 
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
