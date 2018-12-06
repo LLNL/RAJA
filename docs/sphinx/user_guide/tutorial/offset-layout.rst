@@ -129,3 +129,5 @@ Since the stencil operation is data parallel, any parallel execution policy
 may be used. The file ``RAJA/examples/tut_offset-layout.cpp`` contains a 
 complete working example code with parallel implementations. For more details 
 about ``RAJA::kernel`` concepts, please see :ref:`loop_elements-kernel-label`. 
+
+

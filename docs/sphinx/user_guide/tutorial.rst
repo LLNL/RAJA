@@ -210,3 +210,4 @@ This is done in the example code files, but is not discussed further here.
    tutorial/offset-layout.rst
    tutorial/nested_loop_reorder.rst
    tutorial/complex_loop_examples.rst
+   tutorial/matrix_transpose.rst
