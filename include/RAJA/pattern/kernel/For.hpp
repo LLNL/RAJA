@@ -33,6 +33,7 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 #include "RAJA/policy/simd/policy.hpp"
 
@@ -45,7 +46,7 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that implements a single loop.
- *
+ * Assigns the iterate to argument ArgumentId
  *
  */
 template <camp::idx_t ArgumentId,
@@ -55,6 +56,28 @@ struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, ExecPolicy>,
              public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
+  // TODO: add static_assert for valid policy in Pol
+  using execution_policy_t = ExecPolicy;
+};
+
+
+/*!
+ * A RAJA::kernel statement that implements a single loop.
+ * Assigns the iterate to argument ArgumentId
+ * Assigns the index to param ParamId
+ *
+ */
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename ExecPolicy = camp::nil,
+          typename... EnclosedStmts>
+struct ForICount : public internal::ForList,
+             public internal::ForTraitBase<ArgumentId, ExecPolicy>,
+             public internal::Statement<ExecPolicy, EnclosedStmts...> {
+
+  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+                "Inappropriate ParamId, ParamId must be of type "
+                "RAJA::Statement::Param< # >");
   // TODO: add static_assert for valid policy in Pol
   using execution_policy_t = ExecPolicy;
 };
@@ -76,6 +99,23 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   RAJA_INLINE void operator()(InIndexType i)
   {
     Base::data.template assign_offset<ArgumentId>(i);
+    Base::exec();
+  }
+};
+
+template <camp::idx_t ArgumentId, typename ParamId, typename Data,
+          typename... EnclosedStmts>
+struct ForICountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+
+  using Base = GenericWrapper<Data, EnclosedStmts...>;
+  using Base::Base;
+  using privatizer = NestedPrivatizer<ForICountWrapper>;
+
+  template <typename InIndexType>
+  RAJA_INLINE void operator()(InIndexType i)
+  {
+    Base::data.template assign_offset<ArgumentId>(i);
+    Base::data.template assign_param<ParamId::param_idx>(i);
     Base::exec();
   }
 };
@@ -173,7 +213,7 @@ struct Invoke_all_Lambda<LoopIdx, State, States...>
 
 
 /*!
- * RAJA::kernel forall_impl executor specialization.
+ * RAJA::kernel forall_impl executor specialization for statement::For.
  * Assumptions: RAJA::simd_exec is the inner most policy,
  * only one lambda is used, no reductions are done within the lambda.
  *
@@ -210,7 +250,47 @@ struct StatementExecutor<
 };
 
 /*!
- * A generic RAJA::kernel forall_impl executor
+ * RAJA::kernel forall_impl executor specialization for statement::ForICount.
+ * Assumptions: RAJA::simd_exec is the inner most policy,
+ * only one lambda is used, no reductions are done within the lambda.
+ *
+ */
+template <camp::idx_t ArgumentId, typename ParamId,
+          typename... EnclosedStmts>
+struct StatementExecutor<
+    statement::ForICount<ArgumentId, ParamId, RAJA::simd_exec,
+                         EnclosedStmts...>> {
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+
+    auto iter = get<ArgumentId>(data.segment_tuple);
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+
+    RAJA_SIMD
+    for (decltype(distance) i = 0; i < distance; ++i) {
+
+      // Offsets and parameters need to be privatized
+      auto offsets = data.offset_tuple;
+      auto params = data.param_tuple;
+      get<ArgumentId>(offsets) = i;
+      get<ParamId::param_idx>(params) = i;
+
+      Invoke_all_Lambda<0, EnclosedStmts...>::lambda_special(
+          camp::idx_seq_from_t<decltype(offsets)>{},
+          camp::idx_seq_from_t<decltype(params)>{},
+          data,
+          offsets,
+          params);
+    }
+  }
+};
+
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::For
  *
  *
  */
@@ -227,6 +307,34 @@ struct StatementExecutor<
 
     // Create a wrapper, just in case forall_impl needs to thread_privatize
     ForWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
+
+    auto len = segment_length<ArgumentId>(data);
+    using len_t = decltype(len);
+
+    forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+  }
+};
+
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::ForICount
+ *
+ *
+ */
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
+struct StatementExecutor<
+    statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>> {
+
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+
+    // Create a wrapper, just in case forall_impl needs to thread_privatize
+    ForICountWrapper<ArgumentId, ParamId, Data,
+                     EnclosedStmts...> for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
