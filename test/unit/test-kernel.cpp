@@ -1142,6 +1142,100 @@ CUDA_TEST(Kernel, CudaExec)
 }
 
 
+CUDA_TEST(Kernel, CudaForICount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::Tile<0, statement::tile_fixed<T>, cuda_block_x_loop,
+         ForICount<0, Param<0>, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < T; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ii) {
+          trip_count += 1;
+          if (i%T == t && ii == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = N/T;
+    if (t < N%T) {
+      tile_expect += 1;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
+
+
+CUDA_TEST(Kernel, CudaTileTCount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+  constexpr long NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::TileTCount<0, Param<0>, statement::tile_fixed<T>, cuda_block_x_loop,
+         For<0, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < NT; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ti) {
+          trip_count += 1;
+          if (i/T == t && ti == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = T;
+    if ((t+1)*T > N) {
+      tile_expect = N - t*T;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
+
 
 CUDA_TEST(Kernel, CudaConditional)
 {
