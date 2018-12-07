@@ -395,22 +395,22 @@ using CUDATypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<3, RAJA::cuda_block_exec,
-          RAJA::statement::For<2, RAJA::cuda_block_exec,
+        RAJA::statement::For<3, RAJA::cuda_block_y_loop,
+          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
 
            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
 
              //Load data into shared memory
-              RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<0>
                                    >
                                  >,
               RAJA::statement::CudaSyncThreads,
 
                 //Read data from shared memory
-                RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                     RAJA::statement::Lambda<1> > >
                ,RAJA::statement::CudaSyncThreads,
               > //close shared memory scope
@@ -905,33 +905,33 @@ using CudaTypes2 =
     RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::For<4, RAJA::cuda_block_exec,
-        RAJA::statement::For<3, RAJA::cuda_block_exec,
+      RAJA::statement::For<4, RAJA::cuda_block_y_loop,
+        RAJA::statement::For<3, RAJA::cuda_block_x_loop,
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
             //Initalize thread private value
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<0> > >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::seq_exec,
 
                //Load matrix into tile
-              RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<1>
                                    >
                                  >,
              //perform matrix multiplcation
               RAJA::statement::CudaSyncThreads,
-                RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                     RAJA::statement::Lambda<2> > >
                      ,RAJA::statement::CudaSyncThreads,
             >, //sliding window
             //Write memory out to global matrix
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<3> > >
          > //Create shared memory
         >//For 3
@@ -941,34 +941,34 @@ using CudaTypes2 =
     //Policy for Matrix multiply with a scalar as accumulator
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::For<4, RAJA::cuda_block_exec,
-        RAJA::statement::For<3, RAJA::cuda_block_exec,
+      RAJA::statement::For<4, RAJA::cuda_block_y_loop,
+        RAJA::statement::For<3, RAJA::cuda_block_x_loop,
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<1,0>,
 
             //Intialize thread private value to zero
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<0> > >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::seq_exec,
 
                //Load matrix into tile
-              RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<1>
                                    >
                                  >,
              //perform matrix multiplcation
               RAJA::statement::CudaSyncThreads,
-                RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                     RAJA::statement::Lambda<2> > >
                      ,RAJA::statement::CudaSyncThreads,
            >, //sliding window
             //Write memory out to global matrix
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<3> > >
          > //Create shared memory
         >//For 3
@@ -989,34 +989,34 @@ using CudaTypes3 =
     //Policy for Matrix multiply with a scalar
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::For<4, RAJA::cuda_block_exec,
-        RAJA::statement::For<3, RAJA::cuda_block_exec,
+      RAJA::statement::For<4, RAJA::cuda_block_y_loop,
+        RAJA::statement::For<3, RAJA::cuda_block_x_loop,
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
             RAJA::statement::InitLocalMem<RAJA::cuda_thread_mem, RAJA::ParamList<2>,
             //Initalize thread private value
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<0> > >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::seq_exec,
 
                //Load matrix into tile
-              RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                RAJA::statement::For<0, RAJA::cuda_thread_exec,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<1>
                                    >
                                  >,
              //perform matrix multiplcation
               RAJA::statement::CudaSyncThreads,
-                RAJA::statement::For<1, RAJA::cuda_thread_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_exec,
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                     RAJA::statement::Lambda<2> > >
                      ,RAJA::statement::CudaSyncThreads,
             >, //sliding window
             //Write memory out to global matrix
-            RAJA::statement::For<1, RAJA::cuda_thread_exec,
-              RAJA::statement::For<0, RAJA::cuda_thread_exec,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                    RAJA::statement::Lambda<3> > >
          > //Create private memory
         > //Create shared memory

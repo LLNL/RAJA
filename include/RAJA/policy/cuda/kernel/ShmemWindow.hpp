@@ -34,34 +34,30 @@
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/ShmemTile.hpp"
 
 #include "RAJA/pattern/kernel/ShmemWindow.hpp"
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
 {
-
-
 namespace internal
 {
 
 //Intialize thread shared array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, IndexCalc>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
   
-  using enclosed_stmts_t =
-    CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
-  
-  IndexCalc index_calc;
   
   //Launch loops
   template<camp::idx_t Pos>
-  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
@@ -69,25 +65,31 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
     __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
-    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+    enclosed_stmts_t::exec(data);
   }
   
   //Intialize local array
   //Identifies type + number of elements needed
   template<camp::idx_t Pos, camp::idx_t... others>
-  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
     __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
-    initMem<others...>(data, num_logical_blocks, block_carry);
+    initMem<others...>(data);
   }
 
   //Set pointer to null base case
   template<camp::idx_t Pos>
-  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
   {
 
     camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
@@ -96,63 +98,55 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
 
   //Set pointer to null recursive case
   template<camp::idx_t Pos, camp::idx_t... others>
-  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
   {
 
     camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
-    setPtrToNull<others...>(data, num_logical_blocks, block_carry);
+    setPtrToNull<others...>(data);
   }
 
 
-  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
-                                   int num_logical_blocks,
-                                   int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
   {
     
     //Intialize scoped arrays + launch loops
-    initMem<Indices...>(data, num_logical_blocks, block_carry);
+    initMem<Indices...>(data);
     
     //set pointers in scoped arrays to null
-    setPtrToNull<Indices...>(data, num_logical_blocks, block_carry);
-  }
-
-  RAJA_INLINE RAJA_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
-  {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+    setPtrToNull<Indices...>(data);
   }
 
 
-  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
   {
-    enclosed_stmts.initThread(data);
-  }
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-    return enclosed_stmts.calculateDimensions(data, max_physical);
+    return enclosed_stmts_t::calculateDimensions(data);
   }
 
 };
 
 //Intialize thread private array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, IndexCalc>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
   
-  using enclosed_stmts_t =
-    CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
-  
-  IndexCalc index_calc;
   
   //Launch loops
   template<camp::idx_t Pos>
-  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
@@ -160,25 +154,31 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
     varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
-    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+    enclosed_stmts_t::exec(data);
   }
   
   //Intialize local array
   //Identifies type + number of elements needed
   template<camp::idx_t Pos, camp::idx_t... others>
-  void RAJA_INLINE RAJA_DEVICE initMem(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void initMem(Data &data)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
     varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
-    initMem<others...>(data, num_logical_blocks, block_carry);
+    initMem<others...>(data);
   }
 
   //Set pointer to null base case
   template<camp::idx_t Pos>
-  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
   {
 
     camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
@@ -187,65 +187,54 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
 
   //Set pointer to null recursive case
   template<camp::idx_t Pos, camp::idx_t... others>
-  void RAJA_INLINE RAJA_DEVICE setPtrToNull(Data &data, int num_logical_blocks, int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void setPtrToNull(Data &data)
   {
 
     camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
-    setPtrToNull<others...>(data, num_logical_blocks, block_carry);
+    setPtrToNull<others...>(data);
   }
 
 
-  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
-                                   int num_logical_blocks,
-                                   int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
   {
     
     //Intialize scoped arrays + launch loops
-    initMem<Indices...>(data, num_logical_blocks, block_carry);
+    initMem<Indices...>(data);
     
     //set pointers in scoped arrays to null
-    setPtrToNull<Indices...>(data, num_logical_blocks, block_carry);
-  }
-
-  RAJA_INLINE RAJA_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
-  {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
+    setPtrToNull<Indices...>(data);
   }
 
 
-  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
   {
-    enclosed_stmts.initThread(data);
-  }
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-    return enclosed_stmts.calculateDimensions(data, max_physical);
+    return enclosed_stmts_t::calculateDimensions(data);
   }
 
 };
 
-//Set Shared memory window
-template <typename Data, typename... EnclosedStmts, typename IndexCalc>
+
+
+template <typename Data, typename... EnclosedStmts>
 struct CudaStatementExecutor<Data,
-                             statement::SetShmemWindow<EnclosedStmts...>,
-                             IndexCalc> {
+                             statement::SetShmemWindow<EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
-
-  IndexCalc index_calc;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
 
 
-  RAJA_INLINE RAJA_DEVICE void exec(Data &data,
-                              int num_logical_blocks,
-                              int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data)
   {
 
     // Call setWindow on all of our shmem objects
@@ -253,29 +242,17 @@ struct CudaStatementExecutor<Data,
                                       data.get_minimum_index_tuple());
 
     // execute enclosed statements
-    enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+    enclosed_stmts_t::exec(data);
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                          int num_logical_blocks,
-                                          int block_stride)
+
+
+  inline
+  static
+  LaunchDims calculateDimensions(Data const &data)
   {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
-  }
-
-
-  RAJA_INLINE RAJA_DEVICE void initThread(Data &data)
-  {
-    enclosed_stmts.initThread(data);
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return enclosed_stmts.calculateDimensions(data, max_physical);
+    return enclosed_stmts_t::calculateDimensions(data);
   }
 };
 
