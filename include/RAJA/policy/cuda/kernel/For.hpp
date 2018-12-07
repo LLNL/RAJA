@@ -97,7 +97,7 @@ struct CudaStatementExecutor<
 /*
  * Executor for thread work sharing loop inside CudaKernel.
  * Mapping directly from threadIdx.xyz to indices
- * Assigns the index to param ParamId
+ * Assigns the loop index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -200,7 +200,7 @@ struct CudaStatementExecutor<
  * Executor for thread work sharing loop inside CudaKernel.
  * Provides a block-stride loop (stride of blockDim.xyz) for
  * each thread in xyz.
- * Assigns the index to param ParamId
+ * Assigns the loop index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -299,7 +299,7 @@ struct CudaStatementExecutor<
  * Executor for block work sharing inside CudaKernel.
  * Provides a grid-stride loop (stride of gridDim.xyz) for
  * each block in xyz.
- * Assigns the index to param ParamId
+ * Assigns the loop index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -389,7 +389,7 @@ struct CudaStatementExecutor<
  * Executor for sequential loops inside of a CudaKernel.
  *
  * This is specialized since it need to execute the loop immediately.
- * Assigns the index to param ParamId
+ * Assigns the loop index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,

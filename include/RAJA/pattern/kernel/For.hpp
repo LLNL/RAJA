@@ -46,7 +46,7 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that implements a single loop.
- * Assigns the iterate to argument ArgumentId
+ * Assigns the loop iterate to argument ArgumentId
  *
  */
 template <camp::idx_t ArgumentId,
@@ -63,8 +63,8 @@ struct For : public internal::ForList,
 
 /*!
  * A RAJA::kernel statement that implements a single loop.
- * Assigns the iterate to argument ArgumentId
- * Assigns the index to param ParamId
+ * Assigns the loop iterate to argument ArgumentId
+ * Assigns the loop index to param ParamId
  *
  */
 template <camp::idx_t ArgumentId,
