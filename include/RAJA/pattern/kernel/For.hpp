@@ -87,7 +87,11 @@ struct ForICount : public internal::ForList,
 namespace internal
 {
 
-
+/*!
+ * A generic RAJA::kernel forall_impl loop wrapper for statement::For
+ * Assigns the loop index to offset ArgumentId
+ *
+ */
 template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
 struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
@@ -103,6 +107,11 @@ struct ForWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   }
 };
 
+/*!
+ * A generic RAJA::kernel forall_impl loop wrapper for statement::ForICount
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ */
 template <camp::idx_t ArgumentId, typename ParamId, typename Data,
           typename... EnclosedStmts>
 struct ForICountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
@@ -216,7 +225,7 @@ struct Invoke_all_Lambda<LoopIdx, State, States...>
  * RAJA::kernel forall_impl executor specialization for statement::For.
  * Assumptions: RAJA::simd_exec is the inner most policy,
  * only one lambda is used, no reductions are done within the lambda.
- *
+ * Assigns the loop index to offset ArgumentId
  */
 template <camp::idx_t ArgumentId, typename... EnclosedStmts>
 struct StatementExecutor<
@@ -253,7 +262,8 @@ struct StatementExecutor<
  * RAJA::kernel forall_impl executor specialization for statement::ForICount.
  * Assumptions: RAJA::simd_exec is the inner most policy,
  * only one lambda is used, no reductions are done within the lambda.
- *
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
  */
 template <camp::idx_t ArgumentId, typename ParamId,
           typename... EnclosedStmts>

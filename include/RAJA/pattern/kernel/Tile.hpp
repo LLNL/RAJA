@@ -88,7 +88,11 @@ struct tile_fixed {
 namespace internal
 {
 
-
+/*!
+ * A generic RAJA::kernel forall_impl tile wrapper for statement::For
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
 struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
@@ -111,7 +115,11 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   }
 };
 
-
+/*!
+ * A generic RAJA::kernel forall_impl tile wrapper for statement::ForTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
 template <camp::idx_t ArgumentId, typename ParamId, typename Data,
           typename... EnclosedStmts>
 struct TileTCountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
@@ -247,7 +255,11 @@ struct IterableTiler {
   camp::idx_t dist;
 };
 
-
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::Tile
+ *
+ *
+ */
 template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
@@ -281,6 +293,11 @@ struct StatementExecutor<
   }
 };
 
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::TileTCount
+ *
+ *
+ */
 template <camp::idx_t ArgumentId,
           typename ParamId,
           typename TPol,

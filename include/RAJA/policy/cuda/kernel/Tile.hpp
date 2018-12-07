@@ -50,7 +50,11 @@ namespace RAJA
 namespace internal
 {
 
-
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename TPol,
@@ -117,6 +121,11 @@ struct CudaStatementExecutor<
   }
 };
 
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
@@ -167,7 +176,11 @@ struct CudaStatementExecutor<
   }
 };
 
-
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
@@ -252,6 +265,11 @@ struct CudaStatementExecutor<
   }
 };
 
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
