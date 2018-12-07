@@ -112,6 +112,7 @@ struct PreIncCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct PostIncCountOp {
   PostIncCountOp(T* count, RAJA::RangeSegment seg)
@@ -124,6 +125,7 @@ struct PostIncCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct AddEqCountOp {
   AddEqCountOp(T* count, RAJA::RangeSegment seg)
@@ -136,6 +138,7 @@ struct AddEqCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchAddCountOp {
   FetchAddCountOp(T* count, RAJA::RangeSegment seg)
@@ -161,6 +164,7 @@ struct PreDecCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct PostDecCountOp {
   PostDecCountOp(T* count, RAJA::RangeSegment seg)
@@ -173,6 +177,7 @@ struct PostDecCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct SubEqCountOp {
   SubEqCountOp(T* count, RAJA::RangeSegment seg)
@@ -185,6 +190,7 @@ struct SubEqCountOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchSubCountOp {
   FetchSubCountOp(T* count, RAJA::RangeSegment seg)
@@ -210,6 +216,7 @@ struct MaxEqOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchMaxOtherOp {
   FetchMaxOtherOp(T* count, RAJA::RangeSegment seg)
@@ -222,6 +229,7 @@ struct FetchMaxOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct MinEqOtherOp {
   MinEqOtherOp(T* count, RAJA::RangeSegment seg)
@@ -234,6 +242,7 @@ struct MinEqOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchMinOtherOp {
   FetchMinOtherOp(T* count, RAJA::RangeSegment seg)
@@ -257,6 +266,7 @@ typename std::enable_if<sizeof(T) == 1, T>::type np2m1(T val)
   val |= val >> 4  ;
   return val;
 }
+
 template < typename T >
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -268,6 +278,7 @@ typename std::enable_if<sizeof(T) == 2, T>::type np2m1(T val)
   val |= val >> 8  ;
   return val;
 }
+
 template < typename T >
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -280,6 +291,7 @@ typename std::enable_if<sizeof(T) == 4, T>::type np2m1(T val)
   val |= val >> 16 ;
   return val;
 }
+
 template < typename T >
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -293,6 +305,7 @@ typename std::enable_if<sizeof(T) == 8, T>::type np2m1(T val)
   val |= val >> 32 ;
   return val;
 }
+
 template < typename T >
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -320,6 +333,7 @@ struct AndEqOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchAndOtherOp {
   FetchAndOtherOp(T* count, RAJA::RangeSegment seg)
@@ -332,6 +346,7 @@ struct FetchAndOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct OrEqOtherOp {
   OrEqOtherOp(T* count, RAJA::RangeSegment seg)
@@ -344,6 +359,7 @@ struct OrEqOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchOrOtherOp {
   FetchOrOtherOp(T* count, RAJA::RangeSegment seg)
@@ -356,6 +372,7 @@ struct FetchOrOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct XorEqOtherOp {
   XorEqOtherOp(T* count, RAJA::RangeSegment seg)
@@ -371,6 +388,7 @@ struct XorEqOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct FetchXorOtherOp {
   FetchXorOtherOp(T* count, RAJA::RangeSegment seg)
@@ -399,6 +417,7 @@ struct LoadOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct OperatorTOtherOp {
   OperatorTOtherOp(T* count, RAJA::RangeSegment RAJA_UNUSED_ARG(seg))
@@ -411,6 +430,7 @@ struct OperatorTOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct StoreOtherOp {
   StoreOtherOp(T* count, RAJA::RangeSegment seg)
@@ -423,6 +443,7 @@ struct StoreOtherOp {
   RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
+
 template < typename T, typename AtomicPolicy >
 struct AssignOtherOp {
   AssignOtherOp(T* count, RAJA::RangeSegment seg)
