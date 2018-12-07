@@ -776,8 +776,8 @@ TEST(Kernel, TileTCount)
   for (int i = 0; i < N; ++i) {
     x[i] = 0;
   }
-  for (int i = 0; i < NT; ++i) {
-    xt[i] = 0;
+  for (int t = 0; t < NT; ++t) {
+    xt[t] = 0;
   }
 
   kernel_param<Pol>(
@@ -793,12 +793,12 @@ TEST(Kernel, TileTCount)
   for (int i = 0; i < N; ++i) {
     ASSERT_EQ(x[i], 1);
   }
-  for (int i = 0; i < NT; ++i) {
+  for (int t = 0; t < NT; ++t) {
     int expect = T;
-    if ((i+1)*T > N) {
-      expect -= (i+1)*T - N;
+    if ((t+1)*T > N) {
+      expect = N - t*T;
     }
-    ASSERT_EQ(xt[i], expect);
+    ASSERT_EQ(xt[t], expect);
   }
 
   delete[] xt;
