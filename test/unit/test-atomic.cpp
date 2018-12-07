@@ -457,6 +457,59 @@ struct AssignOtherOp {
   T min, max, final_min, final_max;
 };
 
+template < typename T, typename AtomicPolicy >
+struct CASOtherOp {
+  CASOtherOp(T* count, RAJA::RangeSegment seg)
+    : other(count), min((T)0), max((T)seg.size() - (T)1),
+      final_min(min), final_max(max)
+  { count[0] = (T)0; }
+  RAJA_HOST_DEVICE
+  T operator()(RAJA::Index_type i) const
+  {
+    T received, expect = (T)0;
+    while ((received = other.CAS(expect, (T)i)) != expect) {
+      expect = received;
+    }
+    return received;
+  }
+  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  T min, max, final_min, final_max;
+};
+
+template < typename T, typename AtomicPolicy >
+struct CompareExchangeWeakOtherOp {
+  CompareExchangeWeakOtherOp(T* count, RAJA::RangeSegment seg)
+    : other(count), min((T)0), max((T)seg.size() - (T)1),
+      final_min(min), final_max(max)
+  { count[0] = (T)0; }
+  RAJA_HOST_DEVICE
+  T operator()(RAJA::Index_type i) const
+  {
+    T expect = (T)0;
+    while (!other.compare_exchange_weak(expect, (T)i)) {}
+    return expect;
+  }
+  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  T min, max, final_min, final_max;
+};
+
+template < typename T, typename AtomicPolicy >
+struct CompareExchangeStrongOtherOp {
+  CompareExchangeStrongOtherOp(T* count, RAJA::RangeSegment seg)
+    : other(count), min((T)0), max((T)seg.size() - (T)1),
+      final_min(min), final_max(max)
+  { count[0] = (T)0; }
+  RAJA_HOST_DEVICE
+  T operator()(RAJA::Index_type i) const
+  {
+    T expect = (T)0;
+    while (!other.compare_exchange_strong(expect, (T)i)) {}
+    return expect;
+  }
+  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  T min, max, final_min, final_max;
+};
+
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename T,
@@ -538,6 +591,10 @@ void testAtomicRefIntegral()
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, StoreOtherOp    >(seg, count, list);
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, AssignOtherOp   >(seg, count, list);
 
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CASOtherOp                  >(seg, count, list);
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeWeakOtherOp  >(seg, count, list);
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeStrongOtherOp>(seg, count, list);
+
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreIncCountOp  >(seg, count, list, hit);
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostIncCountOp >(seg, count, list, hit);
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, AddEqCountOp   >(seg, count, list, hit);
@@ -600,6 +657,10 @@ void testAtomicRefFloating()
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, OperatorTOtherOp>(seg, count, list);
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, StoreOtherOp    >(seg, count, list);
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, AssignOtherOp   >(seg, count, list);
+
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CASOtherOp                  >(seg, count, list);
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeWeakOtherOp  >(seg, count, list);
+  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeStrongOtherOp>(seg, count, list);
 
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreIncCountOp  >(seg, count, list, hit);
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostIncCountOp >(seg, count, list, hit);
