@@ -679,6 +679,47 @@ TEST(Kernel, FissionFusion_Conditional)
   delete[] x;
 }
 
+
+TEST(Kernel, ForICount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::ForICount<0, Param<0>, seq_exec,
+                           Lambda<0>>>;
+
+
+  int *x = new int[N];
+  int *xi = new int[N];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+    xi[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type ii) {
+        x[i] += 1;
+        xi[ii] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+    ASSERT_EQ(xi[i], 1);
+  }
+
+  delete[] xi;
+  delete[] x;
+}
+
+
 TEST(Kernel, Tile)
 {
   using namespace RAJA;
@@ -711,6 +752,56 @@ TEST(Kernel, Tile)
     ASSERT_EQ(x[i], 320);
   }
 
+  delete[] x;
+}
+
+TEST(Kernel, TileTCount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+  constexpr int T = 4;
+  constexpr int NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::TileTCount<0, Param<0>,
+                      statement::tile_fixed<T>, seq_exec,
+                      For<0, seq_exec, Lambda<0>>>>;
+
+
+  int *x = new int[N];
+  int *xt = new int[NT];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+  }
+  for (int i = 0; i < NT; ++i) {
+    xt[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type it) {
+        x[i] += 1;
+        xt[it] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+  }
+  for (int i = 0; i < NT; ++i) {
+    int expect = T;
+    if ((i+1)*T > N) {
+      expect -= (i+1)*T - N;
+    }
+    ASSERT_EQ(xt[i], expect);
+  }
+
+  delete[] xt;
   delete[] x;
 }
 
