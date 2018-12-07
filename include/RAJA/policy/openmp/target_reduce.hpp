@@ -33,6 +33,8 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
+#include <cassert>
+
 #include <algorithm>
 
 #include <omp.h>
@@ -107,6 +109,8 @@ struct Reduce_Data {
   T *device;
   T *host;
 
+  static constexpr int MaxNumTeams = ThreadsPerTeam;
+
   //! disallow default constructor
   Reduce_Data() = delete;
 
@@ -117,8 +121,8 @@ struct Reduce_Data {
   explicit Reduce_Data(T defaultValue, T identityValue, Offload_Info &info)
       : value(identityValue),
         device{reinterpret_cast<T *>(
-            omp_target_alloc(ThreadsPerTeam * sizeof(T), info.deviceID))},
-        host{new T[ThreadsPerTeam]}
+            omp_target_alloc(MaxNumTeams * sizeof(T), info.deviceID))},
+        host{new T[MaxNumTeams]}
   {
     if (!host) {
       printf("Unable to allocate space on host\n");
@@ -128,7 +132,7 @@ struct Reduce_Data {
       printf("Unable to allocate space on device\n");
       exit(1);
     }
-    std::fill_n(host, ThreadsPerTeam, identityValue);
+    std::fill_n(host, MaxNumTeams, identityValue);
     hostToDevice(info);
   }
 
@@ -141,7 +145,7 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(device),
                           reinterpret_cast<void *>(host),
-                          ThreadsPerTeam * sizeof(T),
+                          MaxNumTeams * sizeof(T),
                           0,
                           0,
                           info.deviceID,
@@ -157,7 +161,7 @@ struct Reduce_Data {
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void *>(host),
                           reinterpret_cast<void *>(device),
-                          ThreadsPerTeam * sizeof(T),
+                          MaxNumTeams * sizeof(T),
                           0,
                           0,
                           info.hostID,
@@ -190,6 +194,7 @@ struct TargetReduce {
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
+  static constexpr int MaxNumTeams = ThreadsPerTeam;
 
   explicit TargetReduce(T init_val)
       : info(),
@@ -202,6 +207,7 @@ struct TargetReduce {
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
+    assert ( omp_get_num_teams() <= MaxNumTeams );
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {
@@ -216,7 +222,7 @@ struct TargetReduce {
   {
     if (!info.isMapped) {
       val.deviceToHost(info);
-      for (int i = 0; i < ThreadsPerTeam; ++i) {
+      for (int i = 0; i < MaxNumTeams; ++i) {
         Reducer{}(val.value, val.host[i]);
       }
       val.cleanup(info);
@@ -248,7 +254,7 @@ private:
   //! storage for offload information (host ID, device ID)
   omp::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
-  omp::Reduce_Data<ThreadsPerTeam, T> val;
+  omp::Reduce_Data<MaxNumTeams, T> val;
   T initVal;
   T finalVal;
 };
@@ -257,6 +263,9 @@ private:
 //! reduction, and type
 template <size_t ThreadsPerTeam, typename Reducer, typename T, typename IndexType>
 struct TargetReduceLoc {
+
+  static constexpr int MaxNumTeams = ThreadsPerTeam;
+
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
@@ -273,6 +282,7 @@ struct TargetReduceLoc {
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
+    assert ( omp_get_num_teams() <= MaxNumTeams );
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {
@@ -288,7 +298,7 @@ struct TargetReduceLoc {
     if (!info.isMapped) {
       val.deviceToHost(info);
       loc.deviceToHost(info);
-      for (int i = 0; i < ThreadsPerTeam; ++i) {
+      for (int i = 0; i < MaxNumTeams; ++i) {
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }
       val.cleanup(info);
@@ -331,9 +341,9 @@ private:
   //! storage for offload information
   omp::Offload_Info info;
   //! storage for reduction data for value
-  omp::Reduce_Data<ThreadsPerTeam, T> val;
+  omp::Reduce_Data<MaxNumTeams, T> val;
   //! storage for redcution data for location
-  omp::Reduce_Data<ThreadsPerTeam, IndexType> loc;
+  omp::Reduce_Data<MaxNumTeams, IndexType> loc;
   T initVal;
   T finalVal;
   IndexType initLoc;
