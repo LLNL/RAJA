@@ -173,10 +173,10 @@ struct LoopData {
     camp::get<Idx>(offset_tuple) = i;
   }
 
-  template <camp::idx_t ParamIdx, typename IndexT>
+  template <typename ParamId, typename IndexT>
   RAJA_HOST_DEVICE RAJA_INLINE void assign_param(IndexT const &i)
   {
-    camp::get<ParamIdx>(param_tuple) = i;
+    camp::get<ParamId::param_idx>(param_tuple) = i;
   }
 
   template <camp::idx_t Idx>

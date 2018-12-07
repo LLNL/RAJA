@@ -115,7 +115,7 @@ struct ForICountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   RAJA_INLINE void operator()(InIndexType i)
   {
     Base::data.template assign_offset<ArgumentId>(i);
-    Base::data.template assign_param<ParamId::param_idx>(i);
+    Base::data.template assign_param<ParamId>(i);
     Base::exec();
   }
 };
