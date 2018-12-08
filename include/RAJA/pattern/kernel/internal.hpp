@@ -79,6 +79,8 @@ struct ForTraitBase : public ForBase {
   using type = ForTraitBase;  // make camp::value compatible
 };
 
+struct ParamBase {
+};
 
 template <typename Iterator>
 struct iterable_difftype_getter {
@@ -171,6 +173,11 @@ struct LoopData {
     camp::get<Idx>(offset_tuple) = i;
   }
 
+  template <typename ParamId, typename IndexT>
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_param(IndexT const &i)
+  {
+    camp::get<ParamId::param_idx>(param_tuple) = i;
+  }
 
   template <camp::idx_t Idx>
   RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()

@@ -679,6 +679,47 @@ TEST(Kernel, FissionFusion_Conditional)
   delete[] x;
 }
 
+
+TEST(Kernel, ForICount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::ForICount<0, Param<0>, seq_exec,
+                           Lambda<0>>>;
+
+
+  int *x = new int[N];
+  int *xi = new int[N];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+    xi[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type ii) {
+        x[i] += 1;
+        xi[ii] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+    ASSERT_EQ(xi[i], 1);
+  }
+
+  delete[] xi;
+  delete[] x;
+}
+
+
 TEST(Kernel, Tile)
 {
   using namespace RAJA;
@@ -711,6 +752,56 @@ TEST(Kernel, Tile)
     ASSERT_EQ(x[i], 320);
   }
 
+  delete[] x;
+}
+
+TEST(Kernel, TileTCount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+  constexpr int T = 4;
+  constexpr int NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::TileTCount<0, Param<0>,
+                      statement::tile_fixed<T>, seq_exec,
+                      For<0, seq_exec, Lambda<0>>>>;
+
+
+  int *x = new int[N];
+  int *xt = new int[NT];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+  }
+  for (int t = 0; t < NT; ++t) {
+    xt[t] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type it) {
+        x[i] += 1;
+        xt[it] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+  }
+  for (int t = 0; t < NT; ++t) {
+    int expect = T;
+    if ((t+1)*T > N) {
+      expect = N - t*T;
+    }
+    ASSERT_EQ(xt[t], expect);
+  }
+
+  delete[] xt;
   delete[] x;
 }
 
@@ -1050,6 +1141,100 @@ CUDA_TEST(Kernel, CudaExec)
   ASSERT_EQ(result, N);
 }
 
+
+CUDA_TEST(Kernel, CudaForICount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::Tile<0, statement::tile_fixed<T>, cuda_block_x_loop,
+         ForICount<0, Param<0>, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < T; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ii) {
+          trip_count += 1;
+          if (i%T == t && ii == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = N/T;
+    if (t < N%T) {
+      tile_expect += 1;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
+
+
+CUDA_TEST(Kernel, CudaTileTCount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+  constexpr long NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::TileTCount<0, Param<0>, statement::tile_fixed<T>, cuda_block_x_loop,
+         For<0, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < NT; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ti) {
+          trip_count += 1;
+          if (i/T == t && ti == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = T;
+    if ((t+1)*T > N) {
+      tile_expect = N - t*T;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
 
 
 CUDA_TEST(Kernel, CudaConditional)
