@@ -31,5 +31,6 @@
 #include "RAJA/policy/simd/forall.hpp"
 #include "RAJA/policy/simd/policy.hpp"
 #include "RAJA/policy/simd/kernel/For.hpp"
+#include "RAJA/policy/simd/kernel/ForICount.hpp"
 
 #endif  // closing endif for header file include guard
