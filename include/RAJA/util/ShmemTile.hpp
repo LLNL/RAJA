@@ -60,17 +60,17 @@ using ParamList = camp::idx_seq<Sizes...>;
  * Two versions are created below, a strongly typed version and
  * a non-strongly typed version.
  */
-template<typename DataType, typename Sizes, typename... IndexTypes>
+template<typename DataType, typename Perm, typename Sizes, typename... IndexTypes>
 struct TypedLocalArray
 {
 };
 
-template<typename DataType, camp::idx_t ...Sizes, typename... IndexTypes>
-struct TypedLocalArray<DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
+template<typename DataType, camp::idx_t ... Perm, camp::idx_t ...Sizes, typename... IndexTypes>
+struct TypedLocalArray<DataType, camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...>, IndexTypes...>
 {
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
-  using layout_t = StaticLayout<Sizes...>;
+  using layout_t = StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
   static const camp::idx_t NumElem = layout_t::size();
 
   RAJA_HOST_DEVICE
@@ -80,17 +80,17 @@ struct TypedLocalArray<DataType, RAJA::SizeList<Sizes...>, IndexTypes...>
   }
 };
 
-template<typename DataType, typename Sizes>
+template<typename DataType, typename Perm, typename Sizes>
 struct LocalArray
 {
 };
 
-template<typename DataType, camp::idx_t ...Sizes>
-struct LocalArray<DataType, RAJA::SizeList<Sizes...> >
+template<typename DataType, camp::idx_t ... Perm, camp::idx_t ...Sizes>
+struct LocalArray<DataType, camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...> >
 {
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
-  using layout_t = StaticLayout<Sizes...>;
+  using layout_t = StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
   static const camp::idx_t NumElem = layout_t::size();
 
   template<typename ...Indices>
@@ -148,7 +148,7 @@ struct ShmemTile<ShmemPol,
 
   // typed layout to map indices to shmem space
   using layout_t =
-      RAJA::TypedStaticLayout<typename arg_tuple_t::TList, Sizes...>;
+      RAJA::TypedStaticLayout<camp::make_idx_seq_t<sizeof...(Sizes)>, typename arg_tuple_t::TList, Sizes...>;
 
   // shared memory object type
   using shmem_t = SharedMemory<ShmemPol, T, layout_t::s_size>;

@@ -140,17 +140,17 @@ struct StrideCalculatorIdx<N, N, Sizes...> {
   static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
-template <typename Range, typename Sizes>
+template <typename Perm, typename Sizes>
 struct StrideCalculator;
 
-template <camp::idx_t... RangeInts, camp::idx_t... Sizes>
-struct StrideCalculator<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>> {
-  static_assert(sizeof...(Sizes) == sizeof...(RangeInts), "");
+template <camp::idx_t... Perm, camp::idx_t... Sizes>
+struct StrideCalculator<camp::idx_seq<Perm...>, camp::idx_seq<Sizes...>> {
+  static_assert(sizeof...(Sizes) == sizeof...(Perm), "");
 
   using sizes = camp::idx_seq<Sizes...>;
   static constexpr camp::idx_t N = sizeof...(Sizes);
   using strides =
-      camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::stride...>;
+      camp::idx_seq<StrideCalculatorIdx<N, Perm, camp::seq_at<Perm, sizes>::value...>::stride...>;
 };
 
 
@@ -183,17 +183,21 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 }  // namespace detail
 
 
-template <camp::idx_t... Sizes>
+template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = detail::StaticLayoutBase_impl<
     camp::make_idx_seq_t<sizeof...(Sizes)>,
     camp::idx_seq<Sizes...>,
-    typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>,
+    typename detail::StrideCalculator<Perm,
                                       camp::idx_seq<Sizes...>>::strides>;
 
 
-template <typename TypeList, camp::idx_t... Sizes>
+
+
+
+
+template <typename Perm, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
-    detail::TypedStaticLayoutImpl<StaticLayout<Sizes...>, TypeList>;
+    detail::TypedStaticLayoutImpl<StaticLayout<Perm, Sizes...>, TypeList>;
 
 
 }  // namespace RAJA
