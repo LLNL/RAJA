@@ -315,12 +315,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXECPOL = 
     RAJA::KernelPolicy<
 
+      // Create Shared memory
+      statement::InitLocalMem<RAJA::seq_shared_mem, RAJA::ParamList<0,1,2>,
+
       // Tile outer m,d loops
       statement::Tile<0, statement::tile_fixed<tile_m>, loop_exec,  // m
         statement::Tile<1, statement::tile_fixed<tile_d>, loop_exec,  // d
 
-          // Set shmem window for m,d tile
-          statement::SetShmemWindow<
 
             // Load L(m,d) for m,d tile into shmem
             statement::For<0, loop_exec,  // m
@@ -333,8 +334,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             statement::For<2, loop_exec,  // g
               statement::Tile<3, statement::tile_fixed<tile_z>, loop_exec,  // z
 
-                // Set shmem window for inner loops
-                statement::SetShmemWindow<
 
                   // Load psi into shmem
                   statement::For<1, loop_exec,  // d
@@ -364,55 +363,57 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     >
                   >  // m
 
-                >  // SetShmemWindow
 
               >  // Tile z
             >  // g
 
-          >  // SetShmemWindow
 
         >  // Tile d
       >  // Tile m
     >; // KernelPolicy 
 
 
-  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
-                                   RAJA::TypedRangeSegment<ID>(0, num_d),
-                                   RAJA::TypedRangeSegment<IG>(0, num_g),
-                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   //
   // Define shared memory tiles used in kernel
   //
-  using shmem_L_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
-                                    RAJA::ArgList<0,1>, 
-                                    RAJA::SizeList<tile_m, tile_d>, 
-                                    decltype(segments)>;
-  shmem_L_T sh_L;
 
-  using shmem_psi_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
-                                      RAJA::ArgList<1,2,3>, 
-                                      RAJA::SizeList<tile_d, tile_g, tile_z>, 
-                                      decltype(segments)>;
-  shmem_psi_T sh_psi;
+  using sh_L_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_IJ,
+                        RAJA::SizeList<tile_m, tile_d>,
+                        IM, ID>;
+  sh_L_t sh_L;
 
-  using shmem_phi_T = RAJA::ShmemTile<RAJA::cpu_shmem, double, 
-                                      RAJA::ArgList<0,2,3>, 
-                                      RAJA::SizeList<tile_m, tile_g, tile_z>, 
-                                      decltype(segments)>;
-  shmem_phi_T sh_phi;
 
+  using sh_psi_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_d, tile_g, tile_z>,
+                        ID, IG, IZ>;
+  sh_psi_t sh_psi;
+  
+  
+  using sh_phi_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_m, tile_g, tile_z>,
+                        IM, IG, IZ>;
+  sh_phi_t sh_phi;
  
+
   RAJA::Timer timer;
   timer.start();
 
-  RAJA::kernel_param<EXECPOL>( segments,
+  RAJA::kernel_param<EXECPOL>( 
 
+    RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                     RAJA::TypedRangeSegment<ID>(0, num_d),
+                     RAJA::TypedRangeSegment<IG>(0, num_g),
+                     RAJA::TypedRangeSegment<IZ>(0, num_z)),
     // For kernel_param, second arg is a tuple of data objects used in lambdas.
     // They are the last args in all lambdas (after indices).
     RAJA::make_tuple( sh_L,
                       sh_psi,
-                      sh_phi),
+                      sh_phi,
+                      ),
 
     // Lambda<0> : Single lambda version
     [=] (IM m, ID d, IG g, IZ z,
