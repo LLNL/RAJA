@@ -51,7 +51,7 @@
  */
 
 
-//#define DEBUG_LTIMES
+#define DEBUG_LTIMES
 
 
 using namespace RAJA;
@@ -312,11 +312,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr size_t tile_z = 256;
   constexpr size_t tile_g = 0;
 
+  using RAJA::statement::Param;
+
   using EXECPOL = 
     RAJA::KernelPolicy<
 
-      // Create Shared memory
-      statement::InitLocalMem<RAJA::seq_shared_mem, RAJA::ParamList<0,1,2>,
+      // Create memory tiles
+      statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
 
       // Tile outer m,d loops
       statement::Tile<0, statement::tile_fixed<tile_m>, loop_exec,  // m
@@ -324,8 +326,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
             // Load L(m,d) for m,d tile into shmem
-            statement::For<0, loop_exec,  // m
-              statement::For<1, loop_exec,  // d
+            statement::ForICount<0, Param<3>, loop_exec,  // m
+              statement::ForICount<1, Param<4>, loop_exec,  // d
                 statement::Lambda<1>
               >
             >,
@@ -336,29 +338,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
                   // Load psi into shmem
-                  statement::For<1, loop_exec,  // d
-                    statement::For<3, loop_exec,  // z
+                  statement::ForICount<1, Param<4>, loop_exec,  // d
+                    statement::ForICount<3, Param<6>, loop_exec,  // z
                       statement::Lambda<2> 
                     >
                   >,
 
                   // Compute phi
-                  statement::For<0, loop_exec,  // m
+                  statement::ForICount<0, Param<3>, loop_exec,  // m
 
                     // Load phi into shmem
-                    statement::For<3, loop_exec,  // z
+                    statement::ForICount<3, Param<6>, loop_exec,  // z
                       statement::Lambda<3>
                     >,
 
                     // Compute phi in shmem 
-                    statement::For<1, loop_exec,  // d
-                      statement::For<3, loop_exec,  // z
+                    statement::ForICount<1, Param<4>, loop_exec,  // d
+                      statement::ForICount<3, Param<6>, loop_exec,  // z
                         statement::Lambda<4>
                       >
                     >,
 
                     // Store phi
-                    statement:: For<3, loop_exec,  // z
+                    statement:: ForICount<3, Param<6>, loop_exec,  // z
                       statement::Lambda<5>
                     >
                   >  // m
@@ -370,6 +372,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
         >  // Tile d
       >  // Tile m
+      > // LocalMemory
     >; // KernelPolicy 
 
 
@@ -378,25 +381,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define shared memory tiles used in kernel
   //
 
-  using sh_L_t = RAJA::TypedLocalArray<double, 
-                        RAJA::PERM_IJ,
+  using shmem_L_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_JI,
                         RAJA::SizeList<tile_m, tile_d>,
                         IM, ID>;
-  sh_L_t sh_L;
+  shmem_L_t shmem_L;
 
 
-  using sh_psi_t = RAJA::TypedLocalArray<double, 
+  using shmem_psi_t = RAJA::TypedLocalArray<double, 
                         RAJA::PERM_IJK,
                         RAJA::SizeList<tile_d, tile_g, tile_z>,
                         ID, IG, IZ>;
-  sh_psi_t sh_psi;
+  shmem_psi_t shmem_psi;
   
   
-  using sh_phi_t = RAJA::TypedLocalArray<double, 
+  using shmem_phi_t = RAJA::TypedLocalArray<double, 
                         RAJA::PERM_IJK,
                         RAJA::SizeList<tile_m, tile_g, tile_z>,
                         IM, IG, IZ>;
-  sh_phi_t sh_phi;
+  shmem_phi_t shmem_phi;
  
 
   RAJA::Timer timer;
@@ -410,45 +413,61 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::TypedRangeSegment<IZ>(0, num_z)),
     // For kernel_param, second arg is a tuple of data objects used in lambdas.
     // They are the last args in all lambdas (after indices).
-    RAJA::make_tuple( sh_L,
-                      sh_psi,
-                      sh_phi,
+    RAJA::make_tuple( shmem_L,
+                      shmem_psi,
+                      shmem_phi,
+                      IM(0),
+                      ID(0),
+                      IG(0),
+                      IZ(0)
                       ),
 
     // Lambda<0> : Single lambda version
     [=] (IM m, ID d, IG g, IZ z,
-         shmem_L_T&, shmem_psi_T&, shmem_phi_T&) {
+         shmem_L_t&, shmem_psi_t&, shmem_phi_t&,
+         IM , ID , IG , IZ ) 
+    {
       phi(m, g, z) += L(m, d) * psi(d, g, z);
     }, 
 
     // Lambda<1> : Load L into shmem
     [=] (IM m, ID d, IG /*g*/, IZ /*z*/,
-         shmem_L_T& sh_L, shmem_psi_T&, shmem_phi_T&) {
-      sh_L(m, d) = L(m, d);
+         shmem_L_t& sh_L, shmem_psi_t&, shmem_phi_t&,
+         IM tm, ID td, IG , IZ ) 
+    {
+      sh_L(tm, td) = L(m, d);
     },
 
     // Lambda<2> : Load psi into shmem
     [=] (IM /*m*/, ID d, IG g, IZ z,
-         shmem_L_T&, shmem_psi_T& sh_psi, shmem_phi_T&) {
-      sh_psi(d, g, z) = psi(d, g, z);
+         shmem_L_t&, shmem_psi_t& sh_psi, shmem_phi_t&,
+         IM , ID td, IG tg, IZ tz) 
+    {
+      sh_psi(td, tg, tz) = psi(d, g, z);
     },
 
     // Lambda<3> : Load phi into shmem
     [=] (IM m, ID /*d*/, IG g, IZ z,
-         shmem_L_T&, shmem_psi_T&, shmem_phi_T& sh_phi) {
-      sh_phi(m, g, z) = phi(m, g, z);
+         shmem_L_t&, shmem_psi_t&, shmem_phi_t& sh_phi,
+         IM tm, ID , IG tg, IZ tz) 
+    {
+      sh_phi(tm, tg, tz) = phi(m, g, z);
     },
 
     // Lambda<4> : Compute phi in shmem
-    [=] (IM m, ID d, IG g, IZ z,
-         shmem_L_T& sh_L, shmem_psi_T& sh_psi, shmem_phi_T& sh_phi) {
-      sh_phi(m, g, z) += sh_L(m, d) * sh_psi(d, g, z);
+    [=] (IM , ID , IG , IZ ,
+         shmem_L_t& sh_L, shmem_psi_t& sh_psi, shmem_phi_t& sh_phi,
+         IM tm, ID td, IG tg, IZ tz) 
+    {
+      sh_phi(tm, tg, tz) += sh_L(tm, td) * sh_psi(td, tg, tz);
     },
 
     // Lambda<5> : Store phi
     [=] (IM m, ID /*d*/, IG g, IZ z,
-         shmem_L_T&, shmem_psi_T&, shmem_phi_T& sh_phi) {
-      phi(m, g, z) = sh_phi(m, g, z);
+         shmem_L_t&, shmem_psi_t&, shmem_phi_t& sh_phi,
+         IM tm, ID , IG tg, IZ tz) 
+    {
+      phi(m, g, z) = sh_phi(tm, tg, tz);
     }
 
   );
