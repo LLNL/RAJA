@@ -25,8 +25,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#ifndef RAJA_policy_cuda_kernel_Tile_HPP
-#define RAJA_policy_cuda_kernel_Tile_HPP
+#ifndef RAJA_policy_cuda_kernel_TileTCount_HPP
+#define RAJA_policy_cuda_kernel_TileTCount_HPP
 
 #include "RAJA/config.hpp"
 
@@ -51,21 +51,27 @@ namespace internal
 {
 
 /*!
- * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
  * Assigns the tile segment to segment ArgumentId
- *
+ * Assigns the tile index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
+          typename ParamId,
           typename TPol,
           typename... EnclosedStmts>
 struct CudaStatementExecutor<
     Data,
-    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>
-{
+    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>>
+    : public CudaStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>> {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>;
+
+  using typename Base::enclosed_stmts_t;
 
   static
   inline
@@ -84,10 +90,11 @@ struct CudaStatementExecutor<
     int len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0; i < len; i += chunk_size) {
+    for (int i = 0, t = 0; i < len; i += chunk_size, ++t) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
+      data.template assign_param<ParamId>(t);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data);
@@ -96,53 +103,41 @@ struct CudaStatementExecutor<
     // Set range back to original values
     segment = orig_segment;
   }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-
-    // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
-    data_t private_data = data;
-
-    // Get original segment
-    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
-
-    // restrict to first tile
-    segment = segment.slice(0, TPol::chunk_size);
-
-    // compute dimensions of children with segment restricted to tile
-    LaunchDims enclosed_dims =
-        enclosed_stmts_t::calculateDimensions(private_data);
-
-    return enclosed_dims;
-  }
 };
 
 
 /*!
- * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
  * Assigns the tile segment to segment ArgumentId
- *
+ * Assigns the tile index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
+          typename ParamId,
           camp::idx_t chunk_size,
           int BlockDim,
           typename... EnclosedStmts>
 struct CudaStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
+    statement::TileTCount<ArgumentId, ParamId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     cuda_block_xyz_loop<BlockDim>,
                     EnclosedStmts...>>
-  {
+    : public CudaStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId,
+                        RAJA::statement::tile_fixed<chunk_size>,
+                        cuda_block_xyz_loop<BlockDim>,
+                        EnclosedStmts...>> {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::Tile<ArgumentId,
+                      RAJA::statement::tile_fixed<chunk_size>,
+                      cuda_block_xyz_loop<BlockDim>,
+                      EnclosedStmts...>>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using typename Base::enclosed_stmts_t;
 
   static
   inline
@@ -158,14 +153,17 @@ struct CudaStatementExecutor<
 
     // compute trip count
     int len = segment.end() - segment.begin();
-    auto i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
-    auto i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
+    auto t0 = get_cuda_dim<BlockDim>(blockIdx);
+    auto t_stride = get_cuda_dim<BlockDim>(gridDim);
+    auto i0 = t0 * chunk_size;
+    auto i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (int i = i0; i < len; i += i_stride) {
+    for (int i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
+      data.template assign_param<ParamId>(t);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data);
@@ -173,41 +171,6 @@ struct CudaStatementExecutor<
 
     // Set range back to original values
     segment = orig_segment;
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-
-    // Compute how many blocks
-    int len = segment_length<ArgumentId>(data);
-    int num_blocks = len / chunk_size;
-    if (num_blocks * chunk_size < len) {
-      num_blocks++;
-    }
-
-    LaunchDims dims;
-    set_cuda_dim<BlockDim>(dims.blocks, num_blocks);
-
-
-
-    // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
-    data_t private_data = data;
-
-    // Get original segment
-    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
-
-    // restrict to first tile
-    segment = segment.slice(0, chunk_size);
-
-
-    LaunchDims enclosed_dims =
-        enclosed_stmts_t::calculateDimensions(private_data);
-
-    return dims.max(enclosed_dims);
   }
 };
 
