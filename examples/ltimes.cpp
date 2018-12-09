@@ -378,7 +378,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   //
-  // Define shared memory tiles used in kernel
+  // Define statically dimensioned local arrays used in kernel
   //
 
   using shmem_L_t = RAJA::TypedLocalArray<double, 
@@ -719,65 +719,60 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   static const int tile_m = 25;
   static const int tile_d = 90;
+  static const int tile_g = 0;
   static const int tile_z = 40;
 
   using EXECPOL = 
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
-
-        // Tile outer m,d loops 
-        statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
-          statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
-
-            // Set shmem window for m,d tile
-            statement::SetShmemWindow<
+        statement::InitLocalMem<cuda_shared_mem, ParamList<0,1>,
+          // Tile outer m,d loops 
+          statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
+            statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
 
               // Load L for m,d tile into shmem 
-              statement::For<1, cuda_thread_x_loop,  // d
-                statement::For<0, cuda_thread_y_direct,   // m
+              statement::ForICount<1, Param<4>, cuda_thread_x_loop,  // d
+                statement::ForICount<0, Param<3>, cuda_thread_y_direct,   // m
                   statement::Lambda<1>
                 >
-              >
-            >,
-            statement::CudaSyncThreads,
+              >,
+              statement::CudaSyncThreads,
 
-#if CALC_EFF
-            statement::Lambda<6>,
-#endif
+  #if CALC_EFF
+              statement::Lambda<6>,
+  #endif
 
-            // Distribute g, z across blocks and tile z
-            statement::For<2, cuda_block_y_loop, // g
-              statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_x_loop,  // z
+              // Distribute g, z across blocks and tile z
+              statement::For<2, cuda_block_y_loop, // g
+                statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_x_loop,  // z
 
-                // Load phi into thread local storage
-                statement::For<3, cuda_thread_x_direct,  // z
-                  statement::For<0, cuda_thread_y_direct, // m
-                    statement::Lambda<3>
-                  >
-                >,
-                
-                // Tile over directions -- not now
+                  // Load phi into thread local storage
+                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
+                      statement::Lambda<3>
+                    >
+                  >,
+                  
+                  // Tile over directions -- not now
 
-                // Set shmem window for inner loops
-                statement::SetShmemWindow< 
 
                   // Load slice of psi into shmem
-                  statement::For<3, cuda_thread_x_direct,  // z
-                    statement::For<1, cuda_thread_y_loop, // d (reusing m)
+                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
+                    statement::ForICount<1, Param<4>, cuda_thread_y_loop, // d (reusing m)
                       statement::Lambda<2>
                     >
                   >,
                   statement::CudaSyncThreads,
-#if CALC_EFF
+  #if CALC_EFF
                   statement::Lambda<6>,
-#endif
+  #endif
 
                   // Compute phi f
-                  statement::For<3, cuda_thread_x_direct,  // z
-                    statement::For<0, cuda_thread_y_direct, // m
+                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
 
                       // Compute thread-local Phi value and store
-                      statement::For<1, seq_exec,  // d
+                      statement::ForICount<1, Param<4>, seq_exec,  // d
                           statement::Lambda<4>
                       >
                     >  // m
@@ -786,20 +781,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                   // finish tile over directions
                   statement::CudaSyncThreads,
                   // Write out phi from thread local storage
-                  statement::For<3, cuda_thread_x_direct,  // z
-                    statement::For<0, cuda_thread_y_direct, // m
+                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
                       statement::Lambda<5>
                     >
                   >,         
-statement::CudaSyncThreads,
-                >  // SetShmemWindow
+                  statement::CudaSyncThreads
+                
+                >  // Tile z
+              >  // g
 
-              >  // Tile z
-            >  // g
-
-          >  // Tile d
-        >  // Tile m
-
+            >  // Tile d
+          >  // Tile m
+        > // init shmem
       >  // CudaKernelAsync
 
     >;  // KernelPolicy
@@ -809,23 +803,24 @@ statement::CudaSyncThreads,
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IG>(0, num_g),
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
-
   //
-  // Define shared memory tiles used in kernel
-  // 
-  using shmem_L_T = RAJA::ShmemTile<RAJA::cuda_shmem, double, 
-                                    RAJA::ArgList<1,0>, 
-                                    RAJA::SizeList<tile_d, tile_m>, 
-                                    decltype(segments)>;
-  shmem_L_T shmem_L;
+  // Define statically dimensioned local arrays used in kernel
+  //
 
-  using shmem_psi_T = RAJA::ShmemTile<RAJA::cuda_shmem, double, 
-                                      RAJA::ArgList<1,3>, 
-                                      RAJA::SizeList<tile_d, tile_z>,
-                                      decltype(segments)>;
-  shmem_psi_T shmem_psi; 
+  using shmem_L_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_IJ,
+                        RAJA::SizeList<tile_m, tile_d>,
+                        IM, ID>;
+  shmem_L_t shmem_L;
 
 
+  using shmem_psi_t = RAJA::TypedLocalArray<double, 
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_d, tile_g, tile_z>,
+                        ID, IG, IZ>;
+  shmem_psi_t shmem_psi;
+  
+  
 
 #if CALC_EFF
   RAJA::ReduceSum<RAJA::cuda_reduce, long> L_loads(0);
@@ -847,11 +842,17 @@ statement::CudaSyncThreads,
     // computing a phi value, for shared memory before writing to phi array.
     RAJA::make_tuple( shmem_L,
                       shmem_psi,
-                      0.0),
+                      0.0,
+                      IM(0),
+                      ID(0),
+                      IG(0),
+                      IZ(0)),
 
     // Lambda<0> : Single lambda version
     [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
-                     shmem_L_T&, shmem_psi_T&, double&) {
+                     shmem_L_t&, shmem_psi_t&, double&,
+                     IM, ID, IG, IZ) {
+
 #if CALC_EFF
       L_loads += 1;
       psi_loads += 1;
@@ -863,25 +864,28 @@ statement::CudaSyncThreads,
 
     // Lambda<1> : Load L into shmem
     [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ /*z*/, 
-                     shmem_L_T& sh_L, shmem_psi_T&, double&) {
+                     shmem_L_t& sh_L, shmem_psi_t&, double&,
+                     IM tm, ID td, IG, IZ) {
 #if CALC_EFF
       L_loads += 1;
 #endif
-      sh_L(d, m) = L(m, d);
+      sh_L(td, tm) = L(m, d);
     },
 
     // Lambda<2> : Load slice of psi into shmem
     [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z, 
-                    shmem_L_T&, shmem_psi_T& sh_psi, double&) {
+                    shmem_L_t&, shmem_psi_t& sh_psi, double&,
+                     IM, ID td, IG, IZ tz) {
 #if CALC_EFF
       psi_loads += 1;
 #endif
-      sh_psi(d, z) = psi(d, g, z);
+      sh_psi(td, tz) = psi(d, g, z);
     },
 
     // Lambda<3> : Load thread-local phi value
     [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
-                     shmem_L_T&, shmem_psi_T&, double& phi_local) {
+                     shmem_L_t&, shmem_psi_t&, double& phi_local,
+                     IM, ID, IG, IZ) {
 #if CALC_EFF
       phi_loads += 1;
 #endif
@@ -890,13 +894,15 @@ statement::CudaSyncThreads,
 
     // Lambda<4> Compute thread-local phi value
     [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ z, 
-                     shmem_L_T& sh_L, shmem_psi_T& sh_psi, double& phi_local) {
-      phi_local += sh_L(d, m) * sh_psi(d, z);
+                     shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local,
+                     IM tm, ID td, IG, IZ tz) {
+      phi_local += sh_L(td, tm) * sh_psi(td, tz);
     },
 
     // Lambda<5> : Store phi
     [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
-                     shmem_L_T&, shmem_psi_T&, double& phi_local) {
+                     shmem_L_t&, shmem_psi_t&, double& phi_local,
+                     IM, ID, IG, IZ) {
 #if CALC_EFF
       phi_stores += 1;
 #endif
@@ -905,7 +911,8 @@ statement::CudaSyncThreads,
 #if CALC_EFF
     // Lambda<6> : count syncthreads
     ,[=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
-                     shmem_L_T&, shmem_psi_T&, double& phi_local) {
+                     shmem_L_t&, shmem_psi_t&, double& phi_local,
+                     IM, ID, IG, IZ) {
       num_syncs += 1;
     }
 #endif
