@@ -338,7 +338,7 @@ struct StatementExecutor<
     //
     // Setup shared memory buffers
     //
-    int shmem = (int)RAJA::internal::shmem_setup_buffers(data.param_tuple);
+    int shmem = 0;
     cudaStream_t stream = 0;
 
 

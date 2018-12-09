@@ -446,6 +446,7 @@ TEST(LayoutTest, 3D_PermutedStaticLayout)
   for (int i = 0; i < 7; ++i) {
     for (int j = 0; j < 13; ++j) {
       for (int k = 0; k < 5; ++k) {
+      printf("%d, %d, %d\n", i, j, k);
         ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
       }
     }

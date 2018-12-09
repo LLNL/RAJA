@@ -52,11 +52,6 @@
 
 
 //
-// Shared memory abstractions
-//
-#include "RAJA/pattern/shared_memory.hpp"
-
-//
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
@@ -113,7 +108,7 @@
 //
 // Shared memory view patterns
 //
-#include "RAJA/util/ShmemTile.hpp"
+#include "RAJA/util/LocalArray.hpp"
 
 //
 // Atomic operations support

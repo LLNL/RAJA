@@ -17,6 +17,7 @@
 #include <cstring>
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/Timer.hpp"
