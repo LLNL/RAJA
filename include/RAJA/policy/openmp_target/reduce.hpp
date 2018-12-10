@@ -252,11 +252,11 @@ struct TargetReduceLoc
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
       : info(),
         val(Reducer::identity, Reducer::identity, info),
-        loc(init_loc, IndexType(-1), info),
+        loc(init_loc, IndexType(DefaultLoc<IndexType>::value), info),
         initVal(init_val),
         finalVal(Reducer::identity),
         initLoc(init_loc),
-        finalLoc(IndexType(-1))
+        finalLoc(IndexType(DefaultLoc<IndexType>::value))
   {
   }
 
@@ -286,7 +286,7 @@ struct TargetReduceLoc
       info.isMapped = true;
     }
     finalVal = Reducer::identity;
-    finalLoc = IndexType(-1);
+    finalLoc = IndexType(DefaultLoc<IndexType>::value);
     Reducer{}(finalVal, finalLoc, initVal, initLoc);
     Reducer{}(finalVal, finalLoc, val.value, loc.value);
     return finalVal;
@@ -412,26 +412,26 @@ public:
 };
 
 //! specialization of ReduceMinLoc for omp_target_reduce
-template <size_t Teams, typename T>
-class ReduceMinLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, omp::minloc<T, Index_type>, T, Index_type> 
+template <size_t Teams, typename T, typename IndexType = Index_type>
+struct ReduceMinLoc<omp_target_reduce<Teams>, T, IndexType>
+    : public TargetReduceLoc<Teams, omp::minloc<T, IndexType>, T, IndexType> 
 {
 public:
 
-  using self = ReduceMinLoc<omp_target_reduce<Teams>, T>;
+  using self = ReduceMinLoc<omp_target_reduce<Teams>, T, IndexType>;
   using parent =
-      TargetReduceLoc<Teams, omp::minloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<Teams, omp::minloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  self &minloc(T rhsVal, Index_type rhsLoc)
+  self &minloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  const self &minloc(T rhsVal, Index_type rhsLoc) const
+  const self &minloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
@@ -440,26 +440,26 @@ public:
 
 
 //! specialization of ReduceMaxLoc for omp_target_reduce
-template <size_t Teams, typename T>
-class ReduceMaxLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, omp::maxloc<T, Index_type>, T, Index_type> 
+template <size_t Teams, typename T, typename IndexType = Index_type>
+struct ReduceMaxLoc<omp_target_reduce<Teams>, T, IndexType>
+    : public TargetReduceLoc<Teams, omp::maxloc<T, IndexType>, T, IndexType> 
 {
 public:
 
-  using self = ReduceMaxLoc<omp_target_reduce<Teams>, T>;
+  using self = ReduceMaxLoc<omp_target_reduce<Teams>, T, IndexType>;
   using parent =
-      TargetReduceLoc<Teams, omp::maxloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<Teams, omp::maxloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  self &maxloc(T rhsVal, Index_type rhsLoc)
+  self &maxloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  const self &maxloc(T rhsVal, Index_type rhsLoc) const
+  const self &maxloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
