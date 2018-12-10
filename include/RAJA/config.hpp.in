@@ -291,6 +291,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+// note that neither nvcc nor Apple Clang compiler currently doesn't support
+// the __builtin_assume_aligned attribute
 #if defined(RAJA_ENABLE_CUDA) || defined(__APPLE__)
 #define RAJA_ALIGN_DATA(d) d
 #else
@@ -302,6 +304,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD _Pragma("clang loop vectorize(disable)")
 #else
 
+// Clang 3.7 and later changed the "pragma clang loop vectorize" options
+// Apple Clang compiler supports older options
 #if ( ( (__clang_major__ >= 4 ) ||  (__clang_major__ >= 3 && __clang_minor__ > 7) ) && !defined(__APPLE__) )
 #define RAJA_SIMD    _Pragma("clang loop vectorize(assume_safety)")
 #else 

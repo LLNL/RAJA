@@ -43,8 +43,8 @@ namespace internal
 /*
  * Executor for thread work sharing loop inside CudaKernel.
  * Mapping directly from threadIdx.xyz to indices
- * Assigns the loop index to offset ArgumentId
- * Assigns the loop index to param ParamId
+ * Assigns the loop iterate to offset ArgumentId
+ * Assigns the loop count to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -90,8 +90,8 @@ struct CudaStatementExecutor<
  * Executor for thread work sharing loop inside CudaKernel.
  * Provides a block-stride loop (stride of blockDim.xyz) for
  * each thread in xyz.
- * Assigns the loop index to offset ArgumentId
- * Assigns the loop index to param ParamId
+ * Assigns the loop iterate to offset ArgumentId
+ * Assigns the loop offset to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
