@@ -44,7 +44,6 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
 
 namespace RAJA
 {

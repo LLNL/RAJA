@@ -25,28 +25,20 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
+#ifndef RAJA_openmp_target_HPP
+#define RAJA_openmp_target_HPP
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #include <omp.h>
-#include <iostream>
-#include <thread>
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/forallN.hpp"
-#include "RAJA/policy/openmp/kernel.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/region.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
-#include "RAJA/policy/openmp/synchronize.hpp"
+#include "RAJA/policy/openmp_target/policy.hpp"
+#include "RAJA/policy/openmp_target/kernel.hpp"
+#include "RAJA/policy/openmp_target/forall.hpp"
+#include "RAJA/policy/openmp_target/reduce.hpp"
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #endif  // closing endif for header file include guard
