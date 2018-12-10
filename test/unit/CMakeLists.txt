@@ -70,6 +70,10 @@ raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
 
+raja_add_test(
+  NAME test-sharedmem
+  SOURCES test-sharedmem.cpp)
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)
