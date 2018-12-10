@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for OpenMP.
- *
- *          These methods should work on any platform that supports OpenMP.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -63,13 +50,26 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+
+//std::cout << "Mapping body to device..." << std::endl;
+//std::cout << typeid(body).name() << std::endl;
+
+//printf("%p\n", &body);
+
 #pragma omp target teams distribute parallel for num_teams(Teams) \
     schedule(static, 1) map(to                                    \
                             : body)
   for (Index_type i = 0; i < distance; ++i) {
+//  printf("Running index %d\n", i);
+//  printf("%p\n", &body);
     Body ib = body;
+//  printf("%p\n", &ib);
+//  printf("%d\n", begin[i]);
     ib(begin[i]);
+//  printf("Ran index %d\n", i);
   }
+
+//std::cout << "Done on device" << std::endl;
 }
 
 template <typename Iterable, typename Func>

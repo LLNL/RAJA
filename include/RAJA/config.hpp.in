@@ -268,7 +268,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+// FIXME: alignx is breaking CUDA+xlc
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d) d
+#else
 #define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
+#endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
