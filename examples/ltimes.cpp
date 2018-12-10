@@ -52,7 +52,7 @@
  */
 
 
-#define DEBUG_LTIMES
+//#define DEBUG_LTIMES
 
 
 using namespace RAJA;
@@ -91,7 +91,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const Index_type num_m = 25;
   const Index_type num_g = 48;
   const Index_type num_d = 80;
-  const Index_type num_z = 8*1024;
+  const Index_type num_z = 64*1024;
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g << 
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
@@ -109,11 +109,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* phi_data = &phi_vec[0];
 
   for (Index_type i = 0; i < L_size; ++i) {
-    L_data[i] = i;
+    L_data[i] = i+1;
   }
 
   for (Index_type i = 0; i < psi_size; ++i) {
-    psi_data[i] = 2*i;
+    psi_data[i] = 2*i+1;
   }
 
   // Note phi_data will be set to zero before each variant is run.
@@ -688,34 +688,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice ) );
 
+
   //
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = RAJA::TypedView<double, Layout<2, int, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
 
-  // psi(d, g, z) : 0 -> d is stride-1 dimension 
-  using PsiView = RAJA::TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
 
-  // phi(m, g, z) : 0 -> m is stride-1 dimension 
-  using PhiView = RAJA::TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
 
-  std::array<RAJA::idx_t, 2> dL_perm {{1, 0}};
-  LView L( dL_data,
-           RAJA::make_permuted_layout({num_m, num_d}, dL_perm) );
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(dL_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> dpsi_perm {{0, 1, 2}};
-  PsiView psi( dpsi_data,
-               RAJA::make_permuted_layout({num_d, num_g, num_z}, dpsi_perm) );
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(dpsi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> dphi_perm {{0, 1, 2}};
-  PhiView phi( dphi_data,
-               RAJA::make_permuted_layout({num_m, num_g, num_z}, dphi_perm) );
-
-
-
-  // Setting this to 1 will enable counting of memory operations
-  #define CALC_EFF 0
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(dphi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
 
   static const int tile_m = 25;
@@ -723,7 +719,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   static const int tile_g = 0;
   static const int tile_z = 40;
 
-  using EXECPOL = 
+
+
+
+  //
+  // Define statically dimensioned local arrays used in kernel
+  //
+
+  using shmem_L_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJ,
+                        RAJA::SizeList<tile_m, tile_d>,
+                        IM, ID>;
+  shmem_L_t shmem_L;
+
+
+  using shmem_psi_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_d, tile_g, tile_z>,
+                        ID, IG, IZ>;
+  shmem_psi_t shmem_psi;
+
+
+
+  //
+  // Define our execution policy
+  //
+
+  using RAJA::statement::Param;
+
+  using EXECPOL =
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
         statement::InitLocalMem<cuda_shared_mem, ParamList<0,1>,
@@ -734,14 +758,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               // Load L for m,d tile into shmem 
               statement::ForICount<1, Param<4>, cuda_thread_x_loop,  // d
                 statement::ForICount<0, Param<3>, cuda_thread_y_direct,   // m
-                  statement::Lambda<1>
+                  statement::Lambda<0>
                 >
               >,
               statement::CudaSyncThreads,
-
-  #if CALC_EFF
-              statement::Lambda<6>,
-  #endif
 
               // Distribute g, z across blocks and tile z
               statement::For<2, cuda_block_y_loop, // g
@@ -750,43 +770,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                   // Load phi into thread local storage
                   statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
                     statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
-                      statement::Lambda<3>
-                    >
-                  >,
-                  
-                  // Tile over directions -- not now
-
-
-                  // Load slice of psi into shmem
-                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
-                    statement::ForICount<1, Param<4>, cuda_thread_y_loop, // d (reusing m)
                       statement::Lambda<2>
                     >
                   >,
-                  statement::CudaSyncThreads,
-  #if CALC_EFF
-                  statement::Lambda<6>,
-  #endif
 
-                  // Compute phi f
+                  // Load slice of psi into shmem
+                  statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
+                    statement::ForICount<1, Param<4>, cuda_thread_y_loop, // d (reusing y)
+                      statement::Lambda<1>
+                    >
+                  >,
+                  statement::CudaSyncThreads,
+
+                  // Compute phi
                   statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
                     statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
 
                       // Compute thread-local Phi value and store
                       statement::ForICount<1, Param<4>, seq_exec,  // d
-                          statement::Lambda<4>
-                      >
+                        statement::Lambda<3>
+                      > // d
                     >  // m
                   >,  // z
                   
                   // finish tile over directions
                   statement::CudaSyncThreads,
+
                   // Write out phi from thread local storage
                   statement::ForICount<3, Param<6>, cuda_thread_x_direct,  // z
                     statement::ForICount<0, Param<3>, cuda_thread_y_direct, // m
-                      statement::Lambda<5>
+                      statement::Lambda<4>
                     >
-                  >,         
+                  >,
                   statement::CudaSyncThreads
                 
                 >  // Tile z
@@ -800,42 +815,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >;  // KernelPolicy
 
 
-  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
-                                   RAJA::TypedRangeSegment<ID>(0, num_d),
-                                   RAJA::TypedRangeSegment<IG>(0, num_g),
-                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
-  //
-  // Define statically dimensioned local arrays used in kernel
-  //
-
-  using shmem_L_t = RAJA::TypedLocalArray<double, 
-                        RAJA::PERM_IJ,
-                        RAJA::SizeList<tile_m, tile_d>,
-                        IM, ID>;
-  shmem_L_t shmem_L;
-
-
-  using shmem_psi_t = RAJA::TypedLocalArray<double, 
-                        RAJA::PERM_IJK,
-                        RAJA::SizeList<tile_d, tile_g, tile_z>,
-                        ID, IG, IZ>;
-  shmem_psi_t shmem_psi;
-  
   
 
-#if CALC_EFF
-  RAJA::ReduceSum<RAJA::cuda_reduce, long> L_loads(0);
-  RAJA::ReduceSum<RAJA::cuda_reduce, long> psi_loads(0);
-  RAJA::ReduceSum<RAJA::cuda_reduce, long> phi_loads(0);
-  RAJA::ReduceSum<RAJA::cuda_reduce, long> phi_stores(0);
-  RAJA::ReduceSum<RAJA::cuda_reduce, long> num_syncs(0);
-#endif
 
   RAJA::Timer timer;
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
-  RAJA::kernel_param<EXECPOL>( segments,
+  RAJA::kernel_param<EXECPOL>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+      RAJA::TypedRangeSegment<ID>(0, num_d),
+      RAJA::TypedRangeSegment<IG>(0, num_g),
+      RAJA::TypedRangeSegment<IZ>(0, num_z)),
 
     // For kernel_param, second arg is a tuple of data objects used in lambdas.
     // They are the last args in all lambdas (after indices).
@@ -849,107 +840,51 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       IG(0),
                       IZ(0)),
 
-    // Lambda<0> : Single lambda version
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z, 
-                     shmem_L_t&, shmem_psi_t&, double&,
-                     IM, ID, IG, IZ) {
-
-#if CALC_EFF
-      L_loads += 1;
-      psi_loads += 1;
-      phi_loads += 1;
-      phi_stores += 1;
-#endif
-      phi(m, g, z) += L(m, d) * psi(d, g, z);
-    },
-
-    // Lambda<1> : Load L into shmem
-    [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ /*z*/, 
+    // Lambda<0> : Load L into shmem
+    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
                      shmem_L_t& sh_L, shmem_psi_t&, double&,
                      IM tm, ID td, IG, IZ) {
-#if CALC_EFF
-      L_loads += 1;
-#endif
-      sh_L(td, tm) = L(m, d);
+      sh_L(tm, td) = L(m, d);
     },
 
-    // Lambda<2> : Load slice of psi into shmem
-    [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z, 
+    // Lambda<1> : Load slice of psi into shmem
+    [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z,
                     shmem_L_t&, shmem_psi_t& sh_psi, double&,
-                     IM, ID td, IG, IZ tz) {
-#if CALC_EFF
-      psi_loads += 1;
-#endif
-      sh_psi(td, tz) = psi(d, g, z);
+                     IM, ID td, IG tg, IZ tz) {
+
+      sh_psi(td, tg, tz) = psi(d, g, z);
     },
 
-    // Lambda<3> : Load thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
+    // Lambda<2> : Load thread-local phi value
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
                      shmem_L_t&, shmem_psi_t&, double& phi_local,
                      IM, ID, IG, IZ) {
-#if CALC_EFF
-      phi_loads += 1;
-#endif
+
       phi_local = phi(m, g, z);
     },
 
-    // Lambda<4> Compute thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID d, IG /*g*/, IZ z, 
+    // Lambda<3> Compute thread-local phi value
+    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
                      shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local,
-                     IM tm, ID td, IG, IZ tz) {
-      phi_local += sh_L(td, tm) * sh_psi(td, tz);
+                     IM tm, ID td, IG tg, IZ tz) {
+
+      phi_local += sh_L(tm, td) *  sh_psi(td, tg, tz);
     },
 
-    // Lambda<5> : Store phi
-    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z, 
+    // Lambda<4> : Store phi
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
                      shmem_L_t&, shmem_psi_t&, double& phi_local,
                      IM, ID, IG, IZ) {
-#if CALC_EFF
-      phi_stores += 1;
-#endif
+
       phi(m, g, z) = phi_local;
     }
-#if CALC_EFF
-    // Lambda<6> : count syncthreads
-    ,[=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
-                     shmem_L_t&, shmem_psi_t&, double& phi_local,
-                     IM, ID, IG, IZ) {
-      num_syncs += 1;
-    }
-#endif
+
   );
 
   cudaDeviceSynchronize();
   timer.stop();
   std::cout << "  RAJA CUDA + shmem version of LTimes run time (sec.): "
             << timer.elapsed() << std::endl;
-
-#if CALC_EFF
-  std::cout << "    Global memory efficiencies:" << std::endl;
-
-  long num_loads = L_loads.get() + phi_loads.get() + psi_loads.get();
-  long num_stores = phi_stores.get();
-
-  long opt_L_loads = (num_m*num_d);
-  long opt_phi_loads = (num_m*num_g*num_z);
-  long opt_psi_loads = (num_d*num_g*num_z);
-  long opt_loads = opt_L_loads + opt_phi_loads + opt_psi_loads;
-  long opt_phi_stores = opt_phi_loads;
-  long opt_stores = opt_phi_stores;
-
-  double L_load_eff = 100.0*((double)opt_L_loads)/((double)L_loads.get());
-  double phi_load_eff = 100.0*((double)opt_phi_loads)/((double)phi_loads.get());
-  double phi_store_eff = 100.0*((double)opt_phi_stores)/((double)phi_stores.get());
-  double psi_load_eff = 100.0*((double)opt_psi_loads)/((double)psi_loads.get());
-  double overall_eff = 100.0*((double)opt_stores+opt_loads)/((double)psi_loads.get()+phi_loads.get()+phi_stores.get()+L_loads.get());
-
-  std::cout << "      L load % eff:     " << L_load_eff << std::endl;
-  std::cout << "      phi load % eff:   " << phi_load_eff << std::endl;
-  std::cout << "      phi store % eff:  " << phi_store_eff << std::endl;
-  std::cout << "      psi load % eff:   " << psi_load_eff << std::endl;
-  std::cout << "      overal mem % eff: " << overall_eff << std::endl;
-  std::cout << "      num __syncthreads:" << num_syncs.get() << std::endl;
-#endif
 
 
 
