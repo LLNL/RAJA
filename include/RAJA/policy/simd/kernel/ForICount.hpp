@@ -71,11 +71,11 @@ struct StatementExecutor<
     for (decltype(distance) i = 0; i < distance; ++i) {
 
       // Offsets and parameters need to be privatized
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
       auto offsets = data.offset_tuple;
       auto params = data.param_tuple;
-      get<ArgumentId>(offsets) = i;
-      get<ParamId::param_idx>(params) = i;
-
       Invoke_all_Lambda<0, EnclosedStmts...>::lambda_special(
           camp::idx_seq_from_t<decltype(offsets)>{},
           camp::idx_seq_from_t<decltype(params)>{},

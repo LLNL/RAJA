@@ -76,6 +76,10 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#include "RAJA/policy/openmp_target.hpp"
+#endif
 #endif
 
 #include "RAJA/index/IndexSet.hpp"

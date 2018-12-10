@@ -54,19 +54,6 @@ template <unsigned int ChunkSize>
 struct Static : std::integral_constant<unsigned int, ChunkSize> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-
-template <unsigned int TeamSize>
-struct Teams : std::integral_constant<unsigned int, TeamSize> {
-};
-
-struct Target {
-};
-
-struct Distribute {
-};
-
-#endif
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -134,23 +121,6 @@ struct omp_collapse_nowait_exec
                                             omp::Collapse> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-template <size_t Teams>
-struct omp_target_parallel_for_exec
-    : make_policy_pattern_t<Policy::target_openmp,
-                            Pattern::forall,
-                            omp::Target,
-                            omp::Teams<Teams>,
-                            omp::Distribute> {
-};
-
-struct omp_target_parallel_for_exec_nt
-    : make_policy_pattern_t<Policy::target_openmp,
-                            Pattern::forall,
-                            omp::Target,
-                            omp::Distribute> {
-};
-#endif
 
 ///
 /// Index set segment iteration policies
@@ -179,12 +149,6 @@ struct omp_taskgraph_interval_segit
 struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-template <size_t Teams>
-struct omp_target_reduce
-    : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
-};
-#endif
 
 struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
@@ -211,11 +175,6 @@ using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
 using policy::omp::omp_synchronize;
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using policy::omp::omp_target_parallel_for_exec;
-using policy::omp::omp_target_parallel_for_exec_nt;
-using policy::omp::omp_target_reduce;
-#endif
 
 
 
