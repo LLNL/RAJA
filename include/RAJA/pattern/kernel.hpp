@@ -175,10 +175,12 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/Conditional.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
+#include "RAJA/pattern/kernel/ForICount.hpp"
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 #include "RAJA/pattern/kernel/ShmemWindow.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/TileTCount.hpp"
 
 
 #endif /* RAJA_pattern_kernel_HPP */

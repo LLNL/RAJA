@@ -58,30 +58,11 @@ struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using exec_policy_t = ExecPolicy;
 };
 
-/*!
- * A RAJA::kernel statement that implements a tiling (or blocking) loop.
- * Assigns the tile index to param ParamId
- *
- */
-template <camp::idx_t ArgumentId,
-          typename ParamId,
-          typename TilePolicy,
-          typename ExecPolicy,
-          typename... EnclosedStmts>
-struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...> {
-  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
-                "Inappropriate ParamId, ParamId must be of type "
-                "RAJA::Statement::Param< # >");
-  using tile_policy_t = TilePolicy;
-  using exec_policy_t = ExecPolicy;
-};
-
 ///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
 struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 };
-
 
 }  // end namespace statement
 
@@ -109,37 +90,6 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
     // Assign the beginning index to the index_tuple for proper use
     // in shmem windows
     camp::get<ArgumentId>(Base::data.offset_tuple) = 0;
-
-    // Execute enclosed statements
-    Base::exec();
-  }
-};
-
-/*!
- * A generic RAJA::kernel forall_impl tile wrapper for statement::ForTCount
- * Assigns the tile segment to segment ArgumentId
- * Assigns the tile index to param ParamId
- */
-template <camp::idx_t ArgumentId, typename ParamId, typename Data,
-          typename... EnclosedStmts>
-struct TileTCountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
-
-  using Base = GenericWrapper<Data, EnclosedStmts...>;
-  using Base::Base;
-  using privatizer = NestedPrivatizer<TileTCountWrapper>;
-
-  template <typename InSegmentIndexType>
-  RAJA_INLINE void operator()(InSegmentIndexType si)
-  {
-    // Assign the tile's segment to the tuple
-    camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
-
-    // Assign the beginning index to the index_tuple for proper use
-    // in shmem windows
-    camp::get<ArgumentId>(Base::data.offset_tuple) = 0;
-
-    // Assign the tile's index
-    camp::get<ParamId::param_idx>(Base::data.param_tuple) = si.i;
 
     // Execute enclosed statements
     Base::exec();
@@ -293,44 +243,6 @@ struct StatementExecutor<
   }
 };
 
-/*!
- * A generic RAJA::kernel forall_impl executor for statement::TileTCount
- *
- *
- */
-template <camp::idx_t ArgumentId,
-          typename ParamId,
-          typename TPol,
-          typename EPol,
-          typename... EnclosedStmts>
-struct StatementExecutor<
-    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>> {
-
-
-  template <typename Data>
-  static RAJA_INLINE void exec(Data &data)
-  {
-    // Get the segment we are going to tile
-    auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Get the tiling policies chunk size
-    auto chunk_size = TPol::chunk_size;
-
-    // Create a tile iterator, needs to survive until the forall is
-    // done executing.
-    IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
-
-    // Wrap in case forall_impl needs to thread_privatize
-    TileTCountWrapper<ArgumentId, ParamId, Data,
-                      EnclosedStmts...> tile_wrapper(data);
-
-    // Loop over tiles, executing enclosed statement list
-    forall_impl(EPol{}, tiled_iterable, tile_wrapper);
-
-    // Set range back to original values
-    camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
-  }
-};
 }  // end namespace internal
 }  // end namespace RAJA
 
