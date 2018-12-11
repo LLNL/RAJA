@@ -176,7 +176,8 @@ struct LoopData {
   template <typename ParamId, typename IndexT>
   RAJA_HOST_DEVICE RAJA_INLINE void assign_param(IndexT const &i)
   {
-    camp::get<ParamId::param_idx>(param_tuple) = i;
+    using param_t = camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>;
+    camp::get<ParamId::param_idx>(param_tuple) = param_t(i);
   }
 
   template <camp::idx_t Idx>
