@@ -293,8 +293,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex)
 
   struct Index {
      RAJA::Index_type idx;
-     Index() : idx(-1) {}
-     Index(RAJA::Index_type idx) : idx(idx) {}
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
   };
 
   RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer(1024.0, Index(0));
@@ -346,8 +346,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex2)
 
   struct Index {
      RAJA::Index_type idx;
-     Index() : idx(-1) {}
-     Index(RAJA::Index_type idx) : idx(idx) {}
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
   };
 
   RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer;
@@ -394,8 +394,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex)
 
   struct Index {
      RAJA::Index_type idx;
-     Index() : idx(-1) {}
-     Index(RAJA::Index_type idx) : idx(idx) {}
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
   };
 
   RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer(0.0, Index());
@@ -442,8 +442,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex2)
 
   struct Index {
      RAJA::Index_type idx;
-     Index() : idx(-1) {}
-     Index(RAJA::Index_type idx) : idx(idx) {}
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
   };
 
   RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer;
