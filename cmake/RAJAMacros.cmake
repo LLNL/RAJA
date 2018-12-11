@@ -15,7 +15,7 @@
 
 macro(raja_add_executable)
   set(options )
-  set(singleValueArgs NAME TEST BENCHMARK)
+  set(singleValueArgs NAME TEST REPRODUCER BENCHMARK)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -24,7 +24,7 @@ macro(raja_add_executable)
   list (APPEND arg_DEPENDS_ON RAJA)
 
   if (ENABLE_CHAI)
-    list (APPEND arg_DEPENDS_ON chai)
+    list (APPEND arg_DEPENDS_ON chai umpire)
   endif ()
 
   if (ENABLE_OPENMP)
@@ -41,6 +41,8 @@ macro(raja_add_executable)
 
   if (${arg_TEST})
     set (_output_dir ${CMAKE_BINARY_DIR}/test)
+  elseif (${arg_REPRODUCER})
+    set (_output_dir ${CMAKE_BINARY_DIR}/reproducers)
   elseif (${arg_BENCHMARK})
     set (_output_dir ${CMAKE_BINARY_DIR}/benchmark)
   else ()
@@ -76,6 +78,21 @@ macro(raja_add_test)
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_test)
+
+macro(raja_add_reproducer)
+  set(options )
+  set(singleValueArgs NAME)
+  set(multiValueArgs SOURCES DEPENDS_ON)
+
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  raja_add_executable(
+    NAME ${arg_NAME}.exe
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    REPRODUCER On)
+endmacro(raja_add_reproducer)
 
 macro(raja_add_benchmark)
   set(options )

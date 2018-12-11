@@ -40,7 +40,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
-#include "RAJA/pattern/shared_memory.hpp"
 
 #include "RAJA/util/chai_support.hpp"
 
@@ -145,12 +144,6 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
-  // Setup shared memory objects passed in through parameter tuple
-  RAJA::internal::shmem_setup_buffers(loop_data.param_tuple);
-
-  // initialize the shmem tuple to the beginning of each loop iteration
-  RAJA::internal::shmem_set_windows(loop_data.param_tuple,
-                                    loop_data.get_begin_index_tuple());
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
@@ -175,10 +168,12 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/Conditional.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
+#include "RAJA/pattern/kernel/ForICount.hpp"
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
+#include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
-#include "RAJA/pattern/kernel/ShmemWindow.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/TileTCount.hpp"
 
 
 #endif /* RAJA_pattern_kernel_HPP */

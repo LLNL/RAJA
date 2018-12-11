@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA reduction templates for OpenMP
- *          OpenMP execution.
- *
- *          These methods should work on any platform that supports OpenMP.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
@@ -48,12 +35,11 @@ namespace RAJA
 
 namespace omp
 {
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp declare target
-#endif
 
 template <typename T, typename I>
-struct minloc {
+struct minloc 
+{
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
                                                I &loc,
@@ -68,7 +54,8 @@ struct minloc {
 };
 
 template <typename T, typename I>
-struct maxloc {
+struct maxloc 
+{
   static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
                                                I &loc,
@@ -81,13 +68,12 @@ struct maxloc {
     }
   }
 };
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
-#endif
 
 
 //! Information necessary for OpenMP offload to be considered
-struct Offload_Info {
+struct Offload_Info 
+{
   int hostID{omp_get_initial_device()};
   int deviceID{omp_get_default_device()};
   bool isMapped{false};
@@ -99,10 +85,12 @@ struct Offload_Info {
   {
   }
 };
+
 //! Reduction data for OpenMP Offload -- stores value, host pointer, and device
 //! pointer
 template <size_t Teams, typename T>
-struct Reduce_Data {
+struct Reduce_Data 
+{
   mutable T value;
   T *device;
   T *host;
@@ -114,7 +102,7 @@ struct Reduce_Data {
    *
    *  allocates data on the host and device and initializes values to default
    */
-  explicit Reduce_Data(T defaultValue, T identityValue, Offload_Info &info)
+  Reduce_Data(T /*defaultValue*/, T identityValue, Offload_Info &info)
       : value(identityValue),
         device{reinterpret_cast<T *>(
             omp_target_alloc(Teams * sizeof(T), info.deviceID))},
@@ -186,7 +174,8 @@ struct Reduce_Data {
 //! OpenMP Target Reduction entity -- generalize on # of teams, reduction, and
 //! type
 template <size_t Teams, typename Reducer, typename T>
-struct TargetReduce {
+struct TargetReduce 
+{
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
@@ -256,7 +245,8 @@ private:
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
 template <size_t Teams, typename Reducer, typename T, typename IndexType>
-struct TargetReduceLoc {
+struct TargetReduceLoc 
+{
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
@@ -343,17 +333,22 @@ private:
 
 //! specialization of ReduceSum for omp_target_reduce
 template <size_t Teams, typename T>
-struct ReduceSum<omp_target_reduce<Teams>, T>
-    : public TargetReduce<Teams, RAJA::reduce::sum<T>, T> {
+class ReduceSum<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, RAJA::reduce::sum<T>, T> 
+{
+public:
+
   using self = ReduceSum<omp_target_reduce<Teams>, T>;
   using parent = TargetReduce<Teams, RAJA::reduce::sum<T>, T>;
   using parent::parent;
+
   //! enable operator+= for ReduceSum -- alias for reduce()
   self &operator+=(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
+
   //! enable operator+= for ReduceSum -- alias for reduce()
   const self &operator+=(T rhsVal) const
   {
@@ -365,17 +360,22 @@ struct ReduceSum<omp_target_reduce<Teams>, T>
 
 //! specialization of ReduceMin for omp_target_reduce
 template <size_t Teams, typename T>
-struct ReduceMin<omp_target_reduce<Teams>, T>
-    : public TargetReduce<Teams, RAJA::reduce::min<T>, T> {
+class ReduceMin<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, RAJA::reduce::min<T>, T> 
+{
+public:
+
   using self = ReduceMin<omp_target_reduce<Teams>, T>;
   using parent = TargetReduce<Teams, RAJA::reduce::min<T>, T>;
   using parent::parent;
+
   //! enable min() for ReduceMin -- alias for reduce()
   self &min(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
+
   //! enable min() for ReduceMin -- alias for reduce()
   const self &min(T rhsVal) const
   {
@@ -387,17 +387,22 @@ struct ReduceMin<omp_target_reduce<Teams>, T>
 
 //! specialization of ReduceMax for omp_target_reduce
 template <size_t Teams, typename T>
-struct ReduceMax<omp_target_reduce<Teams>, T>
-    : public TargetReduce<Teams, RAJA::reduce::max<T>, T> {
+class ReduceMax<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, RAJA::reduce::max<T>, T> 
+{
+public:
+
   using self = ReduceMax<omp_target_reduce<Teams>, T>;
   using parent = TargetReduce<Teams, RAJA::reduce::max<T>, T>;
   using parent::parent;
+
   //! enable max() for ReduceMax -- alias for reduce()
   self &max(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
+
   //! enable max() for ReduceMax -- alias for reduce()
   const self &max(T rhsVal) const
   {
@@ -408,18 +413,23 @@ struct ReduceMax<omp_target_reduce<Teams>, T>
 
 //! specialization of ReduceMinLoc for omp_target_reduce
 template <size_t Teams, typename T>
-struct ReduceMinLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, omp::minloc<T, Index_type>, T, Index_type> {
+class ReduceMinLoc<omp_target_reduce<Teams>, T>
+    : public TargetReduceLoc<Teams, omp::minloc<T, Index_type>, T, Index_type> 
+{
+public:
+
   using self = ReduceMinLoc<omp_target_reduce<Teams>, T>;
   using parent =
       TargetReduceLoc<Teams, omp::minloc<T, Index_type>, T, Index_type>;
   using parent::parent;
+
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   self &minloc(T rhsVal, Index_type rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
+
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   const self &minloc(T rhsVal, Index_type rhsLoc) const
   {
@@ -431,18 +441,23 @@ struct ReduceMinLoc<omp_target_reduce<Teams>, T>
 
 //! specialization of ReduceMaxLoc for omp_target_reduce
 template <size_t Teams, typename T>
-struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, omp::maxloc<T, Index_type>, T, Index_type> {
+class ReduceMaxLoc<omp_target_reduce<Teams>, T>
+    : public TargetReduceLoc<Teams, omp::maxloc<T, Index_type>, T, Index_type> 
+{
+public:
+
   using self = ReduceMaxLoc<omp_target_reduce<Teams>, T>;
   using parent =
       TargetReduceLoc<Teams, omp::maxloc<T, Index_type>, T, Index_type>;
   using parent::parent;
+
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   self &maxloc(T rhsVal, Index_type rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
+
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   const self &maxloc(T rhsVal, Index_type rhsLoc) const
   {

@@ -81,3 +81,13 @@ raja_add_executable(
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
+
+if(ENABLE_TARGET_OPENMP)
+raja_add_executable(
+  NAME target-kernel
+  SOURCES omp-target-kernel.cpp)
+
+raja_add_executable(
+  NAME omp-target-ltimes
+  SOURCES omp-target-ltimes.cpp)
+endif()

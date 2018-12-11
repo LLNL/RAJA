@@ -418,8 +418,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL4 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_exec,
-          RAJA::statement::For<0, RAJA::cuda_thread_exec,
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
             RAJA::statement::Lambda<0>
           >
         >
@@ -459,9 +459,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
-          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>,
-            RAJA::statement::Lambda<0>
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
           >
         >
       >
@@ -604,8 +608,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL8 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_exec,    // row
-          RAJA::statement::For<0, RAJA::cuda_thread_exec, // col
+        RAJA::statement::For<1, RAJA::cuda_block_y_loop,    // row
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
             RAJA::statement::Lambda<0>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
                 RAJA::statement::Lambda<1> // dot += ...
@@ -650,13 +654,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>, // row
-          RAJA::statement::For<0, RAJA::cuda_threadblock_exec<CUDA_BLOCK_SIZE>, // col
-            RAJA::statement::Lambda<0>,   // dot = 0.0
-            RAJA::statement::For<2, RAJA::seq_exec,
-                RAJA::statement::Lambda<1> // dot += ...
-            >,
-            RAJA::statement::Lambda<2>   // set C = ...
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
+                RAJA::statement::Lambda<0>,   // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                    RAJA::statement::Lambda<1> // dot += ...
+                >,
+                RAJA::statement::Lambda<2>   // set C = ...
+              >
+            >
           >
         >
       >

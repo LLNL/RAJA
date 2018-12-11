@@ -46,10 +46,6 @@
 #include "RAJA/policy/openmp/region.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
 #include "RAJA/policy/openmp/synchronize.hpp"
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
-#endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 

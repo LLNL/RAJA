@@ -27,6 +27,7 @@ using namespace RAJA;
 using namespace RAJA::statement;
 
 
+
 using layout_2d = Layout<2, RAJA::Index_type>;
 using view_2d = View<Index_type, layout_2d>;
 static constexpr Index_type x_len = 5;
@@ -296,9 +297,9 @@ using CUDATypes = ::testing::Types<
     list<KernelPolicy<For<
              1,
              s,
-             CudaKernel<For<0, RAJA::cuda_threadblock_exec<128>, Lambda<0>>>>>,
+             CudaKernel<For<0, RAJA::cuda_thread_x_loop, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
-         RAJA::cuda_reduce<1024>>>;
+         RAJA::cuda_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 #endif
 
@@ -308,9 +309,18 @@ INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
 CUDA_TEST(Kernel, CudaZeroIter)
 {
   using Pol =
-      KernelPolicy<CudaKernel<statement::Collapse<RAJA::cuda_thread_exec,
-                                                  ArgList<0, 1, 2>,
-                                                  Lambda<0>>>>;
+      KernelPolicy<
+        CudaKernel<
+          For<0, cuda_thread_z_loop,
+            For<1, cuda_thread_y_loop,
+              For<2, cuda_thread_x_loop,
+                Lambda<0>
+              >
+            >
+          >
+        >
+      >;
+
 
   int *x = nullptr;
   cudaMallocManaged(&x, 3 * 2 * 5 * sizeof(int));
@@ -336,97 +346,23 @@ CUDA_TEST(Kernel, CudaZeroIter)
   cudaFree(x);
 }
 
-CUDA_TEST(Kernel, CudaCollapse1a)
-{
-  using Pol = KernelPolicy<CudaKernel<
-      // Collapse<RAJA::cuda_threadblock_exec<128>, ArgList<0,1,2>,
-      // Lambda<0>>>>;
-      statement::
-          Collapse<RAJA::cuda_thread_exec, ArgList<0, 1, 2>, Lambda<0>>>>;
-
-  int *x = nullptr;
-  cudaMallocManaged(&x, 3 * 2 * 5 * sizeof(int));
 
 
-  RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
-                                     RAJA::RangeSegment(0, 2),
-                                     RAJA::RangeSegment(0, 5)),
-                    [=] __device__(Index_type i, Index_type j, Index_type k) {
-                      x[i + j * 3 + k * 3 * 2] = 1;
-                    });
-
-  cudaDeviceSynchronize();
-
-  for (int i = 0; i < 3 * 2 * 5; ++i) {
-    ASSERT_EQ(x[i], 1);
-  }
-
-  cudaFree(x);
-}
-
-
-CUDA_TEST(Kernel, CudaCollapse1b)
-{
-  using Pol = RAJA::KernelPolicy<
-      CudaKernel<Collapse<RAJA::cuda_threadblock_exec<5>,
-                          ArgList<0, 1>,
-                          For<2, RAJA::seq_exec, Lambda<0>>>>>;
-
-  int *x = nullptr;
-  cudaMallocManaged(&x, 3 * 2 * 5 * sizeof(int));
-
-  RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
-                                     RAJA::RangeSegment(0, 2),
-                                     RAJA::RangeSegment(0, 5)),
-                    [=] RAJA_DEVICE(Index_type i, Index_type j, Index_type k) {
-                      x[i + j * 3 + k * 3 * 2] = 1;
-                    });
-
-  cudaDeviceSynchronize();
-
-  for (int i = 0; i < 3 * 2 * 5; ++i) {
-    ASSERT_EQ(x[i], 1);
-  }
-
-  cudaFree(x);
-}
-
-
-// CUDA_TEST(Kernel, CudaCollapse1c)
-//{
-//
-//  using Pol = RAJA::KernelPolicy<
-//      CudaKernel<
-//        Collapse<RAJA::cuda_block_seq_exec, ArgList<0,1>,
-//          For<2, RAJA::cuda_thread_exec, Lambda<0>>
-//        >
-//      >>;
-//
-//  int *x = nullptr;
-//  cudaMallocManaged(&x, 3*2*5*sizeof(int));
-//
-//  RAJA::kernel<Pol>(
-//      RAJA::make_tuple(RAJA::RangeSegment(0, 3),
-//                       RAJA::RangeSegment(0, 2),
-//                       RAJA::RangeSegment(0, 5)),
-//      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
-//        x[i + j*3 + k*3*2] = 1;
-//       });
-//
-//  cudaDeviceSynchronize();
-//
-//  for(int i = 0;i < 3*2*5;++ i){
-//    ASSERT_EQ(x[i], 1);
-//  }
-//
-//  cudaFree(x);
-//}
 
 
 CUDA_TEST(Kernel, CudaCollapse2)
 {
-  using Pol = RAJA::KernelPolicy<CudaKernel<
-      Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0, 1>, Lambda<0>>>>;
+  using Pol = RAJA::KernelPolicy<
+      CudaKernel<
+        statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+          For<0, cuda_thread_x_loop,
+            For<1, cuda_thread_y_loop,
+              Lambda<0>
+            >
+          >
+        >
+       >
+      >;
 
 
   Index_type *sum1;
@@ -477,11 +413,12 @@ CUDA_TEST(Kernel, CudaReduceA)
 {
 
   using Pol = RAJA::KernelPolicy<
-      CudaKernel<Collapse<RAJA::cuda_threadblock_exec<7>,
-                          ArgList<0, 1>,
-                          For<2, RAJA::seq_exec, Lambda<0>>>>>;
+      CudaKernel<
+       For<0, cuda_block_x_loop,
+         For<1, cuda_thread_z_loop,
+           For<2, RAJA::seq_exec, Lambda<0>>>>>>;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce, int> reducer(0);
 
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
@@ -498,37 +435,15 @@ CUDA_TEST(Kernel, CudaReduceA)
 CUDA_TEST(Kernel, CudaReduceB)
 {
 
-  using Pol = RAJA::KernelPolicy<For<
-      2,
-      RAJA::seq_exec,
-      CudaKernel<
-          Collapse<RAJA::cuda_threadblock_exec<7>, ArgList<0, 1>, Lambda<0>>>>>;
-
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
-
-  RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
-                                     RAJA::RangeSegment(0, 2),
-                                     RAJA::RangeSegment(0, 5)),
-                    [=] RAJA_DEVICE(Index_type i, Index_type j, Index_type k) {
-                      reducer += 1;
-                    });
-
-
-  ASSERT_EQ((int)reducer, 3 * 2 * 5);
-}
-
-
-CUDA_TEST(Kernel, CudaReduceC)
-{
-
   using Pol = RAJA::KernelPolicy<
-      For<2,
-          RAJA::loop_exec,
-          For<0,
-              RAJA::loop_exec,
-              CudaKernel<For<1, RAJA::cuda_threadblock_exec<45>, Lambda<0>>>>>>;
+      For<2, RAJA::seq_exec,
+        CudaKernel<
+          For<0, cuda_block_z_loop,
+            For<1, cuda_thread_y_loop,
+              Lambda<0>
+            > > > > >;
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<1024>, int> reducer(0);
+  RAJA::ReduceSum<RAJA::cuda_reduce, int> reducer(0);
 
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
@@ -540,12 +455,13 @@ CUDA_TEST(Kernel, CudaReduceC)
 
   ASSERT_EQ((int)reducer, 3 * 2 * 5);
 }
+
 
 
 CUDA_TEST(Kernel, SubRange_ThreadBlock)
 {
   using Pol = RAJA::KernelPolicy<
-      CudaKernel<For<0, RAJA::cuda_threadblock_exec<57>, Lambda<0>>>>;
+      CudaKernel<For<0, RAJA::cuda_thread_x_loop, Lambda<0>>>>;
 
   size_t num_elem = 2048;
   size_t first = 10;
@@ -576,12 +492,18 @@ CUDA_TEST(Kernel, SubRange_ThreadBlock)
 CUDA_TEST(Kernel, SubRange_Complex)
 {
   using PolA = RAJA::KernelPolicy<
-      CudaKernel<For<0, RAJA::cuda_threadblock_exec<128>, Lambda<0>>>>;
+      CudaKernel<
+      statement::Tile<0, statement::tile_fixed<128>, cuda_block_x_loop,
+        For<0, RAJA::cuda_thread_x_loop,
+          Lambda<0>>>>>;
 
   using PolB = RAJA::KernelPolicy<
-      CudaKernel<Collapse<RAJA::cuda_threadblock_exec<128>,
-                          ArgList<0, 1>,
-                          For<2, RAJA::seq_exec, Lambda<0>>>>>;
+      CudaKernel<
+      statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+        statement::Tile<1, statement::tile_fixed<32>, cuda_block_y_loop,
+          For<0, cuda_thread_x_direct,
+            For<1, cuda_thread_y_direct,
+              For<2, RAJA::seq_exec, Lambda<0>>>>>>>>;
 
 
   size_t num_elem = 1024;
@@ -620,51 +542,6 @@ CUDA_TEST(Kernel, SubRange_Complex)
 #endif
 
 
-TEST(Kernel, Shmem1)
-{
-  using namespace RAJA;
-
-
-  constexpr int TileSize = 3;
-  using Pol = KernelPolicy<
-      statement::Tile<0,
-                      statement::tile_fixed<TileSize>,
-                      seq_exec,
-                      SetShmemWindow<For<0, seq_exec, Lambda<0>>,
-                                     For<0, seq_exec, Lambda<1>>>>>;
-
-
-  constexpr int N = 16;
-  int *x = new int[N];
-  for (int i = 0; i < N; ++i) {
-    x[i] = 0;
-  }
-
-  auto loop_segments = RAJA::make_tuple(RangeSegment(0, N));
-
-  using shmem_t = ShmemTile<cpu_shmem,
-                            int,
-                            ArgList<0>,
-                            SizeList<TileSize>,
-                            decltype(loop_segments)>;
-  shmem_t shmem;
-
-
-  kernel_param<Pol>(
-
-      loop_segments,
-
-      RAJA::make_tuple(shmem),
-
-      [=](int i, shmem_t &sh) { sh(i) = i; },
-      [=](int i, shmem_t &sh) { x[i] = sh(i) * 2; });
-
-  for (int i = 0; i < N; ++i) {
-    ASSERT_EQ(x[i], i * 2);
-  }
-
-  delete[] x;
-}
 
 
 TEST(Kernel, FissionFusion)
@@ -757,6 +634,125 @@ TEST(Kernel, FissionFusion_Conditional)
   delete[] x;
 }
 
+TEST(Kernel, ForICount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::ForICount<0, Param<0>, seq_exec,
+                           Lambda<0>>>;
+
+
+  int *x = new int[N];
+  int *xi = new int[N];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+    xi[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type ii) {
+        x[i] += 1;
+        xi[ii] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+    ASSERT_EQ(xi[i], 1);
+  }
+
+  delete[] xi;
+  delete[] x;
+}
+
+TEST(Kernel, ForICountTyped_seq)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::ForICount<0, Param<0>, seq_exec,
+                           Lambda<0>>>;
+
+
+  int *x = new int[N];
+  int *xi = new int[N];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+    xi[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple(ZoneI(0)),
+
+      [=](RAJA::Index_type i, ZoneI ii) {
+        x[i] += 1;
+        xi[*ii] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+    ASSERT_EQ(xi[i], 1);
+  }
+
+  delete[] xi;
+  delete[] x;
+}
+
+TEST(Kernel, ForICountTyped_simd)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::ForICount<0, Param<0>, simd_exec,
+                           Lambda<0>>>;
+
+
+  int *x = new int[N];
+  int *xi = new int[N];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+    xi[i] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple(ZoneI(0)),
+
+      [=](RAJA::Index_type i, ZoneI ii) {
+        x[i] += 1;
+        xi[*ii] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+    ASSERT_EQ(xi[i], 1);
+  }
+
+  delete[] xi;
+  delete[] x;
+}
+
+
+
 TEST(Kernel, Tile)
 {
   using namespace RAJA;
@@ -789,6 +785,107 @@ TEST(Kernel, Tile)
     ASSERT_EQ(x[i], 320);
   }
 
+  delete[] x;
+}
+
+TEST(Kernel, TileTCount)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+  constexpr int T = 4;
+  constexpr int NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::TileTCount<0, Param<0>,
+                      statement::tile_fixed<T>, seq_exec,
+                      For<0, seq_exec, Lambda<0>>>>;
+
+
+  int *x = new int[N];
+  int *xt = new int[NT];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+  }
+  for (int t = 0; t < NT; ++t) {
+    xt[t] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple((RAJA::Index_type)0),
+
+      [=](RAJA::Index_type i, RAJA::Index_type it) {
+        x[i] += 1;
+        xt[it] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+  }
+  for (int t = 0; t < NT; ++t) {
+    int expect = T;
+    if ((t+1)*T > N) {
+      expect = N - t*T;
+    }
+    ASSERT_EQ(xt[t], expect);
+  }
+
+  delete[] xt;
+  delete[] x;
+}
+
+
+TEST(Kernel, TileTCountTyped)
+{
+  using namespace RAJA;
+
+  constexpr int N = 17;
+  constexpr int T = 4;
+  constexpr int NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<
+      statement::TileTCount<0, Param<0>,
+                      statement::tile_fixed<T>, seq_exec,
+                      For<0, seq_exec, Lambda<0>>>>;
+
+
+  int *x = new int[N];
+  int *xt = new int[NT];
+
+  for (int i = 0; i < N; ++i) {
+    x[i] = 0;
+  }
+  for (int t = 0; t < NT; ++t) {
+    xt[t] = 0;
+  }
+
+  kernel_param<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+      RAJA::make_tuple(ZoneI(0)),
+
+      [=](RAJA::Index_type i, ZoneI it) {
+        x[i] += 1;
+        xt[*it] += 1;
+      });
+
+  for (int i = 0; i < N; ++i) {
+    ASSERT_EQ(x[i], 1);
+  }
+  for (int t = 0; t < NT; ++t) {
+    int expect = T;
+    if ((t+1)*T > N) {
+      expect = N - t*T;
+    }
+    ASSERT_EQ(xt[t], expect);
+  }
+
+  delete[] xt;
   delete[] x;
 }
 
@@ -1097,6 +1194,7 @@ TEST(Kernel, Collapse8)
 #if defined(RAJA_ENABLE_CUDA)
 
 
+
 CUDA_TEST(Kernel, CudaExec)
 {
   using namespace RAJA;
@@ -1106,13 +1204,12 @@ CUDA_TEST(Kernel, CudaExec)
 
   // Loop Fusion
   using Pol =
-      KernelPolicy<CudaKernel<For<0, cuda_threadblock_exec<32>, Lambda<0>>>>;
+      KernelPolicy<CudaKernel<
+       statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+         For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
-  //  double *d_ptr;
-  //  cudaErrchk(cudaMalloc(&d_ptr, sizeof(double) * N));
 
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1120,8 +1217,6 @@ CUDA_TEST(Kernel, CudaExec)
 
       [=] __device__(RAJA::Index_type i) {
         trip_count += 1;
-        // d_ptr[i] = 1;
-        // d_ptr2[i] = 2;
       });
   cudaDeviceSynchronize();
 
@@ -1129,6 +1224,102 @@ CUDA_TEST(Kernel, CudaExec)
 
   ASSERT_EQ(result, N);
 }
+
+
+CUDA_TEST(Kernel, CudaForICount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::Tile<0, statement::tile_fixed<T>, cuda_block_x_loop,
+         ForICount<0, Param<0>, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < T; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ii) {
+          trip_count += 1;
+          if (i%T == t && ii == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = N/T;
+    if (t < N%T) {
+      tile_expect += 1;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
+
+
+CUDA_TEST(Kernel, CudaTileTCount)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = 1035;
+  constexpr long T = 32;
+  constexpr long NT = (N+T-1)/T;
+
+  // Loop Fusion
+  using Pol =
+      KernelPolicy<CudaKernel<
+       statement::TileTCount<0, Param<0>, statement::tile_fixed<T>, cuda_block_x_loop,
+         For<0, cuda_thread_x_direct, Lambda<0>>>>>;
+
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  for (long t = 0; t < NT; ++t) {
+    RAJA::ReduceSum<cuda_reduce, long> tile_count(0);
+
+    kernel_param<Pol>(
+
+        RAJA::make_tuple(RangeSegment(0, N)),
+        RAJA::make_tuple((RAJA::Index_type)0),
+
+        [=] __device__(RAJA::Index_type i, RAJA::Index_type ti) {
+          trip_count += 1;
+          if (i/T == t && ti == t) {
+            tile_count += 1;
+          }
+        });
+    cudaDeviceSynchronize();
+
+    long trip_result = (long)trip_count;
+    long tile_result = (long)tile_count;
+
+    ASSERT_EQ(trip_result, (t+1)*N);
+
+    long tile_expect = T;
+    if ((t+1)*T > N) {
+      tile_expect = N - t*T;
+    }
+    ASSERT_EQ(tile_result, tile_expect);
+  }
+}
+
 
 CUDA_TEST(Kernel, CudaConditional)
 {
@@ -1139,11 +1330,12 @@ CUDA_TEST(Kernel, CudaConditional)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      For<0, cuda_threadblock_exec<32>, If<Param<0>, Lambda<0>>, Lambda<1>>>>;
+      statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+        For<0, cuda_thread_x_loop, If<Param<0>, Lambda<0>>, Lambda<1>>>>>;
 
   for (int param = 0; param < 2; ++param) {
 
-    RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+    RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
     kernel_param<Pol>(
 
@@ -1174,10 +1366,10 @@ CUDA_TEST(Kernel, CudaExec1)
 
   // Loop Fusion
   using Pol =
-      KernelPolicy<CudaKernel<For<0, cuda_threadblock_exec<32>, Lambda<0>>>>;
+      KernelPolicy<CudaKernel<For<0, cuda_thread_x_loop, Lambda<0>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<128>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1199,12 +1391,19 @@ CUDA_TEST(Kernel, CudaExec1a)
 
   constexpr long N = (long)128;
 
-  // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      statement::Collapse<cuda_thread_exec, ArgList<0, 1, 2>, Lambda<0>>>>;
+      statement::Tile<0, statement::tile_fixed<16>, cuda_block_x_loop,
+        statement::Tile<1, statement::tile_fixed<32>, cuda_block_y_loop,
+          statement::Tile<2, statement::tile_fixed<128>, cuda_block_z_loop,
+            For<0, cuda_thread_x_direct,
+              For<1, cuda_thread_y_direct,
+                For<2, cuda_thread_z_loop,
+                  Lambda<0>
+      >>>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1232,10 +1431,14 @@ CUDA_TEST(Kernel, CudaExec1ab)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      statement::Collapse<cuda_block_exec, ArgList<0, 1, 2>, Lambda<0>>>>;
+      For<0, cuda_block_x_loop,
+        For<1, cuda_block_y_loop,
+          For<2, cuda_block_z_loop,
+            Lambda<0>
+   >>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1261,14 +1464,18 @@ CUDA_TEST(Kernel, CudaExec1ac)
 
   constexpr long N = (long)128;
 
-  // Loop Fusion
-  using Pol =
-      KernelPolicy<CudaKernel<statement::Collapse<cuda_threadblock_exec<1024>,
-                                                  ArgList<0, 1, 2>,
-                                                  Lambda<0>>>>;
+  using Pol = KernelPolicy<CudaKernel<
+      statement::Tile<0, statement::tile_fixed<16>, cuda_block_x_loop,
+        statement::Tile<1, statement::tile_fixed<16>, cuda_block_y_loop,
+          statement::Tile<2, statement::tile_fixed<16>, cuda_block_z_loop,
+            For<0, cuda_thread_x_loop,
+              For<1, cuda_thread_y_loop,
+                For<2, cuda_thread_z_direct,
+                  Lambda<0>
+      >>>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1287,6 +1494,7 @@ CUDA_TEST(Kernel, CudaExec1ac)
 }
 
 
+
 CUDA_TEST(Kernel, CudaExec1b)
 {
   using namespace RAJA;
@@ -1296,10 +1504,12 @@ CUDA_TEST(Kernel, CudaExec1b)
 
   // Loop Fusion
   using Pol =
-      KernelPolicy<CudaKernel<For<0, cuda_threadblock_exec<128>, Lambda<0>>>>;
+      KernelPolicy<CudaKernel<
+        statement::Tile<0, statement::tile_fixed<128>, cuda_block_z_loop,
+          For<0, cuda_thread_y_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1314,6 +1524,7 @@ CUDA_TEST(Kernel, CudaExec1b)
 }
 
 
+
 CUDA_TEST(Kernel, CudaExec1c)
 {
   using namespace RAJA;
@@ -1324,15 +1535,13 @@ CUDA_TEST(Kernel, CudaExec1c)
   // Loop Fusion
   using Pol = KernelPolicy<
       CudaKernelExt<cuda_explicit_launch<false, 5, 3>,
-                    // CudaKernel<
-                    For<0,
-                        cuda_block_exec,
-                        For<1,
-                            cuda_block_exec,
-                            For<2, cuda_threadblock_exec<2>, Lambda<0>>>>>>;
+           statement::Tile<2, statement::tile_fixed<2>, cuda_block_z_loop,
+                    For<0, cuda_block_x_loop,
+                        For<1, cuda_block_y_loop,
+                            For<2, cuda_thread_z_loop, Lambda<0>>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1359,10 +1568,9 @@ CUDA_TEST(Kernel, CudaComplexNested)
   constexpr long N = (long)739;
 
   using Pol = KernelPolicy<CudaKernel<
-      For<0,
-          cuda_threadblock_exec<15>,
-          For<1, cuda_thread_exec, For<2, cuda_thread_exec, Lambda<0>>>,
-          For<2, cuda_thread_exec, Lambda<0>>>>>;
+      For<0, cuda_block_x_loop,
+          For<1, cuda_thread_x_loop, For<2, cuda_thread_y_loop, Lambda<0>>>,
+          For<2, cuda_thread_x_loop, Lambda<0>>>>>;
 
   int *ptr = nullptr;
   cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N));
@@ -1377,7 +1585,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
                                    RangeSegment(0, N));
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1404,272 +1612,10 @@ CUDA_TEST(Kernel, CudaComplexNested)
 }
 
 
-CUDA_TEST(Kernel, CudaShmemWindow1d)
-{
-  using namespace RAJA;
 
 
-  constexpr long N = (long)256;
 
-  using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<0,
-                      statement::tile_fixed<16>,
-                      seq_exec,
-                      SetShmemWindow<For<0, cuda_thread_exec, Lambda<0>>,
-                                     CudaSyncThreads,
-                                     For<0, cuda_thread_exec, Lambda<1>>>>>>;
 
-  int *ptr = nullptr;
-  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N));
-
-  for (long i = 0; i < N; ++i) {
-    ptr[i] = 0;
-  }
-
-
-  auto segments = RAJA::make_tuple(RangeSegment(0, N));
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-  using shmem_t = ShmemTile<cuda_shmem,
-                            double,
-                            ArgList<0>,
-                            SizeList<16>,
-                            decltype(segments)>;
-  shmem_t shmem;
-
-  kernel_param<Pol>(
-
-      segments,
-
-      RAJA::make_tuple(shmem),
-
-      [=] __device__(RAJA::Index_type i, shmem_t & sh) {
-        trip_count += 1;
-        sh(i) = i;
-      },
-
-      [=] __device__(RAJA::Index_type i, shmem_t & sh) {
-        trip_count += 1;
-        ptr[i] = sh(i);
-      });
-  cudaDeviceSynchronize();
-
-  for (long i = 0; i < N; ++i) {
-    ASSERT_EQ(ptr[i], (int)(i));
-  }
-
-  // check trip count
-  long result = (long)trip_count;
-  ASSERT_EQ(result, 2 * N);
-
-
-  cudaFree(ptr);
-}
-
-
-CUDA_TEST(Kernel, CudaShmemWindow1dReverse)
-{
-  using namespace RAJA;
-
-
-  constexpr long N = (long)256;
-
-  using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<0,
-                      statement::tile_fixed<16>,
-                      seq_exec,
-                      SetShmemWindow<For<0, cuda_thread_exec, Lambda<0>>,
-                                     CudaSyncThreads,
-                                     For<0, cuda_thread_exec, Lambda<1>>>>>>;
-
-  int *ptr = nullptr;
-  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N));
-
-  for (long i = 0; i < N; ++i) {
-    ptr[i] = 0;
-  }
-
-
-  auto segments = RAJA::make_tuple(RangeStrideSegment(N - 1, -1, -1));
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-  using shmem_t = ShmemTile<cuda_shmem,
-                            double,
-                            ArgList<0>,
-                            SizeList<16>,
-                            decltype(segments)>;
-  shmem_t shmem;
-
-  kernel_param<Pol>(
-
-      segments,
-
-      RAJA::make_tuple(shmem),
-
-      [=] __device__(RAJA::Index_type i, shmem_t & sh) {
-        trip_count += 1;
-        sh(i) = i;
-      },
-
-      [=] __device__(RAJA::Index_type i, shmem_t & sh) {
-        trip_count += 1;
-        ptr[i] = sh(i);
-      });
-  cudaDeviceSynchronize();
-
-  for (long i = 0; i < N; ++i) {
-    ASSERT_EQ(ptr[i], (int)(i));
-  }
-
-  // check trip count
-  long result = (long)trip_count;
-  ASSERT_EQ(result, 2 * N);
-
-
-  cudaFree(ptr);
-}
-
-
-CUDA_TEST(Kernel, CudaShmemWindow2d)
-{
-  using namespace RAJA;
-
-
-  constexpr long N = (long)32;
-  constexpr long M = (long)64 * 1024 + 1;
-
-  constexpr long tile_N = (long)32;
-  constexpr long tile_M = (long)32;
-
-  using Pol = KernelPolicy<
-      CudaKernel<statement::Tile<1,
-                                 statement::tile_fixed<tile_N>,
-                                 seq_exec,
-                                 //		For<1, cuda_block_exec,
-                                 For<1,
-                                     cuda_threadblock_exec<tile_M>,
-                                     SetShmemWindow<
-
-                                         For<0, seq_exec, Lambda<0>>,
-
-                                         CudaSyncThreads,
-
-                                         For<0, seq_exec, Lambda<1>>>>>>>;
-
-  int *ptr = nullptr;
-  cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N * M));
-
-  for (long i = 0; i < N * M; ++i) {
-    ptr[i] = 0;
-  }
-
-
-  auto segments = RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, M));
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-
-  using shmem_t = ShmemTile<cuda_shmem,
-                            double,
-                            ArgList<0, 1>,
-                            SizeList<tile_N, tile_M>,
-                            decltype(segments)>;
-  using shmem2_t = ShmemTile<cuda_shmem,
-                             double,
-                             ArgList<0, 1>,
-                             SizeList<tile_N, tile_M>,
-                             decltype(segments)>;
-
-
-  kernel_param<Pol>(
-
-      segments,
-
-      RAJA::make_tuple(shmem_t(), shmem2_t()),
-
-      [=] __device__(RAJA::Index_type i,
-                     RAJA::Index_type j,
-                     shmem_t & shmem,
-                     shmem2_t & shmem2) {
-        trip_count += 1;
-        shmem(i, j) = i * j;
-        shmem2(i, j) = 2 * i * j;
-      },
-
-      [=] __device__(RAJA::Index_type i,
-                     RAJA::Index_type j,
-                     shmem_t & shmem,
-                     shmem2_t & shmem2) {
-        trip_count += 1;
-        ptr[i * M + j] = shmem(i, j) + shmem2(i, j);
-      });
-  cudaDeviceSynchronize();
-
-  long errors = 0;
-  for (long i = 0; i < N; ++i) {
-    for (long j = 0; j < M; ++j) {
-      if (ptr[i * M + j] != 3 * i * j) {
-        errors++;
-      }
-      // ASSERT_EQ(ptr[i*M+j], (int)(3*i*j));
-      // ASSERT_EQ(ptr[i*M+j], (int)(i*j));
-    }
-  }
-
-  // check trip count
-  long result = (long)trip_count;
-  ASSERT_EQ(result, 2 * N * M);
-
-
-  cudaFree(ptr);
-}
-
-
-#endif  // CUDA
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-CUDA_TEST(Kernel, CudaExec_1threadexec)
-{
-  using namespace RAJA;
-
-
-  constexpr long N = (long)256;
-
-  // Loop Fusion
-  using Pol = KernelPolicy<CudaKernel<
-      For<0,
-          cuda_block_exec,
-          For<1,
-              cuda_threadblock_exec<32>,
-              For<2, cuda_thread_exec, For<3, cuda_thread_exec, Lambda<0>>>>>>>;
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-  kernel<Pol>(
-
-      RAJA::make_tuple(RangeSegment(0, N),
-                       RangeSegment(0, N),
-                       RangeSegment(0, N),
-                       RangeSegment(0, N)),
-
-      [=] __device__(Index_type i, Index_type j, Index_type k, Index_type l) {
-        trip_count += 1;
-      });
-  cudaDeviceSynchronize();
-
-
-  long result = (long)trip_count;
-
-  ASSERT_EQ(result, N * N * N * N);
-}
 
 CUDA_TEST(Kernel, CudaExec_1blockexec)
 {
@@ -1679,10 +1625,10 @@ CUDA_TEST(Kernel, CudaExec_1blockexec)
   constexpr long N = (long)64;  //*1024;
 
   // Loop Fusion
-  using Pol = KernelPolicy<CudaKernel<For<0, cuda_block_exec, Lambda<0>>>>;
+  using Pol = KernelPolicy<CudaKernel<For<0, cuda_block_x_loop, Lambda<0>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1698,34 +1644,7 @@ CUDA_TEST(Kernel, CudaExec_1blockexec)
 }
 
 
-CUDA_TEST(Kernel, CudaExec_1threadblockexec)
-{
-  using namespace RAJA;
-
-
-  constexpr long N = (long)1024 * 1024;
-
-  // Loop Fusion
-  using Pol =
-      KernelPolicy<CudaKernel<For<0, cuda_threadblock_exec<73>, Lambda<0>>>>;
-
-
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-
-  kernel<Pol>(
-
-      RAJA::make_tuple(RangeSegment(0, N)),
-
-      [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  cudaDeviceSynchronize();
-
-
-  long result = (long)trip_count;
-
-  ASSERT_EQ(result, N);
-}
-
-CUDA_TEST(Kernel, CudaExec_2threadexec)
+CUDA_TEST(Kernel, CudaExec_2threadloop)
 {
   using namespace RAJA;
 
@@ -1734,10 +1653,10 @@ CUDA_TEST(Kernel, CudaExec_2threadexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      For<0, cuda_thread_exec, For<1, cuda_thread_exec, Lambda<0>>>>>;
+      For<0, cuda_thread_x_loop, For<1, cuda_thread_y_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1751,7 +1670,7 @@ CUDA_TEST(Kernel, CudaExec_2threadexec)
   ASSERT_EQ(result, N * N);
 }
 
-CUDA_TEST(Kernel, CudaExec_1thread1blockexec)
+CUDA_TEST(Kernel, CudaExec_1thread1block)
 {
   using namespace RAJA;
 
@@ -1760,10 +1679,10 @@ CUDA_TEST(Kernel, CudaExec_1thread1blockexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<
-      CudaKernel<For<0, cuda_block_exec, For<1, cuda_thread_exec, Lambda<0>>>>>;
+      CudaKernel<For<0, cuda_block_x_loop, For<1, cuda_thread_x_loop, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1782,7 +1701,7 @@ CUDA_TEST(Kernel, CudaExec_1thread1blockexec)
 }
 
 
-CUDA_TEST(Kernel, CudaExec_3threadexec)
+CUDA_TEST(Kernel, CudaExec_3threadloop)
 {
   using namespace RAJA;
 
@@ -1792,11 +1711,11 @@ CUDA_TEST(Kernel, CudaExec_3threadexec)
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
       For<0,
-          cuda_thread_exec,
-          For<1, cuda_thread_exec, For<2, cuda_thread_exec, Lambda<0>>>>>>;
+          cuda_thread_z_loop,
+          For<1, cuda_thread_x_loop, For<2, cuda_thread_y_loop, Lambda<0>>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1815,7 +1734,7 @@ CUDA_TEST(Kernel, CudaExec_3threadexec)
 }
 
 
-CUDA_TEST(Kernel, CudaExec_tile1threadexec)
+CUDA_TEST(Kernel, CudaExec_tile1threaddirect)
 {
   using namespace RAJA;
 
@@ -1827,10 +1746,10 @@ CUDA_TEST(Kernel, CudaExec_tile1threadexec)
       CudaKernel<statement::Tile<0,
                                  statement::tile_fixed<128>,
                                  seq_exec,
-                                 For<0, cuda_thread_exec, Lambda<0>>>>>;
+                                 For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
   kernel<Pol>(
 
@@ -1844,6 +1763,7 @@ CUDA_TEST(Kernel, CudaExec_tile1threadexec)
 
   ASSERT_EQ(result, N);
 }
+
 
 #endif  // CUDA
 
@@ -1879,16 +1799,16 @@ TEST(Kernel, Hyperplane_seq)
 #if defined(RAJA_ENABLE_CUDA)
 
 
+
 CUDA_TEST(Kernel, Hyperplane_cuda_2d)
 {
   using namespace RAJA;
 
   using Pol =
-      RAJA::KernelPolicy<CudaKernel<Hyperplane<0,
-                                               cuda_seq_syncthreads_exec,
-                                               ArgList<1>,
-                                               cuda_thread_exec,
-                                               Lambda<0>>>>;
+      RAJA::KernelPolicy<CudaKernel<
+        For<1, cuda_thread_x_direct,
+          Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>,
+                                               Lambda<0>>>>>;
 
   constexpr long N = (long)24;
   constexpr long M = (long)11;
@@ -1927,17 +1847,15 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d)
   cudaFree(x);
 }
 
-
 CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
 {
   using namespace RAJA;
 
   using Pol =
-      RAJA::KernelPolicy<CudaKernel<Hyperplane<0,
-                                               cuda_seq_syncthreads_exec,
-                                               ArgList<1>,
-                                               cuda_thread_exec,
-                                               Lambda<0>>>>;
+      RAJA::KernelPolicy<CudaKernel<
+        For<1, cuda_thread_y_direct,
+          Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>,
+                                               Lambda<0>>>>>;
 
   constexpr long N = (long)24;
   constexpr long M = (long)11;
@@ -1977,25 +1895,20 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
 }
 
 
+
 CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
 {
   using namespace RAJA;
 
   using Pol = RAJA::KernelPolicy<CudaKernel<
-      For<0,
-          cuda_block_exec,
-          RAJA::statement::Tile<
-              2,
-              RAJA::statement::tile_fixed<13>,
-              seq_exec,
-              RAJA::statement::Tile<3,
-                                    RAJA::statement::tile_fixed<7>,
-                                    seq_exec,
-                                    Hyperplane<1,
-                                               cuda_seq_syncthreads_exec,
-                                               ArgList<2, 3>,
-                                               cuda_thread_exec,
-                                               Lambda<0>>>>>>>;
+      For<0, cuda_block_x_loop,
+        RAJA::statement::Tile<2, RAJA::statement::tile_fixed<13>, seq_exec,
+          RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
+            For<2, cuda_thread_x_direct,
+              For<3, cuda_thread_y_direct,
+                Hyperplane<1, cuda_seq_syncthreads_exec, ArgList<2, 3>,
+
+                                               Lambda<0>>>>>>>>>;
 
   constexpr long L = (long)1;
   constexpr long N = (long)11;
@@ -2014,8 +1927,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
     x[i] = i;
   }
 
-  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
-  RAJA::ReduceSum<cuda_reduce<1024>, long> oob_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> oob_count(0);
 
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, L),
@@ -2099,93 +2012,58 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
 }
 
 
-TEST(Kernel, IndexCalc_seq)
+
+CUDA_TEST(Kernel, CudaExec_1threadexec)
 {
+  using namespace RAJA;
 
 
-  constexpr long N = (long)16;
+  constexpr long N = (long)200;
 
-  auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
-  using segment_t = decltype(segments);
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernel<
+      statement::Tile<2, statement::tile_fixed<64>, cuda_block_z_loop,
+        statement::Tile<3, statement::tile_fixed<16>, seq_exec,
+          For<0, cuda_block_x_loop,
+            For<1, cuda_block_y_loop,
+              For<2, cuda_thread_x_direct,
+                For<3, cuda_thread_y_direct,
+                  Lambda<0>
+                >
+              >
+            >
+          >
+        >
+      >
+    >
+  >;
 
-  using loop_data_t =
-      RAJA::internal::LoopData<RAJA::list<>, segment_t, RAJA::tuple<>>;
 
-  loop_data_t data(segments, RAJA::tuple<>{});
 
-  RAJA::internal::CudaIndexCalc_Policy<0, RAJA::seq_exec> ic;
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
 
-  for (int init = 1; init < 5; ++init) {
+  kernel<Pol>(
 
-    for (int inc = 1; inc < 7; ++inc) {
+      RAJA::make_tuple(RangeSegment(0, N),
+                       RangeSegment(0, N),
+                       RangeSegment(0, N),
+                       RangeSegment(0, N)),
 
-      int i = 0;
+      [=] __device__(Index_type i, Index_type j, Index_type k, Index_type l) {
+        trip_count += 1;
+      });
 
-      ic.initThread(data, init, inc);
-      ASSERT_EQ(ic.reset(data), init <= 0);
-      ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
+  cudaDeviceSynchronize();
 
-      for (int iter = 0; iter < N; ++iter) {
 
-        bool carry = false;
-        i += 1;
-        if (i >= N) {
-          i = i % N;
-          carry = true;
-        }
+  long result = (long)trip_count;
 
-        ASSERT_EQ(ic.increment(data, inc) > 0, carry);
-        ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
-      }
-    }
-  }
+  ASSERT_EQ(result, N * N * N * N);
 }
-
-TEST(Kernel, IndexCalc_thread)
-{
-
-
-  constexpr long N = (long)13;
-
-  auto segments = RAJA::make_tuple(RAJA::RangeSegment(0, N));
-  using segment_t = decltype(segments);
-
-  using loop_data_t =
-      RAJA::internal::LoopData<RAJA::list<>, segment_t, RAJA::tuple<>>;
-
-  loop_data_t data(segments, RAJA::tuple<>{});
-
-  RAJA::internal::CudaIndexCalc_Policy<0, RAJA::cuda_thread_exec> ic;
-
-
-  for (int init = 1; init < 5; ++init) {
-
-
-    for (int inc = 1; inc < 3 * N; ++inc) {
-
-      int i = init;
-
-      ic.initThread(data, init, inc);
-      ASSERT_EQ(ic.reset(data), false);
-      ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
-
-
-      for (int iter = 0; iter < N; ++iter) {
-
-
-        bool carry = false;
-        i += inc;
-        if (i >= N) {
-          i = i % N;
-          carry = true;
-        }
-
-        ASSERT_EQ(ic.increment(data, inc) > 0, carry);
-        ASSERT_EQ(RAJA::get<0>(data.offset_tuple), i);
-      }
-    }
-  }
-}
-
 
 #endif
+
+
+
+
+

@@ -153,22 +153,18 @@ struct cuda_seq_syncthreads_exec
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <size_t BLOCK_SIZE, bool Async = false, bool maybe_atomic = false>
-struct cuda_reduce : public RAJA::make_policy_pattern_launch_platform_t<
-                         RAJA::Policy::cuda,
-                         RAJA::Pattern::reduce,
-                         detail::get_launch<Async>::value,
-                         RAJA::Platform::cuda> {
+template <bool maybe_atomic>
+struct cuda_reduce_base
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::reduce,
+                                                detail::get_launch<false>::value,
+                                                RAJA::Platform::cuda> {
 };
 
-template <size_t BLOCK_SIZE>
-using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true, false>;
+using cuda_reduce = cuda_reduce_base<false>;
 
-template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic = cuda_reduce<BLOCK_SIZE, false, true>;
-
-template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic_async = cuda_reduce<BLOCK_SIZE, true, true>;
+using cuda_reduce_atomic = cuda_reduce_base<true>;
 
 
 template <typename POL>
@@ -207,11 +203,10 @@ using policy::cuda::cuda_exec;
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
-using policy::cuda::cuda_reduce;
-using policy::cuda::cuda_reduce_async;
-using policy::cuda::cuda_reduce_atomic;
-using policy::cuda::cuda_reduce_atomic_async;
 using policy::cuda::cuda_seq_syncthreads_exec;
+using policy::cuda::cuda_reduce_base;
+using policy::cuda::cuda_reduce;
+using policy::cuda::cuda_reduce_atomic;
 using policy::cuda::CudaPolicy;
 
 using policy::cuda::cuda_synchronize;
@@ -371,7 +366,7 @@ struct CudaBlock {
     setDims(dims);
   }
 
-  __device__ inline RAJA::Index_type operator()(void)
+  RAJA_DEVICE inline RAJA::Index_type operator()(void)
   {
     RAJA::Index_type idx = view(blockIdx);
     if (idx >= distance) {
@@ -393,40 +388,120 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Shared memory policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-
-/*!
- * CUDA shared memory
- */
-
-struct cuda_shmem {
-};
 
 
-/*!
- * CUDA shared memory that allows global indexing into a block's shmem
- */
-template <typename DimView>
-struct block_map_shmem {
+template<int dim>
+struct cuda_thread_xyz_direct{};
 
-  template <typename T>
-  RAJA_INLINE RAJA_DEVICE static T apply(ptrdiff_t dim_size, T idx)
+using cuda_thread_x_direct = cuda_thread_xyz_direct<0>;
+using cuda_thread_y_direct = cuda_thread_xyz_direct<1>;
+using cuda_thread_z_direct = cuda_thread_xyz_direct<2>;
+
+
+
+template<int dim, int min_threads>
+struct cuda_thread_xyz_loop{};
+
+using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
+using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
+using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
+
+
+template<int dim>
+struct cuda_block_xyz_loop{};
+
+using cuda_block_x_loop = cuda_block_xyz_loop<0>;
+using cuda_block_y_loop = cuda_block_xyz_loop<1>;
+using cuda_block_z_loop = cuda_block_xyz_loop<2>;
+
+
+namespace internal{
+
+template<int dim>
+struct CudaDimHelper;
+
+template<>
+struct CudaDimHelper<0>{
+
+  inline
+  static
+  constexpr
+  RAJA_HOST_DEVICE
+  auto get(cuda_dim_t const &d) ->
+    decltype(d.x)
   {
-    DimView dim_view;
-    ptrdiff_t block_offset = dim_view(blockIdx) * dim_size;
-    return idx - block_offset;
+    return d.x;
+  }
+
+  inline
+  static
+  RAJA_HOST_DEVICE
+  void set(cuda_dim_t &d, int value)
+  {
+    d.x = value;
   }
 };
 
-using block_map_x_shmem = block_map_shmem<Dim3x>;
-using block_map_y_shmem = block_map_shmem<Dim3y>;
-using block_map_z_shmem = block_map_shmem<Dim3z>;
+template<>
+struct CudaDimHelper<1>{
+
+  inline
+  static
+  constexpr
+  RAJA_HOST_DEVICE
+  auto get(cuda_dim_t const &d) ->
+    decltype(d.x)
+  {
+    return d.y;
+  }
+
+  inline
+  static
+  RAJA_HOST_DEVICE
+  void set(cuda_dim_t &d, int value)
+  {
+    d.y = value;
+  }
+};
+
+template<>
+struct CudaDimHelper<2>{
+
+  inline
+  static
+  constexpr
+  RAJA_HOST_DEVICE
+  auto get(cuda_dim_t const &d) ->
+    decltype(d.x)
+  {
+    return d.z;
+  }
+
+  inline
+  static
+  RAJA_HOST_DEVICE
+  void set(cuda_dim_t &d, int value)
+  {
+    d.z = value;
+  }
+};
+
+template<int dim>
+constexpr
+RAJA_HOST_DEVICE
+auto get_cuda_dim(cuda_dim_t const &d) ->
+  decltype(d.x)
+{
+  return CudaDimHelper<dim>::get(d);
+}
+
+template<int dim>
+RAJA_HOST_DEVICE
+void set_cuda_dim(cuda_dim_t &d, int value)
+{
+  return CudaDimHelper<dim>::set(d, value);
+}
+} // namespace internal
 
 
 }  // namespace RAJA

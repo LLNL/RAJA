@@ -48,88 +48,24 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Data, camp::idx_t LoopIndex, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>, IndexCalc> {
+template <typename Data, camp::idx_t LoopIndex>
+struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
 
-  IndexCalc index_calc;
-
-  inline __device__ void exec(Data &data,
-                              int num_logical_blocks,
-                              int block_carry)
+  static
+  inline RAJA_DEVICE void exec(Data &data)
   {
-
-    if (block_carry <= 0) {
-      // set indices to beginning of each segment, and increment
-      // to this threads first iteration
-      bool done = index_calc.reset(data);
-
-      while (!done) {
-
-        invoke_lambda<LoopIndex>(data);
-
-        done = index_calc.increment(data);
-      }
-    }
+    invoke_lambda<LoopIndex>(data);
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                          int num_logical_blocks,
-                                          int block_stride)
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    // nop
-  }
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    index_calc.initThread(data, threadIdx.x, blockDim.x);
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return LaunchDim();
+    return LaunchDims();
   }
 };
 
-
-template <typename Data, camp::idx_t LoopIndex, typename Segments>
-struct CudaStatementExecutor<Data,
-                             statement::Lambda<LoopIndex>,
-                             CudaIndexCalc_Terminator<Segments>> {
-
-  inline __device__ void exec(Data &data,
-                              int num_logical_blocks,
-                              int block_carry)
-
-  {
-    if (block_carry <= 0) {
-      invoke_lambda<LoopIndex>(data);
-    }
-  }
-
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                          int num_logical_blocks,
-                                          int block_stride)
-  {
-    // nop
-  }
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    // nop
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return LaunchDim();
-  }
-};
 
 
 }  // namespace internal
