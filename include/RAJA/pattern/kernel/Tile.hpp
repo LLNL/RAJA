@@ -35,6 +35,7 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -63,13 +64,16 @@ struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 };
 
-
 }  // end namespace statement
 
 namespace internal
 {
 
-
+/*!
+ * A generic RAJA::kernel forall_impl tile wrapper for statement::For
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
 struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 
@@ -77,11 +81,11 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
   using Base::Base;
   using privatizer = NestedPrivatizer<TileWrapper>;
 
-  template <typename InSegmentType>
-  RAJA_INLINE void operator()(InSegmentType s)
+  template <typename InSegmentIndexType>
+  RAJA_INLINE void operator()(InSegmentIndexType si)
   {
     // Assign the tile's segment to the tuple
-    camp::get<ArgumentId>(Base::data.segment_tuple) = s;
+    camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
 
     // Assign the beginning index to the index_tuple for proper use
     // in shmem windows
@@ -97,6 +101,12 @@ template <typename Iterable>
 struct IterableTiler {
   using value_type = camp::decay<Iterable>;
 
+  struct iterate
+  {
+    value_type s;
+    Index_type i;
+  };
+
   class iterator
   {
     // NOTE: this must be held by value for NVCC support, *even on the host*
@@ -104,7 +114,7 @@ struct IterableTiler {
     const Index_type block_id;
 
   public:
-    using value_type = camp::decay<Iterable>;
+    using value_type = iterate;
     using difference_type = camp::idx_t;
     using pointer = value_type *;
     using reference = value_type &;
@@ -122,7 +132,7 @@ struct IterableTiler {
     value_type operator*()
     {
       auto start = block_id * itiler.block_size;
-      return itiler.it.slice(start, itiler.block_size);
+      return iterate{itiler.it.slice(start, itiler.block_size), block_id};
     }
 
     RAJA_HOST_DEVICE
@@ -195,7 +205,11 @@ struct IterableTiler {
   camp::idx_t dist;
 };
 
-
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::Tile
+ *
+ *
+ */
 template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
@@ -218,7 +232,8 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);
+    TileWrapper<ArgumentId, Data,
+                EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     forall_impl(EPol{}, tiled_iterable, tile_wrapper);
@@ -227,6 +242,7 @@ struct StatementExecutor<
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }
 };
+
 }  // end namespace internal
 }  // end namespace RAJA
 
