@@ -84,9 +84,9 @@ private:
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
 template <typename T, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, doing_min>, mempool>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, Index_type, doing_min>, mempool>
 {
-  using value_type = RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using value_type = RAJA::reduce::detail::ValueLoc<T, Index_type, doing_min>;
   using first_type = T;
   using second_type = Index_type;
 
