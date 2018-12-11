@@ -204,8 +204,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+      //RAJA::statement::For<3, RAJA::loop_exec,
+      //RAJA::statement::For<2, RAJA::loop_exec,
+      RAJA::statement::TileTCount<1, Param<0>, statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::TileTCount<0, Param<1>, statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
         // This statement will initalize local array memory inside a kernel.
         // The cpu_tile_mem policy specifies that memory should be allocated
@@ -218,22 +220,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             // loops. These loops copy data from the global matrices
             // to the local tile.
             //
-            RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+           RAJA::statement::ForICount<1, Param<2>, RAJA::loop_exec,
+             RAJA::statement::ForICount<0, Param<3>, RAJA::loop_exec,
                 RAJA::statement::Lambda<0>
               >
-            >,
-
+            >
            //
            // (2) Execution policies for the second set of inner
            // loops. These loops copy data from the local tile to 
            // the global matrix.
            //
-           RAJA::statement::For<1, RAJA::loop_exec,
-             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
-             >
-           >
          > //close shared memory scope
        >//closes loop 2
      >//closes loop 3
@@ -241,28 +237,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::kernel_param<SEQ_EXEC_POL>(
-    RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                     RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
+        RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0,N))
 
-    RAJA::make_tuple(RAJA_Tile),
+        RAJA::make_tuple((int) 0, (int) 0, (int) 0, (int) 0, RAJA_Tile),
 
     //Load data into tile
-    [=] (int tx, int ty, int bx, int by, TILE_MEM &RAJA_Tile) {
+    //[=] (int tx, int ty, int bx, int by, TILE_MEM &RAJA_Tile) {
+     [=] (int gId0, int gId1, int tId0, int tId1, int id0, int id1,  TILE_MEM &RAJA_Tile) {
 
       int col = bx * TILE_DIM + tx;  // Matrix column index
       int row = by * TILE_DIM + ty;  // Matrix row index
 
-      RAJA_Tile(ty,tx)  = Aview(row, col);
-
-    },
-
-    //Read data from tile
-    [=] (int tx, int ty, int bx, int by, TILE_MEM &RAJA_Tile) {
-
-      int col = by * TILE_DIM + tx;  // Transposed matrix column index
-      int row = bx * TILE_DIM + ty;  // Transposed matrix row index
-
-      Atview(row, col) = RAJA_Tile(tx,ty);
+      //RAJA_Tile(ty,tx)  = Aview(row, col);
 
     });
 
