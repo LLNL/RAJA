@@ -175,15 +175,8 @@ using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
 using policy::omp::omp_synchronize;
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Shared memory policies
-///
-///////////////////////////////////////////////////////////////////////
-///
 
-using omp_shmem = cpu_shmem;
+
 
 }  // namespace RAJA
 
