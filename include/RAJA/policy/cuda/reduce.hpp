@@ -1065,34 +1065,34 @@ public:
 };
 
 //! specialization of ReduceMinLoc for cuda_reduce
-template <bool maybe_atomic, typename T, typename IndexType = Index_type>
-class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T, IndexType>
-    : public cuda::Reduce<RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T, IndexType>>,
-                          RAJA::reduce::detail::ValueLoc<T, IndexType>,
+template <bool maybe_atomic, typename T>
+class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+                          RAJA::reduce::detail::ValueLoc<T>,
                           maybe_atomic>
 {
 
 public:
-  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType>;
+  using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = cuda::
       Reduce<RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMinLoc(T init_val, IndexType init_idx)
+  ReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
-  const ReduceMinLoc& minloc(T rhs, IndexType loc) const
+  const ReduceMinLoc& minloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
   }
 
   //! Get the calculated reduced value
-  IndexType getLoc() { return Base::get().getLoc(); }
+  Index_type getLoc() { return Base::get().getLoc(); }
 
   //! Get the calculated reduced value
   operator T() { return Base::get(); }
@@ -1102,34 +1102,34 @@ public:
 };
 
 //! specialization of ReduceMaxLoc for cuda_reduce
-template <bool maybe_atomic, typename T, typename IndexType = Index_type>
-class ReduceMaxLoc<cuda_reduce_base<maybe_atomic>, T, IndexType>
+template <bool maybe_atomic, typename T>
+class ReduceMaxLoc<cuda_reduce_base<maybe_atomic>, T>
     : public cuda::
-          Reduce<RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, IndexType, false>>,
-                 RAJA::reduce::detail::ValueLoc<T, IndexType, false>,
+          Reduce<RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
+                 RAJA::reduce::detail::ValueLoc<T, false>,
                  maybe_atomic>
 {
 public:
-  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, false>;
+  using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
   using Base = cuda::
       Reduce<RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMaxLoc(T init_val, IndexType init_idx)
+  ReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
-  const ReduceMaxLoc& maxloc(T rhs, IndexType loc) const
+  const ReduceMaxLoc& maxloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
   }
 
   //! Get the calculated reduced value
-  IndexType getLoc() { return Base::get().getLoc(); }
+  Index_type getLoc() { return Base::get().getLoc(); }
 
   //! Get the calculated reduced value
   operator T() { return Base::get(); }
