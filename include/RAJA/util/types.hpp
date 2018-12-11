@@ -724,16 +724,6 @@ typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
 
 #endif
 
-template <typename T>
-struct DefaultLoc {
-   static const T value = T();
-};
-
-template <>
-struct DefaultLoc<Index_type> {
-   static const Index_type value = -1;
-};
-
 }  // namespace RAJA
 
 #endif  // closing endif for header file include guard
