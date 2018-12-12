@@ -87,10 +87,6 @@ struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
     // Assign the tile's segment to the tuple
     camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
 
-    // Assign the beginning index to the index_tuple for proper use
-    // in shmem windows
-    camp::get<ArgumentId>(Base::data.offset_tuple) = 0;
-
     // Execute enclosed statements
     Base::exec();
   }
