@@ -388,22 +388,6 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Shared memory policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-
-/*!
- * CUDA shared memory
- */
-
-struct cuda_shmem {
-};
-
-
 
 
 template<int dim>

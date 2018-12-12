@@ -82,7 +82,7 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
     }
   }
 
-  using SharedTile = TypedLocalArray<double, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
+  using SharedTile = TypedLocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);
@@ -190,7 +190,7 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
   }
 
 
-  using SharedTile = LocalArray<double, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
+  using SharedTile = LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
 
   SharedTile myTile, myTile2;
 
@@ -499,8 +499,8 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
   }
 
 
-  using Shmem      = RAJA::LocalArray<double, Tile_size0>;
-  using ThreadPriv = RAJA::LocalArray<double, Tile_size1>;
+  using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, Tile_size0>;
+  using ThreadPriv = RAJA::LocalArray<double, RAJA::PERM_IJ, Tile_size1>;
 
   Shmem aShared, bShared; //memory to be shared between threads
   ThreadPriv pVal; //iteration dependent data
@@ -662,7 +662,7 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
     }
   }
 
-  using Shmem = RAJA::LocalArray<double, Tile_size0>;
+  using Shmem = RAJA::LocalArray<double, RAJA::PERM_IJ, Tile_size0>;
 
   Shmem aShared, bShared; //memory to be shared between threads
 
