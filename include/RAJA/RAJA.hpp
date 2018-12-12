@@ -121,12 +121,6 @@
 
 
 //
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-//
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
@@ -152,11 +146,7 @@
 
 #include "RAJA/index/IndexSetUtils.hpp"
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
 
 #include "RAJA/pattern/scan.hpp"
 

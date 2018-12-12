@@ -31,7 +31,6 @@
 #if defined(RAJA_ENABLE_TBB)
 
 #include "RAJA/policy/tbb/forall.hpp"
-#include "RAJA/policy/tbb/forallN.hpp"
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/policy/tbb/reduce.hpp"
 #include "RAJA/policy/tbb/scan.hpp"

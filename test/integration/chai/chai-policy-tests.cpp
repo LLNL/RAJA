@@ -48,22 +48,13 @@ static_assert(
     "");
 #endif
 
-static_assert(RAJA::detail::get_space<RAJA::NestedPolicy<
-                      RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>>::value ==
+static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<
+                      RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>::value ==
                   chai::CPU,
               "");
 
 #if defined(RAJA_ENABLE_CUDA)
-static_assert(
-    RAJA::detail::get_space<RAJA::NestedPolicy<
-            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_exec<16>>>>::value ==
-        chai::GPU,
-    "");
-static_assert(
-    RAJA::detail::get_space<RAJA::NestedPolicy<
-            RAJA::ExecList<RAJA::seq_exec, RAJA::cuda_thread_x_exec>>>::value ==
-        chai::GPU,
-    "");
+
 
 static_assert(
     RAJA::detail::get_space<
