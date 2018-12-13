@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout operations for forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
  *
  ******************************************************************************
  */

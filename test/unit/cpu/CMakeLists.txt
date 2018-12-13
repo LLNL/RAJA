@@ -35,14 +35,6 @@ raja_add_test(
   DEPENDS_ON bis)
 
 raja_add_test(
-  NAME test-nested
-  SOURCES test-nested.cpp)
-
-raja_add_test(
-  NAME test-nested-reduce
-  SOURCES test-nested-reduce.cpp)
-
-raja_add_test(
   NAME test-segments
   SOURCES test-segments.cpp)
 

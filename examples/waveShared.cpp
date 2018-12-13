@@ -101,7 +101,7 @@ struct grid_s {
 struct serialLoop{};
 //Host only
 template <typename policyY, typename policyX, typename Func>
-void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
+void innerLoop(const serialLoop &, int Ny, int Nx, Func &&loop_body){
 
 #if 0 //poor man's loop
   for(int ty=0; ty<Ny; ++ty){
@@ -111,9 +111,19 @@ void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
   }
 #endif
 
-  //Some abilities are transferred.. 
-  RAJA::forallN<
-  RAJA::NestedPolicy<RAJA::ExecList<policyY, policyX>>>(RAJA::RangeSegment(0,Ny), RAJA::RangeSegment(0,Nx), std::forward<Func>(innerLoop));
+  //Some abilities are transferred..
+  using policy = RAJA::KernelPolicy<
+      RAJA::statement::For<0, policyY,
+        RAJA::statement::For<1, policyX,
+          RAJA::statement::Lambda<0>
+        >
+      >
+  >;
+  RAJA::kernel<policy>(
+      RAJA::make_tuple(RAJA::RangeSegment(0,Ny),
+                       RAJA::RangeSegment(0,Nx)),
+
+      loop_body);
 
 }
 
@@ -123,9 +133,9 @@ struct cudaLoop{};
 //Device only
 //template <typename Func>
 template <typename policyY, typename policyX, typename Func>
-__device__ void innerLoop(const cudaLoop &, int Ny, int Nx, Func &&innerLoop){
+__device__ void innerLoop(const cudaLoop &, int Ny, int Nx, Func &&loop_body){
 
-  innerLoop(threadIdx.y,threadIdx.x);
+  loop_body(threadIdx.y,threadIdx.x);
 }
 
 
@@ -299,10 +309,18 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
   using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::For<1, RAJA::seq_exec,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >;
 
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+  RAJA::kernel<myPolicy>(
+    RAJA::make_tuple(fdBounds, fdBounds),
+
+    [=](RAJA::Index_type ty, RAJA::Index_type tx) {
 
       int id = tx + grid.nx * ty;
       double x = grid.ox + tx * grid.dx;
@@ -327,11 +345,19 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 {
 
   using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::For<1, RAJA::seq_exec,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >;
   RAJA::RangeSegment fdBounds(0, grid.nx);
   
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
+  RAJA::kernel<myPolicy>(
+    RAJA::make_tuple(fdBounds, fdBounds),
+
+    [=](RAJA::Index_type ty, RAJA::Index_type tx) {
 
       int id = tx + ty * grid.nx;
       double x = grid.ox + tx * grid.dx;
