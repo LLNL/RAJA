@@ -23,7 +23,13 @@ endif()
 
 if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
-  set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+
+  # Promote RAJA_LOADED to PARENT_SCOPE if it exists, which is only if we are bringing	
+  # in RAJA as a subproject to a larger CMake project
+  get_directory_property(hasParent PARENT_DIRECTORY)
+  if(hasParent)
+    set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+  endif()
 
   mark_as_advanced(RAJA_LOADED)
 
