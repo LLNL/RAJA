@@ -67,6 +67,10 @@ raja_add_executable(
   SOURCES tut_matrix-transpose.cpp)
 
 raja_add_executable(
+  NAME tut_matrix-transpose-simple
+  SOURCES tut_matrix-transpose-simple.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 

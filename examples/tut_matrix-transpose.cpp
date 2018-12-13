@@ -102,7 +102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define TILE dimensions (TILE_DIM x TILE_DIM)
   //
-  const int TILE_DIM = 2;
+  const int TILE_DIM = 16;
 
   // Calculate number of tiles (Needed for C++ version)
   const int outer_Dim0 = (N_c - 1) / TILE_DIM + 1;
