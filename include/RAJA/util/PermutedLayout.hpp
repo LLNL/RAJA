@@ -3,8 +3,8 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout permutation operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with permuted stride orderings
  *
  ******************************************************************************
  */
