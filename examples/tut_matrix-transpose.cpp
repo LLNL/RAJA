@@ -183,7 +183,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   using TILE_MEM =
-      RAJA::LocalArray<int, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+    RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
 
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
