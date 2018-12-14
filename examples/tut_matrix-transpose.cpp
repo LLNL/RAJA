@@ -25,18 +25,18 @@
  *  Matrix Transpose Example
  *
  *  In this example, an input matrix A of dimension N_r x N_c is
- *  transposed and returned as a second matrix At.
+ *  transposed and returned as a second matrix At of size N_c x N_r.
  *
  *  This operation is carried out using a local memory tiling
- *  algorithm. The algorithm first loads matrix entries into a
- *  thread shared tile, a two-dimensional array, and then
+ *  algorithm. The algorithm first loads matrix entries into an
+ *  iteraion shared tile, a two-dimensional array, and then
  *  reads from the tile with row and column indices swapped for
  *  the output matrix.
  *
  *  The algorithm is expressed as a collection of ``outer``
- *  and ``inner`` for loops. Iterations of the inner loop will load/read
+ *  and ``inner`` for loops. Iterations of the inner loops will load/read
  *  data into the tile; while outer loops will iterate over the number
- *  of tiles needed to carry out the transposition.
+ *  of tiles needed to carry out the transpose.
  *
  *  RAJA variants of the example use RAJA local arrays as tile memory.
  *  Furthermore, the tiling pattern is handled by RAJA's tile statements.
