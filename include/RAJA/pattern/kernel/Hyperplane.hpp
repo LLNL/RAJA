@@ -90,7 +90,7 @@ template <camp::idx_t HpArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
 struct Hyperplane
-    : public internal::Statement<RAJA::ExecPolicy<HpExecPolicy, ExecPolicy>,
+    : public internal::Statement<ExecPolicy,
                                  EnclosedStmts...> {
 };
 

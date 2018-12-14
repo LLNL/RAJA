@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining loop permutations for forallN templates.
+ * \brief   RAJA header file defining permutations
  *
  ******************************************************************************
  */

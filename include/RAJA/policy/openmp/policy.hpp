@@ -110,16 +110,6 @@ template <unsigned int N>
 struct omp_parallel_for_static : omp_parallel_exec<omp_for_static<N>> {
 };
 
-///
-/// Policies for applying OpenMP clauses in forallN loop nests.
-///
-struct omp_collapse_nowait_exec
-    : make_policy_pattern_launch_platform_t<Policy::openmp,
-                                            Pattern::forall,
-                                            Launch::undefined,
-                                            Platform::host,
-                                            omp::Collapse> {
-};
 
 
 ///
@@ -162,7 +152,6 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 }  // namespace omp
 }  // namespace policy
 
-using policy::omp::omp_collapse_nowait_exec;
 using policy::omp::omp_for_exec;
 using policy::omp::omp_for_nowait_exec;
 using policy::omp::omp_for_static;
