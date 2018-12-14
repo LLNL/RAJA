@@ -31,3 +31,4 @@ The following sections describe key aspects of the main RAJA features.
    feature/atomic
    feature/scan
    feature/local_array
+   feature/tiling
