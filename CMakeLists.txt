@@ -23,7 +23,13 @@ endif()
 
 if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
-  set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+
+  # Promote RAJA_LOADED to PARENT_SCOPE if it exists, which is only if we are bringing	
+  # in RAJA as a subproject to a larger CMake project
+  get_directory_property(hasParent PARENT_DIRECTORY)
+  if(hasParent)
+    set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+  endif()
 
   mark_as_advanced(RAJA_LOADED)
 
@@ -44,6 +50,7 @@ if (NOT RAJA_LOADED)
   set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
   option(ENABLE_TBB "Build TBB support" Off)
+  option(ENABLE_CHAI "Build CHAI support" Off)
   option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
