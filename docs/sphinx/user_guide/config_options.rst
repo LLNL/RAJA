@@ -135,7 +135,8 @@ and their default settings:
      RAJA provides type aliases that can be used to parameterize floating 
      point types in applications, which makes it easy to switch between types. 
 
-     The following variables are used to set the type for 'RAJA::Real_type':
+     The following variables are used to set the data type for the type
+     alias ``RAJA::Real_type``:
 
       ======================   ======================
       Variable                 Default
