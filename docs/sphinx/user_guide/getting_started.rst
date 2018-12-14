@@ -26,20 +26,20 @@ Requirements
 ============
 
 The primary requirement for using RAJA is a C++11 compliant compiler.
-Accessing the full range of RAJA features, such as all available programming
-model back-ends, requires additional support. Available options and how
-to enable or disable them are described in :ref:`configopt-label`. To
-build and use RAJA in its simplest form requires:
+Accessing various programming model back-ends requires that they be supported
+by the compiler you chose. Available options and how to enable or disable 
+them are described in :ref:`configopt-label`. To build and use RAJA in its 
+simplest form requires:
 
 - C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ 3.3 or greater
+- `CMake <https://cmake.org/>`_ version 3.8.2 or greater for most back-ends, and version 3.9 or greater for CUDA.
 
 
 ==================
 Get the Code
 ==================
 
-The RAJA project is hosted on a `GitHub project <https://github.com/LLNL/RAJA>`_.
+The RAJA project is hosted on `GitHub <https://github.com/LLNL/RAJA>`_.
 To get the code, clone the repository into a local working space using
 the command::
 
@@ -48,15 +48,15 @@ the command::
 The ``--recursive`` argument above is needed to pull in other projects
 that we use as Git *submodules*. Currently, we have only two:
 
-- The `BLT build system <https://github.com/LLNL/blt>`_
-- The `CUB project <https://github.com/NVlabs/cub>`_
+- `BLT build system <https://github.com/LLNL/blt>`_
+- `NVIDIA CUB <https://github.com/NVlabs/cub>`_
 
 You probably don't need to know much about either of these projects to start
 using RAJA. But, if you want to know more, click on the links above.
 
 After running the clone command, a copy of the RAJA repository will reside in
-a ``RAJA`` subdirectory and you will be on the ``develop`` branch of RAJA,
-which is our default branch.
+a ``RAJA`` subdirectory where you ran the clone command. You will be on the 
+``develop`` branch of RAJA, which is our default branch.
 
 If you forget to pass the ``--recursive`` argument to the ``git clone``
 command, you can type the following commands after cloning::
@@ -83,7 +83,7 @@ your system.
 Building RAJA
 --------------
 
-RAJA uses CMake to configure a build. Basic configuration looks like::
+RAJA uses CMake to configure a build. A basic configuration looks like::
 
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
@@ -96,11 +96,15 @@ found and which features are discovered. Some RAJA features, like OpenMP
 support are enabled if they are discovered. For a complete summary of 
 configuration options, please see :ref:`configopt-label`.
 
-After CMake successfully completes, RAJA is compiled by executing the ``make``
+After CMake successfully completes, you compile RAJA by executing the ``make``
 command in the build directory; i.e.,::
 
   $ cd build-dir
   $ make
+
+If you have access to a multi-core system you can compile in parallel by running
+``make -j`` (to build with all available cores) or ``make -j N`` to build using
+N cores.
 
 .. note:: RAJA is configured to build its unit tests by default. If you do not
           disable them with the appropriate CMake option, you can run them
@@ -108,6 +112,8 @@ command in the build directory; i.e.,::
           The easiest way to do this is to type::
 
           $ make test
+
+          after the build completes.
 
           You can also run individual tests by invoking individual test 
           executables directly. They live in subdirectories in the ``test`` 
@@ -120,12 +126,14 @@ command in the build directory; i.e.,::
 Installing RAJA
 ----------------
 
-To install RAJA, run the following command in your build directory::
+To install RAJA as a library, run the following command in your build 
+directory::
 
   $ make install
 
 This will copy RAJA header files to the ``include`` directory and the RAJA
-library will be installed in the ``lib`` directory in your build space.
+library will be installed in the ``lib`` directory you specified using the
+``-DCMAKE_INSTALL_PREFIX`` CMake option.
 
 
 ======================
@@ -139,6 +147,9 @@ in the file: ``<build-dir>/examples/bin/daxpy``. Simply type the name
 of the executable in your build directory to run it; i.e.,::
 
   $ ./examples/bin/daxpy 
+
+The ``RAJA/examples`` directory also contains many other RAJA example codes 
+you can run and experiment with.
 
 For an overview of all the main RAJA features, see :ref:`features-label`.
 A full tutorial with a variety of examples showing how to use RAJA features
