@@ -125,9 +125,18 @@ The following policies may only be used with the ``RAJA::kernel`` method.
 CUDA Policies
 ^^^^^^^^^^^^^^
 
-* ``cuda_block_exec`` - Map loop iterations to CUDA thread blocks.
-* ``cuda_thread_exec`` - Map loop iterations to CUDA threads in a thread block.
-* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with given block size number of threads.
+* ``cuda_thread_{xyz}_direct`` - Direct mapping of loop iterations to threads in the x/y/z dimension.
+  
+  * If multiple thread direct policies are used within kernel; the product of the sizes must be :math:`\leq` 1024.
+  * Repeating thread direct policies in the same thread dimension in perfectly nested loops is not supported.
+  * Thread direct policies are only recommended with certain loop patterns such as tiling.
+
+* ``cuda_thread_{xyz}_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over thread blocks.
+  
+  * There is no constraint on the product of sizes of the associated loop iteration space.
+  * This policy is recommended for most loop structures.
+
+* ``cuda_block_{xyz}_loop`` - Maps loop iterations to thread blocks in x/y/z dimension
 
 ----------------------
 RAJA::region Policies
