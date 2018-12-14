@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _matrixtranspose-label:
+.. _matrixtransposelocalarray-label:
 
 ---------------------------------
 Matrix Transpose with Local Array
@@ -33,7 +33,8 @@ This operation is carried out using a local memory tiling
 algorithm. The algorithm first loads matrix entries into an
 iteration shared tile, a two-dimensional array, and then
 reads from the tile swapping the row and column indices for
-the output matrix.
+the output matrix. This example is an extension of :ref:`tiledmatrixtranspose-label`,
+in which only tiling is considered.
 
 The algorithm is expressed as a collection of `outer`
 and `inner` for loops. Iterations of the inner loops will load
@@ -45,23 +46,23 @@ dimensions smaller than the dimensions of the matrix. Furthermore,
 it is not necessary for the tile dimensions to divide the number
 of rows and columns in the matrix A.
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose.cpp
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 84-85,105,108-109
 
 Next, we calculate the number of tiles needed to carryout the transpose.
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose.cpp
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 108-109
 
 Thus, the C++ implementation of a tiled transpose with local memory
-may look like the following:
+looks like the following:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose.cpp
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 126-167
 
 .. note:: In the case the number of tiles leads to excess iterations, a bounds
-          check is added to avoid indexing out of bounds. This occurs when the
-          matrix dimensions are not divisible by the tile dimensions.
+          check is added to avoid indexing out of bounds. Out of bounds indexing
+          occurs when the matrix dimensions are not divisible by the tile dimensions.
 
 .. note:: For efficiency, we index into the column of the matrix using a unit
           stride. For this reason, the order of the second set of inner loops
@@ -82,7 +83,7 @@ and return iterate values within bounds of the original iteration space.
 
 To construct the RAJA variant, we first construct a local array object:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose.cpp
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 185-186
 
 .. note:: Although the local array has been constructed, memory has not yet been allocated.
@@ -92,8 +93,8 @@ only global indices are provided. To index into the local array this example emp
 the ForICount statement which provides the iteration within the tile; we refer the reader
 to :ref:`tiling-label` for more details. The complete sequential RAJA variant is given below:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose.cpp
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 198-254
 
-The file ``RAJA/examples/tut_matrix-transpose.cpp`` contains the complete working example code 
+The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the complete working example code 
 for the examples described in this section along with OpenMP and CUDA variants.

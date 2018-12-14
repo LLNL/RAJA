@@ -23,19 +23,19 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Simple Matrix Transpose Example
+ *  Tiled Matrix Transpose Example
  *
  *  In this example, an input matrix A of dimension N_r x N_c is
  *  transposed and returned as a second matrix At.
  *
  *  This operation is carried out using a tiling algorithm.
  *  The algorithm iterates over tiles of the matrix A and 
- *  performs a transpose copy of a single block. 
+ *  performs a transpose copy without explicitly storing the tile.
  *
  *  The algorithm is expressed as a collection of ``outer``
  *  and ``inner`` for loops. Iterations of the inner loop will 
  *  tranpose tile entries; while outer loops will iterate over
- *  the number of tiles needed to carryout the transposition. 
+ *  the number of tiles needed to carryout the transpose.
  *  We do not assume that tiles divide the number of rows and 
  *  and columns of the matrix.
  *
