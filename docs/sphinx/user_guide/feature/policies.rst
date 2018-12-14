@@ -125,18 +125,24 @@ The following policies may only be used with the ``RAJA::kernel`` method.
 CUDA Policies
 ^^^^^^^^^^^^^^
 
-* ``cuda_thread_{xyz}_direct`` - Direct mapping of loop iterations to threads in the x/y/z dimension.
+* ``cuda_thread_x_direct`` - Direct mapping of loop iterations to cuda threads in the x dimension.
+* ``cuda_thread_y_direct`` - Direct mapping of loop iterations to cuda threads in the y dimension.
+* ``cuda_thread_z_direct`` - Direct mapping of loop iterations to cuda threads in the z dimension.
   
   * If multiple thread direct policies are used within kernel; the product of the sizes must be :math:`\leq` 1024.
-  * Repeating thread direct policies in the same thread dimension in perfectly nested loops is not supported.
+  * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not supported.
   * Thread direct policies are only recommended with certain loop patterns such as tiling.
 
-* ``cuda_thread_{xyz}_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over thread blocks.
+* ``cuda_thread_x_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the x dimension.
+* ``cuda_thread_y_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the y dimension.
+* ``cuda_thread_z_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the z dimension.
   
   * There is no constraint on the product of sizes of the associated loop iteration space.
-  * This policy is recommended for most loop structures.
+  * Cuda thread loop policies are recommended for most loop structures.
 
-* ``cuda_block_{xyz}_loop`` - Maps loop iterations to thread blocks in x/y/z dimension
+* ``cuda_block_x_loop`` - Maps loop iterations to cuda thread blocks in x dimension.
+* ``cuda_block_y_loop`` - Maps loop iterations to cuda thread blocks in y dimension.
+* ``cuda_block_z_loop`` - Maps loop iterations to cuda thread blocks in z dimension.
 
 ----------------------
 RAJA::region Policies
