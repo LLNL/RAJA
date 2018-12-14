@@ -3,8 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing tiling policies and mechanics
- *          for forallN templates.
+ * \brief   RAJA header file containing user interface for RAJA::kernel
  *
  ******************************************************************************
  */

@@ -3,8 +3,8 @@
  *
  * \file
  *
- * \brief   RAJA header file defining offset layout operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with offset indices
  *
  ******************************************************************************
  */

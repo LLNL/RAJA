@@ -40,7 +40,6 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
 #include "RAJA/policy/cuda/scan.hpp"
-#include "RAJA/policy/cuda/forallN.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
 
