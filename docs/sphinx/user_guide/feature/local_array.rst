@@ -19,9 +19,10 @@ Local Array
 ===========
 
 In this section we introduce RAJA local arrays.
-RAJA local arrays are multi-dimensional arrays which are intialized between loops in a kernel policy
-and may only be used within a RAJA kernel. As a starting point, the following is a C++ analogue
-illustrating the construction and usage of two arrays between loops::
+A ``RAJA::LocalArray`` is a multi-dimensional array whose memory is allocated 
+in between RAJA kernel loops and may only be used inside a RAJA kernel.
+To motivate the concept and usage, we start by considering a C++ example
+in which we construct and use two arrays in nested loops::
 
            for(int k = 0; k < 7; ++k) {
 
@@ -39,16 +40,15 @@ illustrating the construction and usage of two arrays between loops::
 
            }
 
+The starting point of a RAJA variant is to begin by constructing
+the RAJA local arrays. A RAJA local array is defined outside of a 
+RAJA kernel by specifying:
 
-Similary, RAJA offers constructs to intialize arrays between loops.
-A RAJA local array is defined outside of a RAJA kernel by specifying
-the type of the data the array will hold, the permutation of the indices
-(see :ref:`_view-label` for more on permuted layouts), and the dimensions
-of the array.
+* Data type
+* Index permutation ( see :ref:`view-label` for more on permuted layouts)
+* Array dimensions
 
-In the example below we construct two arrays. The first array has index
-dimension 5, and 7 with the second index having unit stride. The second
-array is one dimensional and has dimension 5.::
+::
 
   using RAJA_a_array = RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<5,7> >;
   RAJA_a_array kernel_a_array;
@@ -61,10 +61,7 @@ array is one dimensional and has dimension 5.::
 
 Although the objects have been constructed, memory has not yet been allocated.
 Memory allocation for a RAJA local array occurs when the kernel policy
-is executed. Memory intialization for a RAJA local array is carried out through
-the ``InitLocalMem`` statement in a kernel policy. To illustrate the memory
-allocation and usage of a RAJA local array we consider the RAJA variant of
-the C++ loops above. The corresponding policy is provided below::
+is executed using the ``InitLocalMem`` statement::
 
   using Pol =  RAJA::KernelPolicy<
                  RAJA::statement::For<1, RAJA::loop_exec,
@@ -79,15 +76,17 @@ the C++ loops above. The corresponding policy is provided below::
                 >
               >;
 
-The InitLocalMemory statement is templated on an array policy which specifies where memory
-will be allocated and a ``RAJA::ParamList`` which identifies local arrays in the parameter tuple.
-The current supported policies are listed below:
+The InitLocalMemory policy template is used to spcify where memory of a RAJA local array
+should be allocated while ``RAJA::ParamList`` identifies local arrays in the parameter tuple
+to intialize. The following policies may be used to specify memory allocation for the
+RAJA local arrays::
 
 *  ``RAJA::cpu_tile_mem`` - Allocates memory on the stack
 *  ``RAJA::cuda_shared_mem`` - Allocates memory in cuda shared memory
 *  ``RAJA::cuda_thread_mem`` - Allocates memory in cuda thread private memory
 
-Lastly, the corresponding lambdas and RAJA kernel method is provided below::
+Lastly, the corresponding lambdas and RAJA kernel method for the RAJA variant 
+is provided below::
 
   RAJA::kernel_param<Pol> (
   RAJA::make_tuple(RAJA::RangeSegment(0,5), RAJA::RangeSegment(0,7)),
