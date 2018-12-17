@@ -56,6 +56,8 @@ namespace RAJA
 /*!
  * CUDA kernel launch policy where the user specifies the number of physical
  * thread blocks and threads per block.
+ * If num_blocks is 0 then num_blocks is chosen at runtime.
+ * Num_blocks is chosen to maximize the number of blocks running concurrently.
  */
 template <bool async0, int num_blocks, int num_threads>
 struct cuda_explicit_launch {};
@@ -64,8 +66,9 @@ struct cuda_explicit_launch {};
 /*!
  * CUDA kernel launch policy where the number of physical blocks and threads
  * are determined by the CUDA occupancy calculator.
+ * If num_threads is 0 then num_threads is chosen at runtime.
  */
-template <int num_threads0, bool async0>
+template <bool async0, int num_blocks, int num_threads>
 struct cuda_occ_calc_launch {};
 
 
@@ -90,21 +93,21 @@ struct CudaKernelExt
  */
 template <typename... EnclosedStmts>
 using CudaKernelOcc =
-    CudaKernelExt<cuda_occ_calc_launch<1024, false>, EnclosedStmts...>;
+    CudaKernelExt<cuda_occ_calc_launch<false, 0, 0>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel using the
  * CUDA occupancy calculator to determine the optimal number of threads.
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernelOccAsync =
-    CudaKernelExt<cuda_occ_calc_launch<1024, true>, EnclosedStmts...>;
+    CudaKernelExt<cuda_occ_calc_launch<true, 0, 0>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with a fixed
  * number of threads (specified by num_threads)
- * Thre kernel launch is synchronous.
+ * The kernel launch is synchronous.
  */
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixed =
@@ -114,7 +117,7 @@ using CudaKernelFixed =
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with a fixed
  * number of threads (specified by num_threads)
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <int num_threads, typename... EnclosedStmts>
 using CudaKernelFixedAsync =
@@ -185,27 +188,82 @@ struct CudaLaunchHelper;
  * Helper class specialization to use the CUDA occupancy calculator to
  * determine the number of threads and blocks
  */
-template<int num_threads, bool async0, typename StmtList, typename Data>
-struct CudaLaunchHelper<cuda_occ_calc_launch<num_threads, async0>,StmtList,Data>
+template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data>
+struct CudaLaunchHelper<cuda_occ_calc_launch<async0, num_blocks, num_threads>,StmtList,Data>
 {
   static constexpr bool async = async0;
 
   using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
 
-  inline static void max_blocks_threads(int shmem_size,
-      int &max_blocks, int &max_threads)
+  inline static void recommended_blocks_threads(int shmem_size,
+      int &recommended_blocks, int &recommended_threads)
   {
-
     auto func = internal::CudaKernelLauncher<Data, executor_t>;
 
-    cudaOccupancyMaxPotentialBlockSize(&max_blocks,
-                                       &max_threads,
-                                       func,
-                                       shmem_size);
+    if (num_blocks <= 0) {
 
+      if (num_threads <= 0) {
+
+        internal::cuda_occupancy_max_blocks_threads(
+            func, shmem_size, recommended_blocks, recommended_threads);
+
+      } else {
+
+        recommended_threads = num_threads;
+
+        internal::cuda_occupancy_max_blocks<num_threads>(
+            func, shmem_size, recommended_blocks);
+
+      }
+
+    } else {
+
+      if (num_threads <= 0) {
+
+        recommended_threads = 1024;
+
+      } else {
+
+        recommended_threads = num_threads;
+
+      }
+
+      recommended_blocks = num_blocks;
+
+    }
   }
 
-  static void launch(Data const &data,
+  inline static void max_threads(int shmem_size, int &max_threads)
+  {
+    if (num_threads <= 0) {
+
+      max_threads = 1024;
+
+    } else {
+
+      max_threads = num_threads;
+
+    }
+  }
+
+  inline static void max_blocks(int shmem_size,
+      int &max_blocks, int actual_threads)
+  {
+    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+
+    if (num_blocks <= 0) {
+
+      internal::cuda_occupancy_max_blocks(
+          func, shmem_size, max_blocks, actual_threads);
+
+    } else {
+
+      max_blocks = num_blocks;
+
+    }
+  }
+
+  static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
                      cudaStream_t stream)
@@ -213,7 +271,7 @@ struct CudaLaunchHelper<cuda_occ_calc_launch<num_threads, async0>,StmtList,Data>
 
     auto func = internal::CudaKernelLauncher<Data, executor_t>;
 
-    func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(data);
+    func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(std::move(data));
   }
 };
 
@@ -230,29 +288,59 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads>,St
 
   using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
 
-  inline static void max_blocks_threads(int shmem_size,
-      int &max_blocks, int &max_threads)
+  inline static void recommended_blocks_threads(int shmem_size,
+      int &recommended_blocks, int &recommended_threads)
   {
-
-    max_blocks = num_blocks;
-    max_threads = num_threads;
+    auto func = internal::CudaKernelLauncherFixed<num_threads,Data, executor_t>;
 
     // Use maximum number of blocks if user didn't specify
     if (num_blocks <= 0) {
-      max_blocks = RAJA::cuda::internal::getMaxBlocks();
+
+        recommended_threads = num_threads;
+
+        internal::cuda_occupancy_max_blocks<num_threads>(
+            func, shmem_size, recommended_blocks);
+
+    } else {
+
+      recommended_threads = num_threads;
+      recommended_blocks = num_blocks;
+
+    }
+  }
+
+  inline static void max_threads(int shmem_size, int &max_threads)
+  {
+    max_threads = num_threads;
+  }
+
+  inline static void max_blocks(int shmem_size,
+      int &max_blocks, int actual_threads)
+  {
+    auto func = internal::CudaKernelLauncherFixed<num_threads,Data, executor_t>;
+
+    // Use maximum number of blocks if user didn't specify
+    if (num_blocks <= 0) {
+
+        internal::cuda_occupancy_max_blocks(
+            func, shmem_size, max_blocks, actual_threads);
+
+    } else {
+
+      max_blocks = num_blocks;
+
     }
 
   }
 
-  static void launch(Data const &data,
+  static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
                      cudaStream_t stream)
   {
-
     auto func = internal::CudaKernelLauncherFixed<num_threads,Data, executor_t>;
 
-    func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(data);
+    func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(std::move(data));
   }
 };
 
@@ -263,7 +351,7 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads>,St
  * and a minimum limit (minimum).
  *
  * The algorithm is greedy (and probably could be improved), and favors
- * maximizing the number of threads (or blocks) in x, y, then z. 
+ * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline
 cuda_dim_t fitCudaDims(int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
@@ -342,20 +430,6 @@ struct StatementExecutor<
 
 
     //
-    // Compute the MAX physical kernel dimensions
-    //
-    int max_blocks, max_threads;
-    launch_t::max_blocks_threads(shmem, max_blocks, max_threads);
-
-
-    //
-    // Privatize the LoopData, using make_launch_body to setup reductions
-    //
-    auto cuda_data = RAJA::cuda::make_launch_body(
-        max_blocks, max_threads, shmem, stream, data);
-
-
-    //
     // Compute the requested kernel dimensions
     //
     LaunchDims launch_dims = executor_t::calculateDimensions(data);
@@ -366,11 +440,74 @@ struct StatementExecutor<
     int num_threads = launch_dims.num_threads();
     if (num_blocks > 0 || num_threads > 0) {
 
+
       //
-      // Fit the requested threads an blocks
+      // Compute the recommended physical kernel blocks and threads
       //
-      launch_dims.blocks = fitCudaDims(max_blocks, launch_dims.blocks);
-      launch_dims.threads = fitCudaDims(max_threads, launch_dims.threads, launch_dims.min_threads);
+      int recommended_blocks, recommended_threads;
+      launch_t::recommended_blocks_threads(
+          shmem, recommended_blocks, recommended_threads);
+
+
+      //
+      // Compute the MAX physical kernel threads
+      //
+      int max_threads;
+      launch_t::max_threads(shmem, max_threads);
+
+
+      //
+      // Fit the requested threads
+      //
+      cuda_dim_t fit_threads(0,0,0);
+
+      if ( recommended_threads >= get_size(launch_dims.min_threads) ) {
+
+        fit_threads = fitCudaDims(
+            recommended_threads, launch_dims.threads, launch_dims.min_threads);
+
+      }
+
+      //
+      // Redo fit with max threads
+      //
+      if ( recommended_threads < max_threads &&
+           get_size(fit_threads) != recommended_threads ) {
+
+        fit_threads = fitCudaDims(
+            max_threads, launch_dims.threads, launch_dims.min_threads);
+
+      }
+
+      launch_dims.threads = fit_threads;
+
+
+      //
+      // Compute the MAX physical kernel blocks
+      //
+      int max_blocks;
+      launch_t::max_blocks(shmem, max_blocks, launch_dims.num_threads());
+
+      int use_blocks;
+
+      if ( launch_dims.num_threads() == recommended_threads ) {
+
+        //
+        // Fit the requested blocks
+        //
+        use_blocks = recommended_blocks;
+
+      } else {
+
+        //
+        // Fit the max blocks
+        //
+        use_blocks = max_blocks;
+
+      }
+
+      launch_dims.blocks = fitCudaDims(
+          use_blocks, launch_dims.blocks, launch_dims.min_blocks);
 
       // make sure that we fit
       if(launch_dims.num_blocks() > max_blocks){
@@ -380,10 +517,18 @@ struct StatementExecutor<
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
 
+
+      //
+      // Privatize the LoopData, using make_launch_body to setup reductions
+      //
+      auto cuda_data = RAJA::cuda::make_launch_body(
+          launch_dims.blocks, launch_dims.threads, shmem, stream, data);
+
+
       //
       // Launch the kernels
       //
-      launch_t::launch(cuda_data, launch_dims, shmem, stream);
+      launch_t::launch(std::move(cuda_data), launch_dims, shmem, stream);
 
 
       //
