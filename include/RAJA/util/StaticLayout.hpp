@@ -3,7 +3,8 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout operations for forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with compile-time defined sizes and permutation
  *
  ******************************************************************************
  */
@@ -66,7 +67,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
 
   RAJA_INLINE static void print()
   {
-    VarOps::ignore_args(printf("SL: arg%d: size=%d, stride=%d\n",
+    VarOps::ignore_args(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
                                (int)RangeInts,
                                (int)Sizes,
                                (int)Strides)...);
@@ -140,17 +141,22 @@ struct StrideCalculatorIdx<N, N, Sizes...> {
   static constexpr camp::idx_t stride = size > 0 ? value : 0;
 };
 
-template <typename Range, typename Sizes>
+template <typename Range, typename Perm, typename Sizes>
 struct StrideCalculator;
 
-template <camp::idx_t... RangeInts, camp::idx_t... Sizes>
-struct StrideCalculator<camp::idx_seq<RangeInts...>, camp::idx_seq<Sizes...>> {
-  static_assert(sizeof...(Sizes) == sizeof...(RangeInts), "");
+template <camp::idx_t ... Range, camp::idx_t... Perm, camp::idx_t... Sizes>
+struct StrideCalculator<camp::idx_seq<Range...>, camp::idx_seq<Perm...>, camp::idx_seq<Sizes...>> {
+  static_assert(sizeof...(Sizes) == sizeof...(Perm), "");
 
   using sizes = camp::idx_seq<Sizes...>;
   static constexpr camp::idx_t N = sizeof...(Sizes);
-  using strides =
-      camp::idx_seq<StrideCalculatorIdx<N, RangeInts, Sizes...>::stride...>;
+  using range = camp::idx_seq<Range...>;
+  using perm = camp::idx_seq<Perm...>;
+  using inv_perm = invert_permutation<perm>;
+  using strides_unperm =
+      camp::idx_seq<StrideCalculatorIdx<N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
+  
+  using strides = camp::idx_seq<camp::seq_at<camp::seq_at<Range, inv_perm>::value, strides_unperm>::value...>;
 };
 
 
@@ -183,17 +189,22 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 }  // namespace detail
 
 
-template <camp::idx_t... Sizes>
+template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = detail::StaticLayoutBase_impl<
     camp::make_idx_seq_t<sizeof...(Sizes)>,
     camp::idx_seq<Sizes...>,
     typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>,
+                                      Perm,
                                       camp::idx_seq<Sizes...>>::strides>;
 
 
-template <typename TypeList, camp::idx_t... Sizes>
+
+
+
+
+template <typename Perm, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
-    detail::TypedStaticLayoutImpl<StaticLayout<Sizes...>, TypeList>;
+    detail::TypedStaticLayoutImpl<StaticLayout<Perm, Sizes...>, TypeList>;
 
 
 }  // namespace RAJA

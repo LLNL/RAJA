@@ -178,45 +178,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
   }
 }
 
-#if defined(RAJA_DEPRECATED_TESTS)
-CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
-{
-  double* dvalue = ReduceSumCUDA::dvalue;
-  int* ivalue = ReduceSumCUDA::ivalue;
 
-  RangeSegment seg0(0, TEST_VEC_LEN / 2);
-  RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
-
-  UnitIndexSet iset;
-  iset.push_back(seg0);
-  iset.push_back(seg1);
-
-  double dtinit = 5.0;
-  int itinit = 4;
-
-  ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
-  ReduceSum<cuda_reduce, int> isum1(itinit * 2);
-  ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
-  ReduceSum<cuda_reduce, int> isum3(itinit * 4);
-
-  forallN<
-      NestedPolicy<ExecList<ExecPolicy<seq_segit, cuda_exec<block_size> > > > >(
-      iset, [=] RAJA_HOST_DEVICE(int i) {
-        dsum0 += dvalue[i];
-        isum1 += 2 * ivalue[i];
-        dsum2 += 3 * dvalue[i];
-        isum3 += 4 * ivalue[i];
-      });
-
-  double dbase_chk_val = dinit_val * double(iset.getLength());
-  int ibase_chk_val = iinit_val * (iset.getLength());
-
-  ASSERT_FLOAT_EQ(dbase_chk_val + (dtinit * 1.0), dsum0.get());
-  ASSERT_EQ(2 * ibase_chk_val + (itinit * 2), isum1.get());
-  ASSERT_FLOAT_EQ(3 * dbase_chk_val + (dtinit * 3.0), dsum2.get());
-  ASSERT_EQ(4 * ibase_chk_val + (itinit * 4), isum3.get());
-}
-#endif
 //
 // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
 //        of the array using an indexset with four range segments

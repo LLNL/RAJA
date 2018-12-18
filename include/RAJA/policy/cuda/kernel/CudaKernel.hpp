@@ -46,7 +46,6 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
-#include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/policy/cuda/kernel/internal.hpp"
@@ -338,7 +337,7 @@ struct StatementExecutor<
     //
     // Setup shared memory buffers
     //
-    int shmem = (int)RAJA::internal::shmem_setup_buffers(data.param_tuple);
+    int shmem = 0;
     cudaStream_t stream = 0;
 
 

@@ -52,11 +52,6 @@
 
 
 //
-// Shared memory abstractions
-//
-#include "RAJA/pattern/shared_memory.hpp"
-
-//
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
@@ -117,18 +112,12 @@
 //
 // Shared memory view patterns
 //
-#include "RAJA/util/ShmemTile.hpp"
+#include "RAJA/util/LocalArray.hpp"
 
 //
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
-
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
 
 
 //
@@ -157,11 +146,7 @@
 
 #include "RAJA/index/IndexSetUtils.hpp"
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
 
 #include "RAJA/pattern/scan.hpp"
 
