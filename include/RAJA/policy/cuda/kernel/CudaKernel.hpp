@@ -150,7 +150,7 @@ __global__ void CudaKernelLauncher(Data data)
   using data_t = camp::decay<Data>;
   data_t private_data = data;
 
-  Exec::exec(private_data);
+  Exec::exec(private_data, true);
 }
 
 
@@ -170,7 +170,7 @@ __launch_bounds__(BlockSize, 1) __global__
   data_t private_data = data;
 
   // execute the the object
-  Exec::exec(private_data);
+  Exec::exec(private_data, true);
 }
 
 /*!

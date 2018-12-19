@@ -67,7 +67,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
   static
   inline
   RAJA_DEVICE
-  void exec(Data &) { __syncthreads(); }
+  void exec(Data &, bool) { __syncthreads(); }
 
 
   static
