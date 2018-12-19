@@ -57,7 +57,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   static
   inline
   RAJA_DEVICE
-  void initMem(Data &data)
+  void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
@@ -65,7 +65,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
     __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
-    enclosed_stmts_t::exec(data);
+    enclosed_stmts_t::exec(data, thread_active);
   }
   
   //Intialize local array
@@ -74,14 +74,14 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   static
   inline
   RAJA_DEVICE
-  void initMem(Data &data)
+  void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
     __shared__ varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
-    initMem<others...>(data);
+    initMem<others...>(data, thread_active);
   }
 
   //Set pointer to null base case
@@ -112,11 +112,11 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     
     //Intialize scoped arrays + launch loops
-    initMem<Indices...>(data);
+    initMem<Indices...>(data, thread_active);
     
     //set pointers in scoped arrays to null
     setPtrToNull<Indices...>(data);
@@ -146,7 +146,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   static
   inline
   RAJA_DEVICE
-  void initMem(Data &data)
+  void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
@@ -154,7 +154,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
     varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
 
-    enclosed_stmts_t::exec(data);
+    enclosed_stmts_t::exec(data, thread_active);
   }
   
   //Intialize local array
@@ -163,14 +163,14 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   static
   inline
   RAJA_DEVICE
-  void initMem(Data &data)
+  void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
     
     varType Array[NumElem];
     camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
-    initMem<others...>(data);
+    initMem<others...>(data, thread_active);
   }
 
   //Set pointer to null base case
@@ -201,11 +201,11 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     
     //Intialize scoped arrays + launch loops
-    initMem<Indices...>(data);
+    initMem<Indices...>(data, thread_active);
     
     //set pointers in scoped arrays to null
     setPtrToNull<Indices...>(data);

@@ -1807,8 +1807,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d)
   using Pol =
       RAJA::KernelPolicy<CudaKernel<
         For<1, cuda_thread_x_direct,
-          Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>,
-                                               Lambda<0>>>>>;
+          Hyperplane<0, seq_exec, ArgList<1>,
+                                     Lambda<0>, CudaSyncThreads>>>>;
 
   constexpr long N = (long)24;
   constexpr long M = (long)11;
@@ -1854,8 +1854,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
   using Pol =
       RAJA::KernelPolicy<CudaKernel<
         For<1, cuda_thread_y_direct,
-          Hyperplane<0, cuda_seq_syncthreads_exec, ArgList<1>,
-                                               Lambda<0>>>>>;
+          Hyperplane<0, seq_exec, ArgList<1>,
+                                           Lambda<0>, CudaSyncThreads>>>>;
 
   constexpr long N = (long)24;
   constexpr long M = (long)11;
@@ -1906,9 +1906,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
           RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
             For<2, cuda_thread_x_direct,
               For<3, cuda_thread_y_direct,
-                Hyperplane<1, cuda_seq_syncthreads_exec, ArgList<2, 3>,
-
-                                               Lambda<0>>>>>>>>>;
+                Hyperplane<1, seq_exec, ArgList<2, 3>,
+                                           Lambda<0>, CudaSyncThreads>>>>>>>>;
 
   constexpr long L = (long)1;
   constexpr long N = (long)11;
