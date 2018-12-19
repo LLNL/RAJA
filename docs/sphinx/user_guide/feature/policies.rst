@@ -133,10 +133,11 @@ CUDA Policies
   * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not supported.
   * Thread direct policies are only recommended with certain loop patterns such as tiling.
 
-* ``cuda_thread_x_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the x dimension.
-* ``cuda_thread_y_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the y dimension.
-* ``cuda_thread_z_loop`` - Similar to thread direct policies, but introduces a grid-stride loop over cuda blocks in the z dimension.
-  
+* ``cuda_thread_x_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the x dimension.
+* ``cuda_thread_y_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the y dimension.
+* ``cuda_thread_z_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the z dimension.
+
+  * These polices gives the flexability to have a larger number of iterates than threads in the x/y/z dimension.
   * There is no constraint on the product of sizes of the associated loop iteration space.
   * Cuda thread loop policies are recommended for most loop structures.
 
