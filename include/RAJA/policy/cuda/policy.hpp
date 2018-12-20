@@ -117,7 +117,7 @@ using cuda_reduce_atomic = cuda_reduce_base<true>;
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
 // down to threadIdx 0
-struct_cuda_block_reduce{};
+struct cuda_block_reduce{};
 
 
 //
@@ -149,6 +149,8 @@ using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
+
+using policy::cuda::cuda_block_reduce;
 
 using policy::cuda::cuda_synchronize;
 

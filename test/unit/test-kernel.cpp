@@ -1207,7 +1207,7 @@ TEST(Kernel, ReduceSeqSum)
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::For<0, seq_exec,
         Lambda<0>,
-        RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus<int>, Param<0>,
+        RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus, Param<0>,
           Lambda<1>
         >
       >
@@ -1237,6 +1237,40 @@ TEST(Kernel, ReduceSeqSum)
 
 #if defined(RAJA_ENABLE_CUDA)
 
+
+CUDA_TEST(Kernel, ReduceCudaSum1)
+{
+
+  long N = 2345;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_thread_x_loop, Lambda<0>>,
+        RAJA::statement::Reduce<cuda_block_reduce, RAJA::operators::plus, Param<0>,
+          Lambda<1>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((long)0),
+
+      [=] __device__ (Index_type i, long &value) {
+        value += i;
+      },
+      [=] __device__ (Index_type, long &value) {
+        // This only gets executed on the "root" thread which reecieved the
+        // reduced value
+        trip_count += value;
+      });
+
+
+  ASSERT_EQ(trip_count.get(), N*(N-1)/2);
+
+}
 
 
 CUDA_TEST(Kernel, CudaExec)

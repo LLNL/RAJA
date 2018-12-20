@@ -39,7 +39,7 @@ namespace internal
 //
 // Executor that handles reductions for
 //
-template <typename ReduceOperator,
+template <template <typename...> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts>
 struct StatementExecutor<
