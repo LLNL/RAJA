@@ -88,15 +88,6 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
 };
 
 
-/*
- * Policy for on-device loop with a __syncthreads() after each iteration
- */
-struct cuda_seq_syncthreads_exec
-    : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                         RAJA::Pattern::forall,
-                                                         RAJA::Launch::sync,
-                                                         RAJA::Platform::cuda> {
-};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -155,7 +146,6 @@ using policy::cuda::cuda_exec;
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
-using policy::cuda::cuda_seq_syncthreads_exec;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
