@@ -124,6 +124,10 @@ using cuda_reduce = cuda_reduce_base<false>;
 using cuda_reduce_atomic = cuda_reduce_base<true>;
 
 
+// Policy for RAJA::statement::Reduce that reduces threads in a block
+// down to threadIdx 0
+struct_cuda_block_reduce{};
+
 
 //
 // Operations in the included files are parametrized using the following

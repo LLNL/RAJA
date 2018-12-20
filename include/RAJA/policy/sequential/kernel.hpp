@@ -25,9 +25,10 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/sequential/kernel/Collapse.hpp"
-
 #ifndef RAJA_policy_sequential_kernel_HPP
 #define RAJA_policy_sequential_kernel_HPP
+
+#include "RAJA/policy/sequential/kernel/Collapse.hpp"
+#include "RAJA/policy/sequential/kernel/Reduce.hpp"
 
 #endif  // closing endif for header file include guard

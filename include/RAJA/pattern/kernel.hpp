@@ -171,6 +171,7 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
 #include "RAJA/pattern/kernel/TileTCount.hpp"
 

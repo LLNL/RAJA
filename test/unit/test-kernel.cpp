@@ -1191,6 +1191,50 @@ TEST(Kernel, Collapse8)
 
 #endif  // RAJA_ENABLE_OPENMP
 
+
+
+
+TEST(Kernel, ReduceSeqSum)
+{
+
+  int N = 1023;
+
+  int *data = new int[N];
+  for (int i = 0; i < N; ++i) {
+    data[i] = i;
+  }
+
+  using Pol = RAJA::KernelPolicy<
+      RAJA::statement::For<0, seq_exec,
+        Lambda<0>,
+        RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus<int>, Param<0>,
+          Lambda<1>
+        >
+      >
+     >;
+
+  int sum = 0;
+  int *sumPtr = &sum;
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((int)0),
+
+      [=](Index_type i, int &value) {
+        value = data[i];
+      },
+      [=](Index_type, int &value) {
+        (*sumPtr) += value;
+      });
+
+  ASSERT_EQ(sum, N*(N-1)/2);
+
+  delete[] data;
+}
+
+
+
 #if defined(RAJA_ENABLE_CUDA)
 
 
@@ -1906,9 +1950,8 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
           RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
             For<2, cuda_thread_x_direct,
               For<3, cuda_thread_y_direct,
-                Hyperplane<1, cuda_seq_syncthreads_exec, ArgList<2, 3>,
-
-                                               Lambda<0>>>>>>>>>;
+                Hyperplane<1, seq_exec, ArgList<2, 3>,
+                                           Lambda<0>, CudaSyncThreads>>>>>>>>;
 
   constexpr long L = (long)1;
   constexpr long N = (long)11;
