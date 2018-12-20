@@ -193,13 +193,13 @@ struct CudaStatementListExecutorHelper {
   using cur_stmt_t = camp::at_v<StmtList, cur_stmt>;
 
   template <typename Data>
-  inline static RAJA_DEVICE void exec(Data &data)
+  inline static RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Execute stmt
-    cur_stmt_t::exec(data);
+    cur_stmt_t::exec(data, thread_active);
 
     // Execute next stmt
-    next_helper_t::exec(data);
+    next_helper_t::exec(data, thread_active);
   }
 
 
@@ -221,7 +221,7 @@ template <camp::idx_t num_stmts, typename StmtList>
 struct CudaStatementListExecutorHelper<num_stmts, num_stmts, StmtList> {
 
   template <typename Data>
-  inline static RAJA_DEVICE void exec(Data &)
+  inline static RAJA_DEVICE void exec(Data &, bool)
   {
     // nop terminator
   }
@@ -252,10 +252,10 @@ struct CudaStatementListExecutor<Data, StatementList<Stmts...>> {
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     // Execute statements in order with helper class
-    CudaStatementListExecutorHelper<0, num_stmts, enclosed_stmts_t>::exec(data);
+    CudaStatementListExecutorHelper<0, num_stmts, enclosed_stmts_t>::exec(data, thread_active);
   }
 
 
