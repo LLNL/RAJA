@@ -22,10 +22,9 @@ This section describes the execution policies that ``RAJA`` provides and
 indicates which policies may be used with ``RAJA::forall``, ``RAJA::kernel``,
 and/or ``RAJA::scan`` methods.
 
-.. note:: All RAJA execution policies are in the namespace ``RAJA``.
-
-.. note:: As RAJA functionality is expanded, new policies may be added and
-          existing ones may be enabled to work with other RAJA loop constructs.
+.. note:: * All RAJA execution policies are in the namespace ``RAJA``.
+          * As RAJA functionality is expanded, new policies will be added and
+            existing ones may be enabled to work in new ways.
 
 -----------------------------------------------------
 RAJA::forall and RAJA::kernel Policies
@@ -116,6 +115,34 @@ available to use for the segment iteration policy:
 * ``omp_parallel_for_segit`` - Same as above.
 * ``tbb_segit`` - Iterate over an index set segments in parallel using a TBB 'parallel_for' method.
 
+----------------------
+RAJA::region Policies
+----------------------
+
+The following policies may only be used with the ``RAJA::region`` method. 
+``RAJA::forall`` and ``RAJA::kernel`` methods may be used within a
+``RAJA::region``.
+
+* ``seq_region_exec`` - Creates a sequential region.
+* ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+
+-------------------------
+RAJA::scan Policies
+-------------------------
+
+Generally, any execution policy that works with ``RAJA::forall`` methods will 
+also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
+about RAJA scan methods.
+
+-------------------------
+RAJA Reduction Policies
+-------------------------
+
+Note that a RAJA reduction object must be defined with a 'reduction policy'
+type. Reduction policy types are distinct from loop execution policy types.
+A reduction policy type must be consistent with the loop execution policy
+that is used. See :ref:`reductions-label` for more information.
+
 -----------------------
 RAJA::kernel Policies
 -----------------------
@@ -147,28 +174,72 @@ CUDA Policies
 * ``cuda_block_y_loop`` - Maps loop iterations to cuda thread blocks in y dimension.
 * ``cuda_block_z_loop`` - Maps loop iterations to cuda thread blocks in z dimension.
 
-----------------------
-RAJA::region Policies
-----------------------
+.. _loop_elements-kernelpol-label:
 
-The following policies may only be used with the ``RAJA::region`` method.
+--------------------------------
+RAJA Kernel Execution Policies
+--------------------------------
 
-* ``seq_region_exec`` - Creates a sequential region.
-* ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+RAJA kernel policies are constructed with a combination of *Statements* and
+*Statement Lists* that forms a simple domain specific language that
+relies **solely on standard C++11 template support**. A RAJA Statement is an
+action, such as executing a loop, invoking a lambda, setting a thread barrier,
+etc. A StatementList is an ordered list of Statements that are composed
+to construct a kernel in the order that they appear in the kernel policy.
+A Statement may contain an enclosed StatmentList. Thus, a
+``RAJA::KernelPolicy`` type is simply a StatementList.
 
--------------------------
-RAJA::scan Policies
--------------------------
+The main Statements types provided by RAJA are ``RAJA::statement::For`` and
+``RAJA::statement::Lambda``, that we described above. A 'For' Statement
+indicates a for-loop structure and takes three template arguments:
+'ArgId', 'ExecPolicy', and 'EnclosedStatements'. The ArgID identifies the
+position of the item it applies to in the iteration space tuple argument to the
+``RAJA::kernel`` method. The ExecPolicy gives the RAJA execution policy to
+use on that loop/iteration space (similar to ``RAJA::forall``).
+EnclosedStatements contain whatever is nested within the template parameter
+list and form a StatementList, which is executed for each iteration of the loop.
+The ``RAJA::statement::Lambda<LambdaID>`` invokes the lambda corresponding to
+its position (LambdaID) in the sequence of lambda expressions in the
+``RAJA::kernel`` argument list. For example, a simple sequential for-loop::
 
-Generally, any execution policy that works with ``RAJA::forall`` methods will 
-also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
-about RAJA scan methods.
+  for (int i = 0; i < N; ++i) {
+    // loop body
+  }
 
--------------------------
-RAJA Reduction Policies
--------------------------
+would be represented using the RAJA kernel API as::
 
-Note that a RAJA reduction object must be defined with a 'reduction policy'
-type. Reduction policy types are distinct from loop execution policy types.
-A reduction policy type must be consistent with the loop execution policy
-that is used. See :ref:`reductions-label` for more information.
+  using KERNEL_POLICY =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::Lambda<0>
+      >
+    >;
+
+  RAJA::kernel<KERNEL_POLICY>(
+    RAJA::make_tuple(N_range),
+    [=](int i) {
+      // loop body
+    }
+  );
+
+The following list summarizes the current collection of ``RAJA::kernel``
+statement types:
+
+  * ``RAJA::statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
+
+  * ``RAJA::statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
+
+  * ``RAJA::statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
+
+  * ``RAJA::statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
+
+  * ``RAJA::statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
+
+  * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier. Note that a similar thread barrier for OpenMP will be added soon.
+
+  * ``RAJA::statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, 'ArgId' is the position of the loop argument we will iterate on (defines the order of hyperplanes), 'HpExecPolicy' is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), 'ArgList' is a list of other indices that along with ArgId define a hyperplane, and 'ExecPolicy' is the execution policy that applies to the loops in ArgList. Then, for each iteration, everything in the 'EnclosedStatements' is executed.
+
+Various examples that illustrate the use of these statement types can be found
+in :ref:`complex_loops-label`.
+
+Additional statement types will be developed to support new use cases as they arise.
