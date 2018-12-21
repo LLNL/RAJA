@@ -292,40 +292,39 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T volatile *acc, T compare, T value)
  *
  * This object provides an OO interface to the global function calls provided
  * as RAJA::atomic::atomicXXX
- *
- * However, the behavior of these operator overloads returns this object,
- * rather than the atomicXXX functions which return the previous value.
- * If your algorithm needs to capture the old value, you must use the functions
- * directly.
  */
 template <typename T, typename Policy = auto_atomic>
 class AtomicRef
 {
 public:
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr explicit AtomicRef(T *value_ptr) : m_value_ptr(value_ptr){};
-
+  using value_type = T;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr AtomicRef(AtomicRef<T, Policy> const &c)
+  constexpr explicit AtomicRef(value_type *value_ptr)
+      : m_value_ptr(value_ptr){};
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr AtomicRef(AtomicRef const&c)
       : m_value_ptr(c.m_value_ptr){};
 
+  AtomicRef& operator=(AtomicRef const&) = delete;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr AtomicRef(AtomicRef<T, Policy> &c) : m_value_ptr(c.m_value_ptr){};
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T *getPointer() const { return m_value_ptr; }
-
+  value_type *getPointer() const { return m_value_ptr; }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator=(T rhs) const
+  void store(value_type rhs) const
+  {
+    *m_value_ptr = rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator=(value_type rhs) const
   {
     *m_value_ptr = rhs;
     return rhs;
@@ -333,95 +332,183 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator++() const { return RAJA::atomic::atomicInc<Policy>(m_value_ptr); }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator++(int) const
+  value_type load() const
   {
-    return RAJA::atomic::atomicInc<Policy>(m_value_ptr);
+    return *m_value_ptr;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator--() const { return RAJA::atomic::atomicDec<Policy>(m_value_ptr); }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator--(int) const
+  operator value_type() const
   {
-    return RAJA::atomic::atomicDec<Policy>(m_value_ptr);
+    return *m_value_ptr;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T operator+=(T rhs) const
-  {
-    return RAJA::atomic::atomicAdd<Policy>(m_value_ptr, rhs);
-  }
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator-=(T rhs) const
-  {
-    return RAJA::atomic::atomicSub<Policy>(m_value_ptr, rhs);
-  }
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T min(T rhs) const
-  {
-    return RAJA::atomic::atomicMin<Policy>(m_value_ptr, rhs);
-  }
-
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T max(T rhs) const
-  {
-    return RAJA::atomic::atomicMax<Policy>(m_value_ptr, rhs);
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator&=(T rhs) const
-  {
-    return RAJA::atomic::atomicAnd<Policy>(m_value_ptr, rhs);
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator|=(T rhs) const
-  {
-    return RAJA::atomic::atomicOr<Policy>(m_value_ptr, rhs);
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T operator^=(T rhs) const
-  {
-    return RAJA::atomic::atomicXor<Policy>(m_value_ptr, rhs);
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  T exchange(T rhs) const
+  value_type exchange(value_type rhs) const
   {
     return RAJA::atomic::atomicExchange<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  T CAS(T compare, T rhs) const
+  value_type CAS(value_type compare, value_type rhs) const
   {
     return RAJA::atomic::atomicCAS<Policy>(m_value_ptr, compare, rhs);
   }
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  bool compare_exchange_strong(value_type& expect, value_type rhs) const
+  {
+    value_type compare = expect;
+    value_type old = RAJA::atomic::atomicCAS<Policy>(m_value_ptr, compare, rhs);
+    if (compare == old) {
+      return true;
+    } else {
+      expect = old;
+      return false;
+    }
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  bool compare_exchange_weak(value_type& expect, value_type rhs) const
+  {
+    return this->compare_exchange_strong(expect, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator++() const
+  {
+    return RAJA::atomic::atomicInc<Policy>(m_value_ptr) + 1;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator++(int) const
+  {
+    return RAJA::atomic::atomicInc<Policy>(m_value_ptr);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator--() const
+  {
+    return RAJA::atomic::atomicDec<Policy>(m_value_ptr) - 1;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator--(int) const
+  {
+    return RAJA::atomic::atomicDec<Policy>(m_value_ptr);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_add(value_type rhs) const
+  {
+    return RAJA::atomic::atomicAdd<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator+=(value_type rhs) const
+  {
+    return RAJA::atomic::atomicAdd<Policy>(m_value_ptr, rhs) + rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_sub(value_type rhs) const
+  {
+    return RAJA::atomic::atomicSub<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator-=(value_type rhs) const
+  {
+    return RAJA::atomic::atomicSub<Policy>(m_value_ptr, rhs) - rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_min(value_type rhs) const
+  {
+    return RAJA::atomic::atomicMin<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type min(value_type rhs) const
+  {
+    value_type old = RAJA::atomic::atomicMin<Policy>(m_value_ptr, rhs);
+    return old < rhs ? old : rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_max(value_type rhs) const
+  {
+    return RAJA::atomic::atomicMax<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type max(value_type rhs) const
+  {
+    value_type old = RAJA::atomic::atomicMax<Policy>(m_value_ptr, rhs);
+    return old > rhs ? old : rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_and(value_type rhs) const
+  {
+    return RAJA::atomic::atomicAnd<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator&=(value_type rhs) const
+  {
+    return RAJA::atomic::atomicAnd<Policy>(m_value_ptr, rhs) & rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_or(value_type rhs) const
+  {
+    return RAJA::atomic::atomicOr<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator|=(value_type rhs) const
+  {
+    return RAJA::atomic::atomicOr<Policy>(m_value_ptr, rhs) | rhs;
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type fetch_xor(value_type rhs) const
+  {
+    return RAJA::atomic::atomicXor<Policy>(m_value_ptr, rhs);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type operator^=(value_type rhs) const
+  {
+    return RAJA::atomic::atomicXor<Policy>(m_value_ptr, rhs) ^ rhs;
+  }
 
 private:
-  T volatile *m_value_ptr;
+  value_type volatile *m_value_ptr;
 };
 
 

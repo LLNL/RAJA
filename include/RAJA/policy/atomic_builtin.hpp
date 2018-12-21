@@ -41,14 +41,12 @@ namespace atomic
 struct builtin_atomic {
 };
 
+namespace detail
+{
 
 #if defined(RAJA_COMPILER_MSVC)
 
-template <typename T>
-RAJA_INLINE T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value);
-
-template <>
-RAJA_INLINE unsigned atomicCAS(builtin_atomic,
+RAJA_INLINE unsigned builtin_atomic_CAS(
                                unsigned volatile *acc,
                                unsigned compare,
                                unsigned value)
@@ -62,9 +60,7 @@ RAJA_INLINE unsigned atomicCAS(builtin_atomic,
   return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
 }
 
-
-template <>
-RAJA_INLINE unsigned long long atomicCAS(builtin_atomic,
+RAJA_INLINE unsigned long long builtin_atomic_CAS(
                                          unsigned long long volatile *acc,
                                          unsigned long long compare,
                                          unsigned long long value)
@@ -83,17 +79,50 @@ RAJA_INLINE unsigned long long atomicCAS(builtin_atomic,
 }
 
 #else   // RAJA_COMPILER_MSVC
-template <typename T>
-RAJA_INLINE T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value)
+
+RAJA_INLINE unsigned builtin_atomic_CAS(
+                              unsigned volatile *acc,
+                              unsigned compare,
+                              unsigned value)
 {
   __atomic_compare_exchange_n(
       acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
   return compare;
 }
+
+RAJA_INLINE unsigned long long builtin_atomic_CAS(
+                              unsigned long long volatile *acc,
+                              unsigned long long compare,
+                              unsigned long long value)
+{
+  __atomic_compare_exchange_n(
+      acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+  return compare;
+}
+
 #endif  // RAJA_COMPILER_MSVC
 
-namespace detail
+
+template <typename T>
+RAJA_INLINE typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
+builtin_atomic_CAS(T volatile *acc, T compare, T value)
 {
+  return RAJA::util::reinterp_A_as_B<unsigned, T>(
+      builtin_atomic_CAS((unsigned volatile *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned>(value)));
+}
+
+template <typename T>
+RAJA_INLINE typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
+builtin_atomic_CAS(T volatile *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+      builtin_atomic_CAS((unsigned long long volatile *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
+}
+
 
 template <size_t BYTES>
 struct BuiltinAtomicCAS;
@@ -123,8 +152,8 @@ struct BuiltinAtomicCAS<4> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
         oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
 
-    while ((readback = RAJA::atomic::atomicCAS(
-                builtin_atomic{}, (unsigned *)acc, oldval, newval)) != oldval) {
+    while ((readback = builtin_atomic_CAS(
+                (unsigned *)acc, oldval, newval)) != oldval) {
       if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
@@ -153,10 +182,8 @@ struct BuiltinAtomicCAS<8> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
         oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
 
-    while ((readback = RAJA::atomic::atomicCAS(builtin_atomic{},
-                                               (unsigned long long *)acc,
-                                               oldval,
-                                               newval)) != oldval) {
+    while ((readback = builtin_atomic_CAS(
+                (unsigned long long *)acc, oldval, newval)) != oldval) {
       if (sc(readback)) break;
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
@@ -286,6 +313,12 @@ template <typename T>
 RAJA_INLINE T atomicExchange(builtin_atomic, T volatile *acc, T value)
 {
   return detail::builtin_atomic_CAS_oper(acc, [=](T) { return value; });
+}
+
+template <typename T>
+RAJA_INLINE T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value)
+{
+  return detail::builtin_atomic_CAS(acc, compare, value);
 }
 
 
