@@ -125,9 +125,27 @@ The following policies may only be used with the ``RAJA::kernel`` method.
 CUDA Policies
 ^^^^^^^^^^^^^^
 
-* ``cuda_block_exec`` - Map loop iterations to CUDA thread blocks.
-* ``cuda_thread_exec`` - Map loop iterations to CUDA threads in a thread block.
-* ``cuda_threadblock_exec<BLOCK_SIZE>`` - Map loop iterations to CUDA thread blocks, each with given block size number of threads.
+* ``cuda_thread_x_direct`` - Direct mapping of loop iterations to cuda threads in the x dimension.
+* ``cuda_thread_y_direct`` - Direct mapping of loop iterations to cuda threads in the y dimension.
+* ``cuda_thread_z_direct`` - Direct mapping of loop iterations to cuda threads in the z dimension.
+  
+.. note::  
+          * If multiple thread direct policies are used within kernel; the product of the sizes must be :math:`\leq` 1024. 
+          * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not supported. 
+          * Thread direct policies are only recommended with certain loop patterns such as tiling.
+
+* ``cuda_thread_x_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the x dimension.
+* ``cuda_thread_y_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the y dimension.
+* ``cuda_thread_z_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the z dimension.
+
+.. note::
+          * These polices gives the flexability to have a larger number of iterates than threads in the x/y/z dimension.
+          * There is no constraint on the product of sizes of the associated loop iteration space.
+          * Cuda thread loop policies are recommended for most loop structures.
+
+* ``cuda_block_x_loop`` - Maps loop iterations to cuda thread blocks in x dimension.
+* ``cuda_block_y_loop`` - Maps loop iterations to cuda thread blocks in y dimension.
+* ``cuda_block_z_loop`` - Maps loop iterations to cuda thread blocks in z dimension.
 
 ----------------------
 RAJA::region Policies
