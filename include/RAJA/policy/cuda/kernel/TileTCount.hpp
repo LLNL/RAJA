@@ -76,7 +76,7 @@ struct CudaStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data){
+  void exec(Data &data, bool thread_active){
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
@@ -97,7 +97,7 @@ struct CudaStatementExecutor<
       data.template assign_param<ParamId>(t);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data);
+      enclosed_stmts_t::exec(data, thread_active);
     }
 
     // Set range back to original values
@@ -142,7 +142,7 @@ struct CudaStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -166,7 +166,7 @@ struct CudaStatementExecutor<
       data.template assign_param<ParamId>(t);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data);
+      enclosed_stmts_t::exec(data, thread_active);
     }
 
     // Set range back to original values

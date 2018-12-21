@@ -57,13 +57,12 @@ struct CudaStatementExecutor<Data,
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
-
     if (Conditional::eval(data)) {
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data);
+      enclosed_stmts_t::exec(data, thread_active);
     }
   }
 

@@ -12,6 +12,9 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
+
+cmake_policy(SET CMP0048 NEW)
+
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 6)
@@ -32,8 +35,6 @@ if (NOT RAJA_LOADED)
   endif()
 
   mark_as_advanced(RAJA_LOADED)
-
-  cmake_minimum_required (VERSION 3.3)
 
   # C is required for googletest to find Threads
   project(RAJA LANGUAGES CXX C
@@ -66,6 +67,12 @@ if (NOT RAJA_LOADED)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
+
+if (ENABLE_CUDA)
+  cmake_minimum_required(VERSION 3.9)
+else ()
+  cmake_minimum_required(VERSION 3.8.2)
+endif ()
 
   if (NOT BLT_LOADED)
     if (DEFINED BLT_SOURCE_DIR)
