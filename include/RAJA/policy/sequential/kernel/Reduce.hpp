@@ -56,10 +56,9 @@ struct StatementExecutor<
 };
 
 
-
 }  // namespace internal
 
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_sequential_kernel_Reduce_HPP */

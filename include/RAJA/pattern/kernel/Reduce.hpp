@@ -54,9 +54,9 @@ template <typename ReducePolicy,
           typename... EnclosedStmts>
 struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {
 
-    static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
-                  "Inappropriate ParamId, ParamId must be of type "
-                  "RAJA::Statement::Param< # >");
+  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+                "Inappropriate ParamId, ParamId must be of type "
+                "RAJA::Statement::Param< # >");
 
   using execution_policy_t = camp::nil;
 };
@@ -68,4 +68,4 @@ struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_nested_HPP */
+#endif /* RAJA_pattern_kernel_Reduce_HPP */

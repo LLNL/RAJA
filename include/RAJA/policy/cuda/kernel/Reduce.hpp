@@ -46,21 +46,18 @@ template <typename Data,
           template <typename...> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts>
-struct CudaStatementExecutor<
-    Data,
-    statement::Reduce<RAJA::cuda_block_reduce, ReduceOperator, ParamId, EnclosedStmts...>>
-{
+struct CudaStatementExecutor<Data,
+                             statement::Reduce<RAJA::cuda_block_reduce,
+                                               ReduceOperator,
+                                               ParamId,
+                                               EnclosedStmts...>> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
 
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block reduce on the specified parameter
     auto value = data.template get_param<ParamId>();
@@ -68,14 +65,16 @@ struct CudaStatementExecutor<
     value_t ident = value_t();
 
     // if this thread isn't active, just set it to the identity
-    if(!thread_active){
+    if (!thread_active) {
       value = ident;
     }
 
     // Call out existing block reduction algorithm that we use for
     // reduction objects
-    using combiner_t = RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
-    value_t new_value = RAJA::cuda::impl::block_reduce<combiner_t>(value, ident);
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
+    value_t new_value =
+        RAJA::cuda::impl::block_reduce<combiner_t>(value, ident);
     data.template assign_param<ParamId>(new_value);
 
     // execute enclosed statements, and mask off everyone but thread 0
@@ -84,16 +83,12 @@ struct CudaStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
     return enclosed_dims;
   }
-
-
 };
 
 
@@ -101,4 +96,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_cuda_kernel_Reduce_HPP */
