@@ -1366,6 +1366,7 @@ CUDA_TEST(Kernel, ReduceCudaWarpLoop3)
           For<1, cuda_thread_y_direct,
             For<0, cuda_warp_direct, Lambda<0>>
           >,
+          RAJA::statement::CudaSyncWarp,
           RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
             Lambda<1>
           >
