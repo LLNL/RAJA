@@ -192,9 +192,12 @@ of the arguments may actually be used in each lambda expression.
 .. note:: The loop index arguments for each lambda expression used in a RAJA 
           kernel loop body **must match** the contents of the 
           *iteration space tuple* in number, order, and type. Not all index 
-          arguments must be used in each lambda, but they all must appear for
-          the RAJA kernel to be well-formed. In particular, your code may not
-          compile if this is not done correctly.
+          arguments must be used in each lambda, but they **all must appear** 
+          for the RAJA kernel to be well-formed. In particular, your code will 
+          not compile if this is not done correctly. If an argument is unused
+          in a lambda expression, you may include its type and omit its name
+          in the argument list to avoid compiler warnings just as one would do
+          for a regular C++ method.
 
 For RAJA nested loops implemented with ``RAJA::kernel``, as shown here, the 
 loop nest ordering is determined by the order of the nested policies, starting 

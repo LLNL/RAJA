@@ -20,7 +20,7 @@ Execution Policies
 
 This section describes the execution policies that ``RAJA`` provides and 
 indicates which policies may be used with ``RAJA::forall``, ``RAJA::kernel``,
-and/or ``RAJA::scan`` methods.
+and ``RAJA::scan`` methods.
 
 .. note:: * All RAJA execution policies are in the namespace ``RAJA``.
           * As RAJA functionality is expanded, new policies will be added and
@@ -37,14 +37,15 @@ Serial/SIMD Policies
 ^^^^^^^^^^^^^^^^^^^^^^
 
 * ``seq_exec``  - Strictly sequential loop execution.
-* ``simd_exec`` - Forced SIMD execution by adding vectorization hints.
-* ``loop_exec`` - Allows the compiler to generate whichever optimizations (e.g., SIMD) that it thinks are appropriate.
+* ``simd_exec`` - Attempt to force SIMD vectorization of a loop via vectorization compiler hints inside the RAJA internal implementation.
+* ``loop_exec`` - Allow the compiler to generate whichever optimizations, such as SIMD, that it thinks are appropriate; effectively an undecorated loop with no
+pragmas or intrinsics to prevent or encourage compiler optimizations.
 
 OpenMP Policies
 ^^^^^^^^^^^^^^^^
 
-* ``omp_parallel_for_exec`` - Execute a loop in parallel using an ``omp parallel for`` pragma; i.e., create a parallel region and distribute loop iterations across threads.
-* ``omp_for_exec`` - Execute a loop in parallel using an ``omp for`` pragma within an exiting parallel region. 
+* ``omp_parallel_for_exec`` - Execute a loop in parallel by creating an OpenMP parallel region and distribute loop iterations across threads within it; i.e., use an ``omp parallel for`` pragma in the RAJA implementation.
+* ``omp_for_exec`` - Execute a loop in parallel using an ``omp for`` pragma within an existing parallel region. 
 * ``omp_for_static<CHUNK_SIZE>`` - Execute a loop in parallel using a static schedule with given chunk size within an existing parallel region; i.e., use an ``omp parallel for schedule(static, CHUNK_SIZE>`` pragma.
 * ``omp_for_nowait_exec`` - Execute loop in an existing parallel region without synchronization after the loop; i.e., use an ``omp for nowait`` clause.
 
@@ -56,8 +57,7 @@ OpenMP Policies
 
 OpenMP Target Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^
-* ``omp_target_parallel_for_exec<NUMTEAMS>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of thread teams; e.g.,
-if a GPU device is available, this is similar to launching a CUDA kernel with 
+* ``omp_target_parallel_for_exec<NUMTEAMS>`` - Execute a loop in parallel using an ``omp teams distribute parallel for num_teams(NUMTEAMS)`` pragma with given number of thread teams inside a ``omp target`` region; e.g., if a GPU device is available, this is similar to launching a CUDA kernel with 
 a thread block size of NUMTEAMS. 
 
 Intel Threading Building Blocks (TBB) Policies
@@ -97,10 +97,11 @@ IndexSet Policies
 ^^^^^^^^^^^^^^^^^^
 
 When a ``RAJA::forall`` method is used with a ``RAJA::IndexSet`` object, an
-index set execution policy must be used to guarantee correct behavior. An 
-index set execution policy is a two-level policy: an 'outer' policy for 
-iterating over segments in the index set, and an 'inner' policy for executing
-each segment. An index set execution policy type has the form::
+index set execution policy is required. An 
+index set execution policy is a **two-level policy**: an 'outer' policy for 
+iterating over segments in the index set, and an 'inner' policy used to
+execute the iterations defined by each segment. An index set execution policy 
+type has the form::
 
   RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy>
 
@@ -120,11 +121,27 @@ RAJA::region Policies
 ----------------------
 
 The following policies may only be used with the ``RAJA::region`` method. 
-``RAJA::forall`` and ``RAJA::kernel`` methods may be used within a
-``RAJA::region``.
+``RAJA::forall`` and ``RAJA::kernel`` methods may be used within a parallel
+region created with the ``RAJA::region`` construct.
 
 * ``seq_region_exec`` - Creates a sequential region.
 * ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+
+For example, the following code will execute two consecutive loops in parallel in an OpenMP parallel region without thread synchronization between them::
+
+  RAJA::region<RAJA::omp_parallel_region>( [=]() {
+
+    RAJA::forall<RAJA::omp_for_nowait_exec>(
+      RAJA::RangeSegment(0, N), [=](int i) {
+        // loop body #1
+    });
+
+    RAJA::forall<RAJA::omp_for_nowait_exec>(
+      RAJA::RangeSegment(0, N), [=](int i) {
+        // loop body #2
+    });
+
+  }); // end omp parallel region
 
 -------------------------
 RAJA::scan Policies
@@ -157,22 +174,27 @@ CUDA Policies
 * ``cuda_thread_z_direct`` - Direct mapping of loop iterations to cuda threads in the z dimension.
   
 .. note::  
-          * If multiple thread direct policies are used within kernel; the product of the sizes must be :math:`\leq` 1024. 
-          * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not supported. 
-          * Thread direct policies are only recommended with certain loop patterns such as tiling.
+    * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not recommended. Your code may do something, but likely will not do what you expect and/or be correct. 
+    * If multiple thread direct policies are used in a kernel (using different thread dimensions), the product of sizes of the corresponding iteration spaces must be :math:`\leq` 1024. You cannot launch a CUDA kernel with more than 1024 threads per block.
+    * **Thread direct policies are only recommended with certain loop patterns, such as tiling.**
 
-* ``cuda_thread_x_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the x dimension.
-* ``cuda_thread_y_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the y dimension.
-* ``cuda_thread_z_loop`` - Extension to the thread direct policy, introduces a block stride loop based on the thread-block size in the z dimension.
+* ``cuda_thread_x_loop`` - Extension to the thread direct policy by introducing a block stride loop based on the thread-block size in the x dimension.
+* ``cuda_thread_y_loop`` - Extension to the thread direct policy by introducing a block stride loop based on the thread-block size in the y dimension.
+* ``cuda_thread_z_loop`` - Extension to the thread direct policy by introducing a block stride loop based on the thread-block size in the z dimension.
 
 .. note::
-          * These polices gives the flexability to have a larger number of iterates than threads in the x/y/z dimension.
-          * There is no constraint on the product of sizes of the associated loop iteration space.
-          * Cuda thread loop policies are recommended for most loop structures.
+    * There is no constraint on the product of sizes of the associated loop iteration space.
+    * These polices enable a having a larger number of iterates than threads in the x/y/z thread dimension.
+    * **Cuda thread loop policies are recommended for most loop patterns.**
 
 * ``cuda_block_x_loop`` - Maps loop iterations to cuda thread blocks in x dimension.
 * ``cuda_block_y_loop`` - Maps loop iterations to cuda thread blocks in y dimension.
 * ``cuda_block_z_loop`` - Maps loop iterations to cuda thread blocks in z dimension.
+
+OpenMP Target Policies
+^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``omp_target_parallel_collapse_exec`` - Collapse specified loops and execute kernel in OpenMP target region; i.e., apply ``omp teams distribute parallel for collapse(...)`` pragma with given number of loops to collapse inside a ``omp target`` region.
 
 .. _loop_elements-kernelpol-label:
 
@@ -180,33 +202,34 @@ CUDA Policies
 RAJA Kernel Execution Policies
 --------------------------------
 
-RAJA kernel policies are constructed with a combination of *Statements* and
-*Statement Lists* that forms a simple domain specific language that
-relies **solely on standard C++11 template support**. A RAJA Statement is an
-action, such as executing a loop, invoking a lambda, setting a thread barrier,
-etc. A StatementList is an ordered list of Statements that are composed
-to construct a kernel in the order that they appear in the kernel policy.
-A Statement may contain an enclosed StatmentList. Thus, a
-``RAJA::KernelPolicy`` type is simply a StatementList.
+RAJA kernel execution policy constructs form a simple domain specific language 
+for composing and transforming complex loops that relies 
+**solely on standard C++11 template support**. 
+RAJA kernel policies are constructed using a combination of *Statements* and
+*Statement Lists*. A RAJA Statement is an action, such as execute a loop, 
+invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list 
+of Statements that are composed in the order that they appear in the kernel 
+policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a ``RAJA::KernelPolicy`` type is really just a StatementList.
 
 The main Statements types provided by RAJA are ``RAJA::statement::For`` and
-``RAJA::statement::Lambda``, that we described above. A 'For' Statement
+``RAJA::statement::Lambda``, that we have shown above. A 'For' Statement
 indicates a for-loop structure and takes three template arguments:
 'ArgId', 'ExecPolicy', and 'EnclosedStatements'. The ArgID identifies the
 position of the item it applies to in the iteration space tuple argument to the
-``RAJA::kernel`` method. The ExecPolicy gives the RAJA execution policy to
+``RAJA::kernel`` method. The ExecPolicy is the RAJA execution policy to
 use on that loop/iteration space (similar to ``RAJA::forall``).
 EnclosedStatements contain whatever is nested within the template parameter
-list and form a StatementList, which is executed for each iteration of the loop.
-The ``RAJA::statement::Lambda<LambdaID>`` invokes the lambda corresponding to
-its position (LambdaID) in the sequence of lambda expressions in the
-``RAJA::kernel`` argument list. For example, a simple sequential for-loop::
+list to form a StatementList, which will be executed for each iteration of 
+the loop. The ``RAJA::statement::Lambda<LambdaID>`` invokes the lambda 
+corresponding to its position (LambdaID) in the sequence of lambda expressions 
+in the ``RAJA::kernel`` argument list. For example, a simple sequential 
+for-loop::
 
   for (int i = 0; i < N; ++i) {
     // loop body
   }
 
-would be represented using the RAJA kernel API as::
+can be represented using the RAJA kernel interface as::
 
   using KERNEL_POLICY =
     RAJA::KernelPolicy<
@@ -221,6 +244,14 @@ would be represented using the RAJA kernel API as::
       // loop body
     }
   );
+
+.. note:: All ``RAJA::forall`` functionality can be done using the 
+          ``RAJA::kernel`` interface. We maintain the ``RAJA::forall``
+          interface since it is less verbose and thus more convenient
+          for users.
+   
+RAJA::kernel Statement Types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following list summarizes the current collection of ``RAJA::kernel``
 statement types:
