@@ -124,8 +124,8 @@ The following policies may only be used with the ``RAJA::region`` method.
 ``RAJA::forall`` and ``RAJA::kernel`` methods may be used within a parallel
 region created with the ``RAJA::region`` construct.
 
-* ``seq_region_exec`` - Creates a sequential region.
-* ``omp_parallel_region_exec`` - Create an OpenMP parallel region.
+* ``seq_region`` - Create a sequential region (see note below).
+* ``omp_parallel_region`` - Create an OpenMP parallel region.
 
 For example, the following code will execute two consecutive loops in parallel in an OpenMP parallel region without thread synchronization between them::
 
@@ -143,6 +143,11 @@ For example, the following code will execute two consecutive loops in parallel i
 
   }); // end omp parallel region
 
+.. note:: The sequential region does not really do anything useful. It is 
+          provided so that, if you want to turn off OpenMP in your code, 
+          you can simply replace the region policy type and you do not
+          have to change your source code. 
+
 -------------------------
 RAJA::scan Policies
 -------------------------
@@ -152,13 +157,23 @@ also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
 about RAJA scan methods.
 
 -------------------------
-RAJA Reduction Policies
+Reduction Policies
 -------------------------
 
-Note that a RAJA reduction object must be defined with a 'reduction policy'
+Each RAJA reduction object must be defined with a 'reduction policy'
 type. Reduction policy types are distinct from loop execution policy types.
-A reduction policy type must be consistent with the loop execution policy
-that is used. See :ref:`reductions-label` for more information.
+A reduction policy type must be consistent with the execution policy in the
+kernel where the reduction is used. See :ref:`reductions-label` for more 
+information.
+
+-------------------------
+Local Array Policies
+-------------------------
+
+``RAJA::LocalArray`` types must use a memory allocation policy indicating
+where the memory for the local array will live. These policies are described
+in :ref:`local_array-label`.
+
 
 -----------------------
 RAJA::kernel Policies
@@ -253,24 +268,38 @@ can be represented using the RAJA kernel interface as::
 RAJA::kernel Statement Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following list summarizes the current collection of ``RAJA::kernel``
-statement types:
+The list below summarizes the current collection of statement types that
+can be used with ``RAJA::kernel`` and ``RAJA::kernel_param``. More detailed
+explanation along with examples of how they are used can be found in 
+:ref:`tutorial-label`.
 
-  * ``RAJA::statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
+.. note:: * All of these statement types are in the namespace ``RAJA``.
+          * ``RAJA::kernel_param`` functions similar to ``RAJA::kernel`` except             that its second argument is a *tuple of parameters* used in a kernel
+            for local arrays, thread local variables, tiling information, etc.
 
-  * ``RAJA::statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
+  * ``statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
 
-  * ``RAJA::statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
+  * ``statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
 
-  * ``RAJA::statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
+  * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 
-  * ``RAJA::statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
+  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
 
-  * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier. Note that a similar thread barrier for OpenMP will be added soon.
+  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier. Note that a similar thread barrier for OpenMP will be added soon.
 
-  * ``RAJA::statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, 'ArgId' is the position of the loop argument we will iterate on (defines the order of hyperplanes), 'HpExecPolicy' is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), 'ArgList' is a list of other indices that along with ArgId define a hyperplane, and 'ExecPolicy' is the execution policy that applies to the loops in ArgList. Then, for each iteration, everything in the 'EnclosedStatements' is executed.
+  * ``statement::InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The 'ParamList' entries indicate which local array objects in a tuple will be initialized. The 'EnclosedStatements' contain the code in which the local array will be accessed; e.g., initialization operations.
+
+  * ``statement::Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile. The 'ArgId' indicates which entry in the iteration space tuple to which the tiling loop applies and the 'TilePolicy' specifies the tiling pattern to use, including its dimension. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+
+  * ``statement::TileTCount< ArgId, ParamId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile, **where it is necessary to obtain the tile number in each tile**. The 'ArgId' indicates which entry in the iteration space tuple to which the loop applies and the 'ParamId' indicates the position of the tile number in the parameter tuple. The 'TilePolicy' specifies the tiling pattern to use, including its dimension. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+
+  * ``statement::ForICount< ArgId, ParamId, ExecPolicy, EnclosedStatements >`` abstracts an inner for-loop within an outer tiling loop **where it is necessary to obtain the local iteration index in each tile**. The 'ArgId' indicates which entry in the iteration space tuple to which the loop applies and the 'ParamId' indicates the position of the tile index parameter in the parameter tuple. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+
+  * ``statement::tile_fixed<ChunkSize>``
+
+  * ``statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
+
+  * ``statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, 'ArgId' is the position of the loop argument we will iterate on (defines the order of hyperplanes), 'HpExecPolicy' is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), 'ArgList' is a list of other indices that along with ArgId define a hyperplane, and 'ExecPolicy' is the execution policy that applies to the loops in ArgList. Then, for each iteration, everything in the 'EnclosedStatements' is executed.
 
 Various examples that illustrate the use of these statement types can be found
 in :ref:`complex_loops-label`.
-
-Additional statement types will be developed to support new use cases as they arise.
