@@ -63,19 +63,23 @@ As a starting point, we provide a RAJA variant of the tiled C++ loops above::
    });
 
 To tile an iteration space, a developer must use ``Tile`` and ``For`` statements templated on the same
-tuple range. The ``Tile`` statement is similar to a ``For`` statement but with the 
-added template argument of tile dimension. The ``Tile`` statement will iterate over the necessary tiles
-while the ``For`` statement will iterate over the entries in the tile. Together, the Tile and For statements will 
-return the global index within bounds of the original iteration space. Next, we discuss variations on tile 
-and for statements which provide the tile id number and iteration within the tile.
+iteration space. The Tile statement is similar to a For statement but with the 
+added template argument of tile dimension. The Tile statement will iterate over the necessary tiles
+while the For statement will iterate over the local tile index. Together, the Tile and For statements will 
+return the global index to the lambda argument. Next, we discuss variations on Tile 
+and For statements which provide the tile number and local tile index.
 
 The statement ``TileTCount`` is used to extract the tile number, while the statement ``ForICount``
-can be used to extract the iteration within the tile. TileTcount may be paired with a For statement,
-and ForICount may be paired with the Tile statement. Unlike the Tile statement, return values 
-for TileTCount and ForICount are returned in a kernel_param tuple and require specifying which tuple
-entry should hold the iterate. For example, the following kernel policy will populate the tile number in
-the first parameter entry and iteration within the tile in the second tuple entry. Parameter arguments 
-follow segment arguments in lambda arguments and are returned after the global index. ::
+can be used to extract the local tile index. Unlike the Tile and For statements, these statements 
+require an additional template which indicate which param tuple entry holds the index. The ``RAJA::Param<#>``
+statements are used to refer to which param tuple entry the For statement corresponds to.
+For example, the following kernel policy will populate the tile number in the first param tuple entry and 
+local tile index in the second param tuple entry. 
+
+
+.. note :: The global index always appears as the first lambda argument. Param arguments then follow.
+
+::
 
   using KERNEL_EXEC_POL2 =
     RAJA::KernelPolicy<
@@ -95,4 +99,3 @@ follow segment arguments in lambda arguments and are returned after the global i
                                  //t - tile number
                                  //k - iteration within tile
                                  });
-

@@ -74,9 +74,10 @@ RAJA::kernel Variants
 ^^^^^^^^^^^^^^^^^^^^^
 An important component of the algorithm above is the array used to store/read
 entries of the matrix. Similar to the C++ algorithm, RAJA offers constructs
-to create an array between loops. A RAJA::LocalArray is an object which is 
-defined prior to a RAJA kernel but whose memory is initialized as the kernel policy
-is executed. Furthermore, it may only be used within a RAJA kernel; we refer the
+to create an array inside RAJA kernel to be used by loops in kernel. 
+A RAJA::LocalArray is an object which is defined prior to a RAJA kernel but
+whose memory is initialized as the kernel policy is executed. Furthermore, 
+it may only be used within a RAJA kernel; we refer the
 reader to :ref:`local_array-label` for more details. RAJA kernel also includes tiling 
 statements which determine the number of necessary tiles to carry out the transpose 
 and return iterate values within bounds of the original iteration space.
