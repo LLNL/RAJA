@@ -149,22 +149,32 @@ For example, the following code will execute two consecutive loops in parallel i
           have to change your source code. 
 
 -------------------------
+Reduction Policies
+-------------------------
+
+Each RAJA reduction object must be defined with a 'reduction policy'
+type. Reduction policy types are distinct from loop execution policy types.
+A reduction policy type must be consistent with the loop execution policy 
+for the kernel where the reduction is used. See :ref:`reducepolicy-label` for 
+more information.
+
+-------------------------
+Atomic Policies
+-------------------------
+
+Each RAJA atomic operation must be defined with an 'atomic policy'
+type. Atomic policy types are distinct from loop execution policy types.
+An atomic policy type must be consistent with the loop execution policy for the
+kernel where the atomic is used. See :ref:`atomicpolicy-label` for more
+information.
+
+-------------------------
 RAJA::scan Policies
 -------------------------
 
 Generally, any execution policy that works with ``RAJA::forall`` methods will 
 also work with ``RAJA::scan`` methods. See :ref:`scan-label` for information
 about RAJA scan methods.
-
--------------------------
-Reduction Policies
--------------------------
-
-Each RAJA reduction object must be defined with a 'reduction policy'
-type. Reduction policy types are distinct from loop execution policy types.
-A reduction policy type must be consistent with the execution policy in the
-kernel where the reduction is used. See :ref:`reducepolicy-label` for more 
-information.
 
 -------------------------
 Local Array Policies

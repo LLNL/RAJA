@@ -31,12 +31,12 @@ A complete working example code that shows RAJA atomic usage can be found in
 Atomic Operations
 -----------------
 
-RAJA atomic support includes a range of the most common atomic operations.
+RAJA atomic support includes a variety of the most common atomic operations.
 
 .. note:: * Each RAJA atomic operation is templated on an *atomic policy*.
-          * Each of methods below returns the value of the potentially modified
-            argument (i.e., \*acc) immediately before the atomic operation is 
-            applied.
+          * Each of methods described in the table below returns the value of 
+            the potentially modified argument (i.e., \*acc) immediately before 
+            the atomic operation is applied, in case it is needed by a user.
 
 ^^^^^^^^^^^
 Arithmetic
@@ -67,7 +67,7 @@ Increment/decrement
 * ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
 ^^^^^^^^^^^^^^^^^^^^
-Bitwise atomics
+Bitwise operations
 ^^^^^^^^^^^^^^^^^^^^
 
 * ``atomicAnd< atomic_policy >(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
@@ -84,28 +84,28 @@ Replace
 
 * ``atomicCAS< atomic_policy >(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
 
-Here is a simple example that shows how to use an atomic method to accumulate
-a integral sum on a CUDA GPU device::
+Here is a simple example that shows how to use an atomic operation to compute
+an integral sum on a CUDA GPU device::
 
   //
   // Use CUDA UM to share data pointer with host and device code.
-  // RAJA mechanics works the same way if device data allocation
+  // RAJA mechanics work the same way if device data allocation
   // and host-device copies are done with traditional cudaMalloc
   // and cudaMemcpy.
   //
   int* sum = nullptr;
   cudaMallocManaged((void **)&sum, sizeof(int));
   cudaDeviceSynchronize();
-  sum = 0;
+  *sum = 0;
 
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(&sum, 1);
+    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
 
   });
 
-After this operation, 'sum' will be equal to 'N'.
+After this kernel executes, '*sum' will be equal to 'N'.
 
 ^^^^^^^^^^^^^^^^^^^^
 AtomicRef
@@ -131,6 +131,8 @@ change with each atomic update call. If you need to keep the original value
 of the data before an atomic call, you need to use the atomic methods described 
 earlier and not the ``RAJA::atomic::AtomicRef`` interface.
 
+.. _atomicpolicy-label:
+
 ---------------
 Atomic Policies
 ---------------
@@ -139,17 +141,19 @@ Atomic Policies
           * There are no RAJA atomic policies for TBB (Intel Threading Building 
             Blocks) execution contexts currently.
 
-* ``seq_atomic``     - Policy for use in sequential execution contexts, primarily for consistency with parallel policies. Note that sequential atomic operations are not protected and will likely produce incorrect results when used in a parallel execution context.
+* ``seq_atomic``     - Policy for use in sequential execution contexts, such
+as when using RAJA `seq_exec` or `loop_exec` execution policies. RAJA provides
+sequential atomic policies for consistency with parallel policies, so that sequential and parallel execution policies may be swapped without altering loop kernel code. Note that sequential atomic operations will likely produce incorrect results when used in a parallel execution context.
 
-* ``omp_atomic``     - Policy to use 'omp atomic' pragma when applicable; otherwise, revert to builtin compiler atomics.
+* ``omp_atomic``     - Policy to use with OpenMP loop execution policies; i.e., they apply the 'omp atomic' pragma when applicable and revert to builtin compiler atomics otherwise.
 
-* ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code.
+* ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code; i.e., with CUDA execution polcies.
 
 * ``builtin_atomic`` - Policy to use compiler "builtin" atomic operations.
 
-* ``auto_atomic``    - Policy that will attempt to do the "correct thing". For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
+* ``auto_atomic``    - Policy that will attempt to do the "correct thing" without requiring an atomic policy change when a loop  execution policy is changed. For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
 
-For example, we could use the 'auto_atomic' policy in the example above:: 
+To illustrate, we could use the 'auto_atomic' policy in the example above:: 
 
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
@@ -159,6 +163,6 @@ For example, we could use the 'auto_atomic' policy in the example above::
   });
 
 Here, the atomic operation knows that it is used within a CUDA execution 
-context and does the right thing. Similarly, if the 'forall' method used 
-an OpenMP execution policy, the OpenMP version of the atomic operation 
-would be used.
+context and the CUDA atomic operation is applied. Similarly, if the 'forall' 
+method used an OpenMP execution policy, the OpenMP version of the atomic 
+operation would be used.
