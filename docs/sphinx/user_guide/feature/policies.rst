@@ -163,7 +163,7 @@ Reduction Policies
 Each RAJA reduction object must be defined with a 'reduction policy'
 type. Reduction policy types are distinct from loop execution policy types.
 A reduction policy type must be consistent with the execution policy in the
-kernel where the reduction is used. See :ref:`reductions-label` for more 
+kernel where the reduction is used. See :ref:`reducepolicy-label` for more 
 information.
 
 -------------------------
