@@ -24,22 +24,23 @@ parallel algorithm building blocks. They are described in this section.
 A few important notes:
 
 .. note:: * All RAJA scan operations are in the namespace ``RAJA``.
-          * Each RAJA scan operation is templated on an *execution policy*.
-            The same policy types used for ``RAJA::forall`` methods are used
-            for RAJA scans. 
+          * Each RAJA scan operation is a template on an *execution policy*
+            parameter. The same policy types used for ``RAJA::forall`` methods 
+            may be used for RAJA scans. 
           * RAJA scan operations accept an optional *operator* argument so 
-            users can perform different types of scan-type operations. If
+            users can perform different types of scan operations. If
             no operator is given, the default is a 'plus' operation and
             the result is a **prefix-sum**.
 
 Also:
 
 .. note:: For scans using the CUDA back-end, RAJA uses the implementations
-          provided by the NVIDIA Thrust library. For better performance, one
-          can enable the NVIDIA cub library for scans by setting the CMake
-          variable ``CUB_DIR`` to the location of the cub library on your
-          system when CUDA is enabled.
-
+          provided by the NVIDIA cub library, which is available in the 
+          RAJA source repository as a Git submodule. The CMake variable 
+          ``CUB_DIR`` will be automatically set to the location of the cub 
+          library when CUDA is enabled; to use a different version of the
+          cub library, install it and set the ``CUB_DIR`` variable to the
+          desired location when running CMake.
 
 Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
 scan operations.
@@ -103,9 +104,9 @@ RAJA also provides *in-place* scans:
  * ``RAJA::inclusive_scan_inplace< exec_policy >(in, in + N)``
  * ``RAJA::inclusive_scan_inplace< exec_policy >(in, in + N, <operator>)``
 
-An in-place scan generates the same output sequence as the ones above; however,
-they do not take separate input and output arrays. They generate the result 
-of the scan operation *in-place* in the input array.
+An in-place scan generates the same output sequence as a non-inplace scan.
+However, an in-place scan does not take separate input and output arrays and
+the result of the scan operation will appear *in-place* in the input array.
 
 ---------------------
 RAJA Exclusive Scans
