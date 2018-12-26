@@ -141,9 +141,7 @@ Atomic Policies
           * There are no RAJA atomic policies for TBB (Intel Threading Building 
             Blocks) execution contexts currently.
 
-* ``seq_atomic``     - Policy for use in sequential execution contexts, such
-as when using RAJA `seq_exec` or `loop_exec` execution policies. RAJA provides
-sequential atomic policies for consistency with parallel policies, so that sequential and parallel execution policies may be swapped without altering loop kernel code. Note that sequential atomic operations will likely produce incorrect results when used in a parallel execution context.
+* ``seq_atomic``     - Policy for use in sequential execution contexts, such as when using RAJA `seq_exec` or `loop_exec` execution policies. RAJA provides sequential atomic policies for consistency with parallel policies, so that sequential and parallel execution policies may be swapped without altering loop kernel code. Note that sequential atomic operations will likely produce incorrect results when used in a parallel execution context.
 
 * ``omp_atomic``     - Policy to use with OpenMP loop execution policies; i.e., they apply the 'omp atomic' pragma when applicable and revert to builtin compiler atomics otherwise.
 
