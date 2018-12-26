@@ -180,6 +180,14 @@ struct LoopData {
     camp::get<ParamId::param_idx>(param_tuple) = param_t(i);
   }
 
+  template <typename ParamId>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto get_param() ->
+    camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
+  {
+    return camp::get<ParamId::param_idx>(param_tuple);
+  }
+
   template <camp::idx_t Idx>
   RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()
   {

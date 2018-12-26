@@ -119,6 +119,8 @@ Using RAJA exclusive scans is essentially the same as for inclusive scans:
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in, in + N)``
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in, in + N, <operator>)``
 
+.. _scanops-label:
+
 --------------------
 RAJA Scan Operators
 --------------------

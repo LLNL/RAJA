@@ -1191,8 +1191,86 @@ TEST(Kernel, Collapse8)
 
 #endif  // RAJA_ENABLE_OPENMP
 
+
+
+
+TEST(Kernel, ReduceSeqSum)
+{
+
+  int N = 1023;
+
+  int *data = new int[N];
+  for (int i = 0; i < N; ++i) {
+    data[i] = i;
+  }
+
+  using Pol = RAJA::KernelPolicy<
+      RAJA::statement::For<0, seq_exec,
+        Lambda<0>,
+        RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus, Param<0>,
+          Lambda<1>
+        >
+      >
+     >;
+
+  int sum = 0;
+  int *sumPtr = &sum;
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((int)0),
+
+      [=](Index_type i, int &value) {
+        value = data[i];
+      },
+      [=](Index_type, int &value) {
+        (*sumPtr) += value;
+      });
+
+  ASSERT_EQ(sum, N*(N-1)/2);
+
+  delete[] data;
+}
+
+
+
 #if defined(RAJA_ENABLE_CUDA)
 
+
+CUDA_TEST(Kernel, ReduceCudaSum1)
+{
+
+  long N = 2345;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_thread_x_loop, Lambda<0>>,
+        RAJA::statement::Reduce<cuda_block_reduce, RAJA::operators::plus, Param<0>,
+          Lambda<1>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((long)0),
+
+      [=] __device__ (Index_type i, long &value) {
+        value += i;
+      },
+      [=] __device__ (Index_type, long &value) {
+        // This only gets executed on the "root" thread which reecieved the
+        // reduced value
+        trip_count += value;
+      });
+
+
+  ASSERT_EQ(trip_count.get(), N*(N-1)/2);
+
+}
 
 
 CUDA_TEST(Kernel, CudaExec)

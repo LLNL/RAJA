@@ -35,6 +35,7 @@
 #include "RAJA/policy/cuda/kernel/Hyperplane.hpp"
 #include "RAJA/policy/cuda/kernel/InitLocalMem.hpp"
 #include "RAJA/policy/cuda/kernel/Lambda.hpp"
+#include "RAJA/policy/cuda/kernel/Reduce.hpp"
 #include "RAJA/policy/cuda/kernel/Sync.hpp"
 #include "RAJA/policy/cuda/kernel/Tile.hpp"
 #include "RAJA/policy/cuda/kernel/TileTCount.hpp"
