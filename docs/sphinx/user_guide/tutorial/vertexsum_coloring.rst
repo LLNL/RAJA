@@ -90,7 +90,7 @@ First, we define four vectors to gather the mesh element indices for each
 color:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 198-2220
+                    :lines: 198-220
 
 Then, we create a RAJA index set with four list segments, one for each color,
 using the vectors:
