@@ -126,7 +126,7 @@ with respect to RAJA usage. We describe them here.
    execution. In addition, the read-only nature of variables captured 
    by-value can help avoid incorrect CPU code since the compiler will report 
    incorrect usage.
-   |
+
 
  * **Must use 'device' annotation for CUDA device execution.** 
 
@@ -141,7 +141,7 @@ with respect to RAJA usage. We describe them here.
 
    RAJA provides the macro ``RAJA_DEVICE`` that can be used to help switch
    between host-only or device-only CUDA compilation.
-   |
+    
 
  * **Avoid 'host-device' annotation on a lambda that will run in host code.**
 
@@ -152,13 +152,13 @@ with respect to RAJA usage. We describe them here.
    is used in a host (i.e., CPU) execution context**. Unfortunately, a loop 
    kernel containing a lambda annotated in this way will run noticeably 
    slower on a CPU than the same lambda with no annotation.
-   |
+    
 
  * **Cannot use 'break' and 'continue' statements in a lambda.** 
 
    In this regard, a lambda expression is similar to a function. So, if you 
    have loops in your code with these statements, they should be rewritten. 
-   |
+    
 
  * **Global variables are not captured in a lambda.** 
 
@@ -171,7 +171,7 @@ with respect to RAJA usage. We describe them here.
      RAJA::forall<RAJA::cuda_exec>( range, [=] __device__ (int i) { 
        // use ref_to_global_val
      } );
-   |
+    
 
  * **Local stack arrays are not captured by CUDA device lambdas.** 
 
@@ -189,7 +189,7 @@ with respect to RAJA usage. We describe them here.
      RAJA::forall<RAJA::cuda_exec>(range, [=] __device__ (int i) {
        // access entries of bounds.array
      } );
-   |
+    
     
 ================
 RAJA Examples
