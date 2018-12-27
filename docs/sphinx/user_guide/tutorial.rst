@@ -18,18 +18,18 @@
 RAJA Tutorial
 **********************
 
-This RAJA tutorial introduces most RAJA concepts and capabilities via a 
-sequence of examples. Complete working codes for the examples are located
-in the ``RAJA``examples`` directory.
+This RAJA tutorial introduces RAJA concepts and capabilities via a 
+sequence of examples of increasing complexity. Complete working codes for 
+the examples are located in the ``RAJA``examples`` directory.
 
 To understand the discussion and code examples, a working knowledge of C++ 
-templates and lambda expression is required. Here, we provide a bit 
-of background discussion of basic aspects of C++ lambda expressions, which 
-are essential to using RAJA easily.
+templates and lambda expression is required. So, before we begin, we provide 
+a bit of background discussion of basic aspects of C++ lambda expressions, 
+which are essential to using RAJA successfully.
 
-To understand the CUDA examples, It is also important to know the difference 
-between CPU (host) and GPU (device) memory allocations and how transfers 
-between those memory spaces work. For a detailed discussion, see 
+To understand the GPU examples (e.g., CUDA), It is also important to know the 
+difference between CPU (host) and GPU (device) memory allocations and how 
+transfers between those memory spaces work. For a detailed discussion, see 
 `Device Memory <http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory>`_. 
 
 RAJA does not provide a memory model by design. Thus, users are responsible for 
@@ -60,10 +60,10 @@ Here, we provide a brief description of the basic elements of C++ lambda
 expressions. A more technical and detailed discussion is available here:
 `Lambda Functions in C++11 - the Definitive Guide <https://www.cprogramming.com/c++11/c++11-lambda-closures.html>`_ 
 
-Lambda expressions were introduced in C++ 11 to provide a lexically-scoped 
-name binding; i.e., a *closure* that stores a function with a data environment.
-In particular, a lambda expression can *capture* variables from an 
-enclosing scope for use within the local scope of the lambda expression.
+Lambda expressions were introduced in C++ 11 to provide a lexical-scoped 
+name binding; that is, a *closure* that stores a function with a data 
+environment. In particular, a lambda expression can *capture* variables from an 
+enclosing scope for use within the local scope of the function expression.
 
 A C++ lambda expression has the following form::
 
@@ -76,8 +76,8 @@ are just like arguments to a standard C++ method. Variables in the capture list
 are initialized when the lambda expression is created, while those in the 
 parameter list are set when the lambda expression is called. The body of a 
 lambda expression is similar to the body of an ordinary C++ method.
-RAJA template methods pass arguments to lambdas based on usage and context;
-typically, these are loop indices.
+RAJA templates, such as ``RAJA::forall`` and ``RAJA::kernel`` pass arguments 
+to lambdas based on usage and context; typically, these are loop indices.
 
 A C++ lambda expression can capture variables in the capture list by value 
 or by reference. This is similar to how arguments to C++ methods are passed; 
@@ -104,14 +104,13 @@ or::
 Note that the following two attempts will generate compilation errors::
 
   [=](){ x = y; };      // capture all lambda arguments by value...
-  [x, &y](){ x = y; };  // capture 'x' by value and all other arguments
-                        // (e.g., 'y') by reference...
+  [x, &y](){ x = y; };  // capture 'x' by value and 'y' by reference...
 
 Specifically, it is illegal to assign a value to a variable 'x' that is 
 captured by value since it is `read-only`.
 
 -----------------------------------
-C++ Lambda Concerns
+Notes About C++ Lambdas
 -----------------------------------
 
 There are several issues to note about C++ lambda expression; in particular, 
@@ -119,20 +118,21 @@ with respect to RAJA usage. We describe them here.
 
  * **Prefer by-value lambda capture.** 
 
-   We recommended using `capture by-value` 
-   for all lambda loop bodies passed to RAJA execution methods. To execute a
-   RAJA loop on a non-CPU device, such as a GPU, all variables accessed in
-   the loop body must be passed into the device data environment. Using 
-   capture by-value for all RAJA-based lambda usage will allow your
-   code to be portable for either CPU or GPU execution. In addition, 
-   the read-only nature of variables captured by-value can help avoid 
-   incorrect CPU code since the compiler will report incorrect usage.
+   We recommended `capture by-value` for all lambda loop bodies passed to 
+   RAJA execution methods. To execute a RAJA loop on a non-CPU device, such 
+   as a GPU, all variables accessed in the loop body must be passed into the 
+   GPU device data environment. Using capture by-value for all RAJA-based 
+   lambda usage will allow your code to be portable for either CPU or GPU 
+   execution. In addition, the read-only nature of variables captured 
+   by-value can help avoid incorrect CPU code since the compiler will report 
+   incorrect usage.
+   |
 
  * **Must use 'device' annotation for CUDA device execution.** 
 
    Any lambda passed to a CUDA execution context (or function called from a
-   CUDA device kernel, for that matter) must be annotated with 
-   the ``__device__`` annotation; e.g.,::
+   CUDA device kernel, for that matter) must be decorated with 
+   the ``__device__`` annotation; for example::
      
      RAJA::forall<RAJA::cuda_exec>( range, [=] __device__ (int i) { ... } );
 
@@ -141,6 +141,7 @@ with respect to RAJA usage. We describe them here.
 
    RAJA provides the macro ``RAJA_DEVICE`` that can be used to help switch
    between host-only or device-only CUDA compilation.
+   |
 
  * **Avoid 'host-device' annotation on a lambda that will run in host code.**
 
@@ -151,30 +152,33 @@ with respect to RAJA usage. We describe them here.
    is used in a host (i.e., CPU) execution context**. Unfortunately, a loop 
    kernel containing a lambda annotated in this way will run noticeably 
    slower on a CPU than the same lambda with no annotation.
+   |
 
  * **Cannot use 'break' and 'continue' statements in a lambda.** 
 
    In this regard, a lambda expression is similar to a function. So, if you 
    have loops in your code with these statements, they should be rewritten. 
+   |
 
  * **Global variables are not captured in a lambda.** 
 
    This fact is due to the C++ standard. If you need (read-only) access to a 
    global variable inside a lambda expression, one solution is to make a local 
-   reference to it; e.g.,::
+   reference to it; for example::
 
      double& ref_to_global_val = global_val;
 
      RAJA::forall<RAJA::cuda_exec>( range, [=] __device__ (int i) { 
        // use ref_to_global_val
      } );
+   |
 
  * **Local stack arrays are not captured by CUDA device lambdas.** 
 
    Although this is inconsistent with the C++ standard, attempting to access 
    elements in a local stack array in a CUDA device lambda will generate a 
-   compilation error. A solution to this problem is to wrap the array in a 
-   struct; e.g.,::
+   compilation error. One solution to this problem is to wrap the array in a 
+   struct; for example::
 
      struct array_wrapper {
        int[4] array;
@@ -185,6 +189,7 @@ with respect to RAJA usage. We describe them here.
      RAJA::forall<RAJA::cuda_exec>(range, [=] __device__ (int i) {
        // access entries of bounds.array
      } );
+   |
     
 ================
 RAJA Examples
@@ -197,9 +202,9 @@ features used can be found in :ref:`features-label`.
 The examples demonstrate CPU execution (sequential, SIMD, OpenMP
 multi-threading) and CUDA GPU execution. Examples that show how to use
 RAJA with other parallel programming model back-ends that are in 
-development will appear when we feel RAJA support for them is complete
-and robust. For adventurous users who wish to try experimental features, 
-usage is similar to what is shown in the examples here.
+development will appear when we feel RAJA support for them is sufficiently
+complete and robust. For adventurous users who wish to try experimental 
+features, usage is similar to what is shown in the examples here.
 
 All RAJA programming model support features are enabled via CMake options,
 which are described in :ref:`configopt-label`. 
