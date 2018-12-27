@@ -28,7 +28,7 @@ Key RAJA features shown in this example:
 The example computes a sum at each vertex on a logically-Cartesian 2D mesh
 as shown in the figure.
 
-.. figure:: vertexsum.jpg
+.. figure:: ../figures/vertexsum.jpg
 
    A portion of the area of each mesh element is summed to the vertices surrounding the element.
 

@@ -195,9 +195,9 @@ with respect to RAJA usage. We describe them here.
 RAJA Examples
 ================
 
-The remainder of this tutorial illustrates how to exercise various RAJA 
-features using simple examples. Additional information about the RAJA
-features used can be found in :ref:`features-label`.
+The remainder of this tutorial illustrates how to use RAJA features via 
+a various of examples. Additional information about the RAJA features used 
+can be found in :ref:`features-label`.
 
 The examples demonstrate CPU execution (sequential, SIMD, OpenMP
 multi-threading) and CUDA GPU execution. Examples that show how to use
@@ -213,6 +213,10 @@ For the purposes of discussion of each example, we assume that any and all
 data used has been properly allocated and initialized. This is done in the 
 example code files, but is not discussed further here.
 
+=====================================
+Simple Loops and Basic RAJA Features
+=====================================
+
 .. toctree::
    :maxdepth: 1
 
@@ -223,10 +227,14 @@ example code files, but is not discussed further here.
    tutorial/reductions.rst
    tutorial/atomic_binning.rst
    tutorial/scan.rst
+
+=================================================================
+Complex Loops, Loop Transformations, and Advanced RAJA Features
+=================================================================
+
    tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
    tutorial/permuted-layout.rst
    tutorial/offset-layout.rst
-   tutorial/complex_loop_examples.rst
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
