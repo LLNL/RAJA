@@ -224,9 +224,9 @@ example code files, but is not discussed further here.
    tutorial/atomic_binning.rst
    tutorial/scan.rst
    tutorial/matrix_multiply.rst
+   tutorial/nested_loop_reorder.rst
    tutorial/permuted-layout.rst
    tutorial/offset-layout.rst
-   tutorial/nested_loop_reorder.rst
    tutorial/complex_loop_examples.rst
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
