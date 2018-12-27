@@ -263,10 +263,15 @@ and launching the kernel with appropriate CUDA grid and thread-block dimensions.
 
 The following policy will tile row and col indices across two-dimensional
 CUDA thread blocks with 'x' and 'y' dimensions defined by a 'CUDA_BLOCK_SIZE'
-parameter that can be set at compile time.
+parameter that can be set at compile time. Within each tile, the kernel 
+iterates are executed by CUDA threads.
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
                     :lines: 654-671
+
+Note that the tiling mechanism requires a ``RAJA::statement::Tile`` type, 
+with a tile size and a tiling execution policy, plus a ``RAJA::statement::For``
+type with an execution execution policy for each tile dimension.
 
 The file ``RAJA/examples/tut_matrix-multiply.cpp``
 contains the complete working example code for all examples described in this
