@@ -15,12 +15,11 @@
 .. _nestedreorder-label:
 
 ---------------------------------
-Nested Loops and Loop Interchange
+Nested Loop Interchange
 ---------------------------------
 
 Key RAJA features shown in this example:
 
-  * ``RAJA::RangeSegment`` iteration space construct
   * ``RAJA::kernel`` loop iteration templates 
   * RAJA nested loop execution policies
   * Nested loop reordering (i.e., loop interchange)
@@ -55,8 +54,9 @@ represent the main differences between nested-loop RAJA and the
     are specified as nested statements in the ``RAJA::KernelPolicy`` type.
 
   * The loop nest ordering is specified in the nested kernel policy --
-    the first 'For' policy is the outermost loop, the second 'For' policy
-    is the loop nested inside the outermost loop, and so on.
+    the first ``statement::For`` type identifies the outermost loop, the 
+    second ``statement::For`` type identifies the loop nested inside the 
+    outermost loop, and so on.
 
 We begin by defining three named **strongly-typed** variables for the loop 
 index variables.
@@ -71,7 +71,7 @@ index variable types via template specialization:
                     :lines: 53-55
 
 When these features are used as in this example, the compiler will 
-generate error messages if the lambda index argument ordering
+generate error messages if the lambda expression index argument ordering
 and types do not match the index ordering in the tuple.
 
 We present a complete example, and then describe its key elements:
@@ -80,28 +80,25 @@ We present a complete example, and then describe its key elements:
                     :lines: 62-75
 
 Here, the ``RAJA::kernel`` execution template takes two arguments: a tuple of 
-ranges, one for each level in the loop nest, and the lambda loop body. 
-Note that the lambda has an index argument for each range and that their order
-and types match.
+ranges, one for each level in the loop nest, and the lambda expression loop 
+body. Note that the lambda has an index argument for each range and that 
+their order and types match.
 
 The execution policy for the loop nest is specified in the 
-``RAJA::KernelPolicy`` type. Each level in the loop nest has a 
-``RAJA::nested::For`` statement, which includes an execution policy for
-the level. Here, each level uses a sequential execution policy. This is for 
+``RAJA::KernelPolicy`` type. Each level in the loop nest is identified by a
+``statement::For`` type, which identifies the iteration space and
+execution policy for the level. Here, each level uses a 
+sequential execution policy. This is for 
 illustration purposes; if you run the example code, you will see the loop
-index triple printed in the exact order in which they are traversed.
-The integer that appears as the first template argument to each 'For' 
-statement corresponds to the index of a range in the tuple and also to the
-associated lambda index argument; i.e., '0' is for 'i', '1' is for 'j', 
-and '2' is for 'k'. The integer arguments are needed so that the levels in 
-the loop nest can be permuted by reordering the policy arguments while the 
-kernel remains the same.
+index triple printed in the exact order in which the loops are runs.
+The integer that appears as the first template argument to each 
+``statement::For`` type corresponds to the index of a range in the tuple 
+and also to the associated lambda index argument; i.e., '0' is for 'i', 
+'1' is for 'j', and '2' is for 'k'. The integer arguments are needed so 
+that the levels in the loop nest can be reordered by changing the policy 
+while the kernel remains the same.
 
-.. note:: **The nested ordering of the 'For' statements determines the loop 
-          nest ordering. This is analogous to how one would reorder loop
-          nest levels using C-style for-loops.** 
-
-In this case, the 'k' index corresponds to the outermost loop (slowest index), 
+Here, the 'k' index corresponds to the outermost loop (slowest index), 
 the 'j' index corresponds to the middle loop, and the 'i' index is for the 
 innermost loop (fastest index). In other words, if written using C-style 
 for-loops, the loop would appear as::
@@ -150,9 +147,9 @@ For completeness,  analogous C-style loop nest would appear as::
     }
   }
 
-Hopefully, it should be clear how this works at this point. If it seems clear 
-as mud, the typed indices and range segments can help by indicating errors 
-at compile-time.
+Hopefully, it should be clear how this works at this point. If not,
+the typed indices and typed range segments can help by enabling the 
+compiler to let you know when something is not correct.
 
 For example, this version of the loop will generate a compilation error
 (note that the kernel execution policy is the same as in the previous example): 
@@ -163,7 +160,7 @@ For example, this version of the loop will generate a compilation error
 If you carefully compare the range ordering in the tuple to the
 lambda argument types, you will see what's wrong.
 
-Do you see the issue?
+Do you see the problem?
 
 The file ``RAJA/examples/tut_nested-loop-reorder.CPU`` contains the complete 
 working example code.

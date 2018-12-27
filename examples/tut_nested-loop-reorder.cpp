@@ -70,9 +70,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       >;
 
   RAJA::kernel<KJI_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
-    [=] (IIDX i, JIDX j, KIDX k) { 
-       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
-    });
+  [=] (IIDX i, JIDX j, KIDX k) { 
+     printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+  });
 
 
 //----------------------------------------------------------------------------//
@@ -91,9 +91,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       >;
 
   RAJA::kernel<JIK_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
-    [=] (IIDX i, JIDX j, KIDX k) { 
-       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
-    });
+  [=] (IIDX i, JIDX j, KIDX k) { 
+     printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+  });
 
 
 //----------------------------------------------------------------------------//
@@ -112,9 +112,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       >;
 
   RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
-    [=] (IIDX i, JIDX j, KIDX k) {
-       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
-    });
+  [=] (IIDX i, JIDX j, KIDX k) {
+     printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+  });
 
 
 #if 0
@@ -124,9 +124,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
   RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
-    [=] (JIDX i, IIDX j, KIDX k) {
-       printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
-    });
+  [=] (JIDX i, IIDX j, KIDX k) {
+     printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
+  });
 
 #endif
 
