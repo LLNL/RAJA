@@ -217,6 +217,10 @@ example code files, but is not discussed further here.
 Simple Loops and Basic RAJA Features
 =====================================
 
+The examples in this section illustrate how to use ``RAJA::forall`` methods
+to execute simple loop kernels; i.e., non-nested loops. It also describes
+iteration spaces, reductions, atomic operations, and scans.
+
 .. toctree::
    :maxdepth: 1
 
@@ -231,6 +235,11 @@ Simple Loops and Basic RAJA Features
 =================================================================
 Complex Loops: Transformations and Advanced RAJA Features
 =================================================================
+
+The examples in this section illustrate how to use ``RAJA::kernel`` methods
+to execute complex loop kernels, such as nested loops. It also describes
+how to construct kernel execution policies, and use different view types and
+tiling mechanism to transform loop patterns.
 
 .. toctree::
    :maxdepth: 1
