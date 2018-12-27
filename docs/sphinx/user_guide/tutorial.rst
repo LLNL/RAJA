@@ -229,8 +229,11 @@ Simple Loops and Basic RAJA Features
    tutorial/scan.rst
 
 =================================================================
-Complex Loops, Loop Transformations, and Advanced RAJA Features
+Complex Loops: Transformations and Advanced RAJA Features
 =================================================================
+
+.. toctree::
+   :maxdepth: 1
 
    tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
