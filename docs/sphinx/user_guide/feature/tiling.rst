@@ -116,4 +116,4 @@ local tile loop index is the third lambda argument (tuple parameter '1').
 .. note:: The global loop index always appears as the first lambda expression
           argument. This is followed by the parameter tuples where the meaning 
           of each is determined by the integer in the ``Param`` statement
-           specified for the loop statement types. 
+          pecified for the loop statement types. 

@@ -28,14 +28,14 @@ typically allocated as::
 
 Using a one-dimensional array makes it necessary to convert
 two-dimensional indices (rows and columns of a matrix) to a one-dimensional
-pointer offset index to access the array memory location. One could introduce
-a macro such as::
+pointer offset index to access the corresponding array memory location. One 
+could introduce a macro such as::
 
    #define A(r, c) A[c + N_c * r]
 
 to access a matrix entry in row `r` and column `c`. However, this solution has
-limitations. For example, adopting a different matrix layout, or using
-other matrices, requires additional macro definitions. To simplify 
+limitations; e.g., additional macro definitions are needed when adopting a 
+different matrix data layout or when using other matrices. To facilitate
 multi-dimensional indexing and different indexing layouts, RAJA provides 
 ``RAJA::View`` and ``RAJA::Layout`` classes.
 
@@ -44,28 +44,28 @@ RAJA View
 ----------
 
 A ``RAJA::View`` object wraps a pointer and enables various indexing schemes
-based on the definition of a ``RAJA::Layout`` object. Here, we 
-create a ``RAJA::View`` for a matrix of dimensions :math:`N_r \times N_c` 
-using a RAJA View and the simplest RAJA Layout::
+based on the definition of a ``RAJA::Layout`` object. We can
+create a ``RAJA::View`` for a matrix with dimensions :math:`N_r \times N_c` 
+using a RAJA View and a default RAJA two-dimensional Layout as follows::
 
    double* A = new double [N_r * N_c];
 
    const int DIM = 2;
    RAJA::View<double, RAJA::Layout<DIM> > Aview(A, N_r, N_c);
 
-The ``RAJA::View`` constructor takes a pointer and the extent of each dimension 
-as its arguments. The template parameters to the ``RAJA::View`` type define 
-the pointer type and the Layout type; here, the Layout just defines the 
-number of index dimensions. Using the resulting view object, one may 
-access matrix entries in a row-major fashion through the View parenthesis 
-operator::
+The ``RAJA::View`` constructor takes a pointer to the matrix data and the 
+extent of each matrix dimension as arguments. The template parameters to 
+the ``RAJA::View`` type define the pointer type and the Layout type; here, 
+the Layout just defines the number of index dimensions. Using the resulting 
+view object, one may access matrix entries in a row-major fashion (the 
+dafault RAJA layout) through the View parenthesis operator::
 
-   // r - row of a matrix
-   // c - column of a matrix
-   // equivalent indexing as A[c + r * N_c]
+   // r - row index of a matrix
+   // c - column index of a matrix
+   // equivalent to indexing as A[c + r * N_c]
    Aview(r, c) = ...;
 
-A ``RAJA::View`` can support an arbitrary number of index dimensions::
+A ``RAJA::View`` can support any number of index dimensions::
 
    const int DIM = n+1;
    RAJA::View< double, RAJA::Layout<DIM> > Aview(A, N0, ..., Nn);
@@ -86,7 +86,7 @@ accesses array entries with unit stride. The loop::
      Aview(i0, i1, ..., j, ..., iN) = ...
    }
 
-access array entries with stride :math:`N_n * N_(n-1) * ... * N_(j+1)`.
+access array entries with stride :math:`N_n * N\ :sub:`(n-1)`\ * ... * N\ :sub:`(j+1)`\.
 
 ------------
 RAJA Layout
