@@ -30,7 +30,7 @@ matrix :math:`At` of size :math:`N_c \times N_r`.
 We compute the matrix transpose using a tiling algorithm, which iterates 
 over tiles of the matrix A and performs a transpose copy of a tile without 
 explicitly storing the tile. The algorithm is expressed as a collection 
-of ``outer`` and ``inner`` for loops. Iterations of the inner loop will
+of outer and inner for-loops. Iterations of the inner loop will
 transpose tile entries; while outer loops will iterate over
 the tiles needed to compute the transpose. 
 

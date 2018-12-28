@@ -118,16 +118,17 @@ are identified by lambda expression arguments '0' and '1', respectively.
 A couple of notes about the nested inner loops are worth emphasizing. First, the
 loops use ``RAJA::statement::ForICount`` types rather than 
 ``RAJA::statement::For`` types that we have seen in earlier ``RAJA::kernel``
-nested loop examples. The ``RAJA::statement::ForICount`` types generate the
-local tile indices and pass them into the lambda loop body expressions. As
+nested loop examples. The ``RAJA::statement::ForICount`` type generates 
+local tile indice passed to lambda loop body expressions within them. As
 the attentive reader will observe, there is no local tile index computation 
-done in the lambdas here. The first integer template parameter for each 
-``RAJA::statement::ForICount`` type indicates the item in the iteration
-space tuple passed to the ``RAJA::kernel_param``method to which it applies;
-this is similar to ``RAJA::statement::For`` usage. The second template 
-parameter for each ``RAJA::statement::ForICount`` type indicates the position
-in the parameter tuple argument passed to the ``RAJA::kernel_param``method
-that will hold the local tile index. The loop execution policy template
+needed in the lambdas for the RAJA version of the kernel as a result. The 
+first integer template parameter for each ``RAJA::statement::ForICount`` type 
+indicates the item in the iteration space tuple passed to the 
+``RAJA::kernel_param`` method to which it applies; this is similar to 
+``RAJA::statement::For`` usage. The second template parameter for each 
+``RAJA::statement::ForICount`` type indicates the position in the parameter 
+tuple argument passed to the ``RAJA::kernel_param``method that will hold the 
+associated local tile index. The loop execution policy template
 argument that follows works the same as in ``RAJA::statement::For`` usage.
 For more detailed discussion of RAJA loop tiling statement types, please see
 :ref:`tiling-label`.

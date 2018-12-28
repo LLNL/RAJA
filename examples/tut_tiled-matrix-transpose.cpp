@@ -96,8 +96,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int TILE_DIM = 16;
 
   // Calculate number of tiles (Needed for C++ version)
-  const int outer_Dim0 = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dim1 = (N_r - 1) / TILE_DIM + 1;
+  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
 
   //
   // Initialize matrix data
@@ -118,8 +118,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dim1; ++by) {
-    for (int bx = 0; bx < outer_Dim0; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by) {
+    for (int bx = 0; bx < outer_Dimc; ++bx) {
       //
       // (1) Loops to iterate over tile entries
       //

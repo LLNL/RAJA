@@ -154,8 +154,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (2) Inner loops to write array data into output array tile
       //
-      //     Note: loop order is swapped so that output matrix data access 
-      //           is stride-1.
+      //     Note: loop order is swapped from above so that output matrix 
+      //           data access is stride-1.
       //
       for (int tx = 0; tx < TILE_DIM; ++tx) {
         for (int ty = 0; ty < TILE_DIM; ++ty) {
