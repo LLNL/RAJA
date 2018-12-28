@@ -129,9 +129,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
-          //Bounds check
-          if(row < N_r && col < N_c) 
+          // Bounds check
+          if (row < N_r && col < N_c) {
             Atview(col, row) = Aview(row, col);
+          }
         }
       }
       

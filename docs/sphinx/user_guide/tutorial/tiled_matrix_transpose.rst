@@ -67,7 +67,7 @@ dimension and generate iteration index values within the bounds of the
 associated iteration space. The complete sequential RAJA variant is given below:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
-                   :lines: 166-185
+                   :lines: 167-183
 
 The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
 OpenMP and CUDA variants.
