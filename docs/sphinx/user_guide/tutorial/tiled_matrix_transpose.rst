@@ -20,30 +20,24 @@ Tiled Matrix Transpose
 
 Key RAJA features shown in this example:
 
-  * Basic usage of RAJA kernel
-  * Multiple lambdas
-  * Tile statement
+  * ``RAJA::kernel`` usage with multiple lambdas
+  * ``RAJA::statement::Tile`` policy type
 
-In this example, an input matrix A of dimension N_r x N_c is
-transposed and returned as a second matrix At of size N_c x N_r.
+In this example, we compute the transpose of an input matrix 
+:math:`A` of size :math:`N_r \times N_c` store the result in a second 
+matrix :math:`At` of size :math:`N_c \times N_r`.
 
-This operation is carried out using a tiling algorithm.
-The algorithm iterates over tiles of the matrix A and
-performs a transpose copy of a tile without explcitly 
-storing the tile. A more advanced version using RAJA 
-local arrays may be found here :ref:`matrixtransposelocalarray-label`.
-
-The algorithm is expressed as a collection of ``outer``
-and ``inner`` for loops. Iterations of the inner loop will
+We compute the matrix transpose using a tiling algorithm, which iterates 
+over tiles of the matrix A and performs a transpose copy of a tile without 
+explicitly storing the tile. The algorithm is expressed as a collection 
+of ``outer`` and ``inner`` for loops. Iterations of the inner loop will
 transpose tile entries; while outer loops will iterate over
-the number of tiles needed to carryout the transposition.
-We do not assume that tiles divide the number of rows and
-and columns of the matrix.
+the tiles needed to compute the transpose. 
 
-Starting with a classic C++ implementation, we first choose tile
-dimensions smaller than the dimensions of the matrix. Furthermore,
-it is not necessary for the tile dimensions to divide the number
-of rows and columns in the matrix A.
+We start with a non-RAJA C++ implementation, where we choose tile
+dimensions smaller than the matrix dimensions. Note that we do not assume 
+that tiles divide evenly the number of rows and and columns of the matrix.
+However, we do assume square tiles.
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
                    :lines: 75-76,96
@@ -53,27 +47,32 @@ Next, we calculate the number of tiles needed to carryout the transpose.
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
                    :lines: 99-100
 
-Thus, the C++ implementation may look like the following:
+Then, the C++ implementation may look like the following:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
                    :lines: 118-139
 
-.. note:: In the case the number of tiles leads to excess iterations, a bounds
-          check is added to avoid indexing out of bounds. Out of bounds indexing
-          occurs when the matrix dimensions are not divisible by the tile dimensions.
+Note that we include an bounds check in the code to avoid indexing out of
+bounds when the tiles do not divide the matrix dimensions evenly.
 
 ^^^^^^^^^^^^^^^^^^^^^
-RAJA::kernel Variants
+RAJA::kernel Variant
 ^^^^^^^^^^^^^^^^^^^^^
 
-To carryout the tiling pattern, RAJA kernel include tiling statements. The
-``Tile`` statement determines the number of necessary tiles to carry 
-out the transpose and return iterate values within bounds of the original 
-iteration space. The Tile statement takes the dimension of the tile as a 
-template parameter. The complete sequential RAJA variant is given below:
+For the ``RAJA::kernel`` variant, we use ``RAJA::statement::Tile`` types
+for the outer loop tiling, with ``RAJA::statement::tile_fixed`` parameters
+which identify the tile dimensions. The ``RAJA::statement::Tile`` types 
+compute the number of tiles needed to iterate over all matrix entries in each
+dimension and generate iteration index values within the bounds of the
+associated iteration space. The complete sequential RAJA variant is given below:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
                    :lines: 166-185
 
-The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code
-for the examples described in this section along with OpenMP and CUDA variants.
+The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
+OpenMP and CUDA variants.
+
+A more advanced version using RAJA local arrays for CPU cache blocking or to 
+access GPU shared memory is described here 
+:ref:`matrixtransposelocalarray-label`.
+
