@@ -111,10 +111,10 @@ After this kernel executes, '*sum' will be equal to 'N'.
 AtomicRef
 ^^^^^^^^^^^^^^^^^^^^
 
-RAJA also provides an atomic interface similar to C++ 'std::atomic', but which
-works for arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` 
-provides an object-oriented interface to the atomic methods described above. 
-For example, after the following operations:: 
+RAJA also provides an atomic interface similar to the C++20 'std::atomic_ref', 
+but which works for arbitrary memory locations. The class 
+``RAJA::atomic::AtomicRef`` provides an object-oriented interface to the 
+atomic methods described above. For example, after the following operations:: 
 
   double val = 2.0;
   RAJA::atomic::AtomicRef<double,  RAJA::omp_atomic > sum(&val);
@@ -124,12 +124,6 @@ For example, after the following operations::
   sum += 1.0; 
 
 the value of 'val' will be 5.
-
-Note that the operations provided by the 'AtomicRef' class return the object
-that holds the address of the data given to the constructor. It will likely 
-change with each atomic update call. If you need to keep the original value 
-of the data before an atomic call, you need to use the atomic methods described 
-earlier and not the ``RAJA::atomic::AtomicRef`` interface.
 
 .. _atomicpolicy-label:
 
