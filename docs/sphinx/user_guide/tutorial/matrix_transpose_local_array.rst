@@ -127,7 +127,7 @@ indicates the item in the iteration space tuple passed to the
 ``RAJA::kernel_param`` method to which it applies; this is similar to 
 ``RAJA::statement::For`` usage. The second template parameter for each 
 ``RAJA::statement::ForICount`` type indicates the position in the parameter 
-tuple argument passed to the ``RAJA::kernel_param``method that will hold the 
+tuple passed to the ``RAJA::kernel_param`` method that will hold the 
 associated local tile index. The loop execution policy template
 argument that follows works the same as in ``RAJA::statement::For`` usage.
 For more detailed discussion of RAJA loop tiling statement types, please see
