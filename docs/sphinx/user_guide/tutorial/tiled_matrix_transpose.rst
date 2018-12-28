@@ -24,7 +24,7 @@ Key RAJA features shown in this example:
   * ``RAJA::statement::Tile`` policy type
 
 In this example, we compute the transpose of an input matrix 
-:math:`A` of size :math:`N_r \times N_c` store the result in a second 
+:math:`A` of size :math:`N_r \times N_c` and store the result in a second 
 matrix :math:`At` of size :math:`N_c \times N_r`.
 
 We compute the matrix transpose using a tiling algorithm, which iterates 
@@ -72,7 +72,6 @@ associated iteration space. The complete sequential RAJA variant is given below:
 The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
 OpenMP and CUDA variants.
 
-A more advanced version using RAJA local arrays for CPU cache blocking or to 
-access GPU shared memory is described here 
-:ref:`matrixtransposelocalarray-label`.
+A more advanced version using RAJA local arrays for CPU cache blocking and
+using GPU shared memory is discussed in :ref:`matrixtransposelocalarray-label`.
 

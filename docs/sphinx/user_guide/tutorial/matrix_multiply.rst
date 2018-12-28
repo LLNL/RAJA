@@ -228,8 +228,9 @@ is indeed the case.
 
 Next, we show how to collapse nested loops in an OpenMP parallel region
 using a ``RAJA::statement::Collapse`` type in the execution policy. This
-allows multiple levels in a loop nest to be parallelized using OpenMP 
-directives. The following policy will collapse the two outer loops:
+allows one to parallelize multiple levels in a loop nest using OpenMP 
+directives, for instance. The following policy will collapse the two outer 
+loops:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
                     :lines: 562-572
@@ -273,6 +274,10 @@ Note that the tiling mechanism requires a ``RAJA::statement::Tile`` type,
 with a tile size and a tiling execution policy, plus a ``RAJA::statement::For``
 type with an execution execution policy for each tile dimension.
 
-The file ``RAJA/examples/tut_matrix-multiply.cpp``
-contains the complete working example code for all examples described in this
-section. It also contains a raw CUDA version of the kernel for comparison. 
+In :ref:`tiledmatrixtranspose-label` and :ref:`matrixtransposelocalarray-label`,
+we will discuss loop tiling in more detail including how it can be used to 
+improve performance of certain algorithms.
+
+The file ``RAJA/examples/tut_matrix-multiply.cpp`` contains the complete 
+working code for all examples described in this section. It also contains 
+a raw CUDA version of the kernel for comparison. 
