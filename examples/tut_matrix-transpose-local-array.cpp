@@ -227,7 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >;
 
   RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                    RAJA::RangeSegment(0, N_r)),
+                                                     RAJA::RangeSegment(0, N_r)),
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
