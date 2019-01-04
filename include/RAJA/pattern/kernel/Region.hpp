@@ -72,7 +72,7 @@ static RAJA_INLINE void exec(Data &&data)
 
 };
 
-//Statement executor to synchronize omp threads in a kernel region
+//Statement executor to synchronize omp threads inside a kernel region
 template<>
 struct StatementExecutor<statement::OmpSyncThreads> {
 
