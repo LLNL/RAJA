@@ -936,20 +936,16 @@ TEST(Kernel, RegionSeq)
   using Pol =
     RAJA::KernelPolicy<
       RAJA::statement::Region<RAJA::seq_region,
-
         RAJA::statement::For<0, RAJA::loop_exec,
-                           RAJA::statement::Lambda<0>
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<2>
         >
-
-       ,RAJA::statement::For<0, RAJA::loop_exec,
-                             RAJA::statement::Lambda<1>
-        >
-
-       ,RAJA::statement::For<0, RAJA::loop_exec,
-                             RAJA::statement::Lambda<2>
-        >
-
-      >//region
+      >
     >;
 
   RAJA::kernel<Pol>(
@@ -997,21 +993,17 @@ TEST(Kernel, RegionOMP)
   using Pol =
     RAJA::KernelPolicy<
       RAJA::statement::Region<RAJA::omp_parallel_region,
-
         RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-                           RAJA::statement::Lambda<0>
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::OmpSyncThreads,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+          RAJA::statement::Lambda<2>
         >
-
-       ,RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-                             RAJA::statement::Lambda<1>
-        >
-
-       ,OmpSyncThreads
-       ,RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-                             RAJA::statement::Lambda<2>
-        >
-
-      >//region
+      >
     >;
 
   RAJA::kernel<Pol>(
