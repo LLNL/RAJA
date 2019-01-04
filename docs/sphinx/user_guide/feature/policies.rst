@@ -170,15 +170,18 @@ above.
 
           This allows changing number of workers at runtime.
 
-.. note:: CUDA thread-direct policy constraints:
-            * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not recommended. Your code may do something, but likely will not do what you expect and/or be correct.
-            * If multiple thread direct policies are used in a kernel (using different thread dimensions), the product of sizes of the corresponding iteration spaces must be :math:`\leq` 1024. You cannot launch a CUDA kernel with more than 1024 threads per block.
-            * **Thread-direct policies are recommended only for certain loop patterns, such as tiling.**
+Several notable constraints apply to RAJA CUDA thread-direct policies.
 
-.. note:: CUDA thread and block loop policies:
-            * There is no constraint on the product of sizes of the associated loop iteration space.
-            * These polices enable a having a larger number of iterates than threads in the x/y/z thread dimension.
-            * **Cuda thread and block loop policies are recommended for most loop patterns.**
+.. note:: * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not recommended. Your code may do something, but likely will not do what you expect and/or be correct.
+          * If multiple thread direct policies are used in a kernel (using different thread dimensions), the product of sizes of the corresponding iteration spaces must be :math:`\leq` 1024. You cannot launch a CUDA kernel with more than 1024 threads per block.
+          * **Thread-direct policies are recommended only for certain loop patterns, such as tiling.**
+
+Several notes regarding CUDA thread and block loop policies are also good to 
+know.
+
+.. note:: * There is no constraint on the product of sizes of the associated loop iteration space.
+          * These polices enable a having a larger number of iterates than threads in the x/y/z thread dimension.
+          * **Cuda thread and block loop policies are recommended for most loop patterns.**
 
 .. _indexsetpolicy-label:
 
