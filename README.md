@@ -1,3 +1,18 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC.)
+
+[comment]: # (Produced at the Lawrence Livermore National Laboratory)
+
+[comment]: # (LLNL-CODE-689114)
+
+[comment]: # (All rights reserved.)
+
+[comment]: # (This file is part of RAJA.)
+
+[comment]: # (For details about use and distribution, please read RAJA/LICENSE.)
+[comment]: # (#################################################################)
+
 RAJA v0.7.0
 ============
 
