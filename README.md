@@ -1,4 +1,4 @@
-RAJA v0.6.0
+RAJA v0.7.0
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -119,7 +119,7 @@ Please see the [RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/cont
 Release
 -----------
 
-Copyright (c) 2016-2017, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-2019, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 
