@@ -63,7 +63,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                
       array[i] = rand() % M;
       
-  );
+  });
   //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;
