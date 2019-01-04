@@ -113,9 +113,10 @@ two entries '0' and '1' in the kernel parameter tuple (second argument to
 ``RAJA::kernel_param``). Then, the inner initialization loop and inner print 
 loops are run with the respective lambda bodies defined in the kernel.
 
-The following memory policies are available to specify memory allocation 
-for ``RAJA::LocalArray`` objects:
+-------------------
+Memory Policies
+-------------------
 
-  *  ``RAJA::cpu_tile_mem`` - Allocate CPU memory on the stack
-  *  ``RAJA::cuda_shared_mem`` - Allocate CUDA shared memory
-  *  ``RAJA::cuda_thread_mem`` - Allocate CUDA thread private memory
+``RAJA::LocalArray`` supports CPU stack-allocated memory and CUDA GPU shared
+memory and thread private memory. See :ref:`localarraypolicy-label` for a
+discussion of available memory policies.

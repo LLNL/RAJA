@@ -206,7 +206,8 @@ loop execution template to execute the indices defined by its segments::
 .. note:: Iterating over the indices of all segments in a RAJA index set 
           requires a two-level execution policy. The outer level specifies
           how to iterate over the seqments. The inner level specifies how
-          each segment will execute.
+          each segment will execute. See :ref:`indexsetpolicy-label` for
+          more information about IndexSet execution policies.
 
 In this example, the loop iterations will execute in three chunks defined by 
 the two range segments and one list segment. The segments will be iterated 

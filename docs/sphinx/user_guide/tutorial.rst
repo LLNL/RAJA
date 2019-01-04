@@ -213,6 +213,8 @@ For the purposes of discussion of each example, we assume that any and all
 data used has been properly allocated and initialized. This is done in the 
 example code files, but is not discussed further here.
 
+.. _tutorialbasic-label:
+
 =====================================
 Simple Loops and Basic RAJA Features
 =====================================
@@ -231,6 +233,8 @@ iteration spaces, reductions, atomic operations, and scans.
    tutorial/reductions.rst
    tutorial/atomic_binning.rst
    tutorial/scan.rst
+
+.. _tutorialcomplex-label:
 
 =================================================================
 Complex Loops: Transformations and Advanced RAJA Features

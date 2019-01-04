@@ -102,36 +102,10 @@ Note that the location index for the minimum array value can be one of two
 values depending on the order of the reduction finalization since the loop
 is run in parallel.
 
-.. _reducepolicy-label:
-
-------------------
+-------------------
 Reduction Policies
-------------------
+-------------------
 
-This section summarizes RAJA reduction policies.
-
-.. note:: * All RAJA reduction policies are in the namespace ``RAJA``.
-
-There are some important constraints note about RAJA reduction usage.
-
-.. note:: * To guarantee correctness, a **reduction policy must be consistent
-            with the loop execution policy** used. For example, a CUDA 
-            reduction policy must be used when the execution policy is a 
-            CUDA policy, an OpenMP reduction policy must be used when the 
-            execution policy is an OpenMP policy, and so on.
-          * **RAJA reductions used with SIMD execution policies are not 
-            guaranteed to generate correct results at the current time.**
-
-* ``seq_reduce``  - Reduction policy for use with sequential and 'loop' execution policies.
-
-* ``omp_reduce``  - Reduction policy for use with OpenMP execution policies.
-
-* ``omp_reduce_ordered``  - Reduction policy for use with OpenMP execution policies that guarantees reduction is always performed in the same order; i.e., result is reproducible.
-
-* ``omp_target_reduce``  - Reduction policy for use with OpenMP target offload execution policies (i.e., when using OpenMP4.5 to run on a GPU).
-
-* ``tbb_reduce``  - Reduction policy for use with TBB execution policies.
-
-* ``cuda_reduce`` - Reduction policy for use with CUDA execution policies that uses CUDA device synchronization when finalizing reduction value.
-
-* ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that may use CUDA atomic operations in the reduction.
+For more information about available RAJA reduction policies and guidance
+on which to use with RAJA execution policies, please see 
+:ref:`reducepolicy-label`.

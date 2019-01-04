@@ -138,3 +138,11 @@ types of scans, such as:
 
 .. note:: * All RAJA scan operators are in the namespace ``RAJA::operators``.
 
+-------------------
+Scan Policies
+-------------------
+
+For information about RAJA execution policies to use with scan operations, 
+please see :ref:`policies-label`.
+
+

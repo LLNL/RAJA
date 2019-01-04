@@ -216,4 +216,6 @@ loop functionality and :ref:`nestedreorder-label` for a detailed example
 describing nested loop reordering.
 
 A summary of all RAJA execution policies that may be used with ``RAJA::forall``
-or ``RAJA::kernel`` may be found in :ref:`policies-label`.
+or ``RAJA::kernel`` may be found in :ref:`policies-label`. Also, a discussion
+of how to construct ``RAJA::KernelPolicy`` types and available 
+``RAJA::statement`` types can be found in :ref:`loop_elements-kernelpol-label`.

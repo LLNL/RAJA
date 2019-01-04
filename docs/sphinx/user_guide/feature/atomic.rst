@@ -125,36 +125,9 @@ atomic methods described above. For example, after the following operations::
 
 the value of 'val' will be 5.
 
-.. _atomicpolicy-label:
-
----------------
+-----------------
 Atomic Policies
----------------
+-----------------
 
-.. note:: * All RAJA atomic policies are in the namespace ``RAJA::atomic``.
-          * There are no RAJA atomic policies for TBB (Intel Threading Building 
-            Blocks) execution contexts currently.
-
-* ``seq_atomic``     - Policy for use in sequential execution contexts, such as when using RAJA `seq_exec` or `loop_exec` execution policies. RAJA provides sequential atomic policies for consistency with parallel policies, so that sequential and parallel execution policies may be swapped without altering loop kernel code. Note that sequential atomic operations will likely produce incorrect results when used in a parallel execution context.
-
-* ``omp_atomic``     - Policy to use with OpenMP loop execution policies; i.e., they apply the 'omp atomic' pragma when applicable and revert to builtin compiler atomics otherwise.
-
-* ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code; i.e., with CUDA execution polcies.
-
-* ``builtin_atomic`` - Policy to use compiler "builtin" atomic operations.
-
-* ``auto_atomic``    - Policy that will attempt to do the "correct thing" without requiring an atomic policy change when a loop  execution policy is changed. For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
-
-To illustrate, we could use the 'auto_atomic' policy in the example above:: 
-
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
-    [=] RAJA_DEVICE (RAJA::Index_type i) {
-
-    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(&sum, 1);
-
-  });
-
-Here, the atomic operation knows that it is used within a CUDA execution 
-context and the CUDA atomic operation is applied. Similarly, if the 'forall' 
-method used an OpenMP execution policy, the OpenMP version of the atomic 
-operation would be used.
+For more information about available RAJA atomic policies, please see
+:ref:`atomicpolicy-label`.
