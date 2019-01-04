@@ -305,9 +305,9 @@ Atomic Policies
 Each RAJA atomic operation must be defined with an 'atomic policy'
 type. Atomic policy types are distinct from loop execution policy types.
 
-..note :: An atomic policy type must be consistent with the loop execution 
-          policy for the kernel in which the atomic operation is used. The
-          following table summarizes RAJA atomic policies and usage.
+.. note :: An atomic policy type must be consistent with the loop execution 
+           policy for the kernel in which the atomic operation is used. The
+           following table summarizes RAJA atomic policies and usage.
 
 ===================== ============= ===========================================
 Atomic Policy         Loop Policies Brief description
