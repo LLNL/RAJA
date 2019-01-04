@@ -919,6 +919,68 @@ TEST(Kernel, CollapseSeq)
 }
 
 #if defined(RAJA_ENABLE_OPENMP)
+
+TEST(Kernel, Region)
+{
+
+  const int N = 300;
+  int * Arr_a = new int[N];
+  int * Arr_b = new int[N];
+  int * Arr_c = new int[N];
+
+  for(int i=0; i<N; ++i) {
+    Arr_a[i] = 0;
+    Arr_b[i] = 0;
+    Arr_c[i] = 0;
+  }
+
+  using Pol =
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::omp_parallel_region,
+
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+                           RAJA::statement::Lambda<0>
+        >
+
+       ,RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+                             RAJA::statement::Lambda<1>
+        >
+
+       ,OmpSyncThreads
+       ,RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+                             RAJA::statement::Lambda<2>
+        >
+
+      >//region
+    >;
+
+  RAJA::kernel<Pol>(
+    RAJA::make_tuple(RAJA::RangeSegment(0,N)),
+
+    [=] (int i) {
+      Arr_a[i] = 50;
+    },
+
+    [=] (int i) {
+      Arr_b[i] = 100;
+    },
+
+    [=] (int i) {
+      Arr_c[i] = Arr_a[i] + Arr_b[N - 1 - i];
+    }
+
+   );
+
+  for(int i=0; i<N; ++i) {
+    ASSERT_EQ(Arr_c[i], 150);
+  }
+
+  delete [] Arr_a;
+  delete [] Arr_b;
+  delete [] Arr_c;
+}
+
+
 TEST(Kernel, Collapse2)
 {
   int N = 16;
@@ -2139,8 +2201,3 @@ CUDA_TEST(Kernel, CudaExec_1threadexec)
 }
 
 #endif
-
-
-
-
-
