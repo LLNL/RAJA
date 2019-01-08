@@ -410,7 +410,7 @@ TEST(SegmentTest, constructors)
   }
 
   {
-    RAJA::ListSegment first(RAJA::make_range(0, 10));
+    RAJA::ListSegment first(RAJA::RangeSegment(0, 10));
     ASSERT_EQ(RAJA::Owned, first.getIndexOwnership());
 
     RAJA::ListSegment copied(first);
@@ -429,7 +429,7 @@ TEST(SegmentTest, constructors)
 TEST(SegmentTest, assignments)
 {
   {
-    auto r = RAJA::make_range(RAJA::Index_type(), 5);
+    auto r = RAJA::RangeSegment(RAJA::Index_type(), 5);
     RAJA::RangeSegment seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::RangeSegment seg2 = std::move(r);
