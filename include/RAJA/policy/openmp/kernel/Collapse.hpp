@@ -86,13 +86,11 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for \
-    private(i0,i1) \
-    firstprivate(privatizer) \
+#pragma omp parallel for private(i0, i1) firstprivate(privatizer) \
     RAJA_COLLAPSE(2)
     for (i0 = 0; i0 < l0; ++i0) {
       for (i1 = 0; i1 < l1; ++i1) {
-        auto &private_data = privatizer.get_priv();
+        auto& private_data = privatizer.get_priv();
         private_data.template assign_offset<Arg0>(i0);
         private_data.template assign_offset<Arg1>(i1);
         execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
@@ -123,14 +121,12 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for \
-    private(i0,i1,i2) \
-    firstprivate(privatizer) \
+#pragma omp parallel for private(i0, i1, i2) firstprivate(privatizer) \
     RAJA_COLLAPSE(3)
     for (i0 = 0; i0 < l0; ++i0) {
       for (i1 = 0; i1 < l1; ++i1) {
         for (i2 = 0; i2 < l2; ++i2) {
-          auto &private_data = privatizer.get_priv();
+          auto& private_data = privatizer.get_priv();
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
           private_data.template assign_offset<Arg2>(i2);
@@ -140,6 +136,9 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     }
   }
 };
+
+
+
 
 
 }  // namespace internal

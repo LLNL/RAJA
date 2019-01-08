@@ -90,16 +90,14 @@ TEST(CampTuple, CatPair)
 
 struct NoDefCon {
   NoDefCon() = delete;
-  NoDefCon(int i) : num{i} {(void)num;}
+  NoDefCon(int i) : num{i} { (void)num; }
   NoDefCon(NoDefCon const &) = default;
-  private:
+
+private:
   int num;
 };
 
-TEST(CampTuple, NoDefault)
-{
-  camp::tuple<NoDefCon> t(NoDefCon(1));
-}
+TEST(CampTuple, NoDefault) { camp::tuple<NoDefCon> t(NoDefCon(1)); }
 
 struct s1;
 struct s2;

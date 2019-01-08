@@ -250,6 +250,7 @@ statement types:
   * ``RAJA::statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where iteration space of each loop level are associated to threads and/or thread blocks. 
   * ``RAJA::statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier; a similar thread barrier for OpenMP will be added soon.
   * ``RAJA::statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane iteration pattern over multiple indices.
+  * ``RAJA::statement::Reduce< ReducePolicy, Operator, ParamId, EnclosedStatements >`` reduces a value in parameter ParamId across threads to a single thread. After reduction, executes 'EnclosedStatements' on thread that recieved the final reduced value.
   * ``RAJA::statement::SetShmemWindow< EnclosedStatements >`` sets a window into a shared memory buffer for loops described by 'EnclosedStatements'.
   * ``RAJA::statement::Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` creates tiling (or cache blocking) of outer loop associated with kernel iteration space with tuple index 'ArgId' for inner loops described by 'EnclosedStatements' using given 'TilePolicy' (e.g., fixed tile size) and 'ExecPolicy' execution policy.
 

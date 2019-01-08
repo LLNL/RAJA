@@ -28,7 +28,9 @@
 
 using namespace RAJA;
 
-using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                         RAJA::ListSegment,
+                                         RAJA::RangeStrideSegment>;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
@@ -76,10 +78,9 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-
-    ReduceMin<cuda_reduce<block_size>, double> dmin0; dmin0.reset(DEFAULT_VAL);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
-    ReduceMin<cuda_reduce<block_size>, double> dmin2(BIG_VAL);
+    ReduceMin<cuda_reduce, double> dmin0; dmin0.reset(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin2(BIG_VAL);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
@@ -91,11 +92,12 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
         dcurrentMin = RAJA_MIN(dcurrentMin, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
-        dmin0.min(dvalue[i]);
-        dmin1.min(2 * dvalue[i]);
-        dmin2.min(dvalue[i]);
-      });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_DEVICE(int i) {
+                                       dmin0.min(dvalue[i]);
+                                       dmin1.min(2 * dvalue[i]);
+                                       dmin2.min(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMin, dmin0.get());
       ASSERT_FLOAT_EQ(dcurrentMin * 2, dmin1.get());
@@ -116,18 +118,18 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
         dcurrentMin = RAJA_MIN(dcurrentMin, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
-        dmin0.min(dvalue[i]);
-        dmin1.min(2 * dvalue[i]);
-        dmin2.min(dvalue[i]);
-      });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_HOST_DEVICE(int i) {
+                                       dmin0.min(dvalue[i]);
+                                       dmin1.min(2 * dvalue[i]);
+                                       dmin2.min(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMin, dmin0.get());
       ASSERT_FLOAT_EQ(dcurrentMin * 2, dmin1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmin2.get());
     }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -155,8 +157,8 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
 
     double droll = dist(mt);
     int index = int(dist2(mt));
@@ -206,8 +208,8 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
 
     double dcurrentMin = DEFAULT_VAL;
 
-    ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce, double> dmin1(DEFAULT_VAL);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0

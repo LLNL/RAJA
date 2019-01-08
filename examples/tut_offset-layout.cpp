@@ -268,8 +268,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using NESTED_EXEC_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_exec, //row
-          RAJA::statement::For<0, RAJA::cuda_thread_exec, //col
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop, //row
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop, //col
             RAJA::statement::Lambda<0>
           >
         >

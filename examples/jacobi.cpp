@@ -322,9 +322,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_threadblock_exec<32>,
-        RAJA::statement::For<0, RAJA::cuda_threadblock_exec<32>,
-          RAJA::statement::Lambda<0>
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+              RAJA::statement::Lambda<0>
+            >
+          >
         >
       >
     > >;
@@ -357,7 +361,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //
     // Compute residual and update Iold
     //
-    RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> RAJA_resI2(0.0);
+    RAJA::ReduceSum<RAJA::cuda_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       gridRange, [=] RAJA_DEVICE (RAJA::Index_type k) {
       

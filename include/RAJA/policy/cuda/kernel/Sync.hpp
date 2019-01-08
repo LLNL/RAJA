@@ -61,29 +61,20 @@ struct CudaSyncThreads : public internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <typename Data, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::CudaSyncThreads, IndexCalc> {
+template <typename Data>
+struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
 
-  inline __device__ void exec(Data &, int, int) { __syncthreads(); }
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &, bool) { __syncthreads(); }
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    // nop
-  }
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    // nop
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return LaunchDim();
+    return LaunchDims();
   }
 };
 
