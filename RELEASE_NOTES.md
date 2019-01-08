@@ -13,6 +13,77 @@
 [comment]: # (For details about use and distribution, please read RAJA/LICENSE.)
 [comment]: # (#################################################################)
 
+RAJA v0.7.0 Release Notes
+=========================
+
+This release contains several major changes, new features, a variety of bug 
+fixes, and expanded user documentation and accompanying example codes. For
+more information and details about any of the changes listed below, please 
+consult the RAJA documentation for the 0.7.0 release which is linked to 
+our Github project.
+
+Major changes include:
+
+  * RAJA::forallN methods were marked deprecated in the 0.6.0 release. They 
+    have been removed. All applications that contain nested loops and 
+    have been using forallN methods should convert them to use the RAJA::kernel
+    interface.
+  * RAJA::forall methods that take explicit loop bounds rather than segments  
+    (e.g., RAJA::forall(beg, end, ...) were marked deprecated in the 0.6.0
+    release. They have been removed. Hopefully, this will result in faster
+    compile times due to simpler template resolution. Users who have been 
+    passing loop bounds directly to forall methods should convert those
+    cases to use RAJA segments instead.
+  * CUDA execution policies for use in RAJA::kernel policies have been 
+    significantly reworked and redefined. The new set of policies are
+    much more flexible and provide improved run time performance.
+  * New, improved support for loop tiling algorithms and support for 
+    CPU cache blocking, CUDA GPU thread local data and shared memory is 
+    available. This includes RAJA::kernel policy statement types to make tile
+    numbers and local tile indices available in user kernels (TileTCount and
+    (ForICount statement types), and a new RAJA::LocalArray type with various 
+    CPU and GPU memory policies. Due to these new features, RAJA 'shmem sindow'
+    statements have been removed.
+  * This release contains expanded documentation and example codes for the
+    RAJA::kernel interface, including loop tiling algorithms and support for
+    CPU cache blocking, CUDA GPU thread local data and shared memory.
+
+Other notable changes include:
+
+  * Features:
+    * Initial support for OpenMP target execution policies with RAJA::kernel
+      added.
+    * The RAJA::AtomicRef interface is now consistent with the 
+      C++20 std::atomic_ref interface.
+    * Atomic compare-exchange operations added.
+    * New RAJA::statement::Reduce type for use in RAJA::kernel execution 
+      policies. This enables the ability to perform reductions and access
+      reduced values inside user kernels. This capability is considered
+      prelimiary and no significant examples or documentation is available yet.
+    * CUDA reduce policies no longer require a thread-block size parameter.
+
+  * Performance improvements:
+    * Better use of inline directives to improve likelihood of SIMD 
+      instruction generation with the Intel compiler.
+
+  * Bug fixes:
+    * Several CHAI integration issues resolved.
+    * Resolve issue with alignx directive when using XL compiler as host
+      compiler with CUDA.
+    * Fix issue associated with how XL compiler interprets OpenMP region
+      definition.
+    * Various tweaks to camp implementation to improve robustness.
+
+  * Build changes/improvements:
+    * The minimum required version of CMake has changed to 3.8 for all
+      programming model back-ends, except CUDA. The minimum CMake version
+      for CUDA support is 3.9.
+    * Improved support for clang-cuda compiler. Some features still do not
+      work with that compiler.
+    * Update NVIDIA cub module to version 1.8.0.
+    * Enable use of 'BLT_SOURCE_DIR' CMake variable to help prevent conflicts
+      with BLT versions in RAJA and other libraries used in applications.
+
 RAJA v0.6.0 Release Notes
 =========================
 
