@@ -18,8 +18,8 @@
 Matrix Transpose with Local Array
 ---------------------------------
 
-The example this section extends the one in :ref:`tiledmatrixtranspose-label`, 
-in which only loop tiling is considered. Here, we combine loop tiling with 
+This section extends discussion in :ref:`tiledmatrixtranspose-label`, 
+where only loop tiling is considered. Here, we combine loop tiling with 
 ``RAJA::LocalArray`` objects which enable CPU stack-allocated arrays, and
 GPU thread local and shared memory to be used within kernels. For more 
 information about ``RAJA::LocalArray``, please see :ref:`local_array-label`.
