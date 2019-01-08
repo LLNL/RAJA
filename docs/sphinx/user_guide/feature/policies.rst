@@ -384,7 +384,7 @@ invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
 of Statements that are composed in the order that they appear in the kernel 
 policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a ``RAJA::KernelPolicy`` type is really just a StatementList.
 
-The main Statements types provided by RAJA are ``RAJA::statement::For`` and
+The main Statement types provided by RAJA are ``RAJA::statement::For`` and
 ``RAJA::statement::Lambda``, that we have shown above. A 'For' Statement
 indicates a for-loop structure and takes three template arguments:
 'ArgId', 'ExecPolicy', and 'EnclosedStatements'. The ArgID identifies the

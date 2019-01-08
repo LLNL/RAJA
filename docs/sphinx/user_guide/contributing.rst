@@ -65,8 +65,8 @@ Developing a Bug Fix
 --------------------
 
 First, check if the change you want to make has been addressed in the RAJA
-``develop``. If so, we suggest you either start using the ``develop`` branch, 
-or temporarily apply the fix to whichever version of RAJA you are using.
+``develop`` branch. If so, we suggest you either start using the ``develop`` 
+branch, or temporarily apply the fix to whichever version of RAJA you are using.
 
 Assuming there is an unsolved bug, first make sure you have an up-to-date copy
 of the ``develop`` branch:

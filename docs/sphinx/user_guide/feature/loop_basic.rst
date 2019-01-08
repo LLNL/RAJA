@@ -123,7 +123,7 @@ it would work, assuming the execution policies were chosen properly::
   }
 
 However, this approach treats each loop level as an independent entity. This
-make it difficult to parallelize the levels in the loop nest together. So it
+makes it difficult to parallelize the levels in the loop nest together. So it
 limits the amount of parallelism that can be exposed and the types of 
 parallelism that may be used. For example, if an OpenMP or CUDA
 parallel execution policy is used on the outermost loop, then all inner loops

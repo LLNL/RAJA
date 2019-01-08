@@ -83,7 +83,7 @@ its constituent parts::
                                              RAJA::RangeSegment(0,7)),
                             RAJA::make_tuple(kernel_a_array, kernel_b_array),
 
-    [=] (int j, int k, RAJA_a_array& a_array, RAJA_b_array& b_array) {
+    [=] (int j, int k, RAJA_a_array& kernel_a_array, RAJA_b_array& kernel_b_array) {
       a_array(k, j) = 5*k + j;
       b_array(j) = 5*k + j;
     },

@@ -23,7 +23,7 @@ sequence of examples of increasing complexity. Complete working codes for
 the examples are located in the ``RAJA``examples`` directory.
 
 To understand the discussion and code examples, a working knowledge of C++ 
-templates and lambda expression is required. So, before we begin, we provide 
+templates and lambda expressions is required. So, before we begin, we provide 
 a bit of background discussion of basic aspects of C++ lambda expressions, 
 which are essential to using RAJA successfully.
 
@@ -113,7 +113,7 @@ captured by value since it is `read-only`.
 Notes About C++ Lambdas
 -----------------------------------
 
-There are several issues to note about C++ lambda expression; in particular, 
+There are several issues to note about C++ lambda expressions; in particular, 
 with respect to RAJA usage. We describe them here.
 
  * **Prefer by-value lambda capture.** 
