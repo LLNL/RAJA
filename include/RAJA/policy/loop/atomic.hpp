@@ -39,8 +39,8 @@ namespace atomic
 
 using loop_atomic = seq_atomic;
 
-}  // closing namespace atomic
+}  // namespace atomic
 
-}  // closing namespace RAJA
+}  // namespace RAJA
 
 #endif  // guard

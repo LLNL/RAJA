@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout operations for forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
  *
  ******************************************************************************
  */
@@ -193,10 +193,9 @@ public:
 
 #else
     return VarOps::sum<IdxLin>(
-      ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
-          indices, strides[RangeInts]))...);
+        ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
+            indices, strides[RangeInts]))...);
 #endif
-
   }
 
 
@@ -214,8 +213,8 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
-    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
-                                   % inv_mods[RangeInts])...);
+    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
+                                   inv_mods[RangeInts])...);
   }
 
   /*!
@@ -239,7 +238,7 @@ constexpr size_t
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
 constexpr size_t
     LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
-}
+}  // namespace detail
 
 /*!
  * @brief A mapping of n-dimensional index space to a linear index space.
@@ -356,8 +355,7 @@ private:
                                                     Indices &... indices) const
   {
     Index_type locals[sizeof...(DimTypes)];
-    Base::toIndices(stripIndexType(linear_index),
-                    locals[RangeInts]...);
+    Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
     VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
   }
 };

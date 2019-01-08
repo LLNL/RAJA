@@ -72,7 +72,7 @@ struct op_adapter : private Op<T, T, T> {
     val = operator_type::operator()(val, v);
   }
 };
-}  // end detail
+}  // namespace detail
 
 template <typename T>
 struct sum : detail::op_adapter<T, RAJA::operators::plus> {
@@ -123,16 +123,16 @@ public:
   }
 };
 
-}  // end detail
+}  // namespace detail
 
-}  // end reduce
+}  // namespace reduce
 
 namespace operators
 {
 template <typename T, bool B>
 struct limits<::RAJA::reduce::detail::ValueLoc<T, B>> : limits<T> {
 };
-}
+}  // namespace operators
 
 namespace reduce
 {
@@ -141,8 +141,10 @@ namespace detail
 {
 
 template <typename T,
-          template <typename> class Reduce_,
-          template <typename, typename> class Combiner_>
+          template <typename>
+          class Reduce_,
+          template <typename, typename>
+          class Combiner_>
 class BaseReduce
 {
   using Reduce = Reduce_<T>;
@@ -417,10 +419,10 @@ public:
   operator T() const { return Base::get(); }
 };
 
-} /* detail */
+}  // namespace detail
 
-} /* reduce */
+}  // namespace reduce
 
-} /* RAJA */
+}  // namespace RAJA
 
 #endif /* RAJA_PATTERN_DETAIL_REDUCE_HPP */

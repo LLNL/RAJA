@@ -39,6 +39,7 @@ endif ()
 
 if (ENABLE_CHAI)
   message(STATUS "CHAI enabled")
+  find_package(umpire)
   find_package(chai)
   include_directories(${CHAI_INCLUDE_DIRS})
 endif()

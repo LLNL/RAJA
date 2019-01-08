@@ -42,7 +42,7 @@ struct Collapse : public internal::ForList,
 };
 
 
-}  // end namespaces statement
+}  // namespace statement
 }  // end namespace RAJA
 
 

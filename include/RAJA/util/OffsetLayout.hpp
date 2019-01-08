@@ -3,8 +3,8 @@
  *
  * \file
  *
- * \brief   RAJA header file defining offset layout operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with offset indices
  *
  ******************************************************************************
  */
@@ -97,7 +97,7 @@ private:
   }
 };
 
-}  // end internal namespace
+}  // namespace internal
 
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout

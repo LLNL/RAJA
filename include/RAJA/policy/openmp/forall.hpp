@@ -69,14 +69,11 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                              Func&& loop_body)
 {
 
-  RAJA::region<RAJA::omp_parallel_region>([&](){
-
-      using RAJA::internal::thread_privatize;
-      auto body = thread_privatize(loop_body);
-      forall_impl(InnerPolicy{}, iter, body.get_priv());
-
-    });
-
+  RAJA::region<RAJA::omp_parallel_region>([&]() {
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+    forall_impl(InnerPolicy{}, iter, body.get_priv());
+  });
 }
 
 ///
@@ -199,14 +196,12 @@ RAJA_INLINE void forall(
 }
 */
 
-}  // closing brace for omp namespace
+}  // namespace omp
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
-
-#include "RAJA/policy/openmp/target_forall.hpp"

@@ -63,6 +63,14 @@ raja_add_executable(
   SOURCES tut_batched-matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME tut_matrix-transpose-local-array
+  SOURCES tut_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
+  NAME tut_tiled-matrix-transpose
+  SOURCES tut_tiled-matrix-transpose.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 
@@ -78,13 +86,16 @@ raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
   
-  
-if(ENABLE_CUDA)
 raja_add_executable(
-  NAME cuda-shmem-ltimes
-  SOURCES cuda-shmem-ltimes.cpp)
-endif()
+  NAME ltimes
+  SOURCES ltimes.cpp)
+
+if(ENABLE_TARGET_OPENMP)
+raja_add_executable(
+  NAME target-kernel
+  SOURCES omp-target-kernel.cpp)
 
 raja_add_executable(
-  NAME cpu-shmem-ltimes
-  SOURCES cpu-shmem-ltimes.cpp)
+  NAME omp-target-ltimes
+  SOURCES omp-target-ltimes.cpp)
+endif()

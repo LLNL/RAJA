@@ -88,7 +88,7 @@ struct TypedRangeSegment {
    */
   using value_type = StorageT;
 
-  using IndexType  = StorageT;
+  using IndexType = StorageT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
@@ -166,8 +166,7 @@ struct TypedRangeSegment {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
 
-    return TypedRangeSegment{stripIndexType(start),
-                             stripIndexType(end)};
+    return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
 
   //! equality comparison
@@ -261,7 +260,7 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
-  using IndexType  = StorageT;
+  using IndexType = StorageT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
@@ -275,10 +274,10 @@ struct TypedRangeStrideSegment {
         m_end(iterator(DiffT{end}, DiffT{stride})),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin)
-                + static_cast<value_type>(stride)
-                - (stride > 0 ? value_type{1} : value_type{-1}))
-               / static_cast<value_type>(stride))
+        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
+                static_cast<value_type>(stride) -
+                (stride > 0 ? value_type{1} : value_type{-1})) /
+               static_cast<value_type>(stride))
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
@@ -414,7 +413,7 @@ struct common_type<T> {
 template <typename... Ts>
 using common_type_t = typename common_type<Ts...>::type;
 
-}  // closing brace for namespace detail
+}  // namespace detail
 
 //! make function for TypedRangeSegment
 /*!
@@ -469,7 +468,7 @@ struct RangeStrideConstructible
     : DefineConcept(camp::val<RAJA::detail::common_type_t<T, U, V>>()) {
 };
 
-}  // closing brace for concepts namespace
+}  // namespace concepts
 
 namespace type_traits
 {
@@ -480,9 +479,9 @@ DefineTypeTraitFromConcept(is_range_constructible,
 DefineTypeTraitFromConcept(is_range_stride_constructible,
                            RAJA::concepts::RangeStrideConstructible);
 
-}  // closing brace for type_traits namespace
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 namespace std
 {
@@ -503,6 +502,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
   a.swap(b);
 }
 
-}  // closing brace for std namespace
+}  // namespace std
 
 #endif  // closing endif for header file include guard
