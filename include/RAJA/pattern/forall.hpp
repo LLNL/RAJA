@@ -722,6 +722,7 @@ RAJA_INLINE void CallForall::operator()(T const& segment,
                                         ExecutionPolicy,
                                         LoopBody body) const
 {
+  std::cout<<"segment.size()="<<segment.size()<<std::endl;
   forall(ExecutionPolicy(), segment, body);
 }
 

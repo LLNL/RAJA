@@ -23,12 +23,15 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
+#include "RAJA/internal/MemUtils_GPU.hpp"
 
 #include "RAJA/index/Graph.hpp"
 #include "RAJA/index/GraphBuilder.hpp"
 
 using namespace RAJA;
 using namespace std;
+
+static RAJA::Real_ptr ref_array, test_array;
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -38,6 +41,18 @@ using namespace std;
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
+#if defined(RAJA_ENABLE_CUDA)
+
+  {
+    RAJA::RAJAVec<int, managed_allocator<int> > myvec;
+    myvec.push_back(3);
+    int myvar = myvec[0];
+    std::cout<<"myvar="<<myvar<<std::endl;
+    myvec[0] = 4;
+    int myvar0 = myvec[0];
+    std::cout<<"myvar0="<<myvar0<<std::endl;
+  }
+#endif
 
   int starting_vertex = 0; //2;
   int graph_size = 8;
@@ -51,8 +66,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //4343     : 4567
   //1212     : 0123
 
-
-
+#if defined(RAJA_ENABLE_CUDA)
+  cudaDeviceSynchronize();
+#endif
 
   { //build the graph
     RAJA::GraphBuilder<RangeSegment> gb(g);
@@ -108,6 +124,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     gb.createDependenceGraph();
   }
 
+#if defined(RAJA_ENABLE_CUDA)
+  cudaDeviceSynchronize();
+#endif
 
   std::cout<<"Built graph of size="<<g.size()<<":"<<std::endl;
   g.printGraph(std::cout);
@@ -126,26 +145,119 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::ListSegment> is0;
 
+#if defined(RAJA_ENABLE_CUDA)
+  cudaDeviceSynchronize();
+#endif
+
   //RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::GraphRangeSegment> is0; //OLGA FIX ME - should be able to have RangeSegment also
   RAJA::StaticIndexSet<RAJA::GraphRangeSegment> is0;
+  //RAJA::IndexSet<RAJA::GraphRangeSegment> is0;
+
+#if defined(RAJA_ENABLE_CUDA)
+ cudaDeviceSynchronize();
+#endif
 
 //  is0.push_back(RAJA::RangeSegment(0,5));  //OLGA FIX ME - should be able to add this back in
-  is0.push_back(g);
+ is0.push_back(g);
 
+#if defined(RAJA_ENABLE_CUDA)
+  cudaDeviceSynchronize();
+#endif
 
+/*
   using seq_seq_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
   RAJA::forall<seq_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
   std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
 
 
-
+#if defined(RAJA_ENABLE_OPENMP)
   std::cout<<std::endl;
   std::cout<<"Starting forall using OpenMP"<<std::endl;
 
   using seq_omp_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;
   RAJA::forall<seq_omp_pol>(is0, [=](int i){printf("body(%d)\n",i);});
   std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;"<<std::endl;
+#endif
 
+*/
+
+#if defined(RAJA_ENABLE_CUDA)
+  //std::cout<<std::endl;
+  //std::cout<<"Starting forall using CUDA"<<std::endl;
+
+  //using seq_omp_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;
+  //RAJA::forall<seq_omp_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  //std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;"<<std::endl;
+#endif
+
+
+
+  std::cout<<std::endl;
+  std::cout<<"Starting forall using CUDA"<<std::endl;
+
+  //make a test for IndexSet on GPU
+  RAJA::IndexSet is1;
+
+  const int num_segments = 32;
+  for (int i=0; i<num_segments; i++) {
+    is1.push_back(RAJA::RangeSegment(i*2,i*2+2));
+  }
+
+  std::cout<<"pushed all segments onto the index set"<<std::endl;
+
+  int max_size = num_segments * 2;
+
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::Real_ptr test_array = ::test_array;
+  RAJA::Real_ptr ref_array = ::ref_array;
+  cudaMallocManaged((void **)&test_array,
+                    sizeof(Real_type) * max_size,
+                    cudaMemAttachGlobal);
+
+  cudaMallocManaged((void **)&ref_array,
+                    sizeof(Real_type) * max_size,
+                    cudaMemAttachGlobal);
+
+  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * num_segments*2);
+  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * num_segments*2);
+
+  //int myvar2 = test_array[0];   //CRASHES!!!!
+  //std::cout<<"myvar2="<<myvar2<<std::endl;
+
+  RAJA::RAJAVec<int, managed_allocator<int> > test_array2;
+  for (int i=0; i<num_segments*2; i++) {
+    test_array2.push_back(0);
+  }
+
+  int myvar3 = test_array2[0];
+  std::cout<<"myvar3="<<myvar3<<std::endl;
+
+  using cuda_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<num_segments>>;
+  //using cuda_pol = RAJA::ExecPolicy<RAJA::cuda_exec<num_segments>, RAJA::seq_segit>;
+
+  RAJA::forall<cuda_pol>(
+    is1, [=] __device__ (RAJA::Index_type idx) {
+      test_array[idx] = idx;
+      //int i=0;
+      //i++;
+    });
+
+
+  cudaDeviceSynchronize();
+
+  std::cout<<"answer array: ";
+  for (int i=0; i<max_size; i++) {
+    std::cout<<test_array[i]<<" ";
+  } std::cout<<std::endl;
+
+
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
+
+  cudaFree(::test_array);
+  cudaFree(::ref_array);
+  cudaDeviceSynchronize();
+
+#endif
 
 
 /*

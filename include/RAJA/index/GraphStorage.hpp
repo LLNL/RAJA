@@ -129,7 +129,7 @@ public:
   /// dependencies that must be satisfied before this task can execute.
   ///
   RAJA_INLINE
-  value_type semaphoreValue(const value_type v) {
+  value_type getSemaphoreValue(const value_type v) {
     return m_semaphores[v-m_starting_index];
   }
 
@@ -139,6 +139,12 @@ public:
   RAJA_INLINE
   void decrementSemaphore(const value_type v) {
     RAJA::atomic::atomicDec<RAJA::atomic::auto_atomic>(&m_semaphores[v-m_starting_index]);
+#if 0
+    if (m_semaphores[v-m_starting_index] < 0) {
+      std::cout<<v<<"| ERROR NEGATIVE SEMAPHORE"<<std::endl;
+    }
+#endif
+
   }
 
   ///
@@ -150,16 +156,27 @@ public:
     g.copy_dependencies(m_semaphores);
   }
 
+  ///
+  /// For vertex v, reset m_semaphores to be equal to vertex_degree
+  ///
+  RAJA_INLINE
+  void reset(const value_type v) {
+    setSemaphoreValue(v,g.get_vertex_degree(v));
+  }
+
+  ///
+  /// For vertex v, yield control while semaphore > 0
+  /// TODO: an efficient wait would be better here, but the standard
+  ///       promise/future is not good enough
+  ///
   void wait(const value_type v) {
     while (m_semaphores[v-m_starting_index] > 0) {
-      // TODO: an efficient wait would be better here, but the standard
-      // promise/future is not good enough
       std::this_thread::yield();
     }
   }
 
   ///
-  /// Once the task is completed, set all dependents as ready to go
+  /// Once the task is completed, decrement semaphores of all dependents
   ///
   RAJA_INLINE
   void completed(const value_type v) {
@@ -181,7 +198,11 @@ private:
   value_type m_starting_index;
 
   //! vector m_semaphores - number of unsatisfied dependencies (one value per vertex)
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::RAJAVec<value_type, managed_allocator<value_type> > m_semaphores;
+#else
   RAJA::RAJAVec<value_type> m_semaphores;
+#endif
 
 };
 

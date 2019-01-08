@@ -66,7 +66,7 @@
 
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
-
+#include "RAJA/internal/MemUtils_GPU.hpp"
 
 namespace RAJA
 {
@@ -89,14 +89,22 @@ public:
   //! the underlying iterator type
   using iterator = typename Iterable::iterator;
 
+#if defined(RAJA_ENABLE_CUDA)
+  typedef typename RAJA::RAJAVec<value_type, managed_allocator<value_type> > RAJAVec_value_type;
+#else
+  typedef typename RAJA::RAJAVec<value_type> RAJAVec_value_type;
+#endif
+
 
   //! Construct graph
   RAJA_INLINE Graph(Iterable& _segment) : segment(_segment),
     m_size(*_segment.end() - *_segment.begin()),
     m_starting_index(*_segment.begin()) {
-
     m_vertex_degree.resize(m_size);
     m_vertex_degree_prefix_sum.resize(m_size);
+
+    std::cout<<"Constructed graph of size="<<m_size<<", starting_index="<<m_starting_index<<std::endl;
+
   };
 
 
@@ -160,11 +168,11 @@ public:
 
 
   RAJA_INLINE
-  void copy_vertex_degree(RAJA::RAJAVec<value_type>& tmp) const {
+  void copy_vertex_degree(RAJAVec_value_type& tmp) const {
     std::copy(m_vertex_degree.begin(),m_vertex_degree.end(),tmp.begin());
   }
   RAJA_INLINE
-  void copy_dependencies(RAJA::RAJAVec<value_type>& tmp) const {
+  void copy_dependencies(RAJAVec_value_type& tmp) const {
     std::copy(m_dependencies.begin(),m_dependencies.end(),tmp.begin());
   }
 
@@ -186,24 +194,26 @@ public:
   }
 
   RAJA_INLINE
-  void set_vertex_degree(RAJA::RAJAVec<value_type>& tmp) {
+  void set_vertex_degree(RAJAVec_value_type& tmp) {
     std::copy(tmp.begin(),tmp.end(),m_vertex_degree.begin());
   }
+
   RAJA_INLINE
-  void set_vertex_degree_prefix_sum(RAJA::RAJAVec<value_type>& tmp) {
+  void set_vertex_degree_prefix_sum(RAJAVec_value_type& tmp) {
     std::copy(tmp.begin(),tmp.end(),m_vertex_degree_prefix_sum.begin());
   }
+
   RAJA_INLINE
-  void set_dependencies(RAJA::RAJAVec<value_type>& tmp) {
+  void set_dependencies(RAJAVec_value_type& tmp) {
     m_dependencies.resize(tmp.size());
     std::copy(tmp.begin(),tmp.end(),m_dependencies.begin());
   }
+
   RAJA_INLINE
-  void set_adjacency(RAJA::RAJAVec<value_type>& tmp) {
+  void set_adjacency(RAJAVec_value_type& tmp) {
     m_adjacency.resize(tmp.size());
     std::copy(tmp.begin(),tmp.end(),m_adjacency.begin());
   }
-
 
   RAJA_INLINE
   value_type get_starting_index() const {
@@ -246,12 +256,12 @@ protected:
   /// The graph is stored in CSR format, which stores m_vertex_degree and corresponding m_adjacency list
 
   //! vector m_vertex_degree - degree for each vertex (one per vertex)
-  RAJA::RAJAVec<value_type> m_vertex_degree;
-  RAJA::RAJAVec<value_type> m_vertex_degree_prefix_sum;
-  RAJA::RAJAVec<value_type> m_dependencies;
+  RAJAVec_value_type m_vertex_degree;
+  RAJAVec_value_type m_vertex_degree_prefix_sum;
+  RAJAVec_value_type m_dependencies;
 
   //! vector m_adjacency - edges for each vertex v, starting at m_vertex_degree_prefix_sum[v-1] (one per edge)
-  RAJA::RAJAVec<value_type> m_adjacency;
+  RAJAVec_value_type m_adjacency;
 
 private:
 
@@ -259,7 +269,7 @@ private:
 };
 
 
-//! Alias for Graph<Index_type>
+//! Alias for Graph<RangeSegment>
 using GraphRangeSegment = Graph<RangeSegment>;
 
 

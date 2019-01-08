@@ -73,6 +73,10 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
+#include "RAJA/index/Graph.hpp"
+#include "RAJA/index/GraphStorage.hpp"
 
 namespace RAJA
 {
@@ -214,6 +218,11 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
     auto len = std::distance(begin, end);
     auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
 
+    std::cout<<"step_size="<<step_size
+      //<<", begin="<<begin<<", end="<<end
+             <<", len="<<len<<", gridSize="<<gridSize
+             <<", BlockSize="<<BlockSize<<std::endl;
+
     INTERNAL::
         forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BlockSize)>>>(
             body, std::move(begin), len);
@@ -297,6 +306,9 @@ RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
+    std::cout<<"in cuda/forall.hpp forall with iset, num_seg="<<num_seg<<", i="<<isi<<std::endl;
+
+
     iset.segmentCall(isi,
                      CallForall(),
                      cuda_exec<BlockSize, Async>(),
