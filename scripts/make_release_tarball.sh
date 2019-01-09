@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TAR_CMD=gtar
-VERSION=0.6.0
+VERSION=0.7.0
 
 git archive --prefix=RAJA-${VERSION}/ -o RAJA-${VERSION}.tar HEAD 2> /dev/null
 
