@@ -180,7 +180,7 @@ Several notes regarding CUDA thread and block loop policies are also good to
 know.
 
 .. note:: * There is no constraint on the product of sizes of the associated loop iteration space.
-          * These polices enable a having a larger number of iterates than threads in the x/y/z thread dimension.
+          * These polices allow having a larger number of iterates than threads in the x, y, or z thread dimension.
           * **Cuda thread and block loop policies are recommended for most loop patterns.**
 
 .. _indexsetpolicy-label:

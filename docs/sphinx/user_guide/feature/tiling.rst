@@ -25,7 +25,7 @@ entries within each tile in inner loops. Many scientific computing algorithms
 can benefit from loop tiling due to more efficient cache usage and other 
 considerations. 
 
-For example, a operation performed using a for-loop with a range of [0, 10)::
+For example, an operation performed using a for-loop with a range of [0, 10)::
 
   for (int i=0; i<10; ++i) {
     // loop body using index 'i'
@@ -113,7 +113,7 @@ or local tile loop index is passed to the lambda, and in what order. Here,
 the tile number is the second lambda argument (tuple parameter '0') and the
 local tile loop index is the third lambda argument (tuple parameter '1').
 
-.. note:: The global loop index always appears as the first lambda expression
-          argument. This is followed by the parameter tuples where the meaning 
-          of each is determined by the integer in the ``Param`` statement
-          pecified for the loop statement types. 
+.. note:: The global loop indices always appear as the first lambda expression
+          arguments. Then, the parameter tuples, identified by the integers 
+          in the ``Param`` statement types given for the loop statement 
+          types follow. 

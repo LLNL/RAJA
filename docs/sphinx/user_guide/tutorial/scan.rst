@@ -26,7 +26,7 @@ Key RAJA features shown in this section:
   * ``RAJA::exclusive_scan_inplace`` operation
   * RAJA operators for different types of scans; e.g., plus, minimum, maximum, etc.
 
-In the following examples, we present examples of RAJA sequential, OpenMP,
+Below, we present examples of RAJA sequential, OpenMP,
 and CUDA scan operations and show how different scan operations can be 
 performed by passing different RAJA operators to the RAJA scan template 
 methods. Each operator is a template type, where the template argument is 
@@ -70,7 +70,7 @@ We can be explicit about the operation used in the scan by passing the
 The result in the 'out' array is the same.
 
 An inclusive parallel scan operation using OpenMP multi-threading is
-accomplished similarly by replacing the execution poolicy type:
+accomplished similarly by replacing the execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
                     :lines: 156-157

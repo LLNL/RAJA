@@ -176,7 +176,7 @@ array entry.
 
 The arguments to the ``RAJA::make_offset_layout`` method are C++ arrays that
 hold the start and end values of the indices. RAJA offset layouts support
-any number of dimensions also; for example::
+any number of dimensions; for example::
 
   RAJA::Layout<2> layout = RAJA::make_offset_layout<2>({{-1, -5}}, {{2, 5}});
 

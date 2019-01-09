@@ -175,7 +175,7 @@ IndexSets
 
 A ``RAJA::TypedIndexSet`` is a container that can hold an arbitrary collection
 of segment objects of arbitrary type as illustrated in the following figure,
-where we have to contiguous ranges and an irregularly-spaced list of indices.
+where we have two contiguous ranges and an irregularly-spaced list of indices.
 
 .. figure:: ../figures/IndexSet.png
 

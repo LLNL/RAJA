@@ -195,9 +195,10 @@ with respect to RAJA usage. We describe them here.
 RAJA Examples
 ================
 
-The remainder of this tutorial illustrates how to use RAJA features via 
-a various of examples. Additional information about the RAJA features used 
-can be found in :ref:`features-label`.
+The remainder of this tutorial illustrates how to use RAJA features using
+various working code examples that are located in  the ``RAJA/examples`` 
+directory. Additional information about the RAJA features 
+used can be found in :ref:`features-label`.
 
 The examples demonstrate CPU execution (sequential, SIMD, OpenMP
 multi-threading) and CUDA GPU execution. Examples that show how to use
@@ -242,8 +243,8 @@ Complex Loops: Transformations and Advanced RAJA Features
 
 The examples in this section illustrate how to use ``RAJA::kernel`` methods
 to execute complex loop kernels, such as nested loops. It also describes
-how to construct kernel execution policies, and use different view types and
-tiling mechanism to transform loop patterns.
+how to construct kernel execution policies, use different view types and
+tiling mechanisms to transform loop patterns.
 
 .. toctree::
    :maxdepth: 1

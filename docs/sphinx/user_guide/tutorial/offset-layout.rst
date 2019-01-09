@@ -101,7 +101,7 @@ lattice arrays.
 Here, the row index range is :math:`[-1, N_r]`, and the column index 
 range is :math:`[-1, N_c]`. The first argument to each call to the 
 ``RAJA::View`` constructor is a pointer to an array that holds the data for 
-the view; we we assume the arrays are properly allocated before these calls.
+the view; we assume the arrays are properly allocated before these calls.
 
 The offset layout mechanics of RAJA allow us to write loops over
 data arrays using non-zero based indexing and without having to manually 

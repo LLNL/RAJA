@@ -99,7 +99,7 @@ in reverse by giving it a stride of -1. For example:
 RAJA IndexSets
 ^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA::TypedIndexSet`` template is a container that can hold an 
+The ``RAJA::TypedIndexSet`` template is a container that can hold
 any number of segments of arbitrary type. An index set object 
 can be passed to a RAJA loop execution method, just like a segment, to
 run a loop kernel. When the loop is run, the execution method iterates 

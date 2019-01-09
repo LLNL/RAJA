@@ -92,7 +92,7 @@ type of the ``RAJA::LocalArray`` used for matrix entries in a tile:
                    :lines: 192-193
 
 The template parameters that define the type are: array data type, data stride
-permutation for the array indices (here the identity permutation is give, so
+permutation for the array indices (here the identity permutation is given, so
 the default RAJA conventions apply; i.e., the rightmost array index will be 
 stride-1), and the array dimensions.
 
@@ -119,8 +119,8 @@ A couple of notes about the nested inner loops are worth emphasizing. First, the
 loops use ``RAJA::statement::ForICount`` types rather than 
 ``RAJA::statement::For`` types that we have seen in earlier ``RAJA::kernel``
 nested loop examples. The ``RAJA::statement::ForICount`` type generates 
-local tile indice passed to lambda loop body expressions within them. As
-the attentive reader will observe, there is no local tile index computation 
+local tile indices that are passed to lambda loop body expressions. As 
+the observant reader will observe, there is no local tile index computation 
 needed in the lambdas for the RAJA version of the kernel as a result. The 
 first integer template parameter for each ``RAJA::statement::ForICount`` type 
 indicates the item in the iteration space tuple passed to the 

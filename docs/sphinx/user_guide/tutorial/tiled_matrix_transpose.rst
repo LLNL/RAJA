@@ -52,8 +52,8 @@ Then, the C++ implementation may look like the following:
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
                    :lines: 118-139
 
-Note that we include an bounds check in the code to avoid indexing out of
-bounds when the tiles do not divide the matrix dimensions evenly.
+Note that we include a bounds check in the code to avoid indexing out of
+bounds when the tile sizes do not divide the matrix dimensions evenly.
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA::kernel Variant

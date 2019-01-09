@@ -34,7 +34,7 @@ Atomic Operations
 RAJA atomic support includes a variety of the most common atomic operations.
 
 .. note:: * Each RAJA atomic operation is templated on an *atomic policy*.
-          * Each of methods described in the table below returns the value of 
+          * Each method described in the table below returns the value of 
             the potentially modified argument (i.e., \*acc) immediately before 
             the atomic operation is applied, in case it is needed by a user.
 

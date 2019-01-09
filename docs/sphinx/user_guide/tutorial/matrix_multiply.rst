@@ -139,7 +139,7 @@ argument for entry in the iteration space tuple.
 .. note :: The number and order of lambda arguments must match the number and
            order of the elements in the tuple for this to be correct.
 
-Another important different between ``RAJA::forall`` and ``RAJA::kernel`` is 
+Another important difference between ``RAJA::forall`` and ``RAJA::kernel`` is 
 in the execution policy template parameter. The execution policy defined by the 
 ``RAJA::KernelPolicy`` type used here specifies a policy for each level in 
 the loop nest via nested ``RAJA::statement::For`` types. Here, the row and 
