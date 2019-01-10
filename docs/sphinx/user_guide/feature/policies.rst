@@ -180,7 +180,7 @@ Several notes regarding CUDA thread and block loop policies are also good to
 know.
 
 .. note:: * There is no constraint on the product of sizes of the associated loop iteration space.
-          * These polices enable a having a larger number of iterates than threads in the x/y/z thread dimension.
+          * These polices allow having a larger number of iterates than threads in the x, y, or z thread dimension.
           * **Cuda thread and block loop policies are recommended for most loop patterns.**
 
 .. _indexsetpolicy-label:
@@ -384,7 +384,7 @@ invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
 of Statements that are composed in the order that they appear in the kernel 
 policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a ``RAJA::KernelPolicy`` type is really just a StatementList.
 
-The main Statements types provided by RAJA are ``RAJA::statement::For`` and
+The main Statement types provided by RAJA are ``RAJA::statement::For`` and
 ``RAJA::statement::Lambda``, that we have shown above. A 'For' Statement
 indicates a for-loop structure and takes three template arguments:
 'ArgId', 'ExecPolicy', and 'EnclosedStatements'. The ArgID identifies the

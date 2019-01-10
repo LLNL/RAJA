@@ -41,7 +41,7 @@ Indices
 Just like traditional C and C++ for-loops, RAJA uses index variables to 
 identify loop iterates. Any lambda expression that represents all or part of
 a loop body passed to a ``RAJA::forall`` or ``RAJA::kernel`` method will 
-take at least on loop index variable argument. RAJA iteration space types 
+take at least one loop index variable argument. RAJA iteration space types 
 and methods are templates that allow users to use any integral type for an
 index variable. The index variable type may be explicitly specified by a user.
 RAJA also provides a ``RAJA::Index_type`` type, which is used as a default 
@@ -175,7 +175,7 @@ IndexSets
 
 A ``RAJA::TypedIndexSet`` is a container that can hold an arbitrary collection
 of segment objects of arbitrary type as illustrated in the following figure,
-where we have to contiguous ranges and an irregularly-spaced list of indices.
+where we have two contiguous ranges and an irregularly-spaced list of indices.
 
 .. figure:: ../figures/IndexSet.png
 
