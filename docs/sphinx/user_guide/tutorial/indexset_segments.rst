@@ -20,28 +20,30 @@ Iteration Spaces: IndexSets and Segments
 
 Key RAJA features shown in this example:
 
-  * ``RAJA::forall`` loop traversal template
+  * ``RAJA::forall`` loop execution template
   * ``RAJA::RangeSegment`` (i.e., ``RAJA::TypedRangeSegment``) iteration space construct
   * ``RAJA::TypedListSegment`` iteration space construct
   * ``RAJA::IndexSet`` iteration construct and associated execution policies
 
-The example re-uses the daxpy kernel from an earlier example. It focuses 
-on how to use RAJA index sets and iteration space segments, such as index 
-ranges and lists of indices. These features are important for applications 
-and algorithms that use indirection arrays for irregular array accesses. 
-Combining different segment types, such as ranges and lists in an index set 
-allows a user to launch different iteration patterns in a single loop 
+The example uses a simple daxpy kernel and its usage of RAJA is similar to
+previous simple loop examples. The example
+focuses on how to use RAJA index sets and iteration space segments, such 
+as index ranges and lists of indices. These features are important for 
+applications and algorithms that use indirection arrays for irregular array 
+accesses. Combining different segment types, such as ranges and lists in an 
+index set allows a user to launch different iteration patterns in a single loop 
 execution construct (i.e., one kernel). This is something that is not 
 supported by other programming models and abstractions and is unique to RAJA. 
 Applying these concepts judiciously can increase performance by allowing 
 compilers to optimize for specific segment types (e.g., SIMD for range 
-segments) while providing the flexibility of indirection arrays.
+segments) while providing the flexibility of indirection arrays for general
+indexing patterns.
 
 .. note:: For the following examples, it is useful to remember that all
           RAJA segment types are templates, where the type of the index
           value is the template argument. So for example, the basic RAJA
           range segment type is ``RAJA::TypedRangeSegment<T>``. The type
-          ``RAJA::RangeSegment`` used here is a (convenient) type alias 
+          ``RAJA::RangeSegment`` used here (for convenience) is a type alias 
           for ``RAJA::TypedRangeSegment<RAJA::Index_type>``, where the
           template parameter is a default index type that RAJA defines.
 
@@ -52,7 +54,7 @@ see :ref:`index-label`.
 RAJA Segments
 ^^^^^^^^^^^^^^^^^^^^^
 
-In earlier examples, we have seen how to define a contiguous range of loop
+In previous examples, we have seen how to define a contiguous range of loop
 indices [0, N) with a ``RAJA::RangeSegment`` object and use it in a RAJA
 loop execution template to run a loop kernel over the range. For example:
 
@@ -60,19 +62,19 @@ loop execution template to run a loop kernel over the range. For example:
                     :lines: 122-124
 
 We can accomplish the same result by enumerating the indices in a 
-``RAJA::TypedListSegment`` object. Here, we add the indices to a standard 
+``RAJA::TypedListSegment`` object. Here, we assemble the indices to a standard 
 vector, create a list segment from it, and then pass the list segment to the 
-forall template:
+forall execution template:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
 		    :lines: 140-149
 
-Note that we are using the following type aliases these examples:
+Note that we are using the following type aliases here:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
 		    :lines: 58-59
 
-Recall from discussion in ::ref:`index-label` that ``RAJA::Index_type`` is
+Recall from discussion in :ref:`index-label` that ``RAJA::Index_type`` is
 a default index type that RAJA defines and which is used in some RAJA
 constructs as a convenience for users who want a simple mechanism to apply
 index types consistently.
@@ -97,15 +99,15 @@ in reverse by giving it a stride of -1. For example:
 RAJA IndexSets
 ^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA::TypedIndexSet`` template is a container that can hold an 
-arbitrary number of segments of arbitrary type. Then, an index set object 
+The ``RAJA::TypedIndexSet`` template is a container that can hold
+any number of segments of arbitrary type. An index set object 
 can be passed to a RAJA loop execution method, just like a segment, to
-run a loop kernel. When the loop is run, the traversal will iterate over the 
-segments and each segment will be executed. Thus, the loop iterates can be 
-grouped into different segments to partition the iteration space and iterate 
-over the loop kernel chunks (defined by segments), in serial, in parallel, 
-or in some dependency ordering. Individual segments can be executed in serial
-or parallel.
+run a loop kernel. When the loop is run, the execution method iterates 
+over the segments and the loop indices in each segment. Thus, the loop 
+iterates can be grouped into different segments to partition the iteration 
+space and iterate over the loop kernel chunks (defined by segments), in 
+serial, in parallel, or in some specific dependency ordering. Individual 
+segments can be executed in serial or parallel.
 
 When an index set is defined, the segment types it may hold must be specified
 as template arguments. For example, here we create an index set that can
@@ -118,11 +120,11 @@ and run the loop:
 You are probably asking: What is the 'SEQ_ISET_EXECPOL' type used for the 
 execution policy? 
 
-Well, it is like the execution policy types we have seen up to this point, 
+Well, it is like execution policy types we have seen up to this point, 
 except that it specifies a two-level policy -- one for iterating over the 
-segments and one for executing each segment. In the example, we specify
-that we should do each of these operations sequentially by defining the
-policy as follows:
+segments and one for executing the iterates defined by each segment. In the 
+example, we specify that we should do each of these operations sequentially 
+by defining the policy as follows:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
                     :lines: 202-203

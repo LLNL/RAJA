@@ -15,13 +15,13 @@
 .. _offset-label:
 
 ---------------------------------------------
-Stencil Computations (RAJA View Offsets)
+Stencil Computations (View Offsets)
 ---------------------------------------------
 
 Key RAJA features shown in the following example:
 
-  * ``RAJA::Kernel`` loop traversal template
-  *  RAJA execution policies
+  * ``RAJA::Kernel`` loop execution template
+  *  RAJA kernel execution policies
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA:make_offset_layout`` method to apply index offsets
 
@@ -32,9 +32,9 @@ interior cell and its four neighbors. We use ``RAJA::View`` and
 ``RAJA::Layout`` constructs to simplify the multi-dimensional indexing so 
 that we can write the stencil operation as follows::
 
-  output(row, col) = input(row, col)
-    + input(row - 1, col) + input(row + 1, col)
-    + input(row, col - 1) + input(row, col + 1)
+  output(row, col) = input(row, col) + 
+                     input(row - 1, col) + input(row + 1, col) + 
+                     input(row, col - 1) + input(row, col + 1)
 
 A lattice is assumed to have :math:`N_r \times N_c` interior cells with unit 
 values surrounded by a halo of cells containing zero values for a total 
@@ -90,7 +90,7 @@ is the full lattice index range.
 RAJA Offset Layouts
 ^^^^^^^^^^^^^^^^^^^
 
-First, we use the ``RAJA::make_offset_layout`` method to construct a 
+We use the ``RAJA::make_offset_layout`` method to construct a 
 ``RAJA::OffsetLayout`` object that defines our two-dimensional indexing scheme.
 Then, we create two ``RAJA::View`` objects for each of the input and output
 lattice arrays.
@@ -99,20 +99,21 @@ lattice arrays.
                     :lines: 194-200
 
 Here, the row index range is :math:`[-1, N_r]`, and the column index 
-range is :math:`[-1, N_c]`. The first argument to the call to the 
-``RAJA::View`` constructor are pointers to arrays that hold the data for the
-input and output lattices, which we assume are properly allocated.
+range is :math:`[-1, N_c]`. The first argument to each call to the 
+``RAJA::View`` constructor is a pointer to an array that holds the data for 
+the view; we assume the arrays are properly allocated before these calls.
 
-Basically, the offset layout mechanics of RAJA allow us to write loops over
-data arrays using non-zero based indexing and use the proper offsets into
-the arrays. For more details on the ``RAJA::View`` and ``RAJA::Layout`` 
-concepts we use in this example, please refer to :ref:`view-label`.
+The offset layout mechanics of RAJA allow us to write loops over
+data arrays using non-zero based indexing and without having to manually 
+compute the proper offsets into the arrays. For more details on the 
+``RAJA::View`` and ``RAJA::Layout`` concepts we use in this example, please 
+refer to :ref:`view-label`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Kernel Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For the RAJA implementation of the example computation, we use two 
+For the RAJA implementations of the example computation, we use two 
 ``RAJA::RangeSegment`` objects to define the row and column iteration 
 spaces for the interior cells:
 
@@ -127,5 +128,6 @@ execution with a sequential execution policy.
 
 Since the stencil operation is data parallel, any parallel execution policy 
 may be used. The file ``RAJA/examples/tut_offset-layout.cpp`` contains a 
-complete working example code with parallel implementations. For more details 
-about ``RAJA::kernel`` concepts, please see :ref:`loop_elements-kernel-label`. 
+complete working example code with various parallel implementations. For more 
+details about ``RAJA::kernel`` concepts, 
+please see :ref:`loop_elements-kernel-label`. 
