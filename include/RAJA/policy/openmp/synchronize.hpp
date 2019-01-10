@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -46,7 +46,7 @@ void synchronize_impl(const omp_synchronize&)
 
 
 }  // end of namespace omp
-}  // end of namespace impl
+}  // namespace policy
 }  // end of namespace RAJA
 
 #endif  // RAJA_synchronize_openmp_HPP

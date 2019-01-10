@@ -3,14 +3,14 @@
  *
  * \file
  *
- * \brief   RAJA header file defining offset layout operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with offset indices
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -97,7 +97,7 @@ private:
   }
 };
 
-}  // end internal namespace
+}  // namespace internal
 
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout

@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -39,8 +39,8 @@
 
 #include "RAJA/util/chai_support.hpp"
 
-#include <type_traits>
 #include <iterator>
+#include <type_traits>
 
 namespace RAJA
 {
@@ -79,10 +79,13 @@ struct ForTraitBase : public ForBase {
   using type = ForTraitBase;  // make camp::value compatible
 };
 
+struct ParamBase {
+};
 
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename std::iterator_traits<typename Iterator::iterator>::difference_type;
+  using type = typename std::iterator_traits<
+      typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -98,7 +101,8 @@ using difftype_tuple_from_segments =
 
 template <typename Iterator>
 struct iterable_value_type_getter {
-  using type = typename std::iterator_traits<typename Iterator::iterator>::value_type;
+  using type =
+      typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
@@ -169,6 +173,20 @@ struct LoopData {
     camp::get<Idx>(offset_tuple) = i;
   }
 
+  template <typename ParamId, typename IndexT>
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_param(IndexT const &i)
+  {
+    using param_t = camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>;
+    camp::get<ParamId::param_idx>(param_tuple) = param_t(i);
+  }
+
+  template <typename ParamId>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto get_param() ->
+    camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
+  {
+    return camp::get<ParamId::param_idx>(param_tuple);
+  }
 
   template <camp::idx_t Idx>
   RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()
@@ -214,11 +232,10 @@ struct LoopData {
   get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
   {
     return camp::make_tuple(
-        (
-         (*camp::get<Idx>(segment_tuple).begin() <= *camp::get<Idx>(segment_tuple).end()) ?
-         *camp::get<Idx>(segment_tuple).begin() :
-         *(camp::get<Idx>(segment_tuple).end()-1)
-        )...);
+        ((*camp::get<Idx>(segment_tuple).begin() <=
+          *camp::get<Idx>(segment_tuple).end())
+             ? *camp::get<Idx>(segment_tuple).begin()
+             : *(camp::get<Idx>(segment_tuple).end() - 1))...);
   }
 
   RAJA_HOST_DEVICE
@@ -262,11 +279,12 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    typename std::iterator_traits< typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator >::difference_type
+    typename std::iterator_traits<
+        typename camp::at_v<typename Data::segment_tuple_t::TList,
+                            ArgumentId>::iterator>::difference_type
 {
-  return camp::get<ArgumentId>(data.segment_tuple).end()
-         - camp::get<ArgumentId>(data.segment_tuple).begin();
+  return camp::get<ArgumentId>(data.segment_tuple).end() -
+         camp::get<ArgumentId>(data.segment_tuple).begin();
 }
 
 
@@ -317,13 +335,8 @@ RAJA_INLINE void execute_statement_list(Data &&data)
       std::forward<Data>(data));
 }
 
-// Gives all GenericWrapper derived types something to enable_if on
-// in our thread_privatizer
-struct GenericWrapperBase {
-};
-
 template <typename Data, typename... EnclosedStmts>
-struct GenericWrapper : public GenericWrapperBase {
+struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
@@ -357,20 +370,6 @@ struct NestedPrivatizer {
   RAJA_INLINE
   reference_type get_priv() { return privatized_wrapper; }
 };
-
-
-/**
- * @brief specialization of internal::thread_privatize for any wrappers derived
- * from GenericWrapper
- */
-template <typename T>
-constexpr RAJA_INLINE typename std::
-    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
-              NestedPrivatizer<T>>::type
-    thread_privatize(T &wrapper)
-{
-  return NestedPrivatizer<T>{wrapper};
-}
 
 
 }  // end namespace internal
@@ -411,7 +410,7 @@ struct get_platform<RAJA::internal::StatementList<>> {
 };
 
 
-}  // end detail namespace
+}  // namespace detail
 
 #endif  // RAJA_ENABLE_CHAI
 

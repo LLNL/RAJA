@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -50,40 +50,53 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that performs a CUDA __syncthreads().
- *
- *
  */
 struct CudaSyncThreads : public internal::Statement<camp::nil> {
 };
+
+/*!
+ * A RAJA::kernel statement that performs a CUDA __syncwarp().
+ */
+struct CudaSyncWarp : public internal::Statement<camp::nil> {
+};
+
 
 }  // namespace statement
 
 namespace internal
 {
 
-template <typename Data, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::CudaSyncThreads, IndexCalc> {
+template <typename Data>
+struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
 
-  inline __device__ void exec(Data &, int, int) { __syncthreads(); }
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &, bool) { __syncthreads(); }
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    // nop
+    return LaunchDims();
   }
+};
 
-  inline RAJA_DEVICE void initThread(Data &data)
+template <typename Data>
+struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &, bool) { __syncwarp(); }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    // nop
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return LaunchDim();
+    return LaunchDims();
   }
 };
 

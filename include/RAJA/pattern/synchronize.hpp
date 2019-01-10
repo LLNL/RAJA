@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief  RAJA header for execution synchronization template.  
+ * \brief  RAJA header for execution synchronization template.
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -51,6 +51,6 @@ void synchronize()
 {
   synchronize_impl(Policy{});
 }
-}
+}  // namespace RAJA
 
 #endif  // RAJA_synchronize_HPP

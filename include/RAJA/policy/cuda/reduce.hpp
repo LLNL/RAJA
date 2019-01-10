@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -37,18 +37,18 @@
 
 #include <cuda.h>
 
-#include "RAJA/util/types.hpp"
-#include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
+#include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
+#include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/atomic.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 namespace RAJA
@@ -90,8 +90,8 @@ struct atomic<max<T>> {
 template <typename T>
 struct cuda_atomic_available {
   static constexpr const bool value =
-      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T)))
-      || std::is_same<T, float>::value || std::is_same<T, double>::value;
+      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T))) ||
+      std::is_same<T, float>::value || std::is_same<T, double>::value;
 };
 
 }  // namespace cuda
@@ -115,47 +115,31 @@ union AsIntegerArray {
 
   static_assert(min_integer_type_size <= max_integer_type_size,
                 "incompatible min and max integer type size");
-  using integer_type = typename std::
-      conditional<((alignof(T) >= alignof(long long)
-                    && sizeof(long long) <= max_integer_type_size)
-                   || sizeof(long) < min_integer_type_size),
-                  long long,
-                  typename std::
-                      conditional<((alignof(T) >= alignof(long)
-                                    && sizeof(long) <= max_integer_type_size)
-                                   || sizeof(int) < min_integer_type_size),
-                                  long,
-                                  typename std::
-                                      conditional<((alignof(T) >= alignof(int)
-                                                    && sizeof(int)
-                                                           <= max_integer_type_size)
-                                                   || sizeof(short)
-                                                          < min_integer_type_size),
-                                                  int,
-                                                  typename std::
-                                                      conditional<((alignof(T)
-                                                                        >= alignof(
-                                                                               short)
-                                                                    && sizeof(
-                                                                           short)
-                                                                           <= max_integer_type_size)
-                                                                   || sizeof(
-                                                                          char)
-                                                                          < min_integer_type_size),
-                                                                  short,
-                                                                  typename std::
-                                                                      conditional<((alignof(
-                                                                                        T)
-                                                                                        >= alignof(
-                                                                                               char)
-                                                                                    && sizeof(
-                                                                                           char)
-                                                                                           <= max_integer_type_size)),
-                                                                                  char,
-                                                                                  void>::
-                                                                          type>::
-                                                          type>::type>::type>::
-          type;
+  using integer_type = typename std::conditional<
+      ((alignof(T) >= alignof(long long) &&
+        sizeof(long long) <= max_integer_type_size) ||
+       sizeof(long) < min_integer_type_size),
+      long long,
+      typename std::conditional<
+          ((alignof(T) >= alignof(long) &&
+            sizeof(long) <= max_integer_type_size) ||
+           sizeof(int) < min_integer_type_size),
+          long,
+          typename std::conditional<
+              ((alignof(T) >= alignof(int) &&
+                sizeof(int) <= max_integer_type_size) ||
+               sizeof(short) < min_integer_type_size),
+              int,
+              typename std::conditional<
+                  ((alignof(T) >= alignof(short) &&
+                    sizeof(short) <= max_integer_type_size) ||
+                   sizeof(char) < min_integer_type_size),
+                  short,
+                  typename std::conditional<
+                      ((alignof(T) >= alignof(char) &&
+                        sizeof(char) <= max_integer_type_size)),
+                      char,
+                      void>::type>::type>::type>::type>::type;
   static_assert(!std::is_same<integer_type, void>::value,
                 "could not find a compatible integer type");
   static_assert(sizeof(integer_type) >= min_integer_type_size,
@@ -179,7 +163,7 @@ union AsIntegerArray {
 
 // cuda 8 only has shfl primitives for 32 bits while cuda 9 has 32 and 64 bits
 constexpr const size_t min_shfl_int_type_size = sizeof(int);
-#if (__CUDACC_VER_MAJOR__ >= 9)
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
 constexpr const size_t max_shfl_int_type_size = sizeof(long long);
 #else
 constexpr const size_t max_shfl_int_type_size = sizeof(int);
@@ -200,8 +184,8 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < u.array_size(); ++i) {
-#if (__CUDACC_VER_MAJOR__ >= 9)
+  for (size_t i = 0; i < u.array_size(); ++i) {
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_xor_sync(0xffffffffu, u.array[i], laneMask);
 #else
     u.array[i] = ::__shfl_xor(u.array[i], laneMask);
@@ -215,8 +199,8 @@ RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < u.array_size(); ++i) {
-#if (__CUDACC_VER_MAJOR__ >= 9)
+  for (size_t i = 0; i < u.array_size(); ++i) {
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_sync(0xffffffffu, u.array[i], srcLane);
 #else
     u.array[i] = ::__shfl(u.array[i], srcLane);
@@ -225,14 +209,182 @@ RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
   return u.value;
 }
 
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_xor_sync<unsigned int>(unsigned int var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long shfl_xor_sync<long>(long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_xor_sync<unsigned long>(unsigned long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_xor_sync<unsigned long long>(unsigned long long var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE double shfl_xor_sync<double>(double var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
+#else
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+#endif
+
+
+#if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_sync<unsigned int>(unsigned int var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long shfl_sync<long>(long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_sync<unsigned long>(unsigned long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_sync<unsigned long long>(unsigned long long var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE double shfl_sync<double>(double var, int srcLane)
+{
+  return ::__shfl_sync(0xffffffffu, var, srcLane);
+}
+
+#else
+
+template <>
+RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
+{
+  return ::__shfl(var, srcLane);
+}
+
+template <>
+RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
+{
+  return ::__shfl(var, srcLane);
+}
+
+#endif
+
+//! reduce values in block into thread 0
+template <typename Combiner, typename T>
+RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T identity)
+{
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+  T temp = val;
+
+  if (numThreads % policy::cuda::WARP_SIZE == 0) {
+
+    // reduce each warp
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+      T rhs = shfl_xor_sync(temp, i);
+      Combiner{}(temp, rhs);
+    }
+
+  } else {
+
+    // reduce each warp
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+      int srcLane = threadId ^ i;
+      T rhs = shfl_sync(temp, srcLane);
+      // only add from threads that exist (don't double count own value)
+      if (srcLane < numThreads) {
+        Combiner{}(temp, rhs);
+      }
+    }
+  }
+
+  return temp;
+}
+
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   int warpId = threadId % policy::cuda::WARP_SIZE;
   int warpNum = threadId / policy::cuda::WARP_SIZE;
@@ -306,11 +458,11 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
   unsigned int wrap_around = numBlocks - 1;
 
-  int blockId = blockIdx.x + gridDim.x * blockIdx.y
-                + (gridDim.x * gridDim.y) * blockIdx.z;
+  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
+                (gridDim.x * gridDim.y) * blockIdx.z;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   T temp = block_reduce<Combiner>(val, identity);
 
@@ -359,8 +511,8 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   unsigned int wrap_around = numBlocks + 1;
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                 + (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
 
   // one thread in first block initializes device_mem
   if (threadId == 0) {
@@ -586,7 +738,7 @@ private:
 
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device
 //! pointer
-template <bool Async, typename Combiner, typename T>
+template <typename Combiner, typename T>
 struct Reduce_Data {
 
   mutable T value;
@@ -595,8 +747,7 @@ struct Reduce_Data {
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
-  Reduce_Data()
-    : Reduce_Data(T(),T()){};
+  Reduce_Data() : Reduce_Data(T(), T()){};
 
   /*! \brief create from a default value and offload information
    *
@@ -604,11 +755,11 @@ struct Reduce_Data {
    */
 
   Reduce_Data(T initValue, T identity_)
-    : value{initValue},
-    identity{identity_},
-    device_count{nullptr},
-    device{},
-    own_device_ptr{false}
+      : value{initValue},
+        identity{identity_},
+        device_count{nullptr},
+        device{},
+        own_device_ptr{false}
   {
   }
 
@@ -632,10 +783,7 @@ struct Reduce_Data {
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
-  void init_grid_val(T* output)
-  {
-    *output = identity;
-  }
+  void init_grid_val(T* output) { *output = identity; }
 
   //! reduce values in grid to single value, store in output
   RAJA_DEVICE
@@ -681,7 +829,7 @@ struct Reduce_Data {
 
 
 //! Reduction data for Cuda Offload -- stores value, host pointer
-template <bool Async, typename Combiner, typename T>
+template <typename Combiner, typename T>
 struct ReduceAtomic_Data {
 
   mutable T value;
@@ -690,15 +838,14 @@ struct ReduceAtomic_Data {
   T* device;
   bool own_device_ptr;
 
-  ReduceAtomic_Data()
-    : ReduceAtomic_Data(T(),T()) {};
+  ReduceAtomic_Data() : ReduceAtomic_Data(T(), T()){};
 
   ReduceAtomic_Data(T initValue, T identity_)
-    : value{initValue},
-    identity{identity_},
-    device_count{nullptr},
-    device{nullptr},
-    own_device_ptr{false}
+      : value{initValue},
+        identity{identity_},
+        device_count{nullptr},
+        device{nullptr},
+        own_device_ptr{false}
   {
   }
 
@@ -723,10 +870,7 @@ struct ReduceAtomic_Data {
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
-  void init_grid_val(T* output)
-  {
-    *output = identity;
-  }
+  void init_grid_val(T* output) { *output = identity; }
 
   //! reduce values in grid to single value, store in output
   RAJA_DEVICE
@@ -771,24 +915,24 @@ struct ReduceAtomic_Data {
 };
 
 //! Cuda Reduction entity -- generalize on reduction, and type
-template <bool Async, typename Combiner, typename T, bool maybe_atomic>
+template <typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
 public:
-
-  Reduce()
-    : Reduce(T (),  Combiner::identity()){}
+  Reduce() : Reduce(T(), Combiner::identity()) {}
 
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
-    : parent{this},
-    tally_or_val_ptr{new PinnedTally<T>},
-    val(init_val, identity_){}
+      : parent{this},
+        tally_or_val_ptr{new PinnedTally<T>},
+        val(init_val, identity_)
+  {
+  }
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
-    operator T(); //syncs device
+    operator T();  // syncs device
     val = reduce_data_type(in_val, identity_);
   }
 
@@ -890,11 +1034,10 @@ private:
   tally_u tally_or_val_ptr;
 
   //! cuda reduction data storage class and folding algorithm
-  using reduce_data_type = typename std::
-      conditional<maybe_atomic
-                      && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
-                  cuda::ReduceAtomic_Data<Async, Combiner, T>,
-                  cuda::Reduce_Data<Async, Combiner, T>>::type;
+  using reduce_data_type = typename std::conditional<
+      maybe_atomic && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
+      cuda::ReduceAtomic_Data<Combiner, T>,
+      cuda::Reduce_Data<Combiner, T>>::type;
 
   //! storage for reduction data
   reduce_data_type val;
@@ -903,13 +1046,13 @@ private:
 }  // end namespace cuda
 
 //! specialization of ReduceSum for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceSum<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::sum<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::sum<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
@@ -921,13 +1064,13 @@ public:
 };
 
 //! specialization of ReduceMin for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceMin<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::min<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::min<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
@@ -939,13 +1082,13 @@ public:
 };
 
 //! specialization of ReduceMax for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
+template <bool maybe_atomic, typename T>
+class ReduceMax<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::max<T>, T, maybe_atomic>
 {
 
 public:
-  using Base = cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
+  using Base = cuda::Reduce<RAJA::reduce::max<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
@@ -957,10 +1100,9 @@ public:
 };
 
 //! specialization of ReduceMinLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async,
-                          RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+template <bool maybe_atomic, typename T>
+class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
                           RAJA::reduce::detail::ValueLoc<T>,
                           maybe_atomic>
 {
@@ -968,7 +1110,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = cuda::
-      Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+      Reduce<RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -995,18 +1137,17 @@ public:
 };
 
 //! specialization of ReduceMaxLoc for cuda_reduce
-template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+template <bool maybe_atomic, typename T>
+class ReduceMaxLoc<cuda_reduce_base<maybe_atomic>, T>
     : public cuda::
-          Reduce<Async,
-                 RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
+          Reduce<RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
                  RAJA::reduce::detail::ValueLoc<T, false>,
                  maybe_atomic>
 {
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
   using Base = cuda::
-      Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
+      Reduce<RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -1032,7 +1173,7 @@ public:
   T get() { return Base::get(); }
 };
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 

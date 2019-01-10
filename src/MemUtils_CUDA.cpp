@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,7 +31,6 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-
 
 
 namespace RAJA
@@ -60,17 +59,15 @@ cudaInfo tl_status;
 #endif
 
 //! State of raja cuda stream synchronization for cuda reducer objects
-std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
+std::unordered_map<cudaStream_t, bool> g_stream_info_map{
+    {cudaStream_t(0), true}};
 
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
-}  // closing brace for cuda namespace
+}  // namespace cuda
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #endif  // if defined(RAJA_ENABLE_CUDA)
-
-
-

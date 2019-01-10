@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -24,36 +24,38 @@
 
 /*
   As RAJA does not manage memory we include a general purpose memory
-  manager which may be used to perform c++ style allocation/deallocation 
-  or allocate/deallocate CUDA unified memory. The type of memory allocated 
-  is dependent on how RAJA was configured.  
+  manager which may be used to perform c++ style allocation/deallocation
+  or allocate/deallocate CUDA unified memory. The type of memory allocated
+  is dependent on how RAJA was configured.
 */
-namespace memoryManager{
+namespace memoryManager
+{
 
-  template <typename T>
-  T *allocate(RAJA::Index_type size)
-  {
-    T *ptr;
+template <typename T>
+T *allocate(RAJA::Index_type size)
+{
+  T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+  cudaErrchk(
+      cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
 #else
-    ptr = new T[size];
+  ptr = new T[size];
 #endif
-    return ptr;
-  }
-  
-  template <typename T>
-  void deallocate(T *&ptr)
-  {
-    if (ptr) {
+  return ptr;
+}
+
+template <typename T>
+void deallocate(T *&ptr)
+{
+  if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaFree(ptr));
 #else
-      delete[] ptr;
+    delete[] ptr;
 #endif
-      ptr = nullptr;
-    }    
+    ptr = nullptr;
   }
-  
-};
+}
+
+};  // namespace memoryManager
 #endif

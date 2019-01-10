@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -24,12 +24,11 @@
 using namespace RAJA;
 using namespace std;
 
-  
+
 //
 //  Initialize hybrid index set by adding segments as index set objects.
 //
-Index_type buildIndexSet(UnitIndexSet* hindex,
-                         IndexSetBuildMethod build_method)
+Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
 {
   //
   // Record last index in index set for return.
@@ -128,7 +127,7 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
 
     case AddSegmentsReverse: {
       UnitIndexSet& iset_master = hindex[0];
-      for (int i = iset_master.getNumSegments()-1; i >= 0; --i) {
+      for (int i = iset_master.getNumSegments() - 1; i >= 0; --i) {
         iset_master.segment_push_into(i,
                                       hindex[build_method],
                                       PUSH_FRONT,
@@ -152,7 +151,7 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
 
     case AddSegmentsNoCopyReverse: {
       UnitIndexSet& iset_master = hindex[0];
-      for ( int i = iset_master.getNumSegments() - 1; i >= 0 ; --i ) {
+      for (int i = iset_master.getNumSegments() - 1; i >= 0; --i) {
         iset_master.segment_push_into(i,
                                       hindex[build_method],
                                       PUSH_FRONT,
@@ -165,14 +164,13 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
     case MakeSliceRange: {
       UnitIndexSet& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
-      UnitIndexSet* iset_slice
-        = iset_master.createSlice(0, num_segs);
+      UnitIndexSet iset_slice = iset_master.createSlice(0, num_segs);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       break;
@@ -187,14 +185,13 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
         segIds[i] = i;
       }
 
-      UnitIndexSet* iset_slice
-        = iset_master.createSlice(segIds, num_segs);
+      UnitIndexSet iset_slice = iset_master.createSlice(segIds, num_segs);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       delete[] segIds;
@@ -211,14 +208,13 @@ Index_type buildIndexSet(UnitIndexSet* hindex,
         segIds[i] = i;
       }
 
-      UnitIndexSet* iset_slice
-        = iset_master.createSlice(segIds);
+      UnitIndexSet iset_slice = iset_master.createSlice(segIds);
 
-      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
-        iset_slice->segment_push_into(i,
-                                      hindex[build_method],
-                                      PUSH_BACK,
-                                      PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
+        iset_slice.segment_push_into(i,
+                                     hindex[build_method],
+                                     PUSH_BACK,
+                                     PUSH_NOCOPY);
       }
 
       break;

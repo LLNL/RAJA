@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -129,9 +129,8 @@ class TypedListSegment
   {
     allocate(std::integral_constant<bool, GPU>());
     static constexpr bool use_cuda =
-        GPU && std::is_pointer<decltype(src.begin())>::value
-        && std::is_same<type_traits::IterableValue<Container>,
-                        value_type>::value;
+        GPU && std::is_pointer<decltype(src.begin())>::value &&
+        std::is_same<type_traits::IterableValue<Container>, value_type>::value;
     using TagType =
         typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
     copy(src, TagType());
@@ -298,7 +297,7 @@ private:
 //! alias for A TypedListSegment with storage type @Index_type
 using ListSegment = TypedListSegment<Index_type>;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 namespace std
 {
@@ -312,6 +311,6 @@ RAJA_INLINE void swap(RAJA::TypedListSegment<T>& a,
 {
   a.swap(b);
 }
-}
+}  // namespace std
 
 #endif  // closing endif for header file include guard

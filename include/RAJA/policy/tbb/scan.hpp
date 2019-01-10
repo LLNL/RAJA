@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -34,8 +34,8 @@
 
 #include <tbb/tbb.h>
 
-#include "RAJA/util/macros.hpp"
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/sequential/policy.hpp"
 
@@ -106,7 +106,7 @@ struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
     }
   }
 };
-}
+}  // namespace detail
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -28,6 +28,8 @@
 
 
 #include "RAJA/config.hpp"
+
+#include "RAJA/pattern/kernel/internal.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -55,7 +57,9 @@ struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
  * RAJA::kernel execution policies.
  */
 template <camp::idx_t ParamId>
-struct Param {
+struct Param : public internal::ParamBase {
+
+  constexpr static camp::idx_t param_idx = ParamId;
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)

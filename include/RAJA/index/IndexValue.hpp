@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -36,7 +36,8 @@
 namespace RAJA
 {
 
-struct IndexValueBase{};
+struct IndexValueBase {
+};
 
 /*!
  * \brief Strongly typed "integer" class.
@@ -298,8 +299,7 @@ convertIndex_helper(typename FROM::IndexValueType const val)
 }
 
 
-
-}  // closing brace for namespace internal
+}  // namespace internal
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
@@ -318,25 +318,22 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
  * underlying value_type value.
  */
 // This version is enabled if FROM is a strongly typed class
-template<typename FROM>
-constexpr
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
-                        typename FROM::value_type>::type
-stripIndexType(FROM const val)
+template <typename FROM>
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
+                            typename FROM::value_type>::type
+    stripIndexType(FROM const val)
 {
   return *val;
 }
 /*
  * enabled if FROM is not a strongly typed class
  */
-template<typename FROM>
-constexpr
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value, FROM>::type
-stripIndexType(FROM const val)
+template <typename FROM>
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value,
+                            FROM>::type
+    stripIndexType(FROM const val)
 {
   return val;
 }

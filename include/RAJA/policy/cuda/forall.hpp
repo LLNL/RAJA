@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -107,9 +107,9 @@ __device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
 {
   unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-                          + (threadIdx.z * (blockDim.x * blockDim.y))
-                          + (threadIdx.y * blockDim.x) + threadIdx.x;
+  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) +
+                          (threadIdx.z * (blockDim.x * blockDim.y)) +
+                          (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
 __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
@@ -152,7 +152,7 @@ __launch_bounds__(BlockSize, 1) __global__
   }
 }
 
-}  // end impl namespace
+}  // namespace impl
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -182,10 +182,10 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     size_t shmem = 0;
 
-//  printf("gridsize = (%d,%d), blocksize = %d\n",
-//         (int)gridSize.x,
-//         (int)gridSize.y,
-//         (int)BlockSize);
+    //  printf("gridsize = (%d,%d), blocksize = %d\n",
+    //         (int)gridSize.x,
+    //         (int)gridSize.y,
+    //         (int)BlockSize);
 
     impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
         RAJA::cuda::make_launch_body(gridSize,
@@ -242,11 +242,11 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
   if (!Async) RAJA::cuda::synchronize();
 }
 
-}  // closing brace for cuda namespace
+}  // namespace cuda
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 

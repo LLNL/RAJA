@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -44,10 +44,9 @@ namespace detail
  * This is useful for creating a vectorizable data layout and getting
  * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
  */
-template <
-    typename T,
-    typename mempool =
-        RAJA::basic_mempool::MemPool<RAJA::basic_mempool::generic_allocator> >
+template <typename T,
+          typename mempool = RAJA::basic_mempool::MemPool<
+              RAJA::basic_mempool::generic_allocator> >
 class SoAPtr
 {
   using value_type = T;
@@ -132,8 +131,8 @@ private:
   second_type* mem_idx = nullptr;
 };
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif /* RAJA_SOA_PTR_HPP */

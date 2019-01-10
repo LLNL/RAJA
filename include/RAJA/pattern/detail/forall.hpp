@@ -3,14 +3,14 @@
  *
  * \file
  *
- * \brief  Internal header for RAJA forall "BED" macros 
+ * \brief  Internal header for RAJA forall "BED" macros
  *         (i.e., loop bounds 'BED' --> begin, end, distance)
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //

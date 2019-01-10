@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -31,16 +31,8 @@ raja_add_test(
 
 raja_add_test(
   NAME test-indexset
-  SOURCES test-indexsets.cpp
+  SOURCES test-indexset.cpp
   DEPENDS_ON bis)
-
-raja_add_test(
-  NAME test-nested
-  SOURCES test-nested.cpp)
-
-raja_add_test(
-  NAME test-nested-reduce
-  SOURCES test-nested-reduce.cpp)
 
 raja_add_test(
   NAME test-segments

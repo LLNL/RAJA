@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -63,7 +63,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                
       array[i] = rand() % M;
       
-    });
+  });
   //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;
@@ -74,9 +74,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL1>(array_range, [=](int i) {
                                                       
-      RAJA::atomic::atomicAdd<ATOMIC_POL1>(&bins[array[i]], 1);
+    RAJA::atomic::atomicAdd<ATOMIC_POL1>(&bins[array[i]], 1);
 
-    });
+  });
 
   printBins(bins, M);
 
@@ -92,9 +92,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL2>(array_range, [=](int i) {
                           
-      RAJA::atomic::atomicAdd<ATOMIC_POL2>(&bins[array[i]], 1);
+    RAJA::atomic::atomicAdd<ATOMIC_POL2>(&bins[array[i]], 1);
                                            
-    });
+  });
 
   printBins(bins, M);
 
@@ -108,9 +108,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL2>(array_range, [=](int i) {
   
-      RAJA::atomic::atomicAdd<ATOMIC_POL3>(&bins[array[i]], 1);
+    RAJA::atomic::atomicAdd<ATOMIC_POL3>(&bins[array[i]], 1);
   
-    });
+  });
 
   printBins(bins, M);
 
@@ -128,9 +128,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
                           
-      RAJA::atomic::atomicAdd<ATOMIC_POL4>(&bins[array[i]], 1);
+    RAJA::atomic::atomicAdd<ATOMIC_POL4>(&bins[array[i]], 1);
                                                  
-    });
+  });
 
   printBins(bins, M);
 
@@ -143,9 +143,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
 
-      RAJA::atomic::atomicAdd<ATOMIC_POL5>(&bins[array[i]], 1);
+    RAJA::atomic::atomicAdd<ATOMIC_POL5>(&bins[array[i]], 1);
 
-    });
+  });
 
   printBins(bins, M);
   

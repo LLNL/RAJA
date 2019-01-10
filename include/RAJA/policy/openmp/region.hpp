@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -37,23 +37,25 @@ namespace omp
  *  });
  *
  * \endcode
- * 
+ *
  * \tparam Policy region policy
  *
-*/
+ */
 
 template <typename Func>
 RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
 {
 
 #pragma omp parallel
-  body();
+    { // curly brackets to ensure body() is encapsulated in omp parallel region
+    body();
+    }
 }
 
-}  // closing brace for omp namespace
+}  // namespace omp
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

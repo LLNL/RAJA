@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -114,7 +114,7 @@ auto make_multi_policy(VarOps::index_sequence<Indices...>,
 {
   return MultiPolicy<Selector, Policies...>(s, std::get<Indices>(policies)...);
 }
-}
+}  // namespace detail
 
 /// make_multi_policy - Construct a MultiPolicy from the given selector and
 /// Policies

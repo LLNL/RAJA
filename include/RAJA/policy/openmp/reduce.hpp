@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -44,7 +44,6 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
 
 namespace RAJA
 {
@@ -72,7 +71,7 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
@@ -129,11 +128,11 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_OPENMP guard
 

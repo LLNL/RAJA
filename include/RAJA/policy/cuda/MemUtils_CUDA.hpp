@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -37,9 +37,9 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "RAJA/util/types.hpp"
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
+#include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
@@ -48,7 +48,6 @@ namespace RAJA
 
 namespace cuda
 {
-
 
 
 //! Allocator for pinned memory for use in basic_mempool
@@ -156,7 +155,7 @@ extern cudaInfo tl_status;
 
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
 //! Ensure all streams in use are synchronized wrt raja kernel launches
 RAJA_INLINE
@@ -236,7 +235,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     dim3 gridDim,
     dim3 blockDim,
-    size_t dynamic_smem,
+    size_t RAJA_UNUSED_ARG(dynamic_smem),
     cudaStream_t stream,
     LOOP_BODY&& loop_body)
 {
@@ -252,34 +251,34 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
 }
 
 
-
 namespace internal
 {
 
 RAJA_INLINE
-int getMaxBlocks(){
+int getMaxBlocks()
+{
   static int max_blocks = -1;
 
-  if(max_blocks <= 0){
+  if (max_blocks <= 0) {
     int cur_device = -1;
     cudaGetDevice(&cur_device);
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cur_device);
     int s_num_sm = prop.multiProcessorCount;
     int s_max_threads_per_sm = prop.maxThreadsPerMultiProcessor;
-    max_blocks = s_num_sm * (s_max_threads_per_sm/1024);
-    //printf("MAX_BLOCKS=%d\n", max_blocks);
+    max_blocks = s_num_sm * (s_max_threads_per_sm / 1024);
+    // printf("MAX_BLOCKS=%d\n", max_blocks);
   }
 
   return max_blocks;
 }
 
-} // namespace internal
+}  // namespace internal
 
 
-}  // closing brace for cuda namespace
+}  // namespace cuda
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA
 

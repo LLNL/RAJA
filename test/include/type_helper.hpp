@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -79,7 +79,7 @@ template <typename... Ts>
 struct product<std::tuple<>, std::tuple<Ts...>> {
   typedef std::tuple<> type;
 };
-}
+}  // namespace types
 
 
 namespace tt
@@ -132,7 +132,7 @@ struct apply<Fn, L<Ts...>> {
 template <template <class> class Outer, class T>
 using apply_t = typename apply<Outer, T>::type;
 
-} // closing brace for namespace tt
+}  // namespace tt
 
 
 namespace detail
@@ -144,7 +144,7 @@ template <template <class...> class T, typename... Ts>
 struct ForTesting<T<Ts...>> {
   using type = ::testing::Types<Ts...>;
 };
-}
+}  // namespace detail
 
 template <typename T>
 using ForTesting = typename ::detail::ForTesting<T>::type;

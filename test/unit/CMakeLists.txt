@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -69,6 +69,10 @@ raja_add_test(
 raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
+
+raja_add_test(
+  NAME test-sharedmem
+  SOURCES test-sharedmem.cpp)
 
 add_subdirectory(cpu)
 
