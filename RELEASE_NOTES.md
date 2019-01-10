@@ -56,11 +56,13 @@ Other notable changes include:
     * The RAJA::AtomicRef interface is now consistent with the 
       C++20 std::atomic_ref interface.
     * Atomic compare-exchange operations added.
-    * New RAJA::statement::Reduce type for use in RAJA::kernel execution 
-      policies. This enables the ability to perform reductions and access
-      reduced values inside user kernels. This capability is considered
-      prelimiary and no significant examples or documentation is available yet.
     * CUDA reduce policies no longer require a thread-block size parameter.
+    * New features considered prelimiary with no significant documentation or
+      examples available yet:
+        * RAJA::statement::Reduce type for use in RAJA::kernel execution 
+          policies. This enables the ability to perform reductions and access
+          reduced values inside user kernels.
+        * Warp-level execution policies added for CUDA.
 
   * Performance improvements:
     * Better use of inline directives to improve likelihood of SIMD 
