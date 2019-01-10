@@ -119,6 +119,24 @@ using cuda_reduce_atomic = cuda_reduce_base<true>;
 // down to threadIdx 0
 struct cuda_block_reduce{};
 
+// Policy for RAJA::statement::Reduce that reduces threads in a warp
+// down to the first lane of the warp
+struct cuda_warp_reduce{};
+
+// Policy to map work directly to threads within a warp
+// Maximum iteration count is WARP_SIZE
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+struct cuda_warp_direct{};
+
+// Policy to map work to threads within a warp using a warp-stride loop
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+struct cuda_warp_loop{};
+
+
+
+
 
 //
 // Operations in the included files are parametrized using the following
@@ -151,6 +169,10 @@ using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
 
 using policy::cuda::cuda_block_reduce;
+using policy::cuda::cuda_warp_reduce;
+
+using policy::cuda::cuda_warp_direct;
+using policy::cuda::cuda_warp_loop;
 
 using policy::cuda::cuda_synchronize;
 
@@ -194,6 +216,8 @@ struct cuda_block_xyz_loop{};
 using cuda_block_x_loop = cuda_block_xyz_loop<0>;
 using cuda_block_y_loop = cuda_block_xyz_loop<1>;
 using cuda_block_z_loop = cuda_block_xyz_loop<2>;
+
+
 
 
 namespace internal{

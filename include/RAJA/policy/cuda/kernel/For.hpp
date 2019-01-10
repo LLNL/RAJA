@@ -94,6 +94,60 @@ struct CudaStatementExecutor<
 };
 
 
+/*
+ * Executor for thread work sharing loop inside CudaKernel.
+ * Mapping directly from a warp lane
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, RAJA::cuda_warp_direct, EnclosedStmts...>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t>;
+
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    auto len = segment_length<ArgumentId>(data);
+    auto i = threadIdx.x;
+
+    // assign thread id directly to offset
+    data.template assign_offset<ArgumentId>(i);
+
+    // execute enclosed statements if in bounds
+    enclosed_stmts_t::exec(data, thread_active && (i<len));
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+
+    // we always get EXACTLY one warp by allocating one warp in the X dimension
+    int len = RAJA::policy::cuda::WARP_SIZE;
+
+    // request one thread per element in the segment
+    set_cuda_dim<0>(dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_cuda_dim<0>(dims.min_threads, len);
+
+    return dims;
+  }
+};
+
 
 /*
  * Executor for thread work sharing loop inside CudaKernel.
@@ -163,6 +217,71 @@ struct CudaStatementExecutor<
   }
 };
 
+
+/*
+ * Executor for thread work sharing loop inside CudaKernel.
+ * Provides a warp-stride loop for each thread inside of a warp.
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, RAJA::cuda_warp_loop, EnclosedStmts...>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t>;
+
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // block stride loop
+    int len = segment_length<ArgumentId>(data);
+    auto i0 = threadIdx.x;
+    auto i_stride = RAJA::policy::cuda::WARP_SIZE;
+    auto i = i0;
+    for(;i < len;i += i_stride){
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+    // do we need one more masked iteration?
+    if(i - i0 < len)
+    {
+      // execute enclosed statements one more time, but masking them off
+      // this is because there's at least one thread that isn't masked off
+      // that is still executing the above loop
+      enclosed_stmts_t::exec(data, false);
+    }
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+
+    // we always get EXACTLY one warp by allocating one warp in the X dimension
+    int len = RAJA::policy::cuda::WARP_SIZE;
+
+    // request one thread per element in the segment
+    set_cuda_dim<0>(dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_cuda_dim<0>(dims.min_threads, len);
+
+    return dims;
+  }
+};
 
 
 /*
