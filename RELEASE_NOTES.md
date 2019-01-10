@@ -41,8 +41,8 @@ Major changes include:
     CPU cache blocking, CUDA GPU thread local data and shared memory is 
     available. This includes RAJA::kernel policy statement types to make tile
     numbers and local tile indices available in user kernels (TileTCount and
-    (ForICount statement types), and a new RAJA::LocalArray type with various 
-    CPU and GPU memory policies. Due to these new features, RAJA 'shmem sindow'
+    ForICount statement types), and a new RAJA::LocalArray type with various 
+    CPU and GPU memory policies. Due to these new features, RAJA 'shmem window'
     statements have been removed.
   * This release contains expanded documentation and example codes for the
     RAJA::kernel interface, including loop tiling algorithms and support for
@@ -57,7 +57,7 @@ Other notable changes include:
       C++20 std::atomic_ref interface.
     * Atomic compare-exchange operations added.
     * CUDA reduce policies no longer require a thread-block size parameter.
-    * New features considered prelimiary with no significant documentation or
+    * New features considered preliminary with no significant documentation or
       examples available yet:
         * RAJA::statement::Reduce type for use in RAJA::kernel execution 
           policies. This enables the ability to perform reductions and access
