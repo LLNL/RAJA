@@ -105,8 +105,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int TILE_DIM = 16;
 
   // Calculate number of tiles (Needed for C++ version)
-  const int outer_Dim0 = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dim1 = (N_r - 1) / TILE_DIM + 1;
+  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
 
   //
   // Initialize matrix data
@@ -126,13 +126,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dim1; ++by) {
-    for (int bx = 0; bx < outer_Dim0; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by) {
+    for (int bx = 0; bx < outer_Dimc; ++bx) {
 
+      // Stack-allocated local array for data on a tile
       int Tile[TILE_DIM][TILE_DIM];
 
       //
-      // (1) Inner loops to load data into the tile
+      // (1) Inner loops to read input matrix tile data into the array
+      // 
+      //     Note: loops are ordered so that input matrix data access 
+      //           is stride-1.
       //
       for (int ty = 0; ty < TILE_DIM; ++ty) {
         for (int tx = 0; tx < TILE_DIM; ++tx) {
@@ -141,16 +145,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c)
+          if (row < N_r && col < N_c) {
             Tile[ty][tx] = Aview(row, col);
+          } 
         }
       }
+
       //
-      // (2) Inner loops to read data from the tile
+      // (2) Inner loops to write array data into output array tile
       //
-      //     Note: The order of the loops have been
-      //     swapped! This enables us to swap which
-      //     index has unit stride.
+      //     Note: loop order is swapped from above so that output matrix 
+      //           data access is stride-1.
       //
       for (int tx = 0; tx < TILE_DIM; ++tx) {
         for (int ty = 0; ty < TILE_DIM; ++ty) {
@@ -159,10 +164,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c)
+          if (row < N_r && col < N_c) {
             Atview(col, row) = Tile[ty][tx];
+          }
         }
       }
+
     }
   }
   checkResult<int>(Atview, N_c, N_r);
@@ -196,62 +203,42 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using SEQ_EXEC_POL =
-  RAJA::KernelPolicy<
-    //
-    // (0) Execution policies for outer loops
-    //      These loops iterate over the number of
-    //      tiles needed to carry out the transpose
-    //
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        // This statement will initalize local array memory inside a
-        // kernel. The cpu_tile_mem policy specifies that memory should be
-        // allocated on the stack. The entries in the RAJA::ParamList
-        // identify RAJA local arrays to intialize in the parameter tuple.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-          //
-          // (1) Execution policies for the first set of inner
-          // loops. These loops copy data from the global matrices
-          // to the local tile.
-          //
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+
           RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
+              RAJA::statement::Lambda<0>
             >
           >,
-          //
-          // (2) Execution policies for the second set of inner
-          // loops. These loops copy data from the local tile to
-          // the global matrix.
-          //     Note: The order of the loops have been
-          //     swapped! This enables us to swap which
-          //     index has unit stride.
-          //
+
           RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
             RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<1>
+              RAJA::statement::Lambda<1>
             >
+          >
+
           >
         >
       >
-    >
-  >;
+    >;
 
-  RAJA::kernel_param<SEQ_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
+  RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
+                                                     RAJA::RangeSegment(0, N_r)),
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+    RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-        RAJA_Tile(ty, tx) = Aview(row, col);
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      RAJA_Tile(ty, tx) = Aview(row, col);
+    },
 
-      },
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      Atview(col, row) = RAJA_Tile(ty, tx);
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        Atview(col, row) = RAJA_Tile(ty, tx);
-
-      });
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

@@ -20,24 +20,30 @@ Mesh Vertex Sum Example: Iteration Space Coloring
 
 Key RAJA features shown in this example:
 
-  * ``RAJA::forall`` loop iteration template method
+  * ``RAJA::forall`` loop execution template method
   * ``RAJA::ListSegment`` iteration space construct
   * ``RAJA::IndexSet`` iteration space segment container and associated execution policies
 
 
-The example computed a sum at each vertex on a logically-Cartesian 2D mesh. 
+The example computes a sum at each vertex on a logically-Cartesian 2D mesh
+as shown in the figure.
+
+.. figure:: ../figures/vertexsum.jpg
+
+   A portion of the area of each mesh element is summed to the vertices surrounding the element.
+
 Each sum is an average of the area of the mesh elements that share the vertex. 
 In many "staggered mesh" applications, such an operation is common and is 
 often written in a way that presents the algorithm clearly but prevents 
-parallelization due to potential data races. Specifically, multiple loop 
-iterates over mesh elements may be writing to the same shared vertex memory 
-location. The example illustrates how RAJA constructs can be used to enable 
-one to extract parallelism (and potentially improved performance) from such 
-an algorithm without fundamentally changing how it looks in source code.
+parallelization due to potential data races. That is, multiple loop iterates 
+over mesh elements may attempt to write to the same shared vertex memory 
+location at the same time. The example shows how RAJA constructs can be 
+used to enable one to express such an algorithm in parallel and have it
+run correctly without fundamentally changing how it looks in source code.
 
 After defining the number of elements in the mesh, necessary array offsets
 and an array that indicates the mapping between an element and its four 
-surrounding vertices, the C-style version of the vertex sum calculation is:
+surrounding vertices, a C-style version of the vertex sum calculation is:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
                     :lines: 122-131
@@ -46,10 +52,10 @@ surrounding vertices, the C-style version of the vertex sum calculation is:
 RAJA Sequential Variant
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The nested loop RAJA variant of this kernel is:
+A nested loop RAJA variant of this kernel is:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 143-157
+                    :lines: 143-161
 
 Note that this version cannot be guaranteed to run correctly in parallel
 by simply changing the loop execution policies as we have done in other
@@ -63,7 +69,8 @@ RAJA Parallel Variants
 
 To enable the kernel to run safely in parallel, by eliminating the race 
 conditions, we partition the element iteration space into four subsets
-(or `colors`) indicated by the numbers in the figure below.
+(or `colors`) indicated by the numbers in the figure below, which represents
+a portion of our logically-Cartesian 2D mesh.
 
   +---+---+---+---+
   | 2 | 3 | 2 | 3 |
@@ -83,21 +90,22 @@ First, we define four vectors to gather the mesh element indices for each
 color:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 194-216
+                    :lines: 198-220
 
-Then, we create a RAJA index set with four list segments, one for each color:
-
-.. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 224-231
-
-Now, we can define an index set execution policy that iterates over the 
-segments sequentially and traverses each segment in parallel using OpenMP
-multi-threading:
+Then, we create a RAJA index set with four list segments, one for each color,
+using the vectors:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 274-283
+                    :lines: 228-235
 
-Note that we no longer need to use the offset variable to compute the 
+Now, we can use an index set execution policy that iterates over the 
+segments sequentially and executes each segment in parallel using OpenMP
+multi-threading (and ``RAJA::forall``):
+
+.. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
+                    :lines: 278-287
+
+We no longer need to use the offset variable to compute the 
 element index in terms of 'i' and 'j' since the loop is no longer nested
 and the element indices are directly encoded in the list segments.
 
@@ -106,9 +114,9 @@ segments sequentially, and execute each segment in parallel via a CUDA
 kernel launch on a GPU:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 302-311
+                    :lines: 306-315
 
-Note that we've marked the lambda loop body with the 'RAJA_DEVICE' macro
+Here, we have marked the lambda loop body with the 'RAJA_DEVICE' macro
 and specified the number of threads in a CUDA thread block in the segment
 execution policy.
 

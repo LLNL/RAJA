@@ -18,4 +18,4 @@
 Application Considerations
 ***************************
 
-.. warning:: **This section is a work-in-progress!!**
+.. warning:: **Comming soon!! Stay tuned.**
