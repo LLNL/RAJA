@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -40,9 +40,7 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
 #include "RAJA/policy/cuda/scan.hpp"
-#include "RAJA/policy/cuda/forallN.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
-#include "RAJA/policy/cuda/shared_memory.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)

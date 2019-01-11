@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -18,10 +18,10 @@
 Build Configuration Options
 ****************************
 
-RAJA uses `BLT <https://github.com/LLNL/blt>`_, a CMake-based build system .
+RAJA uses `BLT <https://github.com/LLNL/blt>`_, a CMake-based build system.
 In :ref:`getting_started-label`, we described how to run CMake to configure
-RAJA with its default option settings.  In this section, we describe all RAJA
-configuration options, their defaults, and how to enable desired features.
+RAJA with its default option settings. In this section, we describe all RAJA
+configuration options, their defaults, and how to enable or disable features.
 
 =======================
 Setting Options
@@ -43,8 +43,8 @@ the top-level RAJA directory::
     $ make
     $ make install
 
-Following CMake conventions, RAJA supports three build types: 'Release', 
-'RelWithDebInfo', and 'Debug'. Similar to other CMake systems, when you
+Following CMake conventions, RAJA supports three build types: ``Release``, 
+``RelWithDebInfo``, and ``Debug``. Similar to other CMake systems, when you
 choose a build type that includes debug information, you do not have to specify
 the '-g' compiler flag to generate debugging symbols. 
 
@@ -54,7 +54,7 @@ RAJA OpenMP functionality, pass the following argument to cmake::
     -DENABLE_OPENMP=On
 
 All RAJA settings for default options, compilers, flags for optimization, etc. 
-can be found in files in the `RAJA/cmake` directory. Next, we
+can be found in files in the ``RAJA/cmake`` directory. Next, we
 summarize the available options and their defaults
 
 =================================
@@ -62,11 +62,11 @@ Available Options and Defaults
 =================================
 
 RAJA uses a variety of custom variables to control how it is compiled. Many 
-of these are used internally to control how RAJA gets compiled and do 
-not need to be set by users. Others can be turned on or off by users to 
-enable or disable certain RAJA features. Most variables get translated to 
-compiler directives and definitions in the RAJA 'config.hpp' file that is 
-generated when CMake runs. The 'config.hpp' header file is included in other 
+of these are used internally to control RAJA compilation and do 
+not need to be set by users. Others can be used to enable or disable certain 
+RAJA features. Most variables get translated to 
+compiler directives and definitions in the RAJA ``config.hpp`` file that is 
+generated when CMake runs. The ``config.hpp`` header file is included in other 
 RAJA headers as needed so all options propagate consistently through the 
 build process for all of the code. Each RAJA variable has a special prefix 
 to distinguish it as being specific to RAJA; i.e., it is not a BLT variable
@@ -123,18 +123,20 @@ and their default settings:
       the native support in the Clang compiler. When using it, the 
       'ENABLE_CUDA' variable must also be turned on.
 
-      The 'ENABLE_CUB' variable is used to enable NVIDIA cub library support
-      for RAJA CUDA scans. When turned off, NVIDIA thrust is used by default.
+      The 'ENABLE_CUB' variable is used to enable NVIDIA CUB library support
+      for RAJA CUDA scans. Since the CUB library is included in RAJA as a
+      Git submodule, users should not have to set this in most scenarios.
 
 .. note:: When using the NVIDIA nvcc compiler for RAJA CUDA functionality, 
           the variable 'RAJA_NVCC_FLAGS' should be used to pass flags to nvcc.
 
 * **Data types, sizes, alignment, etc.**
 
-     RAJA provides type aliases that can be used to parametrize floating 
+     RAJA provides type aliases that can be used to parameterize floating 
      point types in applications, which makes it easy to switch between types. 
 
-     The following variables are used to set the type for 'RAJA::Real_type':
+     The following variables are used to set the data type for the type
+     alias ``RAJA::Real_type``:
 
       ======================   ======================
       Variable                 Default
@@ -155,8 +157,8 @@ and their default settings:
      When turned on, the RAJA Complex_type is 'std::complex<Real_type>'.
 
      There are several variables to control the definition of the RAJA 
-     floating-point data pointer type 'RAJA::Real_ptr'. The base data type
-     is always 'Real_type'. When RAJA is compiled for CPU execution 
+     floating-point data pointer type ``RAJA::Real_ptr``. The base data type
+     is always ``Real_type``. When RAJA is compiled for CPU execution 
      only, the defaults are:
 
       =============================   ======================
@@ -229,15 +231,15 @@ and their default settings:
       =============================   ========================================
 
      For details on the options in this section are used, please see the 
-     header file `RAJA/include/RAJA/util/types.hpp`.
+     header file ``RAJA/include/RAJA/util/types.hpp``.
 
 * **Timer Options**
 
      RAJA provides a simple portable timer class that is used in RAJA
      example codes to determine execution timing and can be used in other apps
      as well. This timer can use any of three internal timers depending on
-     your preferences, and one should be selected by setting the `RAJA_TIMER`
-     variable. If the `RAJA_CALIPER` variable is turned on (off by default), 
+     your preferences, and one should be selected by setting the 'RAJA_TIMER'
+     variable. If the 'RAJA_CALIPER' variable is turned on (off by default), 
      the timer will also offer caliper-based region annotations.
 
       ======================   ======================
@@ -253,7 +255,8 @@ and their default settings:
       =============================   ========================================
       Value                           Meaning
       =============================   ========================================
-      chrono                          Use the std::chrono library from the STL
+      chrono                          Use the std::chrono library from the 
+                                      C++ standard library
       gettime                         Use `timespec` from the C standard 
                                       library time.h file
       clock                           Use `clock_t` from time.h
@@ -261,8 +264,8 @@ and their default settings:
 
 * **Other RAJA Features**
    
-     RAJA contains some features that are used mainly for development or are 
-     not of general interest to RAJA users. These are turned off be default.
+     RAJA contains some features that are used mainly for development or may
+     not be of general interest to RAJA users. These are turned off be default.
      They are described here for reference and completeness.
 
       =============================   ========================================
@@ -282,9 +285,10 @@ and their default settings:
 RAJA Host-Config Files
 =======================
 
-The `RAJA/host-configs` directory contains subdirectories with files that 
-define configurations for various platforms and compilers at LLNL. These
-serve as examples of  *CMake cache files* that can be passed to CMake using 
-the '-C' option. This option initializes the CMake cache with the configuration 
-specified in each file. For examples of how they are used for specific CMake
-configurations, see the files in the `RAJA/scripts` directory.
+The ``RAJA/host-configs`` directory contains subdirectories with files that 
+define configurations for various platforms and compilers at LLNL. 
+These serve as examples of *CMake cache files* that can be passed to CMake 
+using the '-C' option. This option initializes the CMake cache with the 
+configuration specified in each file. For examples of how they are used for 
+specific CMake configurations, see the build scripts in ``RAJA/scripts`` 
+subdirectories that can be used to drive the RAJA 'host-config' files. 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -322,9 +322,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_threadblock_exec<32>,
-        RAJA::statement::For<0, RAJA::cuda_threadblock_exec<32>,
-          RAJA::statement::Lambda<0>
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+              RAJA::statement::Lambda<0>
+            >
+          >
         >
       >
     > >;

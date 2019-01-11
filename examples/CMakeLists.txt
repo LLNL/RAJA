@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -63,6 +63,14 @@ raja_add_executable(
   SOURCES tut_batched-matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME tut_matrix-transpose-local-array
+  SOURCES tut_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
+  NAME tut_tiled-matrix-transpose
+  SOURCES tut_tiled-matrix-transpose.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 
@@ -81,3 +89,13 @@ raja_add_executable(
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
+
+if(ENABLE_TARGET_OPENMP)
+raja_add_executable(
+  NAME target-kernel
+  SOURCES omp-target-kernel.cpp)
+
+raja_add_executable(
+  NAME omp-target-ltimes
+  SOURCES omp-target-ltimes.cpp)
+endif()

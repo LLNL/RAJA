@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -25,16 +25,15 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#ifndef RAJA_pattern_kernel_ShmemWindow_HPP
-#define RAJA_pattern_kernel_ShmemWindow_HPP
+#ifndef RAJA_pattern_kernel_InitLocalMem_HPP
+#define RAJA_pattern_kernel_InitLocalMem_HPP
 
 #include "RAJA/config.hpp"
 
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/util/ShmemTile.hpp"
-#include "RAJA/util/StaticLayout.hpp"
+#include "RAJA/util/LocalArray.hpp"
 
 namespace RAJA
 {
@@ -42,17 +41,6 @@ namespace RAJA
 namespace statement
 {
 
-
-/*!
- * A RAJA::kernel statement that sets the shared memory window.
- *
- *
- */
-
-template <typename... EnclosedStmts>
-struct SetShmemWindow
-    : public internal::Statement<camp::nil, EnclosedStmts...> {
-};
 
 /*!
  * Kernel statements intialize local arrays
@@ -123,23 +111,6 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
     setPtrToNull<Indices...>(data);
   }
   
-};
-
-template <typename... EnclosedStmts>
-struct StatementExecutor<statement::SetShmemWindow<EnclosedStmts...>> {
-
-
-  template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
-  {
-
-    // Call setWindow on all of our shmem objects
-    shmem_set_windows(data.param_tuple, data.get_minimum_index_tuple());
-
-    // Invoke the enclosed statements
-    execute_statement_list<camp::list<EnclosedStmts...>>(
-        std::forward<Data>(data));
-  }
 };
 
 

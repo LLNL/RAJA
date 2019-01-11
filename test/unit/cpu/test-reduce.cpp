@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -147,7 +147,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
   tmin1.minloc(-100.0, -1);
 
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+  forall<ISET_POLICY_T>(
       this->iset, [=](Index_type idx) {
         tmin0.minloc(1 * this->test_array[idx], idx);
         tmin1.minloc(this->test_array[idx], idx);
@@ -158,7 +158,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
   ASSERT_EQ(tmin1.get(), Real_type(-200.0));
 
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+  forall<ISET_POLICY_T>(
       this->iset, [=](Index_type idx) {
         tmin0.minloc(2 * this->test_array[idx], idx);
         tmin1.minloc(this->test_array[idx], idx);

@@ -1,18 +1,5 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for OpenMP.
- *
- *          These methods should work on any platform that supports OpenMP.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -88,6 +75,7 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
     Body ib = body;
     ib(begin[i]);
   }
+
 }
 
 template <typename Iterable, typename Func>

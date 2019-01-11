@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -13,10 +13,6 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
-
-raja_add_test(
-  NAME test-cuda-nested
-  SOURCES test-nested.cpp)
 
 raja_add_test(
   NAME test-cuda-scan
@@ -41,10 +37,6 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-forall
   SOURCES test-forall.cpp)
-
-raja_add_test(
-  NAME test-cuda-nested-strided
-  SOURCES test-nested-strided.cpp)
 
 raja_add_test(
   NAME test-cuda-forall-view

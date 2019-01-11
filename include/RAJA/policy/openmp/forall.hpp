@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -205,5 +205,3 @@ RAJA_INLINE void forall(
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
-
-#include "RAJA/policy/openmp/target_forall.hpp"

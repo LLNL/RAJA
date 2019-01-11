@@ -17,7 +17,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,11 +52,6 @@
 
 
 //
-// Shared memory abstractions
-//
-#include "RAJA/pattern/shared_memory.hpp"
-
-//
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
@@ -81,6 +76,10 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#include "RAJA/policy/openmp_target.hpp"
+#endif
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
@@ -113,18 +112,12 @@
 //
 // Shared memory view patterns
 //
-#include "RAJA/util/ShmemTile.hpp"
+#include "RAJA/util/LocalArray.hpp"
 
 //
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
-
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
 
 
 //
@@ -153,11 +146,7 @@
 
 #include "RAJA/index/IndexSetUtils.hpp"
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
 
 #include "RAJA/pattern/scan.hpp"
 

@@ -3,14 +3,14 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout permutation operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with permuted stride orderings
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //

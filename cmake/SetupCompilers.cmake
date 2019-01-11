@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -97,7 +97,7 @@ if (ENABLE_CUDA)
     set(RAJA_NVCC_FLAGS_RELEASE -O2 CACHE STRING "")
     set(RAJA_NVCC_FLAGS_DEBUG -g; -G; -O0 CACHE STRING "")
     set(RAJA_NVCC_FLAGS_MINSIZEREL -Os CACHE STRING "")
-    set(RAJA_NVCC_FLAGS_RELWITHDEBINFO -g; -G; -O2 CACHE STRING "")
+    set(RAJA_NVCC_FLAGS_RELWITHDEBINFO -g; -lineinfo; -O2 CACHE STRING "")
 
     if(RAJA_ENABLE_COVERAGE)
       if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
