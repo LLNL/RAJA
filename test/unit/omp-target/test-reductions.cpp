@@ -57,15 +57,15 @@ REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
                            ReductionConstructor);
 
 using constructor_types =
-    ::testing::Types<std::tuple<RAJA::omp_target_reduce<16>, int>,
-                     std::tuple<RAJA::omp_target_reduce<16>, float>,
-                     std::tuple<RAJA::omp_target_reduce<16>, double>,
-                     std::tuple<RAJA::omp_target_reduce<64>, int>,
-                     std::tuple<RAJA::omp_target_reduce<64>, float>,
-                     std::tuple<RAJA::omp_target_reduce<64>, double>,
-                     std::tuple<RAJA::omp_target_reduce<256>, int>,
-                     std::tuple<RAJA::omp_target_reduce<256>, float>,
-                     std::tuple<RAJA::omp_target_reduce<256>, double>>;
+    ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>,
+                     std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>,
+                     std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>>;
 
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
@@ -238,11 +238,11 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceMaxLoc);
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
-                                RAJA::omp_target_reduce<16>>,
+                                RAJA::omp_target_reduce>,
                      std::tuple<RAJA::omp_target_parallel_for_exec<64>,
-                                RAJA::omp_target_reduce<64>>,
+                                RAJA::omp_target_reduce>,
                      std::tuple<RAJA::omp_target_parallel_for_exec<256>,
-                                RAJA::omp_target_reduce<256>>>;
+                                RAJA::omp_target_reduce>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
 
@@ -326,17 +326,17 @@ using nested_types = ::testing::Types<
                    RAJA::ExecList<RAJA::omp_target_parallel_for_exec<64>,
                                   RAJA::seq_exec,
                                   RAJA::seq_exec>>,
-               RAJA::omp_target_reduce<64>>,
+               RAJA::omp_target_reduce>,
     std::tuple<RAJA::NestedPolicy<
                    RAJA::ExecList<RAJA::seq_exec,
                                   RAJA::omp_target_parallel_for_exec<64>,
                                   RAJA::seq_exec>>,
-               RAJA::omp_target_reduce<64>>,
+               RAJA::omp_target_reduce>,
     std::tuple<RAJA::NestedPolicy<
                    RAJA::ExecList<RAJA::seq_exec,
                                   RAJA::seq_exec,
                                   RAJA::omp_target_parallel_for_exec<64>>>,
-               RAJA::omp_target_reduce<64>>>;
+               RAJA::omp_target_reduce>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduceTargetOMP,
                               NestedReductionCorrectnessTestTargetOMP,

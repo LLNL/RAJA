@@ -56,6 +56,11 @@ struct Static : std::integral_constant<unsigned int, ChunkSize> {
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
+// Max number of CUDA reduction threads per block possible.
+// Required for allocating omp target data before execution policy.
+// Used in target_parallel_for, aliased in target_reduce.
+static constexpr int MAXNUMTHREADS = 1024;
+
 template <unsigned int TeamSize>
 struct Teams : std::integral_constant<unsigned int, TeamSize> {
 };
@@ -184,7 +189,6 @@ struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-template <size_t ThreadsPerTeam>
 struct omp_target_reduce
     : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
 };

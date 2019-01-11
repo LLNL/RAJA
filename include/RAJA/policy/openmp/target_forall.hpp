@@ -63,15 +63,26 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  auto NumTeams = RAJA_DIVIDE_CEILING_INT( (int)distance, (int)ThreadsPerTeam );
-  if ( NumTeams > ThreadsPerTeam )
+
+  // Reset if exceed CUDA threads per block limit.
+  int tperteam = ThreadsPerTeam;
+  if ( tperteam > omp::MAXNUMTHREADS )
+  {
+    tperteam = omp::MAXNUMTHREADS;
+  }
+
+  // calculate number of teams based on user defined threads per team
+  // datasize is distance between begin() and end() of iterable
+  auto numteams = RAJA_DIVIDE_CEILING_INT( distance, tperteam );
+  if ( numteams > tperteam )
   {
     // Omp target reducers will write team # results, into Threads-sized array.
     // Need to insure NumTeams <= Threads to prevent array out of bounds access.
-    NumTeams = ThreadsPerTeam;
+    numteams = tperteam;
   }
-#pragma omp target teams distribute parallel for num_teams(NumTeams) \
-    thread_limit(ThreadsPerTeam) schedule(static, 1) map(to              \
+
+#pragma omp target teams distribute parallel for num_teams(numteams) \
+    thread_limit(tperteam) schedule(static, 1) map(to              \
                                                     : body)
   for (Index_type i = 0; i < distance; ++i) {
     Body ib = body;
