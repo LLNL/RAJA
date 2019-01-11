@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -40,7 +40,7 @@ namespace internal
 
 
 //
-// Executor that handles reductions for
+// Executor that handles reductions across a single CUDA thread block
 //
 template <typename Data,
           template <typename...> class ReduceOperator,
@@ -75,10 +75,14 @@ struct CudaStatementExecutor<Data,
         RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
     value_t new_value =
         RAJA::cuda::impl::block_reduce<combiner_t>(value, ident);
-    data.template assign_param<ParamId>(new_value);
+
 
     // execute enclosed statements, and mask off everyone but thread 0
     thread_active = threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0;
+    if(thread_active){
+      // Only update to new value on root thread
+      data.template assign_param<ParamId>(new_value);
+    }
     enclosed_stmts_t::exec(data, thread_active);
   }
 
@@ -90,6 +94,63 @@ struct CudaStatementExecutor<Data,
     return enclosed_dims;
   }
 };
+
+
+//
+// Executor that handles reductions across a single CUDA thread warp
+//
+template <typename Data,
+          template <typename...> class ReduceOperator,
+          typename ParamId,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<Data,
+                             statement::Reduce<RAJA::cuda_warp_reduce,
+                                               ReduceOperator,
+                                               ParamId,
+                                               EnclosedStmts...>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+
+
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // block reduce on the specified parameter
+    auto value = data.template get_param<ParamId>();
+    using value_t = decltype(value);
+    value_t ident = value_t();
+
+    // if this thread isn't active, just set it to the identity
+    if (!thread_active) {
+      value = ident;
+    }
+
+    // Call warp reduction routine
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
+    value_t new_value =
+        RAJA::cuda::impl::warp_reduce<combiner_t>(value, ident);
+    data.template assign_param<ParamId>(new_value);
+
+    // execute enclosed statements, and mask off everyone but lane 0
+    thread_active = threadIdx.x == 0;
+    if(thread_active){
+      // Only update to new value on root thread
+      data.template assign_param<ParamId>(new_value);
+    }
+    enclosed_stmts_t::exec(data, thread_active);
+  }
+
+
+  static inline LaunchDims calculateDimensions(Data const &data)
+  {
+    // combine with enclosed statements
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return enclosed_dims;
+  }
+};
+
 
 
 }  // namespace internal
