@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -341,6 +341,41 @@ RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 }
 
 #endif
+
+//! reduce values in block into thread 0
+template <typename Combiner, typename T>
+RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T identity)
+{
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+  T temp = val;
+
+  if (numThreads % policy::cuda::WARP_SIZE == 0) {
+
+    // reduce each warp
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+      T rhs = shfl_xor_sync(temp, i);
+      Combiner{}(temp, rhs);
+    }
+
+  } else {
+
+    // reduce each warp
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+      int srcLane = threadId ^ i;
+      T rhs = shfl_sync(temp, srcLane);
+      // only add from threads that exist (don't double count own value)
+      if (srcLane < numThreads) {
+        Combiner{}(temp, rhs);
+      }
+    }
+  }
+
+  return temp;
+}
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>

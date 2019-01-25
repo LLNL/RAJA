@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -18,10 +18,10 @@
 Local Array
 ===========
 
-In this section we introduce RAJA local arrays.
-A ``RAJA::LocalArray`` is a multi-dimensional object whose memory is allocated 
-as a RAJA kernel policy is executed and may only be used inside kernel.
-To motivate the concept and usage, we start by considering a simple C++ example
+This section introduces RAJA local arrays. A ``RAJA::LocalArray`` is a 
+multi-dimensional array object whose memory is allocated when a RAJA kernel 
+is executed and only lives within the scope of the kernel execution. To 
+motivate the concept and usage, consider a simple C++ example
 in which we construct and use two arrays in nested loops::
 
            for(int k = 0; k < 7; ++k) { //k loop
@@ -40,10 +40,15 @@ in which we construct and use two arrays in nested loops::
 
            }
 
-In the example above, we see that two arrays have been constructed inside the 
-k - for loop and used in both j - for loops. This loop pattern may be expressed
-similarly using RAJA local arrays in RAJA kernel. Next, we show the RAJA variant of
-these for loops and discuss the different components:: 
+Here, two stack-allocated arrays are defined inside the outer 'k' loop and 
+used in both inner 'j' loops. This loop pattern may be also be expressed 
+using RAJA local arrays in a ``RAJA::kernel_param`` kernel. We show a 
+RAJA variant below, which matches the implementation above, and then discuss 
+its constituent parts::
+
+  // 
+  // Define two local arrays
+  // 
 
   using RAJA_a_array = RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<5,7> >;
   RAJA_a_array kernel_a_array;
@@ -51,12 +56,17 @@ these for loops and discuss the different components::
   using RAJA_b_array = RAJA::LocalArray<int, RAJA::Perm<0>, RAJA::SizeList<5> >;
   RAJA_b_array kernel_b_array;
 
-  using Pol =  RAJA::KernelPolicy<
-                 RAJA::statement::For<1, RAJA::loop_exec,
-                   RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0, 1>,
-                     RAJA::statement::For<0, RAJA::loop_exec,
-                       RAJA::statement::Lambda<0>
-                     >,
+
+  // 
+  // Define the kernel execution policy
+  // 
+
+  using POL = RAJA::KernelPolicy<
+                RAJA::statement::For<1, RAJA::loop_exec,
+                  RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0, 1>,
+                    RAJA::statement::For<0, RAJA::loop_exec,
+                      RAJA::statement::Lambda<0>
+                    >,
                     RAJA::statement::For<0, RAJA::loop_exec,
                       RAJA::statement::Lambda<1>
                     >
@@ -64,35 +74,49 @@ these for loops and discuss the different components::
                 >
               >;
 
-  RAJA::kernel_param<Pol> (
-  RAJA::make_tuple(RAJA::RangeSegment(0,5), RAJA::RangeSegment(0,7)),
-  RAJA::make_tuple(kernel_a_array, kernel_b_array),
 
-    [=] (int j, int k, RAJA_a_array &kernel_a_array, RAJA_b_array &kernel_b_array) {
-      kernel_a_array(k, j) = 5*k + j;
-      kernel_b_array(j) = 5*k + j;
+  // 
+  // Define the kernel
+  // 
+
+  RAJA::kernel_param<POL> ( RAJA::make_tuple(RAJA::RangeSegment(0,5), 
+                                             RAJA::RangeSegment(0,7)),
+                            RAJA::make_tuple(kernel_a_array, kernel_b_array),
+
+    [=] (int j, int k, RAJA_a_array& kernel_a_array, RAJA_b_array& kernel_b_array) {
+      a_array(k, j) = 5*k + j;
+      b_array(j) = 5*k + j;
     },
 
-    [=] (int j, int k, RAJA_a_array &kernel_a_array, RAJA_b_array &kernel_b_array) {
+    [=] (int j, int k, RAJA_a_array& a_array, RAJA_b_array& b_array) {
       printf("%d %d \n", kernel_a_array(k, j), kernel_b_array(j));
-    });
+    }
 
-The RAJA implementation begins by first defining RAJA local array types and 
-creating an instance of that type. RAJA local arrays are templated on: 
+  );
 
-* Data type
-* Index permutation ( see :ref:`view-label` for more on permuted layouts)
-* Array dimensions
+The RAJA version defines two ``RAJA::LocalArray`` types, one 
+two-dimensional and one one-dimensional and creates an instance of each type. 
+The template arguments for the ``RAJA::LocalArray`` types are:
 
-.. note:: RAJA local arrays support arbiratry dimensions and sizes.
+  * Array data type
+  * Index permutation (see :ref:`view-label` for more on layouts and permutations)
+  * Array dimensions
 
-Memory allocation for these objects occurs when the kernel policy is 
-executed using the ``InitLocalMem`` statement. The InitLocalMem statement
-is templated on a policy which specifies where memory for the local array
-should be allocated while ``RAJA::ParamList`` identifies local arrays in 
-the parameter tuple to intialize. The following policies may be used to specify memory allocation 
-for the RAJA local arrays::
+.. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and sizes.
 
-*  ``RAJA::cpu_tile_mem`` - Allocates memory on the stack
-*  ``RAJA::cuda_shared_mem`` - Allocates memory in cuda shared memory
-*  ``RAJA::cuda_thread_mem`` - Allocates memory in cuda thread private memory
+The kernel policy is a two-level nested loop policy (see 
+:ref:`loop_elements-kernel-label`` for more information) with a statement type
+``RAJA::statement::InitLocalMem`` inserted between the nested for-loops which
+allocates the memory for the local arrays when the kernel executes. 
+The ``InitLocalMem`` statement type uses a 'CPU tile' memory type, for the 
+two entries '0' and '1' in the kernel parameter tuple (second argument to 
+``RAJA::kernel_param``). Then, the inner initialization loop and inner print 
+loops are run with the respective lambda bodies defined in the kernel.
+
+-------------------
+Memory Policies
+-------------------
+
+``RAJA::LocalArray`` supports CPU stack-allocated memory and CUDA GPU shared
+memory and thread private memory. See :ref:`localarraypolicy-label` for a
+discussion of available memory policies.

@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -18,4 +18,4 @@
 Application Considerations
 ***************************
 
-.. warning:: **This section is a work-in-progress!!**
+.. warning:: **Comming soon!! Stay tuned.**

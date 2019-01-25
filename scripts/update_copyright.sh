@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -52,7 +52,7 @@ for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/Copyright (c) 2016-18/Copyright (c) 2016-19/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2016-19/Copyright (c) 2016-20/" $i.sed.bak > $i
 done
 
 #=============================================================================

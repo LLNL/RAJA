@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -20,17 +20,24 @@ Computing a Histogram with Atomic Operations
 
 Key RAJA features shown in this example:
 
-  * ``RAJA::forall`` loop iteration template 
+  * ``RAJA::forall`` loop execution template 
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA atomic add operation
 
 The example uses an integer array of length 'N' randomly initialized with 
-values in the interval [0, M). It iterates over the array and accumulates the 
-number of occurrences of each value in the array using atomic add operations. 
-It illustrates usage of RAJA portable atomic operations and shows that they are
-used similarly for different programming model back-ends. For a complete 
-description of supported RAJA atomic operations, please see 
-:ref:`atomics-label`.
+values in the interval [0, M). While iterating over the array, the kernel 
+accumulates the number of occurrences of each value in the array using atomic 
+add operations. Atomic operations allow one to update a memory location 
+referenced by a specific address in parallel without data races. The example 
+shows how to use RAJA portable atomic operations and that they are used 
+similarly for different programming model back-ends. 
+
+.. note:: Each RAJA reduction operation requires an atomic policy type
+          parameter that must be compatible with the execution policy for 
+          the kernel in which it is used.
+
+For a complete description of supported RAJA atomic operations and 
+atomic policies, please see :ref:`atomics-label`.
 
 All code snippets described below use the loop range:
 
@@ -72,9 +79,6 @@ For example, here is the CUDA version that uses the 'auto' atomic policy:
                     :lines: 142-148
 
 The same CUDA loop execution policy as in the previous example is used.
-
-For information about the full range of RAJA atomic support, see
-:ref:`atomics-label`.
 
 The file ``RAJA/examples/tut_atomic-binning.cpp`` contains the complete 
 working example code.

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -96,8 +96,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int TILE_DIM = 16;
 
   // Calculate number of tiles (Needed for C++ version)
-  const int outer_Dim0 = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dim1 = (N_r - 1) / TILE_DIM + 1;
+  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
 
   //
   // Initialize matrix data
@@ -118,8 +118,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dim1; ++by) {
-    for (int bx = 0; bx < outer_Dim0; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by) {
+    for (int bx = 0; bx < outer_Dimc; ++bx) {
       //
       // (1) Loops to iterate over tile entries
       //
@@ -129,9 +129,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
-          //Bounds check
-          if(row < N_r && col < N_c) 
+          // Bounds check
+          if (row < N_r && col < N_c) {
             Atview(col, row) = Aview(row, col);
+          }
         }
       }
       
@@ -176,12 +177,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<KERNEL_EXEC_POL>(
-                         RAJA::make_tuple(col_Range, row_Range),
-                         [=](int col, int row) {
-
-    Atview(col, row) = Aview(row, col);
-
+  RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
 
   checkResult<int>(Atview, N_c, N_r);

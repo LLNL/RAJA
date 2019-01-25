@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -1383,6 +1383,133 @@ CUDA_TEST(Kernel, ReduceCudaSum1)
 
 
   ASSERT_EQ(trip_count.get(), N*(N-1)/2);
+
+}
+
+CUDA_TEST(Kernel, ReduceCudaWarpLoop1)
+{
+
+  long N = 2345;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_warp_loop, Lambda<0>>,
+        RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
+          Lambda<1>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> total_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> reduce_count(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((long)0),
+
+      [=] __device__ (Index_type i, long &value) {
+        value += i;
+      },
+      [=] __device__ (Index_type, long &value) {
+        // This only gets executed on the "root" thread which recieved the
+        // reduced value
+        total_count += value;
+        reduce_count += 1;
+      });
+
+
+  ASSERT_EQ(total_count.get(), N*(N-1)/2);
+  ASSERT_EQ(reduce_count.get(), 1);
+
+}
+
+
+CUDA_TEST(Kernel, ReduceCudaWarpLoop2)
+{
+
+  long N = 239;
+  long M = 17;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<1, cuda_thread_y_loop,
+          For<0, cuda_warp_loop, Lambda<0>>
+        >,
+        RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
+          Lambda<1>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> total_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> reduce_count(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                       RAJA::RangeSegment(0, M)),
+
+      RAJA::make_tuple((long)0),
+
+      [=] __device__ (Index_type i, Index_type j, long &value) {
+        value += i + j*N;
+      },
+      [=] __device__ (Index_type, Index_type, long &value) {
+        // This only gets executed on the "root" thread which recieved the
+        // reduced value
+        total_count += value;
+        reduce_count += 1;
+      });
+
+
+  long NM = N*M;
+  ASSERT_EQ(total_count.get(), NM*(NM-1)/2);
+  ASSERT_EQ(reduce_count.get(), M);
+
+}
+
+
+CUDA_TEST(Kernel, ReduceCudaWarpLoop3)
+{
+
+  long N = 25;
+  long M = 16;
+  long O = 10;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<2, cuda_block_x_loop,
+          For<1, cuda_thread_y_direct,
+            For<0, cuda_warp_direct, Lambda<0>>
+          >,
+          RAJA::statement::CudaSyncWarp,
+          RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
+            Lambda<1>
+          >
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> total_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> reduce_count(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                       RAJA::RangeSegment(0, M),
+                       RAJA::RangeSegment(0, O)),
+
+      RAJA::make_tuple((long)0),
+      [=] __device__ (Index_type i, Index_type j, Index_type k, long &value) {
+        value = i + j*N + k*N*M;
+      },
+      [=] __device__ (Index_type, Index_type, Index_type, long &value) {
+        // This only gets executed on the "root" thread which reecieved the
+        // reduced value
+        total_count += value;
+        reduce_count += 1;
+      });
+
+
+  long NMO = N*M*O;
+  ASSERT_EQ(total_count.get(), NMO*(NMO-1)/2);
+  ASSERT_EQ(reduce_count.get(), M*O);
 
 }
 
