@@ -66,7 +66,8 @@ static RAJA_INLINE void exec(Data &&data)
 {
 
   RAJA::region<RegionPolicy>([&]() {
-      execute_statement_list<camp::list<EnclosedStmts...>>(data);
+      using data_t = camp::decay<Data>;
+      execute_statement_list<camp::list<EnclosedStmts...>>(data_t(data));
     });
 }
 
