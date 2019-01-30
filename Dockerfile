@@ -1,10 +1,16 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
+FROM nvidia/cuda:9.0-devel-ubuntu16.04
 MAINTAINER RAJA Development Team <raja-dev@llnl.gov>
 
 RUN apt-get update -y
 RUN apt-get install -y git cmake gdb
 
-RUN cd /opt/ && git clone https://github.com/LLNL/RAJA.git
+ADD https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh /cmake-3.11.0-Linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh /cmake-3.11.0-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN cmake --version
+
+RUN cd /opt/ && git clone --recursive https://github.com/LLNL/RAJA.git
 
 WORKDIR /opt/RAJA
 
