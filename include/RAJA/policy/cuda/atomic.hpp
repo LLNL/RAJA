@@ -47,6 +47,8 @@ namespace atomic
 namespace detail
 {
 
+#if __CUDA_ARCH__ >= 350
+
 /*!
  * Generic impementation of atomic 32-bit or 64-bit compare and swap primitive.
  * Implementation uses the existing CUDA supplied unsigned 32-bit and 64-bit
@@ -524,6 +526,12 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
 {
   return ::atomicCAS((unsigned long long *)acc, compare, value);
 }
+
+#elif (__GNUC__ || __clang__ || __xlC__) && !__CUDA_ARCH__
+// Silencing extraneous warnings when host compiler is activated (without device compiler) within nvcc.
+#elif __CUDA_ARCH__ < 350 
+#warning CUDA ATOMICS NOT COMPILED, NEED TO SET nvcc -arch=sm_35 (__CUDA_ARCH__ >= 350)
+#endif 
 
 }  // namespace detail
 
