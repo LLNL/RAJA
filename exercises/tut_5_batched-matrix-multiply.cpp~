@@ -170,13 +170,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
     for (Index_type row = 0; row < N_r; ++row) {
       for (Index_type col = 0; col < N_c; ++col) {
-        Aview(e, row, col) = row;
-        Bview(e, row, col) = col;
-        Cview(e, row, col) = 0;
 
-        Aview2(e, row, col) = row;
-        Bview2(e, row, col) = col;
-        Cview2(e, row, col) = 0;
+        //EDIT: Uncomment once views are implemented
+        //Aview(e, row, col) = row;
+        //Bview(e, row, col) = col;
+        //Cview(e, row, col) = 0;
+
+        //Aview2(e, row, col) = row;
+        //Bview2(e, row, col) = col;
+        //Cview2(e, row, col) = 0;
       }
     }
   });
