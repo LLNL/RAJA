@@ -169,7 +169,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::loop_exec;
 #endif
 
-  RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
+  RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type ) {
     for (Index_type row = 0; row < N_r; ++row) {
       for (Index_type col = 0; col < N_c; ++col) {
 
