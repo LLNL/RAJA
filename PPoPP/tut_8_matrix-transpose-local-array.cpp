@@ -189,56 +189,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 3) Dimensions of the array
   //
 
-  using TILE_MEM =
-    RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  //EDIT: Define a RAJA local array type
 
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
 
-  TILE_MEM RAJA_Tile;
+  //EDIT: Create an instance of a RAJA local array
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  using SEQ_EXEC_POL =
-    RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >,
-
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
-            >
-          >
-
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                                     RAJA::RangeSegment(0, N_r)),
-
-    RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
-
-    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-      RAJA_Tile(ty, tx) = Aview(row, col);
-    },
-
-    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-      Atview(col, row) = RAJA_Tile(ty, tx);
-
-  });
+  //EDIT: Use RAJA kernel and sequential tiling statements to carryout 
+  //      a matrix tranpose. Use a RAJA local array to store the tile.
+  //      Use ForICount to extract the index within with tile.
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -250,63 +215,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  using OPENMP_EXEC_1_POL =
-  RAJA::KernelPolicy<
-    //
-    // (0) Execution policies for outer loops
-    //      These loops iterate over the number of
-    //      tiles needed to carry out the transpose
-    //
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        // This statement will initalize local array memory inside a
-        // kernel. The cpu_tile_mem policy specifies that memory should be
-        // allocated on the stack. The entries in the RAJA::ParamList
-        // identify RAJA local arrays in the parameter tuple to intialize.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-          //
-          // (1) Execution policies for the first set of inner
-          // loops. These loops copy data from the global matrices
-          // to the local tile.
-          //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
-            >
-          >,
-          //
-          // (2) Execution policies for the second set of inner
-          // loops. These loops copy data from the local tile to
-          // the global matrix.
-          //     Note: The order of the loops have been
-          //     swapped! This enables us to swap which
-          //     index has unit stride.
-          //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<1>
-            >
-          >
-        >
-      >
-    >
-   >;
-
-  RAJA::kernel_param<OPENMP_EXEC_1_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
-
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        RAJA_Tile(ty, tx) = Aview(row, col);
-
-      },
-
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        Atview(col, row) = RAJA_Tile(ty, tx);
-
-      });
+  //EDIT: Use RAJA kernel tiling statements to carryout 
+  //      a matrix tranpose. Execute the outer loop in parallel 
+  //      using OpenMP. Use a RAJA local array to store the tile.
+  //      Use ForICount to extract the index within with tile.
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -317,63 +229,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  using OPENMP_EXEC_2_POL =
-  RAJA::KernelPolicy<
-    //
-    // (0) Execution policies for outer loops
-    //      These loops iterate over the number of
-    //      tiles needed to carry out the transpose
-    //
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-      // This statement will initalize local array memory inside a
-      // kernel. The cpu_tile_mem policy specifies that memory should be
-      // allocated on the stack. The entries in the RAJA::ParamList
-      // identify RAJA local arrays to intialize in the parameter tuple.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-          //
-          // (1) Execution policies for the first set of inner
-          // loops. These loops copy data from the global matrices
-          // to the local tile.
-          //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::omp_parallel_for_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
-             >
-          >,
-          //
-          // (2) Execution policies for the second set of inner
-          // loops. These loops copy data from the local tile to
-          // the global matrix.
-          //     Note: The order of the loops have been
-          //     swapped! This enables us to swap which
-          //     index has unit stride.
-          //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
-            >
-          >
-        >
-      >
-    >
-  >;
-
-  RAJA::kernel_param<OPENMP_EXEC_2_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
-
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        RAJA_Tile(ty, tx) = Aview(row, col);
-
-      },
-
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        Atview(col, row) = RAJA_Tile(ty, tx);
-
-      });
+  //EDIT: Use RAJA kernel tiling statements to carryout 
+  //      a matrix tranpose. Execute inner loops in parallel 
+  //      using OpenMP. Use a RAJA local array to store the tile.
+  //      Use ForICount to extract the index within with tile.
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_r, N_c);
@@ -385,72 +244,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
 #if defined(RAJA_ENABLE_CUDA)
-  using CUDA_EXEC_POL =
-  RAJA::KernelPolicy<
-    RAJA::statement::CudaKernel<
-      //
-      // (0) Execution policies for outer loops
-      //      These loops iterate over the number of
-      //      tiles needed to carry out the transpose
-      //
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
-          // This statement will initalize local array memory inside a
-          // kernel. The cpu_tile_mem policy specifies that memory should be
-          // allocated on the stack. The entries in the RAJA::ParamList
-          // identify RAJA local arrays to intialize in the parameter tuple.
-          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
-            //
-            // (1) Execution policies for the first set of inner
-            // loops. These loops copy data from the global matrices
-            // to the local tile.
-            //
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_x_direct,
-                                          RAJA::statement::Lambda<0>
-              >
-            >,
-            // Synchronize threads to ensure all loads
-            // to the local array are complete
-            RAJA::statement::CudaSyncThreads,
-            //
-            // (2) Execution policies for the second set of inner
-            // loops. These loops copy data from the local tile to
-            // the global matrix.
-            //     Note: The order of the loops have been
-            //     swapped! This enables us to swap which
-            //     index has unit stride.
-            //
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
-                                            RAJA::statement::Lambda<1>
-              >
-            >,
-            // Synchronize threads to ensure all reads
-            // from the local array are complete
-            RAJA::statement::CudaSyncThreads,
-          >
-        >
-      >
-    >
-  >;
 
-
-  RAJA::kernel_param<CUDA_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
-
-      [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        RAJA_Tile(ty, tx) = Aview(row, col);
-
-      },
-
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-
-        Atview(col, row) = RAJA_Tile(ty, tx);
-
-      });
+  //EDIT: Use RAJA kernel cuda tiling statements to carryout
+  //      a matrix tranpose. Use a RAJA local array with a 
+  //      shared memory policy to store a tile of the input matrix.
+  //      Use ForICount to extract the index within with tile.
+  //      
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

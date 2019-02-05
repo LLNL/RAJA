@@ -241,7 +241,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
 
     //EDIT: Batch matrix multiplication with layout 1
-    //      Using an sequential execution policy
+    //      Using a sequential execution policy
 
     timer.stop();
 
@@ -264,7 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
 
     //EDIT: Batch matrix multiplication with layout 2
-    //      Using an omp parallel execution policy
+    //      Using a sequential parallel execution policy
 
     timer.stop();
 

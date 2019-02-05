@@ -192,7 +192,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //EDIT: Create a matrix multiplication kernel with
-  //      RAJA forall methods on the row and column loop.
+  //      RAJA forall methods for the row and column loops.
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
