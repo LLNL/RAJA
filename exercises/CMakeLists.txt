@@ -15,33 +15,33 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME tut_1_add-vectors
-  SOURCES tut_1_add-vectors.cpp)
+  NAME ex_1_add-vectors
+  SOURCES ex_1_add-vectors.cpp)
 
 raja_add_executable(
-  NAME tut_2_dot-product
-  SOURCES tut_2_dot-product.cpp)
+  NAME ex_2_dot-product
+  SOURCES ex_2_dot-product.cpp)
 
 raja_add_executable(
-  NAME tut_3_indexset-segments
-  SOURCES tut_3_indexset-segments.cpp)
+  NAME ex_3_indexset-segments
+  SOURCES ex_3_indexset-segments.cpp)
 
 raja_add_executable(
-  NAME tut_4_atomic-binning
-  SOURCES tut_4_atomic-binning.cpp)
+  NAME ex_4_atomic-binning
+  SOURCES ex_4_atomic-binning.cpp)
 
 raja_add_executable(
-  NAME tut_5_batched-matrix-multiply
-  SOURCES tut_5_batched-matrix-multiply.cpp)
+  NAME ex_5_batched-matrix-multiply
+  SOURCES ex_5_batched-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME tut_6_matrix-multiply
-  SOURCES tut_6_matrix-multiply.cpp)
+  NAME ex_6_matrix-multiply
+  SOURCES ex_6_matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME tut_7_tiled-matrix-transpose
-  SOURCES tut_7_tiled-matrix-transpose.cpp)
+  NAME ex_7_tiled-matrix-transpose
+  SOURCES ex_7_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
-  NAME tut_8_matrix-transpose-local-array
-  SOURCES tut_8_matrix-transpose-local-array.cpp)
+  NAME ex_8_matrix-transpose-local-array
+  SOURCES ex_8_matrix-transpose-local-array.cpp)
