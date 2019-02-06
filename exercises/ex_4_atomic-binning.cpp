@@ -69,7 +69,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\n Running RAJA sequential binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  //EDIT: RAJA sequential variant using atomics
+  //TODO: RAJA sequential variant using atomics
 
   printBins(bins, M);
 
@@ -80,7 +80,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\n Running RAJA OMP binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  //EDIT: RAJA OpenMP variant using OpenMP atomics
+  //TODO: RAJA OpenMP variant using OpenMP atomics
 
   printBins(bins, M);
 
@@ -89,7 +89,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\n Running RAJA OMP binning with auto atomic" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  //EDIT: RAJA OpenMP variant using auto atomics
+  //TODO: RAJA OpenMP variant using auto atomics
 
   printBins(bins, M);
 
@@ -102,7 +102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRunning RAJA CUDA binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  //EDIT: RAJA CUDA variant using cuda atomics
+  //TODO: RAJA CUDA variant using cuda atomics
 
   printBins(bins, M);
 
@@ -112,7 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(bins, 0, M * sizeof(int));
 
 
-  //EDIT: RAJA CUDA variant using auto atomics
+  //TODO: RAJA CUDA variant using auto atomics
 
 
   printBins(bins, M);

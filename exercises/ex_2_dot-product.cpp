@@ -92,7 +92,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
-  //EDIT: RAJA variant using RAJA::seq_reduce
+  //TODO: RAJA variant using RAJA::seq_reduce
   
   std::cout << "\t (a, b) = " << dot << std::endl;
 
@@ -104,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
-  //EDIT: RAJA variant using RAJA::omp_reduce
+  //TODO: RAJA variant using RAJA::omp_reduce
 
   std::cout << "\t (a, b) = " << dot << std::endl;
 
@@ -117,7 +117,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
-  //EDIT: RAJA variant using RAJA::cuda_reduce
+  //TODO: RAJA variant using RAJA::cuda_reduce
 
   std::cout << "\t (a, b) = " << dot << std::endl;
 

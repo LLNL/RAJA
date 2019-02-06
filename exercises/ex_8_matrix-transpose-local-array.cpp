@@ -189,19 +189,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 3) Dimensions of the array
   //
 
-  //EDIT: Define a RAJA local array type
+  //TODO: Define a RAJA local array type
 
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
 
-  //EDIT: Create an instance of a RAJA local array
+  //TODO: Create an instance of a RAJA local array
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  //EDIT: Use RAJA kernel and sequential tiling statements to carryout 
+  //TODO: Use RAJA kernel and sequential tiling statements to carryout 
   //      a matrix tranpose. Use a RAJA local array to store the tile.
   //      Use ForICount to extract the index within with tile.
 
@@ -215,7 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  //EDIT: Use RAJA kernel tiling statements to carryout 
+  //TODO: Use RAJA kernel tiling statements to carryout 
   //      a matrix tranpose. Execute the outer loop in parallel 
   //      using OpenMP. Use a RAJA local array to store the tile.
   //      Use ForICount to extract the index within with tile.
@@ -229,7 +229,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  //EDIT: Use RAJA kernel tiling statements to carryout 
+  //TODO: Use RAJA kernel tiling statements to carryout 
   //      a matrix tranpose. Execute inner loops in parallel 
   //      using OpenMP. Use a RAJA local array to store the tile.
   //      Use ForICount to extract the index within with tile.
@@ -245,7 +245,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  //EDIT: Use RAJA kernel cuda tiling statements to carryout
+  //TODO: Use RAJA kernel cuda tiling statements to carryout
   //      a matrix tranpose. Use a RAJA local array with a 
   //      shared memory policy to store a tile of the input matrix.
   //      Use ForICount to extract the index within with tile.

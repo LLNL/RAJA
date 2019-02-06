@@ -91,7 +91,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
-  //EDIT: RAJA variant using RAJA::seq_exec
+  //TODO: RAJA variant using RAJA::seq_exec
 
   checkResult(c, N);
 //printResult(c, N);
@@ -104,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
-  //EDIT: RAJA variant using RAJA::simd_exec
+  //TODO: RAJA variant using RAJA::simd_exec
 
   checkResult(c, N);
 //printResult(c, N);
@@ -117,7 +117,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA loop-exec vector addition...\n";
  
-  //EDIT: RAJA variant using RAJA::loop_exec
+  //TODO: RAJA variant using RAJA::loop_exec
 
   checkResult(c, N);
 //printResult(c, N);
@@ -128,7 +128,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
-  //EDIT: RAJA variant using RAJA::omp_parallel_for_exec
+  //TODO: RAJA variant using RAJA::omp_parallel_for_exec
 
   checkResult(c, N);
 //printResult(c, N);
@@ -140,7 +140,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
-  //EDIT: RAJA variant using RAJA::cuda_exec<CUDA_BLOCK_SIZE>
+  //TODO: RAJA variant using RAJA::cuda_exec<CUDA_BLOCK_SIZE>
 
   checkResult(c, N);
 //printResult(c, N);

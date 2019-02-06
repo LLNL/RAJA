@@ -165,7 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed corresponds to the dimension size of the tile.
   //
 
-  //EDIT: Use RAJA kernel and sequential tiling statements to carryout 
+  //TODO: Use RAJA kernel and sequential tiling statements to carryout 
   //      a matrix tranpose.
 
 
@@ -183,7 +183,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // one of the inner loops.
   //
 
-  //EDIT: Use RAJA kernel and tiling statements to carryout 
+  //TODO: Use RAJA kernel and tiling statements to carryout 
   //      a matrix tranpose using OpenMP to expose parallism in an inner loop
 
   checkResult<int>(Atview, N_c, N_r);
@@ -200,7 +200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // to/from the tile.
   //
 
-  //EDIT: Use RAJA kernel and tiling statements to carryout 
+  //TODO: Use RAJA kernel and tiling statements to carryout 
   //      a matrix tranpose using an OpenMP collapsed statement 
   //      for the inner loops.
   
@@ -217,7 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
   
 
-  //EDIT: Use RAJA kernel and tiling statements to carryout 
+  //TODO: Use RAJA kernel and tiling statements to carryout 
   //      a matrix tranpose using cuda
 
   checkResult<int>(Atview, N_c, N_r);

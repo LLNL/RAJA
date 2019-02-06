@@ -119,7 +119,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
   
-  //EDIT: RAJA variant using a range segment
+  //TODO: RAJA variant using a range segment
 
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -140,7 +140,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     idx.push_back(i); 
   } 
 
-  //EDIT: RAJA variant using a list segment
+  //TODO: RAJA variant using a list segment
 
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -158,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::reverse( idx.begin(), idx.end() );  
 
-  //EDIT: RAJA variant using a reverse list segment
+  //TODO: RAJA variant using a reverse list segment
 
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -176,7 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Reverse the order of indices in the vector
 //
   
-  //EDIT: RAJA variant using the a range stride segment with reversed indices
+  //TODO: RAJA variant using the a range stride segment with reversed indices
 
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // example implementations.
 //
 
-  //EDIT: Create a sequential index set execution policy
+  //TODO: Create a sequential index set execution policy
 
 //----------------------------------------------------------------------------//
 
@@ -198,7 +198,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::TypedIndexSet<ListSegType> is1;
   
-   // EDIT: RAJA variant using an index set
+   // TODO: RAJA variant using an index set
    //        Use the list segment created earlier
   
 
@@ -214,7 +214,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::TypedIndexSet<RAJA::RangeSegment> is2;
 
-  // EDIT: RAJA variant using an index set
+  // TODO: RAJA variant using an index set
   // Create an index set composed of two range segments
 
   checkResult(a, aref, N);
@@ -236,7 +236,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3;
   
-  //EDIT: RAJA variant using index set
+  //TODO: RAJA variant using index set
   //      Create an index set composed of range segments
   //      and list segment types
 
@@ -258,7 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  //EDIT: RAJA index set variant with sequential segment iteration and omp
+  //TODO: RAJA index set variant with sequential segment iteration and omp
   //      parallel execution, use index set is3
 
 
@@ -274,7 +274,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  //EDIT: RAJA index set variant with parallel segment iteration and sequential
+  //TODO: RAJA index set variant with parallel segment iteration and sequential
   //      execution, use index set is3
 
   checkResult(a, aref, N);
@@ -291,7 +291,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  //EDIT: RAJA index set variant with sequential segment iteration and parallel
+  //TODO: RAJA index set variant with sequential segment iteration and parallel
   //      execution, use index set is3
 
   checkResult(a, aref, N);

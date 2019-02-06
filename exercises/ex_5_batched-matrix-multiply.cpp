@@ -132,14 +132,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
 //
 
-  //EDIT: Create a layout corresponding to layout 1
+  //TODO: Create a layout corresponding to layout 1
 
 //
 // RAJA::Layout objects may be templated on dimension, argument type, and 
 // index with unit stride. Here, the column index has unit stride (argument 2). 
 //  
   
-  //EDIT: Create RAJA views using layout 1
+  //TODO: Create RAJA views using layout 1
   //Name them Aview, Bview, Cview
 
 //
@@ -155,9 +155,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // In this case the element index has unit stride (argument 0). 
 //
    
-   //EDIT: Create a layout corresponding to layout 2
+   //TODO: Create a layout corresponding to layout 2
 
-   //EDIT: Create RAJA views using layout 2
+   //TODO: Create RAJA views using layout 2
    //Name them Aview2, Bview2, Cview2
 
 //
@@ -173,7 +173,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (Index_type row = 0; row < N_r; ++row) {
       for (Index_type col = 0; col < N_c; ++col) {
 
-        //EDIT: Uncomment once views are implemented
+        //TODO: Uncomment once views are implemented
         //Aview(e, row, col) = row;
         //Bview(e, row, col) = col;
         //Cview(e, row, col) = 0;
@@ -197,7 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
 
-    //EDIT: Batch matrix multiplication with layout 1
+    //TODO: Batch matrix multiplication with layout 1
     //      Using an omp parallel execution policy
 
     timer.stop();
@@ -220,7 +220,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     timer.start(); 
 
-    //EDIT: Batch matrix multiplication with layout 2
+    //TODO: Batch matrix multiplication with layout 2
     //      Using an omp parallel execution policy
     
     timer.stop();
@@ -244,7 +244,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
 
-    //EDIT: Batch matrix multiplication with layout 1
+    //TODO: Batch matrix multiplication with layout 1
     //      Using a sequential execution policy
 
     timer.stop();
@@ -267,7 +267,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
 
-    //EDIT: Batch matrix multiplication with layout 2
+    //TODO: Batch matrix multiplication with layout 2
     //      Using a sequential parallel execution policy
 
     timer.stop();
@@ -290,7 +290,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    //EDIT: Batch matrix multiplication with layout 1
+    //TODO: Batch matrix multiplication with layout 1
     //      Using an cuda execution policy
     timer.stop();
 
@@ -311,7 +311,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    //EDIT: Batch matrix multiplication with layout 2
+    //TODO: Batch matrix multiplication with layout 2
     //      Using an cuda execution policy
     timer.stop();
 

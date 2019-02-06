@@ -132,7 +132,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // into that data, similar to the macros we defined above.
 //
   
-  //EDIT: Create view objects
+  //TODO: Create view objects
 
 //----------------------------------------------------------------------------//
 
@@ -141,7 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // row, column, and dot-product loops
 //
 
-  //EDIT: Use RAJA range segments to define the iteration space
+  //TODO: Use RAJA range segments to define the iteration space
   //      for the column, row, and dot product ranges
 
 //----------------------------------------------------------------------------//
@@ -167,10 +167,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double)); 
 
-  //EDIT: Create a matrix multiplication kernel with
+  //TODO: Create a matrix multiplication kernel with
   //      an outer RAJA forall loop.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 
@@ -191,10 +191,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  //EDIT: Create a matrix multiplication kernel with
+  //TODO: Create a matrix multiplication kernel with
   //      RAJA forall methods for the row and column loops.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 //----------------------------------------------------------------------------//
@@ -230,12 +230,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
   std::memset(C, 0, N*N * sizeof(double));
 
-    //EDIT: Create a matrix multiplication kernel using
+    //TODO: Create a matrix multiplication kernel using
     //      RAJA kernel and sequential policies.
     //      Use a single lambda to encapsulate the loop
     //      body.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
   
 
@@ -246,12 +246,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double)); 
   
-  //EDIT: Create a matrix multiplication kernel using
+  //TODO: Create a matrix multiplication kernel using
   //      RAJA kernel and an omp parallel outer loop.
   //      Use a single lambda to encapsulate the loop
   //      body.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 //----------------------------------------------------------------------------//
@@ -268,12 +268,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // sequentially, while row (inner) iterations execute in parallel.
   // 
 
-  //EDIT: Create a matrix multiplication kernel using
+  //TODO: Create a matrix multiplication kernel using
   //      RAJA kernel and an OpenMP parallel inner loop.
   //      Use a single lambda to encapsulate the loop
   //      body.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 //----------------------------------------------------------------------------//
@@ -288,12 +288,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // outer loop with a 'collapse(2) clause.
   //
 
-  //EDIT: Create a matrix multiplication kernel with
+  //TODO: Create a matrix multiplication kernel with
   //      a collapse OpenMP parallel statement.
   //      Use a single lambda to encapsulate the loop
   //      body.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
 
@@ -316,10 +316,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
 
-  //EDIT: Create matrix multiplication kernel using cuda execution policies.
+  //TODO: Create matrix multiplication kernel using cuda execution policies.
   //      Use a single lambda to encapsulate the loop body.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 #endif // if RAJA_ENABLE_CUDA
@@ -351,10 +351,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // by all three lambdas.
   //
 
-  //EDIT: Create a matrix multiplication kernel.
+  //TODO: Create a matrix multiplication kernel.
   //      Use three lambdas and sequential policies.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 
 //----------------------------------------------------------------------------//
@@ -365,10 +365,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  //EDIT: Create a matrix multiplication kernel.
+  //TODO: Create a matrix multiplication kernel.
   //      Use three lambdas and an OpenMP collapse policy.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
 
@@ -380,10 +380,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  //EDIT: Create a matrix multiplication kernel.
+  //TODO: Create a matrix multiplication kernel.
   //      Use three lambdas and cuda execution policies.
 
-  //checkResult<double>(Cview, N); //EDIT: Uncomment once Cview is implemented
+  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_CUDA
 
