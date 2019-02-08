@@ -36,13 +36,6 @@
  *  If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
-
 template <typename T>
 void printBins(T* bins, int M);
 
@@ -80,45 +73,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\n Running RAJA OMP binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  //TODO: RAJA OpenMP variant using OpenMP atomics
+  //TODO: RAJA OpenMP variant using OpenMP or auto atomics
 
   printBins(bins, M);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n\n Running RAJA OMP binning with auto atomic" << std::endl;
-  std::memset(bins, 0, M * sizeof(int));
-
-  //TODO: RAJA OpenMP variant using auto atomics
-
-  printBins(bins, M);
-
 #endif
 //----------------------------------------------------------------------------//
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-  std::cout << "\n\nRunning RAJA CUDA binning" << std::endl;
-  std::memset(bins, 0, M * sizeof(int));
-
-  //TODO: RAJA CUDA variant using cuda atomics
-
-  printBins(bins, M);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n\nRunning RAJA CUDA binning with auto atomic" << std::endl;
-  std::memset(bins, 0, M * sizeof(int));
-
-
-  //TODO: RAJA CUDA variant using auto atomics
-
-
-  printBins(bins, M);
-  
-#endif
-  //----------------------------------------------------------------------------//
 
 
   //

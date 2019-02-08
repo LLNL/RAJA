@@ -45,13 +45,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
-
 //----------------------------------------------------------------------------//
 // Define types for ListSegments and indices used in examples
 //----------------------------------------------------------------------------//
@@ -126,7 +119,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 //
-// RAJA list segment version #1
+// RAJA list segment version 
 //
   std::cout << "\n Running RAJA list segment daxpy...\n";
 
@@ -141,42 +134,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   } 
 
   //TODO: RAJA variant using a list segment
-
-  checkResult(a, aref, N);
-//printResult(a, N);
-
-//----------------------------------------------------------------------------//
-//
-// RAJA list segment version #2
-//
-  std::cout << "\n Running RAJA list segment daxpy with indices reversed...\n";
-
-  std::memcpy( a, a0, N * sizeof(double) );  
-
-//
-// Reverse the order of indices in the vector
-//
-  std::reverse( idx.begin(), idx.end() );  
-
-  //TODO: RAJA variant using a reverse list segment
-
-  checkResult(a, aref, N);
-//printResult(a, N);
-
-//----------------------------------------------------------------------------//
-//
-// Alternatively, we can also use a RAJA strided range segment to run the
-// loop in reverse.
-//
-  std::cout << "\n Running RAJA daxpy with indices reversed via negatively strided range segment...\n";
-
-  std::memcpy( a, a0, N * sizeof(double) );
-
-//
-// Reverse the order of indices in the vector
-//
-  
-  //TODO: RAJA variant using the a range stride segment with reversed indices
 
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -244,59 +201,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(a, aref, N);
 //printResult(a, N);
 
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_OPENMP)
-//
-// Run the previous version in parallel (2 different ways) just for fun...
-//
-
-  std::cout << 
-    "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
-    " (sequential iteration over segments, OpenMP parallel segment execution)...\n";
-
-  std::memcpy( a, a0, N * sizeof(double) );
-
-  //TODO: RAJA index set variant with sequential segment iteration and omp
-  //      parallel execution, use index set is3
-
-
-  checkResult(a, aref, N);
-//printResult(a, N);
-
-
-//----------------------------------------------------------------------------//
-
-  std::cout << 
-    "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
-    " (OpenMP parallel iteration over segments, sequential segment execution)...\n";
-
-  std::memcpy( a, a0, N * sizeof(double) );
-
-  //TODO: RAJA index set variant with parallel segment iteration and sequential
-  //      execution, use index set is3
-
-  checkResult(a, aref, N);
-//printResult(a, N);
-#endif
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-  std::cout << 
-    "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
-    " (sequential iteration over segments, CUDA parallel segment execution)...\n";
-
-
-  std::memcpy( a, a0, N * sizeof(double) );
-
-  //TODO: RAJA index set variant with sequential segment iteration and parallel
-  //      execution, use index set is3
-
-  checkResult(a, aref, N);
-//printResult(a, N);
-#endif
 
 //----------------------------------------------------------------------------//
 

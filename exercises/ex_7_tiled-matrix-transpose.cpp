@@ -190,40 +190,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running openmp tiled matrix transpose - collapsed inner loops...\n";
-
-  std::memset(At, 0, N_r * N_c * sizeof(int));
-
-  //
-  // This policy loops over tiles sequentially while collapsing inner loops
-  // into a single OpenMP parallel for loop enabling parallel loads/reads
-  // to/from the tile.
-  //
-
-  //TODO: Use RAJA kernel and tiling statements to carryout 
-  //      a matrix tranpose using an OpenMP collapsed statement 
-  //      for the inner loops.
-  
-  checkResult<int>(Atview, N_c, N_r);
-  // printResult<int>(Atview, N_c, N_r);
-
 #endif
 
 //----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running cuda tiled matrix transpose ...\n";
-
-  std::memset(At, 0, N_r * N_c * sizeof(int));
-  
-
-  //TODO: Use RAJA kernel and tiling statements to carryout 
-  //      a matrix tranpose using cuda
-
-  checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
-#endif
-  //----------------------------------------------------------------------------//
 
 
   //

@@ -71,12 +71,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
 
 //
 // By default a RAJA::Index_type
@@ -230,96 +224,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
   std::cout<< "\trun time : " << minRun << " seconds" << std::endl;
-  //checkResult(Cview2, N, N_r, N_c); //Uncomment once Cview2 is implemented
-
-#endif
-
-//----------------------------------------------------------------------------//
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 1 (RAJA - sequential) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-
-    //TODO: Batch matrix multiplication with layout 1
-    //      Using a sequential execution policy
-
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-    
-  std::cout << "\trun time : " << minRun << " seconds" << std::endl;
-  //checkResult(Cview, N, N_r, N_c); //Uncomment once Cview is implemented
-
-//----------------------------------------------------------------------------//
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 2 (RAJA - sequential) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-
-    //TODO: Batch matrix multiplication with layout 2
-    //      Using a sequential parallel execution policy
-
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
-  //checkResult(Cview2, N, N_r, N_c); //Uncomment once Cview2 is implemented
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 1 (RAJA - cuda) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-    //TODO: Batch matrix multiplication with layout 1
-    //      Using an cuda execution policy
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-
-  std::cout<< "\trun time: "<< minRun << " seconds" << std::endl;
-  //checkResult(Cview, N, N_r, N_c); //Uncomment once Cview is implemented
-
-//----------------------------------------------------------------------------//
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 2 (RAJA - cuda) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-    //TODO: Batch matrix multiplication with layout 2
-    //      Using an cuda execution policy
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
   //checkResult(Cview2, N, N_r, N_c); //Uncomment once Cview2 is implemented
 #endif
 

@@ -38,12 +38,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
 
 //
 //  Function to check dot product result.
@@ -111,18 +105,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, dot_ref);
 #endif
 
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA CUDA dot product...\n";
-
-  //TODO: RAJA variant using RAJA::cuda_reduce
-
-  std::cout << "\t (a, b) = " << dot << std::endl;
-
-  checkResult(dot, dot_ref);
-#endif
 
 //----------------------------------------------------------------------------//
 

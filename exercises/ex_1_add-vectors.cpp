@@ -36,12 +36,6 @@
  * If CUDA is enabled, CUDA unified memory is used. 
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
 
 //
 // Functions for checking and printing results
@@ -86,12 +80,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA::seq_exec policy enforces strictly sequential execution.... 
+// RAJA::loop_exec policy means that the compiler is allowed to generate 
+// optimizations (e.g., SIMD) if it thinks it is safe to do so...
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA sequential vector addition...\n";
+  std::cout << "\n Running RAJA loop-exec vector addition...\n";
 
-  //TODO: RAJA variant using RAJA::seq_exec
+  //TODO: RAJA variant using RAJA::loop_exec
 
   checkResult(c, N);
 //printResult(c, N);
@@ -111,36 +106,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA::loop_exec policy means that the compiler is allowed to generate 
-// optimizations (e.g., SIMD) if it thinks it is safe to do so...
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA loop-exec vector addition...\n";
- 
-  //TODO: RAJA variant using RAJA::loop_exec
-
-  checkResult(c, N);
-//printResult(c, N);
-
-
-//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
   //TODO: RAJA variant using RAJA::omp_parallel_for_exec
-
-  checkResult(c, N);
-//printResult(c, N);
-#endif
-
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA CUDA vector addition...\n";
-
-  //TODO: RAJA variant using RAJA::cuda_exec<CUDA_BLOCK_SIZE>
 
   checkResult(c, N);
 //printResult(c, N);

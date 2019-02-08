@@ -224,36 +224,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - OpenMP (parallel inner loops) matrix "
-               "transpose example ...\n";
-
-  std::memset(At, 0, N_r * N_c * sizeof(int));
-
-  //TODO: Use RAJA kernel tiling statements to carryout 
-  //      a matrix tranpose. Execute inner loops in parallel 
-  //      using OpenMP. Use a RAJA local array to store the tile.
-  //      Use ForICount to extract the index within with tile.
-
-  checkResult<int>(Atview, N_c, N_r);
-  // printResult<int>(Atview, N_r, N_c);
 #endif
 
-  //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - CUDA matrix transpose example ...\n";
-
-  std::memset(At, 0, N_r * N_c * sizeof(int));
-
-#if defined(RAJA_ENABLE_CUDA)
-
-  //TODO: Use RAJA kernel cuda tiling statements to carryout
-  //      a matrix tranpose. Use a RAJA local array with a 
-  //      shared memory policy to store a tile of the input matrix.
-  //      Use ForICount to extract the index within with tile.
-  //      
-
-  checkResult<int>(Atview, N_c, N_r);
-  // printResult<int>(Atview, N_c, N_r);
-#endif
   return 0;
 }
 

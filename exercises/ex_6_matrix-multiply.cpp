@@ -32,18 +32,9 @@
  *    - Index range segment
  *    - View abstraction
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *    - Collapsing loops under OpenMP and CUDA policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
-
-/*
-  Define number of threads in x and y dimensions of a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-#define CUDA_BLOCK_SIZE 16
-#endif
-
 
 //
 // Define dimensionality of matrices.
@@ -86,7 +77,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define num rows/cols in matrix
 //
   const int N = 1000;
-//const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE; 
 
 //
 // Allocate and initialize matrix data.
@@ -157,7 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //
 // In the first RAJA implementation, we replace the outer 'row' loop
-// with a RAJA::forall statement. The lambda expression contains the
+// and 'col' loops with a RAJA::forall statement. The lambda expression contains the
 // inner loops.
 //
 
@@ -168,31 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double)); 
 
   //TODO: Create a matrix multiplication kernel with
-  //      an outer RAJA forall loop.
-
-  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
-//printResult<double>(Cview, N);
-
-
-//----------------------------------------------------------------------------//
-
-//
-// Next, we replace the outer 'row' loop and the inner 'col' loop 
-// with RAJA::forall statements. This will also work with parallel
-// execution policies, such as OpenMP and CUDA, with caveats and
-// restrictions.
-//
-// However, nesting RAJA::forall calls like this is not recommended as
-// it limits the ability to expose parallelism and flexibility for
-// implementation alternatives.
-//
-
-  std::cout << "\n Running sequential mat-mult (RAJA-row, RAJA-col)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  //TODO: Create a matrix multiplication kernel with
-  //      RAJA forall methods for the row and column loops.
+  //      an outer RAJA forall loops.
 
   //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
@@ -256,28 +222,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp inner)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double)); 
-  
-  //
-  // Swapping the template arguments in this nested policy swaps the loop 
-  // nest ordering so the col loop is on the outside and the row loop is 
-  // nested within it. The execution policies on each loop remain the same 
-  // as the previous implementation; i.e., col (outer) iterations run 
-  // sequentially, while row (inner) iterations execute in parallel.
-  // 
-
-  //TODO: Create a matrix multiplication kernel using
-  //      RAJA kernel and an OpenMP parallel inner loop.
-  //      Use a single lambda to encapsulate the loop
-  //      body.
-
-  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
   std::cout << "\n Running OpenMP mat-mult (RAJA-nested - collapse)...\n";
 
   std::memset(C, 0, N*N * sizeof(double)); 
@@ -299,66 +243,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
-
-  std::cout << "\n Running CUDA mat-mult...\n";
-
-  std::memset(C, 0, N*N * sizeof(double)); 
-  
-  //
-  // This policy replaces the loop nest with a single CUDA kernel launch
-  // (kernel body is the lambda loop body) where the row indices are 
-  // assigned to thread blocks and the col indices are assigned to
-  // threads within each block.
-  // 
-  // This is equivalent to launching a CUDA kernel with grid dimension N
-  // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
-  // and col = threadIdx.x in the kernel.
-  //
-
-  //TODO: Create matrix multiplication kernel using cuda execution policies.
-  //      Use a single lambda to encapsulate the loop body.
-
-  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
-//printResult<double>(Cview, N);
-
-#endif // if RAJA_ENABLE_CUDA
-
-//----------------------------------------------------------------------------//
-
-//
-// The following examples use execution policies to express the outer row and 
-// col loops as well as the inner dot product loop using the RAJA kernel 
-// interface. They show some more complex policy examples and use additional 
-// kernel features.
-//
-
-  std::cout << "\n Running sequential mat-mult with multiple lambdas...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  //
-  // This policy executes the col, row and k (inner dot product) loops
-  // sequentially using a triply-nested loop execution policy and three
-  // lambda expressions that
-  //    -- initialize the dot product variable, 
-  //    -- define the 'k' inner loop row-col dot product body, and 
-  //    -- store the computed row-col dot product in the proper location 
-  //       in the result matrix.
-  //
-  // Note that we also pass the scalar dot product variable into each lambda
-  // via a single value tuple parameter. This enables the same variable to be
-  // by all three lambdas.
-  //
-
-  //TODO: Create a matrix multiplication kernel.
-  //      Use three lambdas and sequential policies.
-
-  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
 #if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n Running OpenMP mat-mult with multiple lambdas and loop collapse...\n";
@@ -371,21 +255,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-
-  std::cout << "\n Running CUDA mat-mult with multiple lambdas...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  //TODO: Create a matrix multiplication kernel.
-  //      Use three lambdas and cuda execution policies.
-
-  //checkResult<double>(Cview, N); //TODO: Uncomment once Cview is implemented
-//printResult<double>(Cview, N);
-#endif // if RAJA_ENABLE_CUDA
 
 //----------------------------------------------------------------------------//
 
