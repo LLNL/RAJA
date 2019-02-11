@@ -5,9 +5,9 @@
 FROM rajaorg/compiler:gcc8
 MAINTAINER RAJA Development Team <raja-dev@llnl.gov>
 
-COPY --chown=raja:raja . /home/raja/src
+COPY --chown=raja:raja . /home/raja/workspace
 
-WORKDIR /home/raja/src
+WORKDIR /home/raja/workspace
 
 RUN  mkdir build && cd build && cmake -DENABLE_CUDA=OFF ..
 
