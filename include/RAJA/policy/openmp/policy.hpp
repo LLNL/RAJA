@@ -54,6 +54,28 @@ template <unsigned int ChunkSize>
 struct Static : std::integral_constant<unsigned int, ChunkSize> {
 };
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+// Max number of CUDA reduction threads per block possible.
+// Required for allocating omp target data before execution policy.
+// Used in target_parallel_for, aliased in target_reduce.
+static constexpr int MAXNUMTHREADS = 1024;
+
+template <unsigned int TeamSize>
+struct Teams : std::integral_constant<unsigned int, TeamSize> {
+};
+
+template <unsigned int ThreadCount>
+struct Threads : std::integral_constant<unsigned int, ThreadCount> {
+};
+
+struct Target {
+};
+
+struct Distribute {
+};
+
+#endif
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -111,6 +133,23 @@ struct omp_parallel_for_static : omp_parallel_exec<omp_for_static<N>> {
 };
 
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+template <size_t ThreadsPerTeam>
+struct omp_target_parallel_for_exec
+    : make_policy_pattern_t<Policy::target_openmp,
+                            Pattern::forall,
+                            omp::Target,
+                            omp::Threads<ThreadsPerTeam>,
+                            omp::Distribute> {
+};
+
+struct omp_target_parallel_for_exec_nt
+    : make_policy_pattern_t<Policy::target_openmp,
+                            Pattern::forall,
+                            omp::Target,
+                            omp::Distribute> {
+};
+#endif
 
 ///
 /// Index set segment iteration policies
@@ -139,6 +178,11 @@ struct omp_taskgraph_interval_segit
 struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+struct omp_target_reduce
+    : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
+};
+#endif
 
 struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
