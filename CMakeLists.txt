@@ -17,7 +17,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 6)
+set(RAJA_VERSION_MINOR 7)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -58,6 +58,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_TESTS "Build tests" On)
   option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
   option(ENABLE_EXAMPLES "Build simple examples" On)
+  option(ENABLE_EXERCISES "Build exercises " On)
   option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
@@ -181,6 +182,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 
   if(ENABLE_EXAMPLES)
     add_subdirectory(examples)
+  endif()
+
+  if(ENABLE_EXERCISES)
+    add_subdirectory(exercises)
   endif()
 
   if (ENABLE_DOCUMENTATION)
