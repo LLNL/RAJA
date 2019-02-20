@@ -157,7 +157,7 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
+    auto len = segment.end() - segment.begin();
     auto i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
     auto i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
 
