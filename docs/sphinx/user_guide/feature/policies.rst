@@ -137,7 +137,7 @@ omp_target_parallel_for_exec<ThreadsPerTeam> forall  Create parallel target
                                                      internally; i.e.,
                                                      apply ``omp teams 
                                                      distribute parallel for 
-                                             num_teams(ThreadsPerTeam/datasize)
+                                             num_teams(datasize/ThreadsPerTeam)
                                                  thread_limit(ThreadsPerTeam)`` 
                                                      pragma on loop 
 omp_target_parallel_collapse_exec      kernel        Similar to above, but 
