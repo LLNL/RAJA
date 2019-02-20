@@ -129,16 +129,20 @@ cuda_block_z_loop                      kernel (For)  Map loop iterations to CUDA
                                                      thread blocks in
                                                      z-dimension
 **OpenMP target**
-omp_target_parallel_for_exec<NUMTEAMS> forall        Create parallel target 
+omp_target_parallel_for_exec<ThreadsPerTeam> forall  Create parallel target 
                                                      region and execute with 
-                                                     given number of thread 
-                                                     teams inside it; i.e.,
+                                                     given number of threads  
+                                                     per team inside it. Number
+                                                     of teams is calculated
+                                                     internally; i.e.,
                                                      apply ``omp teams 
                                                      distribute parallel for 
-                                                     num_teams(NUMTEAMS)`` 
+                                             num_teams(datasize/ThreadsPerTeam)
+                                                 thread_limit(ThreadsPerTeam)`` 
                                                      pragma on loop 
 omp_target_parallel_collapse_exec      kernel        Similar to above, but 
-                                       (Collapse)    collapse *perfectly-nested*                                                     loops, which are specified
+                                       (Collapse)    collapse *perfectly-nested*
+                                                     loops, which are specified
                                                      in arguments to RAJA
                                                      Collapse statement. Note:
                                                      compiler determines number
