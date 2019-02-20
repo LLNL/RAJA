@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -153,7 +153,7 @@ __global__ void CudaKernelLauncher(Data data)
   using data_t = camp::decay<Data>;
   data_t private_data = data;
 
-  Exec::exec(private_data);
+  Exec::exec(private_data, true);
 }
 
 
@@ -173,7 +173,7 @@ __launch_bounds__(BlockSize, 1) __global__
   data_t private_data = data;
 
   // execute the the object
-  Exec::exec(private_data);
+  Exec::exec(private_data, true);
 }
 
 /*!

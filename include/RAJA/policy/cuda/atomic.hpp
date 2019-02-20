@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,6 +31,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include <stdexcept>
+#include <type_traits>
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
@@ -45,6 +46,50 @@ namespace atomic
 
 namespace detail
 {
+
+/*!
+ * Generic impementation of atomic 32-bit or 64-bit compare and swap primitive.
+ * Implementation uses the existing CUDA supplied unsigned 32-bit and 64-bit
+ * CAS operators.
+ * Returns the value that was stored before this operation.
+ */
+RAJA_INLINE __device__ unsigned cuda_atomic_CAS(
+    unsigned volatile *acc,
+    unsigned compare,
+    unsigned value)
+{
+  return ::atomicCAS((unsigned *)acc, compare, value);
+}
+///
+RAJA_INLINE __device__ unsigned long long cuda_atomic_CAS(
+    unsigned long long volatile *acc,
+    unsigned long long compare,
+    unsigned long long value)
+{
+  return ::atomicCAS((unsigned long long *)acc, compare, value);
+}
+///
+template <typename T>
+RAJA_INLINE __device__
+typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
+cuda_atomic_CAS(T volatile *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned, T>(
+      cuda_atomic_CAS((unsigned volatile *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned>(value)));
+}
+///
+template <typename T>
+RAJA_INLINE __device__
+typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
+cuda_atomic_CAS(T volatile *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+      cuda_atomic_CAS((unsigned long long volatile *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
+}
 
 template <size_t BYTES>
 struct CudaAtomicCAS {
@@ -69,7 +114,7 @@ struct CudaAtomicCAS<4> {
     oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
     newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
         oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-    while ((readback = ::atomicCAS((unsigned *)acc, oldval, newval)) !=
+    while ((readback = cuda_atomic_CAS((unsigned volatile*)acc, oldval, newval)) !=
            oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
@@ -98,7 +143,7 @@ struct CudaAtomicCAS<8> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
         oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
     while (
-        (readback = ::atomicCAS((unsigned long long *)acc, oldval, newval)) !=
+        (readback = cuda_atomic_CAS((unsigned long long volatile*)acc, oldval, newval)) !=
         oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
@@ -454,8 +499,30 @@ RAJA_INLINE __device__ T cuda_atomicExchange(T volatile *acc, T value)
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicCAS(T volatile *acc, T compare, T value)
 {
-  // attempt to use the CUDA builtin atomic, if it exists for T
-  return ::atomicCAS((T *)acc, compare, value);
+  return cuda_atomic_CAS(acc, compare, value);
+}
+
+template <>
+RAJA_INLINE __device__ int cuda_atomicCAS<int>(
+    int volatile *acc, int compare, int value)
+{
+  return ::atomicCAS((int *)acc, compare, value);
+}
+
+template <>
+RAJA_INLINE __device__ unsigned cuda_atomicCAS<unsigned>(
+    unsigned volatile *acc, unsigned compare, unsigned value)
+{
+  return ::atomicCAS((unsigned *)acc, compare, value);
+}
+
+template <>
+RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
+    unsigned long long volatile *acc,
+    unsigned long long compare,
+    unsigned long long value)
+{
+  return ::atomicCAS((unsigned long long *)acc, compare, value);
 }
 
 }  // namespace detail

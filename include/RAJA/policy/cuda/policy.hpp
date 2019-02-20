@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -88,15 +88,6 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
 };
 
 
-/*
- * Policy for on-device loop with a __syncthreads() after each iteration
- */
-struct cuda_seq_syncthreads_exec
-    : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                         RAJA::Pattern::forall,
-                                                         RAJA::Launch::sync,
-                                                         RAJA::Platform::cuda> {
-};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -122,6 +113,28 @@ struct cuda_reduce_base
 using cuda_reduce = cuda_reduce_base<false>;
 
 using cuda_reduce_atomic = cuda_reduce_base<true>;
+
+
+// Policy for RAJA::statement::Reduce that reduces threads in a block
+// down to threadIdx 0
+struct cuda_block_reduce{};
+
+// Policy for RAJA::statement::Reduce that reduces threads in a warp
+// down to the first lane of the warp
+struct cuda_warp_reduce{};
+
+// Policy to map work directly to threads within a warp
+// Maximum iteration count is WARP_SIZE
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+struct cuda_warp_direct{};
+
+// Policy to map work to threads within a warp using a warp-stride loop
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+struct cuda_warp_loop{};
+
+
 
 
 
@@ -151,10 +164,15 @@ using policy::cuda::cuda_exec;
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
-using policy::cuda::cuda_seq_syncthreads_exec;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
+
+using policy::cuda::cuda_block_reduce;
+using policy::cuda::cuda_warp_reduce;
+
+using policy::cuda::cuda_warp_direct;
+using policy::cuda::cuda_warp_loop;
 
 using policy::cuda::cuda_synchronize;
 
@@ -198,6 +216,8 @@ struct cuda_block_xyz_loop{};
 using cuda_block_x_loop = cuda_block_xyz_loop<0>;
 using cuda_block_y_loop = cuda_block_xyz_loop<1>;
 using cuda_block_z_loop = cuda_block_xyz_loop<2>;
+
+
 
 
 namespace internal{

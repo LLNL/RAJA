@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -30,3 +30,5 @@ The following sections describe key aspects of the main RAJA features.
    feature/reduction
    feature/atomic
    feature/scan
+   feature/local_array
+   feature/tiling

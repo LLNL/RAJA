@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -70,7 +70,7 @@ struct CudaStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data){
+  void exec(Data &data, bool thread_active){
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
@@ -90,7 +90,7 @@ struct CudaStatementExecutor<
       segment = orig_segment.slice(i, chunk_size);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data);
+      enclosed_stmts_t::exec(data, thread_active);
     }
 
     // Set range back to original values
@@ -147,7 +147,7 @@ struct CudaStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -168,7 +168,7 @@ struct CudaStatementExecutor<
       segment = orig_segment.slice(i, chunk_size);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data);
+      enclosed_stmts_t::exec(data, thread_active);
     }
 
     // Set range back to original values

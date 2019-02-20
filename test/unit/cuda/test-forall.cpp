@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -193,7 +193,7 @@ CUDA_TEST_F(ForallCUDA, forall_range)
     ref_array[i] = parent[i] * parent[i];
   }
 
-  RAJA::forall<RAJA::cuda_exec<block_size>>(RAJA::make_range(0, array_length),
+  RAJA::forall<RAJA::cuda_exec<block_size>>(RAJA::RangeSegment(0, array_length),
                                             [=] RAJA_HOST_DEVICE(
                                                 RAJA::Index_type idx) {
                                               test_array[idx] =
@@ -226,7 +226,7 @@ CUDA_TEST_F(ForallCUDA, forall_icount_range)
   }
 
   RAJA::forall_Icount<RAJA::cuda_exec<block_size>>(
-      RAJA::make_range(0, array_length),
+      RAJA::RangeSegment(0, array_length),
       0,
       [=] RAJA_DEVICE(RAJA::Index_type icount, RAJA::Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];

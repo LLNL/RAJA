@@ -14,18 +14,19 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_toss3-icpc-19.0-beta
+BUILD_SUFFIX=lc_blueos-xl_2018.11.26_omptarget
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
-module load gcc/7.1.0
 
 cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/toss3/icpc_19_0_beta.cmake \
+  -DCMAKE_BUILD_TYPE=Release\
+  -C ../host-configs/lc-builds/blueos/xl_2018_11_26.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_TARGET_OPENMP=On \
+  -DOpenMP_CXX_FLAGS="-std=c++11 -qoffload -qsmp=omp -qnoeh -qnoinline -qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

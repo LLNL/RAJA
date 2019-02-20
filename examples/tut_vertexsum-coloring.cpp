@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -140,13 +140,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
-  using EXEC_POL1 = RAJA::KernelPolicy<
-                              RAJA::statement::For<1, RAJA::seq_exec,    // j
-                              RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;  // i
+  using EXEC_POL1 = 
+    RAJA::KernelPolicy< 
+      RAJA::statement::For<1, RAJA::seq_exec,    // j
+        RAJA::statement::For<0, RAJA::seq_exec,  // i
+          RAJA::statement::Lambda<0>
+        > 
+      > 
+    >;
 
-  RAJA::kernel<EXEC_POL1>(
-                       RAJA::make_tuple(RAJA::RangeSegment(0, N_elem),
-                                        RAJA::RangeSegment(0, N_elem)),
+  RAJA::kernel<EXEC_POL1>( RAJA::make_tuple(RAJA::RangeSegment(0, N_elem),
+                                            RAJA::RangeSegment(0, N_elem)),
     [=](int i, int j) {
       int ie = i + j*jeoff ;
       int* iv = &(elem2vert_map[4*ie]);

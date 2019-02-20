@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,9 +52,12 @@ template <typename Data, camp::idx_t LoopIndex>
 struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
 
   static
-  inline RAJA_DEVICE void exec(Data &data)
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
-    invoke_lambda<LoopIndex>(data);
+    // Only execute the lambda if it hasn't been masked off
+    if(thread_active){
+      invoke_lambda<LoopIndex>(data);
+    }
   }
 
 

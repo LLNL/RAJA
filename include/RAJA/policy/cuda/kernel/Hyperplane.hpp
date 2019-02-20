@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -50,7 +50,7 @@ template <typename Data,
           typename... EnclosedStmts>
 struct CudaStatementExecutor<Data,
                              statement::Hyperplane<HpArgumentId,
-                                                   cuda_seq_syncthreads_exec,
+                                                   seq_exec,
                                                    ArgList<Args...>,
                                                    EnclosedStmts...>> {
 
@@ -60,7 +60,7 @@ struct CudaStatementExecutor<Data,
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data)
+  void exec(Data &data, bool thread_active)
   {
     // compute Manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
@@ -78,7 +78,7 @@ struct CudaStatementExecutor<Data,
     /*
      * Execute the loop over hyperplanes
      *
-     * We reject the iterations that lie outsize of the specified rectangular
+     * We reject the iterations that lie outside of the specified rectangular
      * region we are sweeping.
      */
     for (int h = 0; h < hp_len; ++h) {
@@ -87,17 +87,10 @@ struct CudaStatementExecutor<Data,
       // as:  i0 = h - (i1 + i2 + i3 + ...)
       idx_t i = h - h_args;
 
-      // execute enclosed statements
-      if (i >= 0 && i < i_len) {
-
-        // assign i to the hp arg
-        data.template assign_offset<HpArgumentId>(i);
-
-        enclosed_stmts_t::exec(data);
-      }
-
-      // sync
-      __syncthreads();
+      // execute enclosed statements, masking off threads that are out of
+      // bounds
+      data.template assign_offset<HpArgumentId>(i);
+      enclosed_stmts_t::exec(data, thread_active && (i >= 0 && i < i_len));
     }
   }
 

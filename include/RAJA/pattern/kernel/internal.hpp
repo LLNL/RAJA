@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -180,6 +180,14 @@ struct LoopData {
     camp::get<ParamId::param_idx>(param_tuple) = param_t(i);
   }
 
+  template <typename ParamId>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto get_param() ->
+    camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
+  {
+    return camp::get<ParamId::param_idx>(param_tuple);
+  }
+
   template <camp::idx_t Idx>
   RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()
   {
@@ -248,7 +256,7 @@ template <camp::idx_t LoopIndex,
 RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<OffsetIdx...> const &,
     camp::idx_seq<ParamIdx...> const &,
-    Data &data)
+    Data &&data)
 {
   camp::get<LoopIndex>(
       data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
@@ -258,15 +266,16 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
 
 
 template <camp::idx_t LoopIndex, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 {
-  using offset_tuple_t = typename Data::offset_tuple_t;
-  using param_tuple_t = typename Data::param_tuple_t;
+  using Data_t = camp::decay<Data>;
+  using offset_tuple_t = typename Data_t::offset_tuple_t;
+  using param_tuple_t = typename Data_t::param_tuple_t;
 
   invoke_lambda_expanded<LoopIndex>(
       camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
       camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-      data);
+      std::forward<Data>(data));
 }
 
 template <camp::idx_t ArgumentId, typename Data>

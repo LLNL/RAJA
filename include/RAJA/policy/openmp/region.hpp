@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -48,7 +48,9 @@ RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
 
 #pragma omp parallel
     { // curly brackets to ensure body() is encapsulated in omp parallel region
-    body();
+      //thread private copy of body
+      auto loopbody = body;
+      loopbody();
     }
 }
 
