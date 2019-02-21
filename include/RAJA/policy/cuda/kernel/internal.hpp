@@ -225,7 +225,7 @@ struct CudaOccMaxBlocksThreadsData
   int max_threads;
 };
 
-template < typename Func >
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
                                        int &max_blocks, int &max_threads)
@@ -253,7 +253,7 @@ struct CudaOccMaxBlocksFixedThreadsData
   int multiProcessorCount;
 };
 
-template < int num_threads, typename Func >
+template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                int &max_blocks)
@@ -289,7 +289,7 @@ struct CudaOccMaxBlocksVariableThreadsData
   int multiProcessorCount;
 };
 
-template < typename Func >
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                int &max_blocks, int num_threads)

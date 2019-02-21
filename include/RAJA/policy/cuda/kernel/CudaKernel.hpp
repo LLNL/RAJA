@@ -227,15 +227,17 @@ struct CudaLaunchHelper;
 template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data>
 struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Data>
 {
+  using Self = CudaLaunchHelper;
+
   static constexpr bool async = async0;
 
   using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
 
-  static constexpr auto func = internal::CudaKernelLauncher<Data, executor_t>;
-
   inline static void recommended_blocks_threads(int shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
+    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+
     if (num_blocks <= 0) {
 
       if (num_threads <= 0) {
@@ -244,7 +246,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
         // determine blocks at runtime
         // determine threads at runtime
         //
-        internal::cuda_occupancy_max_blocks_threads(
+        internal::cuda_occupancy_max_blocks_threads<Self>(
             func, shmem_size, recommended_blocks, recommended_threads);
 
       } else {
@@ -255,7 +257,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
         //
         recommended_threads = num_threads;
 
-        internal::cuda_occupancy_max_blocks<num_threads>(
+        internal::cuda_occupancy_max_blocks<Self, num_threads>(
             func, shmem_size, recommended_blocks);
 
       }
@@ -310,12 +312,14 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   inline static void max_blocks(int shmem_size,
       int &max_blocks, int actual_threads)
   {
+    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+
     if (num_blocks <= 0) {
 
       //
       // determine blocks at runtime
       //
-      internal::cuda_occupancy_max_blocks(
+      internal::cuda_occupancy_max_blocks<Self>(
           func, shmem_size, max_blocks, actual_threads);
 
     } else {
@@ -333,6 +337,8 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
                      size_t shmem,
                      cudaStream_t stream)
   {
+    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+
     func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(std::move(data));
   }
 };
