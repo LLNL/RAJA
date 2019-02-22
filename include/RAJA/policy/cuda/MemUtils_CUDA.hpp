@@ -41,6 +41,7 @@
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 namespace RAJA
@@ -119,8 +120,8 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
-  dim3 gridDim = 0;
-  dim3 blockDim = 0;
+  cuda_dim_t gridDim = 0;
+  cuda_dim_t blockDim = 0;
   cudaStream_t stream = 0;
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
@@ -197,7 +198,7 @@ void synchronize(cudaStream_t stream)
 
 //! Launch kernel and indicate stream is asynchronous
 RAJA_INLINE
-void launch(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t shmem, cudaStream_t stream)
+void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
 {
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
@@ -236,11 +237,11 @@ bool setupReducers() { return detail::tl_status.setup_reducers; }
 
 //! get gridDim of current launch
 RAJA_INLINE
-dim3 currentGridDim() { return detail::tl_status.gridDim; }
+cuda_dim_t currentGridDim() { return detail::tl_status.gridDim; }
 
 //! get blockDim of current launch
 RAJA_INLINE
-dim3 currentBlockDim() { return detail::tl_status.blockDim; }
+cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get stream for current launch
 RAJA_INLINE
@@ -249,8 +250,8 @@ cudaStream_t currentStream() { return detail::tl_status.stream; }
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
-    dim3 gridDim,
-    dim3 blockDim,
+    cuda_dim_t gridDim,
+    cuda_dim_t blockDim,
     size_t RAJA_UNUSED_ARG(dynamic_smem),
     cudaStream_t stream,
     LOOP_BODY&& loop_body)

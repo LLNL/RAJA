@@ -68,7 +68,7 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-dim3 getGridDim(size_t len, dim3 blockDim)
+cuda_dim_t getGridDim(size_t len, cuda_dim_t blockDim)
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
