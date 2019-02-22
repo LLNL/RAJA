@@ -196,22 +196,6 @@ void synchronize(cudaStream_t stream)
   }
 }
 
-//! Launch kernel and indicate stream is asynchronous
-RAJA_INLINE
-void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
-{
-  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
-#endif
-  auto iter = detail::g_stream_info_map.find(stream);
-  if (iter != detail::g_stream_info_map.end()) {
-    iter->second = false;
-  } else {
-    detail::g_stream_info_map.emplace(stream, false);
-  }
-}
-
 //! Indicate stream is asynchronous
 RAJA_INLINE
 void launch(cudaStream_t stream)
@@ -225,6 +209,14 @@ void launch(cudaStream_t stream)
   } else {
     detail::g_stream_info_map.emplace(stream, false);
   }
+}
+
+//! Launch kernel and indicate stream is asynchronous
+RAJA_INLINE
+void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
+{
+  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
+  launch(stream);
 }
 
 //! Check for errors
