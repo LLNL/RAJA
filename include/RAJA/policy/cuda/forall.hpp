@@ -54,6 +54,7 @@ namespace RAJA
 
 namespace policy
 {
+
 namespace cuda
 {
 

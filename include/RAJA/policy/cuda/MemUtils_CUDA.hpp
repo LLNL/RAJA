@@ -250,31 +250,22 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   return return_type(std::forward<LOOP_BODY>(loop_body));
 }
 
-
-namespace internal
-{
-
 RAJA_INLINE
-int getMaxBlocks()
+cudaDeviceProp get_device_prop()
 {
-  static int max_blocks = -1;
-
-  if (max_blocks <= 0) {
-    int cur_device = -1;
-    cudaGetDevice(&cur_device);
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cur_device);
-    int s_num_sm = prop.multiProcessorCount;
-    int s_max_threads_per_sm = prop.maxThreadsPerMultiProcessor;
-    max_blocks = s_num_sm * (s_max_threads_per_sm / 1024);
-    // printf("MAX_BLOCKS=%d\n", max_blocks);
-  }
-
-  return max_blocks;
+  int device;
+  cudaErrchk(cudaGetDevice(&device));
+  cudaDeviceProp prop;
+  cudaErrchk(cudaGetDeviceProperties(&prop, device));
+  return prop;
 }
 
-}  // namespace internal
-
+RAJA_INLINE
+cudaDeviceProp& device_prop()
+{
+  static cudaDeviceProp prop = get_device_prop();
+  return prop;
+}
 
 }  // namespace cuda
 
