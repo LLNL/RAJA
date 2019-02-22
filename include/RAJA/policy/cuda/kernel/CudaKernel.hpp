@@ -339,7 +339,8 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   {
     auto func = internal::CudaKernelLauncher<Data, executor_t>;
 
-    func<<<launch_dims.blocks, launch_dims.threads, shmem, stream>>>(std::move(data));
+    void *args[] = {(void*)&data};
+    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
   }
 };
 
@@ -422,13 +423,6 @@ struct StatementExecutor<
 
 
     //
-    // Setup shared memory buffers
-    //
-    int shmem = 0;
-    cudaStream_t stream = 0;
-
-
-    //
     // Compute the requested kernel dimensions
     //
     LaunchDims launch_dims = executor_t::calculateDimensions(data);
@@ -438,6 +432,12 @@ struct StatementExecutor<
     int num_blocks = launch_dims.num_blocks();
     int num_threads = launch_dims.num_threads();
     if (num_blocks > 0 || num_threads > 0) {
+
+      //
+      // Setup shared memory buffers
+      //
+      int shmem = 0;
+      cudaStream_t stream = 0;
 
 
       //
@@ -518,34 +518,24 @@ struct StatementExecutor<
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
 
-
-      //
-      // Privatize the LoopData, using make_launch_body to setup reductions
-      //
-      auto cuda_data = RAJA::cuda::make_launch_body(
-          launch_dims.blocks, launch_dims.threads, shmem, stream, data);
-
-
-      //
-      // Launch the kernels
-      //
-      launch_t::launch(std::move(cuda_data), launch_dims, shmem, stream);
+      {
+        //
+        // Privatize the LoopData, using make_launch_body to setup reductions
+        //
+        auto cuda_data = RAJA::cuda::make_launch_body(
+            launch_dims.blocks, launch_dims.threads, shmem, stream, data);
 
 
-      //
-      // Check for errors
-      //
-      RAJA::cuda::peekAtLastError();
-
+        //
+        // Launch the kernels
+        //
+        launch_t::launch(std::move(cuda_data), launch_dims, shmem, stream);
+      }
 
       //
       // Synchronize
       //
-      RAJA::cuda::launch(stream);
-
-      if (!launch_t::async) {
-        RAJA::cuda::synchronize(stream);
-      }
+      if (!launch_t::async) { RAJA::cuda::synchronize(stream); }
     }
   }
 };
