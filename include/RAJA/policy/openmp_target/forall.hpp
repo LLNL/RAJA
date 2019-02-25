@@ -39,9 +39,9 @@ namespace omp
 /// OpenMP target parallel for policy implementation
 ///
 
-template <size_t Teams, typename Iterable, typename Func>
+template <size_t ThreadsPerTeam, typename Iterable, typename Func>
 // RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
-RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
@@ -51,25 +51,31 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 
-//std::cout << "Mapping body to device..." << std::endl;
-//std::cout << typeid(body).name() << std::endl;
-
-//printf("%p\n", &body);
-
-#pragma omp target teams distribute parallel for num_teams(Teams) \
-    schedule(static, 1) map(to                                    \
-                            : body)
-  for (Index_type i = 0; i < distance; ++i) {
-//  printf("Running index %d\n", i);
-//  printf("%p\n", &body);
-    Body ib = body;
-//  printf("%p\n", &ib);
-//  printf("%d\n", begin[i]);
-    ib(begin[i]);
-//  printf("Ran index %d\n", i);
+  // Reset if exceed CUDA threads per block limit.
+  int tperteam = ThreadsPerTeam;
+  if ( tperteam > omp::MAXNUMTHREADS )
+  {
+    tperteam = omp::MAXNUMTHREADS;
   }
 
-//std::cout << "Done on device" << std::endl;
+  // calculate number of teams based on user defined threads per team
+  // datasize is distance between begin() and end() of iterable
+  auto numteams = RAJA_DIVIDE_CEILING_INT( distance, tperteam );
+  if ( numteams > tperteam )
+  {
+    // Omp target reducers will write team # results, into Threads-sized array.
+    // Need to insure NumTeams <= Threads to prevent array out of bounds access.
+    numteams = tperteam;
+  }
+
+#pragma omp target teams distribute parallel for num_teams(numteams) \
+    thread_limit(tperteam) schedule(static, 1) map(to              \
+                                                    : body)
+  for (Index_type i = 0; i < distance; ++i) {
+    Body ib = body;
+    ib(begin[i]);
+  }
+
 }
 
 template <typename Iterable, typename Func>

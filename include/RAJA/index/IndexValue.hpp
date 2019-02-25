@@ -63,7 +63,7 @@ struct IndexValue : public IndexValueBase {
    * \brief Explicit constructor.
    * \param v   Initial value
    */
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(Index_type v)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(value_type v)
       : value(v)
   {
   }
