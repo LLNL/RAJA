@@ -20,8 +20,6 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-#include <cassert>
-
 #include <algorithm>
 
 #include <omp.h>
@@ -196,7 +194,6 @@ struct TargetReduce
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
-    assert ( omp_get_num_teams() <= omp::MaxNumTeams );
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {
@@ -270,7 +267,6 @@ struct TargetReduceLoc
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    assert ( omp_get_num_teams() <= omp::MaxNumTeams );
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {
