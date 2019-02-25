@@ -77,8 +77,8 @@ if ( MSVC )
 endif()
 
 if (ENABLE_CUDA)
-    set(CMAKE_CUDA_STANDARD 14)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda")
+  set(CMAKE_CUDA_STANDARD 11)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda")
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
     set(CMAKE_CUDA_FLAGS_RELEASE "-O2")
