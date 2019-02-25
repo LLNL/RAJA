@@ -77,12 +77,10 @@ if ( MSVC )
 endif()
 
 if (ENABLE_CUDA)
-    # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
-  if (NOT RAJA_HOST_CONFIG_LOADED)
     set(CMAKE_CUDA_STANDARD 14)
-
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda")
 
+  if (NOT RAJA_HOST_CONFIG_LOADED)
     set(CMAKE_CUDA_FLAGS_RELEASE "-O2")
     set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0")
     set(CMAKE_CUDA_FLAGS_MINSIZEREL "-Os")
