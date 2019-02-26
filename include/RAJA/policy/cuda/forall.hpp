@@ -69,13 +69,13 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-cuda_dim_t getGridDim(size_t len, cuda_dim_t blockDim)
+cuda_dim_t getGridDim(cuda_dim_member_t len, cuda_dim_t blockDim)
 {
-  size_t block_size = blockDim.x * blockDim.y * blockDim.z;
+  cuda_dim_member_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
-  size_t gridSize = (len + block_size - 1) / block_size;
+  cuda_dim_member_t gridSize = (len + block_size - 1) / block_size;
 
-  return gridSize;
+  return {gridSize, 1, 1};
 }
 
 /*!
@@ -187,7 +187,8 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     //
     // Compute the number of blocks
     //
-    auto gridSize = impl::getGridDim(len, BlockSize);
+    cuda_dim_t blockSize{BlockSize, 1, 1};
+    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
 
     RAJA_FT_BEGIN;
 
@@ -201,21 +202,21 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     //  printf("gridsize = (%d,%d), blocksize = %d\n",
     //         (int)gridSize.x,
     //         (int)gridSize.y,
-    //         (int)BlockSize);
+    //         (int)blockSize.x);
 
     {
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::cuda::make_launch_body(
-          gridSize, BlockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch((const void*)func, gridSize, BlockSize, args, shmem, stream);
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
     }
 
     if (!Async) { RAJA::cuda::synchronize(stream); }
