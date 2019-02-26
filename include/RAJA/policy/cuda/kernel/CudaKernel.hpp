@@ -289,7 +289,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
     }
   }
 
-  inline static void max_threads(int shmem_size, int &max_threads)
+  inline static void max_threads(int RAJA_UNUSED_ARG(shmem_size), int &max_threads)
   {
     if (num_threads <= 0) {
 
