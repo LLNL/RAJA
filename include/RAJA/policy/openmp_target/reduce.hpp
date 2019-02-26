@@ -20,7 +20,7 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-#include <cassert>
+//#include <cassert>  // Leaving out until XL is fixed 2/25/2019.
 
 #include <algorithm>
 
@@ -196,7 +196,7 @@ struct TargetReduce
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
-    assert ( omp_get_num_teams() <= omp::MaxNumTeams );
+    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {
@@ -270,7 +270,7 @@ struct TargetReduceLoc
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    assert ( omp_get_num_teams() <= omp::MaxNumTeams );
+    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
     if (!omp_is_initial_device()) {
 #pragma omp critical
       {

@@ -802,7 +802,7 @@ struct Reduce_Data {
   {
     bool act = !device.allocated() && setupReducers();
     if (act) {
-      dim3 gridDim = currentGridDim();
+      cuda_dim_t gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance()
