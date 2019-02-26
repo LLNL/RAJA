@@ -115,7 +115,7 @@ struct CudaStatementExecutor<
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    int len = segment_length<ArgumentId>(data);
+    auto len = segment_length<ArgumentId>(data);
     auto i0 = get_cuda_dim<ThreadDim>(threadIdx);
     auto i_stride = get_cuda_dim<ThreadDim>(blockDim);
     auto i = i0;
@@ -171,7 +171,7 @@ struct CudaStatementExecutor<
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    int len = segment_length<ArgumentId>(data);
+    auto len = segment_length<ArgumentId>(data);
     auto i0 = get_cuda_dim<BlockDim>(blockIdx);
     auto i_stride = get_cuda_dim<BlockDim>(gridDim);
     for(auto i = i0;i < len;i += i_stride){
