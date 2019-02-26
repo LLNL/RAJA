@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_toss3-clangcuda-7_nvcc-9.2
+BUILD_SUFFIX=lc_toss3-clangcuda-upstream-2018.12.03_nvcc-9.2
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -23,7 +23,7 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/clangcuda_7_nvcc_9_2.cmake \
+  -C ../host-configs/lc-builds/blueos/clangcuda_upstream_2018_12_03_nvcc_9_2.cmake \
   -DENABLE_OPENMP=Off \
   -DENABLE_CLANG_CUDA=On \
   -DBLT_CLANG_CUDA_ARCH=sm_60 \
