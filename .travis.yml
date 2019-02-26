@@ -69,6 +69,12 @@ matrix:
     - IMG=nvcc9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_TBB=On"
     - DO_TEST=no
+  - compiler: clang-cuda
+    env:
+    - COMPILER=clang++
+    - IMG=clang-cuda
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60"
+    - DO_TEST=no
 
 before_install: # don't try to build and run intel when it's impossible
 - |
