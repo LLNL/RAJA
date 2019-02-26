@@ -50,9 +50,9 @@ protected:
   virtual void SetUp()
   {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaMallocManaged(&data,
+    cudaErrchk(cudaMallocManaged(&data,
                       sizeof(Index_type) * x_len * y_len,
-                      cudaMemAttachGlobal);
+                      cudaMemAttachGlobal));
 #else
     data = new Index_type[x_len * y_len];
 #endif
@@ -62,7 +62,7 @@ protected:
   virtual void TearDown()
   {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaFree(data);
+    cudaErrchk(cudaFree(data));
 #else
     delete[] data;
 #endif
@@ -113,7 +113,7 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
 
   double *arr;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged(&arr, arr_len * sizeof(double));
+  cudaErrchk(cudaMallocManaged(&arr, arr_len * sizeof(double)));
 #else
   arr = new double[arr_len];
 #endif
@@ -191,9 +191,9 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   tsum.reset(0.0);
   double *idx_test;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged(&idx_test,
+  cudaErrchk(cudaMallocManaged(&idx_test,
                     sizeof(double) * x_len * y_len,
-                    cudaMemAttachGlobal);
+                    cudaMemAttachGlobal));
 #else
   idx_test = new double[x_len * y_len];
 #endif
@@ -237,8 +237,8 @@ CUDA_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(total, tsum.get());
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(arr);
-  cudaFree(idx_test);
+  cudaErrchk(cudaFree(arr));
+  cudaErrchk(cudaFree(idx_test));
 #else
   delete[] arr;
   delete[] idx_test;
@@ -323,7 +323,7 @@ CUDA_TEST(Kernel, CudaZeroIter)
 
 
   int *x = nullptr;
-  cudaMallocManaged(&x, 3 * 2 * 5 * sizeof(int));
+  cudaErrchk(cudaMallocManaged(&x, 3 * 2 * 5 * sizeof(int)));
 
   for (int i = 0; i < 3 * 2 * 5; ++i) {
     x[i] = 123;
@@ -337,13 +337,13 @@ CUDA_TEST(Kernel, CudaZeroIter)
         x[i + j * 3 + k * 3 * 2] = 321;
       });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   for (int i = 0; i < 3 * 2 * 5; ++i) {
     ASSERT_EQ(x[i], 123);
   }
 
-  cudaFree(x);
+  cudaErrchk(cudaFree(x));
 }
 
 
@@ -366,13 +366,13 @@ CUDA_TEST(Kernel, CudaCollapse2)
 
 
   Index_type *sum1;
-  cudaMallocManaged(&sum1, 1 * sizeof(Index_type));
+  cudaErrchk(cudaMallocManaged(&sum1, 1 * sizeof(Index_type)));
 
   Index_type *sum2;
-  cudaMallocManaged(&sum2, 1 * sizeof(Index_type));
+  cudaErrchk(cudaMallocManaged(&sum2, 1 * sizeof(Index_type)));
 
   int *err;
-  cudaMallocManaged(&err, 2 * sizeof(int));
+  cudaErrchk(cudaMallocManaged(&err, 2 * sizeof(int)));
 
   // Initialize data to zero
   sum1[0] = 0;
@@ -395,7 +395,7 @@ CUDA_TEST(Kernel, CudaCollapse2)
         }
       });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   ASSERT_EQ(0, err[0]);
   ASSERT_EQ(0, err[1]);
@@ -403,9 +403,9 @@ CUDA_TEST(Kernel, CudaCollapse2)
   ASSERT_EQ((N * (N - 1) * (N - 1)) / 2, *sum2);
 
 
-  cudaFree(sum1);
-  cudaFree(sum2);
-  cudaFree(err);
+  cudaErrchk(cudaFree(sum1));
+  cudaErrchk(cudaFree(sum2));
+  cudaErrchk(cudaFree(err));
 }
 
 
@@ -475,7 +475,7 @@ CUDA_TEST(Kernel, SubRange_ThreadBlock)
 
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(first, last)),
                     [=] RAJA_HOST_DEVICE(Index_type i) { ptr[i] = 1.0; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   size_t count = 0;
   for (size_t i = 0; i < num_elem; ++i) {
@@ -486,6 +486,7 @@ CUDA_TEST(Kernel, SubRange_ThreadBlock)
     ASSERT_EQ(ptr[i], 0.0);
     ASSERT_EQ(ptr[num_elem - 1 - i], 0.0);
   }
+  cudaErrchk(cudaFree(ptr));
 }
 
 
@@ -525,7 +526,7 @@ CUDA_TEST(Kernel, SubRange_Complex)
       });
 
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   size_t count = 0;
   for (size_t i = 0; i < num_elem; ++i) {
@@ -536,6 +537,7 @@ CUDA_TEST(Kernel, SubRange_Complex)
     ASSERT_EQ(ptr[i], 0.0);
     ASSERT_EQ(ptr[num_elem - 1 - i], 0.0);
   }
+  cudaErrchk(cudaFree(ptr));
 }
 
 
@@ -1537,7 +1539,7 @@ CUDA_TEST(Kernel, CudaExec)
       [=] __device__(RAJA::Index_type i) {
         trip_count += 1;
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1576,7 +1578,7 @@ CUDA_TEST(Kernel, CudaForICount)
             tile_count += 1;
           }
         });
-    cudaDeviceSynchronize();
+    cudaErrchk(cudaDeviceSynchronize());
 
     long trip_result = (long)trip_count;
     long tile_result = (long)tile_count;
@@ -1624,7 +1626,7 @@ CUDA_TEST(Kernel, CudaTileTCount)
             tile_count += 1;
           }
         });
-    cudaDeviceSynchronize();
+    cudaErrchk(cudaDeviceSynchronize());
 
     long trip_result = (long)trip_count;
     long tile_result = (long)tile_count;
@@ -1667,7 +1669,7 @@ CUDA_TEST(Kernel, CudaConditional)
 
         // This always gets executed
         [=] RAJA_DEVICE(int i, bool) { trip_count += 1; });
-    cudaDeviceSynchronize();
+    cudaErrchk(cudaDeviceSynchronize());
 
     long result = (long)trip_count;
 
@@ -1695,7 +1697,7 @@ CUDA_TEST(Kernel, CudaExec1)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1733,7 +1735,7 @@ CUDA_TEST(Kernel, CudaExec1a)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1768,7 +1770,7 @@ CUDA_TEST(Kernel, CudaExec1ab)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1805,7 +1807,7 @@ CUDA_TEST(Kernel, CudaExec1ac)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1835,7 +1837,7 @@ CUDA_TEST(Kernel, CudaExec1b)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1871,7 +1873,7 @@ CUDA_TEST(Kernel, CudaExec1c)
       [=] __device__(RAJA::Index_type i,
                      RAJA::Index_type j,
                      RAJA::Index_type k) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -1916,7 +1918,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
         trip_count += 1;
         RAJA::atomic::atomicAdd<RAJA::atomic::auto_atomic>(ptr + i, (int)1);
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   for (long i = 0; i < N; ++i) {
     ASSERT_EQ(ptr[i], (int)(N * N + N));
@@ -1927,7 +1929,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
   ASSERT_EQ(result, N * N * N + N * N);
 
 
-  cudaFree(ptr);
+  cudaErrchk(cudaFree(ptr));
 }
 
 
@@ -1954,7 +1956,7 @@ CUDA_TEST(Kernel, CudaExec_1blockexec)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(int i) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
 
   long result = (long)trip_count;
@@ -1982,7 +1984,7 @@ CUDA_TEST(Kernel, CudaExec_2threadloop)
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i, ptrdiff_t j) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -2012,7 +2014,7 @@ CUDA_TEST(Kernel, CudaExec_1thread1block)
           trip_count += 1;
         }
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -2045,7 +2047,7 @@ CUDA_TEST(Kernel, CudaExec_3threadloop)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   long result = (long)trip_count;
 
@@ -2075,7 +2077,7 @@ CUDA_TEST(Kernel, CudaExec_tile1threaddirect)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
 
   long result = (long)trip_count;
@@ -2133,7 +2135,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d)
   constexpr long M = (long)11;
 
   int *x = nullptr;
-  cudaMallocManaged(&x, N * M * sizeof(int));
+  cudaErrchk(cudaMallocManaged(&x, N * M * sizeof(int)));
 
 
   using myview = View<int, Layout<2, RAJA::Index_type>>;
@@ -2155,7 +2157,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d)
                       xv(i, j) = left + up;
                     });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   for (int i = 1; i < N; ++i) {
     for (int j = 1; j < M; ++j) {
@@ -2163,7 +2165,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d)
     }
   }
 
-  cudaFree(x);
+  cudaErrchk(cudaFree(x));
 }
 
 CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
@@ -2180,7 +2182,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
   constexpr long M = (long)11;
 
   int *x = nullptr;
-  cudaMallocManaged(&x, N * M * sizeof(int));
+  cudaErrchk(cudaMallocManaged(&x, N * M * sizeof(int)));
 
 
   using myview = View<int, Layout<2, RAJA::Index_type>>;
@@ -2202,7 +2204,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
                       xv(i, j) = right + down;
                     });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
   for (int i = 0; i < N - 1; ++i) {
     for (int j = 0; j < M - 1; ++j) {
@@ -2210,7 +2212,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_2d_negstride)
     }
   }
 
-  cudaFree(x);
+  cudaErrchk(cudaFree(x));
 }
 
 
@@ -2234,7 +2236,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
   constexpr long O = (long)13;
 
   long *x = nullptr;
-  cudaMallocManaged(&x, N * M * O * sizeof(long));
+  cudaErrchk(cudaMallocManaged(&x, N * M * O * sizeof(long)));
 
 
   using myview =
@@ -2278,7 +2280,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
         trip_count += 1;
       });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
 
   ASSERT_EQ((long)trip_count, (long)L * N * M * O);
@@ -2326,7 +2328,7 @@ CUDA_TEST(Kernel, Hyperplane_cuda_3d_tiled)
     }
   }
 
-  cudaFree(x);
+  cudaErrchk(cudaFree(x));
 }
 
 
@@ -2371,7 +2373,7 @@ CUDA_TEST(Kernel, CudaExec_1threadexec)
         trip_count += 1;
       });
 
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 
 
   long result = (long)trip_count;
