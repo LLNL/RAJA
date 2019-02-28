@@ -63,7 +63,7 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
 
   static
   inline
-  LaunchDims calculateDimensions(Data const &data)
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }

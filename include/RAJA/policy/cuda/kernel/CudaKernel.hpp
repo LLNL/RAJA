@@ -289,7 +289,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
     }
   }
 
-  inline static void max_threads(int shmem_size, int &max_threads)
+  inline static void max_threads(int RAJA_UNUSED_ARG(shmem_size), int &max_threads)
   {
     if (num_threads <= 0) {
 
@@ -354,7 +354,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline
-cuda_dim_t fitCudaDims(int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
+cuda_dim_t fitCudaDims(unsigned int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
 
 
   // clamp things to at least 1
@@ -458,7 +458,7 @@ struct StatementExecutor<
       //
       // Fit the requested threads
       //
-      cuda_dim_t fit_threads(0,0,0);
+      cuda_dim_t fit_threads{0,0,0};
 
       if ( recommended_threads >= get_size(launch_dims.min_threads) ) {
 
