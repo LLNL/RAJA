@@ -12,17 +12,17 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
+set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang++" CACHE PATH "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -finline-functions" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -g -finline-functions" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(CUDA_ARCH sm_35)
+set(CUDA_ARCH sm_60)
 
-set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -finline-functions -Xcompiler -fopenmp")
+set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -fopenmp")
 
 set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0" CACHE STRING "")

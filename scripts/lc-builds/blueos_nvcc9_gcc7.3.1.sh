@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos_nvcc9.2_gcc4.9.3
+BUILD_SUFFIX=lc_blueos_nvcc9_gcc7.3.1
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -23,10 +23,10 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_gcc_4_9_3.cmake \
+  -C ../host-configs/lc-builds/blueos/nvcc9_gcc_7_3_1.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.88 \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
