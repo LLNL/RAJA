@@ -77,7 +77,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
 
   static
   inline
-  LaunchDims calculateDimensions(Data const &data)
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }
@@ -94,7 +94,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
 
   static
   inline
-  LaunchDims calculateDimensions(Data const &data)
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }
