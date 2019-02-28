@@ -120,8 +120,8 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
-  cuda_dim_t gridDim = 0;
-  cuda_dim_t blockDim = 0;
+  cuda_dim_t gridDim{0, 0, 0};
+  cuda_dim_t blockDim{0, 0, 0};
   cudaStream_t stream = 0;
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
