@@ -48,7 +48,7 @@ namespace detail
 {
 
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 350)  // baseline CUDA_ARCH sm_35 check
-#warning CUDA_ARCH not set or too low, should set nvcc -arch=sm_35, COMPILING WITH DEFAULT atomicCAS
+#warning CUDA_ARCH is either not set, or set too low. Should set nvcc -arch=sm_35 or greater. COMPILING WITH DEFAULT atomicCAS!
 #endif
 
 // All CUDA atomic functions are checked for individual arch versions.
