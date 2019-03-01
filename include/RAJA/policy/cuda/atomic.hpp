@@ -47,6 +47,15 @@ namespace atomic
 namespace detail
 {
 
+#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 350)  // baseline CUDA_ARCH sm_35 check
+#warning CUDA_ARCH is set too low in nvcc. Should set nvcc -arch=sm_35 or greater. COMPILING WITH DEFAULT atomicCAS!
+#endif
+
+// All CUDA atomic functions are checked for individual arch versions.
+// Most >= 200 checks can be deemed as >= 110 (except CAS 64-bit, Add 32-bit float, and Add 64-bit ULL), but using 200 for shared memory support.
+// If using < 350, certain atomics will be implemented with atomicCAS.
+
+#if __CUDA_ARCH__ >= 200
 /*!
  * Generic impementation of atomic 32-bit or 64-bit compare and swap primitive.
  * Implementation uses the existing CUDA supplied unsigned 32-bit and 64-bit
@@ -167,8 +176,9 @@ RAJA_INLINE __device__ T cuda_atomic_CAS_oper(T volatile *acc, OPER &&oper)
   CudaAtomicCAS<sizeof(T)> cas;
   return cas(acc, std::forward<OPER>(oper));
 }
+#endif  // end CAS >= 200
 
-
+#if __CUDA_ARCH__ >= 200
 /*!
  * Catch-all policy passes off to CUDA's builtin atomics.
  *
@@ -219,6 +229,7 @@ RAJA_INLINE __device__ float cuda_atomicAdd<float>(float volatile *acc,
 {
   return ::atomicAdd((float *)acc, value);
 }
+#endif
 
 
 // 64-bit double atomicAdd support added for sm_60
@@ -231,6 +242,7 @@ RAJA_INLINE __device__ double cuda_atomicAdd<double>(double volatile *acc,
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicSub(T volatile *acc, T value)
 {
@@ -255,7 +267,9 @@ RAJA_INLINE __device__ unsigned cuda_atomicSub<unsigned>(unsigned volatile *acc,
 {
   return ::atomicSub((unsigned *)acc, value);
 }
+#endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicMin(T volatile *acc, T value)
 {
@@ -280,6 +294,7 @@ RAJA_INLINE __device__ unsigned cuda_atomicMin<unsigned>(unsigned volatile *acc,
 {
   return ::atomicMin((unsigned *)acc, value);
 }
+#endif
 
 // 64-bit unsigned atomicMin support by CUDA sm_35 and later
 #if __CUDA_ARCH__ >= 350
@@ -292,6 +307,7 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicMin<unsigned long long>(
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicMax(T volatile *acc, T value)
 {
@@ -316,6 +332,7 @@ RAJA_INLINE __device__ unsigned cuda_atomicMax<unsigned>(unsigned volatile *acc,
 {
   return ::atomicMax((unsigned *)acc, value);
 }
+#endif
 
 // 64-bit unsigned atomicMax support by CUDA sm_35 and later
 #if __CUDA_ARCH__ >= 350
@@ -328,6 +345,7 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicMax<unsigned long long>(
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicInc(T volatile *acc, T val)
 {
@@ -378,8 +396,10 @@ RAJA_INLINE __device__ T cuda_atomicDec(T volatile *acc)
   return cuda_atomic_CAS_oper(acc,
                                       [=] __device__(T a) { return a - 1; });
 }
+#endif
 
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicAnd(T volatile *acc, T value)
 {
@@ -404,6 +424,7 @@ RAJA_INLINE __device__ unsigned cuda_atomicAnd<unsigned>(unsigned volatile *acc,
 {
   return ::atomicAnd((unsigned *)acc, value);
 }
+#endif
 
 // 64-bit unsigned atomicAnd support by CUDA sm_35 and later
 #if __CUDA_ARCH__ >= 350
@@ -416,6 +437,7 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicAnd<unsigned long long>(
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicOr(T volatile *acc, T value)
 {
@@ -440,6 +462,7 @@ RAJA_INLINE __device__ unsigned cuda_atomicOr<unsigned>(unsigned volatile *acc,
 {
   return ::atomicOr((unsigned *)acc, value);
 }
+#endif
 
 // 64-bit unsigned atomicOr support by CUDA sm_35 and later
 #if __CUDA_ARCH__ >= 350
@@ -452,6 +475,7 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicOr<unsigned long long>(
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicXor(T volatile *acc, T value)
 {
@@ -476,6 +500,7 @@ RAJA_INLINE __device__ unsigned cuda_atomicXor<unsigned>(unsigned volatile *acc,
 {
   return ::atomicXor((unsigned *)acc, value);
 }
+#endif
 
 // 64-bit unsigned atomicXor support by CUDA sm_35 and later
 #if __CUDA_ARCH__ >= 350
@@ -488,14 +513,17 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicXor<unsigned long long>(
 }
 #endif
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicExchange(T volatile *acc, T value)
 {
   // attempt to use the CUDA builtin atomic, if it exists for T
   return ::atomicExch((T *)acc, value);
 }
+#endif
 
 
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicCAS(T volatile *acc, T compare, T value)
 {
@@ -524,6 +552,7 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
 {
   return ::atomicCAS((unsigned long long *)acc, compare, value);
 }
+#endif
 
 }  // namespace detail
 

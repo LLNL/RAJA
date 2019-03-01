@@ -344,7 +344,7 @@ RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
-RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T identity)
+RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 

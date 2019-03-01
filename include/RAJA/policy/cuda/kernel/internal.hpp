@@ -129,8 +129,8 @@ struct LaunchDims {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDims() : blocks(0,0,0),  min_blocks(0,0,0),
-                 threads(0,0,0), min_threads(0,0,0) {}
+  LaunchDims() : blocks{0,0,0},  min_blocks{0,0,0},
+                 threads{0,0,0}, min_threads{0,0,0} {}
 
 
   RAJA_INLINE
