@@ -54,11 +54,13 @@ namespace statement
 struct CudaSyncThreads : public internal::Statement<camp::nil> {
 };
 
+#if CUDART_VERSION >= 9000
 /*!
  * A RAJA::kernel statement that performs a CUDA __syncwarp().
  */
 struct CudaSyncWarp : public internal::Statement<camp::nil> {
 };
+#endif
 
 
 }  // namespace statement
@@ -83,6 +85,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
   }
 };
 
+#if CUDART_VERSION >= 9000
 template <typename Data>
 struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
 
@@ -99,6 +102,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
     return LaunchDims();
   }
 };
+#endif
 
 
 }  // namespace internal

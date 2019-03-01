@@ -37,6 +37,7 @@ RAJA atomic support includes a variety of the most common atomic operations.
           * Each method described in the table below returns the value of 
             the potentially modified argument (i.e., \*acc) immediately before 
             the atomic operation is applied, in case it is needed by a user.
+          * Please set the nvcc option "-arch=sm_35" (or greater), when CUDA is enabled. If a CUDA architecture does not support an sm_xy atomic operation, RAJA will generically implement it with atomicCAS.
 
 ^^^^^^^^^^^
 Arithmetic
