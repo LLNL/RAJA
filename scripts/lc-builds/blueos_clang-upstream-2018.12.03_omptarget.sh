@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos_clang-upsttream-2018.12.03_omptarget
+BUILD_SUFFIX=lc_blueos-clang-upstream-2018.12.03_omptarget
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}

@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos_nvcc9_clang-upstream-2018.12.03
+BUILD_SUFFIX=lc_blueos-nvcc9-clang-upstream-2018.12.03
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}

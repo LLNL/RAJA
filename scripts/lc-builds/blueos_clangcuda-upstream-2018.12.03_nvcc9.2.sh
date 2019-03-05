@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos_clangcuda-upstream-2018.12.03_nvcc-9.2
+BUILD_SUFFIX=lc_blueos-clangcuda-upstream-2018.12.03_nvcc-9.2
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
