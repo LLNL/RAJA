@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
@@ -14,11 +14,11 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_XLC" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-beta-2018.10.29/bin/xlc++_r" CACHE PATH "")
-set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-beta-2018.10.29/bin/xlC_r" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2019.02.07/bin/xlc++_r" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2019.02.07/bin/xlC_r" CACHE PATH "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 " CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g " CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qnoeh" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qnoeh" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -qsmp=omp:noopt " CACHE STRING "")
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-z,muldefs" CACHE STRING "")
 
