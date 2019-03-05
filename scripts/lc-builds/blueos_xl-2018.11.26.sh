@@ -25,6 +25,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release\
   -C ../host-configs/lc-builds/blueos/xl_2018_11_26.cmake \
   -DENABLE_OPENMP=On \
+  -DOpenMP_CXX_FLAGS="-qsmp=omp;-qnoeh;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
