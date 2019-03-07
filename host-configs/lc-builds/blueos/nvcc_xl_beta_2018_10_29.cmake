@@ -21,8 +21,6 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g9" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -qsmp=omp:noopt" CACHE STRING "")
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-z,muldefs" CACHE STRING "")
 
-set(CUDA_ARCH sm_60)
-
 set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qlanglvl=extended0x  -Xcompiler -qalias=noansi -Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 -Xcompiler -qsuppress=1500-036")
 
 set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
