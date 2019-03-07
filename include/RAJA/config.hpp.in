@@ -341,7 +341,10 @@ template<typename T>
 RAJA_INLINE
 T * align_hint(T * x)
 {
-#if defined(RAJA_COMPILER_INTEL) || defined(RAJA_COMPILER_XLC)
+
+#if defined(RAJA_COMPILER_XLC) && defined(RAJA_ENABLE_CUDA)
+  return x;
+#elif defined(RAJA_COMPILER_INTEL) || defined(RAJA_COMPILER_XLC)
   RAJA_ALIGN_DATA(x);
   return x;
 #else
