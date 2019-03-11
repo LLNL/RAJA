@@ -80,6 +80,7 @@ template<std::size_t n_matrices, std::size_t size>
   RAJA::kernel<MatMulPolicy>(
       rs,
       [=](const std::size_t matrices, const std::size_t i,const std::size_t j,const std::size_t k){
+        (void)matrices;
         out_matrix[MAT2D(i,j,size)] += input_matrix1[MAT2D(i,k,size)] * input_matrix2[MAT2D(k,j,size)];
       }  
   );
@@ -102,20 +103,23 @@ void affine_kernel(Kernel&& k, Args... ends){
 #endif // USE_JIT
 
 int main(int argc, char* argv[]){
+  (void)argc;
   std::size_t size = atoi(argv[1]);
   std::size_t batch_size = atoi(argv[2]);
   srand(time(nullptr));
   std::cout << "Size is "<<size<<", batch size "<< batch_size<<"\n";
-  const std::size_t repeats = 5000000000;
+  std::size_t repeats = 5000000000;
+  if(argc>2){
+     repeats = atoi(argv[3]) * 10000000;
+  }
   float* out_matrix = (float*)malloc(sizeof(float)*size*size);
   float* input_matrix1 = (float*)malloc(sizeof(float)*size*size);
   float* input_matrix2 = (float*)malloc(sizeof(float)*size*size);
-  for(int r = 0; r < size * size; r++){
+  for(std::size_t r = 0; r < size * size; r++){
     input_matrix1[r] = (1.0f*rand())/RAND_MAX;
     input_matrix2[r] = (1.0f*rand())/RAND_MAX;
   } 
-  for(long rep = 0; rep<(repeats/batch_size);rep++){
-
+  for(std::size_t rep = 0; rep<(repeats/batch_size);rep++){
 #ifdef USE_JIT
     affine_jit_kernel_difficult<MatMulPolicy>(
         camp::make_tuple(
@@ -125,6 +129,7 @@ int main(int argc, char* argv[]){
           RAJA::RangeSegment(0,size)
         ),
         [=](const std::size_t matrices, const std::size_t i, const std::size_t j, const std::size_t k){
+            (void)matrices;
             out_matrix[MAT2D(i,j,size)] += input_matrix1[MAT2D(i,k,size)] * input_matrix2[MAT2D(k,j,size)];
         }
     );
@@ -143,6 +148,7 @@ int main(int argc, char* argv[]){
       >
     >>>(
         [=](const std::size_t matrices, const std::size_t i, const std::size_t j, const std::size_t k){
+          (void)matrices;
           out_matrix[MAT2D(i,j,size)] += input_matrix1[MAT2D(i,k,size)] * input_matrix2[MAT2D(k,j,size)];
         },
         batch_size,
