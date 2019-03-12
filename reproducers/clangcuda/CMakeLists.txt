@@ -17,3 +17,7 @@
 raja_add_reproducer(
   NAME reproducer-clangcuda-shuffle
   SOURCES reproducer-shuffle.cpp)
+
+raja_add_reproducer(
+  NAME reproducer-clangcuda-multdef
+  SOURCES reproducer-multdef-main.cpp reproducer-multdef-other.cpp)
