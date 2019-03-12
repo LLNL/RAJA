@@ -112,7 +112,7 @@ int main(int argc, char* argv[]){
   if(argc>2){
      repeats = atoi(argv[3]) * 10000000;
   }
-  float* out_matrix = (float*)malloc(sizeof(float)*size*size);
+  float* out_matrix = (float*)malloc(sizeof(float)*size*size );
   float* input_matrix1 = (float*)malloc(sizeof(float)*size*size);
   float* input_matrix2 = (float*)malloc(sizeof(float)*size*size);
   for(std::size_t r = 0; r < size * size; r++){
