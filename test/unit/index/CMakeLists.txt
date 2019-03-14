@@ -13,7 +13,10 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
-
 raja_add_test(
   NAME test-rangesegment
   SOURCES test-rangesegment.cpp)
+
+raja_add_test(
+  NAME test-rangestridesegment
+  SOURCES test-rangestridesegment.cpp)
