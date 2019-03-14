@@ -181,6 +181,12 @@ struct TypedRangeSegment {
     return m_begin == o.m_begin && m_end == o.m_end;
   }
 
+
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
+  {
+    return !(operator==(o));
+  }
+
 private:
   //! member variable for begin iterator
   iterator m_begin;
