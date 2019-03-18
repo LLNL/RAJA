@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -285,6 +285,32 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  // using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer(1024.0, Index(0));
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) {
+                             minloc_reducer.minloc(this->array[i], Index(i));
+                           });
+
+  Index raja_loc = minloc_reducer.getLoc();
+  double raja_min = (double)minloc_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+  ASSERT_EQ(this->minloc, raja_loc.idx);
+}
+
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc2)
 {
   using ExecPolicy =
@@ -310,6 +336,36 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc2)
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex2)
+{
+  using ExecPolicy =
+      RAJA::seq_exec;  // typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy =
+      RAJA::seq_reduce;  // typename std::tuple_element<1, TypeParam>::type;
+  // using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer;
+
+  minloc_reducer.reset({1024.0, Index(0)});
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) {
+                             minloc_reducer.minloc(this->array[i], Index(i));
+                           });
+
+  Index raja_loc = minloc_reducer.getLoc();
+  double raja_min = (double)minloc_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+  ASSERT_EQ(this->minloc, raja_loc.idx);
+}
+
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
@@ -328,6 +384,32 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
 
   ASSERT_FLOAT_EQ(this->max, raja_max);
   ASSERT_EQ(this->maxloc, raja_loc);
+}
+
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  // using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer(0.0, Index());
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) {
+                             maxloc_reducer.maxloc(this->array[i], Index(i));
+                           });
+
+  Index raja_loc = maxloc_reducer.getLoc();
+  double raja_max = (double)maxloc_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->max, raja_max);
+  ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc2)
@@ -352,6 +434,34 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc2)
   ASSERT_EQ(this->maxloc, raja_loc);
 }
 
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex2)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  // using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     constexpr Index() : idx(-1) {}
+     constexpr Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer;
+
+  maxloc_reducer.reset({0.0, Index()});
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) {
+                             maxloc_reducer.maxloc(this->array[i], Index(i));
+                           });
+
+  Index raja_loc = maxloc_reducer.getLoc();
+  double raja_max = (double)maxloc_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->max, raja_max);
+  ASSERT_EQ(this->maxloc, raja_loc.idx);
+}
+
 REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
                            ReduceSum,
                            ReduceSum2,
@@ -360,9 +470,13 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
                            ReduceMax,
                            ReduceMax2,
                            ReduceMinLoc,
+                           ReduceMinLocGenericIndex,
                            ReduceMinLoc2,
+                           ReduceMinLocGenericIndex2,
                            ReduceMaxLoc,
-                           ReduceMaxLoc2);
+                           ReduceMaxLocGenericIndex,
+                           ReduceMaxLoc2,
+                           ReduceMaxLocGenericIndex2);
 
 using types = ::testing::Types<
     std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,

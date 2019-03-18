@@ -110,7 +110,7 @@ class ReduceMin;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMinLoc;
 
 /*!
@@ -161,7 +161,7 @@ class ReduceMax;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMaxLoc;
 
 /*!
