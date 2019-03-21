@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,7 +31,6 @@
 #if defined(RAJA_ENABLE_TBB)
 
 #include "RAJA/policy/tbb/forall.hpp"
-#include "RAJA/policy/tbb/forallN.hpp"
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/policy/tbb/reduce.hpp"
 #include "RAJA/policy/tbb/scan.hpp"

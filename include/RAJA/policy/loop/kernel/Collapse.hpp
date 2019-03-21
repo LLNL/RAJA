@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -41,8 +41,8 @@ namespace internal
 // Termination case for seq_exec collapsed loops
 //
 template <typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Collapse<loop_exec, ArgList<>, EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::Collapse<loop_exec, ArgList<>, EnclosedStmts...>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -66,10 +66,8 @@ struct StatementExecutor<statement::Collapse<loop_exec,
   static RAJA_INLINE void exec(Data &data)
   {
     // compute next-most inner loop Executor
-    using next_loop_t =
-        StatementExecutor<statement::Collapse<loop_exec,
-                                              ArgList<ArgRest...>,
-                                              EnclosedStmts...>>;
+    using next_loop_t = StatementExecutor<
+        statement::Collapse<loop_exec, ArgList<ArgRest...>, EnclosedStmts...>>;
 
     auto len0 = segment_length<Arg0>(data);
 

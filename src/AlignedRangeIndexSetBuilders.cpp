@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -39,10 +39,10 @@ namespace RAJA
 *************************************************************************
 */
 
-void buildIndexSetAligned(RAJA::TypedIndexSet<RAJA::RangeSegment,
-                          RAJA::ListSegment>& hiset,
-                          const Index_type* const indices_in,
-                          Index_type length)
+void buildIndexSetAligned(
+    RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& hiset,
+    const Index_type* const indices_in,
+    Index_type length)
 {
   if (length == 0) return;
 
@@ -193,4 +193,4 @@ void buildIndexSetAligned(RAJA::TypedIndexSet<RAJA::RangeSegment,
   }
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA

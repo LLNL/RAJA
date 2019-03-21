@@ -43,7 +43,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -83,6 +83,7 @@
 #include "RAJA/policy/sequential/forall.hpp"
 
 #include "RAJA/pattern/detail/forall.hpp"
+#include "RAJA/pattern/detail/privatizer.hpp"
 
 #include "RAJA/util/chai_support.hpp"
 
@@ -102,46 +103,11 @@ namespace internal
 {
 
 template <typename T>
-struct Privatizer {
-  using value_type = camp::decay<T>;
-  using reference_type = value_type&;
-  value_type priv;
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
-};
-
-template <typename T>
 auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
 {
   return item;
 }
 
-/**
- * @brief Create a private copy of the argument to be stored on the current
- * thread's stack in a class of the Privatizer concept
- *
- * @param item data to privatize
- *
- * @return Privatizer<T>
- *
- * This function will be invoked such that ADL can be used to extend its
- * functionality.  Anywhere it is called it should be invoked by:
- *
- * `using RAJA::internal::thread_privatize; thread_privatize()`
- *
- * This allows other namespaces to add new versions to support functionality
- * that does not belong here.
- *
- */
-template <typename T>
-RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
-{
-  return Privatizer<T>{item};
-}
 
 }  // end namespace internal
 
@@ -183,7 +149,7 @@ struct CallForallIcount {
 
   const int start;
 };
-}
+}  // namespace detail
 
 /*!
  ******************************************************************************
@@ -204,11 +170,10 @@ namespace wrap
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 
   using RAJA::internal::trigger_updates_before;
@@ -239,8 +204,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   auto body = trigger_updates_before(loop_body);
 
   using std::begin;
-  using std::end;
   using std::distance;
+  using std::end;
   auto range = RangeSegment(0, distance(begin(c), end(c)));
   detail::icount_adapter<Container, LoopBody, IndexType> adapted(c,
                                                                  body,
@@ -332,9 +297,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_indexset_policy<ExecutionPolicy>>
-    forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_indexset_policy<ExecutionPolicy>>
+forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an TypedIndexSet but did not get one. Are you using "
@@ -390,11 +355,10 @@ forall_Icount(ExecutionPolicy&& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
@@ -404,265 +368,6 @@ RAJA_INLINE concepts::
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Iteration over explicit iterator pairs
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over iterators with icount
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename Iterator,
-          typename IndexType,
-          typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE
- concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              type_traits::is_iterator<Iterator>,
-              concepts::negate<type_traits::is_integral<Iterator>>>
-    forall_Icount(ExecutionPolicy&& p,
-                  Iterator begin,
-                  Iterator end,
-                  const IndexType icount,
-                  LoopBody&& loop_body)
-{
-  static_assert(type_traits::is_random_access_iterator<Iterator>::value,
-                "Iterator pair does not meet requirement of "
-                "RandomAccessIterator");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  auto len = std::distance(begin, end);
-  using SpanType = impl::Span<Iterator, decltype(len)>;
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      SpanType{begin, len},
-                      icount,
-                      std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over iterators with a value-based policy
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy, typename Iterator, typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE
-  concepts::enable_if<type_traits::is_iterator<Iterator>,
-              concepts::negate<type_traits::is_integral<Iterator>>>
-    forall(ExecutionPolicy&& p,
-           Iterator begin,
-           Iterator end,
-           LoopBody&& loop_body)
-{
-  static_assert(type_traits::is_random_access_iterator<Iterator>::value,
-                "Iterator pair does not meet requirement of "
-                "RandomAccessIterator");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  auto len = std::distance(begin, end);
-  using SpanType = impl::Span<Iterator, decltype(len)>;
-
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               SpanType{begin, len},
-               std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index ranges.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over index range.
- *
- ******************************************************************************
- */
-
-template <typename ExecutionPolicy,
-          typename IndexType1,
-          typename IndexType2,
-          typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE 
-concepts::enable_if<type_traits::is_integral<IndexType1>,
-                                type_traits::is_integral<IndexType2>>
-forall(ExecutionPolicy&& p,
-       IndexType1 begin,
-       IndexType2 end,
-       LoopBody&& loop_body)
-{
-  static_assert(
-      type_traits::is_range_constructible<IndexType1, IndexType2>::value,
-      "Cannot deduce a common type between begin and end for Range creation");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               make_range(begin, end),
-               std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over index range with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename IndexType1,
-          typename IndexType2,
-          typename OffsetType,
-          typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE 
-concepts::enable_if<type_traits::is_integral<IndexType1>,
-                                type_traits::is_integral<IndexType2>,
-                                type_traits::is_integral<OffsetType>>
-forall_Icount(ExecutionPolicy&& p,
-              IndexType1 begin,
-              IndexType2 end,
-              OffsetType icount,
-              LoopBody&& loop_body)
-{
-  static_assert(
-      type_traits::is_range_constructible<IndexType1, IndexType2>::value,
-      "Cannot deduce a common type between begin and end for Range creation");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      make_range(begin, end),
-                      icount,
-                      std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index ranges with stride.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over index range with stride.
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename IndexType1,
-          typename IndexType2,
-          typename IndexType3,
-          typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE
-concepts::enable_if<type_traits::is_integral<IndexType1>,
-                               type_traits::is_integral<IndexType2>,
-                               type_traits::is_integral<IndexType3>>
-forall(ExecutionPolicy&& p,
-       IndexType1 begin,
-       IndexType2 end,
-       IndexType3 stride,
-       LoopBody&& loop_body)
-{
-  static_assert(type_traits::is_range_stride_constructible<IndexType1,
-                                                           IndexType2,
-                                                           IndexType3>::value,
-                "Cannot deduce a common type between begin and end for Range "
-                "creation");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               make_strided_range(begin, end, stride),
-               std::forward<LoopBody>(loop_body));
-
-  detail::clearChaiExecutionSpace();
-}
-
-static_assert(
-    type_traits::is_range_stride_constructible<int, RAJA::seq_exec, int>::value,
-    "");
-static_assert(type_traits::is_range_stride_constructible<int, int, int>::value,
-              "");
-
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over index range with stride with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename IndexType1,
-          typename IndexType2,
-          typename IndexType3,
-          typename OffsetType,
-          typename LoopBody>
-RAJA_DEPRECATE("Forall methods will require iteration space containers in next release")
-RAJA_INLINE 
-concepts::enable_if<type_traits::is_integral<IndexType1>,
-                                type_traits::is_integral<IndexType2>,
-                                type_traits::is_integral<IndexType3>,
-                                type_traits::is_integral<OffsetType>>
-forall_Icount(ExecutionPolicy&& p,
-              IndexType1 begin,
-              IndexType2 end,
-              IndexType3 stride,
-              OffsetType icount,
-              LoopBody&& loop_body)
-{
-  static_assert(type_traits::is_range_stride_constructible<IndexType1,
-                                                           IndexType2,
-                                                           IndexType3>::value,
-                "Cannot deduce a common type between begin and end for Range "
-                "creation");
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      make_strided_range(begin, end, stride),
-                      icount,
-                      std::forward<LoopBody>(loop_body));
 
   detail::clearChaiExecutionSpace();
 }
@@ -686,13 +391,13 @@ template <typename ExecutionPolicy,
           typename ArrayIdxType,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              concepts::negate<type_traits::is_iterator<IndexType>>>
-    forall(ExecutionPolicy&& p,
-           const ArrayIdxType* idx,
-           const IndexType len,
-           LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_integral<IndexType>,
+    concepts::negate<type_traits::is_iterator<IndexType>>>
+forall(ExecutionPolicy&& p,
+       const ArrayIdxType* idx,
+       const IndexType len,
+       LoopBody&& loop_body)
 {
   detail::setChaiExecutionSpace<ExecutionPolicy>();
 
@@ -717,18 +422,18 @@ template <typename ExecutionPolicy,
           typename IndexType,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              concepts::negate<type_traits::is_iterator<IndexType>>,
-              type_traits::is_integral<OffsetType>,
-              concepts::negate<type_traits::is_iterator<OffsetType>>,
-              type_traits::is_integral<ArrayIdxType>,
-              concepts::negate<type_traits::is_iterator<ArrayIdxType>>>
-    forall_Icount(ExecutionPolicy&& p,
-                  const ArrayIdxType* idx,
-                  const IndexType len,
-                  const OffsetType icount,
-                  LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_integral<IndexType>,
+    concepts::negate<type_traits::is_iterator<IndexType>>,
+    type_traits::is_integral<OffsetType>,
+    concepts::negate<type_traits::is_iterator<OffsetType>>,
+    type_traits::is_integral<ArrayIdxType>,
+    concepts::negate<type_traits::is_iterator<ArrayIdxType>>>
+forall_Icount(ExecutionPolicy&& p,
+              const ArrayIdxType* idx,
+              const IndexType len,
+              const OffsetType icount,
+              LoopBody&& loop_body)
 {
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
@@ -753,6 +458,7 @@ RAJA_INLINE void forall(Args&&... args)
 
   detail::setChaiExecutionSpace<ExecutionPolicy>();
 
+  RAJA_FORCEINLINE_RECURSIVE
   forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
   detail::clearChaiExecutionSpace();
@@ -799,9 +505,9 @@ RAJA_INLINE void CallForallIcount::operator()(T const& segment,
   wrap::forall_Icount(ExecutionPolicy(), segment, start, body);
 }
 
-}  // closing brace for impl namespace
+}  // namespace detail
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

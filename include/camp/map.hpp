@@ -21,8 +21,7 @@ namespace detail
   struct lookup_table;
 
   template <typename... Keys, typename... Values>
-  struct lookup_table<list<list<Keys, Values>...>>
-      : list<Keys, Values>... {
+  struct lookup_table<list<list<Keys, Values>...>> : list<Keys, Values>... {
   };
 }  // namespace detail
 
@@ -32,8 +31,15 @@ struct at_key_s {
       decltype(detail::lookup<Key>(declptr<detail::lookup_table<Seq>>()));
 };
 
-template <typename Seq, typename Key>
-using at_key = typename at_key_s<Seq, Key>::type;
+
+/**
+ * @brief Get value at Key from Map
+ *
+ * @tparam Map The map, or associative list, to index
+ * @tparam Key The key to find
+ */
+template <typename Map, typename Key>
+using at_key = typename at_key_s<Map, Key>::type;
 
 
 #if defined(CAMP_TEST)

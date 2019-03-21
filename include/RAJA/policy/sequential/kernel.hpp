@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -25,9 +25,10 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/sequential/kernel/Collapse.hpp"
-
 #ifndef RAJA_policy_sequential_kernel_HPP
 #define RAJA_policy_sequential_kernel_HPP
+
+#include "RAJA/policy/sequential/kernel/Collapse.hpp"
+#include "RAJA/policy/sequential/kernel/Reduce.hpp"
 
 #endif  // closing endif for header file include guard

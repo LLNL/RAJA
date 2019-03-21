@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -88,14 +88,15 @@ struct TypedRangeSegment {
    */
   using value_type = StorageT;
 
-  using IndexType  = StorageT;
+  using IndexType = StorageT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Index_type begin, Index_type end)
+  template<typename Arg1, typename Arg2>
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Arg1 begin, Arg2 end)
       : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
@@ -160,14 +161,13 @@ struct TypedRangeSegment {
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(Index_type begin,
-                                                       Index_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(value_type begin,
+                                                       value_type length) const
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
 
-    return TypedRangeSegment{stripIndexType(start),
-                             stripIndexType(end)};
+    return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
 
   //! equality comparison
@@ -261,7 +261,7 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
-  using IndexType  = StorageT;
+  using IndexType = StorageT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
@@ -272,17 +272,8 @@ struct TypedRangeStrideSegment {
                                            Index_type end,
                                            Index_type stride)
       : m_begin(iterator(DiffT{begin}, DiffT{stride})),
-        m_end(iterator(DiffT{end}, DiffT{stride})),
-        // essentially a ceil((end-begin)/stride) but using integer math,
-        // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin)
-                + static_cast<value_type>(stride)
-                - (stride > 0 ? value_type{1} : value_type{-1}))
-               / static_cast<value_type>(stride))
+        m_end(iterator(DiffT{end}, DiffT{stride}))
   {
-    // if m_size was initialized as negative, that indicates a zero iteration
-    // space
-    m_size = m_size < value_type{0} ? value_type{0} : m_size;
   }
 
   //! disable compiler generated constructor
@@ -291,14 +282,13 @@ struct TypedRangeStrideSegment {
   //! move constructor
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&& o)
       : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end)),
-        m_size(std::move(o.m_size))
+        m_end(std::move(o.m_end))
   {
   }
 
   //! copy constructor
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+      : m_begin(o.m_begin), m_end(o.m_end)
   {
   }
 
@@ -308,7 +298,6 @@ struct TypedRangeStrideSegment {
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
-    m_size = o.m_size;
     return *this;
   }
 
@@ -323,7 +312,6 @@ struct TypedRangeStrideSegment {
   {
     camp::safe_swap(m_begin, other.m_begin);
     camp::safe_swap(m_end, other.m_end);
-    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeStrideSegment
@@ -345,7 +333,24 @@ struct TypedRangeStrideSegment {
    *
    * \return the total number of steps for this Segment
    */
-  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+  RAJA_HOST_DEVICE StorageT size() const {
+
+    auto stride = m_begin.get_stride();
+
+    // essentially a ceil((end-begin)/stride) but using integer math,
+    // and allowing for negative strides
+    auto m_size = (static_cast<value_type>(*m_end) -
+            static_cast<value_type>(*m_begin) +
+            static_cast<value_type>(stride) -
+            (stride > 0 ? value_type{1} : value_type{-1})) /
+           static_cast<value_type>(stride);
+
+    // if m_size was initialized as negative, that indicates a zero iteration
+    // space
+    m_size = m_size < value_type{0} ? value_type{0} : m_size;
+
+    return m_size;
+  }
 
   //! Create a slice of this instance as a new instance
   /*!
@@ -378,7 +383,7 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+    return m_begin == o.m_begin && m_end == o.m_end;
   }
 
 private:
@@ -388,8 +393,6 @@ private:
   //! member variable for end iterator
   iterator m_end;
 
-  //! member variable for size of segment
-  StorageT m_size;
 };
 
 //! Alias for TypedRangeSegment<Index_type>
@@ -414,7 +417,7 @@ struct common_type<T> {
 template <typename... Ts>
 using common_type_t = typename common_type<Ts...>::type;
 
-}  // closing brace for namespace detail
+}  // namespace detail
 
 //! make function for TypedRangeSegment
 /*!
@@ -469,7 +472,7 @@ struct RangeStrideConstructible
     : DefineConcept(camp::val<RAJA::detail::common_type_t<T, U, V>>()) {
 };
 
-}  // closing brace for concepts namespace
+}  // namespace concepts
 
 namespace type_traits
 {
@@ -480,9 +483,9 @@ DefineTypeTraitFromConcept(is_range_constructible,
 DefineTypeTraitFromConcept(is_range_stride_constructible,
                            RAJA::concepts::RangeStrideConstructible);
 
-}  // closing brace for type_traits namespace
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 namespace std
 {
@@ -503,6 +506,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
   a.swap(b);
 }
 
-}  // closing brace for std namespace
+}  // namespace std
 
 #endif  // closing endif for header file include guard

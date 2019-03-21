@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -33,20 +33,20 @@
 
 namespace RAJA
 {
-  
-  template<typename ExecutionPolicy, typename LoopBody>
-  void region(LoopBody&& loop_body)
-  {
-    region_impl(ExecutionPolicy(), loop_body);
-  }
 
-  template<typename ExecutionPolicy, typename OuterBody, typename InnerBody>
-  void region(OuterBody&& outer_body, InnerBody&& inner_body)
-  {
-    region_impl(ExecutionPolicy(), outer_body, inner_body);
-  }
+template <typename ExecutionPolicy, typename LoopBody>
+void region(LoopBody&& loop_body)
+{
+  region_impl(ExecutionPolicy(), loop_body);
+}
 
-}  // closing brace for RAJA namespace
+template <typename ExecutionPolicy, typename OuterBody, typename InnerBody>
+void region(OuterBody&& outer_body, InnerBody&& inner_body)
+{
+  region_impl(ExecutionPolicy(), outer_body, inner_body);
+}
+
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

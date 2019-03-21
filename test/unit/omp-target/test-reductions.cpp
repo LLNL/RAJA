@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -53,18 +53,19 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP, ReductionConstructor);
+REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
+                           ReductionConstructor);
 
 using constructor_types =
-    ::testing::Types<std::tuple<RAJA::omp_target_reduce<16>, int>,
-                     std::tuple<RAJA::omp_target_reduce<16>, float>,
-                     std::tuple<RAJA::omp_target_reduce<16>, double>,
-                     std::tuple<RAJA::omp_target_reduce<64>, int>,
-                     std::tuple<RAJA::omp_target_reduce<64>, float>,
-                     std::tuple<RAJA::omp_target_reduce<64>, double>,
-                     std::tuple<RAJA::omp_target_reduce<256>, int>,
-                     std::tuple<RAJA::omp_target_reduce<256>, float>,
-                     std::tuple<RAJA::omp_target_reduce<256>, double>>;
+    ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>,
+                     std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>,
+                     std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>>;
 
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
@@ -87,7 +88,7 @@ protected:
     }
     array[0] = 0.0;
     array[array_length - 1] = -1.0;
-#pragma omp target enter data map(to:array[:array_length])
+#pragma omp target enter data map(to : array[:array_length])
 
     sum = 0.0;
     min = array_length * 2;
@@ -114,12 +115,12 @@ protected:
 
   virtual void TearDown()
   {
-#pragma omp target exit data map(release:array[:array_length])
-      free(array);
+#pragma omp target exit data map(release : array[:array_length])
+    free(array);
   }
 
   RAJA::Real_ptr array;
-  
+
   RAJA::Real_type max;
   RAJA::Real_type min;
   RAJA::Real_type sum;
@@ -199,9 +200,7 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMinLoc)
   // broken for lambda capture
 #pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
-                           [=](int i) {
-                             minloc_reducer.minloc(array[i], i);
-                           });
+                           [=](int i) { minloc_reducer.minloc(array[i], i); });
 
   double raja_min = (double)minloc_reducer.get();
   RAJA::Index_type raja_loc = minloc_reducer.getLoc();
@@ -222,9 +221,7 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLoc)
   // broken for lambda capture
 #pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
-                           [=](int i) {
-                             maxloc_reducer.maxloc(array[i], i);
-                           });
+                           [=](int i) { maxloc_reducer.maxloc(array[i], i); });
 
   double raja_max = (double)maxloc_reducer.get();
   RAJA::Index_type raja_loc = maxloc_reducer.getLoc();
@@ -241,11 +238,11 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceMaxLoc);
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
-                                RAJA::omp_target_reduce<16>>,
+                                RAJA::omp_target_reduce>,
                      std::tuple<RAJA::omp_target_parallel_for_exec<64>,
-                                RAJA::omp_target_reduce<64>>,
+                                RAJA::omp_target_reduce>,
                      std::tuple<RAJA::omp_target_parallel_for_exec<256>,
-                                RAJA::omp_target_reduce<256>>>;
+                                RAJA::omp_target_reduce>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
 
@@ -260,8 +257,8 @@ protected:
     z_size = 256;
 
     array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                x_size * y_size * z_size
-                                                    * sizeof(double));
+                                                x_size * y_size * z_size *
+                                                    sizeof(double));
 
     const double val = 4.0 / (x_size * y_size * z_size);
 
@@ -269,14 +266,15 @@ protected:
       array[i] = (RAJA::Real_type)val;
     }
 
-#pragma omp target enter data map(to: array[:x_size*y_size*z_size])
+#pragma omp target enter data map(to : array[:x_size * y_size * z_size])
 
     sum = 4.0;
   }
 
-  virtual void TearDown() {
-#pragma omp target exit data map(release: array[:x_size*y_size*z_size])
-      free(array);
+  virtual void TearDown()
+  {
+#pragma omp target exit data map(release : array[:x_size * y_size * z_size])
+    free(array);
   }
 
   RAJA::Real_ptr array;
@@ -288,64 +286,4 @@ protected:
   RAJA::Index_type z_size;
 };
 
-#if defined(RAJA_DEPRECATED_TESTS)
-TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP);
 
-TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
-{
-  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
-  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
-
-  RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
-
-  RAJA::View<double, RAJA::Layout<3>> view(this->array,
-                                           this->x_size,
-                                           this->y_size,
-                                           this->z_size);
-  auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
-  view.set_data(array);
-
-  RAJA::forallN<ExecPolicy>(RAJA::RangeSegment(0, this->x_size),
-                            RAJA::RangeSegment(0, this->y_size),
-                            RAJA::RangeSegment(0, this->z_size),
-                            [=](int i, int j, int k) {
-                              sum_reducer += view(i, j, k);
-                            });
-
-  double raja_sum = (double)sum_reducer.get();
-
-  ASSERT_FLOAT_EQ(this->sum, raja_sum);
-}
-
-REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum);
-
-using nested_types = ::testing::Types<
-  std::tuple<
-    RAJA::NestedPolicy<RAJA::ExecList<
-                         RAJA::omp_target_parallel_for_exec<64>,
-                         RAJA::seq_exec,
-                         RAJA::seq_exec>>,
-    RAJA::omp_target_reduce<64>>
-  ,
-  std::tuple<
-    RAJA::NestedPolicy<RAJA::ExecList<
-                       RAJA::seq_exec,
-                       RAJA::omp_target_parallel_for_exec<64>,
-                       RAJA::seq_exec>>,
-    RAJA::omp_target_reduce<64>>
-  ,
-  std::tuple<
-    RAJA::NestedPolicy<RAJA::ExecList<
-                         RAJA::seq_exec,
-                         RAJA::seq_exec,
-                         RAJA::omp_target_parallel_for_exec<64>>>,
-    RAJA::omp_target_reduce<64>>
-  >;
-
-INSTANTIATE_TYPED_TEST_CASE_P(NestedReduceTargetOMP,
-                              NestedReductionCorrectnessTestTargetOMP,
-                              nested_types);
-#endif

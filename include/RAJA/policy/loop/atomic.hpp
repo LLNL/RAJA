@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -39,8 +39,8 @@ namespace atomic
 
 using loop_atomic = seq_atomic;
 
-}  // closing namespace atomic
+}  // namespace atomic
 
-}  // closing namespace RAJA
+}  // namespace RAJA
 
 #endif  // guard

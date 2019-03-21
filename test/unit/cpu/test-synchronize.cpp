@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -18,7 +18,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-TEST(SynchronizeTest, omp){
+TEST(SynchronizeTest, omp)
+{
 
   double test_val = 0.0;
 

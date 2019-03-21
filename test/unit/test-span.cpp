@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -22,7 +22,7 @@
 
 TEST(Span, basic)
 {
-  int data[4] = { 0, 1, 2, 3 };
+  int data[4] = {0, 1, 2, 3};
   auto span = RAJA::impl::make_span(data, 4);
   ASSERT_EQ(0, *span.begin());
   ASSERT_EQ(0, *span.data());

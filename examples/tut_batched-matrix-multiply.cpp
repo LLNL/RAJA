@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -131,9 +131,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The layout object will index into the array as the following C macro would
 // #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
 //
+  std::array<RAJA::idx_t, 3> perm1 {{0, 1, 2}};
   auto layout1 =
-      RAJA::make_permuted_layout({{N, N_r, N_c}},
-                                 RAJA::as_array<RAJA::Perm<0, 1, 2>>::get());
+      RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm1 );
 //
 // RAJA::Layout objects may be templated on dimension, argument type, and 
 // index with unit stride. Here, the column index has unit stride (argument 2). 
@@ -154,9 +154,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // #define Aview2(e, r, c) A2[e + N*(c + N_c*r)]
 // In this case the element index has unit stride (argument 0). 
 //
+  std::array<RAJA::idx_t, 3> perm2 {{1, 2, 0}};
   auto layout2 =
-      RAJA::make_permuted_layout({{N, N_r, N_c}},
-                                 RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
+      RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm2 );
 
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
@@ -512,6 +512,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate(A);
   memoryManager::deallocate(B);
   memoryManager::deallocate(C);
+  memoryManager::deallocate(A2);
+  memoryManager::deallocate(B2);
   memoryManager::deallocate(C2);
 
   std::cout << "\n DONE!...\n";

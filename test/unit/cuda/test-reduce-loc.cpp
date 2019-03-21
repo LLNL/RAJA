@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -28,7 +28,9 @@
 
 using namespace RAJA;
 
-using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                         RAJA::ListSegment,
+                                         RAJA::RangeStrideSegment>;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 8;
 
@@ -56,8 +58,8 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
   static U big() { return -500.0; }
   template <bool B>
   static void updatedvalue(U* dvalue,
-                                reduce::detail::ValueLoc<U, B>& randval,
-                                reduce::detail::ValueLoc<U, B>& dcurrent)
+                           reduce::detail::ValueLoc<U, B>& randval,
+                           reduce::detail::ValueLoc<U, B>& dcurrent)
   {
     if (dvalue[randval.loc] > randval.val) {
       dvalue[randval.loc] = randval.val;
@@ -65,8 +67,8 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
     }
   }
   RAJA_HOST_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
-                                U const& val,
-                                Index_type i)
+                                     U const& val,
+                                     Index_type i)
   {
     r.minloc(val, i);
   }
@@ -90,8 +92,8 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
   static U big() { return 500.0; }
   template <bool B>
   static void updatedvalue(U* dvalue,
-                                reduce::detail::ValueLoc<U, B>& randval,
-                                reduce::detail::ValueLoc<U, B>& dcurrent)
+                           reduce::detail::ValueLoc<U, B>& randval,
+                           reduce::detail::ValueLoc<U, B>& dcurrent)
   {
     if (randval.val > dvalue[randval.loc]) {
       dvalue[randval.loc] = randval.val;
@@ -99,8 +101,8 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
     }
   }
   RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
-                                U const& val,
-                                Index_type i)
+                                     U const& val,
+                                     Index_type i)
   {
     r.maxloc(val, i);
   }
@@ -112,7 +114,7 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
   }
   template <bool B>
   static void cmp(ReduceMaxLoc<T, U>& l,
-                                   reduce::detail::ValueLoc<U, B> const& r)
+                  reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
@@ -167,11 +169,12 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
       reduce::detail::ValueLoc<double> randval(droll, index);
       applier::updatedvalue(dvalue, randval, dcurrent);
 
-      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
-        applier::apply(dmin0, dvalue[i], i);
-        applier::apply(dmin1, 2 * dvalue[i], i);
-        applier::apply(dmin2, dvalue[i], i);
-      });
+      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN),
+                                    [=] RAJA_DEVICE(int i) {
+                                      applier::apply(dmin0, dvalue[i], i);
+                                      applier::apply(dmin1, 2 * dvalue[i], i);
+                                      applier::apply(dmin2, dvalue[i], i);
+                                    });
 
       applier::cmp(dmin0, dcurrent);
 
@@ -292,9 +295,9 @@ REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
                            indexset_noalign);
 
 using MinLocTypes =
-    ::testing::Types<ReduceMinLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
 
 using MaxLocTypes =
-    ::testing::Types<ReduceMaxLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -168,7 +168,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA reductions...\n";
 
   using EXEC_POL3   = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
-  using REDUCE_POL3 = RAJA::cuda_reduce<CUDA_BLOCK_SIZE>;
+  using REDUCE_POL3 = RAJA::cuda_reduce;
 
   RAJA::ReduceSum<REDUCE_POL3, int> cuda_sum(0);
   RAJA::ReduceMin<REDUCE_POL3, int> cuda_min(std::numeric_limits<int>::max());

@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -309,9 +309,9 @@ public:
   ///
   const Real_type* get() const { return dptr; }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -423,9 +423,9 @@ public:
     return ConstRestrictAlignedRealPtr(dptr);
   }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -724,6 +724,6 @@ typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
 
 #endif
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

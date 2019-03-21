@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -45,11 +45,14 @@
  * because we assume there is no thread safety issues (no parallel model)
  */
 #if defined(__CUDA_ARCH__)
-#define RAJA_AUTO_ATOMIC RAJA::atomic::cuda_atomic {}
+#define RAJA_AUTO_ATOMIC \
+  RAJA::atomic::cuda_atomic {}
 #elif defined(RAJA_ENABLE_OPENMP)
-#define RAJA_AUTO_ATOMIC RAJA::atomic::omp_atomic {}
+#define RAJA_AUTO_ATOMIC \
+  RAJA::atomic::omp_atomic {}
 #else
-#define RAJA_AUTO_ATOMIC RAJA::atomic::seq_atomic {}
+#define RAJA_AUTO_ATOMIC \
+  RAJA::atomic::seq_atomic {}
 #endif
 
 

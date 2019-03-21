@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -30,5 +30,7 @@
 
 #include "RAJA/policy/simd/forall.hpp"
 #include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/simd/kernel/For.hpp"
+#include "RAJA/policy/simd/kernel/ForICount.hpp"
 
 #endif  // closing endif for header file include guard

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -62,7 +62,9 @@ struct ScanCUDA : public ::testing::Test {
 
   static void SetUpTestCase()
   {
-    cudaMallocManaged((void**)&data, sizeof(data_type) * N, cudaMemAttachGlobal);
+    cudaMallocManaged((void**)&data,
+                      sizeof(data_type) * N,
+                      cudaMemAttachGlobal);
     std::iota(data, data + N, 1);
     std::shuffle(data, data + N, std::mt19937{std::random_device{}()});
   }

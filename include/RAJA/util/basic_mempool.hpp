@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -86,8 +86,8 @@ public:
 
   size_t capacity()
   {
-    return static_cast<char*>(m_allocation.end)
-           - static_cast<char*>(m_allocation.begin);
+    return static_cast<char*>(m_allocation.end) -
+           static_cast<char*>(m_allocation.begin);
   }
 
   bool unused() { return m_used_space.empty(); }

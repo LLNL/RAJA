@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -90,7 +90,7 @@ template <camp::idx_t HpArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
 struct Hyperplane
-    : public internal::Statement<RAJA::ExecPolicy<HpExecPolicy, ExecPolicy>,
+    : public internal::Statement<ExecPolicy,
                                  EnclosedStmts...> {
 };
 
@@ -129,21 +129,19 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
-    using kernel_policy =
-        statement::Collapse<ExecPolicy,
-                            ArgList<Args...>,
-                            HyperplaneInner<HpArgumentId,
-                                            ArgList<Args...>,
-                                            EnclosedStmts...>>;
+    using kernel_policy = statement::Collapse<
+        ExecPolicy,
+        ArgList<Args...>,
+        HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
     ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);
 
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    idx_t hp_len = segment_length<HpArgumentId>(data)
-                   + VarOps::foldl(RAJA::operators::plus<idx_t>(),
-                                   segment_length<Args>(data)...);
+    idx_t hp_len = segment_length<HpArgumentId>(data) +
+                   VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                 segment_length<Args>(data)...);
 
     /* Execute the outer loop over hyperplanes
      *
@@ -161,9 +159,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 template <camp::idx_t HpArgumentId,
           camp::idx_t... Args,
           typename... EnclosedStmts>
-struct StatementExecutor<HyperplaneInner<HpArgumentId,
-                                         ArgList<Args...>,
-                                         EnclosedStmts...>> {
+struct StatementExecutor<
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>> {
 
 
   template <typename Data>

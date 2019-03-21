@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
 #    
 # Produced at the Lawrence Livermore National Laboratory
 #    
@@ -39,6 +39,7 @@ endif ()
 
 if (ENABLE_CHAI)
   message(STATUS "CHAI enabled")
+  find_package(umpire)
   find_package(chai)
   include_directories(${CHAI_INCLUDE_DIRS})
 endif()
