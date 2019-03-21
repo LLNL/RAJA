@@ -62,6 +62,7 @@ public:
   //! prohibit compiler-generated default ctor
   ReduceOMP() = delete;
 
+RAJA_HOST_DEVICE
   ~ReduceOMP()
   {
     if (Base::parent) {
