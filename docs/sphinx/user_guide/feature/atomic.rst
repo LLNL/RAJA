@@ -37,7 +37,7 @@ RAJA atomic support includes a variety of the most common atomic operations.
           * Each method described in the table below returns the value of 
             the potentially modified argument (i.e., \*acc) immediately before 
             the atomic operation is applied, in case it is needed by a user.
-          * Please set the nvcc option "-arch=sm_35" (or greater), when CUDA is enabled. If a CUDA architecture does not support an sm_xy atomic operation, RAJA will generically implement it with atomicCAS.
+          * See :ref:`atomics-label` for details about CUDA atomic operations.
 
 ^^^^^^^^^^^
 Arithmetic
@@ -132,3 +132,30 @@ Atomic Policies
 
 For more information about available RAJA atomic policies, please see
 :ref:`atomicpolicy-label`.
+
+
+.. _cudaatomics-label:
+
+---------------------------------------
+CUDA Atomics Architecture Dependencies
+---------------------------------------
+
+The internal implementations for RAJA atomic operations may vary depending
+on which CUDA architecture is available and/or specified when the RAJA
+is configured for compilation. The following rules apply when the following
+CUDA architecture level is chosen:
+
+  * **CUDA architecture is lower than `sm_35`** 
+
+    * Certain atomics will be implemented using CUDA `atomicCAS` 
+      (Compare and Swap).
+
+  * **CUDA architecture is `sm_35` or higher**   
+
+    * CUDA native 64-bit unsigned atomicMin, atomicMax, atomicAnd, atomicOr,
+      atomicXor are used.
+
+  * **CUDA architecture is `sm_60` or higher** 
+
+    * CUDA native 64-bit double `atomicAdd` is used.
+
