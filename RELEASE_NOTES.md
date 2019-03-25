@@ -13,6 +13,30 @@
 [comment]: # (For details about use and distribution, please read RAJA/LICENSE.)
 [comment]: # (#################################################################)
 
+RAJA v0.8.0 Release Notes
+=========================
+
+This release contains one major change and some minor improvements to 
+compilation and performance.
+
+Major changes include:
+
+  * Build system updated to use the latest version of BLT (or close to it). 
+    Depending on how one builds RAJA, this could require changes to how 
+    information is passed to CMake. Content has been added to the relevant 
+    sections of the RAJA User Guide which describes how this is done.
+
+Other notable changes include:
+
+  * Fix 'align hint' macro to eliminate compile warning when XL compiler
+    is used with nvcc.
+  * Fix issues associated with CUDA architecture level (i.e., sm_*) set
+    too low and generated compiler warning/errors. Caveats for RAJA features
+    (mostly atomic operations) available at different CUDA architecture levels 
+    added to User Guide.
+  * Some performance improvements in RAJA::kernel usage with CUDA back-end.
+
+
 RAJA v0.7.0 Release Notes
 =========================
 
