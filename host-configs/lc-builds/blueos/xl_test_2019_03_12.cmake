@@ -14,8 +14,8 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_XLC" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2018.11.26/bin/xlc++_r" CACHE PATH "")
-set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2018.11.26/bin/xlC_r" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-test-2019.03.12/bin/xlc++_r" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-test-2019.03.12/bin/xlC_r" CACHE PATH "")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qnoeh" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qnoeh" CACHE STRING "")
