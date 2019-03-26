@@ -464,7 +464,7 @@ struct CudaStatementExecutor<
   LaunchDims calculateDimensions(Data const &data)
   {
     // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+    LaunchDims dims;
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
@@ -476,7 +476,8 @@ struct CudaStatementExecutor<
     // since we are direct-mapping, we REQUIRE len
     set_cuda_dim<0>(dims.min_threads, len);
 
-    return(dims);
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return(dims.max(enclosed_dims));
   }
 };
 
@@ -537,7 +538,7 @@ struct CudaStatementExecutor<
   LaunchDims calculateDimensions(Data const &data)
   {
     // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+    LaunchDims dims;
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
@@ -549,7 +550,8 @@ struct CudaStatementExecutor<
     // since we are direct-mapping, we REQUIRE len
     set_cuda_dim<0>(dims.min_threads, len);
 
-    return(dims);
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return(dims.max(enclosed_dims));
   }
 };
 
