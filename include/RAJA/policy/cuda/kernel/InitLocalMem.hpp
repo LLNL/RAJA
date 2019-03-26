@@ -40,6 +40,10 @@
 
 namespace RAJA
 {
+
+struct cuda_thread_mem;
+struct cuda_shared_mem;
+
 namespace internal
 {
 

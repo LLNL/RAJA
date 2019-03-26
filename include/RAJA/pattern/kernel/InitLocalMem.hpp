@@ -33,10 +33,12 @@
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/util/LocalArray.hpp"
-
 namespace RAJA
 {
+
+//Policies for RAJA local arrays
+struct cpu_tile_mem;
+
 
 namespace statement
 {
