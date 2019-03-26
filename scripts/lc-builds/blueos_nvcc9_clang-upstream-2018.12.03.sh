@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##
 ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
