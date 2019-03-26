@@ -119,6 +119,10 @@
 //
 #include "RAJA/pattern/atomic.hpp"
 
+//
+// Bit masking operators
+//
+#include "RAJA/util/BitMask.hpp"
 
 //
 // Reduction objects

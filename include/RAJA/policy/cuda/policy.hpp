@@ -138,6 +138,31 @@ struct cuda_warp_loop{};
 
 
 
+// Policy to map work to threads within a warp using a bit mask
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+// Since we are masking specific threads, multiple nested
+// cuda_warp_masked
+// can be used to create complex thread interleaving patterns
+template<typename Mask>
+struct cuda_warp_masked_direct {};
+
+// Policy to map work to threads within a warp using a bit mask
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+// Since we are masking specific threads, multiple nested
+// cuda_warp_masked
+// can be used to create complex thread interleaving patterns
+template<typename Mask>
+struct cuda_warp_masked_loop {};
+
+
+template<typename Mask>
+struct cuda_thread_masked_direct {};
+
+template<typename Mask>
+struct cuda_thread_masked_loop {};
+
 
 
 //
@@ -175,6 +200,12 @@ using policy::cuda::cuda_warp_reduce;
 
 using policy::cuda::cuda_warp_direct;
 using policy::cuda::cuda_warp_loop;
+
+using policy::cuda::cuda_warp_masked_direct;
+using policy::cuda::cuda_warp_masked_loop;
+
+using policy::cuda::cuda_thread_masked_direct;
+using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
