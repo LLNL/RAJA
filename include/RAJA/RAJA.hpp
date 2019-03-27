@@ -120,6 +120,10 @@
 //
 #include "RAJA/util/LocalArray.hpp"
 
+//
+// Bit masking operators
+//
+#include "RAJA/util/BitMask.hpp"
 
 //
 // Reduction objects
