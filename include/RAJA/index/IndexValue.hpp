@@ -338,6 +338,31 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
   return val;
 }
 
+namespace internal{
+template<typename FROM, typename Enable = void>
+struct StripIndexTypeT {};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = typename FROM::value_type;
+};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = FROM;
+};
+} // namespace internal
+
+/*!
+ * \brief Strips a strongly typed index to its underlying type
+ * In the case of a non-strongly typed index, the original type is returned.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
 }  // namespace RAJA
 
