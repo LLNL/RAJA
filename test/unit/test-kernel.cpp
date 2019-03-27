@@ -1388,6 +1388,267 @@ CUDA_TEST(Kernel, ReduceCudaSum1)
 
 }
 
+
+CUDA_TEST(Kernel, CudaWarpLoop1)
+{
+
+  long N = 2345;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_warp_loop, Lambda<0>>
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      [=] __device__ (Index_type i) {
+        value += i;
+      });
+
+
+  ASSERT_EQ(value.get(), N*(N-1)/2);
+
+}
+
+CUDA_TEST(Kernel, CudaWarpLoop2)
+{
+
+  long N = 2345;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        Tile<0, tile_fixed<32>, seq_exec,
+          For<0, cuda_warp_direct, Lambda<0>>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      [=] __device__ (Index_type i) {
+        value += i;
+      });
+
+
+  ASSERT_EQ(value.get(), N*(N-1)/2);
+
+}
+
+CUDA_TEST(Kernel, CudaWarpLoop3)
+{
+
+  long A = 32;
+  long B = 43;
+  long N = A*B;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        Tile<0, tile_fixed<32>, seq_exec,
+          ForICount<0, Param<0>, cuda_warp_direct, Lambda<0>>
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
+
+      RAJA::make_tuple((Index_type)0),
+
+      [=] __device__ (Index_type i, Index_type j) {
+        value += j;  // j should only be 0..31
+      });
+
+
+  ASSERT_EQ(value.get(), B*A*(A-1)/2);
+
+}
+
+CUDA_TEST(Kernel, CudaWarpLoop4)
+{
+
+  long A = 16;
+  long B = 43;
+
+  using maskA = BitMask<4,0>;
+  using maskB = BitMask<1,4>;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_warp_masked_direct<maskA>,
+          For<1, cuda_warp_masked_loop<maskB>,
+            Lambda<0>
+          >
+        >
+      >>;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, A), RAJA::RangeSegment(0, B)),
+
+      [=] __device__ (Index_type i, Index_type j) {
+        trip_count += 1;
+        value += i;  // i should only be 0..A-1
+      });
+
+  ASSERT_EQ(trip_count.get(), A*B);
+  ASSERT_EQ(value.get(), B*A*(A-1)/2);
+
+}
+
+CUDA_TEST(Kernel, CudaThreadMasked1)
+{
+
+  long A = 64;
+  long B = 943;
+
+  using maskA = BitMask<6,0>;
+  using maskB = BitMask<2,6>;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        For<0, cuda_thread_masked_direct<maskA>,
+          For<1, cuda_thread_masked_loop<maskB>,
+            Lambda<0>
+          >
+        >
+      >>;
+
+  RAJA::ReduceMax<cuda_reduce, int> max_thread(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, A), RAJA::RangeSegment(0, B)),
+
+      [=] __device__ (Index_type i, Index_type j) {
+        trip_count += 1;
+        value += i;  // i should only be 0..A-1
+        max_thread.max(threadIdx.x);
+      });
+
+  ASSERT_EQ(max_thread.get(), 255);
+  ASSERT_EQ(trip_count.get(), A*B);
+  ASSERT_EQ(value.get(), B*A*(A-1)/2);
+
+}
+
+CUDA_TEST(Kernel, CudaThreadMasked2)
+{
+
+  long A = 64;
+  long B = 4*123;
+
+  using maskA = BitMask<6,0>;
+  using maskB = BitMask<2,6>;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        ForICount<0, Param<0>, cuda_thread_masked_direct<maskA>,
+        ForICount<1, Param<1>, cuda_thread_masked_loop<maskB>,
+            Lambda<0>
+          >
+        >
+      >>;
+
+  RAJA::ReduceMax<cuda_reduce, int> max_thread(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel_param<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, A), RAJA::RangeSegment(0, B)),
+
+      RAJA::make_tuple((Index_type)0, (Index_type)0),
+
+      [=] __device__ (Index_type i, Index_type j, Index_type x, Index_type y) {
+        trip_count += 1;
+        value += y;  // i should only be 0..3
+        max_thread.max(threadIdx.x);
+      });
+
+  ASSERT_EQ(max_thread.get(), 255);
+  ASSERT_EQ(trip_count.get(), A*B);
+  ASSERT_EQ(value.get(), A*B*(B-1)/2);
+
+}
+
+
+CUDA_TEST(Kernel, CudaTileThread1)
+{
+
+  long A = 1021;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        Tile<0, tile_fixed<32>, cuda_thread_x_loop,
+          For<0, seq_exec,
+            Lambda<0>
+          >
+        >
+      >>;
+
+  RAJA::ReduceMax<cuda_reduce, int> max_thread(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, A)),
+
+      [=] __device__ (Index_type i) {
+        trip_count += 1;
+        value += i;
+        max_thread.max(threadIdx.x);
+      });
+
+  ASSERT_EQ(max_thread.get(), 31);
+  ASSERT_EQ(trip_count.get(), A);
+  ASSERT_EQ(value.get(), A*(A-1)/2);
+
+}
+
+
+CUDA_TEST(Kernel, CudaTileThread2)
+{
+
+  long A = 17021;
+
+  using Pol =
+      KernelPolicy<CudaKernel<
+        Tile<0, tile_fixed<1024>, seq_exec,
+          Tile<0, tile_fixed<128>, cuda_thread_x_direct,
+            For<0, seq_exec,
+              Lambda<0>
+            >
+          >
+        >
+      >>;
+
+  RAJA::ReduceMax<cuda_reduce, int> max_thread(0);
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce, long> value(0);
+
+  RAJA::kernel<Pol>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, A)),
+
+      [=] __device__ (Index_type i) {
+        trip_count += 1;
+        value += i;
+        max_thread.max(threadIdx.x);
+      });
+
+  ASSERT_EQ(max_thread.get(), 7); // 1024/128 = 8 threads
+  ASSERT_EQ(trip_count.get(), A);
+  ASSERT_EQ(value.get(), A*(A-1)/2);
+
+}
+
 CUDA_TEST(Kernel, ReduceCudaWarpLoop1)
 {
 
