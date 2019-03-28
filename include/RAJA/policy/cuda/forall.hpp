@@ -54,6 +54,7 @@ namespace RAJA
 
 namespace policy
 {
+
 namespace cuda
 {
 
@@ -68,13 +69,13 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-dim3 getGridDim(size_t len, dim3 blockDim)
+cuda_dim_t getGridDim(cuda_dim_member_t len, cuda_dim_t blockDim)
 {
-  size_t block_size = blockDim.x * blockDim.y * blockDim.z;
+  cuda_dim_member_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
-  size_t gridSize = (len + block_size - 1) / block_size;
+  cuda_dim_member_t gridSize = (len + block_size - 1) / block_size;
 
-  return gridSize;
+  return {gridSize, 1, 1};
 }
 
 /*!
@@ -167,38 +168,58 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using LOOP_BODY = camp::decay<LoopBody>;
+  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-  auto len = std::distance(begin, end);
+  auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
+  //
+  // Compute the requested iteration space size
+  //
+  Iterator begin = std::begin(iter);
+  Iterator end = std::end(iter);
+  IndexType len = std::distance(begin, end);
+
+  // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = impl::getGridDim(len, BlockSize);
+    //
+    // Compute the number of blocks
+    //
+    cuda_dim_t blockSize{BlockSize, 1, 1};
+    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
 
     RAJA_FT_BEGIN;
 
+    //
+    // Setup shared memory buffers
+    //
+    size_t shmem = 0;
     cudaStream_t stream = 0;
 
-    size_t shmem = 0;
 
     //  printf("gridsize = (%d,%d), blocksize = %d\n",
     //         (int)gridSize.x,
     //         (int)gridSize.y,
-    //         (int)BlockSize);
+    //         (int)blockSize.x);
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
-        RAJA::cuda::make_launch_body(gridSize,
-                                     BlockSize,
-                                     shmem,
-                                     stream,
-                                     std::forward<LoopBody>(loop_body)),
-        std::move(begin),
-        len);
-    RAJA::cuda::peekAtLastError();
+    {
+      //
+      // Privatize the loop_body, using make_launch_body to setup reductions
+      //
+      LOOP_BODY body = RAJA::cuda::make_launch_body(
+          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
-    RAJA::cuda::launch(stream);
-    if (!Async) RAJA::cuda::synchronize(stream);
+
+      //
+      // Launch the kernels
+      //
+      void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+    }
+
+    if (!Async) { RAJA::cuda::synchronize(stream); }
 
     RAJA_FT_END;
   }

@@ -17,7 +17,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 7)
+set(RAJA_VERSION_MINOR 8)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -27,7 +27,7 @@ endif()
 if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
 
-  # Promote RAJA_LOADED to PARENT_SCOPE if it exists, which is only if we are bringing	
+  # Promote RAJA_LOADED to PARENT_SCOPE if it exists, which is only if we are bringing
   # in RAJA as a subproject to a larger CMake project
   get_directory_property(hasParent PARENT_DIRECTORY)
   if(hasParent)
@@ -55,9 +55,11 @@ if (NOT RAJA_LOADED)
   option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+  option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
   option(ENABLE_TESTS "Build tests" On)
   option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
   option(ENABLE_EXAMPLES "Build simple examples" On)
+  option(ENABLE_EXERCISES "Build exercises " On)
   option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
   option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
   option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
@@ -128,6 +130,23 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
       cuda)
   endif ()
 
+  if (ENABLE_CUDA)
+    if(ENABLE_EXTERNAL_CUB)
+      find_package(CUB)
+        if (CUB_FOUND)
+          blt_register_library(
+            NAME cub
+            INCLUDES ${CUB_INCLUDE_DIRS})
+            set(raja_depends
+                ${raja_depends}
+                cub)
+          else()
+            message(WARNING "External CUB not found.")
+            set(ENABLE_EXTERNAL_CUB Off)
+         endif()
+      endif ()
+  endif ()
+
   if (ENABLE_CHAI)
     set (raja_depends
       ${raja_depends}
@@ -162,8 +181,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
     $<INSTALL_INTERFACE:include>)
 
-  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+  if(ENABLE_EXTERNAL_CUB)
+    install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+  else()
+    install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+    install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+  endif()
 
   install(FILES
     ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
@@ -181,6 +204,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 
   if(ENABLE_EXAMPLES)
     add_subdirectory(examples)
+  endif()
+
+  if(ENABLE_EXERCISES)
+    add_subdirectory(exercises)
   endif()
 
   if (ENABLE_DOCUMENTATION)

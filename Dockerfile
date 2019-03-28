@@ -1,13 +1,16 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
+#
+#Builds and installs RAJA using the gcc8 compiler
+#
+
+FROM rajaorg/compiler:gcc8
 MAINTAINER RAJA Development Team <raja-dev@llnl.gov>
 
-RUN apt-get update -y
-RUN apt-get install -y git cmake gdb
+COPY --chown=raja:raja . /home/raja/workspace
 
-RUN cd /opt/ && git clone https://github.com/LLNL/RAJA.git
+WORKDIR /home/raja/workspace
 
-WORKDIR /opt/RAJA
+RUN  mkdir build && cd build && cmake -DENABLE_CUDA=OFF ..
 
-RUN mkdir build && cd build && cmake -DENABLE_CUDA=ON ..
+RUN cd build && sudo make -j 3 && sudo make install
 
-RUN cd build && make -j && make install
+CMD ["bash"]

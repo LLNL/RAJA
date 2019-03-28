@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##
 ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
@@ -20,7 +20,6 @@ rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
-module load gcc/7.1.0
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \

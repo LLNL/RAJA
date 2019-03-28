@@ -344,7 +344,7 @@ RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
-RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T identity)
+RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
@@ -802,7 +802,7 @@ struct Reduce_Data {
   {
     bool act = !device.allocated() && setupReducers();
     if (act) {
-      dim3 gridDim = currentGridDim();
+      cuda_dim_t gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance()

@@ -1,13 +1,28 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-TAR_CMD=gtar
-VERSION=0.7.0
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-689114
+#
+# All rights reserved.
+#
+# This file is part of RAJA.
+#
+# For details about use and distribution, please read RAJA/LICENSE.
+#   
+###############################################################################
+
+TAR_CMD=`which tar`
+VERSION=`git describe --tags`
 
 git archive --prefix=RAJA-${VERSION}/ -o RAJA-${VERSION}.tar HEAD 2> /dev/null
 
 echo "Running git archive submodules..."
 
-p=`pwd` && (echo .; git submodule foreach) | while read entering path; do
+p=`pwd` && (echo .; git submodule foreach --recursive) | while read entering path; do
     temp="${path%\'}";
     temp="${temp#\'}";
     path=$temp;

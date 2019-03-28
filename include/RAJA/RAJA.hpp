@@ -109,16 +109,21 @@
 #include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/View.hpp"
 
-//
-// Shared memory view patterns
-//
-#include "RAJA/util/LocalArray.hpp"
 
 //
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
 
+//
+// Shared memory view patterns
+//
+#include "RAJA/util/LocalArray.hpp"
+
+//
+// Bit masking operators
+//
+#include "RAJA/util/BitMask.hpp"
 
 //
 // Reduction objects

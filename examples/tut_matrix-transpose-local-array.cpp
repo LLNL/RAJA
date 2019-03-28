@@ -134,8 +134,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       //
       // (1) Inner loops to read input matrix tile data into the array
-      // 
-      //     Note: loops are ordered so that input matrix data access 
+      //
+      //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
       //
       for (int ty = 0; ty < TILE_DIM; ++ty) {
@@ -147,14 +147,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // Bounds check
           if (row < N_r && col < N_c) {
             Tile[ty][tx] = Aview(row, col);
-          } 
+          }
         }
       }
 
       //
       // (2) Inner loops to write array data into output array tile
       //
-      //     Note: loop order is swapped from above so that output matrix 
+      //     Note: loop order is swapped from above so that output matrix
       //           data access is stride-1.
       //
       for (int tx = 0; tx < TILE_DIM; ++tx) {
@@ -428,7 +428,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             >,
             // Synchronize threads to ensure all reads
             // from the local array are complete
-            RAJA::statement::CudaSyncThreads,
+            RAJA::statement::CudaSyncThreads
           >
         >
       >

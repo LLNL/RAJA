@@ -29,9 +29,9 @@ TEST(NestedReduceTargetOMP, outer)
 {
   RAJA::Index_type l_begin = begin;
   RAJA::Index_type l_xExtent = xExtent;
-  RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumA(0.0);
-  RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minA(10000.0);
-  RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxA(0.0);
+  RAJA::ReduceSum<RAJA::omp_target_reduce, double> sumA(0.0);
+  RAJA::ReduceMin<RAJA::omp_target_reduce, double> minA(10000.0);
+  RAJA::ReduceMax<RAJA::omp_target_reduce, double> maxA(0.0);
   RAJA::RangeSegment xrange(begin, xExtent);
   RAJA::RangeSegment yrange(begin, yExtent);
 
@@ -50,9 +50,9 @@ TEST(NestedReduceTargetOMP, outer)
 
 TEST(NestedReduceTargetOMP, inner)
 {
-  RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumB(0.0);
-  RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minB(10000.0);
-  RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxB(0.0);
+  RAJA::ReduceSum<RAJA::omp_target_reduce, double> sumB(0.0);
+  RAJA::ReduceMin<RAJA::omp_target_reduce, double> minB(10000.0);
+  RAJA::ReduceMax<RAJA::omp_target_reduce, double> maxB(0.0);
   RAJA::RangeSegment xrange(begin, xExtent);
   RAJA::RangeSegment yrange(begin, yExtent);
 

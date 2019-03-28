@@ -30,6 +30,8 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include <utility>
+
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
@@ -46,7 +48,7 @@ using cuda_dim_t = uint3;
 using cuda_dim_t = dim3;
 #endif
 
-
+using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
 
 //
@@ -136,6 +138,31 @@ struct cuda_warp_loop{};
 
 
 
+// Policy to map work to threads within a warp using a bit mask
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+// Since we are masking specific threads, multiple nested
+// cuda_warp_masked
+// can be used to create complex thread interleaving patterns
+template<typename Mask>
+struct cuda_warp_masked_direct {};
+
+// Policy to map work to threads within a warp using a bit mask
+// Cannot be used in conjunction with cuda_thread_x_*
+// Multiple warps have to be created by using cuda_thread_{yz}_*
+// Since we are masking specific threads, multiple nested
+// cuda_warp_masked
+// can be used to create complex thread interleaving patterns
+template<typename Mask>
+struct cuda_warp_masked_loop {};
+
+
+template<typename Mask>
+struct cuda_thread_masked_direct {};
+
+template<typename Mask>
+struct cuda_thread_masked_loop {};
+
 
 
 //
@@ -173,6 +200,12 @@ using policy::cuda::cuda_warp_reduce;
 
 using policy::cuda::cuda_warp_direct;
 using policy::cuda::cuda_warp_loop;
+
+using policy::cuda::cuda_warp_masked_direct;
+using policy::cuda::cuda_warp_masked_loop;
+
+using policy::cuda::cuda_thread_masked_direct;
+using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
@@ -228,20 +261,22 @@ struct CudaDimHelper;
 template<>
 struct CudaDimHelper<0>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(cuda_dim_t const &d) ->
+  auto get(dim_t const &d) ->
     decltype(d.x)
   {
     return d.x;
   }
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
-  RAJA_HOST_DEVICE
-  void set(cuda_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.x = value;
   }
@@ -250,20 +285,22 @@ struct CudaDimHelper<0>{
 template<>
 struct CudaDimHelper<1>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(cuda_dim_t const &d) ->
+  auto get(dim_t const &d) ->
     decltype(d.x)
   {
     return d.y;
   }
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
-  RAJA_HOST_DEVICE
-  void set(cuda_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.y = value;
   }
@@ -272,37 +309,39 @@ struct CudaDimHelper<1>{
 template<>
 struct CudaDimHelper<2>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(cuda_dim_t const &d) ->
+  auto get(dim_t const &d) ->
     decltype(d.x)
   {
     return d.z;
   }
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
-  RAJA_HOST_DEVICE
-  void set(cuda_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.z = value;
   }
 };
 
-template<int dim>
-constexpr
+template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
-auto get_cuda_dim(cuda_dim_t const &d) ->
+constexpr
+auto get_cuda_dim(dim_t const &d) ->
   decltype(d.x)
 {
   return CudaDimHelper<dim>::get(d);
 }
 
-template<int dim>
+template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
-void set_cuda_dim(cuda_dim_t &d, int value)
+void set_cuda_dim(dim_t &d, int value)
 {
   return CudaDimHelper<dim>::set(d, value);
 }

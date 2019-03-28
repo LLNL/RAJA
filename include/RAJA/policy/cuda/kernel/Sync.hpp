@@ -77,7 +77,7 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
 
   static
   inline
-  LaunchDims calculateDimensions(Data const &data)
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }
@@ -89,12 +89,16 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
   static
   inline
   RAJA_DEVICE
+#if CUDART_VERSION >= 9000
   void exec(Data &, bool) { __syncwarp(); }
+#else
+  void exec(Data &, bool) {  }
+#endif
 
 
   static
   inline
-  LaunchDims calculateDimensions(Data const &data)
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }

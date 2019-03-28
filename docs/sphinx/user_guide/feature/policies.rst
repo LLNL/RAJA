@@ -129,16 +129,20 @@ cuda_block_z_loop                      kernel (For)  Map loop iterations to CUDA
                                                      thread blocks in
                                                      z-dimension
 **OpenMP target**
-omp_target_parallel_for_exec<NUMTEAMS> forall        Create parallel target 
+omp_target_parallel_for_exec<ThreadsPerTeam> forall  Create parallel target 
                                                      region and execute with 
-                                                     given number of thread 
-                                                     teams inside it; i.e.,
+                                                     given number of threads  
+                                                     per team inside it. Number
+                                                     of teams is calculated
+                                                     internally; i.e.,
                                                      apply ``omp teams 
                                                      distribute parallel for 
-                                                     num_teams(NUMTEAMS)`` 
+                                             num_teams(datasize/ThreadsPerTeam)
+                                                 thread_limit(ThreadsPerTeam)`` 
                                                      pragma on loop 
 omp_target_parallel_collapse_exec      kernel        Similar to above, but 
-                                       (Collapse)    collapse *perfectly-nested*                                                     loops, which are specified
+                                       (Collapse)    collapse *perfectly-nested*
+                                                     loops, which are specified
                                                      in arguments to RAJA
                                                      Collapse statement. Note:
                                                      compiler determines number
@@ -155,7 +159,18 @@ above.
           'omp_set_num_threads(nthreads)' (which allows changing number of 
           threads at runtime).
 
-.. note:: To control the number of worker threads used by TBB policies:
+OpenMP Target Policies
+^^^^^^^^^^^^^^^^^^^^^^^^
+* ``omp_target_parallel_for_exec<ThreadsPerTeam>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of threads per team; e.g., if a GPU device is available, this is similar to launching a CUDA kernel with a thread block size of ThreadsPerTeam. 
+
+Intel Threading Building Blocks (TBB) Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``tbb_for_exec`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method.
+* ``tbb_for_static<CHUNK_SIZE>`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a static partitioner using given chunk size.
+* ``tbb_for_dynamic`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a dynamic scheduler.
+
+.. note:: To control the number of TBB worker threads used by these policies:
           set the value of the environment variable 'TBB_NUM_WORKERS' (which is
           fixed for duration of run), or create a 'task_scheduler_init' object::
 

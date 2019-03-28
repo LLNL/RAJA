@@ -77,7 +77,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = Index_type>
+template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
 struct TypedRangeSegment {
 
   //! the underlying iterator type
@@ -95,7 +95,7 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Index_type begin, Index_type end)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(DiffT begin, DiffT end)
       : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
@@ -160,8 +160,8 @@ struct TypedRangeSegment {
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(Index_type begin,
-                                                       Index_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(DiffT begin,
+                                                       DiffT length) const
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
@@ -248,7 +248,7 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = Index_type>
+template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
 struct TypedRangeStrideSegment {
 
   //! the underlying iterator type
@@ -267,21 +267,22 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin,
-                                           Index_type end,
-                                           Index_type stride)
-      : m_begin(iterator(DiffT{begin}, DiffT{stride})),
-        m_end(iterator(DiffT{end}, DiffT{stride})),
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(DiffT begin,
+                                           DiffT end,
+                                           DiffT stride)
+      : m_begin(iterator(begin, stride)),
+        m_end(iterator(end, stride)),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
-                static_cast<value_type>(stride) -
-                (stride > 0 ? value_type{1} : value_type{-1})) /
-               static_cast<value_type>(stride))
+        m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
+//        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
+//                static_cast<value_type>(stride) -
+//                (stride > 0 ? value_type{1} : value_type{-1})) /
+//               static_cast<value_type>(stride))
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
-    m_size = m_size < value_type{0} ? value_type{0} : m_size;
+    m_size = m_size < DiffT{0} ? DiffT{0} : m_size;
   }
 
   //! disable compiler generated constructor
@@ -344,15 +345,15 @@ struct TypedRangeStrideSegment {
    *
    * \return the total number of steps for this Segment
    */
-  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+  RAJA_HOST_DEVICE DiffT size() const { return m_size; }
 
   //! Create a slice of this instance as a new instance
   /*!
    * \return A new instance spanning *begin() + begin * stride to *begin() +
    * (begin + length) * stride
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
-                                                 Index_type length) const
+  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(DiffT begin,
+                                                 DiffT length) const
   {
     auto stride = m_begin.get_stride();
     auto start = m_begin[0] + begin * stride;
@@ -367,6 +368,7 @@ struct TypedRangeStrideSegment {
     return TypedRangeStrideSegment{stripIndexType(start),
                                    stripIndexType(end),
                                    m_begin.get_stride()};
+
   }
 
   //! equality comparison
@@ -388,7 +390,7 @@ private:
   iterator m_end;
 
   //! member variable for size of segment
-  StorageT m_size;
+  DiffT m_size;
 };
 
 //! Alias for TypedRangeSegment<Index_type>

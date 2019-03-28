@@ -111,7 +111,6 @@ struct omp_parallel_for_static : omp_parallel_exec<omp_for_static<N>> {
 };
 
 
-
 ///
 /// Index set segment iteration policies
 ///
@@ -138,7 +137,6 @@ struct omp_taskgraph_interval_segit
 
 struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
-
 
 struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {

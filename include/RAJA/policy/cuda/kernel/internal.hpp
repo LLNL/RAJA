@@ -109,22 +109,35 @@ struct cuda_threadblock_exec
 namespace internal
 {
 
+RAJA_INLINE
+int get_size(cuda_dim_t dims)
+{
+  if(dims.x == 0 && dims.y == 0 && dims.z == 0){
+    return 0;
+  }
+  return (dims.x ? dims.x : 1) *
+         (dims.y ? dims.y : 1) *
+         (dims.z ? dims.z : 1);
+}
 
 struct LaunchDims {
 
   cuda_dim_t blocks;
+  cuda_dim_t min_blocks;
   cuda_dim_t threads;
   cuda_dim_t min_threads;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDims() : blocks(0,0,0), threads(0,0,0), min_threads(0,0,0) {}
+  LaunchDims() : blocks{0,0,0},  min_blocks{0,0,0},
+                 threads{0,0,0}, min_threads{0,0,0} {}
 
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   LaunchDims(LaunchDims const &c) :
-  blocks(c.blocks), threads(c.threads), min_threads(c.min_threads)
+  blocks(c.blocks),   min_blocks(c.min_blocks),
+  threads(c.threads), min_threads(c.min_threads)
   {
   }
 
@@ -136,6 +149,10 @@ struct LaunchDims {
     result.blocks.x = std::max(c.blocks.x, blocks.x);
     result.blocks.y = std::max(c.blocks.y, blocks.y);
     result.blocks.z = std::max(c.blocks.z, blocks.z);
+
+    result.min_blocks.x = std::max(c.min_blocks.x, min_blocks.x);
+    result.min_blocks.y = std::max(c.min_blocks.y, min_blocks.y);
+    result.min_blocks.z = std::max(c.min_blocks.z, min_blocks.z);
 
     result.threads.x = std::max(c.threads.x, threads.x);
     result.threads.y = std::max(c.threads.y, threads.y);
@@ -150,24 +167,21 @@ struct LaunchDims {
 
   RAJA_INLINE
   int num_blocks() const {
-    if(blocks.x == 0 && blocks.y == 0 && blocks.z == 0){
-      return 0;
-    }
-    return (blocks.x ? blocks.x : 1) *
-           (blocks.y ? blocks.y : 1) *
-           (blocks.z ? blocks.z : 1);
+    return get_size(blocks);
   }
 
   RAJA_INLINE
   int num_threads() const {
-    if(threads.x == 0 && threads.y == 0 && threads.z == 0){
-      return 0;
-    }
-    return (threads.x ? threads.x : 1) *
-           (threads.y ? threads.y : 1) *
-           (threads.z ? threads.z : 1);
+    return get_size(threads);
   }
 
+
+  RAJA_INLINE
+  void clamp_to_min_blocks() {
+    blocks.x = std::max(min_blocks.x, blocks.x);
+    blocks.y = std::max(min_blocks.y, blocks.y);
+    blocks.z = std::max(min_blocks.z, blocks.z);
+  };
 
   RAJA_INLINE
   void clamp_to_min_threads() {
@@ -179,8 +193,131 @@ struct LaunchDims {
 };
 
 
+struct CudaFixedMaxBlocksData
+{
+  int multiProcessorCount;
+  int maxThreadsPerMultiProcessor;
+};
 
+RAJA_INLINE
+int cuda_max_blocks(int block_size)
+{
+  static CudaFixedMaxBlocksData data = {-1, -1};
 
+  if (data.multiProcessorCount < 0) {
+    cudaDeviceProp& prop = cuda::device_prop();
+    data.multiProcessorCount = prop.multiProcessorCount;
+    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
+  }
+
+  int max_blocks = data.multiProcessorCount *
+                  (data.maxThreadsPerMultiProcessor / block_size);
+
+  // printf("MAX_BLOCKS=%d\n", max_blocks);
+
+  return max_blocks;
+}
+
+struct CudaOccMaxBlocksThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int max_threads;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+                                       int &max_blocks, int &max_threads)
+{
+  static CudaOccMaxBlocksThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+    cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
+        &data.max_blocks, &data.max_threads, func, shmem_size));
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks  = data.max_blocks;
+  max_threads = data.max_threads;
+
+}
+
+struct CudaOccMaxBlocksFixedThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks)
+{
+  static CudaOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+struct CudaOccMaxBlocksVariableThreadsData
+{
+  int prev_shmem_size;
+  int prev_num_threads;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks, int num_threads)
+{
+  static CudaOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+
+  if ( data.prev_shmem_size  != shmem_size ||
+       data.prev_num_threads != num_threads ) {
+
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size  = shmem_size;
+    data.prev_num_threads = num_threads;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
 
 
 
