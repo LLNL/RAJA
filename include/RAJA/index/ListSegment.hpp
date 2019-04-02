@@ -38,7 +38,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(__NVCC__) && defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #else
 #define cudaErrchk(...)
@@ -64,7 +64,7 @@ template <typename T>
 class TypedListSegment
 {
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(__NVCC__) && defined(RAJA_ENABLE_CUDA)
   static constexpr bool Has_CUDA = true;
 #else
   static constexpr bool Has_CUDA = false;
@@ -99,7 +99,7 @@ class TypedListSegment
   //! specialization for allocation of CPU_memory
   void allocate(CPU_memory) { m_data = new T[m_size]; }
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(__NVCC__) && defined(RAJA_ENABLE_CUDA)
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)

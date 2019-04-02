@@ -30,7 +30,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(__NVCC__) && defined(RAJA_ENABLE_CUDA)
 
 #include <cuda.h>
 #include <cuda_runtime.h>
