@@ -17,63 +17,79 @@
 #include <cstring>
 #include <iostream>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA vector addition example...\n";
-
-//
-// Define vector length
-//
-  int a_N = 3; 
-  int b_N = 5; 
-
-  int *a = memoryManager::allocate<int>(a_N);
-  int *b = memoryManager::allocate<int>(b_N);
-
-#if 0
-  auto myLambda = [=] (int i) { printf("lambda test \n"); };
-  myLambda(2,4);
-#endif
-
-  using NEW_POLICY = RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::loop_exec,
-        RAJA::statement::tLambda<0, camp::idx_seq<0>, camp::idx_seq<>>
+  std::cout<<"Testing existing kernel lambda statement types \n"<<std::endl;
+  // Create kernel policy
+    using KERNEL_POLICY =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0,RAJA::loop_exec,
+        RAJA::statement::Lambda<0>
+      >,
+      RAJA::statement::For<1,RAJA::loop_exec,
+        RAJA::statement::Lambda<1>
+      >,
+     RAJA::statement::For<1, RAJA::loop_exec,
+       RAJA::statement::For<2,RAJA::loop_exec,
+         RAJA::statement::Lambda<2>
+       >
       >
     >;
-  
-  //Create kernel policy
-  using KERNEL_EXEC_POL = 
-    RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::loop_exec,
-        RAJA::statement::Lambda<0>
-      >
-    >;  
 
-  //RAJA::kernel<KERNEL_EXEC_POL>
-  RAJA::kernel<NEW_POLICY>
-    (RAJA::make_tuple(RAJA::RangeSegment(0,3), //segment tuple...
-                      RAJA::RangeSegment(5,8),
-                      RAJA::RangeSegment(10,12)
-                      ),
-     [=](int i) {
-      printf("i = %d \n",i);
-      assert( 0 && "invoking first lambda \n");
+  //Existing kernel API
+  RAJA::kernel<KERNEL_POLICY>(
+    RAJA::make_tuple(RAJA::RangeSegment(0, 3),  // segment tuple...
+                     RAJA::RangeSegment(5, 8),
+                     RAJA::RangeSegment(20, 23)),
+    [=](int i, int , int ) {
+      printf("i = %d \n", i);
+    },
+
+    [=](int, int j, int) {
+      printf("j = %d \n", j);
+    },
+    [=](int, int j, int k) {
+      printf("j, k = %d  %d \n",j, k);
     });
-     
 
 
-//
-// Clean up.
-//
-  memoryManager::deallocate(a);
-  memoryManager::deallocate(b);
+  std::cout<<"----------------------------------------------------\n \n"<<std::endl;
+  std::cout<<"Testing new kernel lambda statement types \n"<<std::endl;
 
-  std::cout << "\n DONE!...\n";
+  //Lambda statement format : lambda idx, segment indices, parameter indices (to be tested...)
+  using NEW_POLICY =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0,RAJA::loop_exec,
+        RAJA::statement::tLambda<0, camp::idx_seq<0>, camp::idx_seq<>>
+      >,
+      RAJA::statement::For<1,RAJA::loop_exec,
+        RAJA::statement::tLambda<1, camp::idx_seq<1>, camp::idx_seq<>>
+      >,
+     RAJA::statement::For<1, RAJA::loop_exec,
+       RAJA::statement::For<2,RAJA::loop_exec,
+         RAJA::statement::tLambda<2, camp::idx_seq<1,2>, camp::idx_seq<>>
+       >
+      >
+    >;
+  // New Kernel API ...
+  RAJA::kernel<NEW_POLICY>(
+    RAJA::make_tuple(RAJA::RangeSegment(0, 3),  // segment tuple...
+                     RAJA::RangeSegment(5, 8),
+                     RAJA::RangeSegment(20, 23)),
+    [=](int i) {
+      printf("i = %d \n", i);
+    },
+
+    [=](int j) {
+      printf("j = %d \n", j);
+    },
+
+    [=](int j, int k) {
+      printf("j, k = %d  %d \n",j, k);
+    });
 
   return 0;
 }

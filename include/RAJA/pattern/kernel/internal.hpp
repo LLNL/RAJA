@@ -247,6 +247,10 @@ struct LoopData {
   }
 };
 
+void myPrint()
+{
+  std::cout<<"empty \n"<<std::endl;
+}
 
 template<class Arg>
 void myPrint(Arg i)
@@ -271,29 +275,13 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &&data)
 {
-
+#if 0
   printf("printing offset Idx \n");
   myPrint(OffsetIdx...);
 
-  //printf("printing param Idx \n");
-  //myPrint<ParamIdx...>();
-
-#if 0 //Ground truth
-  camp::get<LoopIndex>(
-      data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
-                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
-                   camp::get<ParamIdx>(data.param_tuple)...);
+  printf("printing param Idx \n");
+  myPrint(ParamIdx...);
 #endif
-
-  //std::cout<<"Internal index \n", camp::get<OffsetIdx>(data.segment_tuple).begin()[0]<<std::endl;
-
-  //data.segment_tuple;
-
-  //Get a particuluar iteration space
-  camp::get<0>(data.segment_tuple).size();
-
-  using SegType = typename camp::tuple_element_t<0, typename camp::decay<Data>::segment_tuple_t>;
-
 
   camp::get<LoopIndex>(data.bodies)
     ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
@@ -314,31 +302,12 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       std::forward<Data>(data));
 }
 
-template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & offList)
+template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & offList,
+                                                 camp::idx_seq<ParamIdx...> const & paramList)
+
 {
-
-  printf("Invoking custom lambda \n");
-
-  using Data_t = camp::decay<Data>;
-  using offset_tuple_t = typename Data_t::offset_tuple_t;
-  using param_tuple_t = typename Data_t::param_tuple_t;
-
-
-  std::cout<<"camp offset tuple size "<<camp::tuple_size<offset_tuple_t>::value<<std::endl;
-  std::cout<<"camp param tuple size "<<camp::tuple_size<param_tuple_t>::value<<std::endl;
-
-  invoke_lambda_expanded<LoopIndex>(offList,
-    camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-    std::forward<Data>(data));
-
-
-#if 0
-  invoke_lambda_expanded<LoopIndex>(
-      camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
-      camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-      std::forward<Data>(data));
-#endif
+  invoke_lambda_expanded<LoopIndex>(offList, paramList,std::forward<Data>(data));
 }
 
 
@@ -370,7 +339,6 @@ struct StatementListExecutor {
     using statement = camp::at_v<StmtList, statement_index>;
 
     // Execute this statement
-    printf("kernel-api-4\n");
     StatementExecutor<statement>::exec(std::forward<Data>(data));
 
     // call our next statement
@@ -397,7 +365,6 @@ struct StatementListExecutor<num_statements, num_statements, StmtList> {
 template <typename StmtList, typename Data>
 RAJA_INLINE void execute_statement_list(Data &&data)
 {
-  printf("kernel-api-3 \n");
   StatementListExecutor<0, camp::size<StmtList>::value, StmtList>::exec(
       std::forward<Data>(data));
 }

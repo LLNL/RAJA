@@ -99,7 +99,7 @@ struct StatementExecutor<statement::tLambda<LoopIndex, camp::idx_seq<SegIdx...>,
   static RAJA_INLINE void exec(Data &&data)
   {
     tinvoke_lambda<LoopIndex>
-      (std::forward<Data>(data),camp::idx_seq<SegIdx...>{});
+      (std::forward<Data>(data),camp::idx_seq<SegIdx...>{}, camp::idx_seq<ParamIdx...>{});
 
   }
 };
