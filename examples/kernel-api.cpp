@@ -17,12 +17,18 @@
 #include <cstring>
 #include <iostream>
 
+#include "memoryManager.hpp"
 #include "RAJA/RAJA.hpp"
+
+const int DIM = 2;
+
+template <typename T>
+void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout<<"Testing existing kernel lambda statement types \n"<<std::endl;
+  std::cout<<"Testing existing kernel lambda statements \n"<<std::endl;
   // Create kernel policy
     using KERNEL_POLICY =
     RAJA::KernelPolicy<
@@ -91,5 +97,82 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       printf("j, k = %d  %d \n",j, k);
     });
 
+
+
+  //-----------------------------------------------
+  printf("\n Testing matrix multiplication kernel with new Lambda API ...\n");
+  int N = 10;
+  double *A = memoryManager::allocate<double>(N * N);
+  double *B = memoryManager::allocate<double>(N * N);
+  double *C = memoryManager::allocate<double>(N * N);
+
+  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
+
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      Aview(row, col) = row;
+      Bview(row, col) = col;
+    }
+  }
+
+  using EXEC_POL6 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::tLambda<0,camp::idx_seq<>,camp::idx_seq<0>>,  // dot = 0.0
+          RAJA::statement::For<2, RAJA::loop_exec,
+            RAJA::statement::tLambda<1, camp::idx_seq<0,1,2>, camp::idx_seq<0>> // inner loop: dot += ...
+          >,
+          RAJA::statement::tLambda<2, camp::idx_seq<0,1>, camp::idx_seq<0>>   // set C(row, col) = dot
+        >
+      >
+    >;
+
+  RAJA::kernel_param<EXEC_POL6>(
+    RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                     RAJA::RangeSegment(0, N),
+                     RAJA::RangeSegment(0, N)),
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+
+    // lambda 0
+    [=] (double& dot) {
+       dot = 0.0;
+    },
+
+    // lambda 1
+    [=] (int col, int row, int k, double& dot) {
+       dot += Aview(row, k) * Bview(k, col);
+    },
+
+    // lambda 2
+    [=] (int col, int row, double& dot) {
+       Cview(row, col) = dot;
+    }
+
+  );
+
+  checkResult<double>(Cview, N);
+
   return 0;
 }
+
+
+template <typename T>
+void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
+{
+  bool match = true;
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      if ( std::abs( Cview(row, col) - row * col * N ) > 10e-12 ) {
+        match = false;
+      }
+    }
+  }
+  if ( match ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  }
+};
