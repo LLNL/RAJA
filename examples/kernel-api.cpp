@@ -44,7 +44,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::For<0, RAJA::loop_exec,
         RAJA::statement::tLambda<0, camp::idx_seq<0>, camp::idx_seq<>>
       >
-    >;  
+    >;
   
   //Create kernel policy
   using KERNEL_EXEC_POL = 
@@ -54,13 +54,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;  
 
-  //works
-  //RAJA::RangeSegment mySeg = RAJA::RangeSegment(0,1);
-
-  RAJA::kernel<KERNEL_EXEC_POL>
+  //RAJA::kernel<KERNEL_EXEC_POL>
+  RAJA::kernel<NEW_POLICY>
     (RAJA::make_tuple(RAJA::RangeSegment(0,3), //segment tuple...
-                      RAJA::RangeSegment(5,8)),
-     [=](int i, int j) {
+                      RAJA::RangeSegment(5,8),
+                      RAJA::RangeSegment(10,12)
+                      ),
+     [=](int i) {
       printf("i = %d \n",i);
       assert( 0 && "invoking first lambda \n");
     });

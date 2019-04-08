@@ -15,6 +15,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME kernel-api
+  SOURCES kernel-api.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 

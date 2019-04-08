@@ -91,6 +91,20 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
+template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx>
+struct StatementExecutor<statement::tLambda<LoopIndex, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > >
+ {
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+    tinvoke_lambda<LoopIndex>
+      (std::forward<Data>(data),camp::idx_seq<SegIdx...>{});
+
+  }
+};
+
+
 }  // namespace internal
 
 }  // end namespace RAJA
