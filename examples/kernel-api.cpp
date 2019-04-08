@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cmath>
 
 #include "memoryManager.hpp"
 #include "RAJA/RAJA.hpp"
