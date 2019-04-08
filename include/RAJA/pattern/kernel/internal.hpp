@@ -247,6 +247,7 @@ struct LoopData {
   }
 };
 
+
 RAJA_SUPPRESS_HD_WARN
 template <camp::idx_t LoopIndex,
           camp::idx_t... OffsetIdx,
@@ -277,11 +278,11 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 }
 
 template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & offList,
+RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & segList,
                                                  camp::idx_seq<ParamIdx...> const & paramList)
 
 {
-  invoke_lambda_expanded<LoopIndex>(offList, paramList,std::forward<Data>(data));
+  invoke_lambda_expanded<LoopIndex>(segList, paramList,std::forward<Data>(data));
 }
 
 
