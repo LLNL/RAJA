@@ -64,6 +64,18 @@ struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
 
+//Base case
+template <camp::idx_t BodyIdx, typename SegIdx, typename ParamIdx>
+struct tLambda : internal::Statement<camp::nil> {
+  const static camp::idx_t loop_body_index = BodyIdx;
+};
+
+//Variadic
+template <camp::idx_t BodyIdx, camp::idx_t... SegIdx, camp::idx_t ... ParamIdx>
+struct tLambda<BodyIdx, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > : internal::Statement<camp::nil> {
+  const static camp::idx_t loop_body_index = BodyIdx;
+};
+
 }  // end namespace statement
 
 namespace internal
