@@ -247,24 +247,6 @@ struct LoopData {
   }
 };
 
-void myPrint()
-{
-  std::cout<<"empty \n"<<std::endl;
-}
-
-template<class Arg>
-void myPrint(Arg i)
-{
-  std::cout<<"printing data = "<<i<<std::endl;
-}
-
-template<class Head, class... Tail>
-void myPrint(Head head, Tail...tail)
-{
-  std::cout<<"printing data = "<<head<<std::endl;
-  myPrint(tail...);
-}
-
 RAJA_SUPPRESS_HD_WARN
 template <camp::idx_t LoopIndex,
           camp::idx_t... OffsetIdx,
@@ -275,14 +257,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &&data)
 {
-#if 0
-  printf("printing offset Idx \n");
-  myPrint(OffsetIdx...);
-
-  printf("printing param Idx \n");
-  myPrint(ParamIdx...);
-#endif
-
   camp::get<LoopIndex>(data.bodies)
     ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
      camp::get<ParamIdx>(data.param_tuple)...);
