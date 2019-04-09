@@ -59,7 +59,7 @@ namespace statement
  * RAJA::kernel<exec_pol>(make_tuple{s0, s1, s2}, lambda0, lambda1);
  *
  */
-template <camp::idx_t BodyIdx>
+template <camp::idx_t BodyIdx, typename... Args >
 struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
@@ -90,6 +90,18 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
     invoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
+
+template <camp::idx_t LoopIndex,typename Head, typename... Tails>
+struct StatementExecutor<statement::Lambda<LoopIndex, Head, Tails...>> {
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+    invoke_lambda<LoopIndex>(std::forward<Data>(data));
+  }
+};
+
+
 
 template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx>
 struct StatementExecutor<statement::tLambda<LoopIndex, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > >

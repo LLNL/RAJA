@@ -81,6 +81,8 @@ struct ForTraitBase : public ForBase {
 
 struct ParamBase {
 };
+struct SegBase {
+};
 
 template <typename Iterator>
 struct iterable_difftype_getter {

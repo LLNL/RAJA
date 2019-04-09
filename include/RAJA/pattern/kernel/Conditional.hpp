@@ -70,6 +70,26 @@ struct Param : public internal::ParamBase {
 };
 
 /*!
+ * An expression that returns the value of the specified RAJA::kernel
+ * segment.
+ *
+ * This allows run-time values to affect the control logic within
+ * RAJA::kernel execution policies.
+ */
+template <camp::idx_t SegId>
+struct Seg : public internal::SegBase {
+
+  constexpr static camp::idx_t seg_idx = SegId;
+
+  template <typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
+      -> decltype(camp::get<Seg>(data.offset_tuple))
+  {
+    return camp::get<SegId>(data.offset_tuple);
+  }
+};
+
+/*!
  * An expression that returns a compile time literal value.
  *
  */
