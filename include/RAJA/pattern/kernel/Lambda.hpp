@@ -91,13 +91,78 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
-template <camp::idx_t LoopIndex,typename Head, typename... Tails>
-struct StatementExecutor<statement::Lambda<LoopIndex, Head, Tails...>> {
+template<camp::idx_t Pos, typename... Args>
+struct inspector
+{
+  template<typename T>
+  static void make_args(T tuple){
+    std::cout<<"Kicking off with "<<Pos<<std::endl;
+    inspector<Pos, Args...>::make_args(tuple);
+  }
+};
+
+template<camp::idx_t Pos, camp::idx_t id, typename... Tail>
+struct inspector<Pos, RAJA::statement::Param<id>, Tail...>
+{
+  template<typename T>
+  static void make_args(T tuple){
+    std::cout<<"Param with "<<Pos<<std::endl;
+    inspector<Pos-1, Tail...>::make_args(tuple);
+  }
+};
+
+template<camp::idx_t Pos, camp::idx_t id, typename...Tail>
+struct inspector<Pos, RAJA::statement::Seg<id>, Tail...>
+{
+  template<typename T>
+  static void make_args(T tuple){
+    std::cout<<"Seg with "<<Pos<<std::endl;
+    inspector<Pos-1, Tail...>::make_args(tuple);
+  }
+};
+
+template<camp::idx_t id>
+struct inspector<1, RAJA::statement::Param<id>>
+{
+  template<typename T>
+  static void make_args(T tuple){
+    std::cout<<"Last param call"<<std::endl;
+  }
+};
+
+template<camp::idx_t id>
+struct inspector<1, RAJA::statement::Seg<id>>
+{
+  template<typename T>
+  static void make_args(T tuple){
+    std::cout<<"Last seg call "<<std::endl;
+  }
+};
+
+template <camp::idx_t LoopIndex,typename... Args>
+struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    invoke_lambda<LoopIndex>(std::forward<Data>(data));
+    printf("\n Building up lambda args \n");
+
+    const int size = sizeof...(Args);
+    auto myTuple = camp::make_tuple(); //empty tuple
+    inspector<size, Args...>::make_args(myTuple);
+    std::cout<<"\n \n"<<std::endl;
+
+    //RAJA::statement::Param<0> a;
+    //inspector<size, Args...>::make_arg(myTuple);
+
+
+    auto seg_tuple = data.segment_tuple;
+    auto off_tuple = data.offset_tuple;
+    auto par_tuple = data.param_tuple;
+
+    auto argTuple = camp::make_tuple(camp::get<0>(seg_tuple).begin()[camp::get<0>(off_tuple)]);
+
+    qinvoke_lambda<LoopIndex>(std::forward<Data>(data));
   }
 };
 

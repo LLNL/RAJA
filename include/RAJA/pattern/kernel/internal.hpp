@@ -260,9 +260,20 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &&data)
 {
+  printf("invoke lambda expression \n");
+
+  //iterate
+  std::cout<<"iter = "<<camp::get<0>(data.segment_tuple).begin()[camp::get<0>(data.offset_tuple)]<<std::endl;
+
+#if 0
+  //Something that works
+  auto A = RAJA::make_tuple((double)7.2, (int) 3);
+  camp::get<LoopIndex>(data.bodies)(camp::get<ParamIdx>(A)...);
+//original
   camp::get<LoopIndex>(data.bodies)
     ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
      camp::get<ParamIdx>(data.param_tuple)...);
+#endif
 }
 
 
@@ -279,12 +290,36 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       std::forward<Data>(data));
 }
 
+
+template <camp::idx_t LoopIndex, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void qinvoke_lambda(Data &&data)
+{
+
+  printf("q-invoke-lambda\n");
+  //Build up arg list
+
+
+
+
+#if 0
+  using Data_t = camp::decay<Data>;
+  using offset_tuple_t = typename Data_t::offset_tuple_t;
+  using param_tuple_t = typename Data_t::param_tuple_t;
+
+  invoke_lambda_expanded<LoopIndex>(
+      camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
+      camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
+      std::forward<Data>(data));
+#endif
+}
+
+
 template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & segList,
                                                  camp::idx_seq<ParamIdx...> const & paramList)
 
 {
-  invoke_lambda_expanded<LoopIndex>(segList, paramList,std::forward<Data>(data));
+  invoke_lambda_expanded<LoopIndex>(segList, paramList, std::forward<Data>(data));
 }
 
 

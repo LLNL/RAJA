@@ -79,7 +79,8 @@ struct Param : public internal::ParamBase {
 template <camp::idx_t SegId>
 struct Seg : public internal::SegBase {
 
-  constexpr static camp::idx_t seg_idx = SegId;
+  //constexpr static camp::idx_t seg_idx = SegId;
+  constexpr static camp::idx_t param_idx = SegId;
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
