@@ -145,6 +145,7 @@ struct inspector<1, RAJA::statement::Seg<id>>
   }
 };
 
+//Iteration 1
 template <camp::idx_t LoopIndex,typename... Args>
 struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
 
@@ -157,6 +158,8 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   }
 };
 
+
+//Iteration 0
 template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx>
 struct StatementExecutor<statement::tLambda<LoopIndex, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > >
  {
