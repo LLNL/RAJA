@@ -260,20 +260,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &&data)
 {
-  printf("invoke lambda expression \n");
-
-  //iterate
-  std::cout<<"iter = "<<camp::get<0>(data.segment_tuple).begin()[camp::get<0>(data.offset_tuple)]<<std::endl;
-
-#if 0
-  //Something that works
-  auto A = RAJA::make_tuple((double)7.2, (int) 3);
-  camp::get<LoopIndex>(data.bodies)(camp::get<ParamIdx>(A)...);
-//original
   camp::get<LoopIndex>(data.bodies)
     ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
      camp::get<ParamIdx>(data.param_tuple)...);
-#endif
 }
 
 
@@ -290,27 +279,16 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       std::forward<Data>(data));
 }
 
-
-template <camp::idx_t LoopIndex, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void qinvoke_lambda(Data &&data)
+template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
+void invoke_custom_lambda(Data &&data,T myTuple)
 {
+  camp::get<LoopIndex>(data.bodies)(camp::get<Args>(myTuple)...);
+}
 
-  printf("q-invoke-lambda\n");
-  //Build up arg list
-
-
-
-
-#if 0
-  using Data_t = camp::decay<Data>;
-  using offset_tuple_t = typename Data_t::offset_tuple_t;
-  using param_tuple_t = typename Data_t::param_tuple_t;
-
-  invoke_lambda_expanded<LoopIndex>(
-      camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
-      camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-      std::forward<Data>(data));
-#endif
+template <camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t ...Idx>
+RAJA_INLINE RAJA_HOST_DEVICE void qinvoke_lambda(Data &&data, T tuple, camp::idx_seq<Idx...> const &)
+{
+  invoke_custom_lambda<LoopIndex,Data,T,Idx...>(data, tuple);
 }
 
 
