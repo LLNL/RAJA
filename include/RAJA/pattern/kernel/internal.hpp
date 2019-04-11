@@ -279,27 +279,19 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       std::forward<Data>(data));
 }
 
+//Lambda with custom arguments
 template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
 void invoke_custom_lambda(Data &&data,T myTuple)
 {
   camp::get<LoopIndex>(data.bodies)(camp::get<Args>(myTuple)...);
 }
 
+//Helper to launch lambda with custom arguments
 template <camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t ...Idx>
 RAJA_INLINE RAJA_HOST_DEVICE void qinvoke_lambda(Data &&data, T tuple, camp::idx_seq<Idx...> const &)
 {
   invoke_custom_lambda<LoopIndex,Data,T,Idx...>(data, tuple);
 }
-
-
-template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void tinvoke_lambda(Data &&data, camp::idx_seq<SegIdx...> const & segList,
-                                                 camp::idx_seq<ParamIdx...> const & paramList)
-
-{
-  invoke_lambda_expanded<LoopIndex>(segList, paramList, std::forward<Data>(data));
-}
-
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->

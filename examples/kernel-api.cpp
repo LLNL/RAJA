@@ -21,8 +21,11 @@
 #include "memoryManager.hpp"
 #include "RAJA/RAJA.hpp"
 
-RAJA_INDEX_VALUE(IIDX, "IIDX"); 
-RAJA_INDEX_VALUE(JIDX, "JIDX"); 
+RAJA_INDEX_VALUE(IIDX, "IIDX");
+RAJA_INDEX_VALUE(JIDX, "JIDX");
+
+using RAJA::statement::Seg;
+using RAJA::statement::Param;
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -63,23 +66,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   std::cout<<"\n \n----------------------------------------------------"<<std::endl;
-  std::cout<<"Kernel API Iteration 1"<<std::endl;
+  std::cout<<"New Kernel API"<<std::endl;
 
   //Lambda statement format : lambda idx, segment indices, parameter indices (to be tested...)
   using NEW_POLICY =
     RAJA::KernelPolicy<
       RAJA::statement::For<0,RAJA::loop_exec,
-        RAJA::statement::tLambda<0, camp::idx_seq<0>, camp::idx_seq<>>
+        RAJA::statement::Lambda<0, Seg<0>>
       >,
       RAJA::statement::For<1,RAJA::loop_exec,
-        RAJA::statement::tLambda<1, camp::idx_seq<1>, camp::idx_seq<>>
+        RAJA::statement::Lambda<1, Seg<1>>
       >,
-     RAJA::statement::For<1, RAJA::loop_exec,
-       RAJA::statement::For<2,RAJA::loop_exec,
-         RAJA::statement::tLambda<2, camp::idx_seq<1,2>, camp::idx_seq<>>
-       >
+      RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<2,RAJA::loop_exec,
+         RAJA::statement::Lambda<2, Seg<1>, Seg<2>>
       >
+     >
     >;
+
   // New Kernel API ...
   RAJA::kernel<NEW_POLICY>(
     RAJA::make_tuple(RAJA::RangeSegment(0, 3),  // segment tuple...
@@ -101,10 +105,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //-------------------------------------------------------------------------------
   std::cout<<"\n \n----------------------------------------------------"<<std::endl;
-  std::cout<<"Kernel API Iteration 2"<<std::endl;
+  std::cout<<"New Kernel API"<<std::endl;
 
-  using RAJA::statement::Seg;
-  using RAJA::statement::Param;
   using POLICY_V2 =
     RAJA::KernelPolicy<
     RAJA::statement::For<0,RAJA::loop_exec,
@@ -127,7 +129,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      [=](JIDX j) {
       printf("invoke kernel 2 : iter = %d \n", (int)(*j));
     });
-     
+
 
   return 0;
 }

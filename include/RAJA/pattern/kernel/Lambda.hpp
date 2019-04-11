@@ -64,18 +64,6 @@ struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
 
-//Base case
-template <camp::idx_t BodyIdx, typename SegIdx, typename ParamIdx>
-struct tLambda : internal::Statement<camp::nil> {
-  const static camp::idx_t loop_body_index = BodyIdx;
-};
-
-//Variadic
-template <camp::idx_t BodyIdx, camp::idx_t... SegIdx, camp::idx_t ... ParamIdx>
-struct tLambda<BodyIdx, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > : internal::Statement<camp::nil> {
-  const static camp::idx_t loop_body_index = BodyIdx;
-};
-
 }  // end namespace statement
 
 namespace internal
@@ -118,7 +106,7 @@ struct extractor<RAJA::statement::Param<id>, Tail...>
   }
 };
 
-//Iteration 1
+//Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
 struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
 
@@ -129,21 +117,6 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     auto myTuple = camp::make_tuple(extractor<Args>::extract_arg(data) ...);
 
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
-  }
-};
-
-
-//Iteration 0
-template <camp::idx_t LoopIndex, camp::idx_t... SegIdx, camp::idx_t... ParamIdx>
-struct StatementExecutor<statement::tLambda<LoopIndex, camp::idx_seq<SegIdx...>, camp::idx_seq<ParamIdx...> > >
- {
-
-  template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
-  {
-    tinvoke_lambda<LoopIndex>
-      (std::forward<Data>(data),camp::idx_seq<SegIdx...>{}, camp::idx_seq<ParamIdx...>{});
-
   }
 };
 
