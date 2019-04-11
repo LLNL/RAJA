@@ -41,6 +41,8 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
+#include "RAJA/pattern/kernel/Seg.hpp"
 
 namespace RAJA
 {
