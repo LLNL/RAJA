@@ -91,57 +91,30 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
-template<camp::idx_t Pos, typename... Args>
-struct inspector
+//...extractor of arguments
+template<typename Head, typename...Tail>
+struct extractor
 {};
 
-template<camp::idx_t Pos, camp::idx_t id, typename... Tail>
-struct inspector<Pos, RAJA::statement::Param<id>, Tail...>
+template<camp::idx_t id, typename...Tail>
+struct extractor<RAJA::statement::Seg<id>, Tail...>
 {
-  template<typename T, typename Data>
-  static auto make_args(T tuple, Data &&data) ->
-  decltype(inspector<Pos-1, Tail...>::make_args(camp::tuple_cat_pair(tuple, camp::make_tuple(camp::get<id>(data.param_tuple))), data))
+  template<typename Data>
+  static auto extract_arg(Data &&data) ->
+    decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
   {
-    auto newTuple = camp::tuple_cat_pair(tuple, camp::make_tuple(camp::get<id>(data.param_tuple)));
-    return inspector<Pos-1, Tail...>::make_args(newTuple, data);
+    return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
   }
 };
 
-template<camp::idx_t Pos, camp::idx_t id, typename...Tail>
-struct inspector<Pos, RAJA::statement::Seg<id>, Tail...>
+template<camp::idx_t id, typename...Tail>
+struct extractor<RAJA::statement::Param<id>, Tail...>
 {
-  template<typename T, typename Data>
-  static auto make_args(T tuple, Data &&data) ->
-    decltype(inspector<Pos-1, Tail...>::make_args
-             (camp::tuple_cat_pair(tuple,camp::make_tuple(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])), data))
- {
-    auto newTuple = camp::tuple_cat_pair
-      (tuple,camp::make_tuple(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)]));
-
-    return inspector<Pos-1, Tail...>::make_args(newTuple, data);
-  }
-};
-
-template<camp::idx_t id>
-struct inspector<1, RAJA::statement::Param<id>>
-{
-  template<typename T, typename Data>
-  static auto make_args(T tuple, Data &&data) ->
-    decltype(camp::tuple_cat_pair(tuple, camp::make_tuple(camp::get<id>(data.param_tuple))))
+  template<typename Data>
+  static auto extract_arg(Data &&data)->
+    decltype(camp::get<id>(data.param_tuple))
   {
-    return camp::tuple_cat_pair(tuple, camp::make_tuple(camp::get<id>(data.param_tuple)));
-  }
-};
-
-template<camp::idx_t id>
-struct inspector<1, RAJA::statement::Seg<id>>
-{
-  template<typename T, typename Data>
-    static auto make_args(T tuple, Data &&data) ->
-    decltype(camp::tuple_cat_pair(tuple,camp::make_tuple(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])))
-  {
-    return camp::tuple_cat_pair
-      (tuple,camp::make_tuple(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)]));
+    return camp::get<id>(data.param_tuple);
   }
 };
 
@@ -153,8 +126,9 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   static RAJA_INLINE void exec(Data &&data)
   {
     const int size = sizeof...(Args); //Total number of arguments
-    auto myTuple = inspector<size, Args...>::make_args(camp::make_tuple(),data);
-    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple, camp::make_idx_seq_t<size>{});
+    auto myTuple = camp::make_tuple(extractor<Args>::extract_arg(data) ...);
+
+    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
   }
 };
 
