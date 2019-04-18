@@ -108,6 +108,36 @@ struct extractor<RAJA::statement::Param<id>, Tail...>
   }
 };
 
+//Tools to concatenate lists
+template<typename ListA, typename ListB>
+struct catList
+{};
+
+template<typename...itemsA, typename...itemsB>
+struct catList<camp::list<itemsA...>, camp::list<itemsB...>> {
+
+  static auto makeList(camp::list<itemsA...> &, camp::list<itemsB...> &) ->
+    camp::list<itemsA...,itemsB...>
+  {    
+    return camp::list<itemsA...,itemsB...> {};
+  }
+
+};
+
+//TODO listmaker
+template<typename Arg>
+struct listMaker
+{
+  static auto genList()
+    -> camp::list<>
+  {
+    return camp::list<>{};
+  }
+}
+
+//Need to be able to convert SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
+
+
 //Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
 struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
