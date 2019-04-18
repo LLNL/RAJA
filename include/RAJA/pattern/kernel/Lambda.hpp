@@ -116,13 +116,27 @@ struct catList
 template<typename...itemsA, typename...itemsB>
 struct catList<camp::list<itemsA...>, camp::list<itemsB...>> {
 
-  static auto makeList(camp::list<itemsA...> &, camp::list<itemsB...> &) ->
+  static auto makeList(camp::list<itemsA...> const &, camp::list<itemsB...> const &) ->
     camp::list<itemsA...,itemsB...>
   {    
     return camp::list<itemsA...,itemsB...> {};
   }
 
 };
+
+template<typename...itemsA>
+struct catList<camp::list<itemsA...>, camp::list<>> {
+
+  static auto makeList(camp::list<itemsA...> const &, camp::list<> const &) ->
+    camp::list<itemsA...>
+  {    
+    return camp::list<itemsA...> {};
+  }
+
+};
+
+using RAJA::statement::SegList;
+using RAJA::statement::Seg;
 
 //TODO listmaker
 template<typename Arg>
@@ -133,10 +147,34 @@ struct listMaker
   {
     return camp::list<>{};
   }
-}
-
+};
 //Need to be able to convert SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
 
+template<camp::idx_t head, camp::idx_t... tail>
+struct listMaker<SegList<head,tail...>>
+{
+  static auto genList() 
+    -> decltype(catList<camp::list<Seg<head>>,
+            decltype(listMaker<SegList<tail...>>::genList())>::makeList(
+            camp::list<Seg<head>>{}, 
+            listMaker<SegList<tail...>>::genList()))
+  {
+    std::cout<<"list maker "<<head<<std::endl;
+
+#if 0
+    catList<camp::list<Seg<head>>,
+            decltype(listMaker<SegList<tail...>>::genList())>::makeList(
+            camp::list<Seg<head>>{}, 
+            listMaker<SegList<tail...>>::genList());    
+#endif
+
+    return catList<camp::list<Seg<head>>,
+            decltype(listMaker<SegList<tail...>>::genList())>::makeList(
+            camp::list<Seg<head>>{}, 
+            listMaker<SegList<tail...>>::genList());
+
+  }
+};
 
 //Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
@@ -145,10 +183,24 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
+    printf("Entered executor \n");
+    
+    listMaker<SegList<1, 2>>::genList();
+
+#if 0
+    camp::list<double> a;    
+    camp::list<int> b;
+    auto c = catList<decltype(a), decltype(b) >::makeList(a, b);
+
+    catList<camp::list<Seg<1>>, camp::list<Seg<2>> >::makeList(camp::list<Seg<1>>{}, 
+                                                               camp::list<Seg<2>>{});
+#endif    
+
+#if 0    
     const int size = sizeof...(Args); //Total number of arguments
     auto myTuple = camp::make_tuple(extractor<Args>::extract_arg(data) ...);
-
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
+#endif
   }
 };
 
