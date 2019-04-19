@@ -161,20 +161,67 @@ struct listMaker<SegList<head,tail...>>
   {
     std::cout<<"list maker "<<head<<std::endl;
 
-#if 0
-    catList<camp::list<Seg<head>>,
-            decltype(listMaker<SegList<tail...>>::genList())>::makeList(
-            camp::list<Seg<head>>{}, 
-            listMaker<SegList<tail...>>::genList());    
-#endif
-
     return catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
             camp::list<Seg<head>>{}, 
             listMaker<SegList<tail...>>::genList());
-
   }
 };
+
+//Helper to unroll list 
+template <typename List>
+struct printList
+{};
+
+template<>
+struct printList<camp::list<>>
+{
+  static void display() {};
+};
+
+template<typename Head, typename...Tail>
+struct printList<camp::list<Head, Tail...>> 
+{  
+  static void display() 
+  {
+    std::cout<<"Seg Id "<<Head::seg_idx<<std::endl;
+    printList<camp::list<Tail...>>::display();
+  }
+};
+
+//Helper structs to parse through the arguments
+template<typename List>
+struct parser{};
+
+template<>
+struct parser<camp::list<>>
+{
+  static auto checkArgs() 
+    -> camp::list<int>    
+  {
+    printf("last parser \n");
+    return camp::list<int> {};
+  }
+};
+
+template <typename Head, typename... Tail>
+struct parser<camp::list<Head, Tail...>>
+{
+
+  static auto checkArgs()
+    ->camp::list<int>
+  {        
+
+    parser<camp::list<Tail...>>::checkArgs();
+
+    catList<decltype(listMaker<Head>::genList()), 
+            decltype(parser<camp::list<Tail...> >::checkArgs())>
+      ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs());
+
+    return camp::list<int>{};
+  }
+};
+
 
 //Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
@@ -185,7 +232,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   {
     printf("Entered executor \n");
     
-    listMaker<SegList<1, 2>>::genList();
+    parser<camp::list<Args...>>::checkArgs();
 
 #if 0
     camp::list<double> a;    
