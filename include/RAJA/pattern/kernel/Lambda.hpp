@@ -118,7 +118,7 @@ struct catList<camp::list<itemsA...>, camp::list<itemsB...>> {
 
   static auto makeList(camp::list<itemsA...> const &, camp::list<itemsB...> const &) ->
     camp::list<itemsA...,itemsB...>
-  {    
+  {
     return camp::list<itemsA...,itemsB...> {};
   }
 
@@ -129,7 +129,7 @@ struct catList<camp::list<itemsA...>, camp::list<>> {
 
   static auto makeList(camp::list<itemsA...> const &, camp::list<> const &) ->
     camp::list<itemsA...>
-  {    
+  {
     return camp::list<itemsA...> {};
   }
 
@@ -137,6 +137,9 @@ struct catList<camp::list<itemsA...>, camp::list<>> {
 
 using RAJA::statement::SegList;
 using RAJA::statement::Seg;
+
+using RAJA::statement::ParamList;
+using RAJA::statement::Param;
 
 //TODO listmaker
 template<typename Arg>
@@ -148,27 +151,75 @@ struct listMaker
     return camp::list<>{};
   }
 };
-//Need to be able to convert SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
 
+//Converts SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
 template<camp::idx_t head, camp::idx_t... tail>
 struct listMaker<SegList<head,tail...>>
 {
-  static auto genList() 
+  static auto genList()
     -> decltype(catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
-            camp::list<Seg<head>>{}, 
+            camp::list<Seg<head>>{},
             listMaker<SegList<tail...>>::genList()))
   {
     std::cout<<"SegList -> Seg "<<head<<std::endl;
 
     return catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
-            camp::list<Seg<head>>{}, 
+            camp::list<Seg<head>>{},
             listMaker<SegList<tail...>>::genList());
   }
 };
 
-//Helper to unroll list 
+//Converts Seg<id> -> list<Seg<id>>
+template<camp::idx_t id>
+struct listMaker<Seg<id>>
+{
+  static auto genList()
+    -> camp::list<Seg<id>>
+  {
+    std::cout<<"Seg<id> -> Seg<id>"<<std::endl;
+    return camp::list<Seg<id>>{};
+  }
+};
+
+//Converts ParamList<1,2,3> -> list<Param<0>, Param<1>, Param<2>>
+template<camp::idx_t head, camp::idx_t... tail>
+struct listMaker<ParamList<head,tail...>>
+{
+  static auto genList()
+    -> decltype(catList<camp::list<Param<head>>,
+            decltype(listMaker<ParamList<tail...>>::genList())>::makeList(
+            camp::list<Param<head>>{},
+            listMaker<ParamList<tail...>>::genList()))
+  {
+    std::cout<<"ParamList -> Param "<<head<<std::endl;
+
+    return catList<camp::list<Param<head>>,
+            decltype(listMaker<ParamList<tail...>>::genList())>::makeList(
+            camp::list<Param<head>>{},
+            listMaker<ParamList<tail...>>::genList());
+  }
+};
+
+
+//Converts Param<id> -> list<Param<id>>
+template<camp::idx_t id>
+struct listMaker<Param<id>>
+{
+  static auto genList()
+    -> camp::list<Param<id>>
+  {
+    std::cout<<"Param<id> -> Param<id>"<<std::endl;
+    return camp::list<Param<id>>{};
+  }
+};
+
+
+
+
+
+//Helper to unroll list
 template <typename List>
 struct printList
 {};
@@ -180,9 +231,9 @@ struct printList<camp::list<>>
 };
 
 template<typename Head, typename...Tail>
-struct printList<camp::list<Head, Tail...>> 
-{  
-  static void display() 
+struct printList<camp::list<Head, Tail...>>
+{
+  static void display()
   {
     std::cout<<"Seg Id "<<Head::seg_idx<<std::endl;
     printList<camp::list<Tail...>>::display();
@@ -196,8 +247,8 @@ struct parser{};
 template<>
 struct parser<camp::list<>>
 {
-  static auto checkArgs() 
-    -> camp::list<>    
+  static auto checkArgs()
+    -> camp::list<>
   {
     printf("last parser \n");
     return camp::list<> {};
@@ -209,17 +260,17 @@ struct parser<camp::list<Head, Tail...>>
 {
 
   static auto checkArgs()
-    -> decltype(catList<decltype(listMaker<Head>::genList()), 
+    -> decltype(catList<decltype(listMaker<Head>::genList()),
                 decltype(parser<camp::list<Tail...> >::checkArgs())>
                 ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs()))
-  {        
+  {
 
     printf("Parsing argument ... \n");
 
 
-    return catList<decltype(listMaker<Head>::genList()), 
+    return catList<decltype(listMaker<Head>::genList()),
                    decltype(parser<camp::list<Tail...> >::checkArgs())>
-      ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs());   
+      ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs());
   }
 };
 
@@ -232,19 +283,19 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   static RAJA_INLINE void exec(Data &&data)
   {
     printf("Entered executor \n");
-    
+
     parser<camp::list<Args...>>::checkArgs();
 
 #if 0
-    camp::list<double> a;    
+    camp::list<double> a;
     camp::list<int> b;
     auto c = catList<decltype(a), decltype(b) >::makeList(a, b);
 
-    catList<camp::list<Seg<1>>, camp::list<Seg<2>> >::makeList(camp::list<Seg<1>>{}, 
+    catList<camp::list<Seg<1>>, camp::list<Seg<2>> >::makeList(camp::list<Seg<1>>{},
                                                                camp::list<Seg<2>>{});
-#endif    
+#endif
 
-#if 0    
+#if 0
     const int size = sizeof...(Args); //Total number of arguments
     auto myTuple = camp::make_tuple(extractor<Args>::extract_arg(data) ...);
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
