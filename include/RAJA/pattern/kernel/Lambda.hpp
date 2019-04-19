@@ -159,7 +159,7 @@ struct listMaker<SegList<head,tail...>>
             camp::list<Seg<head>>{}, 
             listMaker<SegList<tail...>>::genList()))
   {
-    std::cout<<"list maker "<<head<<std::endl;
+    std::cout<<"SegList -> Seg "<<head<<std::endl;
 
     return catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
@@ -197,10 +197,10 @@ template<>
 struct parser<camp::list<>>
 {
   static auto checkArgs() 
-    -> camp::list<int>    
+    -> camp::list<>    
   {
     printf("last parser \n");
-    return camp::list<int> {};
+    return camp::list<> {};
   }
 };
 
@@ -209,16 +209,17 @@ struct parser<camp::list<Head, Tail...>>
 {
 
   static auto checkArgs()
-    ->camp::list<int>
+    -> decltype(catList<decltype(listMaker<Head>::genList()), 
+                decltype(parser<camp::list<Tail...> >::checkArgs())>
+                ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs()))
   {        
 
-    parser<camp::list<Tail...>>::checkArgs();
+    printf("Parsing argument ... \n");
 
-    catList<decltype(listMaker<Head>::genList()), 
-            decltype(parser<camp::list<Tail...> >::checkArgs())>
-      ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs());
 
-    return camp::list<int>{};
+    return catList<decltype(listMaker<Head>::genList()), 
+                   decltype(parser<camp::list<Tail...> >::checkArgs())>
+      ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs());   
   }
 };
 
