@@ -138,22 +138,52 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout<<"\n \n----------------------------------------------------"<<std::endl;
   std::cout<<"New Kernel API with SegList"<<std::endl;
 
-  using POLICY_V3 =
+  //Lambda statement format : lambda idx, segment indices, parameter indices (to be tested...)
+  using NEW_POLICY =
     RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
-                           //RAJA::statement::Lambda<0, Seg<0>>
-                           RAJA::statement::Lambda<0, SegList<0>>
+      RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<0,RAJA::loop_exec,
+                             //RAJA::statement::Lambda<0, Seg<0>,Seg<1> >
+                             RAJA::statement::Lambda<0, SegList<0,1> >
       >
+     >
     >;
 
-  RAJA::RangeSegment iSegment(0, 1);
-  RAJA::kernel<POLICY_V3>
-    (RAJA::make_tuple(iSegment), [=] (int i) {
-
-      printf("i = %d \n", i);
+  // New Kernel API ...
+  RAJA::kernel<NEW_POLICY>(
+    RAJA::make_tuple(RAJA::RangeSegment(0, 3),  // segment tuple...
+                     RAJA::RangeSegment(20, 23)),
+    [=](int j, int k) {
+      printf("j, k = %d  %d \n",j, k);
     });
 
+#if 0
+  //-------------------------------------------------------------------------------
+  std::cout<<"\n \n----------------------------------------------------"<<std::endl;
+  std::cout<<"New Kernel API with SegList"<<std::endl;
+  using POLICY_V3 =
+    RAJA::KernelPolicy<
+    RAJA::statement::For<0,RAJA::loop_exec,
+                         RAJA::statement::Lambda<0, Param<0>, Seg<0>>
+                         >,
+    RAJA::statement::For<1,RAJA::loop_exec,
+                         RAJA::statement::Lambda<1, Seg<1>>
+    >
+    >;
 
+  RAJA::TypedRangeSegment<IIDX> IRange(0, 5);
+  RAJA::TypedRangeSegment<JIDX> JRange(7, 10);
+
+  RAJA::kernel_param<POLICY_V3>
+    (RAJA::make_tuple(IRange, JRange),
+     RAJA::make_tuple((double)55.2),
+     [=](double &dot, IIDX i) {
+      printf("invoke kernel 1 :  %f , iter = %d \n", dot, (int)(*i));
+    },
+     [=](JIDX j) {
+       printf("invoke kernel 2 : iter = %d \n", (int)(*j));
+     });
+#endif
 
 
 

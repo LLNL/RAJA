@@ -93,6 +93,7 @@ struct extractor<RAJA::statement::Seg<id>, Tail...>
   static auto extract_arg(Data &&data) ->
     decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
   {
+    std::cout<<"extracting seg id "<<id<<std::endl;
     return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
   }
 };
@@ -299,14 +300,36 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   {
     printf("Entered executor \n");
 
-    parser<camp::list<Args...>>::checkArgs();
+#if 1
+    //const int size = sizeof...(Args); //Total number of arguments
+    //auto myList = parser<camp::list<Args...>>::checkArgs();
 
+    const int size = 1;
+    auto myList = parser<camp::list<SegList<0,1> > >::checkArgs();
+    
+    std::cout<<" my Seg id "<<camp::at_v<decltype(myList), 0>::seg_idx<<" "<<std::endl;
+    std::cout<<" my Seg id "<<camp::at_v<decltype(myList), 1>::seg_idx<<" "<<std::endl;
+
+    auto myTuple = 
+      call_extractor<decltype(myList)>::make_tuple(data);
+
+    const int full_size = camp::tuple_size<decltype(myTuple)>::value;
+    std::cout<<"tuple size "<<camp::tuple_size<decltype(myTuple)>::value<<std::endl;
+    
+    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<full_size>{});
+
+#else
     const int size = sizeof...(Args); //Total number of arguments
     auto myTuple =
       call_extractor<decltype(parser<camp::list<Args...>>::checkArgs())>::make_tuple(data);
+    
 
-    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
+    std::cout<<"tuple size "<<camp::tuple_size<decltype(myTuple)>::value<<std::endl;
+    //qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
+
+
     //call_extractor<camp::list<Seg<0>>>::make_tuple(data);
+#endif
 
 #if 0
     camp::list<double> a;
