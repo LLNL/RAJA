@@ -274,6 +274,21 @@ struct parser<camp::list<Head, Tail...>>
   }
 };
 
+template<typename List>
+struct call_extractor
+{};
+
+template<typename ...Args>
+struct call_extractor<camp::list<Args...>>
+{
+  template<typename Data>
+  static auto make_tuple(Data &&data)
+    -> decltype(camp::make_tuple(extractor<Args>::extract_arg(data) ...))
+  {
+    return camp::make_tuple(extractor<Args>::extract_arg(data) ...);
+  }
+};
+
 
 //Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
@@ -285,6 +300,13 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     printf("Entered executor \n");
 
     parser<camp::list<Args...>>::checkArgs();
+
+    const int size = sizeof...(Args); //Total number of arguments
+    auto myTuple =
+      call_extractor<decltype(parser<camp::list<Args...>>::checkArgs())>::make_tuple(data);
+
+    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
+    //call_extractor<camp::list<Seg<0>>>::make_tuple(data);
 
 #if 0
     camp::list<double> a;

@@ -140,9 +140,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using POLICY_V3 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::loop_exec,
                            //RAJA::statement::Lambda<0, Seg<0>>
-                           RAJA::statement::Lambda<0, SegList<0,1>, Seg<2>>
+                           RAJA::statement::Lambda<0, SegList<0>>
       >
     >;
 
@@ -150,7 +150,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<POLICY_V3>
     (RAJA::make_tuple(iSegment), [=] (int i) {
 
-      printf("i = %d \n");
+      printf("i = %d \n", i);
     });
 
 
