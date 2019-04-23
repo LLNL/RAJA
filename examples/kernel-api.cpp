@@ -25,12 +25,15 @@ RAJA_INDEX_VALUE(IIDX, "IIDX");
 RAJA_INDEX_VALUE(JIDX, "JIDX");
 
 using RAJA::statement::Seg;
-using RAJA::statement::SegList;
 using RAJA::statement::Param;
+using RAJA::statement::OffSet;
+
+using RAJA::statement::SegList;
+using RAJA::statement::ParamList;
+
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-
 
   using POL1 =
     RAJA::KernelPolicy<
@@ -90,6 +93,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      [=](JIDX j) {
        printf("invoke kernel 2 : iter = %d \n", (int)(*j));
      });
+
+
+  //-------------------------------------------------------------------------------
+  std::cout<<"\n \n----------------------------------------------------"<<std::endl;
+  using POL3 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0,RAJA::loop_exec,
+                           RAJA::statement::Lambda<0, Seg<0>, OffSet<0> >
+      >
+    >;
+
+  RAJA::RangeSegment rangeSeg(5, 10);
+
+  RAJA::kernel<POL3>
+    (RAJA::make_tuple(rangeSeg),
+    [=](int i, int j) {
+     printf("Segment/offset %d  %d \n", i, j);
+  });
 
 
   return 0;

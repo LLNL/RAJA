@@ -41,6 +41,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/kernel/OffSet.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Seg.hpp"
 
@@ -85,6 +86,17 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
 template<typename Head, typename...Tail>
 struct extractor
 {};
+
+template<camp::idx_t id, typename...Tail>
+struct extractor<RAJA::statement::OffSet<id>, Tail...>
+{
+  template<typename Data>
+  static auto extract_arg(Data &&data) ->
+    decltype(camp::get<id>(data.offset_tuple))
+  {
+    return camp::get<id>(data.offset_tuple);
+  }
+};
 
 template<camp::idx_t id, typename...Tail>
 struct extractor<RAJA::statement::Seg<id>, Tail...>
@@ -138,6 +150,9 @@ struct catList<camp::list<itemsA...>, camp::list<>> {
 using RAJA::statement::SegList;
 using RAJA::statement::Seg;
 
+using RAJA::statement::OffSet;
+using RAJA::statement::OffSetList;
+
 using RAJA::statement::ParamList;
 using RAJA::statement::Param;
 
@@ -177,6 +192,35 @@ struct listMaker<Seg<id>>
     -> camp::list<Seg<id>>
   {
     return camp::list<Seg<id>>{};
+  }
+};
+
+//Converts OffSet<id> -> list<OffSet<id>>
+template<camp::idx_t id>
+struct listMaker<OffSet<id>>
+{
+  static auto genList()
+    -> camp::list<OffSet<id>>
+  {
+    return camp::list<OffSet<id>>{};
+  }
+};
+
+//Converts OffSetList<1,2,3> -> list<OffSet<0>, OffSet<1>, OffSet<2>>
+template<camp::idx_t head, camp::idx_t... tail>
+struct listMaker<OffSetList<head,tail...>>
+{
+  static auto genList()
+    -> decltype(catList<camp::list<OffSet<head>>,
+            decltype(listMaker<OffSetList<tail...>>::genList())>::makeList(
+            camp::list<OffSet<head>>{},
+            listMaker<OffSetList<tail...>>::genList()))
+  {
+
+    return catList<camp::list<OffSet<head>>,
+            decltype(listMaker<OffSetList<tail...>>::genList())>::makeList(
+            camp::list<OffSet<head>>{},
+            listMaker<OffSetList<tail...>>::genList());
   }
 };
 
@@ -276,6 +320,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), 
                               argTuple,camp::make_idx_seq_t<tuple_size>{});    
+
   }
 };
 

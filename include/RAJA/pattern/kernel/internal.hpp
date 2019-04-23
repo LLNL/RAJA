@@ -83,6 +83,8 @@ struct ParamBase {
 };
 struct SegBase {
 };
+struct OffSetBase {
+};
 
 template <typename Iterator>
 struct iterable_difftype_getter {
