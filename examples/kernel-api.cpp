@@ -25,11 +25,13 @@ RAJA_INDEX_VALUE(IIDX, "IIDX");
 RAJA_INDEX_VALUE(JIDX, "JIDX");
 
 using RAJA::statement::Seg;
+using RAJA::statement::SegList;
 using RAJA::statement::Param;
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
+#if 0
   std::cout<<"\n ----------------------------------------------------"<<std::endl;
   std::cout<<"Testing existing kernel lambda statements"<<std::endl;
   // Create kernel policy
@@ -129,6 +131,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      [=](JIDX j) {
       printf("invoke kernel 2 : iter = %d \n", (int)(*j));
     });
+
+#endif
+
+  //-------------------------------------------------------------------------------
+  std::cout<<"\n \n----------------------------------------------------"<<std::endl;
+  std::cout<<"New Kernel API with SegList"<<std::endl;
+
+  using POLICY_V3 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::loop_exec,
+                           //RAJA::statement::Lambda<0, Seg<0>>
+                           RAJA::statement::Lambda<0, SegList<0,1>, Seg<2>>
+      >
+    >;
+
+  RAJA::RangeSegment iSegment(0, 1);
+  RAJA::kernel<POLICY_V3>
+    (RAJA::make_tuple(iSegment), [=] (int i) {
+
+      printf("i = %d \n");
+    });
+
+
+
 
 
   return 0;
