@@ -298,9 +298,19 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    printf("Entered executor \n");
+    
+    //Convert SegList, ParamList into Seg, Param structs - store in a list
+    auto targList = parser<camp::list<Args...>>::checkArgs();
 
-#if 1
+    //Create a tuple with the appropriate lambda arguments 
+    auto argTuple = call_extractor<decltype(targList)>::make_tuple(data);
+
+    //Invoke the lambda with custom arguments
+    const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
+    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), 
+                              argTuple,camp::make_idx_seq_t<tuple_size>{});
+    
+#if 0
     //const int size = sizeof...(Args); //Total number of arguments
     //auto myList = parser<camp::list<Args...>>::checkArgs();
 
@@ -318,7 +328,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<full_size>{});
 
-#else
+    //#else
     const int size = sizeof...(Args); //Total number of arguments
     auto myTuple =
       call_extractor<decltype(parser<camp::list<Args...>>::checkArgs())>::make_tuple(data);
