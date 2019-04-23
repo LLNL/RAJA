@@ -176,7 +176,6 @@ struct listMaker<Seg<id>>
   static auto genList()
     -> camp::list<Seg<id>>
   {
-    std::cout<<"Seg<id> -> Seg<id>"<<std::endl;
     return camp::list<Seg<id>>{};
   }
 };
@@ -191,7 +190,6 @@ struct listMaker<ParamList<head,tail...>>
             camp::list<Param<head>>{},
             listMaker<ParamList<tail...>>::genList()))
   {
-    std::cout<<"ParamList -> Param "<<head<<std::endl;
 
     return catList<camp::list<Param<head>>,
             decltype(listMaker<ParamList<tail...>>::genList())>::makeList(
@@ -208,7 +206,7 @@ struct listMaker<Param<id>>
   static auto genList()
     -> camp::list<Param<id>>
   {
-    std::cout<<"Param<id> -> Param<id>"<<std::endl;
+
     return camp::list<Param<id>>{};
   }
 };
