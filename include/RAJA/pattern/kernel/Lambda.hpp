@@ -81,7 +81,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
   }
 };
 
-//...extractor of arguments
+//Extracts arguments from segments, and parameters
 template<typename Head, typename...Tail>
 struct extractor
 {};
@@ -93,7 +93,6 @@ struct extractor<RAJA::statement::Seg<id>, Tail...>
   static auto extract_arg(Data &&data) ->
     decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
   {
-    std::cout<<"extracting seg id "<<id<<std::endl;
     return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
   }
 };
@@ -109,7 +108,7 @@ struct extractor<RAJA::statement::Param<id>, Tail...>
   }
 };
 
-//Tools to concatenate lists
+//Helper to concatante list [Move to camp?]
 template<typename ListA, typename ListB>
 struct catList
 {};
@@ -142,7 +141,6 @@ using RAJA::statement::Seg;
 using RAJA::statement::ParamList;
 using RAJA::statement::Param;
 
-//TODO listmaker
 template<typename Arg>
 struct listMaker
 {
@@ -163,7 +161,6 @@ struct listMaker<SegList<head,tail...>>
             camp::list<Seg<head>>{},
             listMaker<SegList<tail...>>::genList()))
   {
-    std::cout<<"SegList -> Seg "<<head<<std::endl;
 
     return catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
@@ -216,32 +213,9 @@ struct listMaker<Param<id>>
   }
 };
 
-
-
-
-
-//Helper to unroll list
-template <typename List>
-struct printList
-{};
-
-template<>
-struct printList<camp::list<>>
-{
-  static void display() {};
-};
-
-template<typename Head, typename...Tail>
-struct printList<camp::list<Head, Tail...>>
-{
-  static void display()
-  {
-    std::cout<<"Seg Id "<<Head::seg_idx<<std::endl;
-    printList<camp::list<Tail...>>::display();
-  }
-};
-
-//Helper structs to parse through the arguments
+//Helper structs to parse through template arguments
+//Takes a pre-processing step convert SegList, ParamList
+//into a list of Seg and Param's
 template<typename List>
 struct parser{};
 
@@ -251,7 +225,6 @@ struct parser<camp::list<>>
   static auto checkArgs()
     -> camp::list<>
   {
-    printf("last parser \n");
     return camp::list<> {};
   }
 };
@@ -265,9 +238,6 @@ struct parser<camp::list<Head, Tail...>>
                 decltype(parser<camp::list<Tail...> >::checkArgs())>
                 ::makeList(listMaker<Head>::genList(), parser<camp::list<Tail...> >::checkArgs()))
   {
-
-    printf("Parsing argument ... \n");
-
 
     return catList<decltype(listMaker<Head>::genList()),
                    decltype(parser<camp::list<Tail...> >::checkArgs())>
@@ -290,7 +260,6 @@ struct call_extractor<camp::list<Args...>>
   }
 };
 
-
 //Lambda with custom args
 template <camp::idx_t LoopIndex,typename... Args>
 struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
@@ -299,7 +268,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   static RAJA_INLINE void exec(Data &&data)
   {
     
-    //Convert SegList, ParamList into Seg, Param structs - store in a list
+    //Convert SegList, ParamList into Seg, Param types, and store in a list
     auto targList = parser<camp::list<Args...>>::checkArgs();
 
     //Create a tuple with the appropriate lambda arguments 
@@ -308,53 +277,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     //Invoke the lambda with custom arguments
     const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
     qinvoke_lambda<LoopIndex>(std::forward<Data>(data), 
-                              argTuple,camp::make_idx_seq_t<tuple_size>{});
-    
-#if 0
-    //const int size = sizeof...(Args); //Total number of arguments
-    //auto myList = parser<camp::list<Args...>>::checkArgs();
-
-    const int size = 1;
-    auto myList = parser<camp::list<SegList<0,1> > >::checkArgs();
-    
-    std::cout<<" my Seg id "<<camp::at_v<decltype(myList), 0>::seg_idx<<" "<<std::endl;
-    std::cout<<" my Seg id "<<camp::at_v<decltype(myList), 1>::seg_idx<<" "<<std::endl;
-
-    auto myTuple = 
-      call_extractor<decltype(myList)>::make_tuple(data);
-
-    const int full_size = camp::tuple_size<decltype(myTuple)>::value;
-    std::cout<<"tuple size "<<camp::tuple_size<decltype(myTuple)>::value<<std::endl;
-    
-    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<full_size>{});
-
-    //#else
-    const int size = sizeof...(Args); //Total number of arguments
-    auto myTuple =
-      call_extractor<decltype(parser<camp::list<Args...>>::checkArgs())>::make_tuple(data);
-    
-
-    std::cout<<"tuple size "<<camp::tuple_size<decltype(myTuple)>::value<<std::endl;
-    //qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
-
-
-    //call_extractor<camp::list<Seg<0>>>::make_tuple(data);
-#endif
-
-#if 0
-    camp::list<double> a;
-    camp::list<int> b;
-    auto c = catList<decltype(a), decltype(b) >::makeList(a, b);
-
-    catList<camp::list<Seg<1>>, camp::list<Seg<2>> >::makeList(camp::list<Seg<1>>{},
-                                                               camp::list<Seg<2>>{});
-#endif
-
-#if 0
-    const int size = sizeof...(Args); //Total number of arguments
-    auto myTuple = camp::make_tuple(extractor<Args>::extract_arg(data) ...);
-    qinvoke_lambda<LoopIndex>(std::forward<Data>(data), myTuple,camp::make_idx_seq_t<size>{});
-#endif
+                              argTuple,camp::make_idx_seq_t<tuple_size>{});    
   }
 };
 
