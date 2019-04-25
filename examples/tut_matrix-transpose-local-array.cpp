@@ -21,6 +21,13 @@
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
+using RAJA::statement::Seg;
+using RAJA::statement::Param;
+using RAJA::statement::OffSet;
+
+using RAJA::statement::SegList;
+using RAJA::statement::ParamList;
+
 /*
  *  Matrix Transpose Example
  *
@@ -207,17 +214,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
+                                        
+          RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
             >
           >
 
@@ -229,10 +236,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
                                                      RAJA::RangeSegment(0, N_r)),
 
-    RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
+    RAJA::make_tuple(RAJA_Tile),
 
     [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-      RAJA_Tile(ty, tx) = Aview(row, col);
+        RAJA_Tile(ty, tx) = Aview(row, col);
     },
 
     [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
@@ -263,15 +270,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         // kernel. The cpu_tile_mem policy specifies that memory should be
         // allocated on the stack. The entries in the RAJA::ParamList
         // identify RAJA local arrays in the parameter tuple to intialize.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
           //
           // (1) Execution policies for the first set of inner
           // loops. These loops copy data from the global matrices
           // to the local tile.
           //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
+          RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
             >
           >,
           //
@@ -282,9 +289,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //     swapped! This enables us to swap which
           //     index has unit stride.
           //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<1>
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
             >
           >
         >
@@ -294,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<OPENMP_EXEC_1_POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
+      RAJA::make_tuple(RAJA_Tile),
 
       [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
 
@@ -330,15 +337,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       // kernel. The cpu_tile_mem policy specifies that memory should be
       // allocated on the stack. The entries in the RAJA::ParamList
       // identify RAJA local arrays to intialize in the parameter tuple.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
           //
           // (1) Execution policies for the first set of inner
           // loops. These loops copy data from the global matrices
           // to the local tile.
           //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::omp_parallel_for_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
              >
           >,
           //
@@ -349,9 +356,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //     swapped! This enables us to swap which
           //     index has unit stride.
           //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
             >
           >
         >
@@ -361,7 +368,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
+      RAJA::make_tuple(RAJA_Tile),
 
       [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
 
@@ -399,15 +406,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList
           // identify RAJA local arrays to intialize in the parameter tuple.
-          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0>,
             //
             // (1) Execution policies for the first set of inner
             // loops. These loops copy data from the global matrices
             // to the local tile.
             //
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_x_direct,
-                                          RAJA::statement::Lambda<0>
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+               RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
               >
             >,
             // Synchronize threads to ensure all loads
@@ -421,9 +428,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //     swapped! This enables us to swap which
             //     index has unit stride.
             //
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
-                                            RAJA::statement::Lambda<1>
+            RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+               RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
               >
             >,
             // Synchronize threads to ensure all reads
@@ -438,7 +445,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel_param<CUDA_EXEC_POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
+      RAJA::make_tuple(RAJA_Tile),
 
       [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
 
