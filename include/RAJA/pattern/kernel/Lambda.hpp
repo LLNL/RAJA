@@ -45,6 +45,15 @@
 #include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Seg.hpp"
 
+using RAJA::statement::SegList;
+using RAJA::statement::Seg;
+
+using RAJA::statement::OffSet;
+using RAJA::statement::OffSetList;
+
+using RAJA::statement::ParamList;
+using RAJA::statement::Param;
+
 namespace RAJA
 {
 
@@ -91,6 +100,7 @@ template<camp::idx_t id, typename...Tail>
 struct extractor<RAJA::statement::OffSet<id>, Tail...>
 {
   template<typename Data>
+  RAJA_HOST_DEVICE
   static auto extract_arg(Data &&data) ->
     decltype(camp::get<id>(data.offset_tuple))
   {
@@ -102,6 +112,7 @@ template<camp::idx_t id, typename...Tail>
 struct extractor<RAJA::statement::Seg<id>, Tail...>
 {
   template<typename Data>
+  RAJA_HOST_DEVICE
   static auto extract_arg(Data &&data) ->
     decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
   {
@@ -113,6 +124,7 @@ template<camp::idx_t id, typename...Tail>
 struct extractor<RAJA::statement::Param<id>, Tail...>
 {
   template<typename Data>
+  RAJA_HOST_DEVICE
   static auto extract_arg(Data &&data)->
     decltype(camp::get<id>(data.param_tuple))
   {
@@ -128,6 +140,7 @@ struct catList
 template<typename...itemsA, typename...itemsB>
 struct catList<camp::list<itemsA...>, camp::list<itemsB...>> {
 
+  RAJA_HOST_DEVICE
   static auto makeList(camp::list<itemsA...> const &, camp::list<itemsB...> const &) ->
     camp::list<itemsA...,itemsB...>
   {
@@ -139,6 +152,7 @@ struct catList<camp::list<itemsA...>, camp::list<itemsB...>> {
 template<typename...itemsA>
 struct catList<camp::list<itemsA...>, camp::list<>> {
 
+  RAJA_HOST_DEVICE
   static auto makeList(camp::list<itemsA...> const &, camp::list<> const &) ->
     camp::list<itemsA...>
   {
@@ -147,18 +161,10 @@ struct catList<camp::list<itemsA...>, camp::list<>> {
 
 };
 
-using RAJA::statement::SegList;
-using RAJA::statement::Seg;
-
-using RAJA::statement::OffSet;
-using RAJA::statement::OffSetList;
-
-using RAJA::statement::ParamList;
-using RAJA::statement::Param;
-
 template<typename Arg>
 struct listMaker
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> camp::list<>
   {
@@ -170,6 +176,7 @@ struct listMaker
 template<camp::idx_t head, camp::idx_t... tail>
 struct listMaker<SegList<head,tail...>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> decltype(catList<camp::list<Seg<head>>,
             decltype(listMaker<SegList<tail...>>::genList())>::makeList(
@@ -188,6 +195,7 @@ struct listMaker<SegList<head,tail...>>
 template<camp::idx_t id>
 struct listMaker<Seg<id>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> camp::list<Seg<id>>
   {
@@ -199,6 +207,7 @@ struct listMaker<Seg<id>>
 template<camp::idx_t id>
 struct listMaker<OffSet<id>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> camp::list<OffSet<id>>
   {
@@ -210,6 +219,7 @@ struct listMaker<OffSet<id>>
 template<camp::idx_t head, camp::idx_t... tail>
 struct listMaker<OffSetList<head,tail...>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> decltype(catList<camp::list<OffSet<head>>,
             decltype(listMaker<OffSetList<tail...>>::genList())>::makeList(
@@ -228,6 +238,7 @@ struct listMaker<OffSetList<head,tail...>>
 template<camp::idx_t head, camp::idx_t... tail>
 struct listMaker<ParamList<head,tail...>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> decltype(catList<camp::list<Param<head>>,
             decltype(listMaker<ParamList<tail...>>::genList())>::makeList(
@@ -247,6 +258,7 @@ struct listMaker<ParamList<head,tail...>>
 template<camp::idx_t id>
 struct listMaker<Param<id>>
 {
+  RAJA_HOST_DEVICE
   static auto genList()
     -> camp::list<Param<id>>
   {
@@ -264,6 +276,7 @@ struct parser{};
 template<>
 struct parser<camp::list<>>
 {
+  RAJA_HOST_DEVICE
   static auto checkArgs()
     -> camp::list<>
   {
@@ -275,6 +288,7 @@ template <typename Head, typename... Tail>
 struct parser<camp::list<Head, Tail...>>
 {
 
+  RAJA_HOST_DEVICE
   static auto checkArgs()
     -> decltype(catList<decltype(listMaker<Head>::genList()),
                 decltype(parser<camp::list<Tail...> >::checkArgs())>
@@ -295,6 +309,7 @@ template<typename ...Args>
 struct call_extractor<camp::list<Args...>>
 {
   template<typename Data>
+  RAJA_HOST_DEVICE
   static auto make_tuple(Data &&data)
     -> decltype(camp::make_tuple(extractor<Args>::extract_arg(data) ...))
   {

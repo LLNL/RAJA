@@ -69,6 +69,42 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
   }
 };
 
+//
+
+template <typename Data, camp::idx_t LoopIndex, typename... Args>
+struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex, Args...>> {
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+
+    //Convert SegList, ParamList into Seg, Param types, and store in a list
+    auto targList = parser<camp::list<Args...>>::checkArgs();
+
+    //Create a tuple with the appropriate lambda arguments
+    auto argTuple = call_extractor<decltype(targList)>::make_tuple(data);
+
+    //Invoke the lambda with custom arguments
+    const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
+
+    // Only execute the lambda if it hasn't been masked off
+    if(thread_active){
+      qinvoke_lambda<LoopIndex>(data,
+                                argTuple,camp::make_idx_seq_t<tuple_size>{});
+    }
+
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  {
+    return LaunchDims();
+  }
+};
+
+
 
 
 }  // namespace internal

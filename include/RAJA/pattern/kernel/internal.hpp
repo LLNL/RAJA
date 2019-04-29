@@ -283,7 +283,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 
 //Lambda with custom arguments
 template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
-void invoke_custom_lambda(Data &&data,T myTuple)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple)
 {
   camp::get<LoopIndex>(data.bodies)(camp::get<Args>(myTuple)...);
 }

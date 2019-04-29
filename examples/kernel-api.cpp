@@ -97,21 +97,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //-------------------------------------------------------------------------------
   std::cout<<"\n \n----------------------------------------------------"<<std::endl;
+#if defined(RAJA_ENABLE_CUDA)
   using POL3 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<0,RAJA::loop_exec,
-                           RAJA::statement::Lambda<0, Seg<0>, OffSet<0> >
-      >
-    >;
+    RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<1>, RAJA::cuda_block_x_loop,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                             RAJA::statement::Lambda<0, Seg<0>, OffSet<0> >
+                             >
+                            >
+      >//cuda
+    >; //kernel
 
-  RAJA::RangeSegment rangeSeg(5, 10);
+  RAJA::RangeSegment rangeSeg(0, 1);
 
   RAJA::kernel<POL3>
     (RAJA::make_tuple(rangeSeg),
-    [=](int i, int j) {
+    [=] RAJA_HOST_DEVICE (int i, int j) {
      printf("Segment/offset %d  %d \n", i, j);
   });
-
+#endif
 
   return 0;
 }
