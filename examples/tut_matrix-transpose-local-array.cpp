@@ -214,7 +214,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
                                         
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
@@ -268,9 +268,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         // This statement will initalize local array memory inside a
         // kernel. The cpu_tile_mem policy specifies that memory should be
-        // allocated on the stack. The entries in the RAJA::ParamList
+        // allocated on the stack. The entries in the RAJA::InitList
         // identify RAJA local arrays in the parameter tuple to intialize.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
+        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
           //
           // (1) Execution policies for the first set of inner
           // loops. These loops copy data from the global matrices
@@ -335,9 +335,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
       // This statement will initalize local array memory inside a
       // kernel. The cpu_tile_mem policy specifies that memory should be
-      // allocated on the stack. The entries in the RAJA::ParamList
+      // allocated on the stack. The entries in the RAJA::InitList
       // identify RAJA local arrays to intialize in the parameter tuple.
-        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
+        RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
           //
           // (1) Execution policies for the first set of inner
           // loops. These loops copy data from the global matrices
@@ -404,9 +404,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
-          // allocated on the stack. The entries in the RAJA::ParamList
+          // allocated on the stack. The entries in the RAJA::InitList
           // identify RAJA local arrays to intialize in the parameter tuple.
-          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::InitList<0>,
             //
             // (1) Execution policies for the first set of inner
             // loops. These loops copy data from the global matrices
