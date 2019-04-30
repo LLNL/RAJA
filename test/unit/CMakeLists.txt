@@ -74,6 +74,10 @@ raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
 
+raja_add_test(
+  NAME test-new-kernel-api
+  SOURCES test-new-kernel-api.cpp)
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)

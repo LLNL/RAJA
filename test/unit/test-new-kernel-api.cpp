@@ -1,0 +1,294 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
+
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <cmath>
+#include <cassert>
+
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include <cuda_runtime.h>
+#endif
+
+using namespace RAJA;
+using namespace RAJA::statement;
+
+//Define tile size ( TILE_DIM x TILE_DIM )
+//Matrix transpose and matrix multiplication
+//are carried out via tiling algorithms
+RAJA_INDEX_VALUE(TX, "TX");
+RAJA_INDEX_VALUE(TY, "TY");
+
+const int TILE_DIM = 16;
+
+//
+//Matrix transpose example - test all variants
+//
+template <typename NestedPolicy>
+class MatTranspose : public ::testing::Test
+{
+
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+};
+TYPED_TEST_CASE_P(MatTranspose);
+
+CUDA_TYPED_TEST_P(MatTranspose, Basic)
+{
+
+  using Pol = at_v<TypeParam, 0>;
+
+  const int DIM = 2;
+  const int N_rows = 144;
+  const int N_cols = 255;
+  const int TILE_DIM = 16;
+
+
+  double *A, *At, *B, *Bt;
+#if defined(RAJA_ENABLE_CUDA)
+  cudaMallocManaged(&A,  sizeof(double) * N_rows * N_cols);
+  cudaMallocManaged(&At, sizeof(double) * N_rows * N_cols);
+  cudaMallocManaged(&B,  sizeof(double) * N_rows * N_cols);
+  cudaMallocManaged(&Bt, sizeof(double) * N_rows * N_cols);
+#else
+  A  = new double[N_rows * N_cols];
+  At = new double[N_rows * N_cols];
+  B  = new double[N_rows * N_cols];
+  Bt = new double[N_rows * N_cols];
+#endif
+
+  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
+  RAJA::View<double, RAJA::Layout<DIM>> Atview(At, N_cols, N_rows);
+
+  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N_rows, N_cols);
+  RAJA::View<double, RAJA::Layout<DIM>> Btview(Bt, N_cols, N_rows);
+
+
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      Aview(row, col) = col;
+      Bview(row, col) = col;
+    }
+  }
+
+
+  using SharedTile = LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
+
+  SharedTile myTile, myTile2;
+
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, N_cols),
+                                           RAJA::RangeSegment(0, N_rows)),
+                          RAJA::make_tuple(myTile, myTile2),
+
+  //Load data into shared memory
+  [=] RAJA_HOST_DEVICE (int col, int row, int tx, int ty, SharedTile &myTile, SharedTile &myTile2) {
+
+      myTile(ty,tx)  = Aview(row, col);
+      myTile2(ty,tx) = Bview(row, col);
+
+  },
+
+  //read from shared mem
+  [=] RAJA_HOST_DEVICE (int col, int row, int tx, int ty, SharedTile &myTile, SharedTile &myTile2) {
+
+     Atview(col, row) = myTile(ty,tx);
+     Btview(col, row) = myTile2(ty,tx);
+  });
+
+  //Check result
+  for (int row = 0; row < N_rows; ++row) {
+    for (int col = 0; col < N_cols; ++col) {
+      ASSERT_FLOAT_EQ(Atview(col,row), col);
+      ASSERT_FLOAT_EQ(Btview(col,row), col);
+    }
+  }
+
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaFree(A);
+  cudaFree(At);
+  cudaFree(B);
+  cudaFree(Bt);
+#else
+  delete [] A;
+  delete [] At;
+  delete [] B;
+  delete [] Bt;
+#endif
+}
+
+REGISTER_TYPED_TEST_CASE_P(MatTranspose, Basic);
+
+
+using SeqTypes =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                   >
+                                 >,
+
+                //Read data from shared memory
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::For<1, RAJA::loop_exec,
+                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                     >
+                  >
+
+              > //close shared memory scope
+            >//for 2
+        >//for 3
+      > //kernel policy
+    > //list
+  >; //types
+INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatTranspose, SeqTypes);
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+using TestTypes =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+
+           //Load data into shared memory
+           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                     RAJA::ArgList<0, 1>,
+                                     RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                     >,
+
+           //Read data from shared memory
+           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                     RAJA::ArgList<0, 1>,
+                                     RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                     >
+                                 >
+        >//for 2
+       >//for 3
+       > //close policy
+    >, //close list
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                   >
+                                 >,
+
+                //Read data from shared memory
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                     >
+                  >
+
+              > //close shared memory scope
+            >//for 2
+        >//for 3
+      > //kernel policy
+    > //close list
+  ,RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                   >
+                                 >,
+
+                //Read data from shared memory
+                RAJA::statement::For<0, RAJA::loop_exec,
+                  RAJA::statement::For<1, RAJA::loop_exec,
+                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                     >
+                  >
+
+              > //close shared memory scope
+            >//for 2
+        >//for 3
+      > //kernel policy
+     > //close list
+   >;
+
+
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatTranspose, TestTypes);
+#endif
+ 
+#if defined(RAJA_ENABLE_CUDA)
+
+using CUDATypes =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::InitList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1> >
+                 >
+               >,
+              RAJA::statement::CudaSyncThreads,
+
+                //Read data from shared memory
+                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1> >
+                  >
+                 >,
+                RAJA::statement::CudaSyncThreads
+              > //close shared memory scope
+            >//for 2
+          >//for 3
+        > //CudaKernel
+      > //kernel policy
+    > //list
+  >; //types
+INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
+
+#endif

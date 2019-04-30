@@ -282,6 +282,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 }
 
 //Lambda with custom arguments
+RAJA_SUPPRESS_HD_WARN
 template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple)
 {
