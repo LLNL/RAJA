@@ -543,7 +543,7 @@ using OmpTypes2 =
          > //Create shared memory
         >//For 3
        >//For 4
-      >, //close kernel policy
+      > //close kernel policy
     > //close list
   >;//close types
 
