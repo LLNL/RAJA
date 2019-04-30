@@ -193,7 +193,7 @@ struct TargetReduce
   {
   }
 
-#ifdef __ibmxl__ // implicit declare target doesn't pick this up
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
 #pragma omp declare target
 #endif
   //! apply reduction on device upon destruction
@@ -208,7 +208,7 @@ struct TargetReduce
       }
     }
   }
-#ifdef __ibmxl__ // implicit declare target doesn't pick this up
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
 #pragma omp end declare target
 #endif
 
