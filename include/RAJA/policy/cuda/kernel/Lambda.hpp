@@ -89,8 +89,8 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex, Args...>> {
 
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){
-      qinvoke_lambda<LoopIndex>(data,
-                                argTuple,camp::make_idx_seq_t<tuple_size>{});
+      invoke_lambda_with_args<LoopIndex>(data,
+                                         argTuple,camp::make_idx_seq_t<tuple_size>{});
     }
 
   }

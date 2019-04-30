@@ -291,7 +291,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple)
 
 //Helper to launch lambda with custom arguments
 template <camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t ...Idx>
-RAJA_INLINE RAJA_HOST_DEVICE void qinvoke_lambda(Data &&data, T tuple, camp::idx_seq<Idx...> const &)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data, T tuple, camp::idx_seq<Idx...> const &)
 {
   invoke_custom_lambda<LoopIndex,Data,T,Idx...>(data, tuple);
 }
