@@ -67,6 +67,10 @@ raja_add_executable(
   SOURCES tut_matrix-transpose-local-array.cpp)
 
 raja_add_executable(
+  NAME kernel-api
+  SOURCES kernel-api.cpp)
+
+raja_add_executable(
   NAME tut_tiled-matrix-transpose
   SOURCES tut_tiled-matrix-transpose.cpp)
 
