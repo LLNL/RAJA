@@ -91,8 +91,7 @@ struct View {
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
     auto idx = stripIndexType(layout(args...));
-    auto &value = data[idx];
-    return value;
+    return data[idx];
   }
 };
 

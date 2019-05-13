@@ -44,7 +44,7 @@ namespace Iterators
 // Containers
 
 template <typename Type = Index_type,
-          typename DifferenceType = Index_type,
+          typename DifferenceType = Type,
           typename PointerType = Type*>
 class numeric_iterator
 {
@@ -191,7 +191,7 @@ private:
 };
 
 template <typename Type = Index_type,
-          typename DifferenceType = Index_type,
+          typename DifferenceType = Type,
           typename PointerType = Type*>
 class strided_numeric_iterator
 {

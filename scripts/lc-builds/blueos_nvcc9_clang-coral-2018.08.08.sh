@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##
 ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos-EA-nvcc9-clang-coral-2018.08.08
+BUILD_SUFFIX=lc_blueos-nvcc9-clang-coral-2018.08.08
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}

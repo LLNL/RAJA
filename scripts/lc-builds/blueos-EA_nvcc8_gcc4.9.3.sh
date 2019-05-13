@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##
 ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
@@ -14,21 +14,21 @@
 ## For details about use and distribution, please read RAJA/LICENSE.
 ##
 
-BUILD_SUFFIX=lc_blueos-EA-nvcc9-xl-test_2019.03.12
+BUILD_SUFFIX=lc_blueos-EA-nvcc8-gcc4.9.3
 
-rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_xl_test_2019_03_12.cmake \
+  -C ../host-configs/lc-builds/blueos/nvcc_gcc_4_9_3.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-9.2.148/bin/nvcc \
-  -DCUDA_ARCH=sm_60 \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-8.0 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-8.0/bin/nvcc \
+  -DCUDA_ARCH=sm_35 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
