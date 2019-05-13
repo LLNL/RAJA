@@ -92,8 +92,6 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
   static RAJA_INLINE void exec(Data &&data)
   {
 
-    printf("Testing Lambda with args \n");
-
     //Convert SegList, ParamList into Seg, Param types, and store in a list
     using targList = typename parser<camp::list<Args...>>::type;
 
@@ -102,7 +100,6 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
 
     //Invoke the lambda with custom arguments
     const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
-    printf("%d \n",tuple_size);
 
     invoke_lambda_with_args<LoopIndex>(std::forward<Data>(data),
                                        argTuple,camp::make_idx_seq_t<tuple_size>{});
