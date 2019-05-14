@@ -180,9 +180,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - with existing kernel API ...\n";
-  
+
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  
+
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
@@ -190,7 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           //InitList identifies memory within the tuple which needs to be intialized
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<2>,
-          
+
           //
           //ForICount populates the Param<> arg within the local offset
           //
@@ -239,9 +239,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          //InitList identifies memory within the tuple which needs to be intialized                            
+          //InitList identifies memory within the tuple which needs to be intialized
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
-                                        
+
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
               //The additional types passed into the lambda statement
@@ -257,7 +257,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              //If contiguous Lambda arguments are coming from the same tuple, 
+              //If contiguous Lambda arguments are coming from the same tuple,
               //they may be merged into a *List<>
               RAJA::statement::Lambda<1, SegList<0, 1>, OffSetList<0, 1>, Param<0> >
             >

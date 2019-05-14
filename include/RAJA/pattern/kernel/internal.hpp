@@ -36,8 +36,10 @@
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 #include "RAJA/util/chai_support.hpp"
+#include "RAJA/pattern/kernel/ArgHelper.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -77,13 +79,6 @@ struct ForTraitBase : public ForBase {
   using index_type = camp::nil;  // default to invalid type
   using policy_type = Policy;
   using type = ForTraitBase;  // make camp::value compatible
-};
-
-struct ParamBase {
-};
-struct SegBase {
-};
-struct OffSetBase {
 };
 
 template <typename Iterator>
@@ -284,16 +279,26 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 //Lambda with custom arguments
 RAJA_SUPPRESS_HD_WARN
 template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple,
+                                                       camp::idx_seq<Args...> const &)
 {
   camp::get<LoopIndex>(data.bodies)(camp::get<Args>(myTuple)...);
 }
 
 //Helper to launch lambda with custom arguments
-template <camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t ...Idx>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data, T tuple, camp::idx_seq<Idx...> const &)
+template <camp::idx_t LoopIndex, typename targList, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data)
 {
-  invoke_custom_lambda<LoopIndex,Data,T,Idx...>(data, tuple);
+
+  //Create a tuple with the appropriate lambda arguments
+  auto argTuple = call_extractor<targList>::make_tuple(data);
+
+  //Invoke the lambda with custom arguments
+  const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
+
+
+  invoke_custom_lambda<LoopIndex,Data,decltype(argTuple)>(data, argTuple,
+                                                          camp::make_idx_seq_t<tuple_size>{});
 }
 
 template <camp::idx_t ArgumentId, typename Data>

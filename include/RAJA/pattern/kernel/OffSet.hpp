@@ -36,6 +36,11 @@
 
 namespace RAJA
 {
+namespace internal
+{
+struct OffSetBase {
+};
+};
 namespace statement
 {
 

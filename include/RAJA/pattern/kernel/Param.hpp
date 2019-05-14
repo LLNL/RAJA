@@ -36,9 +36,16 @@
 
 namespace RAJA
 {
-namespace statement
+namespace internal
 {
 
+struct ParamBase {
+};
+
+}// end namespace internal
+
+namespace statement
+{
 
 /*!
  * An expression that returns the value of the specified RAJA::kernel

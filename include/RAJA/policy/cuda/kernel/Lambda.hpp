@@ -81,16 +81,9 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex, Args...>> {
     //Convert SegList, ParamList into Seg, Param types, and store in a list
     using targList = typename parser<camp::list<Args...>>::type;
 
-    //Create a tuple with the appropriate lambda arguments
-    auto argTuple = call_extractor<targList>::make_tuple(data);
-
-    //Invoke the lambda with custom arguments
-    const int tuple_size = camp::tuple_size<decltype(argTuple)>::value;
-
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){
-      invoke_lambda_with_args<LoopIndex>(data,
-                                         argTuple,camp::make_idx_seq_t<tuple_size>{});
+      invoke_lambda_with_args<LoopIndex, targList>(data);
     }
 
   }
