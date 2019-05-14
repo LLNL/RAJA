@@ -70,13 +70,13 @@ struct Lambda : internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <camp::idx_t LoopIndex>
-struct StatementExecutor<statement::Lambda<LoopIndex>> {
+template <camp::idx_t LambdaIndex>
+struct StatementExecutor<statement::Lambda<LambdaIndex>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    invoke_lambda<LoopIndex>(std::forward<Data>(data));
+    invoke_lambda<LambdaIndex>(std::forward<Data>(data));
   }
 };
 
@@ -85,8 +85,8 @@ struct StatementExecutor<statement::Lambda<LoopIndex>> {
  * A RAJA::kernel statement that invokes a lambda function
  * with user specified arguments.
  */
-template <camp::idx_t LoopIndex,typename... Args>
-struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
+template <camp::idx_t LambdaIndex,typename... Args>
+struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -95,7 +95,7 @@ struct StatementExecutor<statement::Lambda<LoopIndex, Args...>> {
     //Convert SegList, ParamList into Seg, Param types, and store in a list
     using targList = typename parser<camp::list<Args...>>::type;
 
-    invoke_lambda_with_args<LoopIndex, targList>(std::forward<Data>(data));
+    invoke_lambda_with_args<LambdaIndex, targList>(std::forward<Data>(data));
   }
 };
 

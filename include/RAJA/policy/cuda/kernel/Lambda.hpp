@@ -48,15 +48,15 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Data, camp::idx_t LoopIndex>
-struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
+template <typename Data, camp::idx_t LambdaIndex>
+struct CudaStatementExecutor<Data, statement::Lambda<LambdaIndex>> {
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){
-      invoke_lambda<LoopIndex>(data);
+      invoke_lambda<LambdaIndex>(data);
     }
   }
 
@@ -71,8 +71,8 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex>> {
 
 //
 
-template <typename Data, camp::idx_t LoopIndex, typename... Args>
-struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex, Args...>> {
+template <typename Data, camp::idx_t LambdaIndex, typename... Args>
+struct CudaStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>> {
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
@@ -83,7 +83,7 @@ struct CudaStatementExecutor<Data, statement::Lambda<LoopIndex, Args...>> {
 
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){
-      invoke_lambda_with_args<LoopIndex, targList>(data);
+      invoke_lambda_with_args<LambdaIndex, targList>(data);
     }
 
   }
