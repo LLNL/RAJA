@@ -1,3 +1,9 @@
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+###############################################################################
+
 set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
 set(DOXYGEN_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
