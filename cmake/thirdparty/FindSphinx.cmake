@@ -1,3 +1,9 @@
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+###############################################################################
+
 find_program(SPHINX_EXECUTABLE
         NAMES sphinx-build sphinx-build2
         DOC "Path to sphinx-build executable")
