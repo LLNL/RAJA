@@ -1,0 +1,8 @@
+libdir=/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/install_lc_toss3-gcc-8.1.0/lib
+includedir=/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/install_lc_toss3-gcc-8.1.0/include
+
+Name: RAJA
+Description: RAJA Portability Layer
+Version: 0.8.0
+Libs: -rdynamic ${libdir}/libRAJA.a   -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc
+Cflags:  -Ofast -finline-functions -finline-limit=20000      -Wall -Wextra  -I${includedir}

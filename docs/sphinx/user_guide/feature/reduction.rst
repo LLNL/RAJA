@@ -3,6 +3,8 @@
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
+.. ##
 
 .. _reductions-label:
 

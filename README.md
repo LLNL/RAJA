@@ -3,6 +3,8 @@
 [comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
 [comment]: # (for details.)
+[comment]: # 
+[comment]: # (# SPDX-License-Identifier: (BSD-3-Clause))
 [comment]: # (#################################################################)
 
 RAJA v0.8.0

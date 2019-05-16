@@ -1,0 +1,109 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_bc837/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_bc837.dir/build.make CMakeFiles/cmTC_bc837.dir/build
+gmake[1]: Entering directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bc837.dir/CheckSymbolExists.c.o
+/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc   -Wall -Wextra   -fPIE   -o CMakeFiles/cmTC_bc837.dir/CheckSymbolExists.c.o   -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_bc837
+/usr/tce/packages/cmake/cmake-3.9.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bc837.dir/link.txt --verbose=1
+/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc   -Wall -Wextra      -rdynamic CMakeFiles/cmTC_bc837.dir/CheckSymbolExists.c.o  -o cmTC_bc837 
+CMakeFiles/cmTC_bc837.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [cmTC_bc837] Error 1
+gmake[1]: Leaving directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_bc837/fast] Error 2
+
+File /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the std::aligned_alloc exist failed with the following output:
+Change Dir: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_0d8e3/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_0d8e3.dir/build.make CMakeFiles/cmTC_0d8e3.dir/build
+gmake[1]: Entering directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_0d8e3.dir/CheckSymbolExists.c.o
+/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc   -Wall -Wextra   -fPIE   -o CMakeFiles/cmTC_0d8e3.dir/CheckSymbolExists.c.o   -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function 'main':
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:7:12: warning: extra tokens at end of #ifndef directive
+ #ifndef std::aligned_alloc
+            ^
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: 'std' undeclared (first use in this function)
+   return ((int*)(&std::aligned_alloc))[argc];
+                   ^~~
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:22: error: expected ')' before ':' token
+   return ((int*)(&std::aligned_alloc))[argc];
+                 ~    ^
+                      )
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:4:14: warning: parameter 'argc' set but not used [-Wunused-but-set-parameter]
+ int main(int argc, char** argv)
+          ~~~~^~~~
+gmake[1]: *** [CMakeFiles/cmTC_0d8e3.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_0d8e3/fast] Error 2
+
+File /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef std::aligned_alloc
+  return ((int*)(&std::aligned_alloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the _mm_malloc exist failed with the following output:
+Change Dir: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_4de03/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_4de03.dir/build.make CMakeFiles/cmTC_4de03.dir/build
+gmake[1]: Entering directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4de03.dir/CheckSymbolExists.c.o
+/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc   -Wall -Wextra   -fPIE   -o CMakeFiles/cmTC_4de03.dir/CheckSymbolExists.c.o   -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function 'main':
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:7:19: error: '_mm_malloc' undeclared (first use in this function)
+   return ((int*)(&_mm_malloc))[argc];
+                   ^~~~~~~~~~
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:7:19: note: each undeclared identifier is reported only once for each function it appears in
+/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:3:14: warning: parameter 'argc' set but not used [-Wunused-but-set-parameter]
+ int main(int argc, char** argv)
+          ~~~~^~~~
+gmake[1]: *** [CMakeFiles/cmTC_4de03.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory `/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_4de03/fast] Error 2
+
+File /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef _mm_malloc
+  return ((int*)(&_mm_malloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+

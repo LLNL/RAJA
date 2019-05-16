@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libRAJA.a  CMakeFiles/RAJA.dir/src/AlignedRangeIndexSetBuilders.cpp.o CMakeFiles/RAJA.dir/src/DepGraphNode.cpp.o CMakeFiles/RAJA.dir/src/LockFreeIndexSetBuilders.cpp.o CMakeFiles/RAJA.dir/src/MemUtils_CUDA.cpp.o
+/usr/bin/ranlib lib/libRAJA.a

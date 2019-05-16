@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../../lib/libbis.a  CMakeFiles/bis.dir/buildIndexSet.cpp.o
+/usr/bin/ranlib ../../../lib/libbis.a
