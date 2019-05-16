@@ -1,25 +1,17 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 ###############################################################################
 
 #=============================================================================
 # Change the copyright date in all files that contain the text
-# "This file is part of RAJA". We restrict to this subset of files
-# since we do not want to modify files we do not own (e.g., other repos
-# included as submodules). Note that this file and *.git files are omitted
+# "the RAJA/COPYRIGHT file", which is part of the copyright statement 
+# at the top of each RAJA file. We use this to distinguish RAJA files from 
+# that we do not own (e.g., other repos included as submodules), which we do
+# not want to modify. Note that this file and *.git files are omitted
 # as well.
 #
 # IMPORTANT: Since this file is not modified (it is running the shell 
@@ -43,7 +35,7 @@
 #=============================================================================
 # First find all the files we want to modify
 #=============================================================================
-find . -type f ! -name \*.git\*  ! -name \*update_copyright\* -exec grep -l "This file is part of RAJA" {} \; > files2change
+find . -type f ! -name \*.git\*  ! -name \*update_copyright\* -exec grep -l "the RAJA/COPYRIGHT file" {} \; > files2change
 
 #=============================================================================
 # Replace the old copyright dates with new dates
@@ -54,6 +46,10 @@ do
     cp $i $i.sed.bak
     sed "s/Copyright (c) 2016-19/Copyright (c) 2016-20/" $i.sed.bak > $i
 done
+
+echo LICENSE
+cp LICENSE LICENSE.sed.bak
+sed "s/Copyright (c) 2016-19/Copyright (c) 2016-20/" LICENSE.sed.bak > LICENSE
 
 #=============================================================================
 # Remove temporary files created in the process
