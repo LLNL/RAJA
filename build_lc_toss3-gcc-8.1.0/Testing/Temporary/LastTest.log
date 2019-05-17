@@ -1,0 +1,1698 @@
+Start testing: May 16 16:28 PDT
+----------------------------------------------------------
+1/25 Testing: blt_gtest_smoke
+1/25 Test: blt_gtest_smoke
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/tests/blt_gtest_smoke"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/tests/smoke
+"blt_gtest_smoke" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 2 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 2 tests from blt_gtest_smoke
+[ RUN      ] blt_gtest_smoke.basic_assert_example
+[       OK ] blt_gtest_smoke.basic_assert_example (0 ms)
+[ RUN      ] blt_gtest_smoke.death_test
+Note: Death tests disabled in this configuration.
+
+[WARNING] /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/tests/smoke/blt_gtest_smoke.cpp:33:: Death tests are not supported on this platform.
+Statement 'exit(1)' cannot be verified.
+[       OK ] blt_gtest_smoke.death_test (0 ms)
+[----------] 2 tests from blt_gtest_smoke (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test case ran. (0 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"blt_gtest_smoke" end time: May 16 16:28 PDT
+"blt_gtest_smoke" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/25 Testing: blt_openmp_smoke
+2/25 Test: blt_openmp_smoke
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/tests/blt_openmp_smoke"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/tests/smoke
+"blt_openmp_smoke" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+
+My thread id is: 45
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 1
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 60
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 17
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 23
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 64
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 6
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 7
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 34
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 44
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 18
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 2
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 41
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 8
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 62
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 70
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 40
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 38
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 20
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 28
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 37
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 71
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 49
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 29
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 43
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 15
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 65
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 11
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 21
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 13
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 51
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 39
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 31
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 46
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 25
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 53
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 36
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 42
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 67
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 61
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 63
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 9
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 56
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 26
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 16
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 14
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 66
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 27
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 69
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 52
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 10
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 35
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 30
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 4
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 48
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 3
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 59
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 5
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 55
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 50
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 0
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 12
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 22
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 47
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 68
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 58
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 33
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 32
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 19
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 57
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 24
+Num threads is: 72
+Max threads is: 72
+
+My thread id is: 54
+Num threads is: 72
+Max threads is: 72
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"blt_openmp_smoke" end time: May 16 16:28 PDT
+"blt_openmp_smoke" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/25 Testing: camp_tuple.exe
+3/25 Test: camp_tuple.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/camp_tuple.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"camp_tuple.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 9 tests from 2 test cases.
+[----------] Global test environment set-up.
+[----------] 7 tests from CampTuple
+[ RUN      ] CampTuple.AssignCompat
+[       OK ] CampTuple.AssignCompat (0 ms)
+[ RUN      ] CampTuple.Assign
+[       OK ] CampTuple.Assign (0 ms)
+[ RUN      ] CampTuple.ForwardAsTuple
+[       OK ] CampTuple.ForwardAsTuple (0 ms)
+[ RUN      ] CampTuple.GetByIndex
+[       OK ] CampTuple.GetByIndex (0 ms)
+[ RUN      ] CampTuple.GetByType
+[       OK ] CampTuple.GetByType (0 ms)
+[ RUN      ] CampTuple.CatPair
+[       OK ] CampTuple.CatPair (0 ms)
+[ RUN      ] CampTuple.NoDefault
+[       OK ] CampTuple.NoDefault (0 ms)
+[----------] 7 tests from CampTuple (0 ms total)
+
+[----------] 2 tests from CampTaggedTuple
+[ RUN      ] CampTaggedTuple.GetByType
+[       OK ] CampTaggedTuple.GetByType (0 ms)
+[ RUN      ] CampTaggedTuple.MakeTagged
+[       OK ] CampTaggedTuple.MakeTagged (0 ms)
+[----------] 2 tests from CampTaggedTuple (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 9 tests from 2 test cases ran. (0 ms total)
+[  PASSED  ] 9 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"camp_tuple.exe" end time: May 16 16:28 PDT
+"camp_tuple.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/25 Testing: test-atomic.exe
+4/25 Test: test-atomic.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-atomic.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-atomic.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 8 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 8 tests from Atomic
+[ RUN      ] Atomic.basic_OpenMP_AtomicFunction
+[       OK ] Atomic.basic_OpenMP_AtomicFunction (8 ms)
+[ RUN      ] Atomic.basic_OpenMP_AtomicRef
+[       OK ] Atomic.basic_OpenMP_AtomicRef (61 ms)
+[ RUN      ] Atomic.basic_OpenMP_AtomicView
+[       OK ] Atomic.basic_OpenMP_AtomicView (20 ms)
+[ RUN      ] Atomic.basic_OpenMP_Logical
+[       OK ] Atomic.basic_OpenMP_Logical (222 ms)
+[ RUN      ] Atomic.basic_seq_AtomicFunction
+[       OK ] Atomic.basic_seq_AtomicFunction (5 ms)
+[ RUN      ] Atomic.basic_seq_AtomicRef
+[       OK ] Atomic.basic_seq_AtomicRef (51 ms)
+[ RUN      ] Atomic.basic_seq_AtomicView
+[       OK ] Atomic.basic_seq_AtomicView (16 ms)
+[ RUN      ] Atomic.basic_seq_Logical
+[       OK ] Atomic.basic_seq_Logical (158 ms)
+[----------] 8 tests from Atomic (541 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test case ran. (541 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   0.55 sec
+----------------------------------------------------------
+Test Passed.
+"test-atomic.exe" end time: May 16 16:28 PDT
+"test-atomic.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/25 Testing: test-region.exe
+5/25 Test: test-region.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-region.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-region.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Region
+[ RUN      ] Region.basic_Functions
+[       OK ] Region.basic_Functions (9 ms)
+[----------] 1 test from Region (9 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (9 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test-region.exe" end time: May 16 16:28 PDT
+"test-region.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/25 Testing: test-layout.exe
+6/25 Test: test-layout.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-layout.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-layout.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 15 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 4 tests from OffsetLayoutTest
+[ RUN      ] OffsetLayoutTest.1D
+[       OK ] OffsetLayoutTest.1D (0 ms)
+[ RUN      ] OffsetLayoutTest.2D_IJ
+[       OK ] OffsetLayoutTest.2D_IJ (0 ms)
+[ RUN      ] OffsetLayoutTest.2D_JI
+[       OK ] OffsetLayoutTest.2D_JI (0 ms)
+[ RUN      ] OffsetLayoutTest.View
+[       OK ] OffsetLayoutTest.View (0 ms)
+[----------] 4 tests from OffsetLayoutTest (0 ms total)
+
+[----------] 1 test from TypedLayoutTest
+[ RUN      ] TypedLayoutTest.1D
+[       OK ] TypedLayoutTest.1D (0 ms)
+[----------] 1 test from TypedLayoutTest (0 ms total)
+
+[----------] 10 tests from LayoutTest
+[ RUN      ] LayoutTest.OffsetVsRegular
+[       OK ] LayoutTest.OffsetVsRegular (0 ms)
+[ RUN      ] LayoutTest.2D_IJ
+[       OK ] LayoutTest.2D_IJ (0 ms)
+[ RUN      ] LayoutTest.2D_JI
+[       OK ] LayoutTest.2D_JI (0 ms)
+[ RUN      ] LayoutTest.2D_IJ_ProjJ
+[       OK ] LayoutTest.2D_IJ_ProjJ (0 ms)
+[ RUN      ] LayoutTest.3D_KJI_ProjJ
+[       OK ] LayoutTest.3D_KJI_ProjJ (0 ms)
+[ RUN      ] LayoutTest.2D_StrideOne
+[       OK ] LayoutTest.2D_StrideOne (0 ms)
+[ RUN      ] LayoutTest.2D_StaticLayout
+[       OK ] LayoutTest.2D_StaticLayout (0 ms)
+[ RUN      ] LayoutTest.2D_PermutedStaticLayout
+[       OK ] LayoutTest.2D_PermutedStaticLayout (0 ms)
+[ RUN      ] LayoutTest.3D_PermutedStaticLayout
+[       OK ] LayoutTest.3D_PermutedStaticLayout (0 ms)
+[ RUN      ] LayoutTest.4D_PermutedStaticLayout
+[       OK ] LayoutTest.4D_PermutedStaticLayout (0 ms)
+[----------] 10 tests from LayoutTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 3 test cases ran. (0 ms total)
+[  PASSED  ] 15 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-layout.exe" end time: May 16 16:28 PDT
+"test-layout.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/25 Testing: test-view.exe
+7/25 Test: test-view.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-view.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-view.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from ViewTest
+[ RUN      ] ViewTest.Const
+[       OK ] ViewTest.Const (0 ms)
+[----------] 1 test from ViewTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-view.exe" end time: May 16 16:28 PDT
+"test-view.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/25 Testing: test-timer.exe
+8/25 Test: test-timer.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-timer.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-timer.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 2 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 2 tests from TimerTest
+[ RUN      ] TimerTest.No1
+[       OK ] TimerTest.No1 (0 ms)
+[ RUN      ] TimerTest.No2
+2
+1
+[       OK ] TimerTest.No2 (20 ms)
+[----------] 2 tests from TimerTest (20 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test case ran. (20 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test-timer.exe" end time: May 16 16:28 PDT
+"test-timer.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/25 Testing: test-integral-limits.exe
+9/25 Test: test-integral-limits.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-integral-limits.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-integral-limits.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 12 tests from 12 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/0, where TypeParam = char
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/0.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/0.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/0 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/1, where TypeParam = unsigned char
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/1.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/1.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/1 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/2, where TypeParam = short
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/2.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/2.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/2 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/3, where TypeParam = unsigned short
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/3.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/3.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/3 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/4, where TypeParam = int
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/4.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/4.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/4 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/5, where TypeParam = unsigned int
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/5.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/5.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/5 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/6, where TypeParam = long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/6.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/6.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/6 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/7, where TypeParam = unsigned long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/7.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/7.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/7 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/8, where TypeParam = long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/8.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/8.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/8 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/9, where TypeParam = unsigned long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/9.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/9.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/9 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/10, where TypeParam = long long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/10.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/10.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/10 (0 ms total)
+
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/11, where TypeParam = unsigned long long
+[ RUN      ] IntegralLimitsTests/IntegralLimitsTest/11.IntegralLimits
+[       OK ] IntegralLimitsTests/IntegralLimitsTest/11.IntegralLimits (0 ms)
+[----------] 1 test from IntegralLimitsTests/IntegralLimitsTest/11 (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 12 test cases ran. (0 ms total)
+[  PASSED  ] 12 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-integral-limits.exe" end time: May 16 16:28 PDT
+"test-integral-limits.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/25 Testing: test-rajavec.exe
+10/25 Test: test-rajavec.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-rajavec.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-rajavec.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from RAJAVec
+[ RUN      ] RAJAVec.basic_test
+[       OK ] RAJAVec.basic_test (0 ms)
+[----------] 1 test from RAJAVec (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-rajavec.exe" end time: May 16 16:28 PDT
+"test-rajavec.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/25 Testing: test-iterators.exe
+11/25 Test: test-iterators.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-iterators.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-iterators.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 2 tests from 2 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from NumericIterator
+[ RUN      ] NumericIterator.simple
+[       OK ] NumericIterator.simple (0 ms)
+[----------] 1 test from NumericIterator (0 ms total)
+
+[----------] 1 test from StridedNumericIterator
+[ RUN      ] StridedNumericIterator.simple
+[       OK ] StridedNumericIterator.simple (0 ms)
+[----------] 1 test from StridedNumericIterator (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 2 test cases ran. (0 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-iterators.exe" end time: May 16 16:28 PDT
+"test-iterators.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/25 Testing: test-indexvalue.exe
+12/25 Test: test-indexvalue.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-indexvalue.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-indexvalue.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 7 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 7 tests from IndexValue
+[ RUN      ] IndexValue.Construct
+[       OK ] IndexValue.Construct (0 ms)
+[ RUN      ] IndexValue.PrePostIncrement
+[       OK ] IndexValue.PrePostIncrement (0 ms)
+[ RUN      ] IndexValue.PrePostDecrement
+[       OK ] IndexValue.PrePostDecrement (0 ms)
+[ RUN      ] IndexValue.StrongTypesArith
+[       OK ] IndexValue.StrongTypesArith (0 ms)
+[ RUN      ] IndexValue.IndexTypeArith
+[       OK ] IndexValue.IndexTypeArith (0 ms)
+[ RUN      ] IndexValue.StrongTypeCompare
+[       OK ] IndexValue.StrongTypeCompare (0 ms)
+[ RUN      ] IndexValue.IndexTypeCompare
+[       OK ] IndexValue.IndexTypeCompare (0 ms)
+[----------] 7 tests from IndexValue (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test case ran. (0 ms total)
+[  PASSED  ] 7 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-indexvalue.exe" end time: May 16 16:28 PDT
+"test-indexvalue.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/25 Testing: test-span.exe
+13/25 Test: test-span.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-span.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-span.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Span
+[ RUN      ] Span.basic
+[       OK ] Span.basic (0 ms)
+[----------] 1 test from Span (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test-span.exe" end time: May 16 16:28 PDT
+"test-span.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/25 Testing: test-kernel.exe
+14/25 Test: test-kernel.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-kernel.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-kernel.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 25 tests from 6 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from Sequential/Kernel/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<1l, RAJA::policy::sequential::seq_exec, RAJA::statement::For<0l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > >, camp::list<TypedIndex, long>, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] Sequential/Kernel/0.Basic
+[       OK ] Sequential/Kernel/0.Basic (0 ms)
+[----------] 1 test from Sequential/Kernel/0 (0 ms total)
+
+[----------] 1 test from Sequential/Kernel/1, where TypeParam = camp::list<camp::list<RAJA::statement::Tile<1l, RAJA::statement::tile_fixed<2l>, RAJA::policy::loop::loop_exec, RAJA::statement::Tile<0l, RAJA::statement::tile_fixed<2l>, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::sequential::seq_exec, RAJA::statement::For<1l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > > > >, camp::list<long, long>, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] Sequential/Kernel/1.Basic
+[       OK ] Sequential/Kernel/1.Basic (0 ms)
+[----------] 1 test from Sequential/Kernel/1 (0 ms total)
+
+[----------] 1 test from Sequential/Kernel/2, where TypeParam = camp::list<camp::list<RAJA::statement::Collapse<RAJA::policy::sequential::seq_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<0l> > >, camp::list<long, long>, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] Sequential/Kernel/2.Basic
+[       OK ] Sequential/Kernel/2.Basic (0 ms)
+[----------] 1 test from Sequential/Kernel/2 (0 ms total)
+
+[----------] 1 test from OpenMP/Kernel/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<1l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<0l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > >, camp::list<TypedIndex, long>, RAJA::policy::omp::omp_reduce>
+[ RUN      ] OpenMP/Kernel/0.Basic
+[       OK ] OpenMP/Kernel/0.Basic (44 ms)
+[----------] 1 test from OpenMP/Kernel/0 (44 ms total)
+
+[----------] 1 test from OpenMP/Kernel/1, where TypeParam = camp::list<camp::list<RAJA::statement::Tile<1l, RAJA::statement::tile_fixed<2l>, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > > >, camp::list<TypedIndex, long>, RAJA::policy::omp::omp_reduce>
+[ RUN      ] OpenMP/Kernel/1.Basic
+[       OK ] OpenMP/Kernel/1.Basic (16 ms)
+[----------] 1 test from OpenMP/Kernel/1 (16 ms total)
+
+[----------] 20 tests from Kernel
+[ RUN      ] Kernel.FissionFusion
+[       OK ] Kernel.FissionFusion (1 ms)
+[ RUN      ] Kernel.FissionFusion_Conditional
+[       OK ] Kernel.FissionFusion_Conditional (0 ms)
+[ RUN      ] Kernel.ForICount
+[       OK ] Kernel.ForICount (0 ms)
+[ RUN      ] Kernel.ForICountTyped_seq
+[       OK ] Kernel.ForICountTyped_seq (0 ms)
+[ RUN      ] Kernel.ForICountTyped_simd
+[       OK ] Kernel.ForICountTyped_simd (0 ms)
+[ RUN      ] Kernel.Tile
+[       OK ] Kernel.Tile (0 ms)
+[ RUN      ] Kernel.TileTCount
+[       OK ] Kernel.TileTCount (0 ms)
+[ RUN      ] Kernel.TileTCountTyped
+[       OK ] Kernel.TileTCountTyped (0 ms)
+[ RUN      ] Kernel.CollapseSeq
+[       OK ] Kernel.CollapseSeq (0 ms)
+[ RUN      ] Kernel.RegionSeq
+[       OK ] Kernel.RegionSeq (0 ms)
+[ RUN      ] Kernel.RegionOMP
+[       OK ] Kernel.RegionOMP (0 ms)
+[ RUN      ] Kernel.Collapse2
+[       OK ] Kernel.Collapse2 (0 ms)
+[ RUN      ] Kernel.Collapse3
+[       OK ] Kernel.Collapse3 (0 ms)
+[ RUN      ] Kernel.Collapse4
+[       OK ] Kernel.Collapse4 (0 ms)
+[ RUN      ] Kernel.Collapse5
+[       OK ] Kernel.Collapse5 (0 ms)
+[ RUN      ] Kernel.Collapse6
+[       OK ] Kernel.Collapse6 (0 ms)
+[ RUN      ] Kernel.Collapse7
+[       OK ] Kernel.Collapse7 (0 ms)
+[ RUN      ] Kernel.Collapse8
+[       OK ] Kernel.Collapse8 (0 ms)
+[ RUN      ] Kernel.ReduceSeqSum
+[       OK ] Kernel.ReduceSeqSum (0 ms)
+[ RUN      ] Kernel.Hyperplane_seq
+[       OK ] Kernel.Hyperplane_seq (0 ms)
+[----------] 20 tests from Kernel (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 25 tests from 6 test cases ran. (61 ms total)
+[  PASSED  ] 25 tests.
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"test-kernel.exe" end time: May 16 16:28 PDT
+"test-kernel.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/25 Testing: test-multipolicy.exe
+15/25 Test: test-multipolicy.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-multipolicy.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-multipolicy.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 2 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 2 tests from MultiPolicy
+[ RUN      ] MultiPolicy.basic
+[       OK ] MultiPolicy.basic (0 ms)
+[ RUN      ] MultiPolicy.invalid_index
+[       OK ] MultiPolicy.invalid_index (1 ms)
+[----------] 2 tests from MultiPolicy (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test case ran. (1 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-multipolicy.exe" end time: May 16 16:28 PDT
+"test-multipolicy.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/25 Testing: test-simd.exe
+16/25 Test: test-simd.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-simd.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-simd.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 3 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 3 tests from SIMD
+[ RUN      ] SIMD.Align
+[       OK ] SIMD.Align (0 ms)
+[ RUN      ] SIMD.OMPAndSimd
+[       OK ] SIMD.OMPAndSimd (8 ms)
+[ RUN      ] SIMD.OMPAndSimd_MultiLambda
+[       OK ] SIMD.OMPAndSimd_MultiLambda (6 ms)
+[----------] 3 tests from SIMD (14 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test case ran. (14 ms total)
+[  PASSED  ] 3 tests.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test-simd.exe" end time: May 16 16:28 PDT
+"test-simd.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/25 Testing: test-sharedmem.exe
+17/25 Test: test-sharedmem.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-sharedmem.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit
+"test-sharedmem.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 14 tests from 14 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from Seq/MatTranspose/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] Seq/MatTranspose/0.Basic
+[       OK ] Seq/MatTranspose/0.Basic (1 ms)
+[----------] 1 test from Seq/MatTranspose/0 (1 ms total)
+
+[----------] 1 test from Seq/TypedLocalMem/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] Seq/TypedLocalMem/0.Basic
+[       OK ] Seq/TypedLocalMem/0.Basic (1 ms)
+[----------] 1 test from Seq/TypedLocalMem/0 (1 ms total)
+
+[----------] 1 test from OpenMP/MatTranspose/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<0l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> > > > > > >
+[ RUN      ] OpenMP/MatTranspose/0.Basic
+[       OK ] OpenMP/MatTranspose/0.Basic (231 ms)
+[----------] 1 test from OpenMP/MatTranspose/0 (231 ms total)
+
+[----------] 1 test from OpenMP/MatTranspose/1, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] OpenMP/MatTranspose/1.Basic
+[       OK ] OpenMP/MatTranspose/1.Basic (70 ms)
+[----------] 1 test from OpenMP/MatTranspose/1 (70 ms total)
+
+[----------] 1 test from OpenMP/MatTranspose/2, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] OpenMP/MatTranspose/2.Basic
+[       OK ] OpenMP/MatTranspose/2.Basic (2 ms)
+[----------] 1 test from OpenMP/MatTranspose/2 (2 ms total)
+
+[----------] 1 test from OpenMP/MatTranspose/3, where TypeParam = camp::list<camp::list<RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 2l, 3l>, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > >
+[ RUN      ] OpenMP/MatTranspose/3.Basic
+[       OK ] OpenMP/MatTranspose/3.Basic (2 ms)
+[----------] 1 test from OpenMP/MatTranspose/3 (2 ms total)
+
+[----------] 1 test from OpenMP/TypedLocalMem/0, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<0l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> > > > > > >
+[ RUN      ] OpenMP/TypedLocalMem/0.Basic
+[       OK ] OpenMP/TypedLocalMem/0.Basic (8 ms)
+[----------] 1 test from OpenMP/TypedLocalMem/0 (8 ms total)
+
+[----------] 1 test from OpenMP/TypedLocalMem/1, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] OpenMP/TypedLocalMem/1.Basic
+[       OK ] OpenMP/TypedLocalMem/1.Basic (69 ms)
+[----------] 1 test from OpenMP/TypedLocalMem/1 (69 ms total)
+
+[----------] 1 test from OpenMP/TypedLocalMem/2, where TypeParam = camp::list<camp::list<RAJA::statement::For<3l, RAJA::policy::omp::omp_parallel_for_exec, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > > >
+[ RUN      ] OpenMP/TypedLocalMem/2.Basic
+[       OK ] OpenMP/TypedLocalMem/2.Basic (1 ms)
+[----------] 1 test from OpenMP/TypedLocalMem/2 (1 ms total)
+
+[----------] 1 test from OpenMP/TypedLocalMem/3, where TypeParam = camp::list<camp::list<RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 2l, 3l>, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 0l, 1l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > > > > > >
+[ RUN      ] OpenMP/TypedLocalMem/3.Basic
+[       OK ] OpenMP/TypedLocalMem/3.Basic (0 ms)
+[----------] 1 test from OpenMP/TypedLocalMem/3 (0 ms total)
+
+[----------] 1 test from Seq/MatMultiply/0, where TypeParam = camp::list<RAJA::SizeList<16l, 16l>, RAJA::SizeList<16l, 16l>, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 2l, 1l, 0l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<2l> > > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<3l> > > > > > >, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 1l, 0l>, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l>, RAJA::statement::Lambda<2l>, RAJA::statement::Lambda<3l> > > > > > > > >
+[ RUN      ] Seq/MatMultiply/0.shmem
+[       OK ] Seq/MatMultiply/0.shmem (2 ms)
+[----------] 1 test from Seq/MatMultiply/0 (2 ms total)
+
+[----------] 1 test from Seq/MatMultiplyScalar/0, where TypeParam = camp::list<RAJA::SizeList<16l, 16l>, RAJA::SizeList<16l, 16l>, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 2l, 1l, 0l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<2l> > > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<3l> > > > > > >, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 1l, 0l>, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<1l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l>, RAJA::statement::Lambda<2l>, RAJA::statement::Lambda<3l> > > > > > > > >
+[ RUN      ] Seq/MatMultiplyScalar/0.shmem
+[       OK ] Seq/MatMultiplyScalar/0.shmem (2 ms)
+[----------] 1 test from Seq/MatMultiplyScalar/0 (2 ms total)
+
+[----------] 1 test from OpenMP/MatMultiply/0, where TypeParam = camp::list<RAJA::SizeList<16l, 16l>, RAJA::SizeList<16l, 16l>, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 2l, 1l, 0l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<2l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<3l> > > > > > >, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 1l, 0l>, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<0l>, RAJA::statement::Lambda<2l>, RAJA::statement::Lambda<3l> > > > > > > >
+[ RUN      ] OpenMP/MatMultiply/0.shmem
+[       OK ] OpenMP/MatMultiply/0.shmem (11 ms)
+[----------] 1 test from OpenMP/MatMultiply/0 (11 ms total)
+
+[----------] 1 test from OpenMP/MatMultiplyScalar/0, where TypeParam = camp::list<RAJA::SizeList<16l, 16l>, RAJA::SizeList<16l, 16l>, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 2l, 1l, 0l>, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<0l> > >, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<2l> > >, RAJA::statement::For<1l, RAJA::policy::loop::loop_exec, RAJA::statement::For<0l, RAJA::policy::loop::loop_exec, RAJA::statement::Lambda<3l> > > > > > >, camp::list<RAJA::statement::For<4l, RAJA::policy::loop::loop_exec, RAJA::statement::For<3l, RAJA::policy::loop::loop_exec, RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, camp::int_seq<long, 1l, 0l>, RAJA::statement::For<2l, RAJA::policy::loop::loop_exec, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<1l> >, RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec, camp::int_seq<long, 0l, 1l>, RAJA::statement::Lambda<0l>, RAJA::statement::Lambda<2l>, RAJA::statement::Lambda<3l> > > > > > > >
+[ RUN      ] OpenMP/MatMultiplyScalar/0.shmem
+[       OK ] OpenMP/MatMultiplyScalar/0.shmem (12 ms)
+[----------] 1 test from OpenMP/MatMultiplyScalar/0 (12 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 14 test cases ran. (413 ms total)
+[  PASSED  ] 14 tests.
+<end of output>
+Test time =   0.42 sec
+----------------------------------------------------------
+Test Passed.
+"test-sharedmem.exe" end time: May 16 16:28 PDT
+"test-sharedmem.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/25 Testing: test-reduce.exe
+18/25 Test: test-reduce.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-reduce.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-reduce.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 17 tests from 5 test cases.
+[----------] Global test environment set-up.
+[----------] 4 tests from IndexSetReduce/0, where TypeParam = std::tuple<RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::sequential::seq_exec>, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] IndexSetReduce/0.ReduceMinTest
+[       OK ] IndexSetReduce/0.ReduceMinTest (0 ms)
+[ RUN      ] IndexSetReduce/0.ReduceMaxTest
+[       OK ] IndexSetReduce/0.ReduceMaxTest (0 ms)
+[ RUN      ] IndexSetReduce/0.ReduceMaxLocTest
+[       OK ] IndexSetReduce/0.ReduceMaxLocTest (0 ms)
+[ RUN      ] IndexSetReduce/0.ReduceSumTest
+[       OK ] IndexSetReduce/0.ReduceSumTest (0 ms)
+[----------] 4 tests from IndexSetReduce/0 (0 ms total)
+
+[----------] 4 tests from IndexSetReduce/1, where TypeParam = std::tuple<RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::loop::loop_exec>, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] IndexSetReduce/1.ReduceMinTest
+[       OK ] IndexSetReduce/1.ReduceMinTest (1 ms)
+[ RUN      ] IndexSetReduce/1.ReduceMaxTest
+[       OK ] IndexSetReduce/1.ReduceMaxTest (0 ms)
+[ RUN      ] IndexSetReduce/1.ReduceMaxLocTest
+[       OK ] IndexSetReduce/1.ReduceMaxLocTest (0 ms)
+[ RUN      ] IndexSetReduce/1.ReduceSumTest
+[       OK ] IndexSetReduce/1.ReduceSumTest (0 ms)
+[----------] 4 tests from IndexSetReduce/1 (1 ms total)
+
+[----------] 4 tests from IndexSetReduce/2, where TypeParam = std::tuple<RAJA::policy::indexset::ExecPolicy<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::loop::loop_exec>, RAJA::policy::omp::omp_reduce>
+[ RUN      ] IndexSetReduce/2.ReduceMinTest
+[       OK ] IndexSetReduce/2.ReduceMinTest (29 ms)
+[ RUN      ] IndexSetReduce/2.ReduceMaxTest
+[       OK ] IndexSetReduce/2.ReduceMaxTest (25 ms)
+[ RUN      ] IndexSetReduce/2.ReduceMaxLocTest
+[       OK ] IndexSetReduce/2.ReduceMaxLocTest (10 ms)
+[ RUN      ] IndexSetReduce/2.ReduceSumTest
+[       OK ] IndexSetReduce/2.ReduceSumTest (1 ms)
+[----------] 4 tests from IndexSetReduce/2 (65 ms total)
+
+[----------] 4 tests from IndexSetReduce/3, where TypeParam = std::tuple<RAJA::policy::indexset::ExecPolicy<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::loop::loop_exec>, RAJA::policy::omp::omp_reduce_ordered>
+[ RUN      ] IndexSetReduce/3.ReduceMinTest
+[       OK ] IndexSetReduce/3.ReduceMinTest (0 ms)
+[ RUN      ] IndexSetReduce/3.ReduceMaxTest
+[       OK ] IndexSetReduce/3.ReduceMaxTest (0 ms)
+[ RUN      ] IndexSetReduce/3.ReduceMaxLocTest
+[       OK ] IndexSetReduce/3.ReduceMaxLocTest (1 ms)
+[ RUN      ] IndexSetReduce/3.ReduceSumTest
+[       OK ] IndexSetReduce/3.ReduceSumTest (0 ms)
+[----------] 4 tests from IndexSetReduce/3 (1 ms total)
+
+[----------] 1 test from Reduce
+[ RUN      ] Reduce.MinMaxLoc
+[       OK ] Reduce.MinMaxLoc (0 ms)
+[----------] 1 test from Reduce (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 17 tests from 5 test cases ran. (67 ms total)
+[  PASSED  ] 17 tests.
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"test-reduce.exe" end time: May 16 16:28 PDT
+"test-reduce.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/25 Testing: test-forall.exe
+19/25 Test: test-forall.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-forall.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-forall.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 12 tests from 6 test cases.
+[----------] Global test environment set-up.
+[----------] 2 tests from Sequential/ForallTest/0, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::sequential::seq_exec>
+[ RUN      ] Sequential/ForallTest/0.BasicForall
+[       OK ] Sequential/ForallTest/0.BasicForall (0 ms)
+[ RUN      ] Sequential/ForallTest/0.BasicForallIcount
+[       OK ] Sequential/ForallTest/0.BasicForallIcount (0 ms)
+[----------] 2 tests from Sequential/ForallTest/0 (0 ms total)
+
+[----------] 2 tests from Sequential/ForallTest/1, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::loop::loop_exec>
+[ RUN      ] Sequential/ForallTest/1.BasicForall
+[       OK ] Sequential/ForallTest/1.BasicForall (1 ms)
+[ RUN      ] Sequential/ForallTest/1.BasicForallIcount
+[       OK ] Sequential/ForallTest/1.BasicForallIcount (0 ms)
+[----------] 2 tests from Sequential/ForallTest/1 (1 ms total)
+
+[----------] 2 tests from Sequential/ForallTest/2, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::simd::simd_exec>
+[ RUN      ] Sequential/ForallTest/2.BasicForall
+[       OK ] Sequential/ForallTest/2.BasicForall (0 ms)
+[ RUN      ] Sequential/ForallTest/2.BasicForallIcount
+[       OK ] Sequential/ForallTest/2.BasicForallIcount (0 ms)
+[----------] 2 tests from Sequential/ForallTest/2 (0 ms total)
+
+[----------] 2 tests from OpenMP/ForallTest/0, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::sequential::seq_exec, RAJA::policy::omp::omp_parallel_for_exec>
+[ RUN      ] OpenMP/ForallTest/0.BasicForall
+[       OK ] OpenMP/ForallTest/0.BasicForall (63 ms)
+[ RUN      ] OpenMP/ForallTest/0.BasicForallIcount
+[       OK ] OpenMP/ForallTest/0.BasicForallIcount (1 ms)
+[----------] 2 tests from OpenMP/ForallTest/0 (64 ms total)
+
+[----------] 2 tests from OpenMP/ForallTest/1, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::sequential::seq_exec>
+[ RUN      ] OpenMP/ForallTest/1.BasicForall
+[       OK ] OpenMP/ForallTest/1.BasicForall (2 ms)
+[ RUN      ] OpenMP/ForallTest/1.BasicForallIcount
+[       OK ] OpenMP/ForallTest/1.BasicForallIcount (1 ms)
+[----------] 2 tests from OpenMP/ForallTest/1 (3 ms total)
+
+[----------] 2 tests from OpenMP/ForallTest/2, where TypeParam = RAJA::policy::indexset::ExecPolicy<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::loop::loop_exec>
+[ RUN      ] OpenMP/ForallTest/2.BasicForall
+[       OK ] OpenMP/ForallTest/2.BasicForall (0 ms)
+[ RUN      ] OpenMP/ForallTest/2.BasicForallIcount
+[       OK ] OpenMP/ForallTest/2.BasicForallIcount (0 ms)
+[----------] 2 tests from OpenMP/ForallTest/2 (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 6 test cases ran. (68 ms total)
+[  PASSED  ] 12 tests.
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"test-forall.exe" end time: May 16 16:28 PDT
+"test-forall.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/25 Testing: test-indexset.exe
+20/25 Test: test-indexset.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-indexset.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-indexset.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 6 tests from 2 test cases.
+[----------] Global test environment set-up.
+[----------] 3 tests from IndexSetTest
+[ RUN      ] IndexSetTest.IndexSetEquality
+[       OK ] IndexSetTest.IndexSetEquality (0 ms)
+[ RUN      ] IndexSetTest.conditionalOperation_even_indices
+[       OK ] IndexSetTest.conditionalOperation_even_indices (0 ms)
+[ RUN      ] IndexSetTest.conditionalOperation_lt300_indices
+[       OK ] IndexSetTest.conditionalOperation_lt300_indices (0 ms)
+[----------] 3 tests from IndexSetTest (0 ms total)
+
+[----------] 3 tests from IndexSet
+[ RUN      ] IndexSet.empty
+[       OK ] IndexSet.empty (0 ms)
+[ RUN      ] IndexSet.compare
+[       OK ] IndexSet.compare (0 ms)
+[ RUN      ] IndexSet.swap
+[       OK ] IndexSet.swap (0 ms)
+[----------] 3 tests from IndexSet (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 2 test cases ran. (0 ms total)
+[  PASSED  ] 6 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-indexset.exe" end time: May 16 16:28 PDT
+"test-indexset.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/25 Testing: test-segments.exe
+21/25 Test: test-segments.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-segments.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-segments.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 21 tests from 2 test cases.
+[----------] Global test environment set-up.
+[----------] 17 tests from RangeStrideSegmentTest
+[ RUN      ] RangeStrideSegmentTest.sizes_no_roundoff
+[       OK ] RangeStrideSegmentTest.sizes_no_roundoff (0 ms)
+[ RUN      ] RangeStrideSegmentTest.sizes_roundoff1
+[       OK ] RangeStrideSegmentTest.sizes_roundoff1 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.sizes_primes
+[       OK ] RangeStrideSegmentTest.sizes_primes (0 ms)
+[ RUN      ] RangeStrideSegmentTest.basic_types
+[       OK ] RangeStrideSegmentTest.basic_types (0 ms)
+[ RUN      ] RangeStrideSegmentTest.strongly_typed
+[       OK ] RangeStrideSegmentTest.strongly_typed (0 ms)
+[ RUN      ] RangeStrideSegmentTest.sizes_reverse_no_roundoff
+[       OK ] RangeStrideSegmentTest.sizes_reverse_no_roundoff (0 ms)
+[ RUN      ] RangeStrideSegmentTest.sizes_reverse_roundoff1
+[       OK ] RangeStrideSegmentTest.sizes_reverse_roundoff1 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.values_forward_stride1
+[       OK ] RangeStrideSegmentTest.values_forward_stride1 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.values_forward_stride3
+[       OK ] RangeStrideSegmentTest.values_forward_stride3 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.values_reverse_stride1
+[       OK ] RangeStrideSegmentTest.values_reverse_stride1 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.values_reverse_stride1_negative
+[       OK ] RangeStrideSegmentTest.values_reverse_stride1_negative (0 ms)
+[ RUN      ] RangeStrideSegmentTest.zero_size
+[       OK ] RangeStrideSegmentTest.zero_size (0 ms)
+[ RUN      ] RangeStrideSegmentTest.zero_size_reverse
+[       OK ] RangeStrideSegmentTest.zero_size_reverse (0 ms)
+[ RUN      ] RangeStrideSegmentTest.forall_values_forward_stride3
+[       OK ] RangeStrideSegmentTest.forall_values_forward_stride3 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.forall_values_reverse_stride5
+[       OK ] RangeStrideSegmentTest.forall_values_reverse_stride5 (0 ms)
+[ RUN      ] RangeStrideSegmentTest.iterator_begin_end
+[       OK ] RangeStrideSegmentTest.iterator_begin_end (0 ms)
+[ RUN      ] RangeStrideSegmentTest.iterator_distance
+[       OK ] RangeStrideSegmentTest.iterator_distance (0 ms)
+[----------] 17 tests from RangeStrideSegmentTest (0 ms total)
+
+[----------] 4 tests from SegmentTest
+[ RUN      ] SegmentTest.constructors
+[       OK ] SegmentTest.constructors (0 ms)
+[ RUN      ] SegmentTest.assignments
+[       OK ] SegmentTest.assignments (0 ms)
+[ RUN      ] SegmentTest.swaps
+[       OK ] SegmentTest.swaps (0 ms)
+[ RUN      ] SegmentTest.iterators
+[       OK ] SegmentTest.iterators (0 ms)
+[----------] 4 tests from SegmentTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 21 tests from 2 test cases ran. (0 ms total)
+[  PASSED  ] 21 tests.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test-segments.exe" end time: May 16 16:28 PDT
+"test-segments.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+22/25 Testing: test-scan.exe
+22/25 Test: test-scan.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-scan.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-scan.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 72 tests from 12 test cases.
+[----------] Global test environment set-up.
+[----------] 6 tests from ScanTests/Scan/0, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::plus<int, int, int> >
+[ RUN      ] ScanTests/Scan/0.inclusive
+[       OK ] ScanTests/Scan/0.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/0.inclusive_inplace
+[       OK ] ScanTests/Scan/0.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/0.exclusive
+[       OK ] ScanTests/Scan/0.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/0.exclusive_inplace
+[       OK ] ScanTests/Scan/0.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/0.exclusive_offset
+[       OK ] ScanTests/Scan/0.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/0.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/0.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/0 (0 ms total)
+
+[----------] 6 tests from ScanTests/Scan/1, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::plus<double, double, double> >
+[ RUN      ] ScanTests/Scan/1.inclusive
+[       OK ] ScanTests/Scan/1.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/1.inclusive_inplace
+[       OK ] ScanTests/Scan/1.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/1.exclusive
+[       OK ] ScanTests/Scan/1.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/1.exclusive_inplace
+[       OK ] ScanTests/Scan/1.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/1.exclusive_offset
+[       OK ] ScanTests/Scan/1.exclusive_offset (1 ms)
+[ RUN      ] ScanTests/Scan/1.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/1.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/1 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/2, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::minimum<float, float, float> >
+[ RUN      ] ScanTests/Scan/2.inclusive
+[       OK ] ScanTests/Scan/2.inclusive (1 ms)
+[ RUN      ] ScanTests/Scan/2.inclusive_inplace
+[       OK ] ScanTests/Scan/2.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/2.exclusive
+[       OK ] ScanTests/Scan/2.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/2.exclusive_inplace
+[       OK ] ScanTests/Scan/2.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/2.exclusive_offset
+[       OK ] ScanTests/Scan/2.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/2.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/2.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/2 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/3, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::minimum<double, double, double> >
+[ RUN      ] ScanTests/Scan/3.inclusive
+[       OK ] ScanTests/Scan/3.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/3.inclusive_inplace
+[       OK ] ScanTests/Scan/3.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/3.exclusive
+[       OK ] ScanTests/Scan/3.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/3.exclusive_inplace
+[       OK ] ScanTests/Scan/3.exclusive_inplace (1 ms)
+[ RUN      ] ScanTests/Scan/3.exclusive_offset
+[       OK ] ScanTests/Scan/3.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/3.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/3.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/3 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/4, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::maximum<int, int, int> >
+[ RUN      ] ScanTests/Scan/4.inclusive
+[       OK ] ScanTests/Scan/4.inclusive (1 ms)
+[ RUN      ] ScanTests/Scan/4.inclusive_inplace
+[       OK ] ScanTests/Scan/4.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/4.exclusive
+[       OK ] ScanTests/Scan/4.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/4.exclusive_inplace
+[       OK ] ScanTests/Scan/4.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/4.exclusive_offset
+[       OK ] ScanTests/Scan/4.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/4.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/4.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/4 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/5, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::operators::maximum<float, float, float> >
+[ RUN      ] ScanTests/Scan/5.inclusive
+[       OK ] ScanTests/Scan/5.inclusive (1 ms)
+[ RUN      ] ScanTests/Scan/5.inclusive_inplace
+[       OK ] ScanTests/Scan/5.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/5.exclusive
+[       OK ] ScanTests/Scan/5.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/5.exclusive_inplace
+[       OK ] ScanTests/Scan/5.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/5.exclusive_offset
+[       OK ] ScanTests/Scan/5.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/5.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/5.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/5 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/6, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::plus<int, int, int> >
+[ RUN      ] ScanTests/Scan/6.inclusive
+[       OK ] ScanTests/Scan/6.inclusive (9 ms)
+[ RUN      ] ScanTests/Scan/6.inclusive_inplace
+[       OK ] ScanTests/Scan/6.inclusive_inplace (8 ms)
+[ RUN      ] ScanTests/Scan/6.exclusive
+[       OK ] ScanTests/Scan/6.exclusive (9 ms)
+[ RUN      ] ScanTests/Scan/6.exclusive_inplace
+[       OK ] ScanTests/Scan/6.exclusive_inplace (11 ms)
+[ RUN      ] ScanTests/Scan/6.exclusive_offset
+[       OK ] ScanTests/Scan/6.exclusive_offset (6 ms)
+[ RUN      ] ScanTests/Scan/6.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/6.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/6 (43 ms total)
+
+[----------] 6 tests from ScanTests/Scan/7, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::plus<double, double, double> >
+[ RUN      ] ScanTests/Scan/7.inclusive
+[       OK ] ScanTests/Scan/7.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/7.inclusive_inplace
+[       OK ] ScanTests/Scan/7.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/7.exclusive
+[       OK ] ScanTests/Scan/7.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/7.exclusive_inplace
+[       OK ] ScanTests/Scan/7.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/7.exclusive_offset
+[       OK ] ScanTests/Scan/7.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/7.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/7.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/7 (2 ms total)
+
+[----------] 6 tests from ScanTests/Scan/8, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::minimum<float, float, float> >
+[ RUN      ] ScanTests/Scan/8.inclusive
+[       OK ] ScanTests/Scan/8.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/8.inclusive_inplace
+[       OK ] ScanTests/Scan/8.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/8.exclusive
+[       OK ] ScanTests/Scan/8.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/8.exclusive_inplace
+[       OK ] ScanTests/Scan/8.exclusive_inplace (1 ms)
+[ RUN      ] ScanTests/Scan/8.exclusive_offset
+[       OK ] ScanTests/Scan/8.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/8.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/8.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/8 (1 ms total)
+
+[----------] 6 tests from ScanTests/Scan/9, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::minimum<double, double, double> >
+[ RUN      ] ScanTests/Scan/9.inclusive
+[       OK ] ScanTests/Scan/9.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/9.inclusive_inplace
+[       OK ] ScanTests/Scan/9.inclusive_inplace (1 ms)
+[ RUN      ] ScanTests/Scan/9.exclusive
+[       OK ] ScanTests/Scan/9.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/9.exclusive_inplace
+[       OK ] ScanTests/Scan/9.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/9.exclusive_offset
+[       OK ] ScanTests/Scan/9.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/9.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/9.exclusive_inplace_offset (1 ms)
+[----------] 6 tests from ScanTests/Scan/9 (2 ms total)
+
+[----------] 6 tests from ScanTests/Scan/10, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::maximum<int, int, int> >
+[ RUN      ] ScanTests/Scan/10.inclusive
+[       OK ] ScanTests/Scan/10.inclusive (0 ms)
+[ RUN      ] ScanTests/Scan/10.inclusive_inplace
+[       OK ] ScanTests/Scan/10.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/10.exclusive
+[       OK ] ScanTests/Scan/10.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/10.exclusive_inplace
+[       OK ] ScanTests/Scan/10.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/10.exclusive_offset
+[       OK ] ScanTests/Scan/10.exclusive_offset (0 ms)
+[ RUN      ] ScanTests/Scan/10.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/10.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/10 (0 ms total)
+
+[----------] 6 tests from ScanTests/Scan/11, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::operators::maximum<float, float, float> >
+[ RUN      ] ScanTests/Scan/11.inclusive
+[       OK ] ScanTests/Scan/11.inclusive (1 ms)
+[ RUN      ] ScanTests/Scan/11.inclusive_inplace
+[       OK ] ScanTests/Scan/11.inclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/11.exclusive
+[       OK ] ScanTests/Scan/11.exclusive (0 ms)
+[ RUN      ] ScanTests/Scan/11.exclusive_inplace
+[       OK ] ScanTests/Scan/11.exclusive_inplace (0 ms)
+[ RUN      ] ScanTests/Scan/11.exclusive_offset
+[       OK ] ScanTests/Scan/11.exclusive_offset (1 ms)
+[ RUN      ] ScanTests/Scan/11.exclusive_inplace_offset
+[       OK ] ScanTests/Scan/11.exclusive_inplace_offset (0 ms)
+[----------] 6 tests from ScanTests/Scan/11 (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 72 tests from 12 test cases ran. (64 ms total)
+[  PASSED  ] 72 tests.
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"test-scan.exe" end time: May 16 16:28 PDT
+"test-scan.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/25 Testing: test-reductions.exe
+23/25 Test: test-reductions.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-reductions.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-reductions.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 58 tests from 13 test cases.
+[----------] Global test environment set-up.
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/0, where TypeParam = std::tuple<RAJA::policy::sequential::seq_reduce, int>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/0.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/0.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/0.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/0.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/0 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/1, where TypeParam = std::tuple<RAJA::policy::sequential::seq_reduce, float>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/1.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/1.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/1.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/1.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/1 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/2, where TypeParam = std::tuple<RAJA::policy::sequential::seq_reduce, double>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/2.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/2.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/2.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/2.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/2 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/3, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce, int>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/3.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/3.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/3.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/3.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/3 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/4, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce, float>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/4.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/4.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/4.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/4.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/4 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/5, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce, double>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/5.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/5.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/5.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/5.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/5 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/6, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce_ordered, int>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/6.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/6.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/6.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/6.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/6 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/7, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce_ordered, float>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/7.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/7.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/7.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/7.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/7 (0 ms total)
+
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/8, where TypeParam = std::tuple<RAJA::policy::omp::omp_reduce_ordered, double>
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/8.ReductionConstructor
+[       OK ] ReduceBasicTests/ReductionConstructorTest/8.ReductionConstructor (0 ms)
+[ RUN      ] ReduceBasicTests/ReductionConstructorTest/8.ReductionConstructor2
+[       OK ] ReduceBasicTests/ReductionConstructorTest/8.ReductionConstructor2 (0 ms)
+[----------] 2 tests from ReduceBasicTests/ReductionConstructorTest/8 (0 ms total)
+
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/0, where TypeParam = std::tuple<RAJA::policy::sequential::seq_exec, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceSum
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceSum (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceSum2
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceSum2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMin
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMin (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMin2
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMin2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMax
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMax (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMax2
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMax2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMinLoc
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMinLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMinLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMinLoc2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMaxLoc
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMaxLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/0.ReduceMaxLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/0.ReduceMaxLoc2 (0 ms)
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/0 (0 ms total)
+
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/1, where TypeParam = std::tuple<RAJA::policy::loop::loop_exec, RAJA::policy::sequential::seq_reduce>
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceSum
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceSum (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceSum2
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceSum2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMin
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMin (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMin2
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMin2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMax
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMax (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMax2
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMax2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMinLoc
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMinLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMinLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMinLoc2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMaxLoc
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMaxLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/1.ReduceMaxLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/1.ReduceMaxLoc2 (0 ms)
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/1 (0 ms total)
+
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/2, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::omp::omp_reduce>
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceSum
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceSum (8 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceSum2
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceSum2 (6 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMin
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMin (3 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMin2
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMin2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMax
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMax (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMax2
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMax2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMinLoc
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMinLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMinLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMinLoc2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMaxLoc
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMaxLoc (1 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/2.ReduceMaxLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/2.ReduceMaxLoc2 (0 ms)
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/2 (18 ms total)
+
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/3, where TypeParam = std::tuple<RAJA::policy::omp::omp_parallel_for_exec, RAJA::policy::omp::omp_reduce_ordered>
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceSum
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceSum (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceSum2
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceSum2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMin
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMin (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMin2
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMin2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMax
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMax (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMax2
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMax2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMinLoc
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMinLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMinLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMinLoc2 (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMaxLoc
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMaxLoc (0 ms)
+[ RUN      ] Reduce/ReductionCorrectnessTest/3.ReduceMaxLoc2
+[       OK ] Reduce/ReductionCorrectnessTest/3.ReduceMaxLoc2 (0 ms)
+[----------] 10 tests from Reduce/ReductionCorrectnessTest/3 (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 58 tests from 13 test cases ran. (18 ms total)
+[  PASSED  ] 58 tests.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test-reductions.exe" end time: May 16 16:28 PDT
+"test-reductions.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/25 Testing: test-forall-view.exe
+24/25 Test: test-forall-view.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-forall-view.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-forall-view.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 8 tests from 4 test cases.
+[----------] Global test environment set-up.
+[----------] 2 tests from Sequential/ForallViewTest/0, where TypeParam = RAJA::policy::sequential::seq_exec
+[ RUN      ] Sequential/ForallViewTest/0.ForallViewLayout
+[       OK ] Sequential/ForallViewTest/0.ForallViewLayout (2 ms)
+[ RUN      ] Sequential/ForallViewTest/0.ForallViewOffsetLayout
+[       OK ] Sequential/ForallViewTest/0.ForallViewOffsetLayout (1 ms)
+[----------] 2 tests from Sequential/ForallViewTest/0 (3 ms total)
+
+[----------] 2 tests from Sequential/ForallViewTest/1, where TypeParam = RAJA::policy::loop::loop_exec
+[ RUN      ] Sequential/ForallViewTest/1.ForallViewLayout
+[       OK ] Sequential/ForallViewTest/1.ForallViewLayout (1 ms)
+[ RUN      ] Sequential/ForallViewTest/1.ForallViewOffsetLayout
+[       OK ] Sequential/ForallViewTest/1.ForallViewOffsetLayout (1 ms)
+[----------] 2 tests from Sequential/ForallViewTest/1 (2 ms total)
+
+[----------] 2 tests from Sequential/ForallViewTest/2, where TypeParam = RAJA::policy::simd::simd_exec
+[ RUN      ] Sequential/ForallViewTest/2.ForallViewLayout
+[       OK ] Sequential/ForallViewTest/2.ForallViewLayout (2 ms)
+[ RUN      ] Sequential/ForallViewTest/2.ForallViewOffsetLayout
+[       OK ] Sequential/ForallViewTest/2.ForallViewOffsetLayout (1 ms)
+[----------] 2 tests from Sequential/ForallViewTest/2 (3 ms total)
+
+[----------] 2 tests from OpenMP/ForallViewTest/0, where TypeParam = RAJA::policy::omp::omp_parallel_for_exec
+[ RUN      ] OpenMP/ForallViewTest/0.ForallViewLayout
+[       OK ] OpenMP/ForallViewTest/0.ForallViewLayout (8 ms)
+[ RUN      ] OpenMP/ForallViewTest/0.ForallViewOffsetLayout
+[       OK ] OpenMP/ForallViewTest/0.ForallViewOffsetLayout (7 ms)
+[----------] 2 tests from OpenMP/ForallViewTest/0 (15 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 4 test cases ran. (23 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test-forall-view.exe" end time: May 16 16:28 PDT
+"test-forall-view.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+25/25 Testing: test-synchronize.exe
+25/25 Test: test-synchronize.exe
+Command: "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/test-synchronize.exe"
+Directory: /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu
+"test-synchronize.exe" start time: May 16 16:28 PDT
+Output:
+----------------------------------------------------------
+Running main() from gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from SynchronizeTest
+[ RUN      ] SynchronizeTest.omp
+[       OK ] SynchronizeTest.omp (6 ms)
+[----------] 1 test from SynchronizeTest (6 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (7 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"test-synchronize.exe" end time: May 16 16:28 PDT
+"test-synchronize.exe" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: May 16 16:28 PDT

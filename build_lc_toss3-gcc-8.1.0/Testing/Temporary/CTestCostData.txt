@@ -1,0 +1,26 @@
+blt_gtest_smoke 1 0.00592899
+blt_openmp_smoke 1 0.011548
+camp_tuple.exe 1 0.00613213
+test-atomic.exe 1 0.546612
+test-region.exe 1 0.015986
+test-layout.exe 1 0.0056138
+test-view.exe 1 0.00534487
+test-timer.exe 1 0.0260639
+test-integral-limits.exe 1 0.00550413
+test-rajavec.exe 1 0.00560379
+test-iterators.exe 1 0.00549412
+test-indexvalue.exe 1 0.00540018
+test-span.exe 1 0.00475407
+test-kernel.exe 1 0.0670099
+test-multipolicy.exe 1 0.00568891
+test-simd.exe 1 0.0195611
+test-sharedmem.exe 1 0.419713
+test-reduce.exe 1 0.073952
+test-forall.exe 1 0.075515
+test-indexset.exe 1 0.00587106
+test-segments.exe 1 0.00498796
+test-scan.exe 1 0.0705481
+test-reductions.exe 1 0.0241699
+test-forall-view.exe 1 0.02952
+test-synchronize.exe 1 0.0129881
+---

@@ -1,0 +1,297 @@
+[
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC   -fopenmp -std=c++14 -o CMakeFiles/RAJA.dir/src/AlignedRangeIndexSetBuilders.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/AlignedRangeIndexSetBuilders.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/AlignedRangeIndexSetBuilders.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC   -fopenmp -std=c++14 -o CMakeFiles/RAJA.dir/src/DepGraphNode.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/DepGraphNode.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/DepGraphNode.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC   -fopenmp -std=c++14 -o CMakeFiles/RAJA.dir/src/LockFreeIndexSetBuilders.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/LockFreeIndexSetBuilders.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/LockFreeIndexSetBuilders.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC   -fopenmp -std=c++14 -o CMakeFiles/RAJA.dir/src/MemUtils_CUDA.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/MemUtils_CUDA.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/src/MemUtils_CUDA.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC        -Wall -Wextra  -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/src/gtest_main.cc",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/src/gtest_main.cc"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC        -Wall -Wextra  -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/src/gtest-all.cc",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/src/gtest-all.cc"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/tests/smoke",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++         -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++11 -o CMakeFiles/blt_openmp_smoke.dir/blt_openmp_smoke.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/tests/smoke/blt_openmp_smoke.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/tests/smoke/blt_openmp_smoke.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/blt/tests/smoke",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -std=c++11 -o CMakeFiles/blt_gtest_smoke.dir/blt_gtest_smoke.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/tests/smoke/blt_gtest_smoke.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/tests/smoke/blt_gtest_smoke.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-sharedmem.exe.dir/test-sharedmem.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-sharedmem.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-sharedmem.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-kernel.exe.dir/test-kernel.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-kernel.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-kernel.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/camp_tuple.exe.dir/camp_tuple.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/camp_tuple.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/camp_tuple.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-span.exe.dir/test-span.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-span.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-span.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-timer.exe.dir/test-timer.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-timer.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-timer.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-multipolicy.exe.dir/test-multipolicy.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-multipolicy.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-multipolicy.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-atomic.exe.dir/test-atomic.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-atomic.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-atomic.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-region.exe.dir/test-region.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-region.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-region.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-simd.exe.dir/test-simd.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-simd.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-simd.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-layout.exe.dir/test-layout.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-layout.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-layout.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-view.exe.dir/test-view.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-view.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-view.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-indexvalue.exe.dir/test-indexvalue.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-indexvalue.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-indexvalue.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-iterators.exe.dir/test-iterators.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-iterators.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-iterators.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-integral-limits.exe.dir/test-integral-limits.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-integral-limits.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-integral-limits.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-rajavec.exe.dir/test-rajavec.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-rajavec.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/test-rajavec.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-reduce.exe.dir/test-reduce.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-reduce.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-reduce.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-segments.exe.dir/test-segments.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-segments.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-segments.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-reductions.exe.dir/test-reductions.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-reductions.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-reductions.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIC   -fopenmp -std=c++14 -o CMakeFiles/bis.dir/buildIndexSet.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/buildIndexSet.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/buildIndexSet.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-indexset.exe.dir/test-indexset.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-indexset.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-indexset.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-scan.exe.dir/test-scan.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-scan.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-scan.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-forall-view.exe.dir/test-forall-view.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-forall-view.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-forall-view.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-synchronize.exe.dir/test-synchronize.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-synchronize.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-synchronize.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/test/unit/cpu",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++  -DGTEST_HAS_DEATH_TEST=0 -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/include -isystem /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/blt/thirdparty_builtin/googletest-master-2018-02-01/googletest/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/test-forall.exe.dir/test-forall.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-forall.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/test/unit/cpu/test-forall.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_scan.dir/tut_scan.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_scan.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_scan.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_matrix-multiply.dir/tut_matrix-multiply.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_matrix-multiply.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_matrix-multiply.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_nested-loop-reorder.dir/tut_nested-loop-reorder.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_nested-loop-reorder.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_nested-loop-reorder.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_indexset-segments.dir/tut_indexset-segments.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_indexset-segments.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_indexset-segments.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_tiled-matrix-transpose.dir/tut_tiled-matrix-transpose.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_tiled-matrix-transpose.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_tiled-matrix-transpose.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_vertexsum-coloring.dir/tut_vertexsum-coloring.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_vertexsum-coloring.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_vertexsum-coloring.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/red-black-gauss-seidel.dir/red-black-gauss-seidel.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/red-black-gauss-seidel.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/red-black-gauss-seidel.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_add-vectors.dir/tut_add-vectors.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_add-vectors.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_add-vectors.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_offset-layout.dir/tut_offset-layout.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_offset-layout.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_offset-layout.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/pi-reduce_vs_atomic.dir/pi-reduce_vs_atomic.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/pi-reduce_vs_atomic.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/pi-reduce_vs_atomic.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_reductions.dir/tut_reductions.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_reductions.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_reductions.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_daxpy.dir/tut_daxpy.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_daxpy.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_daxpy.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_atomic-binning.dir/tut_atomic-binning.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_atomic-binning.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_atomic-binning.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_batched-matrix-multiply.dir/tut_batched-matrix-multiply.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_batched-matrix-multiply.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_batched-matrix-multiply.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_dot-product.dir/tut_dot-product.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_dot-product.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_dot-product.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/jacobi.dir/jacobi.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/jacobi.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/jacobi.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/tut_matrix-transpose-local-array.dir/tut_matrix-transpose-local-array.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_matrix-transpose-local-array.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/tut_matrix-transpose-local-array.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/wave-eqn.dir/wave-eqn.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/wave-eqn.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/wave-eqn.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/examples",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ltimes.dir/ltimes.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/ltimes.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/examples/ltimes.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_1_add-vectors.dir/ex_1_add-vectors.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_1_add-vectors.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_1_add-vectors.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_2_dot-product.dir/ex_2_dot-product.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_2_dot-product.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_2_dot-product.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_3_indexset-segments.dir/ex_3_indexset-segments.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_3_indexset-segments.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_3_indexset-segments.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_5_batched-matrix-multiply.dir/ex_5_batched-matrix-multiply.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_5_batched-matrix-multiply.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_5_batched-matrix-multiply.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_4_atomic-binning.dir/ex_4_atomic-binning.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_4_atomic-binning.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_4_atomic-binning.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_7_tiled-matrix-transpose.dir/ex_7_tiled-matrix-transpose.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_7_tiled-matrix-transpose.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_7_tiled-matrix-transpose.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_6_matrix-multiply.dir/ex_6_matrix-multiply.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_6_matrix-multiply.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_6_matrix-multiply.cpp"
+},
+{
+  "directory": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/exercises",
+  "command": "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++   -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/build_lc_toss3-gcc-8.1.0/include -I/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/tpl/cub       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000 -fPIE   -fopenmp -std=c++14 -o CMakeFiles/ex_8_matrix-transpose-local-array.dir/ex_8_matrix-transpose-local-array.cpp.o -c /g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_8_matrix-transpose-local-array.cpp",
+  "file": "/g/g16/hornung1/AASD/RAJA-repo/raja-WORK/RAJA/exercises/ex_8_matrix-transpose-local-array.cpp"
+}
+]

@@ -1,0 +1,1 @@
+/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/test-iterators.exe.dir/test-iterators.cpp.o  -o ../test-iterators.exe ../../lib/libgtest_main.a ../../lib/libgtest.a -pthread ../../lib/libRAJA.a 

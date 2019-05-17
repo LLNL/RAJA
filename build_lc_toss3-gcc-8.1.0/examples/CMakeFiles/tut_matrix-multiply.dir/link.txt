@@ -1,0 +1,1 @@
+/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/tut_matrix-multiply.dir/tut_matrix-multiply.cpp.o  -o ../bin/tut_matrix-multiply ../lib/libRAJA.a 
