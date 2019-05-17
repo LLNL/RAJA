@@ -1,1 +1,0 @@
-/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/pi-reduce_vs_atomic.dir/pi-reduce_vs_atomic.cpp.o  -o ../bin/pi-reduce_vs_atomic ../lib/libRAJA.a 
