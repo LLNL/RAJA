@@ -1,1 +1,0 @@
-/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/test-reduce.exe.dir/test-reduce.cpp.o  -o ../../test-reduce.exe ../../../lib/libbis.a ../../../lib/libgtest_main.a ../../../lib/libgtest.a -pthread ../../../lib/libRAJA.a 

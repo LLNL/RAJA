@@ -1,1 +1,0 @@
-/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/test-region.exe.dir/test-region.cpp.o  -o ../test-region.exe ../../lib/libgtest_main.a ../../lib/libgtest.a -pthread ../../lib/libRAJA.a 

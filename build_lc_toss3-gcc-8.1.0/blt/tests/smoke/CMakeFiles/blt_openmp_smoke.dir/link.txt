@@ -1,1 +1,0 @@
-/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/blt_openmp_smoke.dir/blt_openmp_smoke.cpp.o  -o ../../../tests/blt_openmp_smoke 

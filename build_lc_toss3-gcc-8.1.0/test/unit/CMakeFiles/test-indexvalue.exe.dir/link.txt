@@ -1,1 +1,0 @@
-/usr/tce/packages/gcc/gcc-8.1.0/bin/g++       -Wall -Wextra  -Ofast -finline-functions -finline-limit=20000  -fopenmp  CMakeFiles/test-indexvalue.exe.dir/test-indexvalue.cpp.o  -o ../test-indexvalue.exe ../../lib/libgtest_main.a ../../lib/libgtest.a -pthread ../../lib/libRAJA.a 
