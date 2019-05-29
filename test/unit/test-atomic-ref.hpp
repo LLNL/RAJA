@@ -19,26 +19,72 @@
 
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
+#include <type_traits>
 
 template < typename T >
 RAJA_INLINE
-  RAJA_HOST_DEVICE
-T np2m1(T val)
+RAJA_HOST_DEVICE
+typename std::enable_if<sizeof(T) == 1, T>::type np2m1(T val)
 {
   val |= val >> 1  ;
   val |= val >> 2  ;
   val |= val >> 4  ;
-  if (sizeof(T) >= 2)
-    val |= val >> 8  ;
-  if (sizeof(T) >= 4)
-    val |= val >> 16 ;
-  if (sizeof(T) >= 8)
-    val |= val >> 32 ;
-  if (sizeof(T) >= 16)
-    val |= val >> 64 ;
   return val;
 }
 
+template < typename T >
+RAJA_INLINE
+RAJA_HOST_DEVICE
+typename std::enable_if<sizeof(T) == 2, T>::type np2m1(T val)
+{
+  val |= val >> 1  ;
+  val |= val >> 2  ;
+  val |= val >> 4  ;
+  val |= val >> 8  ;
+  return val;
+}
+
+template < typename T >
+RAJA_INLINE
+RAJA_HOST_DEVICE
+typename std::enable_if<sizeof(T) == 4, T>::type np2m1(T val)
+{
+  val |= val >> 1  ;
+  val |= val >> 2  ;
+  val |= val >> 4  ;
+  val |= val >> 8  ;
+  val |= val >> 16 ;
+  return val;
+}
+
+template < typename T >
+RAJA_INLINE
+RAJA_HOST_DEVICE
+typename std::enable_if<sizeof(T) == 8, T>::type np2m1(T val)
+{
+  val |= val >> 1  ;
+  val |= val >> 2  ;
+  val |= val >> 4  ;
+  val |= val >> 8  ;
+  val |= val >> 16 ;
+  val |= val >> 32 ;
+  return val;
+}
+
+template < typename T >
+RAJA_INLINE
+RAJA_HOST_DEVICE
+typename std::enable_if<sizeof(T) == 16, T>::type np2m1(T val)
+{
+  val |= val >> 1  ;
+  val |= val >> 2  ;
+  val |= val >> 4  ;
+  val |= val >> 8  ;
+  val |= val >> 16 ;
+  val |= val >> 32 ;
+  val |= val >> 64 ;
+  return val;
+}
 
 template < typename T, typename AtomicPolicy >
 struct AndEqOtherOp {
