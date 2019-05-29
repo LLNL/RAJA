@@ -43,6 +43,7 @@
 #include "RAJA/pattern/kernel/OffSet.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Seg.hpp"
+#include "RAJA/pattern/kernel/LambdaArgs.hpp"
 
 namespace RAJA
 {
@@ -58,6 +59,11 @@ using RAJA::statement::OffSetList;
 
 using RAJA::statement::ParamList;
 using RAJA::statement::Param;
+
+using RAJA::statement::seg_t;
+using RAJA::statement::param_t;
+using RAJA::statement::offset_t;
+using RAJA::statement::LambdaArgs;
 
 //Concatanate lists
 template<typename ListA, typename ListB>
@@ -82,7 +88,6 @@ struct listMaker
 {
   using type = typename camp::list<>;
 };
-
   
 //Converts SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
 template<camp::idx_t head, camp::idx_t... tail>
@@ -99,6 +104,20 @@ struct listMaker<Seg<id>>
   using type = typename camp::list<Seg<id>>::type;
 };
 
+//Convert LambdaArgs<T, 1, 2, 3> - > camp::list<LambdaArgs<T, 1>, LambdaArgs<T, 2>, LambdaArgs<T, 3> >
+template<typename T, camp::idx_t head, camp::idx_t... tail>
+struct listMaker<LambdaArgs<T, head, tail...>>
+{
+  using type = typename catList<camp::list<LambdaArgs<T, head>>,
+              typename listMaker<LambdaArgs<T, tail...> >::type>::type;
+};
+
+//Convert LambdaArgs<T, id> - > camp::list<LambdaArgs<T, id>>
+template<typename T, camp::idx_t id>
+struct listMaker<LambdaArgs<T, id>>
+{
+  using type = typename camp::list<LambdaArgs<T,id>>::type;
+};
 
 //Converts OffSetList<1,2,3> -> list<OffSet<0>, OffSet<1>, OffSet<2>>
 template<camp::idx_t head, camp::idx_t... tail>
@@ -166,7 +185,33 @@ struct extractor<RAJA::statement::OffSet<id>, Tail...>
 };
 
 template<camp::idx_t id, typename...Tail>
+struct extractor<LambdaArgs<offset_t, id>, Tail...>
+{
+
+  template<typename Data>
+  RAJA_HOST_DEVICE
+  static auto extract_arg(Data &&data) ->
+    decltype(camp::get<id>(data.offset_tuple))
+  {
+    return camp::get<id>(data.offset_tuple);
+  }
+
+};
+
+template<camp::idx_t id, typename...Tail>
 struct extractor<RAJA::statement::Seg<id>, Tail...>
+{
+  template<typename Data>
+  RAJA_HOST_DEVICE
+  static auto extract_arg(Data &&data) ->
+    decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
+  {
+    return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
+  }
+};
+
+template<camp::idx_t id, typename...Tail>
+struct extractor<LambdaArgs<seg_t, id>, Tail...>
 {
   template<typename Data>
   RAJA_HOST_DEVICE
@@ -188,6 +233,19 @@ struct extractor<RAJA::statement::Param<id>, Tail...>
     return camp::get<id>(data.param_tuple);
   }
 };
+
+template<camp::idx_t id, typename...Tail>
+struct extractor<LambdaArgs<param_t, id>, Tail...>
+{
+  template<typename Data>
+  RAJA_HOST_DEVICE
+  static auto extract_arg(Data &&data)->
+    decltype(camp::get<id>(data.param_tuple))
+  {
+    return camp::get<id>(data.param_tuple);
+  }
+};
+
   
 template<typename List>
 struct call_extractor

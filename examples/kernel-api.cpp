@@ -29,6 +29,11 @@ using RAJA::statement::OffSetList;
 using RAJA::statement::SegList;
 using RAJA::statement::ParamList;
 
+using RAJA::statement::LambdaArgs;
+using RAJA::statement::seg_t;
+using RAJA::statement::param_t;
+using RAJA::statement::offset_t;
+
 /*
  *  Matrix Transpose Example
  *
@@ -155,7 +160,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-
   //----------------------------------------------------------------------------//
 
   //
@@ -287,17 +291,88 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   //--------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA - with kernel API 2 ...\n";
+
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+
+  using SEQ_EXEC_POL_NEW_2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          //InitList identifies memory within the tuple which needs to be intialized
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
+
+          RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              //The additional types passed into the lambda statement
+              //are used to specify lambda arguments.
+             RAJA::statement::Lambda<0, LambdaArgs<seg_t, 0, 1>, LambdaArgs<offset_t, 0,1>, LambdaArgs<param_t, 0> >
+            >
+          >,
+
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::loop_exec,
+              //If contiguous Lambda arguments are coming from the same tuple,
+              //they may be merged into a *List<>
+             RAJA::statement::Lambda<1, LambdaArgs<seg_t, 0, 1>, LambdaArgs<offset_t, 0,1>, LambdaArgs<param_t, 0> >
+            >
+          >
+
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel_param<SEQ_EXEC_POL_NEW_2>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
+                                                        RAJA::RangeSegment(0, N_r)),
+
+    RAJA::make_tuple(RAJA_Tile),
+
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+        RAJA_Tile(ty, tx) = Aview(row, col);
+    },
+
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      Atview(col, row) = RAJA_Tile(ty, tx);
+
+  });
+
+  checkResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
+
+  //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - with existing kernel API 2 ...\n";
   //
   //The new interface enables having lambdas with different numbers of arguments
   //
+
+#if 1
+  using NEW_POL =
+    RAJA::KernelPolicy<
+        RAJA::statement::For<1, RAJA::loop_exec,
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::Lambda<0, LambdaArgs<seg_t, 0, 1> >
+        >
+      >
+    >;
+
+  RAJA::kernel<NEW_POL>
+    (RAJA::make_tuple(RAJA::RangeSegment(0,1),
+                      RAJA::RangeSegment(2,3)
+                      ),
+     [=] (int i, int j) {
+      printf("%d %d \n", i, j);
+    });
+
+#else
   using NEW_POL =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::loop_exec,
-        RAJA::statement::Lambda<0, Seg<0> >
+        RAJA::statement::Lambda<0, LambdaArgs<seg_t,0> >
       >,
       RAJA::statement::For<1, RAJA::loop_exec,
-                           RAJA::statement::Lambda<1, Seg<1>, Param<0> >
+        RAJA::statement::Lambda<1, Seg<1>, Param<0> >
       >
     >;
 
@@ -310,6 +385,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     [=] (int j, int &val) {
       printf("j = %d, val = %d \n", j, val);
     });
+#endif
+
+    printf("Exited normally \n");
 
   return 0;
 }
