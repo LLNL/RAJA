@@ -64,6 +64,20 @@ struct LambdaArgs<offset_t, Args...>
 {
 };
 
+template<camp::idx_t ... Args>
+struct LambdaArgs<param_t, Args...>
+{
+};
+
+template<camp::idx_t ... args> 
+using Segs = LambdaArgs<seg_t, args...>;
+
+template<camp::idx_t ... args> 
+using OffSets = LambdaArgs<offset_t, args...>;
+
+template<camp::idx_t ... args> 
+using Params = LambdaArgs<param_t, args...>;
+
 
 }  // namespace statement
 }  // end namespace RAJA
