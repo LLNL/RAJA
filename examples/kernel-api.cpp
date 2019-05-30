@@ -21,19 +21,6 @@
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
-using RAJA::statement::Seg;
-using RAJA::statement::Param;
-using RAJA::statement::OffSet;
-using RAJA::statement::OffSetList;
-
-using RAJA::statement::SegList;
-using RAJA::statement::ParamList;
-
-using RAJA::statement::LambdaArgs;
-using RAJA::statement::seg_t;
-using RAJA::statement::param_t;
-using RAJA::statement::offset_t;
-
 using RAJA::statement::Segs;
 using RAJA::statement::OffSets;
 using RAJA::statement::Params;
@@ -238,8 +225,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
 
   //--------------------------------------------------------------------------//
+#if 0
   std::cout << "\n Running RAJA - with new kernel API ...\n";
-
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using SEQ_EXEC_POL_NEW =
@@ -292,7 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-
+#endif
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - with kernel API 2 ...\n";
@@ -356,7 +343,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
         RAJA::statement::For<1, RAJA::loop_exec,
           RAJA::statement::For<0, RAJA::loop_exec,
-            RAJA::statement::Lambda<0, LambdaArgs<seg_t, 0, 1> >
+            RAJA::statement::Lambda<0, Segs<0, 1> >
         >
       >
     >;
@@ -373,10 +360,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using NEW_POL =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::loop_exec,
-        RAJA::statement::Lambda<0, LambdaArgs<seg_t,0> >
+        RAJA::statement::Lambda<0, Segs<0> >
       >,
       RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::Lambda<1, Seg<1>, Param<0> >
+        RAJA::statement::Lambda<1, Segs<1>, Params<0> >
       >
     >;
 

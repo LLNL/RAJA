@@ -51,15 +51,6 @@ namespace RAJA
 namespace internal
 {
 
-using RAJA::statement::SegList;
-using RAJA::statement::Seg;
-
-using RAJA::statement::OffSet;
-using RAJA::statement::OffSetList;
-
-using RAJA::statement::ParamList;
-using RAJA::statement::Param;
-
 using RAJA::statement::seg_t;
 using RAJA::statement::param_t;
 using RAJA::statement::offset_t;
@@ -89,21 +80,6 @@ struct listMaker
   using type = typename camp::list<>;
 };
   
-//Converts SegList<1,2,3> -> list<Seg<0>, Seg<1>, Seg<2>>
-template<camp::idx_t head, camp::idx_t... tail>
-struct listMaker<SegList<head,tail...>>
-{
-  using type = typename catList<camp::list<Seg<head>>,
-	        typename listMaker<SegList<tail...> >::type>::type;
-};
-
-//Converts Seg<id> -> list<Seg<id>>
-template<camp::idx_t id>
-struct listMaker<Seg<id>>
-{
-  using type = typename camp::list<Seg<id>>::type;
-};
-
 //Convert LambdaArgs<T, 1, 2, 3> - > camp::list<LambdaArgs<T, 1>, LambdaArgs<T, 2>, LambdaArgs<T, 3> >
 template<typename T, camp::idx_t head, camp::idx_t... tail>
 struct listMaker<LambdaArgs<T, head, tail...>>
@@ -117,36 +93,6 @@ template<typename T, camp::idx_t id>
 struct listMaker<LambdaArgs<T, id>>
 {
   using type = typename camp::list<LambdaArgs<T,id>>::type;
-};
-
-//Converts OffSetList<1,2,3> -> list<OffSet<0>, OffSet<1>, OffSet<2>>
-template<camp::idx_t head, camp::idx_t... tail>
-struct listMaker<OffSetList<head,tail...>>
-{
-  using type = typename catList<camp::list<OffSet<head>>,
-	        typename listMaker<OffSetList<tail...> >::type>::type;
-};
-
-//Converts OffSet<id> -> list<OffSet<id>>
-template<camp::idx_t id>
-struct listMaker<OffSet<id>>
-{
-  using type = typename camp::list<OffSet<id>>::type;
-};
-
-//Converts ParamList<1,2,3> -> list<Param<0>, Param<1>, Param<2>>
-template<camp::idx_t head, camp::idx_t... tail>
-struct listMaker<ParamList<head,tail...>>
-{
-  using type = typename catList<camp::list<Param<head>>,
-	        typename listMaker<ParamList<tail...> >::type>::type;
-};
-
-//Converts Param<id> -> list<Param<id>>
-template<camp::idx_t id>
-struct listMaker<Param<id>>
-{
-  using type = typename camp::list<Param<id>>::type;
 };
   
 template<typename List>
@@ -173,18 +119,6 @@ struct extractor
 {};
 
 template<camp::idx_t id, typename...Tail>
-struct extractor<RAJA::statement::OffSet<id>, Tail...>
-{
-  template<typename Data>
-  RAJA_HOST_DEVICE
-  static auto extract_arg(Data &&data) ->
-    decltype(camp::get<id>(data.offset_tuple))
-  {
-    return camp::get<id>(data.offset_tuple);
-  }
-};
-
-template<camp::idx_t id, typename...Tail>
 struct extractor<LambdaArgs<offset_t, id>, Tail...>
 {
 
@@ -199,18 +133,6 @@ struct extractor<LambdaArgs<offset_t, id>, Tail...>
 };
 
 template<camp::idx_t id, typename...Tail>
-struct extractor<RAJA::statement::Seg<id>, Tail...>
-{
-  template<typename Data>
-  RAJA_HOST_DEVICE
-  static auto extract_arg(Data &&data) ->
-    decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
-  {
-    return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
-  }
-};
-
-template<camp::idx_t id, typename...Tail>
 struct extractor<LambdaArgs<seg_t, id>, Tail...>
 {
   template<typename Data>
@@ -219,18 +141,6 @@ struct extractor<LambdaArgs<seg_t, id>, Tail...>
     decltype(camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)])
   {
     return camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)];
-  }
-};
-
-template<camp::idx_t id, typename...Tail>
-struct extractor<RAJA::statement::Param<id>, Tail...>
-{
-  template<typename Data>
-  RAJA_HOST_DEVICE
-  static auto extract_arg(Data &&data)->
-    decltype(camp::get<id>(data.param_tuple))
-  {
-    return camp::get<id>(data.param_tuple);
   }
 };
 

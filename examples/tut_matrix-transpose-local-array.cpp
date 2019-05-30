@@ -21,13 +21,6 @@
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
-using RAJA::statement::Seg;
-using RAJA::statement::Param;
-using RAJA::statement::OffSet;
-
-using RAJA::statement::SegList;
-using RAJA::statement::ParamList;
-
 /*
  *  Matrix Transpose Example
  *
@@ -61,6 +54,10 @@ using RAJA::statement::ParamList;
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
+
+using RAJA::statement::Segs;
+using RAJA::statement::OffSets;
+using RAJA::statement::Params;
 
 //
 // Define dimensionality of matrices
@@ -218,13 +215,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                         
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
             >
           >,
 
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
             >
           >
 
@@ -278,7 +275,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
             >
           >,
           //
@@ -291,7 +288,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
             >
           >
         >
@@ -345,7 +342,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
              >
           >,
           //
@@ -358,7 +355,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
             >
           >
         >
@@ -414,7 +411,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-               RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+               RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
               >
             >,
             // Synchronize threads to ensure all loads
@@ -430,7 +427,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //
             RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-               RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, Param<0> >
+               RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
               >
             >,
             // Synchronize threads to ensure all reads

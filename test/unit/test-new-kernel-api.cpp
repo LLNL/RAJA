@@ -151,14 +151,14 @@ using SeqTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                      >
                   >
 
@@ -184,13 +184,13 @@ using TestTypes =
            //Load data into shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                     RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                                      >,
 
            //Read data from shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                                     RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                                      >
                                  >
         >//for 2
@@ -207,14 +207,14 @@ using TestTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                      >
                   >
 
@@ -233,14 +233,14 @@ using TestTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
                      >
                   >
 
@@ -269,7 +269,7 @@ using CUDATypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::Lambda<0, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1> >
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1> >
                  >
                >,
               RAJA::statement::CudaSyncThreads,
@@ -277,7 +277,7 @@ using CUDATypes =
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
                   RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::Lambda<1, Seg<0>, Seg<1>, OffSet<0>, OffSet<1>, ParamList<0,1> >
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1> >
                   >
                  >,
                 RAJA::statement::CudaSyncThreads
@@ -464,7 +464,7 @@ using SeqTypes2 =
             //Initalize thread private value
            RAJA::statement::For<1, RAJA::loop_exec,
              RAJA::statement::For<0, RAJA::loop_exec,
-               RAJA::statement::Lambda<0, SegList<0,1>, Param<2> >
+               RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
             >,
 
@@ -474,13 +474,13 @@ using SeqTypes2 =
                //Load matrix into tile
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                   RAJA::statement::Lambda<1, SegList<0,1,2,3,4>, ParamList<0,1> >
+                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
                 >
                >,
                //Partial multiplication
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                   RAJA::statement::Lambda<2, SegList<0,1>, ParamList<0,1,2> >
+                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
                 >
                >
             >, //sliding window
@@ -488,7 +488,7 @@ using SeqTypes2 =
             //Write memory out to global matrix
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                RAJA::statement::Lambda<3, SegList<0,1, 3, 4>, Param<2> >
+                RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
             >
          > //Create shared memory
@@ -514,7 +514,7 @@ using OmpTypes2 =
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                                   RAJA::statement::Lambda<0, SegList<0,1>, Param<2> >
+                                   RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
             >,
 
@@ -524,20 +524,20 @@ using OmpTypes2 =
                //Load matrix into tile
                RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                   RAJA::statement::Lambda<1, SegList<0,1,2,3,4>, ParamList<0,1> >
+                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
                                      >,
 
              //perform matrix multiplcation
              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                       RAJA::ArgList<0, 1>,
-                   RAJA::statement::Lambda<2, SegList<0,1>, ParamList<0,1,2> >
+                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
                                       >
             >, //sliding window
 
             //Write memory out to global matrix
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                RAJA::statement::Lambda<3, SegList<0,1, 3, 4>, Param<2> >
+                RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
              >
          > //Create shared memory
@@ -564,7 +564,7 @@ using CudaTypes2 =
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                RAJA::statement::Lambda<0, SegList<0,1>, Param<2> >
+                RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
              >,
 
@@ -574,14 +574,14 @@ using CudaTypes2 =
               //Load matrix into tile
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                   RAJA::statement::Lambda<1, SegList<0,1,2,3,4>, ParamList<0,1> >
+                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
                 >
               >,
               //perform matrix multiplcation
               RAJA::statement::CudaSyncThreads,
                 RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                   RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                   RAJA::statement::Lambda<2, SegList<0,1>, ParamList<0,1,2> >
+                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
                 >
               >,
               RAJA::statement::CudaSyncThreads
@@ -590,7 +590,7 @@ using CudaTypes2 =
             //Write memory out to global matrix
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                RAJA::statement::Lambda<3, SegList<0,1, 3, 4>, Param<2> >
+                RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
              >
          > //Create shared memory
