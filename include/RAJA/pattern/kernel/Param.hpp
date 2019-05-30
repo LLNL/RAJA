@@ -67,11 +67,6 @@ struct Param : public internal::ParamBase {
   }
 };
 
-template <camp::idx_t... ParamId>
-struct ParamList : public internal::ParamBase {
-
-};
-
 }  // end namespace statement
 }  // end namespace RAJA
 

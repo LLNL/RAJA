@@ -40,9 +40,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/kernel/OffSet.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
-#include "RAJA/pattern/kernel/Seg.hpp"
 #include "RAJA/pattern/kernel/LambdaArgs.hpp"
 
 namespace RAJA
@@ -58,17 +56,17 @@ using RAJA::statement::LambdaArgs;
 
 //Concatanate lists
 template<typename ListA, typename ListB>
-struct catList
+struct merge_list
 {};
 
 template<typename...itemsA, typename...itemsB>
-struct catList<camp::list<itemsA...>, camp::list<itemsB...>>
+struct merge_list<camp::list<itemsA...>, camp::list<itemsB...>>
 {
   using type = typename camp::list<itemsA...,itemsB...>;
 };
 
 template<typename...itemsA>
-struct catList<camp::list<itemsA...>, camp::list<>>
+struct merge_list<camp::list<itemsA...>, camp::list<>>
 {
   using type  = typename camp::list<itemsA... >;
 };
@@ -84,7 +82,7 @@ struct listMaker
 template<typename T, camp::idx_t head, camp::idx_t... tail>
 struct listMaker<LambdaArgs<T, head, tail...>>
 {
-  using type = typename catList<camp::list<LambdaArgs<T, head>>,
+  using type = typename merge_list<camp::list<LambdaArgs<T, head>>,
               typename listMaker<LambdaArgs<T, tail...> >::type>::type;
 };
 
@@ -107,7 +105,7 @@ struct parser<camp::list<>>
 template <typename Head, typename... Tail>
 struct parser<camp::list<Head, Tail...>>
 {
-  using type = typename catList<typename listMaker<Head>::type,
+  using type = typename merge_list<typename listMaker<Head>::type,
 				typename parser<camp::list<Tail...>>::type
 				>::type;
 };
