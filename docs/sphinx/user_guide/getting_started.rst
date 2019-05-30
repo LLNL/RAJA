@@ -94,14 +94,17 @@ MPI+CUDA Compilation
 
 When trying to compile RAJA with MPI and CUDA make sure that both the CMAKE 
 flags of RAJA and BLT are in sync. The BLT cmake variables are easily 
-recognizable because they have the ``BLT_`` prefix. 
+recognizable because they have the ``BLT_`` prefix. This is not always
+necessary, but it could help avoiding weird behavior if you are not super
+familiar with the code base.
 Next, you want to change the target architecture variables to the compute 
-capability of your hardware, in order for the ``nvcc`` compiler to generate 
-GPU code native for your GPU hardware. 
+capability of your hardware, in order for the ``nvcc`` or ``clang`` compiler
+to generate GPU code native for your GPU hardware. 
 `Click here <https://developer.nvidia.com/cuda-gpus>`_ to check which is the
 right version for your card. For example, if you have a Geforce GTX 1080, 
 its compute capability is 6.1. The cmake options to change in RAJA are 
-``BLT_CLANG_CUDA_ARCH`` and ``CUDA_ARCH``. Both should be set to ``sm61``.
+``BLT_CLANG_CUDA_ARCH`` and ``CUDA_ARCH``. If using ``clang``, both should be 
+set to ``sm61``. If using ``nvcc`` it is enough to set ``CUDA_ARCH``.
 You can either do it from ``ccmake`` or by the command line::
    
    $ cmake -DBLT_CLANG_CUDA_ARCH=sm61 -DCUDA_ARCH=sm61 [your_other_options] [source_dir]
