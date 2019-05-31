@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+#Allows blt and other dependencies to see RAJA and have special rules for it.
+option (RAJA_EXISTS "Signals blt that it is used in conjunction with RAJA. Needed to compile RAJA MPI+CUDA" ON)
+
 ## Floating point options
 set(RAJA_FP "RAJA_USE_DOUBLE")
 #set(RAJA_FP "RAJA_USE_FLOAT")
