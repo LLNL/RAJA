@@ -95,8 +95,8 @@ MPI+CUDA Compilation with ``nvcc``
 When trying to compile RAJA with MPI and CUDA using ``nvcc`` you want to change
 the target architecture variables to the compute capability of your hardware. 
 `Click here <https://developer.nvidia.com/cuda-gpus>`_ to check which is the
-right version for your card. For example, if you have a Geforce GTX 1080, 
-its compute capability is 6.1. You have to set the ``CUDA_ARCH`` variable to ``sm_61``
+right version for your card. For example, if you have a Geforce GTX 1080 
+(compute capability is 6.1), then set the ``CUDA_ARCH`` variable to ``sm_61``.
 You can either do it from ``ccmake`` or by the command line::
    
    $ cmake -DCUDA_ARCH=sm_61 [your_other_options] [source_dir]
