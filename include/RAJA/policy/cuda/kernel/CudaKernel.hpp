@@ -301,8 +301,13 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
     }
   }
 
+  //
+  // actual_threads can be modified in the case where
+  // the requested number of theads would cause the
+  // max_blocks to be 0
+  //
   inline static void max_blocks(int shmem_size,
-      int &max_blocks, int actual_threads)
+      int &max_blocks, int &actual_threads)
   {
     auto func = internal::CudaKernelLauncher<Data, executor_t>;
 
@@ -313,6 +318,23 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
       //
       internal::cuda_occupancy_max_blocks<Self>(
           func, shmem_size, max_blocks, actual_threads);
+
+      if(max_blocks == 0) {
+
+        //
+        // actual_threads is too high for the kernel to run
+        // successfully due to resource constraints reset to
+        // something that is possible
+        //
+        int min_grid_size, max_block_size;
+        // NOTE: min_grid_size is the minimum grid size needed
+        //       to achieve the best potential occupancy
+        cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
+            &min_grid_size, &max_block_size, func, shmem_size));
+        actual_threads = max_block_size;
+        max_blocks = min_grid_size;
+      }
+
 
     } else {
 
@@ -477,7 +499,9 @@ struct StatementExecutor<
       // Compute the MAX physical kernel blocks
       //
       int max_blocks;
-      launch_t::max_blocks(shmem, max_blocks, launch_dims.num_threads());
+      int adjusted_threads = launch_dims.num_threads();
+      launch_t::max_blocks(shmem, max_blocks, adjusted_threads);
+      launch_dims.threads = adjusted_threads;
 
       int use_blocks;
 
