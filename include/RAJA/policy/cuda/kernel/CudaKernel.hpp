@@ -501,8 +501,14 @@ struct StatementExecutor<
       int max_blocks;
       int adjusted_threads = launch_dims.num_threads();
       launch_t::max_blocks(shmem, max_blocks, adjusted_threads);
+
+      //
+      // Redo fit with adjusted_threads
+      //
       if(launch_dims.num_threads() != adjusted_threads) {
-        launch_dims.threads = adjusted_threads;
+        fit_threads = fitCudaDims(
+            adjusted_threads, launch_dims.threads, launch_dims.min_threads);
+        launch_dims.threads = fit_threads;
       }
 
       int use_blocks;
