@@ -329,8 +329,8 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
         int min_grid_size, max_block_size;
         // NOTE: min_grid_size is the minimum grid size needed
         //       to achieve the best potential occupancy
-        cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
-            &min_grid_size, &max_block_size, func, shmem_size));
+        internal::cuda_occupancy_max_blocks_threads<Self>(
+            func, shmem_size, min_grid_size, max_block_size);
         actual_threads = max_block_size;
         max_blocks = min_grid_size;
       }
