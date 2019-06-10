@@ -106,9 +106,8 @@ protected:
   {
     array_length = 102;
 
-    array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                array_length * sizeof(double));
-
+    array = RAJA::allocate_aligned_type<RAJA::Real_type>(RAJA::DATA_ALIGN,
+                                                         array_length * sizeof(RAJA::Real_type));
     for (int i = 1; i < array_length - 1; ++i) {
       array[i] = (RAJA::Real_type)i;
     }
