@@ -501,6 +501,41 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndexViewKernel)
   ASSERT_EQ(this->minlocy, raja_loc.idy);
 }
 
+TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndexTupleViewKernel)
+{
+  using ExecPolicy =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::loop_exec,  // row
+        RAJA::statement::For<0, RAJA::loop_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >;
+
+  using ReducePolicy = RAJA::seq_reduce;
+
+  RAJA::RangeSegment colrange(0, 10);
+  RAJA::RangeSegment rowrange(0, 10);
+
+  RAJA::View<double, RAJA::Layout<2>> ArrView(this->data, 10, 10);
+
+  RAJA::tuple<int, int> LocTup(0, 0);
+
+  RAJA::ReduceMinLoc<ReducePolicy, double, RAJA::tuple<int, int>> minloc_reducer(1024.0, LocTup);
+
+  RAJA::kernel<ExecPolicy>(RAJA::make_tuple(colrange, rowrange),
+                           [=](int c, int r) {
+                             minloc_reducer.minloc(ArrView(r, c), RAJA::make_tuple(c, r));
+                           });
+
+  RAJA::tuple<int, int> raja_loc = minloc_reducer.getLoc();
+  double raja_min = (double)minloc_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+  ASSERT_EQ(this->minlocx, RAJA::get<0>(raja_loc));
+  ASSERT_EQ(this->minlocy, RAJA::get<1>(raja_loc));
+}
+
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc2)
 {
   using ExecPolicy =
@@ -671,7 +706,8 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
 REGISTER_TYPED_TEST_CASE_P(ReductionGenericLocTest,
                            ReduceMinLoc2DIndex,
                            ReduceMinLoc2DIndexKernel,
-                           ReduceMinLoc2DIndexViewKernel);
+                           ReduceMinLoc2DIndexViewKernel,
+                           ReduceMinLoc2DIndexTupleViewKernel);
 
 using types = ::testing::Types<
     std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
