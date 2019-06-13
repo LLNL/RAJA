@@ -141,6 +141,10 @@ namespace internal
                               get<Indices>(rhs))...),
               *this);
     }
+
+    // solves problem where default copy assignment op is deleted by compiler
+    // when overridden
+    tuple_helper& operator=(const tuple_helper&) = default;
   };
 
   template <typename Types, typename Indices>
