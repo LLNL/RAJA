@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -117,9 +109,8 @@ protected:
   {
     array_length = 102;
 
-    array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                array_length * sizeof(double));
-
+    array = RAJA::allocate_aligned_type<RAJA::Real_type>(RAJA::DATA_ALIGN,
+                                                         array_length * sizeof(RAJA::Real_type));
     for (int i = 1; i < array_length - 1; ++i) {
       array[i] = (RAJA::Real_type)i;
     }
