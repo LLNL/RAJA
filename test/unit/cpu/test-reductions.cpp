@@ -215,7 +215,10 @@ protected:
   }
 
   virtual void TearDown() {
-    RAJA::free_aligned(array);
+    // NOTE: clang prefers cast to void * and fails compilation otherwise.
+    // gcc prefers RAJA::Real_ptr * (with no compilation warnings).
+    RAJA::free_aligned((void *)array);
+
     RAJA::free_aligned(data);
   }
 
