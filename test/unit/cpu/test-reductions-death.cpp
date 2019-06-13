@@ -106,6 +106,7 @@ using BasicReduceLocDeathTest = BasicReduceLocTest;
 
 
 constexpr int array_length = 100;
+constexpr int ydim = 100;
 
 TEST( BasicReduceLocDeathTest, OutOfBounds )
 {
