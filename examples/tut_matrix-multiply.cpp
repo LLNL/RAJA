@@ -187,7 +187,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int k = 0; k < N; ++k) {
         dot += Aview(row, k) * Bview(k, col);
       }
-        
       Cview(row, col) = dot;
 
     }
@@ -222,7 +221,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int k = 0; k < N; ++k) {
         dot += Aview(row, k) * Bview(k, col);
       }
-
       Cview(row, col) = dot;
 
     });
@@ -280,7 +278,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-        
     Cview(row, col) = dot;
 
   });
@@ -311,7 +308,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-
     Cview(row, col) = dot;
 
   });
@@ -347,7 +343,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-
     Cview(row, col) = dot;
 
   });
@@ -380,7 +375,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-
     Cview(row, col) = dot;
 
   });
@@ -424,7 +418,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-
     Cview(row, col) = dot;
 
   });
@@ -469,7 +462,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int k = 0; k < N; ++k) {
       dot += Aview(row, k) * Bview(k, col);
     }
-
     Cview(row, col) = dot;
 
   });
