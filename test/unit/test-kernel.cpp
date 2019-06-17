@@ -2634,4 +2634,56 @@ CUDA_TEST(Kernel, CudaExec_1threadexec)
   ASSERT_EQ(result, N * N * N * N);
 }
 
+
+
+CUDA_TEST(Kernel, CudaExec_fixedspillexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)2048;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernelFixed<1024,
+      statement::Tile<0, statement::tile_fixed<1024>, cuda_block_x_loop,
+        For<0, cuda_thread_x_direct,
+          Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+  long *x = nullptr;
+  cudaErrchk(cudaMallocManaged(&x, (N+32) * sizeof(long)));
+  long *y = x;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+
+      [=] __device__(Index_type i) {
+        long a[32];
+        for (int j = 0; j < 32; ++j) {
+          a[j] = x[i+j];
+          y[i+j] = a[j];
+        }
+        trip_count += 1;
+        for (int j = 0; j < 32; ++j) {
+          x[i+j] = a[j];
+        }
+      });
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N);
+
+  cudaErrchk(cudaFree(x));
+}
+
 #endif
