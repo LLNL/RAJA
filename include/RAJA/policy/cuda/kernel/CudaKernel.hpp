@@ -206,16 +206,28 @@ __launch_bounds__(BlockSize, 1) __global__
 
 /*!
  * Helper class that handles getting the correct global function for
- * CudaKernel policies.
- */
-template<size_t BlockSize, typename Data, typename executor_t, bool fixed = (BlockSize > 0)>
-struct CudaKernelLauncherGetter;
-
-/*!
- * Helper class specialization for unknown number of threads.
+ * CudaKernel policies. This class is specialized on whether or not BlockSize
+ * is fixed at compile time.
+ *
+ * The default case handles BlockSize != 0 and gets the fixed max block size
+ * version of the kernel.
  */
 template<size_t BlockSize, typename Data, typename executor_t>
-struct CudaKernelLauncherGetter<BlockSize, Data, executor_t, false>
+struct CudaKernelLauncherGetter
+{
+  using type = camp::decay<decltype(&internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+  static constexpr type get() noexcept
+  {
+    return internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>;
+  }
+};
+
+/*!
+ * Helper class specialization for BlockSize == 0 and gets the unfixed max
+ * block size version of the kernel.
+ */
+template<typename Data, typename executor_t>
+struct CudaKernelLauncherGetter<0, Data, executor_t>
 {
   using type = camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t>)>;
   static constexpr type get() noexcept
@@ -224,18 +236,6 @@ struct CudaKernelLauncherGetter<BlockSize, Data, executor_t, false>
   }
 };
 
-/*!
- * Helper class specialization for maximum number of threads.
- */
-template<size_t BlockSize, typename Data, typename executor_t>
-struct CudaKernelLauncherGetter<BlockSize, Data, executor_t, true>
-{
-  using type = camp::decay<decltype(&internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>)>;
-  static constexpr type get() noexcept
-  {
-    return internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>;
-  }
-};
 
 
 /*!
