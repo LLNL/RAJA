@@ -41,16 +41,35 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA pi example...\n";
 
 //
-// Define RangeSegment to enumerate "bins" used in pi approximation,
+// Define RangeSegment to enumerate "bins" and "bin step" size used in
+// Riemann integral sum to approximate pi,
 // and memory location for atomic add operation.
 //
   const int num_bins = 512 * 512;
+  const double dx = 1.0 / double(num_bins); 
+
   RAJA::RangeSegment bins(0, num_bins); 
 
   double* atomic_pi = memoryManager::allocate<double>(1);
 
 // Set precision for printing pi
   int prec = 16;
+
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running C-style sequential pi approximation...\n";
+ 
+  double c_pi = 0.0;
+
+  for (int i = 0; i < num_bins; ++i) {
+      double x = (double(i) + 0.5) * dx;
+      c_pi += dx / (1.0 + x * x);
+  }
+  c_pi *= 4.0;
+
+  std::cout << "\tpi = " << std::setprecision(prec) 
+            << c_pi << std::endl;
 
 
 //----------------------------------------------------------------------------//
@@ -63,27 +82,30 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceSum<REDUCE_POL1, double> seq_pi(0.0);
 
   RAJA::forall<EXEC_POL1>(bins, [=](int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      seq_pi += 4.0 / (1.0 + x * x);
+      double x = (double(i) + 0.5) * dx;
+      seq_pi += dx / (1.0 + x * x);
   });
+  double seq_pi_val = seq_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) 
-            << seq_pi.get() / num_bins << std::endl;
+            << seq_pi_val << std::endl;
 
 
   std::cout << "\n Running RAJA sequential pi approximation (atomic)...\n";
 
-  *atomic_pi = 0;
-
   using ATOMIC_POL1 = RAJA::atomic::seq_atomic;
 
+  *atomic_pi = 0.0;
+
   RAJA::forall<EXEC_POL1>(bins, [=](int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL1>(atomic_pi, 4.0 / (1.0 + x * x));
+      double x = (double(i) + 0.5) * dx;
+      RAJA::atomic::atomicAdd<ATOMIC_POL1>(atomic_pi, 
+                                           dx / (1.0 + x * x));
   });
+  *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) 
-            << (*atomic_pi) / num_bins << std::endl;
+            << *atomic_pi << std::endl;
 
 
 //----------------------------------------------------------------------------//
@@ -98,27 +120,30 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceSum<REDUCE_POL2, double> omp_pi(0.0);
 
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      omp_pi += 4.0 / (1.0 + x * x);
+      double x = (double(i) + 0.5) * dx;
+      omp_pi += dx / (1.0 + x * x);
   });
+  double omp_pi_val = omp_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << omp_pi.get() / num_bins << std::endl;
+            << omp_pi_val << std::endl;
 
 
   std::cout << "\n Running RAJA OpenMP pi approximation (atomic)...\n";
 
-  *atomic_pi = 0;
-
   using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
 
+  *atomic_pi = 0.0;
+
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 4.0 / (1.0 + x * x));
+      double x = (double(i) + 0.5) * dx;
+      RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 
+                                           dx / (1.0 + x * x));
   });
+  *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << (*atomic_pi) / num_bins << std::endl;
+            << *atomic_pi << std::endl;
 
 #endif
 
@@ -135,27 +160,30 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceSum<REDUCE_POL3, double> cuda_pi(0.0);
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      cuda_pi += 4.0 / (1.0 + x * x);
+      double x = (double(i) + 0.5) * dx;
+      cuda_pi += dx / (1.0 + x * x);
   });
+  double cuda_pi_val = cuda_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << cuda_pi.get() / num_bins << std::endl;
+            << cuda_pi_val << std::endl;
 
 
   std::cout << "\n Running RAJA CUDA pi approximation (atomic)...\n";
 
-  *atomic_pi = 0;
-
   using ATOMIC_POL3 = RAJA::atomic::cuda_atomic;
 
+  *atomic_pi = 0.0;
+
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL3>(atomic_pi, 4.0 / (1.0 + x * x));
+      double x = (double(i) + 0.5) * dx;
+      RAJA::atomic::atomicAdd<ATOMIC_POL3>(atomic_pi, 
+                                           4.0 * dx / (1.0 + x * x));
   });
+  *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << (*atomic_pi) / num_bins << std::endl;
+            << *atomic_pi << std::endl;
 
 #endif
 
