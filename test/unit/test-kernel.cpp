@@ -2642,6 +2642,7 @@ CUDA_TEST(Kernel, CudaExec_fixedspillexec)
 
 
   constexpr long N = (long)2048;
+  constexpr long M = (long)32;
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernelFixed<1024,
@@ -2655,7 +2656,7 @@ CUDA_TEST(Kernel, CudaExec_fixedspillexec)
 
 
   long *x = nullptr;
-  cudaErrchk(cudaMallocManaged(&x, (N+32) * sizeof(long)));
+  cudaErrchk(cudaMallocManaged(&x, (N+M) * sizeof(long)));
   long *y = x;
 
   RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
@@ -2665,13 +2666,14 @@ CUDA_TEST(Kernel, CudaExec_fixedspillexec)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(Index_type i) {
-        long a[32];
-        for (int j = 0; j < 32; ++j) {
+        constexpr long M = (long)32; // M must be constexpr on the device
+        long a[M];
+        for (int j = 0; j < M; ++j) {
           a[j] = x[i+j];
           y[i+j] = a[j];
         }
         trip_count += 1;
-        for (int j = 0; j < 32; ++j) {
+        for (int j = 0; j < M; ++j) {
           x[i+j] = a[j];
         }
       });
