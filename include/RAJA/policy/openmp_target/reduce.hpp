@@ -185,6 +185,9 @@ struct TargetReduce
   {
   }
 
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp declare target
+#endif
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
@@ -197,6 +200,9 @@ struct TargetReduce
       }
     }
   }
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp end declare target
+#endif
 
   //! map result value back to host if not done already; return aggregate value
   operator T()

@@ -4,6 +4,10 @@ ignore:
 coverage:
   precision: 3
   range: "97...100"
+  status:
+    project:
+      default:
+        threshold: 1
 
 parsers:
   gcov:
