@@ -40,7 +40,7 @@
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *       - Multiple lambdas
- *       - Options for secifying lambda arguments
+ *       - Options for specifying lambda arguments
  *       - Tile statement
  *       - ForICount statement
  *       - RAJA local arrays
