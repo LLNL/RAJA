@@ -191,7 +191,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   TILE_MEM RAJA_Tile;
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - sequential matrix transpose example I ...\n";
+  std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -237,7 +237,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - sequential matrix transpose example II ...\n";
+  std::cout << "\n Running RAJA - sequential matrix transpose example with args in statement ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
