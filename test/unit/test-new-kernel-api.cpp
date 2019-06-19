@@ -151,14 +151,14 @@ using SeqTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                      >
                   >
 
@@ -184,13 +184,13 @@ using TestTypes =
            //Load data into shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                                     RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                                      >,
 
            //Read data from shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                                     RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                                      >
                                  >
         >//for 2
@@ -207,14 +207,14 @@ using TestTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                      >
                   >
 
@@ -233,14 +233,14 @@ using TestTypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
                 RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                                    >
                                  >,
 
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::loop_exec,
                   RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1>>
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1>>
                      >
                   >
 
@@ -269,7 +269,7 @@ using CUDATypes =
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1> >
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
                  >
                >,
               RAJA::statement::CudaSyncThreads,
@@ -277,7 +277,7 @@ using CUDATypes =
                 //Read data from shared memory
                 RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
                   RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0,1> >
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
                   >
                  >,
                 RAJA::statement::CudaSyncThreads

@@ -73,7 +73,7 @@ template<camp::idx_t ... args>
 using Segs = LambdaArgs<seg_t, args...>;
 
 template<camp::idx_t ... args> 
-using OffSets = LambdaArgs<offset_t, args...>;
+using Offsets = LambdaArgs<offset_t, args...>;
 
 template<camp::idx_t ... args> 
 using Params = LambdaArgs<param_t, args...>;

@@ -22,7 +22,7 @@
 #include "memoryManager.hpp"
 
 using RAJA::statement::Segs;
-using RAJA::statement::OffSets;
+using RAJA::statement::Offsets;
 using RAJA::statement::Params;
 
 /*
@@ -298,7 +298,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             RAJA::statement::For<0, RAJA::loop_exec,
               //The additional types passed into the lambda statement
               //are used to specify lambda arguments.
-             RAJA::statement::Lambda<0, Segs<0, 1>, OffSets<0,1>, Params<0> >
+             RAJA::statement::Lambda<0, Segs<0, 1>, Offsets<0,1>, Params<0> >
             >
           >,
 
@@ -306,7 +306,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             RAJA::statement::For<1, RAJA::loop_exec,
               //If contiguous Lambda arguments are coming from the same tuple,
               //they may be merged into a *List<>
-              RAJA::statement::Lambda<1, Segs<0, 1>, OffSets<0,1>, Params<0> >
+              RAJA::statement::Lambda<1, Segs<0, 1>, Offsets<0,1>, Params<0> >
             >
           >
 

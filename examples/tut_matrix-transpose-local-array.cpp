@@ -47,7 +47,7 @@
  */
 
 using RAJA::statement::Segs;
-using RAJA::statement::OffSets;
+using RAJA::statement::Offsets;
 using RAJA::statement::Params;
 
 //
@@ -206,13 +206,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                         
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >,
 
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >
 
@@ -266,7 +266,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >,
           //
@@ -279,7 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >
         >
@@ -333,7 +333,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
              >
           >,
           //
@@ -346,7 +346,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //
           RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+              RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >
         >
@@ -402,7 +402,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-               RAJA::statement::Lambda<0, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+               RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
               >
             >,
             // Synchronize threads to ensure all loads
@@ -418,7 +418,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             //
             RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-               RAJA::statement::Lambda<1, Segs<0>, Segs<1>, OffSets<0>, OffSets<1>, Params<0> >
+               RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
               >
             >,
             // Synchronize threads to ensure all reads

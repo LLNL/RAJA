@@ -73,20 +73,12 @@ struct listMaker
 };
   
 //Convert LambdaArgs<T, 1, 2, 3> - > camp::list<LambdaArgs<T, 1>, LambdaArgs<T, 2>, LambdaArgs<T, 3> >
-template<typename T, camp::idx_t head, camp::idx_t... tail>
-struct listMaker<LambdaArgs<T, head, tail...>>
+template<typename T, camp::idx_t... elems>
+struct listMaker<LambdaArgs<T, elems...>>
 {
-  using type = typename merge_list<camp::list<LambdaArgs<T, head>>,
-              typename listMaker<LambdaArgs<T, tail...> >::type>::type;
+  using type = camp::list<LambdaArgs<T, elems>...>;
 };
 
-//Convert LambdaArgs<T, id> - > camp::list<LambdaArgs<T, id>>
-template<typename T, camp::idx_t id>
-struct listMaker<LambdaArgs<T, id>>
-{
-  using type = typename camp::list<LambdaArgs<T,id>>::type;
-};
-  
 template<typename List>
 struct parser{};
 
