@@ -183,8 +183,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          //InitList identifies memory within the tuple which needs to be intialized
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<2>,
+          //ParamList identifies memory within the tuple which needs to be intialized
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
           //
           //ForICount populates the Param<> arg within the local offset
@@ -234,8 +234,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          //InitList identifies memory within the tuple which needs to be intialized
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
+          //ParamList identifies memory within the tuple which needs to be intialized
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
 
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
@@ -291,8 +291,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          //InitList identifies memory within the tuple which needs to be intialized
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0>,
+          //ParamList identifies memory within the tuple which needs to be intialized
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
 
           RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::loop_exec,

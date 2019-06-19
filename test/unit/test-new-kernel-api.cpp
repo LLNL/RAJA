@@ -146,7 +146,7 @@ using SeqTypes =
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
@@ -179,7 +179,7 @@ using TestTypes =
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
            RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
@@ -202,7 +202,7 @@ using TestTypes =
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
@@ -228,7 +228,7 @@ using TestTypes =
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::loop_exec,
@@ -264,7 +264,7 @@ using CUDATypes =
         RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
 
-            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::InitList<0,1>,
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
@@ -459,7 +459,7 @@ using SeqTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
 
             //Initalize thread private value
            RAJA::statement::For<1, RAJA::loop_exec,
@@ -510,7 +510,7 @@ using OmpTypes2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<4, RAJA::loop_exec,
         RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
@@ -560,7 +560,7 @@ using CudaTypes2 =
       RAJA::statement::CudaKernel<
       RAJA::statement::For<4, RAJA::cuda_block_y_loop,
         RAJA::statement::For<3, RAJA::cuda_block_x_loop,
-          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::InitList<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,

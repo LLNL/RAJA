@@ -311,7 +311,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
 
       // Create memory tiles
-      statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::InitList<0,1,2>,
+      statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
 
       // Tile outer m,d loops
       statement::Tile<0, statement::tile_fixed<tile_m>, loop_exec,  // m
@@ -742,7 +742,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
-        statement::InitLocalMem<cuda_shared_mem, InitList<0,1>,
+        statement::InitLocalMem<cuda_shared_mem, ParamList<0,1>,
           // Tile outer m,d loops 
           statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
             statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d

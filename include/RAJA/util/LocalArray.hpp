@@ -32,7 +32,7 @@ namespace RAJA
 
 
 template<camp::idx_t ... Sizes>
-using InitList = camp::idx_seq<Sizes...>;
+using ParamList = camp::idx_seq<Sizes...>;
 
 /*!
  * RAJA local array
