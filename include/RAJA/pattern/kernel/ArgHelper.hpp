@@ -71,7 +71,7 @@ struct listMaker
 {
   using type = typename camp::list<>;
 };
-  
+
 //Convert LambdaArgs<T, 1, 2, 3> - > camp::list<LambdaArgs<T, 1>, LambdaArgs<T, 2>, LambdaArgs<T, 3> >
 template<typename T, camp::idx_t... elems>
 struct listMaker<LambdaArgs<T, elems...>>
@@ -97,12 +97,11 @@ struct parser<camp::list<Head, Tail...>>
 };
 
 //Extracts arguments from segments, and parameters
-template<typename Head, typename...Tail>
-struct extractor
-{};
+template<typename T>
+struct extractor;
 
-template<camp::idx_t id, typename...Tail>
-struct extractor<LambdaArgs<offset_t, id>, Tail...>
+template<camp::idx_t id>
+struct extractor<LambdaArgs<offset_t, id>>
 {
 
   template<typename Data>
@@ -115,8 +114,8 @@ struct extractor<LambdaArgs<offset_t, id>, Tail...>
 
 };
 
-template<camp::idx_t id, typename...Tail>
-struct extractor<LambdaArgs<seg_t, id>, Tail...>
+template<camp::idx_t id>
+struct extractor<LambdaArgs<seg_t, id>>
 {
   template<typename Data>
   RAJA_HOST_DEVICE
@@ -127,19 +126,18 @@ struct extractor<LambdaArgs<seg_t, id>, Tail...>
   }
 };
 
-template<camp::idx_t id, typename...Tail>
-struct extractor<LambdaArgs<param_t, id>, Tail...>
+template<camp::idx_t id>
+struct extractor<LambdaArgs<param_t, id>>
 {
   template<typename Data>
   RAJA_HOST_DEVICE
   static auto extract_arg(Data &&data)->
-    decltype(camp::get<id>(data.param_tuple))
+    typename std::add_lvalue_reference<camp::tuple_element_t<id,typename camp::decay<Data>::param_tuple_t>>::type
   {
     return camp::get<id>(data.param_tuple);
   }
 };
 
-  
 template<typename List>
 struct call_extractor
 {};
@@ -150,12 +148,12 @@ struct call_extractor<camp::list<Args...>>
   template<typename Data>
   RAJA_HOST_DEVICE
   static auto make_tuple(Data &&data)
-    -> decltype(camp::make_tuple(extractor<Args>::extract_arg(data) ...))
+    -> camp::tuple<decltype(extractor<Args>::extract_arg(data))...>
   {
-    return camp::make_tuple(extractor<Args>::extract_arg(data) ...);
+    return camp::tuple<decltype(extractor<Args>::extract_arg(data))...>{extractor<Args>::extract_arg(data)...};
   }
 };
-  
+
 }  // namespace internal
 
 }  // end namespace RAJA

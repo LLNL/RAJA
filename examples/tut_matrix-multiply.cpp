@@ -488,7 +488,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // kernel features.
 //
 
-  std::cout << "\n Running sequential mat-mult with multiple lambdas (RAJA-POL6)...\n";
+  std::cout << "\n Running sequential mat-mult with multiple lambdas (RAJA-POL6a)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
@@ -541,11 +541,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   );
 
   checkResult<double>(Cview, N);
-printResult<double>(Cview, N);
+  //printResult<double>(Cview, N);
 
 //----------------------------------------------------------------------------//
 
   std::memset(C, 0, N*N * sizeof(double));
+
+//
+// The following examples illustrate an alternative lambda api where in
+// arguments are specified as template arguments in lambda statements.
+// This removes the requirement of lambdas having the same number of arguments.
+//
+
+  std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args are specified in statements (RAJA-POL6b)...\n";
 
   //Alias for convenience
   using RAJA::statement::Segs;
@@ -557,11 +565,10 @@ printResult<double>(Cview, N);
       RAJA::statement::For<1, RAJA::loop_exec,
         RAJA::statement::For<0, RAJA::loop_exec,
           RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
-          RAJA::statement::Lambda<1, Params<0>>,  // dot = 0.0
           RAJA::statement::For<2, RAJA::loop_exec,
-            RAJA::statement::Lambda<2, Segs<0,1,2>, Params<0> > // inner loop: dot += ...
+            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // inner loop: dot += ...
           >,
-          RAJA::statement::Lambda<3, Segs<0,1>, Params<0> >   // set C(row, col) = dot
+            RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C(row, col) = dot
         >
       >
     >;
@@ -569,23 +576,19 @@ printResult<double>(Cview, N);
   RAJA::kernel_param<EXEC_POL6b>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
-    RAJA::tuple<double>{3.0},    // thread local variable for 'dot'
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
     [=] (double& dot) {
-       dot = 777.0;
+       dot = 0.0;
     },
 
-    [=] (double& dot) {
-      printf("dot = %f \n", dot);
-    },
-
-    // lambda 2
+    // lambda 1
     [=] (int col, int row, int k, double& dot) {
        dot += Aview(row, k) * Bview(k, col);
     },
 
-    // lambda 3
+    // lambda 2
     [=] (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
