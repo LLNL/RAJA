@@ -74,8 +74,8 @@ raja_add_test(
   SOURCES test-sharedmem.cpp)
 
 raja_add_test(
-  NAME test-new-kernel-api
-  SOURCES test-new-kernel-api.cpp)
+  NAME test-kernel-lambda-args
+  SOURCES test-kernel-lambda-args.cpp)
 
 add_subdirectory(cpu)
 
