@@ -65,12 +65,6 @@ struct merge_list<camp::list<itemsA...>, camp::list<itemsB...>>
   using type = typename camp::list<itemsA...,itemsB...>;
 };
 
-template<typename...itemsA>
-struct merge_list<camp::list<itemsA...>, camp::list<>>
-{
-  using type  = typename camp::list<itemsA... >;
-};
-
 //List Maker
 template<typename Arg>
 struct listMaker
@@ -109,7 +103,6 @@ struct parser<camp::list<Head, Tail...>>
 				typename parser<camp::list<Tail...>>::type
 				>::type;
 };
-
 
 //Extracts arguments from segments, and parameters
 template<typename Head, typename...Tail>
