@@ -186,7 +186,7 @@ __global__ void CudaKernelLauncher(Data data)
 
 /*!
  * CUDA global function for launching CudaKernel policies
- * This is annotated to gaurantee that device code generated
+ * This is annotated to guarantee that device code generated
  * can be launched by a kernel with BlockSize number of threads.
  *
  * This launcher is used by the CudaKerelFixed policies.
@@ -202,6 +202,41 @@ __launch_bounds__(BlockSize, 1) __global__
   // execute the the object
   Exec::exec(private_data, true);
 }
+
+
+/*!
+ * Helper class that handles getting the correct global function for
+ * CudaKernel policies. This class is specialized on whether or not BlockSize
+ * is fixed at compile time.
+ *
+ * The default case handles BlockSize != 0 and gets the fixed max block size
+ * version of the kernel.
+ */
+template<size_t BlockSize, typename Data, typename executor_t>
+struct CudaKernelLauncherGetter
+{
+  using type = camp::decay<decltype(&internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+  static constexpr type get() noexcept
+  {
+    return internal::CudaKernelLauncherFixed<BlockSize, Data, executor_t>;
+  }
+};
+
+/*!
+ * Helper class specialization for BlockSize == 0 and gets the unfixed max
+ * block size version of the kernel.
+ */
+template<typename Data, typename executor_t>
+struct CudaKernelLauncherGetter<0, Data, executor_t>
+{
+  using type = camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t>)>;
+  static constexpr type get() noexcept
+  {
+    return internal::CudaKernelLauncher<Data, executor_t>;
+  }
+};
+
+
 
 /*!
  * Helper class that handles CUDA kernel launching, and computing
@@ -225,10 +260,12 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
 
   using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
 
+  using kernelGetter_t = CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
+
   inline static void recommended_blocks_threads(int shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
-    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     if (num_blocks <= 0) {
 
@@ -304,7 +341,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   inline static void max_blocks(int shmem_size,
       int &max_blocks, int actual_threads)
   {
-    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     if (num_blocks <= 0) {
 
@@ -329,7 +366,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
                      size_t shmem,
                      cudaStream_t stream)
   {
-    auto func = internal::CudaKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
     RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);

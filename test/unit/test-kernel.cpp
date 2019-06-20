@@ -3095,6 +3095,58 @@ GPU_TEST(Kernel, CudaExec_1threadexec)
   ASSERT_EQ(result, N * N * N * N);
 }
 
+GPU_TEST(Kernel, CudaExec_fixedspillexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)2048;
+  constexpr long M = (long)32;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernelFixed<1024,
+      statement::Tile<0, statement::tile_fixed<1024>, cuda_block_x_loop,
+        For<0, cuda_thread_x_direct,
+          Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+  long *x = nullptr;
+  cudaErrchk(cudaMallocManaged(&x, (N+M) * sizeof(long)));
+  long *y = x;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+
+      [=] __device__(Index_type i) {
+        constexpr long M = (long)32; // M must be constexpr on the device
+        long a[M];
+        for (int j = 0; j < M; ++j) {
+          a[j] = x[i+j];
+          y[i+j] = a[j];
+        }
+        trip_count += 1;
+        for (int j = 0; j < M; ++j) {
+          x[i+j] = a[j];
+        }
+      });
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N);
+
+  cudaErrchk(cudaFree(x));
+}
+
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -4384,4 +4436,55 @@ GPU_TEST(Kernel_gpu, HipExec_1threadexec)
   ASSERT_EQ(result, N * N * N * N);
 }
 
+GPU_TEST(Kernel, HipExec_fixedspillexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)2048;
+  constexpr long M = (long)32;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<HipKernelFixed<1024,
+      statement::Tile<0, statement::tile_fixed<1024>, hip_block_x_loop,
+        For<0, hip_thread_x_direct,
+          Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+  long *x = nullptr;
+  hipErrchk(hipMalloc(&x, (N+M) * sizeof(long)));
+  long *y = x;
+
+  RAJA::ReduceSum<hip_reduce, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+
+      [=] __device__(Index_type i) {
+        constexpr long M = (long)32; // M must be constexpr on the device
+        long a[M];
+        for (int j = 0; j < M; ++j) {
+          a[j] = x[i+j];
+          y[i+j] = a[j];
+        }
+        trip_count += 1;
+        for (int j = 0; j < M; ++j) {
+          x[i+j] = a[j];
+        }
+      });
+
+  hipErrchk(hipDeviceSynchronize());
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N);
+
+  hipErrchk(hipFree(x));
+}
 #endif
