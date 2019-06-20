@@ -62,7 +62,7 @@
 #include "RAJA/policy/tbb.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #include "RAJA/policy/cuda.hpp"
 #endif
 
