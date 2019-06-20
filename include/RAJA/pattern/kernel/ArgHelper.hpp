@@ -91,9 +91,15 @@ struct parser<camp::list<>>
 template <typename Head, typename... Tail>
 struct parser<camp::list<Head, Tail...>>
 {
+#if 0
   using type = typename merge_list<typename listMaker<Head>::type,
 				typename parser<camp::list<Tail...>>::type
 				>::type;
+#else
+  //using type = typename camp::flatten<typename camp::transform<listMaker,camp::list<Head, Tail...> >::type>::type;				
+
+  using type = typename camp::flatten<camp::list<Head, Tail...> >::type;				
+#endif
 };
 
 //Extracts arguments from segments, and parameters
@@ -150,7 +156,8 @@ struct call_extractor<camp::list<Args...>>
   static auto make_tuple(Data &&data)
     -> camp::tuple<decltype(extractor<Args>::extract_arg(data))...>
   {
-    return camp::tuple<decltype(extractor<Args>::extract_arg(data))...>{extractor<Args>::extract_arg(data)...};
+    return camp::tuple<decltype(extractor<Args>::extract_arg(data))...>
+      {extractor<Args>::extract_arg(data)...};
   }
 };
 

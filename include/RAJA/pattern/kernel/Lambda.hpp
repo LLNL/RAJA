@@ -83,7 +83,8 @@ struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>> {
   {
 
     //Convert SegList, ParamList into Seg, Param types, and store in a list
-    using targList = typename parser<camp::list<Args...>>::type;
+    //using targList = typename parser<camp::list<Args...>>::type;
+    using targList = typename camp::flatten<camp::list<Args...>>::type;
 
     invoke_lambda_with_args<LambdaIndex, targList>(std::forward<Data>(data));
   }

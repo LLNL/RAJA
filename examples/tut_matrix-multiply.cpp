@@ -553,7 +553,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // This removes the requirement of lambdas having the same number of arguments.
 //
 
-  std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args are specified in statements (RAJA-POL6b)...\n";
+  std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args in statements (RAJA-POL6b)...\n";
 
   //Alias for convenience
   using RAJA::statement::Segs;
@@ -694,11 +694,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running CUDA mat-mult with multiple lambdas (RAJA-POL9)...\n";
+  std::cout << "\n Running CUDA mat-mult with multiple lambdas (RAJA-POL9a)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  using EXEC_POL9 =
+  using EXEC_POL9a =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
@@ -717,7 +717,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel_param<EXEC_POL9>(
+  RAJA::kernel_param<EXEC_POL9a>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
@@ -734,6 +734,56 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     // lambda 2
     [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
+       Cview(row, col) = dot;
+    }
+
+  );
+
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running CUDA mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9b)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  using EXEC_POL9b =
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
+                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
+                >,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
+              >
+            >
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel_param<EXEC_POL9b>(
+    RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+
+    // lambda 0
+    [=] RAJA_DEVICE (double& dot) {
+       dot = 0.0;
+    },
+
+    // lambda 1
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot += Aview(row, k) * Bview(k, col);
+    },
+
+    // lambda 2
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 

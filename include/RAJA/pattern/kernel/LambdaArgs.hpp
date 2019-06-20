@@ -54,29 +54,14 @@ struct LambdaArgs
 {
 };
 
-template<camp::idx_t ... Args>
-struct LambdaArgs<seg_t, Args...>
-{
-};
-
-template<camp::idx_t ... Args>
-struct LambdaArgs<offset_t, Args...>
-{
-};
-
-template<camp::idx_t ... Args>
-struct LambdaArgs<param_t, Args...>
-{
-};
+template<camp::idx_t ... args> 
+using Segs = camp::list<LambdaArgs<seg_t, args>...>;
 
 template<camp::idx_t ... args> 
-using Segs = LambdaArgs<seg_t, args...>;
+using Offsets = camp::list<LambdaArgs<offset_t, args>...>;
 
 template<camp::idx_t ... args> 
-using Offsets = LambdaArgs<offset_t, args...>;
-
-template<camp::idx_t ... args> 
-using Params = LambdaArgs<param_t, args...>;
+using Params = camp::list<LambdaArgs<param_t, args>...>;
 
 
 }  // namespace statement
