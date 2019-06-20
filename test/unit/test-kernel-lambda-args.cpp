@@ -500,7 +500,6 @@ using SeqTypes2 =
 
 INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
 
-
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypes2 =
   ::testing::Types<
@@ -602,4 +601,160 @@ using CudaTypes2 =
   >;//close types
 
 INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiply, CudaTypes2);
+#endif
+
+//
+//Matrix Multiply with 3 lambdas
+//
+template <typename NestedPolicy>
+class MatMult3 : public ::testing::Test
+{
+
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+};
+TYPED_TEST_CASE_P(MatMult3);
+
+CUDA_TYPED_TEST_P(MatMult3, Basic)
+{
+
+  using Pol = at_v<TypeParam, 0>;
+
+  const int DIM = 2;
+  const int N = 1000;
+
+  double *A, *B, *C;
+#if defined(RAJA_ENABLE_CUDA)
+  cudaMallocManaged(&A,  sizeof(double) * N * N);
+  cudaMallocManaged(&B,  sizeof(double) * N * N);
+  cudaMallocManaged(&C,  sizeof(double) * N * N);
+#else
+  A  = new double[N * N];
+  B  = new double[N * N];
+  C  = new double[N * N];
+#endif
+
+  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
+
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      Aview(row, col) = row;
+      Bview(row, col) = col;
+    }
+  }
+
+  RAJA::RangeSegment row_range(0, N);
+  RAJA::RangeSegment col_range(0, N);
+  RAJA::RangeSegment dot_range(0, N);
+
+  RAJA::kernel_param<Pol>(
+    RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+
+    // lambda 0
+    [=] RAJA_HOST_DEVICE (double& dot) {
+       dot = 0.0;
+    },
+
+    // lambda 1
+    [=] RAJA_HOST_DEVICE (int col, int row, int k, double& dot) {
+       dot += Aview(row, k) * Bview(k, col);
+    },
+
+    // lambda 2
+    [=] RAJA_HOST_DEVICE (int col, int row, double& dot) {
+       Cview(row, col) = dot;
+    }
+
+  );
+
+  //Check result
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+      ASSERT_FLOAT_EQ(Cview(row,col),(row*col*N));
+    }
+  }
+
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaFree(A);
+  cudaFree(B);
+  cudaFree(C);
+#else
+  delete [] A;
+  delete [] B;
+  delete [] C;
+#endif
+}
+
+REGISTER_TYPED_TEST_CASE_P(MatMult3, Basic);
+
+
+using SeqTypesMult3 =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+          RAJA::statement::For<2, RAJA::loop_exec,
+            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // inner loop: dot += ...
+          >,
+            RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C(row, col) = dot
+        >
+       >
+      >
+    >
+  >;//close types
+INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMult3, SeqTypesMult3);
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OmpTypesMult3 =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+          RAJA::statement::For<2, RAJA::loop_exec,
+            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // inner loop: dot += ...
+          >,
+            RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C(row, col) = dot
+        >
+       >
+      >
+    >
+  >;//close types
+
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMult3, OmpTypesMult3);
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaTypesMult3 =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
+                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
+                >,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
+              >
+            >
+          >
+        >
+      >
+    >
+    >//close list
+  >;//close types
+
+INSTANTIATE_TYPED_TEST_CASE_P(Cuda, MatMult3, CudaTypesMult3);
 #endif
