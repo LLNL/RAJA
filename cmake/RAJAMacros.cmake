@@ -27,6 +27,10 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
+  if (ENABLE_HIP)
+    list (APPEND arg_DEPENDS_ON hip)
+  endif ()
+
   if (ENABLE_TBB)
     list (APPEND arg_DEPENDS_ON tbb)
   endif ()

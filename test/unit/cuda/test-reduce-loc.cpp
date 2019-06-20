@@ -136,7 +136,7 @@ double* ReduceCUDA<Reducer>::dvalue = nullptr;
 
 TYPED_TEST_CASE_P(ReduceCUDA);
 
-CUDA_TYPED_TEST_P(ReduceCUDA, generic)
+GPU_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
@@ -184,7 +184,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
+GPU_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
@@ -232,7 +232,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
+GPU_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;

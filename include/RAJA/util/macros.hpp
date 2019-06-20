@@ -23,6 +23,10 @@
 #include <cstdlib>
 #include <stdexcept>
 
+#if defined(RAJA_ENABLE_HIP)
+#include <hip/hip_runtime.h>
+#endif
+
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
@@ -45,6 +49,11 @@
 #define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
 #endif
 #endif
+
+#elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#define RAJA_SUPPRESS_HD_WARN
 
 #else
 

@@ -64,6 +64,13 @@ struct get_space_from_platform<Platform::cuda> {
 };
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+template <>
+struct get_space_from_platform<Platform::hip> {
+  static constexpr chai::ExecutionSpace value = chai::GPU;
+};
+#endif
+
 template <>
 struct get_space_from_platform<Platform::undefined> {
   static constexpr chai::ExecutionSpace value = chai::NONE;

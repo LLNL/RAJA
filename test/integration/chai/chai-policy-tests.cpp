@@ -21,6 +21,15 @@ static_assert(RAJA::detail::get_space<
                   chai::CPU,
               "");
 
+static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<
+                      RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>::value ==
+                  chai::CPU,
+              "");
+static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<
+                      RAJA::statement::For<0, RAJA::seq_exec>>>::value ==
+                  chai::CPU,
+              "");
+
 #if defined(RAJA_ENABLE_OPENMP)
 static_assert(RAJA::detail::get_space<RAJA::omp_parallel_for_exec>::value ==
                   chai::CPU,
@@ -30,31 +39,31 @@ static_assert(RAJA::detail::get_space<RAJA::omp_parallel_for_exec>::value ==
 #if defined(RAJA_ENABLE_CUDA)
 static_assert(RAJA::detail::get_space<RAJA::cuda_exec<128>>::value == chai::GPU,
               "");
-#endif
 
-#if defined(RAJA_ENABLE_CUDA)
 static_assert(
     RAJA::detail::get_space<
         RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>>::value ==
         chai::GPU,
     "");
+
+static_assert(
+    RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::CudaKernel<
+            RAJA::statement::For<0, RAJA::seq_exec>>>>::value == chai::GPU,
+    "");
 #endif
 
-static_assert(RAJA::detail::get_space<RAJA::KernelPolicy<
-                      RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>::value ==
-                  chai::CPU,
+#if defined(RAJA_ENABLE_HIP)
+static_assert(RAJA::detail::get_space<RAJA::hip_exec<128>>::value == chai::GPU,
               "");
-
-#if defined(RAJA_ENABLE_CUDA)
-
 
 static_assert(
     RAJA::detail::get_space<
-        RAJA::KernelPolicy<RAJA::statement::For<0, RAJA::seq_exec>>>::value ==
-        chai::CPU,
+        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<128>>>::value ==
+        chai::GPU,
     "");
+
 static_assert(
-    RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::CudaKernel<
+    RAJA::detail::get_space<RAJA::KernelPolicy<RAJA::statement::HipKernel<
             RAJA::statement::For<0, RAJA::seq_exec>>>>::value == chai::GPU,
     "");
 #endif
@@ -66,6 +75,11 @@ TEST(ChaiPolicyTest, Default)
   std::cout
       << RAJA::detail::get_space<
              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>>::value
+      << std::endl;
+#elif defined(RAJA_ENABLE_HIP)
+  std::cout
+      << RAJA::detail::get_space<
+             RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<128>>>::value
       << std::endl;
 #else
   std::cout << RAJA::detail::get_space<

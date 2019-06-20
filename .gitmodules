@@ -4,3 +4,6 @@
 [submodule "include/cub"]
 	path = tpl/cub
 	url = https://github.com/NVlabs/cub.git
+[submodule "tpl/rocPRIM"]
+	path = tpl/rocPRIM
+	url = https://github.com/ROCmSoftwarePlatform/rocPRIM.git

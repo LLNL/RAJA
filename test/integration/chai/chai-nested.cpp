@@ -29,13 +29,14 @@ using namespace std;
 /*
  * Simple tests using nested::forall and View
  */
-CUDA_TEST(Chai, NestedSimple)
+GPU_TEST(Chai, NestedSimple)
 {
   typedef RAJA::KernelPolicy<
       RAJA::statement::
           For<0, RAJA::seq_exec, RAJA::statement::For<1, RAJA::seq_exec>>>
       POLICY;
 
+#if defined(RAJA_ENABLE_CUDA)
   using POLICY_GPU = RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::For<1, RAJA::cuda_block_x_loop,
@@ -45,6 +46,17 @@ CUDA_TEST(Chai, NestedSimple)
       >
     >
   >;
+#elif defined(RAJA_ENABLE_HIP)
+  using POLICY_GPU = RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::For<1, RAJA::hip_block_x_loop,
+        RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >;
+#endif
 
   const int X = 16;
   const int Y = 16;
@@ -69,7 +81,11 @@ CUDA_TEST(Chai, NestedSimple)
         v2[index] = v1[index] * 2.0f;
       });
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
+#elif defined(RAJA_ENABLE_HIP)
+  hipDeviceSynchronize();
+#endif
 
   RAJA::kernel<POLICY>(
 
@@ -82,17 +98,26 @@ CUDA_TEST(Chai, NestedSimple)
       });
 }
 
-CUDA_TEST(Chai, NestedView)
+GPU_TEST(Chai, NestedView)
 {
   typedef RAJA::KernelPolicy<
       RAJA::statement::
           For<0, RAJA::seq_exec, RAJA::statement::For<1, RAJA::seq_exec>>>
       POLICY;
+
+#if defined(RAJA_ENABLE_CUDA)
   typedef RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::For<1, RAJA::cuda_block_x_loop,
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop>>>>
       POLICY_GPU;
+#elif defined(RAJA_ENABLE_HIP)
+  typedef RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+      RAJA::statement::For<1, RAJA::hip_block_x_loop,
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop>>>>
+      POLICY_GPU;
+#endif
 
   const int X = 16;
   const int Y = 16;
@@ -180,6 +205,7 @@ void runLTimesTests(Index_type num_moments,
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
+#if defined(RAJA_ENABLE_CUDA)
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<    
@@ -193,14 +219,34 @@ void runLTimesTests(Index_type num_moments,
           >
         >
       >         
+    >;
+#elif defined(RAJA_ENABLE_HIP)
+  using EXECPOL =
+    RAJA::KernelPolicy<
+      statement::HipKernelAsync<    
+        statement::For<0, hip_block_x_loop,  // m
+          statement::For<2, hip_block_y_loop,  // g
+            statement::For<3, hip_thread_x_loop,  // z
+              statement::For<1, seq_exec,  // d
+                statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >         
     >;          
+#endif
                  
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_moments),
                                    RAJA::TypedRangeSegment<ID>(0, num_directions),
                                    RAJA::TypedRangeSegment<IG>(0, num_groups),
                                    RAJA::TypedRangeSegment<IZ>(0, num_zones));
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaErrchk( cudaDeviceSynchronize() );
+#elif defined(RAJA_ENABLE_HIP)
+  hipErrchk( hipDeviceSynchronize() );
+#endif
 
   RAJA::kernel<EXECPOL>( segments,
     [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z) {
@@ -208,7 +254,11 @@ void runLTimesTests(Index_type num_moments,
     }
   );
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaErrchk( cudaDeviceSynchronize() );
+#elif defined(RAJA_ENABLE_HIP)
+  hipErrchk( hipDeviceSynchronize() );
+#endif
 
   RAJA::forall<RAJA::seq_exec>(
     RAJA::TypedRangeSegment<IM>(0, num_moments), [=] (IM m) {

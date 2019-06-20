@@ -33,6 +33,7 @@ struct seq_atomic {
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAdd(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -43,6 +44,7 @@ RAJA_INLINE T atomicAdd(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicSub(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -53,6 +55,7 @@ RAJA_INLINE T atomicSub(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMin(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -62,6 +65,7 @@ RAJA_INLINE T atomicMin(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMax(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -72,6 +76,7 @@ RAJA_INLINE T atomicMax(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc)
 {
   T ret = *acc;
@@ -81,6 +86,7 @@ RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc, T val)
 {
   T old = *acc;
@@ -90,6 +96,7 @@ RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc, T val)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc)
 {
   T ret = *acc;
@@ -99,6 +106,7 @@ RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc, T val)
 {
   T old = *acc;
@@ -108,6 +116,7 @@ RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc, T val)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAnd(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -117,6 +126,7 @@ RAJA_INLINE T atomicAnd(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicOr(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -126,6 +136,7 @@ RAJA_INLINE T atomicOr(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicXor(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -135,6 +146,7 @@ RAJA_INLINE T atomicXor(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicExchange(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
@@ -144,6 +156,7 @@ RAJA_INLINE T atomicExchange(seq_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(seq_atomic, T volatile *acc, T compare, T value)
 {
   T ret = *acc;

@@ -100,7 +100,7 @@ template <typename Function, typename T>
   return ::testing::AssertionSuccess();
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
+GPU_TYPED_TEST_P(ScanCUDA, inclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -118,7 +118,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
   cudaFree(out);
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
+GPU_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -136,7 +136,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
   cudaFree(data);
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -154,7 +154,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
   cudaFree(out);
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -172,7 +172,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
   cudaFree(data);
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -191,7 +191,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
   cudaFree(out);
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;

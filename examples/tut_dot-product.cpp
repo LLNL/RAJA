@@ -37,6 +37,10 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+#endif
+
 //
 //  Function to check dot product result.
 //
@@ -130,6 +134,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running RAJA HIP dot product...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
+
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += d_a[i] * d_b[i];
+  });
+
+  dot = hpdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
 #endif
 
 //----------------------------------------------------------------------------//

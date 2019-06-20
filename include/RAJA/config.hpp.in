@@ -80,6 +80,7 @@
 #cmakedefine RAJA_ENABLE_TBB
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
+#cmakedefine RAJA_ENABLE_HIP
 #cmakedefine RAJA_ENABLE_CHAI
 
 /*!
@@ -209,7 +210,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
@@ -234,7 +235,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)

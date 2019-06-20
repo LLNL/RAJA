@@ -10,7 +10,7 @@
 
 #include "RAJA_gtest.hpp"
 
-CUDA_TEST(SynchronizeTest, CUDA)
+GPU_TEST(SynchronizeTest, CUDA)
 {
 
   double* managed_data;

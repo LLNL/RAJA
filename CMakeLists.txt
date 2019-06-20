@@ -37,6 +37,7 @@ if (NOT RAJA_LOADED)
   # Build options
   set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
   set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
+  set(ENABLE_HIP Off CACHE Bool "Build HIP support")
   set(ENABLE_COPY_HEADERS Off CACHE Bool "")
   set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
@@ -48,6 +49,7 @@ if (NOT RAJA_LOADED)
   option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
   set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
   option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
+  option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
   option(ENABLE_TESTS "Build tests" On)
   option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
   option(ENABLE_EXAMPLES "Build simple examples" On)
@@ -62,11 +64,11 @@ if (NOT RAJA_LOADED)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
-if (ENABLE_CUDA)
-  cmake_minimum_required(VERSION 3.9)
-else ()
-  cmake_minimum_required(VERSION 3.8.2)
-endif ()
+  if (ENABLE_CUDA)
+    cmake_minimum_required(VERSION 3.9)
+  else ()
+    cmake_minimum_required(VERSION 3.8.2)
+  endif ()
 
   if (NOT BLT_LOADED)
     if (DEFINED BLT_SOURCE_DIR)
@@ -103,7 +105,8 @@ endif ()
     src/AlignedRangeIndexSetBuilders.cpp
     src/DepGraphNode.cpp
     src/LockFreeIndexSetBuilders.cpp
-    src/MemUtils_CUDA.cpp)
+    src/MemUtils_CUDA.cpp
+    src/MemUtils_HIP.cpp)
 
   set (raja_depends)
 
@@ -112,7 +115,7 @@ endif ()
       openmp)
   endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)
      message(WARNING "RAJA::simd_exec support requires Intel-17 or greater")
   endif()
 
@@ -122,21 +125,44 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
       cuda)
   endif ()
 
+  if (ENABLE_HIP)
+    set (raja_depends
+      ${raja_depends}
+      hip)
+  endif ()
+
   if (ENABLE_CUDA)
     if(ENABLE_EXTERNAL_CUB)
       find_package(CUB)
-        if (CUB_FOUND)
-          blt_register_library(
-            NAME cub
-            INCLUDES ${CUB_INCLUDE_DIRS})
-            set(raja_depends
-                ${raja_depends}
-                cub)
-          else()
-            message(WARNING "External CUB not found.")
-            set(ENABLE_EXTERNAL_CUB Off)
-         endif()
-      endif ()
+      if (CUB_FOUND)
+        blt_register_library(
+          NAME cub
+          INCLUDES ${CUB_INCLUDE_DIRS})
+        set(raja_depends
+            ${raja_depends}
+            cub)
+      else()
+        message(WARNING "External CUB not found.")
+        set(ENABLE_EXTERNAL_CUB Off)
+       endif()
+    endif ()
+  endif ()
+
+  if (ENABLE_HIP)
+    if(ENABLE_EXTERNAL_ROCPRIM)
+      find_package(ROCPRIM)
+      if (ROCPRIM_FOUND)
+        blt_register_library(
+          NAME rocPRIM
+          INCLUDES ${ROCPRIM_INCLUDE_DIRS})
+        set(raja_depends
+            ${raja_depends}
+            rocPRIM)
+      else()
+        message(WARNING "External rocPRIM not found.")
+        set(ENABLE_EXTERNAL_ROCPRIM Off)
+       endif()
+    endif ()
   endif ()
 
   if (ENABLE_CHAI)
@@ -171,13 +197,15 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
     $<INSTALL_INTERFACE:include>)
 
-  if(ENABLE_EXTERNAL_CUB)
-    install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-  else()
-    install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+  if(NOT ENABLE_EXTERNAL_CUB)
     install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+  endif()
+  if(NOT ENABLE_EXTERNAL_ROCPRIM)
+    install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
   endif()
 
   install(FILES
