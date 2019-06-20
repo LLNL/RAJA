@@ -267,19 +267,10 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       std::forward<Data>(data));
 }
 
-//Lambda with custom arguments
-RAJA_SUPPRESS_HD_WARN
-template<camp::idx_t LoopIndex, typename Data, typename T, camp::idx_t... Args>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,T myTuple,
-                                                       camp::idx_seq<Args...> const &)
-{
-  camp::get<LoopIndex>(data.bodies)(camp::get<Args>(myTuple)...);
-}
-
 RAJA_SUPPRESS_HD_WARN
 template<camp::idx_t LoopIndex, typename Data, typename... targLists>
-RAJA_INLINE RAJA_HOST_DEVICE void my_invoke_custom_lambda(Data &&data,
-                                                          camp::list<targLists...> const &)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,
+                                                       camp::list<targLists...> const &)
 {
   camp::get<LoopIndex>(data.bodies)(extractor<targLists>::extract_arg(data)...);
 }
@@ -289,16 +280,7 @@ template <camp::idx_t LoopIndex, typename targList, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data)
 {
 
-  //Create a tuple with the appropriate lambda arguments
-  //auto argTuple = call_extractor<targList>::make_tuple(data);
-
-  //Invoke the lambda with custom arguments
-  //const int tuple_size = camp::size<targList>::value;
-  
-  //invoke_custom_lambda<LoopIndex,Data,decltype(argTuple)>(data, argTuple,
-  //camp::make_idx_seq_t<tuple_size>{});
-
-  my_invoke_custom_lambda<LoopIndex>(data,targList{});
+  invoke_custom_lambda<LoopIndex>(data,targList{});
                                      
 }
 

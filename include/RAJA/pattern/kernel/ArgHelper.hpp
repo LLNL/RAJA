@@ -54,54 +54,6 @@ using RAJA::statement::param_t;
 using RAJA::statement::offset_t;
 using RAJA::statement::LambdaArgs;
 
-//Concatanate lists
-template<typename ListA, typename ListB>
-struct merge_list
-{};
-
-template<typename...itemsA, typename...itemsB>
-struct merge_list<camp::list<itemsA...>, camp::list<itemsB...>>
-{
-  using type = typename camp::list<itemsA...,itemsB...>;
-};
-
-//List Maker
-template<typename Arg>
-struct listMaker
-{
-  using type = typename camp::list<>;
-};
-
-//Convert LambdaArgs<T, 1, 2, 3> - > camp::list<LambdaArgs<T, 1>, LambdaArgs<T, 2>, LambdaArgs<T, 3> >
-template<typename T, camp::idx_t... elems>
-struct listMaker<LambdaArgs<T, elems...>>
-{
-  using type = camp::list<LambdaArgs<T, elems>...>;
-};
-
-template<typename List>
-struct parser{};
-
-template<>
-struct parser<camp::list<>>
-{
-  using type = camp::list<>;
-};
-
-template <typename Head, typename... Tail>
-struct parser<camp::list<Head, Tail...>>
-{
-#if 0
-  using type = typename merge_list<typename listMaker<Head>::type,
-				typename parser<camp::list<Tail...>>::type
-				>::type;
-#else
-  //using type = typename camp::flatten<typename camp::transform<listMaker,camp::list<Head, Tail...> >::type>::type;				
-
-  using type = typename camp::flatten<camp::list<Head, Tail...> >::type;				
-#endif
-};
-
 //Extracts arguments from segments, and parameters
 template<typename T>
 struct extractor;
@@ -141,23 +93,6 @@ struct extractor<LambdaArgs<param_t, id>>
     typename std::add_lvalue_reference<camp::tuple_element_t<id,typename camp::decay<Data>::param_tuple_t>>::type
   {
     return camp::get<id>(data.param_tuple);
-  }
-};
-
-template<typename List>
-struct call_extractor
-{};
-
-template<typename ...Args>
-struct call_extractor<camp::list<Args...>>
-{
-  template<typename Data>
-  RAJA_HOST_DEVICE
-  static auto make_tuple(Data &&data)
-    -> camp::tuple<decltype(extractor<Args>::extract_arg(data))...>
-  {
-    return camp::tuple<decltype(extractor<Args>::extract_arg(data))...>
-      {extractor<Args>::extract_arg(data)...};
   }
 };
 
