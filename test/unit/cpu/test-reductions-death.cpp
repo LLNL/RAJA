@@ -106,7 +106,7 @@ using BasicReduceLocDeathTest = BasicReduceLocTest;
 
 
 constexpr int array_length = 100;
-constexpr int ydim = 100;
+constexpr int ydim = 10;
 
 TEST( BasicReduceLocDeathTest, OutOfBounds )
 {
@@ -115,10 +115,15 @@ TEST( BasicReduceLocDeathTest, OutOfBounds )
   RAJA::Real_ptr data = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
                                                array_length * sizeof(double));
 
+  // set rows to point to data
+  for ( int ii = 0; ii < ydim; ++ii ) {
+    array[ii] = data + ii * ydim;
+  }
+
   RAJA::ReduceMinLoc<RAJA::seq_reduce, int, RAJA::tuple<int, int>> reduce_minloc(0, RAJA::make_tuple(0, 0));
 
-  EXPECT_DEATH_IF_SUPPORTED( reduce_minloc.minloc( array[0][0], RAJA::make_tuple(10, 10) ), "" ); // not supported at runtime
-  //ASSERT_DEATH_IF_SUPPORTED( reduce_minloc.minloc( array[0][0], RAJA::make_tuple(10, 10) ), "" ); // not supported at runtime
-  //EXPECT_EXIT( reduce_minloc.minloc( array[0][0], RAJA::make_tuple(10, 10) ), ::testing::KilledBySignal(SIGSEGV), "ReduceMinLoc tuple out of bounds access." ); // does not compile
+  EXPECT_DEATH_IF_SUPPORTED( reduce_minloc.minloc( array[10][10], RAJA::make_tuple(10, 10) ), "" );
+  //ASSERT_DEATH_IF_SUPPORTED( reduce_minloc.minloc( array[0][0], RAJA::make_tuple(10, 10) ), "" );
+  EXPECT_EXIT( reduce_minloc.minloc( array[10][10], RAJA::make_tuple(10, 10) ), ::testing::KilledBySignal(SIGSEGV), "" ); // may not compile if gtest death tests not supported
 }
 

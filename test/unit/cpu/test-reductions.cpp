@@ -395,13 +395,20 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndex)
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
 
   struct Index2D {
-     RAJA::Index_type idx, idy;
-     RAJA::Index_type idarray;  // actual array index
-     constexpr Index2D() : idx(-1), idy(-1), idarray(-1) {}
+    RAJA::Index_type idx, idy;
+    RAJA::Index_type idarray;  // actual array index
+    constexpr Index2D() : idx(-1), idy(-1), idarray(-1) {}
 
-     // 2 dimensional array, 10 elements per row
-     constexpr Index2D(RAJA::Index_type idx, RAJA::Index_type idy) : idx(idx), idy(idy), idarray{idx % 10 + idy * 10} {}
-     constexpr Index2D(RAJA::Index_type idarray) : idx{idarray%10}, idy{(RAJA::Index_type)floor(idarray/10)}, idarray(idarray) {}
+    // 2 dimensional array, 10 elements per row
+    Index2D(RAJA::Index_type idx, RAJA::Index_type idy) : idx(idx), idy(idy)
+    {
+      idarray = idx % 10 + idy * 10;
+    }
+    Index2D(RAJA::Index_type idarray) : idarray(idarray)
+    {
+      idx = idarray % 10;
+      idy = floor( idarray / 10 );
+    }
   };
 
   RAJA::ReduceMinLoc<ReducePolicy, double, Index2D> minloc_reducer(1024.0, Index2D(0, 0));
