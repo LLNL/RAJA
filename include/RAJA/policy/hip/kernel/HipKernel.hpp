@@ -186,7 +186,7 @@ __global__ void HipKernelLauncher(Data data)
 
 /*!
  * HIP global function for launching HipKernel policies
- * This is annotated to gaurantee that device code generated
+ * This is annotated to guarantee that device code generated
  * can be launched by a kernel with BlockSize number of threads.
  *
  * This launcher is used by the HipKerelFixed policies.
@@ -202,6 +202,41 @@ __launch_bounds__(BlockSize, 1) __global__
   // execute the the object
   Exec::exec(private_data, true);
 }
+
+
+/*!
+ * Helper class that handles getting the correct global function for
+ * HipKernel policies. This class is specialized on whether or not BlockSize
+ * is fixed at compile time.
+ *
+ * The default case handles BlockSize != 0 and gets the fixed max block size
+ * version of the kernel.
+ */
+template<size_t BlockSize, typename Data, typename executor_t>
+struct HipKernelLauncherGetter
+{
+  using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+  static constexpr type get() noexcept
+  {
+    return internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
+  }
+};
+
+/*!
+ * Helper class specialization for BlockSize == 0 and gets the unfixed max
+ * block size version of the kernel.
+ */
+template<typename Data, typename executor_t>
+struct HipKernelLauncherGetter<0, Data, executor_t>
+{
+  using type = camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
+  static constexpr type get() noexcept
+  {
+    return internal::HipKernelLauncher<Data, executor_t>;
+  }
+};
+
+
 
 /*!
  * Helper class that handles HIP kernel launching, and computing
@@ -225,10 +260,12 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
 
   using executor_t = internal::hip_statement_list_executor_t<StmtList, Data>;
 
+  using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
+
   inline static void recommended_blocks_threads(int shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
-    auto func = internal::HipKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     if (num_blocks <= 0) {
 
@@ -304,7 +341,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   inline static void max_blocks(int shmem_size,
       int &max_blocks, int actual_threads)
   {
-    auto func = internal::HipKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     if (num_blocks <= 0) {
 
@@ -329,7 +366,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
                      size_t shmem,
                      hipStream_t stream)
   {
-    auto func = internal::HipKernelLauncher<Data, executor_t>;
+    auto func = kernelGetter_t::get();
 
     hipLaunchKernelGGL((func), dim3(launch_dims.blocks), dim3(launch_dims.threads),
                         shmem, stream, data);

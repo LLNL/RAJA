@@ -4442,7 +4442,7 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
 
 
   constexpr long N = (long)2048;
-  constexpr long M = (long)32;
+  constexpr long M = (long)20;
 
   // Loop Fusion
   using Pol = KernelPolicy<HipKernelFixed<1024,
@@ -4466,7 +4466,7 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(Index_type i) {
-        constexpr long M = (long)32; // M must be constexpr on the device
+        constexpr long M = (long)20; // M must be constexpr on the device
         long a[M];
         for (int j = 0; j < M; ++j) {
           a[j] = x[i+j];
