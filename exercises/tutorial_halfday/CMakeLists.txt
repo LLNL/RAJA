@@ -1,0 +1,18 @@
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
+
+raja_add_executable(
+  NAME ex1_vector-addition_solution
+  SOURCES ex1_vector-addition_solution.cpp)
+
+raja_add_executable(
+  NAME ex2_approx-pi_solution
+  SOURCES ex2_approx-pi_solution.cpp)
+
+raja_add_executable(
+  NAME ex3_colored-indexset_solution
+  SOURCES ex3_colored-indexset_solution.cpp)
