@@ -43,10 +43,10 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-// Functions for checking and printing results
+// Functions for checking and printing arrays
 //
 void checkResult(int* c, int* c_ref, int len); 
-void printResult(int* c, int len);
+void printArray(int* v, int len);
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -85,7 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c_ref[i] = a[i] + b[i];
   }
 
-//printResult(c_ref, N);
+//printArray(c_ref, N);
 
 
 //----------------------------------------------------------------------------//
@@ -103,7 +103,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   checkResult(c, c_ref, N);
-//printResult(c, N);
+//printArray(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -122,7 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   checkResult(c, c_ref, N);
-//printResult(c, N);
+//printArray(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -141,7 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
 
   checkResult(c, c_ref, N);
-//printResult(c, N);
+//printArray(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -160,7 +160,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   checkResult(c, c_ref, N);
-//printResult(c, N); 
+//printArray(c, N); 
 
 #endif
 
@@ -183,7 +183,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   checkResult(c, c_ref, N);
-//printResult(c, N);
+//printArray(c, N);
 #endif
 
 
@@ -204,7 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
 
   checkResult(c, c_ref, N);
-//printResult(c, N);
+//printArray(c, N);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -239,13 +239,13 @@ void checkResult(int* c, int* c_ref, int len)
 }
 
 //
-// Function to print result.
+// Function to print array.
 //
-void printResult(int* c, int len)
+void printArray(int* v, int len)
 {
   std::cout << std::endl;
   for (int i = 0; i < len; i++) {
-    std::cout << "c[" << i << "] = " << c[i] << std::endl;
+    std::cout << "v[" << i << "] = " << v[i] << std::endl;
   }
   std::cout << std::endl;
 }
