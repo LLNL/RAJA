@@ -18,7 +18,7 @@ Key RAJA features shown in the following examples:
   * RAJA kernel execution policies
   * ``RAJA::View`` multi-dimensional data access
   * Basic RAJA nested-loop interchange 
-
+  * Specifying lambda arguments through statements
 
 In this example, we present different ways to perform multiplication of two 
 square matrices 'A' and 'B' of dimension N x N and store the result in matrix 
@@ -27,20 +27,20 @@ we define the following macros to access the matrix entries in the
 C-version:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 56-58
+                    :lines: 49-51
 
 Then, a typical C-style sequential matrix multiplication operation looks like
 the following:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 130-140
+                    :lines: 123-133
 
 For the RAJA variants of the matrix multiple operation, we use 
 ``RAJA::Range Segment`` objects to define the matrix row and column and dot
 product iteration spaces:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 163-165
+                    :lines: 156-158
 
 We also use ``RAJA::View`` objects, which allow us to access matrix
 entries in a multi-dimensional manner similar to the C-style version that
@@ -48,7 +48,7 @@ uses macros. We create a two-dimensional N x N 'view'
 for each of the three matrices:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 153-155
+                    :lines: 146-148
 
 Although we only show very basic RAJA view usage here, RAJA views can be used to
 encapsulate a variety of different data layouts and access patterns, including
@@ -69,7 +69,7 @@ Starting with the C-style kernel above, we first convert the outermost
 'row' loop to a ``RAJA::forall`` method call with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 191-204
+                    :lines: 186-195
 
 Here, the lambda expression for the loop body contains the inner 
 'col' and 'k' loops.
@@ -85,7 +85,7 @@ Next, we nest a ``RAJA::forall`` method call for the 'column' loop inside the
 outer lambda expression:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 226-239
+                    :lines: 219-232
 
 Here, the innermost lambda expression contains the row-column dot product
 initialization, the inner 'k' loop for the dot product, and the operation
@@ -118,7 +118,7 @@ then describe its key elements, noting important differences between
 ``RAJA::kernel`` and ``RAJA::forall`` loop execution interfaces. 
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 276-295
+                    :lines: 296-288
 
 Here, we use ``RAJA::kernel`` to express the outer 'row' and 'col' loops; 
 the inner 'k' loop is included in the lambda expression for the loop body. 
@@ -161,7 +161,7 @@ If we want to execute the row loop using OpenMP multi-threaded parallelism
 and keep the column loop sequential, the policy we would use is:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 307-314
+                    :lines: 300-320
 
 To swap the loop nest ordering and keep the same execution policy on each loop,
 we would use the following policy, which swaps the ``RAJA::statement::For`` 
@@ -169,7 +169,7 @@ types. The inner loop is now the 'row' loop and is run in parallel;
 the outer loop is now the 'col' loop and is still sequential:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-		    :lines: 343-350
+		    :lines: 336-355
 
 .. note:: It is important to note that these kernel transformations, and others,
           can be done by switching the ``RAJA::KernelPolicy`` type with no
@@ -191,7 +191,7 @@ complex policy examples and show additional RAJA kernel features.
 The first example uses sequential execution for all loops:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 516-549
+                    :lines: 509-542
 
 Note that we use a ``RAJA::kernel_param`` method to execute the kernel. It is
 similar to ``RAJA::kernel`` except that it accepts a tuple as its second
@@ -204,13 +204,21 @@ The remaining arguments include a sequence of lambda expressions representing
 different parts of the inner loop body. We use three lambda expressions that: 
 initialize the dot product variable (lambda 0), define the 'k' inner loop 
 row-col dot product operations (lambda 1), and store the computed row-col dot 
-product in the proper location in the result matrix (lambda 2). Note that all 
-lambdas take the same arguments in the same order, which is required for the 
-kernel to be well-formed. In addition to the loop index variables, we pass 
-the scalar dot product variable into each lambda. This enables the same 
-variable to be used in all three lambdas. However, also note that not all 
+product in the proper location in the result matrix (lambda 2). Unless specified
+in the lambda statement, all lambdas take the same arguments in the same order, 
+which is required for the kernel to be well-formed. In addition to the 
+loop index variables, we pass the scalar dot product variable into each lambda. 
+This enables the same variable to be used in all three lambdas. However, also note that not all 
 lambda expressions use all three index variables. They are declared, but left
-unnamed to prevent compiler warnings.
+unnamed to prevent compiler warnings. The following example illustrates how
+the lambda statement may be used to specify arguments for each lambda. 
+
+.. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
+                    :lines: 560-597
+
+Statements such as ``RAJA::statement::Segs``, ``RAJA::statement::Offsets``, and
+``RAJA::statement::Params`` are used to identify segments and params within tuples
+to be used as lambda arguments.
 
 The execution policy type passed to the ``RAJA::kernel_param`` method as a 
 template parameter describes how the statements and lambda expressions are
@@ -227,7 +235,7 @@ directives, for instance. The following policy will collapse the two outer
 loops:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 562-572
+                    :lines: 610-620
 
 The ``RAJA::ArgList`` type indicates which loops in the nest are to be 
 collapsed and their nesting order within the collapse region. The integers
@@ -246,7 +254,7 @@ Here is a policy that will distribute the row indices across CUDA thread
 blocks and column indices across threads in each block:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 608-621
+                    :lines: 656-669
 
 This is equivalent to defining a CUDA kernel with the lambda body inside
 it and defining row and column indices as::
@@ -262,7 +270,7 @@ parameter that can be set at compile time. Within each tile, the kernel
 iterates are executed by CUDA threads.
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-                    :lines: 654-671
+                    :lines: 702-719
 
 Note that the tiling mechanism requires a ``RAJA::statement::Tile`` type, 
 with a tile size and a tiling execution policy, plus a ``RAJA::statement::For``
