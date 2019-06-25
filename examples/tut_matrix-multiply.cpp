@@ -97,7 +97,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Define num rows/cols in matrix
 //
-  const int N = 10;
+  const int N = 1000;
 //const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE;
 
 //
