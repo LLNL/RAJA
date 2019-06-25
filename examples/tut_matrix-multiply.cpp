@@ -25,6 +25,7 @@
  *    - View abstraction
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *    - Collapsing loops under OpenMP and CUDA policies
+ *    - Specifying lambda arguments through statements
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
