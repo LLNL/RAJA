@@ -8,20 +8,11 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
@@ -38,10 +29,7 @@
 namespace RAJA
 {
 
-//Policies for RAJA local arrays
-struct cpu_tile_mem;
-struct cuda_thread_mem;
-struct cuda_shared_mem;
+
 
 template<camp::idx_t ... Sizes>
 using ParamList = camp::idx_seq<Sizes...>;
@@ -79,6 +67,33 @@ struct TypedLocalArray<DataType, camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...
     return  m_arrayPtr[layout_t::s_oper(stripIndexType(indices)...)];
   }
 };
+
+
+
+template<typename AtomicPolicy, typename DataType, typename Perm,
+         typename Sizes, typename ... IndexTypes>
+struct AtomicTypedLocalArray {
+};
+
+template<typename AtomicPolicy, typename DataType, camp::idx_t ... Perm,
+         camp::idx_t ... Sizes, typename ... IndexTypes>
+struct AtomicTypedLocalArray<AtomicPolicy, DataType, camp::idx_seq<Perm ...>,
+                             RAJA::SizeList<Sizes ...>, IndexTypes ...>{
+  DataType *m_arrayPtr = nullptr;
+  using element_t = DataType;
+  using atomic_ref_t = RAJA::atomic::AtomicRef<element_t, AtomicPolicy>;
+  using layout_t = RAJA::StaticLayout<camp::idx_seq<Perm ...>, Sizes ...>;
+  static const camp::idx_t NumElem = layout_t::size();
+
+  RAJA_HOST_DEVICE
+  atomic_ref_t operator()(IndexTypes ... indices) const
+  {
+    return(atomic_ref_t(&m_arrayPtr[layout_t::s_oper(stripIndexType(indices)
+                                                     ...)]));
+  }
+};
+
+
 
 template<typename DataType, typename Perm, typename Sizes>
 struct LocalArray

@@ -1,16 +1,8 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -77,44 +69,25 @@ if ( MSVC )
 endif()
 
 if (ENABLE_CUDA)
-  if ( NOT DEFINED RAJA_NVCC_STD ) 
-    set(RAJA_NVCC_STD "c++11")
-    # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
-    if(CUDA_VERSION_MAJOR GREATER "8")
-      execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 -ccbin ${CMAKE_CXX_COMPILER} . 
-                      ERROR_VARIABLE TEST_NVCC_ERR
-                      OUTPUT_QUIET)
-      if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
-        set(RAJA_NVCC_STD "c++14")
-      endif()
-    else()
-    endif()
-  endif()
+  set(CMAKE_CUDA_STANDARD 11)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda")
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
-    list(APPEND RAJA_EXTRA_NVCC_FLAGS -restrict; -arch ${CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER})
-
-    set(RAJA_NVCC_FLAGS_RELEASE -O2 CACHE STRING "")
-    set(RAJA_NVCC_FLAGS_DEBUG -g; -G; -O0 CACHE STRING "")
-    set(RAJA_NVCC_FLAGS_MINSIZEREL -Os CACHE STRING "")
-    set(RAJA_NVCC_FLAGS_RELWITHDEBINFO -g; -lineinfo; -O2 CACHE STRING "")
+    set(CMAKE_CUDA_FLAGS_RELEASE "-O2")
+    set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0")
+    set(CMAKE_CUDA_FLAGS_MINSIZEREL "-Os")
+    set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "-g -lineinfo -O2")
 
     if(RAJA_ENABLE_COVERAGE)
       if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
         message(INFO "Coverage analysis enabled")
-        set(RAJA_EXTRA_NVCC_FLAGS ${RAJA_EXTRA_NVCC_FLAGS}; -Xcompiler -coverage; -Xlinker -coverage)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -coverage -Xlinker -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "-coverage ${CMAKE_EXE_LINKER_FLAGS}")
       else()
         message(WARNING "Code coverage specified but not enabled -- GCC was not detected")
       endif()
     endif()
   endif()
-  set(RAJA_NVCC_FLAGS ${RAJA_EXTRA_NVCC_FLAGS} CACHE STRING "")
-  set(CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-  set(CUDA_NVCC_FLAGS_RELEASE ${RAJA_NVCC_FLAGS_RELEASE})
-  set(CUDA_NVCC_FLAGS_DEBUG ${RAJA_NVCC_FLAGS_DEBUG})
-  set(CUDA_NVCC_FLAGS_MINSIZEREL ${RAJA_NVCC_FLAGS_MINSIZEREL})
-  set(CUDA_NVCC_FLAGS_RELWITHDEBINFO ${RAJA_NVCC_FLAGS_RELWITHDEBINFO})
 endif()
 # end RAJA_ENABLE_CUDA section
 

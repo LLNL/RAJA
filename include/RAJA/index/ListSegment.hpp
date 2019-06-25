@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_ListSegment_HPP
@@ -38,7 +30,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #else
 #define cudaErrchk(...)
@@ -64,7 +56,7 @@ template <typename T>
 class TypedListSegment
 {
 
-#if defined(RAJA_ENABLE_CUDA)
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
   static constexpr bool Has_CUDA = true;
 #else
   static constexpr bool Has_CUDA = false;
@@ -99,7 +91,7 @@ class TypedListSegment
   //! specialization for allocation of CPU_memory
   void allocate(CPU_memory) { m_data = new T[m_size]; }
 
-#if defined(RAJA_ENABLE_CUDA)
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)

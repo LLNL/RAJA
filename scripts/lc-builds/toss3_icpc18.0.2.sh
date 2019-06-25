@@ -1,18 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-##
-## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-689114
-##
-## All rights reserved.
-##
-## This file is part of RAJA.
-##
-## For details about use and distribution, please read RAJA/LICENSE.
-##
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
 
 BUILD_SUFFIX=lc_toss3-icpc-18.0.2
 
@@ -20,7 +13,6 @@ rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.9.2
-module load gcc/7.1.0
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \

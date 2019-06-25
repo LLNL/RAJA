@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_INDEXVALUE_HPP
@@ -338,6 +330,31 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
   return val;
 }
 
+namespace internal{
+template<typename FROM, typename Enable = void>
+struct StripIndexTypeT {};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = typename FROM::value_type;
+};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = FROM;
+};
+} // namespace internal
+
+/*!
+ * \brief Strips a strongly typed index to its underlying type
+ * In the case of a non-strongly typed index, the original type is returned.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
 }  // namespace RAJA
 

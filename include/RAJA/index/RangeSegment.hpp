@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_RangeSegment_HPP
@@ -77,7 +69,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = Index_type>
+template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
 struct TypedRangeSegment {
 
   //! the underlying iterator type
@@ -95,8 +87,7 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  template<typename Arg1, typename Arg2>
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(Arg1 begin, Arg2 end)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(DiffT begin, DiffT end)
       : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
@@ -161,8 +152,8 @@ struct TypedRangeSegment {
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(value_type begin,
-                                                       value_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(DiffT begin,
+                                                       DiffT length) const
   {
     auto start = m_begin[0] + begin;
     auto end = start + length > m_end[0] ? m_end[0] : start + length;
@@ -249,7 +240,7 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = Index_type>
+template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
 struct TypedRangeStrideSegment {
 
   //! the underlying iterator type
@@ -268,12 +259,22 @@ struct TypedRangeStrideSegment {
    * \param[in] end the ending value (exclusive) for the range
    * \param[in] stride the increment value for the iteration of the range
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(Index_type begin,
-                                           Index_type end,
-                                           Index_type stride)
-      : m_begin(iterator(DiffT{begin}, DiffT{stride})),
-        m_end(iterator(DiffT{end}, DiffT{stride}))
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(DiffT begin,
+                                           DiffT end,
+                                           DiffT stride)
+      : m_begin(iterator(begin, stride)),
+        m_end(iterator(end, stride)),
+        // essentially a ceil((end-begin)/stride) but using integer math,
+        // and allowing for negative strides
+        m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
+//        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
+//                static_cast<value_type>(stride) -
+//                (stride > 0 ? value_type{1} : value_type{-1})) /
+//               static_cast<value_type>(stride))
   {
+    // if m_size was initialized as negative, that indicates a zero iteration
+    // space
+    m_size = m_size < DiffT{0} ? DiffT{0} : m_size;
   }
 
   //! disable compiler generated constructor
@@ -282,13 +283,14 @@ struct TypedRangeStrideSegment {
   //! move constructor
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&& o)
       : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end))
+        m_end(std::move(o.m_end)),
+        m_size(std::move(o.m_size))
   {
   }
 
   //! copy constructor
   RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end)
+      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
   {
   }
 
@@ -298,6 +300,7 @@ struct TypedRangeStrideSegment {
   {
     m_begin = o.m_begin;
     m_end = o.m_end;
+    m_size = o.m_size;
     return *this;
   }
 
@@ -312,6 +315,7 @@ struct TypedRangeStrideSegment {
   {
     camp::safe_swap(m_begin, other.m_begin);
     camp::safe_swap(m_end, other.m_end);
+    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeStrideSegment
@@ -333,32 +337,15 @@ struct TypedRangeStrideSegment {
    *
    * \return the total number of steps for this Segment
    */
-  RAJA_HOST_DEVICE StorageT size() const {
-
-    auto stride = m_begin.get_stride();
-
-    // essentially a ceil((end-begin)/stride) but using integer math,
-    // and allowing for negative strides
-    auto m_size = (static_cast<value_type>(*m_end) -
-            static_cast<value_type>(*m_begin) +
-            static_cast<value_type>(stride) -
-            (stride > 0 ? value_type{1} : value_type{-1})) /
-           static_cast<value_type>(stride);
-
-    // if m_size was initialized as negative, that indicates a zero iteration
-    // space
-    m_size = m_size < value_type{0} ? value_type{0} : m_size;
-
-    return m_size;
-  }
+  RAJA_HOST_DEVICE DiffT size() const { return m_size; }
 
   //! Create a slice of this instance as a new instance
   /*!
    * \return A new instance spanning *begin() + begin * stride to *begin() +
    * (begin + length) * stride
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
-                                                 Index_type length) const
+  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(DiffT begin,
+                                                 DiffT length) const
   {
     auto stride = m_begin.get_stride();
     auto start = m_begin[0] + begin * stride;
@@ -373,6 +360,7 @@ struct TypedRangeStrideSegment {
     return TypedRangeStrideSegment{stripIndexType(start),
                                    stripIndexType(end),
                                    m_begin.get_stride()};
+
   }
 
   //! equality comparison
@@ -383,7 +371,7 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end;
+    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
   }
 
 private:
@@ -393,6 +381,8 @@ private:
   //! member variable for end iterator
   iterator m_end;
 
+  //! member variable for size of segment
+  DiffT m_size;
 };
 
 //! Alias for TypedRangeSegment<Index_type>

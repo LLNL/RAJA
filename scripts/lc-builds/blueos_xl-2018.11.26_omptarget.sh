@@ -1,18 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-##
-## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-689114
-##
-## All rights reserved.
-##
-## This file is part of RAJA.
-##
-## For details about use and distribution, please read RAJA/LICENSE.
-##
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
 
 BUILD_SUFFIX=lc_blueos-xl_2018.11.26_omptarget
 
@@ -26,7 +19,7 @@ cmake \
   -C ../host-configs/lc-builds/blueos/xl_2018_11_26.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-std=c++11 -qoffload -qsmp=omp -qnoeh -qnoinline -qalias=noansi" \
+  -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qnoeh;-qnoinline;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
