@@ -24,6 +24,7 @@ Key RAJA features shown in this example:
   * ``RAJA::statement::Tile`` type
   * ``RAJA::statement::ForICount`` type
   * ``RAJA::LocalArray``
+  * Specifying lambda arguments through statements
 
 As in :ref:`tiledmatrixtranspose-label`, this example computes the transpose 
 of an input matrix :math:`A` of size :math:`N_r \times N_c` and stores the 
@@ -40,18 +41,18 @@ that it is not necessary for the tile dimensions to divide evenly the number
 of rows and columns in the matrix A.
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
-                   :lines: 84-86,105
+                   :lines: 77-78,98
 
 Next, we calculate the number of tiles needed to perform the transpose.
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
-                   :lines: 108-109
+                   :lines: 101-102
 
 The complete C++ implementation of the tiled transpose operation using 
 local memory is:
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
-                   :lines: 126-174
+                   :lines: 119-167
 
 .. note:: * To prevent indexing out of bounds, when the tile dimensions do not
             divide evenly the matrix dimensions, we use a bounds check in the
@@ -83,18 +84,21 @@ For the RAJA version of the matrix transpose kernel above, we define the
 type of the ``RAJA::LocalArray`` used for matrix entries in a tile: 
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
-                   :lines: 192-193
+                   :lines: 185-186
 
 The template parameters that define the type are: array data type, data stride
 permutation for the array indices (here the identity permutation is given, so
 the default RAJA conventions apply; i.e., the rightmost array index will be 
-stride-1), and the array dimensions.
+stride-1), and the array dimensions. Next, we compare two implementations
+of matrix transpose with RAJA. The first does not explicity specify lambda arguments
+through RAJA lambda statements while the second does.
 
-Here is the complete RAJA implementation for sequential CPU execution
+Without specifying lambda arguments through RAJA statements,
+here is the complete RAJA implementation for sequential CPU execution
 with kernel execution policy and kernel:
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
-                   :lines: 205-241
+                   :lines: 198-234
 
 The ``RAJA::statement::Tile`` types at the start of the execution policy define
 tiling of the outer 'row' (iteration space tuple index '1') and 'col' 
@@ -146,6 +150,17 @@ The next three arguments correspond to the parameter tuple entries. The first
 two of these are the local tile indices used to access entries in the 
 ``RAJA::LocalArray`` object memory. The last argument is a reference to the 
 ``RAJA::LocalArray`` object itself.
+
+The second implementation uses the lambda statement extension to specify
+lambda arguments:
+
+.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+                   :lines: 245-285
+
+There are two main differences as consequence of spcifying lambda arguments
+through lambda statements. On the policy side, it no longer becomes necessary 
+to use ``RAJA::ForICount`` as offsets are specified as arguments through 
+lambda statements. Furthermore, place holder values are no longer necessary 
 
 The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the 
 complete working example code for the examples described in this section along 
