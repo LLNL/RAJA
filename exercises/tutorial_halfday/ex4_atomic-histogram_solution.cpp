@@ -207,7 +207,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
   using ATOMIC_POL5 = RAJA::atomic::auto_atomic;
 
-  std::cout << "\n Running RAJA OpenMP histogram with auto atomic policy...\n";
+  std::cout << "\n Running RAJA CUDA histogram with auto atomic policy...\n";
  
   RAJA::forall<EXEC_POL5>(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) {
     RAJA::atomic::atomicAdd<ATOMIC_POL5>(&hist[array[i]], 1);
@@ -238,7 +238,7 @@ void checkResult(int* hist, int* hist_ref, int len)
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
-    if ( hist[i] != hist_ref[i] ) { correct = false; }
+    if ( correct && hist[i] != hist_ref[i] ) { correct = false; }
   }
   if ( correct ) {
     std::cout << "\n\t result -- PASS\n";

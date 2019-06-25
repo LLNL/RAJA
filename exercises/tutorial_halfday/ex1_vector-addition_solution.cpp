@@ -229,7 +229,7 @@ void checkResult(int* c, int* c_ref, int len)
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
-    if ( c[i] != c_ref[i] ) { correct = false; }
+    if ( correct && c[i] != c_ref[i] ) { correct = false; }
   }
   if ( correct ) {
     std::cout << "\n\t result -- PASS\n";

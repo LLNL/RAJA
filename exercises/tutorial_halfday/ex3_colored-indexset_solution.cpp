@@ -114,7 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // C-style sequential variant establishes reference solution to compare with.
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running sequential C-version of vertex sum...\n";
+  std::cout << "\n Running sequential C-style version of vertex sum...\n";
 
   std::memset(areav_ref, 0, Nvert*Nvert * sizeof(double));
 
@@ -235,7 +235,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  std::cout << "\n Running RAJA OpenMP index set version...\n";
+  std::cout << "\n Running RAJA OpenMP index set vertex sum...\n";
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
@@ -264,7 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  std::cout << "\n Running RAJA CUDA index set version...\n";
+  std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
@@ -303,11 +303,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 void checkResult(double* a, double* aref, int n)
 {
-  bool match = true;
+  bool correct = true;
   for (int i = 0; i < n*n; i++) {
-    if ( std::abs(a[i] - aref[i]) > 10e-12 ) { match = false; }
+    if ( correct && std::abs(a[i] - aref[i]) > 10e-12 ) { correct = false; }
   }
-  if ( match ) {
+  if ( correct ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";

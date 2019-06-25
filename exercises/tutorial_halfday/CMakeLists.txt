@@ -20,3 +20,7 @@ raja_add_executable(
 raja_add_executable(
   NAME ex4_atomic-histogram_solution
   SOURCES ex4_atomic-histogram_solution.cpp)
+
+raja_add_executable(
+  NAME ex5_line-of-sight_solution
+  SOURCES ex5_line-of-sight_solution.cpp)
