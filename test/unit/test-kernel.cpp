@@ -342,8 +342,6 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
       tMax.max(d_arr[id]);
   });
 
-  hipDeviceSynchronize();
-
   ASSERT_FLOAT_EQ(total, tsum.get());
   ASSERT_FLOAT_EQ(-1,  tMin.get());
   ASSERT_FLOAT_EQ(50, tMax.get());
@@ -769,8 +767,6 @@ GPU_TEST(Kernel_gpu, HipZeroIter)
 
   hipErrchk(hipMemcpy(x, d_x, 3 * 2 * 5 *sizeof(int), hipMemcpyDeviceToHost));
 
-  hipDeviceSynchronize();
-
   for (int i = 0; i < 3 * 2 * 5; ++i) {
     ASSERT_EQ(x[i], 123);
   }
@@ -834,8 +830,6 @@ GPU_TEST(Kernel_gpu, HipCollapse2)
         }
       });
 
-  hipDeviceSynchronize();
-
   hipErrchk(hipMemcpy(&sum1, d_sum1, 1 * sizeof(Index_type), hipMemcpyDeviceToHost));
   hipErrchk(hipMemcpy(&sum2, d_sum2, 1 * sizeof(Index_type), hipMemcpyDeviceToHost));
   hipErrchk(hipMemcpy(  err,  d_err, 2 * sizeof(Index_type), hipMemcpyDeviceToHost));
@@ -871,8 +865,6 @@ GPU_TEST(Kernel_gpu, HipReduceA)
                       reducer += 1;
                     });
 
-  hipDeviceSynchronize();
-
   ASSERT_EQ((int)reducer, 3 * 2 * 5);
 }
 
@@ -896,8 +888,6 @@ GPU_TEST(Kernel_gpu, HipReduceB)
                     [=] RAJA_DEVICE(Index_type i, Index_type j, Index_type k) {
                       reducer += 1;
                     });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ((int)reducer, 3 * 2 * 5);
 }
@@ -924,8 +914,6 @@ GPU_TEST(Kernel_gpu, SubRange_ThreadBlock)
                     [=] RAJA_HOST_DEVICE(Index_type i) { d_ptr[i] = 1.0; });
 
   hipErrchk(hipMemcpy(ptr, d_ptr, sizeof(double) * num_elem, hipMemcpyDeviceToHost));
-
-  hipDeviceSynchronize();
 
   size_t count = 0;
   for (size_t i = 0; i < num_elem; ++i) {
@@ -977,8 +965,6 @@ GPU_TEST(Kernel_gpu, SubRange_Complex)
       [=] RAJA_HOST_DEVICE(Index_type i, Index_type j, Index_type k) {
         RAJA::atomic::atomicAdd<RAJA::atomic::hip_atomic>(d_ptr + i, 1.0);
       });
-
-  hipDeviceSynchronize();
 
   hipErrchk(hipMemcpy(ptr, d_ptr, sizeof(double) * num_elem, hipMemcpyDeviceToHost));
 
@@ -3181,8 +3167,6 @@ GPU_TEST(Kernel_gpu, ReduceHipSum1)
         trip_count += value;
       });
 
-  hipDeviceSynchronize();
-
   ASSERT_EQ(trip_count.get(), N*(N-1)/2);
 
 }
@@ -3205,8 +3189,6 @@ GPU_TEST(Kernel, HipWarpLoop1)
       [=] __device__ (Index_type i) {
         value += i;
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(value.get(), N*(N-1)/2);
 
@@ -3232,8 +3214,6 @@ GPU_TEST(Kernel, HipWarpLoop2)
       [=] __device__ (Index_type i) {
         value += i;
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(value.get(), N*(N-1)/2);
 
@@ -3263,8 +3243,6 @@ GPU_TEST(Kernel, HipWarpLoop3)
       [=] __device__ (Index_type i, Index_type j) {
         value += j;  // j should only be 0..31
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(value.get(), B*A*(A-1)/2);
 
@@ -3298,8 +3276,6 @@ GPU_TEST(Kernel, HipWarpLoop4)
         trip_count += 1;
         value += i;  // i should only be 0..A-1
       });
-
-  hipDeviceSynchronize();
 
   //factor of 2 since wavefronts are 64-wide on AMD
   ASSERT_EQ(trip_count.get(), 2*A*B); 
@@ -3337,8 +3313,6 @@ GPU_TEST(Kernel, HipThreadMasked1)
         value += i;  // i should only be 0..A-1
         max_thread.max(threadIdx.x);
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(max_thread.get(), 255);
   ASSERT_EQ(trip_count.get(), A*B);
@@ -3379,8 +3353,6 @@ GPU_TEST(Kernel, HipThreadMasked2)
         max_thread.max(threadIdx.x);
       });
 
-  hipDeviceSynchronize();
-
   ASSERT_EQ(max_thread.get(), 255);
   ASSERT_EQ(trip_count.get(), A*B);
   ASSERT_EQ(value.get(), A*B*(B-1)/2);
@@ -3414,8 +3386,6 @@ GPU_TEST(Kernel, HipTileThread1)
         value += i;
         max_thread.max(threadIdx.x);
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(max_thread.get(), 31);
   ASSERT_EQ(trip_count.get(), A);
@@ -3453,8 +3423,6 @@ GPU_TEST(Kernel, HipTileThread2)
         max_thread.max(threadIdx.x);
       });
 
-  hipDeviceSynchronize();
-
   ASSERT_EQ(max_thread.get(), 7); // 1024/128 = 8 threads
   ASSERT_EQ(trip_count.get(), A);
   ASSERT_EQ(value.get(), A*(A-1)/2);
@@ -3491,8 +3459,6 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop1)
         total_count += value;
         reduce_count += 1;
       });
-
-  hipDeviceSynchronize();
 
   ASSERT_EQ(total_count.get(), N*(N-1)/2);
   ASSERT_EQ(reduce_count.get(), 1);
@@ -3534,8 +3500,6 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop2)
         total_count += value;
         reduce_count += 1;
       });
-
-  hipDeviceSynchronize();
 
   long NM = N*M;
   ASSERT_EQ(total_count.get(), NM*(NM-1)/2);
@@ -3583,8 +3547,6 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop3)
         reduce_count += 1;
       });
 
-  hipDeviceSynchronize();
-
   long NMO = N*M*O;
   ASSERT_EQ(total_count.get(), NMO*(NMO-1)/2);
   ASSERT_EQ(reduce_count.get(), M*O);
@@ -3615,7 +3577,6 @@ GPU_TEST(Kernel_gpu, HipExec)
       [=] __device__(RAJA::Index_type i) {
         trip_count += 1;
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3654,7 +3615,6 @@ GPU_TEST(Kernel_gpu, HipForICount)
             tile_count += 1;
           }
         });
-    hipDeviceSynchronize();
 
     long trip_result = (long)trip_count;
     long tile_result = (long)tile_count;
@@ -3702,7 +3662,6 @@ GPU_TEST(Kernel_gpu, HipTileTCount)
             tile_count += 1;
           }
         });
-    hipDeviceSynchronize();
 
     long trip_result = (long)trip_count;
     long tile_result = (long)tile_count;
@@ -3745,7 +3704,6 @@ GPU_TEST(Kernel_gpu, HipConditional)
 
         // This always gets executed
         [=] RAJA_DEVICE(int i, bool) { trip_count += 1; });
-    hipDeviceSynchronize();
 
     long result = (long)trip_count;
 
@@ -3773,7 +3731,6 @@ GPU_TEST(Kernel_gpu, HipExec1)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3811,7 +3768,6 @@ GPU_TEST(Kernel_gpu, HipExec1a)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3846,7 +3802,6 @@ GPU_TEST(Kernel_gpu, HipExec1ab)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3883,7 +3838,6 @@ GPU_TEST(Kernel_gpu, HipExec1ac)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3913,7 +3867,6 @@ GPU_TEST(Kernel_gpu, HipExec1b)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3949,7 +3902,6 @@ GPU_TEST(Kernel_gpu, HipExec1c)
       [=] __device__(RAJA::Index_type i,
                      RAJA::Index_type j,
                      RAJA::Index_type k) { trip_count += 1; });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -3996,7 +3948,6 @@ GPU_TEST(Kernel_gpu, HipComplexNested)
         RAJA::atomic::atomicAdd<RAJA::atomic::auto_atomic>(d_ptr + i, (int)1);
       });
   hipErrchk(hipMemcpy(ptr, d_ptr, sizeof(int) * N, hipMemcpyDeviceToHost));
-  hipDeviceSynchronize();
 
   for (long i = 0; i < N; ++i) {
     ASSERT_EQ(ptr[i], (int)(N * N + N));
@@ -4034,8 +3985,6 @@ GPU_TEST(Kernel_gpu, HipExec_1blockexec)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(int i) { trip_count += 1; });
-  hipDeviceSynchronize();
-
 
   long result = (long)trip_count;
 
@@ -4062,7 +4011,6 @@ GPU_TEST(Kernel_gpu, HipExec_2threadloop)
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i, ptrdiff_t j) { trip_count += 1; });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -4092,7 +4040,6 @@ GPU_TEST(Kernel_gpu, HipExec_1thread1block)
           trip_count += 1;
         }
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -4125,7 +4072,6 @@ GPU_TEST(Kernel_gpu, HipExec_3threadloop)
       [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
         trip_count += 1;
       });
-  hipDeviceSynchronize();
 
   long result = (long)trip_count;
 
@@ -4155,8 +4101,6 @@ GPU_TEST(Kernel_gpu, HipExec_tile1threaddirect)
       RAJA::make_tuple(RangeSegment(0, N)),
 
       [=] __device__(ptrdiff_t i) { trip_count += 1; });
-  hipDeviceSynchronize();
-
 
   long result = (long)trip_count;
 
@@ -4201,7 +4145,6 @@ GPU_TEST(Kernel_gpu, Hyperplane_hip_2d)
                       d_xv(i, j) = left + up;
                     });
 
-  hipDeviceSynchronize();
   hipErrchk(hipMemcpy(x, d_x, N*M*sizeof(int), hipMemcpyDeviceToHost));
 
   for (int i = 1; i < N; ++i) {
@@ -4253,7 +4196,6 @@ GPU_TEST(Kernel_gpu, Hyperplane_hip_2d_negstride)
                       d_xv(i, j) = right + down;
                     });
 
-  hipDeviceSynchronize();
   hipErrchk(hipMemcpy(x, d_x, N*M*sizeof(int), hipMemcpyDeviceToHost));
 
   for (int i = 0; i < N - 1; ++i) {
@@ -4334,7 +4276,6 @@ GPU_TEST(Kernel_gpu, Hyperplane_hip_3d_tiled)
         trip_count += 1;
       });
 
-  hipDeviceSynchronize();
   hipErrchk(hipMemcpy(x, d_x, N*M*O*sizeof(long), hipMemcpyDeviceToHost));
 
   ASSERT_EQ((long)trip_count, (long)L * N * M * O);
@@ -4428,9 +4369,6 @@ GPU_TEST(Kernel_gpu, HipExec_1threadexec)
         trip_count += 1;
       });
 
-  hipDeviceSynchronize();
-
-
   long result = (long)trip_count;
 
   ASSERT_EQ(result, N * N * N * N);
@@ -4477,9 +4415,6 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
           x[i+j] = a[j];
         }
       });
-
-  hipErrchk(hipDeviceSynchronize());
-
 
   long result = (long)trip_count;
 

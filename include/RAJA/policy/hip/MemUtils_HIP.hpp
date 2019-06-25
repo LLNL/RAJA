@@ -203,6 +203,16 @@ void launch(hipStream_t stream)
   }
 }
 
+//! Launch kernel and indicate stream is asynchronous
+template<typename Func, typename Data>
+RAJA_INLINE
+void launch(Func &func, hip_dim_t gridDim, hip_dim_t blockDim, Data &&data, size_t shmem, hipStream_t stream)
+{
+  hipLaunchKernelGGL(func, dim3(gridDim), dim3(blockDim), shmem, stream, data);
+  hipErrchk(hipGetLastError());
+  launch(stream);
+}
+
 //! Indicate stream is asynchronous
 RAJA_INLINE
 void peekAtLastError() { hipErrchk(hipPeekAtLastError()); }

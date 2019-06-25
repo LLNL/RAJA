@@ -368,8 +368,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   {
     auto func = kernelGetter_t::get();
 
-    hipLaunchKernelGGL((func), dim3(launch_dims.blocks), dim3(launch_dims.threads),
-                        shmem, stream, data);
+    RAJA::hip::launch(func, launch_dims.blocks, launch_dims.threads, std::move(data), shmem, stream);
   }
 };
 
