@@ -174,16 +174,22 @@ Here, the innermost type in the kernel policy is a
 (argument zero of the sequence of lambdas passed to the ``RAJA::kernel`` method)
 will comprise the inner loop body. We only have one lambda in this example 
 but, in general, we can have any number of lambdas and we can use any subset 
-of them, with ``RAJA::statement::Lambda`` types placed appropriately in the 
+of them, with ``RAJA::statement::Lambda`` types placed appropriately in the
 execution policy, to construct a loop kernel. For example, placing 
 ``RAJA::statement::Lambda`` types between ``RAJA::statement::For`` statements 
 enables non-perfectly nested loops.
 
-Each lambda expression passed to a ``RAJA::kernel`` method **must take an 
-index argument for each iteration space in the tuple**. However, any subset 
-of the arguments may actually be used in each lambda expression. 
+RAJA offers two types of lambda statements. The first as illustratated
+above, requires that each lambda expression passed to a ``RAJA::kernel`` method
+**must take an index argument for each iteration space in the tuple**.
+However, any subset of the arguments may actually be used in each lambda expression.
 
-.. note:: The loop index arguments for each lambda expression used in a RAJA 
+The second type of lambda statement, an extension of the first, takes in additional
+template parameters which are used  to specify lambda arguments. This relieves the requirement
+that arguments in a lambda expression must match the contents of segment tuples.
+
+.. note:: Unless lambda arguments are specified through RAJA lambda statements,
+          the loop index arguments for each lambda expression used in a RAJA
           kernel loop body **must match** the contents of the 
           *iteration space tuple* in number, order, and type. Not all index 
           arguments must be used in each lambda, but they **all must appear** 

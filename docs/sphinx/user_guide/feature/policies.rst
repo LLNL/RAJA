@@ -448,7 +448,7 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
 
-  * ``statement::Lambda< LambdaId , Args...>`` extension of the lambda statement; enabling lambda arguments to be specified at compile time.
+  * ``statement::Lambda< LambdaId, Args...>`` extension of the lambda statement; enabling lambda arguments to be specified at compile time.
 
   * ``statement::Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
 
