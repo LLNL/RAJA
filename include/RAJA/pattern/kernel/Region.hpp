@@ -63,6 +63,7 @@ static RAJA_INLINE void exec(Data &&data)
 
 };
 
+#if defined(RAJA_ENABLE_OPENMP)
 //Statement executor to synchronize omp threads inside a kernel region
 template<>
 struct StatementExecutor<statement::OmpSyncThreads> {
@@ -74,6 +75,7 @@ static RAJA_INLINE void exec(Data &&)
 }
 
 };
+#endif
 
 }  // namespace internal
 }  // end namespace RAJA
