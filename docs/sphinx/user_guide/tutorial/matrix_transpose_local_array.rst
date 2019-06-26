@@ -93,9 +93,9 @@ stride-1), and the array dimensions. Next, we compare two implementations
 of matrix transpose with RAJA. The first does not explicity specify lambda arguments
 through RAJA lambda statements while the second does.
 
-Without specifying lambda arguments through RAJA statements,
-here is the complete RAJA implementation for sequential CPU execution
-with kernel execution policy and kernel:
+The first implementation we discuss does not specify lambda arguments
+within RAJA lambda statements. Here is the complete RAJA implementation for sequential
+CPU execution with kernel execution policy and kernel:
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 198-234
@@ -157,10 +157,10 @@ lambda arguments:
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
                    :lines: 245-285
 
-There are two main differences as consequence of spcifying lambda arguments
-through lambda statements. On the policy side, it no longer becomes necessary 
-to use ``RAJA::ForICount`` as offsets are specified as arguments through 
-lambda statements. Furthermore, place holder values are no longer necessary 
+As a consequence of specifying lambda arguments, there are two main differences.
+On the policy side, it no longer becomes necessary to use ``RAJA::ForICount`` as 
+offsets are specified as arguments through lambda statements. Furthermore, place 
+holder values are no longer necessary 
 
 The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the 
 complete working example code for the examples described in this section along 

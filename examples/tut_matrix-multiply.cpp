@@ -549,16 +549,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
 //
-// The following examples illustrate an alternative lambda api where in
-// arguments are specified as template arguments in lambda statements.
-// This removes the requirement of lambdas having the same number of arguments.
+// The following examples uses an extension of the lambda statement
+// to specify lambda arguments. By specifying arguments within statements
+// we remove the requirement that lambdas require all of the tuple contents.
 //
 
   std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args in statements (RAJA-POL6b)...\n";
 
   //Alias for convenience
   using RAJA::statement::Segs;
-  using RAJA::statement::Offsets;
   using RAJA::statement::Params;
 
   using EXEC_POL6b =

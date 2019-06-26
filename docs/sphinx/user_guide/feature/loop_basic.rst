@@ -185,8 +185,8 @@ above, requires that each lambda expression passed to a ``RAJA::kernel`` method
 However, any subset of the arguments may actually be used in each lambda expression.
 
 The second type of lambda statement, an extension of the first, takes in additional
-template parameters which are used  to specify lambda arguments. This relieves the requirement
-that arguments in a lambda expression must match the contents of segment tuples.
+template parameters which are used to specify lambda arguments. This results in
+kernel lambdas only requiring arguments which will be used within the body.
 
 .. note:: Unless lambda arguments are specified through RAJA lambda statements,
           the loop index arguments for each lambda expression used in a RAJA
