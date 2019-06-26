@@ -36,7 +36,7 @@ atomic policies, please see :ref:`atomics-label`.
 All code snippets described below use the loop range:
 
 .. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 57-57
+                    :lines: 49-49
 
 and the integer array 'bins' of length 'M' to accumulate the number of 
 occurrences of each value in the array.
@@ -44,7 +44,7 @@ occurrences of each value in the array.
 Here is the OpenMP version:
 
 .. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 90-97
+                    :lines: 82-89
 
 Each slot in the 'bins' array is incremented by one when a value associated 
 with that slot is encountered. Note that the ``RAJA::atomic::atomicAdd`` 
@@ -54,7 +54,7 @@ loop execution policy.
 The CUDA version is similar:
 
 .. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 126-133
+                    :lines: 118-125
 
 Here, the atomic add operation uses a CUDA atomic policy, which is compatible 
 with the CUDA loop execution policy.
@@ -70,7 +70,7 @@ applied.
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
 .. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 142-148
+                    :lines: 134-140
 
 The same CUDA loop execution policy as in the previous example is used.
 
