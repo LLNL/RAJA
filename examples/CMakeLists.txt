@@ -91,3 +91,10 @@ raja_add_executable(
   NAME omp-target-ltimes
   SOURCES omp-target-ltimes.cpp)
 endif()
+
+if(ENABLE_MPI AND ENABLE_CUDA)
+raja_add_executable(
+  NAME xpl_cuda_mpi
+  SOURCES xpl_cuda_mpi.cpp
+  DEPENDS_ON cuda mpi hwloc)
+endif()
