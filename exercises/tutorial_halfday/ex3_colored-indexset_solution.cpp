@@ -11,9 +11,9 @@
 #include <iostream>
 #include <vector>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
+
+#include "memoryManager.hpp"
 
 /*
  *  Exercise #3: Mesh vertex area with "colored" IndexSet
@@ -65,7 +65,7 @@ void printMeshData(double* v, int n, int joff);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA mesh vertex area example...\n";
+  std::cout << "\n\nExercise #3: Mesh vertex area with 'colored' IndexSet...\n";
 
 //
 // 2D mesh has N^2 elements (N+1)^2 vertices.

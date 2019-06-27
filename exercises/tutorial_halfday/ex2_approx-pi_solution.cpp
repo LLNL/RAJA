@@ -41,7 +41,7 @@ const int CUDA_BLOCK_SIZE = 256;
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA pi approximation exercise...\n";
+  std::cout << "\n\nExercise #2: Approximate pi using a Riemann sum...\n";
 
 //
 // Define number of subintervals (N) and size of each subinterval (dx) used in

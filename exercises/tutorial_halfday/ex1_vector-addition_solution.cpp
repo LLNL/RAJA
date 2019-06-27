@@ -9,9 +9,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
+
+#include "memoryManager.hpp"
 
 /*
  *  Exercise #1: Vector Addition
@@ -52,7 +52,7 @@ void printArray(int* v, int len);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA vector addition exercise...\n";
+  std::cout << "\n\nExercise #1: RAJA Vector Addition...\n";
 
 //
 // Define vector length

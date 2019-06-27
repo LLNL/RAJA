@@ -10,9 +10,9 @@
 #include <iomanip>
 #include <cstring>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
+
+#include "memoryManager.hpp"
 
 /*
  *  Exercise #4: Atomic histogram
@@ -53,6 +53,9 @@ void printArray(int* v, int len);
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
+
+  std::cout << "\n\nExercise #4: Atomic histogram...\n";
+
   //
   // Define array bounds and initialize array to compute histogram of values
   // on. 

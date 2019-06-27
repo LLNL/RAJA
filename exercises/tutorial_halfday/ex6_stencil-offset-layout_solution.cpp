@@ -11,31 +11,40 @@
 #include <iostream>
 
 #include "RAJA/RAJA.hpp"
+
 #include "memoryManager.hpp"
 
 /*
- *  Offset Layout example
+ *  Exercise #6: Offset layout stencil computation. 
  *
- *  This example applies a five-cell stencil to the
- *  interior cells of a lattice and stores the 
- *  resulting sums in a second lattice of equal size.
- *
- *  The five-cell stencil accumulates values of a cell 
- *  and its four neighbors. Assuming the cells of a 
- *  lattice may be accessed through a row/col fashion, 
- *  the stencil may be expressed as the following sum
+ *  In this exercise, you will use RAJA Layouts and Views to perform
+ *  a simple 5-point stencil computation on a 2-dimensional Cartesian mesh.
+ *  The exercise demonstrates the relative ease with which array data access
+ *  can be done using multi-dimensional RAJA Views as compared to C-style
+ *  pointer offset arithmetic.
  * 
- *  output_lattice(row, col)
- *         = input_lattice(row, col)
- *         + input_lattice(row - 1, col) + input_lattice(row + 1, col)
- *         + input_lattice(row, col - 1) + input_lattice(row, col + 1)
+ *  The five-cell stencil accumulates values in a cell from itself and and 
+ *  its four neighbors. Assuming the cells are indexed using (i,j) pairs on
+ *  the two dimensional mesh, the stencil computation looks like:
+ * 
+ *  out(i, j) = in(i, j) + in(i - 1, j) + in(i + 1, j) +
+ *              in(i, j - 1) + in(i, j + 1)
  *
- *  We assume a lattice has N x N interior nodes 
- *  and a padded edge of zeros for a lattice
- *  of size (N_r + 2) x (N_c + 2).  
+ *  where 'in' is the input data array and 'out' is the result of
+ *  the stencil computation. For simplicity, in the code examples, we refer 
+ *  to the index tuples used to access input array entries as C (center), 
+ *  W (west), E (east), S (south), and N (north).
  *
- *  In the case of N = 3, the input lattice generated
- *  takes the form
+ *  We assume that the input array has an entry for N x M interior mesh cells 
+ *  plus a one cell wide halo region around the mesh interior; i.e., the size
+ *  of the input array is (N + 2) * (M + 2). The output array has an entry
+ *  for N x M interior mesh cells only, so its size is N * M. Note that since
+ *  the arrays have different sizes, C-style indexing requires different 
+ *  offset values in the code for accessing a cell entry in each array.
+ * 
+ *  The input array is initialized so that the entry for each interior cell 
+ *  is one and the entry for each halo cell is zero. So for the case where
+ *  N = 3 and M = 2, the input array looks like:
  *
  *  ---------------------
  *  | 0 | 0 | 0 | 0 | 0 |
@@ -44,269 +53,297 @@
  *  ---------------------
  *  | 0 | 1 | 1 | 1 | 0 |
  *  ---------------------
- *  | 0 | 1 | 1 | 1 | 0 |
- *  ---------------------
  *  | 0 | 0 | 0 | 0 | 0 |
  *  ---------------------
  *
- *  after the computation, we expect the output
- *  lattice to take the form
+ *  And, after the stencil computation, the output array looks like:
  *
- *  ---------------------
- *  | 0 | 0 | 0 | 0 | 0 |
- *  ---------------------
- *  | 0 | 3 | 4 | 3 | 0 |
- *  ---------------------
- *  | 0 | 4 | 5 | 4 | 0 |
- *  ---------------------
- *  | 0 | 3 | 4 | 3 | 0 |
- *  ---------------------
- *  | 0 | 0 | 0 | 0 | 0 |
- *  ---------------------
+ *      -------------
+ *      | 3 | 4 | 3 |
+ *      -------------
+ *      | 4 | 5 | 4 |
+ *      -------------
+ *      | 3 | 4 | 3 |
+ *      -------------
  *
- * In this example, we use RAJA's make_offset_layout
- * method and view object to simplify applying
- * the stencil to interior cells.
- * The make_offset_layout method enables developers
- * to create layouts which offset
- * the enumeration of values in an array. Here we
- * choose to enumerate the lattice in the following manner:
+ *  You can think about indexing into this mesh as illustrated in the 
+ *  following diagram:
  *
- *  --------------------------------------------------
- *  | (-1, 3) | (0, 3)  | (1, 3)  | (2, 3)  | (3, 3)  |
- *  --------------------------------------------------
+ *  ---------------------------------------------------
  *  | (-1, 2) | (0, 2)  | (1, 2)  | (2, 2)  | (3, 2)  |
- *  --------------------------------------------------
+ *  ---------------------------------------------------
  *  | (-1, 1) | (0, 1)  | (1, 1)  | (2, 1)  | (3, 1)  |
- *  --------------------------------------------------
+ *  ---------------------------------------------------
  *  | (-1, 0) | (0, 0)  | (1, 0)  | (2, 0)  | (3, 0)  |
  *  ---------------------------------------------------
  *  | (-1,-1) | (0, -1) | (1, -1) | (2, -1) | (3, -1) |
  *  ---------------------------------------------------
  *
- *  Notably (0, 0) corresponds to the bottom left
- *  corner of the region to which we wish to apply stencil.
+ *  Notably (0, 0) corresponds to the bottom left corner of the interior 
+ *  region, which extends to (2, 1), and (-1, -1) corresponds to the bottom 
+ *  left corner of the halo region, which extends to (3, 2).
  *
- *  RAJA features shown:
- *    - `forall` loop iteration template method
- *    -  Offset-layouts for RAJA Views
- *    -  Index range segment
- *    -  Execution policies
+ *  This file contains two C-style sequential implementations of stencil 
+ *  computation. One has column indexing as stride-1 with the outer loop 
+ *  traversing the rows ('i' loop variable) and the inner loop traversing the 
+ *  columns ('j' loop variable). The other has row indexing as stride-1 and
+ *  reverses the order of the loops. This shows that a C-style implementation 
+ *  requires two different implementations, one for each loop order, since the
+ *  array offset arithmetic is different in the two cases. Where indicated 
+ *  by comments, you will fill in versions using two-dimensional RAJA Views
+ *  with offset layouts. One loop ordering requires permutations, while the
+ *  other does not. If done properly, you will see that both RAJA versions
+ *  have identical inner loop bodies, which is not the case for the C-style
+ *  variants.
+ *
+ *  Note that you will use the same for-loop patterns as the C-style loops. 
+ *  In a later exercise, we will show you how to use RAJA's nested loop
+ *  support, which allows you to write both RAJA variants with identical 
+ *  source code.
+ *
+ *  RAJA features you will use:
+ *    -  Offset-layouts and RAJA Views
+ * 
+ *  Since this exercise is done on a CPU only, we use C++ new and delete
+ *  operators to allocate and deallocate the arrays we will use.
  */
-
-/*
- * Define number of threads in x and y dimensions of a CUDA thread block
- */
-#if defined(RAJA_ENABLE_CUDA)
-#define CUDA_BLOCK_SIZE 16
-#endif
 
 //
 // Functions for printing and checking results
 //
-void printLattice(int* lattice, int N_r, int N_c);
-void checkResult(int* compLattice, int* refLattice, int totCells);
+// For array printing, 'stride1dim' indicates which mesh dimenstride is 
+// stride-1 (Rows indicates each row is stride-1, 
+//           Columns indicates each column is stride-1).
+//
+enum class Stride1
+{
+   Rows,
+   Columns 
+};
+void printArrayOnMesh(int* v, int Nrows, int Ncols, Stride1 stride1dim);
+void checkResult(int* A, int* A_ref, int Ntot);
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA five-cell stencil example...\n";
+  std::cout << "\n\nExercise #6: Offset layout stencil computation...\n";
 
 //
-// Define num of interior cells in row/cols in a lattice
-//
-  const int N_r = 3;
-  const int N_c = 3;
-
-//
-// Define total num of cells in rows/cols in a lattice
-//
-  const int totCellsInRow = N_r + 2;
-  const int totCellsInCol = N_c + 2;
-
-//
-// Define total num of cells in a lattice
-//
-  const int totCells = totCellsInRow * totCellsInCol;
-
-//
-// Allocate and initialize lattice
-//
-  int* input_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* output_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* lattice_ref = memoryManager::allocate<int>(totCells * sizeof(int));
-
-  std::memset(input_lattice, 0, totCells * sizeof(int));
-  std::memset(output_lattice, 0, totCells * sizeof(int));
-  std::memset(lattice_ref, 0, totCells * sizeof(int));
-
-//
-// C-Style intialization
-//
-  for (int row = 1; row <= N_r; ++row) {
-    for (int col = 1; col <= N_c; ++col) {
-      int id = col + totCellsInCol * row;
-      input_lattice[id] = 1;
-    }
-  }
-// printLattice(input_lattice, totCellsInRow, totCellsInCol);
-
-//
-// Generate reference solution
-//
-  for (int row = 1; row <= N_r; ++row) {
-    for (int col = 1; col <= N_c; ++col) {
-
-      int id = col + totCellsInCol * row;
-      lattice_ref[id] = input_lattice[id] + input_lattice[id + 1]
-                        + input_lattice[id - 1]
-                        + input_lattice[id + totCellsInCol]
-                        + input_lattice[id - totCellsInCol];
-    }
-  }
-// printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-
-//----------------------------------------------------------------------------//
-
-//
-// Create loop bounds
-//
-  RAJA::RangeSegment col_range(0, N_r);
-  RAJA::RangeSegment row_range(0, N_c);
-
-// The following code illustrates pairing an offset layout and a RAJA view
-// object to simplify multidimensional indexing.
-// An offset layout is constructed by using the make_offset_layout method.
-// The first argument of the layout is an array object with the coordinates of
-// the bottom left corner of the lattice, and the second argument is an array 
-// object of the coordinates of the top right corner.
-// The example uses double braces to initiate the array object and its
-// subobjects.
+// Define number of rows and columns of cells in the 2D mesh.
 //
   const int DIM = 2;
 
-  RAJA::OffsetLayout<DIM> layout =
-      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r, N_c}});
+  const int Nr_int = 5; 
+  const int Nc_int = 8;
 
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
+  const int Nr_tot = Nr_int + 2; 
+  const int Nc_tot = Nc_int + 2;
+  
+  const int int_cells = Nr_int * Nc_int;
+  const int tot_cells = Nr_tot * Nc_tot; 
 
-//----------------------------------------------------------------------------//
+//
+// Allocate and initialize input array
+//
+  int* B = memoryManager::allocate<int>(tot_cells * sizeof(int));
+  int* A = memoryManager::allocate<int>(int_cells * sizeof(int));
+  int* A_ref = memoryManager::allocate<int>(int_cells * sizeof(int));
 
-  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
-               "sequential)...\n";
-
-  using NESTED_EXEC_POL1 =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,    // row
-        RAJA::statement::For<0, RAJA::seq_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >  
-    >;  
-
-  RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
-                                 [=](int col, int row) {
-
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
-                                 });
-
-  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
 
 //----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_OPENMP)
-
-  std::cout << "\n Running five-cell stencil (RAJA-Kernel - omp "
-               "parallel for)...\n";
-
-  using NESTED_EXEC_POL2 = 
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::omp_parallel_for_exec, // row
-        RAJA::statement::For<0, RAJA::seq_exec,            // col
-          RAJA::statement::Lambda<0>
-        > 
-      > 
-    >;
-
-  RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
-                                 [=](int col, int row) {
-
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
-                                 });
-
-  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
-#endif
-
+// First variant of stencil computation with column indexing as stride-1.
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+  std::memset(B, 0, tot_cells * sizeof(int));
 
-  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
-               "cuda)...\n";
+//
+// We assume that for each cell id (i,j) that j is the stride-1 index.
+//
+  for (int i = 1; i <= Nc_int; ++i) {
+    for (int j = 1; j <= Nr_int; ++j) {
+      int idx = j + Nr_tot * i;
+      B[idx] = 1;
+    }
+  }
+//printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Columns); 
 
-  using NESTED_EXEC_POL3 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_x_loop, //row
-          RAJA::statement::For<0, RAJA::cuda_thread_x_loop, //col
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >;                                                     
-
-  RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row) {
-
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
-                                 });
-
-  //printLattice(output_lattice, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
-#endif
 
 //----------------------------------------------------------------------------//
+// C-style stencil computation establishes reference solution to compare with.
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n\n Running C-style stencil computation (reference soln)...\n";
+
+  std::memset(A_ref, 0, int_cells * sizeof(int));
+
+  for (int i = 0; i < Nc_int; ++i) {
+    for (int j = 0; j < Nr_int; ++j) {
+
+      int idx_out = j + Nr_int * i;
+      int idx_in = (j + 1) + Nr_tot * (i + 1);
+
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nr_tot] + B[idx_in + Nr_tot] +  // W, E
+                       B[idx_in - 1] + B[idx_in + 1];             // S, N
+
+    }
+  }
+
+//printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Columns);
+
+
+//----------------------------------------------------------------------------//
+// Variant using RAJA Layouts and Views (no permutation).
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n\n Running stencil computation with RAJA Views...\n";
+
+  std::memset(A, 0, int_cells * sizeof(int));
+
+  //
+  // Create offset Layout and Views for data access. Note that only
+  // the input array access requires an offset since the loops iterate over
+  // the interior (i, j) indices. We can use the default layout for the 
+  // output array. Also, since the 'j' index (rightmost) is stride-1, 
+  // we don't need a permutation for this case.
+  //
+
+  RAJA::OffsetLayout<DIM> B_layout =
+      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{Nc_tot-2, Nr_tot-2}});
+
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Bview(B, B_layout);
+  RAJA::View<int, RAJA::Layout<DIM>> Aview(A, Nc_int, Nr_int);
+
+  for (int i = 0; i < Nc_int; ++i) {
+    for (int j = 0; j < Nr_int; ++j) {
+
+      Aview(i, j) = Bview(i, j) +                           // C
+                    Bview(i - 1, j) + Bview(i + 1, j) +     // W, E
+                    Bview(i, j - 1) + Bview(i, j + 1);      // S, N
+
+    }
+  }
+
+  checkResult(A, A_ref, int_cells);
+//printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Columns);
+
+
+//----------------------------------------------------------------------------//
+// Second variant of stencil computation with row indexing as stride-1.
+//----------------------------------------------------------------------------//
+
+  std::memset(B, 0, tot_cells * sizeof(int));
+
+//
+// We assume that for each cell id (i,j) that i is the stride-1 index.
+//
+  for (int j = 1; j <= Nr_int; ++j) {
+    for (int i = 1; i <= Nc_int; ++i) {
+      int idx = i + Nc_tot * j;
+      B[idx] = 1;
+    }
+  }
+//printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Rows);
+
+
+//----------------------------------------------------------------------------//
+// C-style stencil computation establishes reference solution to compare with.
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n\n Running C-style stencil computation (reference soln)...\n";
+
+  std::memset(A_ref, 0, int_cells * sizeof(int));
+
+  for (int j = 0; j < Nr_int; ++j) {
+    for (int i = 0; i < Nc_int; ++i) {
+
+      int idx_out = i + Nc_int * j;
+      int idx_in = (i + 1) + Nc_tot * (j + 1);
+
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nc_tot] + B[idx_in + Nc_tot] +  // S, N
+                       B[idx_in - 1] + B[idx_in + 1];             // W, E
+
+    }
+  }
+
+//printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Rows);
+
+
+//----------------------------------------------------------------------------//
+// Variant using RAJA Layouts and Views (with permutation).
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n\n Running stencil computation with RAJA Views (permuted)...\n";
+
+  std::memset(A, 0, int_cells * sizeof(int));
+
+  //
+  // Create offset Layout and Views for data access. Note that only
+  // the input array access requires an offset since the loops iterate over
+  // the interior (i, j) indices. Since the 'i' index (leftmost) is stride-1,
+  // we use permuted layouts for this case.
+  //
+  // Note that the inner loop body is the same here as the RAJA version above,
+  // except for the changed View names, which can be abstracted in an
+  // application.
+  //
+
+  std::array<RAJA::idx_t, DIM> perm {{1, 0}};  // 'i' index (position zero0) 
+                                               // is stride-1 
+
+  RAJA::OffsetLayout<DIM> pB_layout =
+    RAJA::make_permuted_offset_layout( {{-1, -1}}, {{Nc_tot-2, Nr_tot-2}},
+                                       perm );
+
+  RAJA::Layout<DIM> pA_layout = 
+      RAJA::make_permuted_layout( {{Nc_int, Nr_int}}, perm );
+
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> pBview(B, pB_layout);
+  RAJA::View<int, RAJA::Layout<DIM>> pAview(A, pA_layout);
+
+  for (int j = 0; j < Nr_int; ++j) {
+    for (int i = 0; i < Nc_int; ++i) {
+
+      pAview(i, j) = pBview(i, j) +                            // C
+                     pBview(i - 1, j) + pBview(i + 1, j) +     // W, E
+                     pBview(i, j - 1) + pBview(i, j + 1);      // S, N
+
+    }
+  }
+
+  checkResult(A, A_ref, int_cells);
+//printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Rows);
 
 //
 // Clean up.
 //
-  memoryManager::deallocate(input_lattice);
-  memoryManager::deallocate(output_lattice);
-  memoryManager::deallocate(lattice_ref);
+  memoryManager::deallocate(B);
+  memoryManager::deallocate(A);
+  memoryManager::deallocate(A_ref);
 
   std::cout << "\n DONE!...\n";
   return 0;
 }
 
+
 //
-// Print Lattice
+// For array printing, 'stride1dim' indicates which mesh dimenstride is 
+// stride-1 (0 indicates each row is stride-1, 
+//           1 indicates each column is stride-1).
 //
-void printLattice(int* lattice, int totCellsInRow, int totCellsInCol)
+void printArrayOnMesh(int* v, int Nrows, int Ncols, Stride1 stride1dim)
 {
   std::cout << std::endl;
-  for (int row = 0; row < totCellsInRow; ++row) {
-    for (int col = 0; col < totCellsInCol; ++col) {
-
-      const int id = col + totCellsInCol * row;
-      std::cout << lattice[id] << " ";
+  for (int j = 0; j < Nrows; ++j) {
+    for (int i = 0; i < Ncols; ++i) {
+      int idx = 0;
+      if ( stride1dim == Stride1::Columns ) {
+        idx = j + Nrows * i;
+      } else {
+        idx = i + Ncols * j;
+      }
+      std::cout << v[idx] << " ";
     }
     std::cout << " " << std::endl;
   }
@@ -316,13 +353,14 @@ void printLattice(int* lattice, int totCellsInRow, int totCellsInCol)
 //
 // Check Result
 //
-void checkResult(int* compLattice, int* refLattice, int totCells)
+void checkResult(int* A, int* A_ref, int Ntot)
 {
-
   bool pass = true;
 
-  for (int i = 0; i < totCells; ++i) {
-    if (compLattice[i] != refLattice[i]) pass = false;
+  for (int i = 0; i < Ntot; ++i) {
+    if ( pass && (A[i] != A_ref[i]) ) {
+      pass = false;
+    }
   }
 
   if (pass) {

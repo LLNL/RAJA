@@ -12,9 +12,9 @@
 #include <cmath>
 #include <algorithm>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
+
+#include "memoryManager.hpp"
 
 /*
  *  Exercise #5: The line-of-sight problem.
@@ -77,6 +77,9 @@ void printArray(T* v, int len);
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
+
+  std::cout << "\n\nExercise #5: The line-of-sight problem...\n";
+
   //
   // Define array bounds and initialize distance and altitude arrays.
   //

@@ -24,3 +24,7 @@ raja_add_executable(
 raja_add_executable(
   NAME ex5_line-of-sight_solution
   SOURCES ex5_line-of-sight_solution.cpp)
+
+raja_add_executable(
+  NAME ex6_stencil-offset-layout_solution
+  SOURCES ex6_stencil-offset-layout_solution.cpp)
