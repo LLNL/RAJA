@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 .. _configopt-label:
@@ -48,18 +42,27 @@ Following CMake conventions, RAJA supports three build types: ``Release``,
 choose a build type that includes debug information, you do not have to specify
 the '-g' compiler flag to generate debugging symbols. 
 
-All RAJA options are set like standard CMake variables. For example, to enable 
-RAJA OpenMP functionality, pass the following argument to cmake::
+All RAJA options are set like standard CMake variables. All RAJA settings for 
+default options, compilers, flags for optimization, etc. can be found in files 
+in the ``RAJA/cmake`` directory. Configuration variables can be set by passing
+arguments to CMake on the command line when CMake is called, or by setting
+options in a CMake cache file and passing that file to CMake. For example, 
+to enable RAJA OpenMP functionality, pass the following argument to cmake::
 
     -DENABLE_OPENMP=On
 
-All RAJA settings for default options, compilers, flags for optimization, etc. 
-can be found in files in the ``RAJA/cmake`` directory. Next, we
-summarize the available options and their defaults
+The RAJA repository contains a collection of CMake cache files 
+(or 'host-config' files) that may be used as a guide for users trying
+to set their own options. See :ref:`configopt-raja-hostconfig-label`.
 
-=================================
-Available Options and Defaults
-=================================
+Next, we summarize RAJA options and their defaults.
+
+
+.. _configopt-raja-features-label:
+
+====================================
+Available RAJA Options and Defaults
+====================================
 
 RAJA uses a variety of custom variables to control how it is compiled. Many 
 of these are used internally to control RAJA compilation and do 
@@ -96,7 +99,7 @@ and their default settings:
       ENABLE_WARNINGS_AS_ERRORS   Off
       =========================   ======================
      
-* **Programming models and compilers**
+* **Programming model back-ends**
 
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
@@ -127,8 +130,8 @@ and their default settings:
       for RAJA CUDA scans. Since the CUB library is included in RAJA as a
       Git submodule, users should not have to set this in most scenarios.
 
-.. note:: When using the NVIDIA nvcc compiler for RAJA CUDA functionality, 
-          the variable 'RAJA_NVCC_FLAGS' should be used to pass flags to nvcc.
+.. note:: See :ref:`configopt-raja-backends-label` for more information about
+          setting compiler flags and other options for RAJA back-ends.
 
 * **Data types, sizes, alignment, etc.**
 
@@ -280,6 +283,61 @@ and their default settings:
                                       faults detected, recovered from, 
                                       recovery overhead, etc.)
       =============================   ========================================
+
+
+.. _configopt-raja-backends-label:
+
+===============================
+Setting RAJA Back-End Features
+===============================
+
+To access compiler and hardware optimization features, it is often necessary
+to pass options to a compiler. This sections describes how to do this and
+which CMake variables to use for certain cases. 
+
+* **OpenMP Compiler Options**
+
+   The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
+   compiler. Option syntax follows the CMake *list* pattern. Here is an example
+   showing how to specify OpenMP target back-end options for the clang compiler
+   as a CMake option::
+
+   cmake \
+     ....
+     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda;-fopenmp-implicit-declare-target" 
+     ....
+
+* **CUDA Compiler Options**
+
+When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables
+`CMAKE_CUDA_FLAGS_RELEASE`, `CMAKE_CUDA_FLAGS_DEBUG`, and 
+'CMAKE_CUDA_FLAGS_RELWITHDEBINFO` (corresponding to the standard CMake build
+types) are used to pass flags to nvcc.
+
+.. note:: When nvcc must pass options to the host compiler, the arguments
+          can be included in these CMake variables. Each host compiler
+          option must be prepended with the `-Xcompiler` directive.
+
+To set the CUDA architecture level for the nvcc compiler, which should be 
+chosen based on the NVIDIA GPU hardware you are using, you can use the 
+`CUDA_ARCH` CMake variable. For example, the CMake option::
+
+  -DCUDA_ARCH=sm_60
+
+will tell the compiler to use the `sm_60` SASS architecture in its second
+stage of compilation. It will pick the PTX architecture to use in the first
+stage of compilation that is suitable for the SASS architecture you specify.
+
+Alternatively, you may specify the PTX and SASS architectures, using 
+appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
+
+.. note:: RAJA requires a minimum CUDA architecture level of `sm_35` to use 
+          all supported CUDA features. Mostly, the architecture level affects 
+          which RAJA CUDA atomic operations are available and how they are 
+          implemented inside RAJA. This is described in :ref:`atomics-label`.
+
+
+.. _configopt-raja-hostconfig-label:
 
 =======================
 RAJA Host-Config Files

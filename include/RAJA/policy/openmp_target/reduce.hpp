@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_omp_target_reduce_HPP
@@ -193,6 +185,9 @@ struct TargetReduce
   {
   }
 
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp declare target
+#endif
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
@@ -205,6 +200,9 @@ struct TargetReduce
       }
     }
   }
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp end declare target
+#endif
 
   //! map result value back to host if not done already; return aggregate value
   operator T()

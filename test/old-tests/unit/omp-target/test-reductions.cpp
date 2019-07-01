@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -139,9 +131,6 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceSum)
   RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
 
   auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { sum_reducer += array[i]; });
 
@@ -158,9 +147,6 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMin)
   RAJA::ReduceMin<ReducePolicy, double> min_reducer(1024.0);
 
   auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { min_reducer.min(array[i]); });
 
@@ -177,9 +163,6 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMax)
   RAJA::ReduceMax<ReducePolicy, double> max_reducer(0.0);
 
   auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { max_reducer.max(array[i]); });
 
@@ -196,9 +179,6 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMinLoc)
   RAJA::ReduceMinLoc<ReducePolicy, double> minloc_reducer(1024.0, 0);
 
   auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { minloc_reducer.minloc(array[i], i); });
 
@@ -217,9 +197,6 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLoc)
   RAJA::ReduceMaxLoc<ReducePolicy, double> maxloc_reducer(0.0, -1);
 
   auto array = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) { maxloc_reducer.maxloc(array[i], i); });
 
