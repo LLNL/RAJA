@@ -391,7 +391,7 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
   public:                                                            \
     using IndexValueType = TYPE;                                     \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v) \
         : parent::IndexValue(v)                                      \
     {                                                                \
     }                                                                \
