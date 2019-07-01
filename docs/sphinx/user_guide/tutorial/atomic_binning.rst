@@ -47,7 +47,7 @@ Here is the OpenMP version:
                     :lines: 90-97
 
 Each slot in the 'bins' array is incremented by one when a value associated 
-with that slot is encountered. Note that the ``RAJA::atomic::atomicAdd`` 
+with that slot is encountered. Note that the ``RAJA::atomicAdd`` 
 operation uses an OpenMP atomic policy, which is compatible with the OpenMP 
 loop execution policy.
 
