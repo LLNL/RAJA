@@ -23,8 +23,8 @@
 
 TEST(Atomic, basic_OpenMP_AtomicRef)
 {
-  testAtomicRefPol<RAJA::omp_for_exec, RAJA::atomic::omp_atomic>();
-  testAtomicRefPol<RAJA::omp_for_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicRefPol<RAJA::omp_for_exec, RAJA::omp_atomic>();
+  testAtomicRefPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
 }
 
 #endif
@@ -33,7 +33,7 @@ TEST(Atomic, basic_OpenMP_AtomicRef)
 
 CUDA_TEST(Atomic, basic_CUDA_AtomicRef)
 {
-  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::atomic::cuda_atomic>();
+  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 #endif
@@ -41,8 +41,8 @@ CUDA_TEST(Atomic, basic_CUDA_AtomicRef)
 #if defined(TEST_EXHAUSTIVE) || !defined(RAJA_ENABLE_OPENMP)
 TEST(Atomic, basic_seq_AtomicRef)
 {
-  testAtomicRefPol<RAJA::seq_exec, RAJA::atomic::seq_atomic>();
-  testAtomicRefPol<RAJA::seq_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicRefPol<RAJA::seq_exec, RAJA::seq_atomic>();
+  testAtomicRefPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
 #endif
 

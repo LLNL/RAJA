@@ -26,12 +26,8 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 using loop_atomic = seq_atomic;
-
-}  // namespace atomic
 
 }  // namespace RAJA
 

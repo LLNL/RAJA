@@ -76,11 +76,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0;
 
-  using ATOMIC_POL1 = RAJA::atomic::seq_atomic;
+  using ATOMIC_POL1 = RAJA::seq_atomic;
 
   RAJA::forall<EXEC_POL1>(bins, [=](int i) {
       double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL1>(atomic_pi, 4.0 / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL1>(atomic_pi, 4.0 / (1.0 + x * x));
   });
 
   std::cout << "\tpi = " << std::setprecision(prec) 
@@ -111,11 +111,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0;
 
-  using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
+  using ATOMIC_POL2 = RAJA::omp_atomic;
 
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 4.0 / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL2>(atomic_pi, 4.0 / (1.0 + x * x));
   });
 
   std::cout << "\tpi = " << std::setprecision(prec)
@@ -148,11 +148,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0;
 
-  using ATOMIC_POL3 = RAJA::atomic::cuda_atomic;
+  using ATOMIC_POL3 = RAJA::cuda_atomic;
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL3>(atomic_pi, 4.0 / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, 4.0 / (1.0 + x * x));
   });
 
   std::cout << "\tpi = " << std::setprecision(prec)

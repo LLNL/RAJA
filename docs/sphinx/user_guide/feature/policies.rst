@@ -346,7 +346,7 @@ Here is an example illustrating use of the ``auto_atomic`` policy::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(&sum, 1);
+    RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
 
   });
 

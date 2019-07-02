@@ -137,12 +137,12 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
 #endif
 
 
-template <typename ViewType, typename AtomicPolicy = RAJA::atomic::auto_atomic>
+template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::atomic::AtomicRef<value_type, AtomicPolicy>;
+  using atomic_type = RAJA::AtomicRef<value_type, AtomicPolicy>;
 
   base_type base_;
 
@@ -164,12 +164,11 @@ struct AtomicViewWrapper {
  * for performance
  */
 template <typename ViewType>
-struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
+struct AtomicViewWrapper<ViewType, RAJA::seq_atomic> {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type =
-      RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+  using atomic_type = RAJA::AtomicRef<value_type, RAJA::seq_atomic>;
 
   base_type base_;
 
