@@ -95,7 +95,7 @@ struct AndEqOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other &= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -108,7 +108,7 @@ struct FetchAndOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.fetch_and((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -121,7 +121,7 @@ struct OrEqOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other |= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -134,7 +134,7 @@ struct FetchOrOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.fetch_or((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -150,7 +150,7 @@ struct XorEqOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other ^= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -166,7 +166,7 @@ struct FetchXorOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.fetch_xor((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -179,7 +179,7 @@ struct LoadOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
     { return other.load(); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -192,7 +192,7 @@ struct OperatorTOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
     { return other; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -205,7 +205,7 @@ struct StoreOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { other.store((T)i); return (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -218,7 +218,7 @@ struct AssignOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return (other = (T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -237,7 +237,7 @@ struct CASOtherOp {
       }
       return received;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -254,7 +254,7 @@ struct CompareExchangeWeakOtherOp {
       while (!other.compare_exchange_weak(expect, (T)i)) {}
       return expect;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -271,7 +271,7 @@ struct CompareExchangeStrongOtherOp {
       while (!other.compare_exchange_strong(expect, (T)i)) {}
       return expect;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -284,7 +284,7 @@ struct PreIncCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (++counter) - (T)1;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -297,7 +297,7 @@ struct PostIncCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (counter++);
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -310,7 +310,7 @@ struct AddEqCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (counter += (T)1) - (T)1;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -323,7 +323,7 @@ struct FetchAddCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return counter.fetch_add((T)1);
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -336,7 +336,7 @@ struct PreDecCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (--counter);
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -349,7 +349,7 @@ struct PostDecCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (counter--) - (T)1;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -362,7 +362,7 @@ struct SubEqCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return (counter -= (T)1);
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -375,7 +375,7 @@ struct FetchSubCountOp {
     T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
       return counter.fetch_sub((T)1) - (T)1;
     }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -388,7 +388,7 @@ struct MaxEqOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.max((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -401,7 +401,7 @@ struct FetchMaxOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.fetch_max((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -414,7 +414,7 @@ struct MinEqOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.min((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -427,7 +427,7 @@ struct FetchMinOtherOp {
   RAJA_HOST_DEVICE
     T operator()(RAJA::Index_type i) const
     { return other.fetch_min((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
