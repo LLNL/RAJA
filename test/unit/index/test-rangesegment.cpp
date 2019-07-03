@@ -16,59 +16,65 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-template <class T>
-void RangeSegmentConstructorTest()
+template<typename T>
+class RangeSegmentTest : public ::testing::Test {};
+
+using MyTypes = ::testing::Types<RAJA::Index_type,
+                                 char, 
+                                 unsigned char,
+				 short,
+				 unsigned short,
+				 int, 
+				 unsigned int,
+				 long,
+				 unsigned long,
+				 long int,
+				 unsigned long int,
+				 long long,
+				 unsigned long long,
+				 double,
+				 float>;
+
+TYPED_TEST_CASE(RangeSegmentTest, MyTypes);
+
+TYPED_TEST(RangeSegmentTest, Constructors)
 {
-  RAJA::TypedRangeSegment<T> first(0, 10);
-  RAJA::TypedRangeSegment<T> copied(first);
+  RAJA::TypedRangeSegment<TypeParam> first(0, 10);
+  RAJA::TypedRangeSegment<TypeParam> copied(first);
 
   ASSERT_EQ(first, copied);
 
-  RAJA::TypedRangeSegment<T> moved(std::move(first));
+  RAJA::TypedRangeSegment<TypeParam> moved(std::move(first));
 
   ASSERT_EQ(moved, copied);
 
-  RAJA::TypedRangeSegment<T> r1(-10, 7);
-  RAJA::TypedRangeSegment<T> r2(0, -50);
+  RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
+  RAJA::TypedRangeSegment<TypeParam> r2(0, -50);
 }
 
-TEST(RangeSegmentTest, Constructors)
+TYPED_TEST(RangeSegmentTest, Assignments)
 {
-  // Default Range Segment Test
-  RangeSegmentConstructorTest<RAJA::Index_type>();
-
-  // Typed Range Segment Tests
-  RangeSegmentConstructorTest<int>();
-  RangeSegmentConstructorTest<float>();
-  RangeSegmentConstructorTest<double>();
-  RangeSegmentConstructorTest<short>();
-  RangeSegmentConstructorTest<long>();
-  RangeSegmentConstructorTest<unsigned int>();
-}
-
-TEST(RangeSegmentTest, Assignments)
-{
-  auto r = RAJA::RangeSegment(RAJA::Index_type(), 5);
-  RAJA::RangeSegment seg1 = r;
+  auto r = RAJA::TypedRangeSegment<TypeParam>(RAJA::Index_type(), 5);
+  RAJA::TypedRangeSegment<TypeParam> seg1 = r;
   ASSERT_EQ(r, seg1);
-  RAJA::RangeSegment seg2 = std::move(r);
+  RAJA::TypedRangeSegment<TypeParam> seg2 = std::move(r);
   ASSERT_EQ(seg2, seg1);
 }
 
-TEST(RangeSegmentTest, Swaps)
+TYPED_TEST(RangeSegmentTest, Swaps)
 {
-  RAJA::RangeSegment r1(0, 5);
-  RAJA::RangeSegment r2(1, 6);
-  RAJA::RangeSegment r3(r1);
-  RAJA::RangeSegment r4(r2);
+  RAJA::TypedRangeSegment<TypeParam> r1(0, 5);
+  RAJA::TypedRangeSegment<TypeParam> r2(1, 6);
+  RAJA::TypedRangeSegment<TypeParam> r3(r1);
+  RAJA::TypedRangeSegment<TypeParam> r4(r2);
   std::swap(r1, r2);
   ASSERT_EQ(r1, r4);
   ASSERT_EQ(r2, r3);
 }
 
-TEST(RangeSegmentTest, Iterators)
+TYPED_TEST(RangeSegmentTest, Iterators)
 {
-  RAJA::RangeSegment r1(0, 100);
+  RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
   ASSERT_EQ(0, *r1.begin());
   ASSERT_EQ(99, *(--r1.end()));
   ASSERT_EQ(100, r1.end() - r1.begin());
@@ -76,9 +82,9 @@ TEST(RangeSegmentTest, Iterators)
   ASSERT_EQ(100, r1.size());
 }
 
-TEST(RangeSegmentTest, Slices)
+TYPED_TEST(RangeSegmentTest, Slices)
 {
-  auto r = RAJA::RangeSegment(0, 125);
+  auto r = RAJA::TypedRangeSegment<TypeParam>(0, 125);
 
   auto s = r.slice(10,100);
 
@@ -86,14 +92,14 @@ TEST(RangeSegmentTest, Slices)
   ASSERT_EQ(110, *(s.end()));
 }
 
-TEST(RangeSegmentTest, Equality)
+TYPED_TEST(RangeSegmentTest, Equality)
 {
-  auto r1 = RAJA::RangeSegment(0, 125);
-  auto r2 = RAJA::RangeSegment(0, 125);
+  auto r1 = RAJA::TypedRangeSegment<TypeParam>(0, 125);
+  auto r2 = RAJA::TypedRangeSegment<TypeParam>(0, 125);
 
   ASSERT_EQ(r1, r2);
 
-  auto r3 = RAJA::RangeSegment(10,15);
+  auto r3 = RAJA::TypedRangeSegment<TypeParam>(10,15);
 
   ASSERT_NE(r1, r3);
 }
