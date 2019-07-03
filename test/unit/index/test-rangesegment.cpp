@@ -16,19 +16,34 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-TEST(RangeSegmentTest, Constructors)
+template <class T>
+void RangeSegmentConstructorTest()
 {
-  RAJA::RangeSegment first(0, 10);
-  RAJA::RangeSegment copied(first);
+  RAJA::TypedRangeSegment<T> first(0, 10);
+  RAJA::TypedRangeSegment<T> copied(first);
 
   ASSERT_EQ(first, copied);
 
-  RAJA::RangeSegment moved(std::move(first));
+  RAJA::TypedRangeSegment<T> moved(std::move(first));
 
   ASSERT_EQ(moved, copied);
 
-  RAJA::RangeSegment r1(-10, 7);
-  RAJA::RangeSegment r2(0, -50);
+  RAJA::TypedRangeSegment<T> r1(-10, 7);
+  RAJA::TypedRangeSegment<T> r2(0, -50);
+}
+
+TEST(RangeSegmentTest, Constructors)
+{
+  // Default Range Segment Test
+  RangeSegmentConstructorTest<RAJA::Index_type>();
+
+  // Typed Range Segment Tests
+  RangeSegmentConstructorTest<int>();
+  RangeSegmentConstructorTest<float>();
+  RangeSegmentConstructorTest<double>();
+  RangeSegmentConstructorTest<short>();
+  RangeSegmentConstructorTest<long>();
+  RangeSegmentConstructorTest<unsigned int>();
 }
 
 TEST(RangeSegmentTest, Assignments)
