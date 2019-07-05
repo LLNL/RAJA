@@ -84,17 +84,17 @@
  *  left corner of the halo region, which extends to (3, 2).
  *
  *  This file contains two C-style sequential implementations of stencil 
- *  computation. One has column indexing as stride-1 with the outer loop 
- *  traversing the rows ('i' loop variable) and the inner loop traversing the 
- *  columns ('j' loop variable). The other has row indexing as stride-1 and
- *  reverses the order of the loops. This shows that a C-style implementation 
- *  requires two different implementations, one for each loop order, since the
- *  array offset arithmetic is different in the two cases. Where indicated 
- *  by comments, you will fill in versions using two-dimensional RAJA Views
- *  with offset layouts. One loop ordering requires permutations, while the
- *  other does not. If done properly, you will see that both RAJA versions
- *  have identical inner loop bodies, which is not the case for the C-style
- *  variants.
+ *  computation. One (Part a) has column indexing as stride-1 with the outer 
+ *  loop traversing the rows ('i' loop variable) and the inner loop traversing 
+ *  the columns ('j' loop variable). The other (Part B) has row indexing as 
+ *  stride-1 and reverses the order of the loops. This shows that a C-style 
+ *  implementation requires two different implementations, one for each loop 
+ *  order, since the array offset arithmetic is different in the two cases. 
+ *  Where indicated by comments, you will fill in versions using 
+ *  two-dimensional RAJA Views with offset layouts. One loop ordering requires 
+ *  permutations, while the other does not. If done properly, you will see 
+ *  that both RAJA versions have identical inner loop bodies, which is not the 
+ *  case for the C-style variants.
  *
  *  Note that you will use the same for-loop patterns as the C-style loops. 
  *  In a later exercise, we will show you how to use RAJA's nested loop
@@ -151,7 +151,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// First variant of stencil computation with column indexing as stride-1.
+// Part A:
+// 
+// Variant of stencil computation with column indexing as stride-1.
 //----------------------------------------------------------------------------//
 
   std::memset(B, 0, tot_cells * sizeof(int));
@@ -227,7 +229,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// Second variant of stencil computation with row indexing as stride-1.
+// Part B:
+// 
+// Variant of stencil computation with row indexing as stride-1.
 //----------------------------------------------------------------------------//
 
   std::memset(B, 0, tot_cells * sizeof(int));
