@@ -94,7 +94,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential pi approximation (atomic)...\n";
 
-  using ATOMIC_POL1 = RAJA::atomic::seq_atomic;
+  using ATOMIC_POL1 = RAJA::seq_atomic;
 
   *atomic_pi = 0.0;
 
@@ -132,7 +132,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA OpenMP pi approximation (atomic)...\n";
 
-  using ATOMIC_POL2 = RAJA::atomic::omp_atomic;
+  using ATOMIC_POL2 = RAJA::omp_atomic;
 
   *atomic_pi = 0.0;
 
@@ -172,7 +172,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA CUDA pi approximation (atomic)...\n";
 
-  using ATOMIC_POL3 = RAJA::atomic::cuda_atomic;
+  using ATOMIC_POL3 = RAJA::cuda_atomic;
 
   *atomic_pi = 0.0;
 
