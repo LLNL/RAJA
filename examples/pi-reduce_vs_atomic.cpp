@@ -100,8 +100,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL1>(bins, [=](int i) {
       double x = (double(i) + 0.5) * dx;
-      RAJA::atomic::atomicAdd<ATOMIC_POL1>(atomic_pi, 
-                                           dx / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL1>(atomic_pi, 
+                                   dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
 
@@ -138,8 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) * dx;
-      RAJA::atomic::atomicAdd<ATOMIC_POL2>(atomic_pi, 
-                                           dx / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL2>(atomic_pi, 
+                                   dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
 
@@ -178,8 +178,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) * dx;
-      RAJA::atomic::atomicAdd<ATOMIC_POL3>(atomic_pi, 
-                                           4.0 * dx / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, 
+                                   4.0 * dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
 
