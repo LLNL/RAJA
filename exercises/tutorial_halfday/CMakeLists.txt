@@ -52,3 +52,7 @@ raja_add_executable(
 raja_add_executable(
   NAME ex6_stencil-offset-layout_solution
   SOURCES ex6_stencil-offset-layout_solution.cpp)
+
+raja_add_executable(
+  NAME ex7_tiled-matrix-transpose
+  SOURCES ex7_tiled-matrix-transpose.cpp)
