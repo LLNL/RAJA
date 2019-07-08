@@ -48,8 +48,13 @@ TYPED_TEST(RangeSegmentTest, Constructors)
 
   ASSERT_EQ(moved, copied);
 
-  RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
-  RAJA::TypedRangeSegment<TypeParam> r2(0, -50);
+  if(std::is_signed<TypeParam>::value){
+    RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
+    RAJA::TypedRangeSegment<TypeParam> r2(0, -50);
+    std::cout << r2.size() << std::endl;
+    ASSERT_EQ(17, r1.size());
+    ASSERT_EQ(-50, r2.size());
+  }
 }
 
 TYPED_TEST(RangeSegmentTest, Assignments)
@@ -85,7 +90,7 @@ TYPED_TEST(RangeSegmentTest, Iterators)
 TYPED_TEST(RangeSegmentTest, Slices)
 {
   auto r = RAJA::TypedRangeSegment<TypeParam>(0, 125);
-
+  
   auto s = r.slice(10,100);
 
   ASSERT_EQ(10, *s.begin());
