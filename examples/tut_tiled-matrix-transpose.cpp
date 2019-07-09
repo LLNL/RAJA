@@ -200,7 +200,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >; 
 
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
+                          RAJA::make_tuple(col_Range, row_Range), 
+                          [=](int col, int row) {
 
+    Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
