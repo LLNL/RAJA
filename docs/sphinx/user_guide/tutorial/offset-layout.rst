@@ -90,7 +90,7 @@ Then, we create two ``RAJA::View`` objects for each of the input and output
 lattice arrays.
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 194-200
+                    :lines: 186-192
 
 Here, the row index range is :math:`[-1, N_r]`, and the column index 
 range is :math:`[-1, N_c]`. The first argument to each call to the 
@@ -112,13 +112,13 @@ For the RAJA implementations of the example computation, we use two
 spaces for the interior cells:
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 182-183
+                    :lines: 174-175
 
 Here, is an implementation using ``RAJA::kernel`` multi-dimensional loop
 execution with a sequential execution policy.
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 207-225
+                    :lines: 199-217
 
 Since the stencil operation is data parallel, any parallel execution policy 
 may be used. The file ``RAJA/examples/tut_offset-layout.cpp`` contains a 
