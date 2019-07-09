@@ -69,8 +69,18 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
+
+template<typename T>
+using make_signed_t = typename std::conditional < 
+                                  std::is_floating_point<T>::value,
+                                    std::common_type<T>,
+				    std::make_signed<T>
+			        >::type::type;
+
+template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment {
+  
+  static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
 
   //! the underlying iterator type
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
@@ -145,15 +155,15 @@ struct TypedRangeSegment {
   /*!
    * \return the range (end - begin) of this Segment
    */
-  RAJA_HOST_DEVICE RAJA_INLINE StorageT size() const { return m_end - m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE DiffT size() const { return m_end - m_begin; }
 
   //! Create a slice of this instance as a new instance
   /*!
    * \return A new instance spanning *begin() + begin to *begin() + begin +
    * length
    */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(DiffT begin,
-                                                       DiffT length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
+                                                       StorageT length) const
   {
     DiffT start = m_begin[0] + begin;
     DiffT end = start + length > m_end[0] ? m_end[0] : start + length;
@@ -246,9 +256,11 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = strip_index_type_t<StorageT>>
+template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeStrideSegment {
 
+  static_assert(std::is_signed<DiffT>::value, "TypedRangeStrideSegment DiffT requires signed type.");
+  
   //! the underlying iterator type
   using iterator = Iterators::strided_numeric_iterator<StorageT, DiffT>;
 
@@ -350,8 +362,8 @@ struct TypedRangeStrideSegment {
    * \return A new instance spanning *begin() + begin * stride to *begin() +
    * (begin + length) * stride
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(DiffT begin,
-                                                 DiffT length) const
+  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
+                                                 StorageT length) const
   {
     DiffT stride = m_begin.get_stride();
     DiffT start = m_begin[0] + begin * stride;

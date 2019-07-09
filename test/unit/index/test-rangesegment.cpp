@@ -85,6 +85,11 @@ TYPED_TEST(RangeSegmentTest, Iterators)
   ASSERT_EQ(100, r1.end() - r1.begin());
   ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
   ASSERT_EQ(100, r1.size());
+
+  if(std::is_signed<TypeParam>::value){
+    RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
+    ASSERT_EQ(-2, *r3.begin());
+  }
 }
 
 TYPED_TEST(RangeSegmentTest, Slices)
