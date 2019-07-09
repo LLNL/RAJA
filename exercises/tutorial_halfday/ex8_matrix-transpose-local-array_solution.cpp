@@ -19,15 +19,15 @@
  *  In this exercise, your program will carry out the
  *  transpose of a matrix A using a tiling algorithm and local array.
  *  Unlike the previous exercise, each tile will be stored within
- *  a RAJA local array. As part of the exercise you will have to provide 
+ *  a RAJA local array. As part of the exercise you will have to provide
  *  the transpose as a second matrix At.
  *
  *  This file contains a C-style variant of the algorithm as well as the
  *  RAJA kernel for a RAJA variant. You will have to
  *  implement the RAJA policy for the sequential, and OpenMP variants.
- *  If you have access to a GPU and a CUDA compiler, try using constructing 
+ *  If you have access to a GPU and a CUDA compiler, try using constructing
  *  the CUDA policy.
- *  
+ *
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *       - Multiple lambdas

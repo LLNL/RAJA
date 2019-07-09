@@ -168,7 +168,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
-  
+
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
@@ -182,25 +182,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using KERNEL_EXEC_POL_OMP = 
+  using KERNEL_EXEC_POL_OMP =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-          RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
               RAJA::statement::Lambda<0>
             >
-          > 
+          >
         >
       >
-    >; 
+    >;
 
   ///
   /// Exercise:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
-  
+
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
@@ -210,15 +210,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  
-  using KERNEL_EXEC_POL_CUDA = 
+
+  using KERNEL_EXEC_POL_CUDA =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                                      RAJA::statement::Lambda<0> 
+                                      RAJA::statement::Lambda<0>
               >
             >
           >
@@ -231,12 +231,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
-  
+
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
   //----------------------------------------------------------------------------//
-  
+
   //
   // Clean up.
   //
