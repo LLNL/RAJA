@@ -17,7 +17,7 @@
  *  Exercise #8: Matrix Transpose with Local Array
  *
  *  In this exercise, your program will carry out the
- *  transpose of a matrix A using a tiling algorithm and local array.
+ *  transpose of a matrix A using a tiling algorithm and a RAJA local array.
  *  Unlike the previous exercise, each tile will be stored within
  *  a RAJA local array. As part of the exercise you will have to provide
  *  the transpose as a second matrix At.
@@ -270,7 +270,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// Exercise:
   ///
-  ///   Implement the RAJA policy for a sequential matrix transpose with a local array.
+  ///   Implement the RAJA policy for a cuda matrix transpose with a local array.
   ///   Use the statement InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<#>, ....>
   ///   to allocate local array memory inside a kernel. The cuda_shared_mem policy
   ///   specifies that memory should be allocated using cuda shared memory. The entries in the
