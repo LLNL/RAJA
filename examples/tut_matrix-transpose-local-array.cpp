@@ -252,7 +252,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         // This statement will initalize local array memory inside a
-        // kernel. The cpu_tile_mem policy specifies that memory should be
+        // kernel.
+                            // The cpu_tile_mem policy specifies that memory should be
         // allocated on the stack. The entries in the RAJA::ParamList
         // identify RAJA local arrays in the parameter tuple to intialize.
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,

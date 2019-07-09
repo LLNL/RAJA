@@ -58,5 +58,13 @@ raja_add_executable(
   SOURCES ex7_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
+  NAME ex7_tiled-matrix-transpose_solution
+  SOURCES ex7_tiled-matrix-transpose_solution.cpp)
+
+raja_add_executable(
   NAME ex8_matrix-transpose-local-array
   SOURCES ex8_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
+  NAME ex8_matrix-transpose-local-array_solution
+  SOURCES ex8_matrix-transpose-local-array_solution.cpp)
