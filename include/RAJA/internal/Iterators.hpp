@@ -27,6 +27,8 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/index/IndexValue.hpp"
+
 namespace RAJA
 {
 namespace Iterators
@@ -41,13 +43,14 @@ class numeric_iterator
 {
 public:
   using value_type = Type;
+  using s_value_type = strip_index_type_t<Type>;
   using difference_type = DifferenceType;
   using pointer = PointerType;
   using reference = value_type&;
   using iterator_category = std::random_access_iterator_tag;
 
   RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0) {}
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs)
+  RAJA_HOST_DEVICE constexpr numeric_iterator(const s_value_type& rhs)
       : val(rhs)
   {
   }
@@ -178,7 +181,7 @@ public:
   }
 
 private:
-  difference_type val;
+  s_value_type val;
 };
 
 template <typename Type = Index_type,
@@ -188,6 +191,7 @@ class strided_numeric_iterator
 {
 public:
   using value_type = Type;
+  using s_value_type = strip_index_type_t<Type>;
   using difference_type = DifferenceType;
   using pointer = DifferenceType*;
   using reference = DifferenceType&;
@@ -196,7 +200,7 @@ public:
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : val(0), stride(1) {}
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
-      DifferenceType rhs,
+      s_value_type rhs,
       DifferenceType stride_ = DifferenceType(1))
       : val(rhs), stride(stride_)
   {
@@ -311,7 +315,7 @@ public:
   }
 
 private:
-  DifferenceType val;
+  s_value_type val;
   DifferenceType stride;
 };
 
