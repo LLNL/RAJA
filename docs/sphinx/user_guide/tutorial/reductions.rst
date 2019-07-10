@@ -35,12 +35,12 @@ a sequence of alternating values ('1' and '-1'). Then, two values near
 the middle of the array are set to '-100' and '100':
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 51-76
+                    :lines: 43-68
 
 We also define a range segment to iterate over the array:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 93-93
+                    :lines: 85-85
 
 With these parameters and data initialization, all the code examples 
 presented below will generate the following results:
@@ -54,7 +54,7 @@ presented below will generate the following results:
 A sequential kernel that exercises all RAJA sequential reduction types is:
  
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 99-126
+                    :lines: 91-118
 
 Note that each reduction object takes an initial value at construction. Also,
 within the kernel, updating each reduction is done via an operator or method
@@ -68,13 +68,13 @@ For parallel multi-threading execution via OpenMP, the example can be run
 by replacing the execution and reduction policies with:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 134-135
+                    :lines: 126-127
 
 Similarly, the kernel containing the reductions can be run in parallel
 on a CUDA GPU using these policies:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 170-171
+                    :lines: 162-163
 
 .. note:: Each RAJA reduction type requires a reduction policy that must 
           be compatible with the execution policy for the kernel in which 
