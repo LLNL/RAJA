@@ -97,7 +97,8 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(DiffT begin, DiffT end)
+  using StripStorageT = strip_index_type_t<StorageT>;
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
       : m_begin(iterator{begin}), m_end(iterator{end})
   {
   }
@@ -165,8 +166,8 @@ struct TypedRangeSegment {
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
                                                        StorageT length) const
   {
-    DiffT start = m_begin[0] + begin;
-    DiffT end = start + length > m_end[0] ? m_end[0] : start + length;
+    StorageT start = m_begin[0] + begin;
+    StorageT end = start + length > m_end[0] ? m_end[0] : start + length;
 
     return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
