@@ -95,6 +95,7 @@ struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 namespace detail
 {
 
+/*
 template <typename T>
 struct DefaultLoc
 {
@@ -105,6 +106,22 @@ template <>
 struct DefaultLoc<Index_type>
 {
   RAJA_HOST_DEVICE constexpr Index_type value() { return -1; }
+};
+*/
+
+template <typename T, bool = std::is_integral<T>::value>
+struct DefaultLoc {};
+
+template <typename T>
+struct DefaultLoc<T, false>  // any non-integral type
+{
+  RAJA_HOST_DEVICE constexpr T value() { return T(); }
+};
+
+template <typename T>
+struct DefaultLoc<T, true>
+{
+  RAJA_HOST_DEVICE constexpr T value() { return -1; }
 };
 
 template <typename T, typename IndexType, bool doing_min = true>
