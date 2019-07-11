@@ -36,6 +36,10 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
+  RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal, LocTup);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal, LocTup);
+
   ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(initVal));
   ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(initVal));
   ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(initVal));
@@ -43,6 +47,13 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)1);
   ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(initVal));
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
+
+  ASSERT_EQ((NumericType)reduce_minloctup.get(), (NumericType)(initVal));
+  ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(initVal));
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
 }
 
 REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
