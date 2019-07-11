@@ -7,6 +7,16 @@
 [comment]: # (# SPDX-License-Identifier: (BSD-3-Clause))
 [comment]: # (#################################################################)
 
+RAJA v0.9.0 Release Notes
+=========================
+
+This release introduces an extension to the kernel lambda statement.
+
+   * Lambda arguments may now be specified in a lambda statement
+     using RAJA Segs, Param, and Offset types. By specifying lambda
+     arguments we relieve the requirement of utilizing all contents
+     in seg and param tuples.
+
 RAJA v0.8.0 Release Notes
 =========================
 

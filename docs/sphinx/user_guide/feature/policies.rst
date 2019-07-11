@@ -346,7 +346,7 @@ Here is an example illustrating use of the ``auto_atomic`` policy::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(&sum, 1);
+    RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
 
   });
 
@@ -447,6 +447,14 @@ explanation along with examples of how they are used can be found in
   * ``statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
 
   * ``statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
+
+  * ``statement::Lambda< LambdaId, Args...>`` extension of the lambda statement; enabling lambda arguments to be specified at compile time.
+
+  * ``statement::Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
+
+  * ``statement::Offsets<...>`` argument to a Lambda statement; used to specify which segment offsets in a tuple will be used as lambda arguments.
+
+  * ``statement::Params<...>`` argument to a Lambda statement; used to specify which params in a tuple will be used as lambda arguments.
 
   * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 

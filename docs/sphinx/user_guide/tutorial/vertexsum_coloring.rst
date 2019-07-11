@@ -40,7 +40,7 @@ and an array that indicates the mapping between an element and its four
 surrounding vertices, a C-style version of the vertex sum calculation is:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 122-131
+                    :lines: 114-123
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Sequential Variant
@@ -49,7 +49,7 @@ RAJA Sequential Variant
 A nested loop RAJA variant of this kernel is:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 143-161
+                    :lines: 135-153
 
 Note that this version cannot be guaranteed to run correctly in parallel
 by simply changing the loop execution policies as we have done in other
@@ -84,20 +84,20 @@ First, we define four vectors to gather the mesh element indices for each
 color:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 198-220
+                    :lines: 190-212
 
 Then, we create a RAJA index set with four list segments, one for each color,
 using the vectors:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 228-235
+                    :lines: 220-227
 
 Now, we can use an index set execution policy that iterates over the 
 segments sequentially and executes each segment in parallel using OpenMP
 multi-threading (and ``RAJA::forall``):
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 278-287
+                    :lines: 270-279
 
 We no longer need to use the offset variable to compute the 
 element index in terms of 'i' and 'j' since the loop is no longer nested
@@ -108,7 +108,7 @@ segments sequentially, and execute each segment in parallel via a CUDA
 kernel launch on a GPU:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-                    :lines: 306-315
+                    :lines: 298-307
 
 Here, we have marked the lambda loop body with the 'RAJA_DEVICE' macro
 and specified the number of threads in a CUDA thread block in the segment

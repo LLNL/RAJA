@@ -40,6 +40,7 @@
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *       - Multiple lambdas
+ *       - Options for specifying lambda arguments
  *       - Tile statement
  *       - ForICount statement
  *       - RAJA local arrays
@@ -194,7 +195,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  using SEQ_EXEC_POL =
+  using SEQ_EXEC_POL_I =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
@@ -218,13 +219,64 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                                     RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<SEQ_EXEC_POL_I>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
+                                                       RAJA::RangeSegment(0, N_r)),
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
     [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
       RAJA_Tile(ty, tx) = Aview(row, col);
+    },
+
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      Atview(col, row) = RAJA_Tile(ty, tx);
+
+  });
+
+  checkResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
+
+  //--------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA - sequential matrix transpose example with args in statement ...\n";
+
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+
+  //Alias for convenience
+  using RAJA::statement::Segs;
+  using RAJA::statement::Offsets;
+  using RAJA::statement::Params;
+
+  using SEQ_EXEC_POL_II =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
+
+          RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
+            >
+          >,
+
+          RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::loop_exec,
+              RAJA::statement::Lambda<1, Segs<0, 1>, Offsets<0, 1>, Params<0> >
+            >
+          >
+
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel_param<SEQ_EXEC_POL_II>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
+                                                        RAJA::RangeSegment(0, N_r)),
+
+    RAJA::make_tuple(RAJA_Tile),
+
+    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+        RAJA_Tile(ty, tx) = Aview(row, col);
     },
 
     [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
