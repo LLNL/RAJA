@@ -261,6 +261,7 @@ template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<S
 struct TypedRangeStrideSegment {
 
   static_assert(std::is_signed<DiffT>::value, "TypedRangeStrideSegment DiffT requires signed type.");
+  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeStrideSegment Type must be non floating point.");
   
   //! the underlying iterator type
   using iterator = Iterators::strided_numeric_iterator<StorageT, DiffT>;
@@ -367,9 +368,9 @@ struct TypedRangeStrideSegment {
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
                                                  StorageT length) const
   {
-    DiffT stride = m_begin.get_stride();
-    DiffT start = m_begin[0] + begin * stride;
-    DiffT end = start + stride * length;
+    StorageT stride = m_begin.get_stride();
+    StorageT start = m_begin[0] + begin * stride;
+    StorageT end = start + stride * length;
 
     if (stride > 0) {
       end = end > m_end[0] ? m_end[0] : end;
@@ -460,12 +461,14 @@ RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
 template <typename BeginT,
           typename EndT,
           typename StrideT,
-          typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
+          typename Common = detail::common_type_t<BeginT, EndT>>
 RAJA_HOST_DEVICE TypedRangeStrideSegment<Common> make_strided_range(
     BeginT&& begin,
     EndT&& end,
     StrideT&& stride)
 {
+  static_assert(std::is_signed<StrideT>::value, "make_strided_segment : stride must be signed.");
+  static_assert(std::is_same<make_signed_t<EndT>, StrideT>::value, "make_stride_segment : stride and end must be of similar types.");
   return {begin, end, stride};
 }
 
