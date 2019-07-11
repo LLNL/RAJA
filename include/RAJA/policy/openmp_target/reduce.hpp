@@ -247,18 +247,6 @@ private:
   T finalVal;
 };
 
-template <typename T>
-struct DefaultLoc
-{
-  constexpr T value() { return T(); }
-};
-
-template <>
-struct DefaultLoc<Index_type>
-{
-  constexpr Index_type value() { return -1; }
-};
-
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
 template <typename Reducer, typename T, typename IndexType>
@@ -269,11 +257,11 @@ struct TargetReduceLoc
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
       : info(),
         val(Reducer::identity, Reducer::identity, info),
-        loc(init_loc, IndexType(DefaultLoc<IndexType>().value()), info),
+        loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
         initVal(init_val),
         finalVal(Reducer::identity),
         initLoc(init_loc),
-        finalLoc(IndexType(DefaultLoc<IndexType>().value()))
+        finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
   }
 
@@ -304,7 +292,7 @@ struct TargetReduceLoc
       info.isMapped = true;
     }
     finalVal = Reducer::identity;
-    finalLoc = IndexType(DefaultLoc<IndexType>().value());
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
     Reducer{}(finalVal, finalLoc, initVal, initLoc);
     Reducer{}(finalVal, finalLoc, val.value, loc.value);
     return finalVal;
