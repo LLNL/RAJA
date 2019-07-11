@@ -124,6 +124,10 @@ TYPED_TEST(RangeStrideSegment, Sizes)
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment14(0, 17, 5);  // should produce 0,5,10,15
   ASSERT_EQ(segment14.size(), 4);
+
+  // NEGATIVE STRIDE
+  RAJA::TypedRangeStrideSegment<TypeParam> segment15(0, 20, -2);
+  ASSERT_EQ(segment15.size(), 0);
 }
 
 TYPED_TEST(RangeStrideSegment, Slices)
