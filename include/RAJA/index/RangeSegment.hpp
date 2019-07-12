@@ -70,13 +70,6 @@ namespace RAJA
  ******************************************************************************
  */
 
-template<typename T>
-using make_signed_t = typename std::conditional < 
-                                  std::is_floating_point<T>::value,
-                                    std::common_type<T>,
-				    std::make_signed<T>
-			        >::type::type;
-
 template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment {
   
@@ -164,7 +157,7 @@ struct TypedRangeSegment {
    * length
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
-                                                       StorageT length) const
+                                                       DiffT length) const
   {
     StorageT start = m_begin[0] + begin;
     StorageT end = start + length > m_end[0] ? m_end[0] : start + length;
@@ -366,7 +359,7 @@ struct TypedRangeStrideSegment {
    * (begin + length) * stride
    */
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
-                                                 StorageT length) const
+                                                 DiffT length) const
   {
     StorageT stride = m_begin.get_stride();
     StorageT start = m_begin[0] + begin * stride;

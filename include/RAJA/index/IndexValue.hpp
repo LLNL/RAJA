@@ -356,6 +356,19 @@ struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValue
 template<typename FROM>
 using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
+/*!
+ * \brief Converts a type into a signed type. Also handles floating point
+ * types as std::make_signed only supports integral types.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using make_signed_t = typename std::conditional < 
+                                  std::is_floating_point<FROM>::value,
+                                    std::common_type<FROM>,
+				    std::make_signed<FROM>
+			        >::type::type;
+
 }  // namespace RAJA
 
 /*!
