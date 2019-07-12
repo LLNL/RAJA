@@ -95,20 +95,6 @@ struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 namespace detail
 {
 
-/*
-template <typename T>
-struct DefaultLoc
-{
-  RAJA_HOST_DEVICE constexpr T value() { return T(); }
-};
-
-template <>
-struct DefaultLoc<Index_type>
-{
-  RAJA_HOST_DEVICE constexpr Index_type value() { return -1; }
-};
-*/
-
 template <typename T, bool = std::is_integral<T>::value>
 struct DefaultLoc {};
 
