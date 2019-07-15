@@ -39,11 +39,7 @@
 #if defined(RAJA_ENABLE_CLANG_CUDA)
 #define RAJA_SUPPRESS_HD_WARN
 #else
-#if defined(_WIN32)  // windows is non-compliant, yay
-#define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
-#else
-#define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
-#endif
+#define RAJA_SUPPRESS_HD_WARN RAJA_PRAGMA(nv_exec_check_disable)
 #endif
 
 #else
