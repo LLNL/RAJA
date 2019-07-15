@@ -31,9 +31,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 long int,
 				 unsigned long int,
 				 long long,
-				 unsigned long long,
-				 double,
-				 float>;
+				 unsigned long long>;
 
 TYPED_TEST_CASE(RangeSegmentTest, MyTypes);
 

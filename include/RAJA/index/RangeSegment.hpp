@@ -74,6 +74,7 @@ template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<S
 struct TypedRangeSegment {
   
   static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
+  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeStrideSegment Type must be non floating point.");
 
   //! the underlying iterator type
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
