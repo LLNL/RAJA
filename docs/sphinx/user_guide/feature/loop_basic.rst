@@ -174,16 +174,41 @@ Here, the innermost type in the kernel policy is a
 (argument zero of the sequence of lambdas passed to the ``RAJA::kernel`` method)
 will comprise the inner loop body. We only have one lambda in this example 
 but, in general, we can have any number of lambdas and we can use any subset 
-of them, with ``RAJA::statement::Lambda`` types placed appropriately in the 
+of them, with ``RAJA::statement::Lambda`` types placed appropriately in the
 execution policy, to construct a loop kernel. For example, placing 
 ``RAJA::statement::Lambda`` types between ``RAJA::statement::For`` statements 
 enables non-perfectly nested loops.
 
-Each lambda expression passed to a ``RAJA::kernel`` method **must take an 
-index argument for each iteration space in the tuple**. However, any subset 
-of the arguments may actually be used in each lambda expression. 
+RAJA offers two types of lambda statements. The first as illustratated
+above, requires that each lambda expression passed to a ``RAJA::kernel`` method
+**must take an index argument for each iteration space in the tuple**.
+However, any subset of the arguments may actually be used in each lambda expression.
 
-.. note:: The loop index arguments for each lambda expression used in a RAJA 
+The second type of lambda statement, an extension of the first, takes additional
+template parameters which are used to specify lambda arguments. This results in
+kernel lambdas only requiring arguments which will be used within the body.
+
+The kernel policy list with lambda arguments may be written as::
+
+    using KERNEL_POL = 
+      RAJA::KernelPolicy< RAJA::statement::For<N, exec_policyN, 
+                            ...
+                              RAJA::statement::For<0, exec_policy0,
+                                RAJA::statement::Lambda<0, RAJA::statement::Segs<N,...,0>>
+                              >
+                            ...
+                          > 
+                        >;
+
+The template parameter ``RAJA::statement::Segs`` is used to identify elements from the
+segment tuple to be used as arguments for a lambda. RAJA offers other statements
+such as ``Offsets``, and ``Params`` to identify offsets and parameters in segments and 
+param tuples respectively to be used as lambda argumentsx. See :ref:`matrixmultiply-label`
+and :ref:`matrixtransposelocalarray-label` for detailed  examples.
+
+
+.. note:: Unless lambda arguments are specified through RAJA lambda statements,
+          the loop index arguments for each lambda expression used in a RAJA
           kernel loop body **must match** the contents of the 
           *iteration space tuple* in number, order, and type. Not all index 
           arguments must be used in each lambda, but they **all must appear** 

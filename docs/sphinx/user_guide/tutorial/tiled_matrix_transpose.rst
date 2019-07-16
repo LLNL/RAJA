@@ -34,17 +34,17 @@ that tiles divide evenly the number of rows and and columns of the matrix.
 However, we do assume square tiles.
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
-                   :lines: 75-76,96
+                   :lines: 67-68,88
 
 Next, we calculate the number of tiles needed to carryout the transpose.
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
-                   :lines: 99-100
+                   :lines: 91-92
 
 Then, the C++ implementation may look like the following:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
-                   :lines: 118-139
+                   :lines: 110-132
 
 Note that we include a bounds check in the code to avoid indexing out of
 bounds when the tile sizes do not divide the matrix dimensions evenly.
@@ -61,7 +61,7 @@ dimension and generate iteration index values within the bounds of the
 associated iteration space. The complete sequential RAJA variant is given below:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
-                   :lines: 167-183
+                   :lines: 159-175
 
 The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
 OpenMP and CUDA variants.
