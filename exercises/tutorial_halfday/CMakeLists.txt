@@ -52,3 +52,19 @@ raja_add_executable(
 raja_add_executable(
   NAME ex6_stencil-offset-layout_solution
   SOURCES ex6_stencil-offset-layout_solution.cpp)
+
+raja_add_executable(
+  NAME ex7_tiled-matrix-transpose
+  SOURCES ex7_tiled-matrix-transpose.cpp)
+
+raja_add_executable(
+  NAME ex7_tiled-matrix-transpose_solution
+  SOURCES ex7_tiled-matrix-transpose_solution.cpp)
+
+raja_add_executable(
+  NAME ex8_matrix-transpose-local-array
+  SOURCES ex8_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
+  NAME ex8_matrix-transpose-local-array_solution
+  SOURCES ex8_matrix-transpose-local-array_solution.cpp)
