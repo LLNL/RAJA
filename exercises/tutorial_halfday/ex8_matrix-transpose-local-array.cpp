@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-19, Lawrence Livermore National Securitrow, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
-
+//#define ENABLE_KERNEL //Exercise: Uncomment
 /*
  *  Exercise #8: Matrix Transpose with Local Array
  *
@@ -35,7 +35,9 @@
  *       - ForICount statement
  *       - RAJA local arrays
  *
- * If CUDA is enabled, CUDA unified memory is used.
+ * Note: Kernels are disabled, uncomment the #define
+ *       preprocessor above prior to starting exercise.
+ *       If CUDA is enabled, CUDA unified memory is used.
  */
 
 //
@@ -80,7 +82,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // into the data.
   //
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
-  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_c, N_r);
+
+  //
+  //Construct a permuted layout such that the column index has stride 1
+  //
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, std::array<RAJA::idx_t, 2>{{1, 0}});
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
   // Define TILE dimensions (TILE_DIM x TILE_DIM)
@@ -121,15 +128,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
       //
-      for (int ty = 0; ty < TILE_DIM; ++ty) {
-        for (int tx = 0; tx < TILE_DIM; ++tx) {
+      for (int trow = 0; trow < TILE_DIM; ++trow) {
+        for (int tcol = 0; tcol < TILE_DIM; ++tcol) {
 
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
+          int col = bx * TILE_DIM + tcol;  // Matrix column index
+          int row = by * TILE_DIM + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
-            Tile[ty][tx] = Aview(row, col);
+            Tile[trow][tcol] = Aview(row, col);
           }
         }
       }
@@ -140,15 +147,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loop order is swapped from above so that output matrix
       //           data access is stride-1.
       //
-      for (int tx = 0; tx < TILE_DIM; ++tx) {
-        for (int ty = 0; ty < TILE_DIM; ++ty) {
+      for (int tcol = 0; tcol < TILE_DIM; ++tcol) {
+        for (int trow = 0; trow < TILE_DIM; ++trow) {
 
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
+          int col = bx * TILE_DIM + tcol;  // Matrix column index
+          int row = by * TILE_DIM + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
-            Atview(col, row) = Tile[ty][tx];
+            Atview(col, row) = Tile[trow][tcol];
           }
         }
       }
@@ -171,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 2) Index permutation
   // 3) Dimensions of the array
   //
-
+#if defined(DISABLE_KERNEL)
   using TILE_MEM =
     RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
 
@@ -179,6 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // the array memory has not been allocated.
 
   TILE_MEM RAJA_Tile;
+#endif
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
@@ -199,21 +207,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///   stored in location T of the parameter tuple.
   ///
 
-  /*
+#if defined(ENABLE_KERNEL)
   RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
                                                      RAJA::RangeSegment(0, N_r)),
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-      RAJA_Tile(ty, tx) = Aview(row, col);
+    [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+
+      RAJA_Tile(trow, tcol) = Aview(row, col);
+
     },
 
-    [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
-      Atview(col, row) = RAJA_Tile(ty, tx);
+    [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+
+      Atview(col, row) = RAJA_Tile(trow, tcol);
 
   });
-  */
+#endif
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -239,23 +250,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///   stored in location T of the parameter tuple.
   ///
 
-  /*
+#if defined(ENABLE_KERNEL)
   RAJA::kernel_param<OPENMP_EXEC_POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
 
-        RAJA_Tile(ty, tx) = Aview(row, col);
+        RAJA_Tile(trow, tcol) = Aview(row, col);
 
       },
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
 
-        Atview(col, row) = RAJA_Tile(ty, tx);
+        Atview(col, row) = RAJA_Tile(trow, tcol);
 
       });
-  */
+#endif
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
@@ -284,23 +295,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///   statment CudaSyncThreads to prevent race conditions.
   ///
 
-  /*
+#if defined(ENABLE_KERNEL)
   RAJA::kernel_param<CUDA_EXEC_POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      [=] RAJA_DEVICE (int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
 
-        RAJA_Tile(ty, tx) = Aview(row, col);
+        RAJA_Tile(trow, tcol) = Aview(row, col);
 
       },
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &RAJA_Tile) {
+      [=] RAJA_DEVICE(int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
 
-        Atview(col, row) = RAJA_Tile(ty, tx);
+        Atview(col, row) = RAJA_Tile(trow, tcol);
 
       });
-  */
+#endif
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -319,7 +330,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   for (int row = 0; row < N_r; ++row) {
     for (int col = 0; col < N_c; ++col) {
       if (Atview(row, col) != row) {
-        match = false;
+        match &= false;
       }
     }
   }

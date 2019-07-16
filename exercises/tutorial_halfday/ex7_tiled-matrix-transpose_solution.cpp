@@ -12,7 +12,6 @@
 #include "RAJA/RAJA.hpp"
 
 #include "memoryManager.hpp"
-
 /*
  *  Exercise #7: Tiled Matrix Transpose
  *
@@ -75,7 +74,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // into the data.
   //
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
-  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_c, N_r);
+
+  //
+  //Construct a permuted layout such that the column index has stride 1
+  //
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, std::array<RAJA::idx_t, 2>{{1, 0}});
+  RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
   // Define TILE dimensions
@@ -170,7 +174,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-
   //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running openmp tiled matrix transpose -  parallel top inner loop...\n";
@@ -204,9 +207,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-#endif
+  //----------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
+  std::cout << "\n Running openmp tiled matrix transpose - collapsed inner loops...\n";
+
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+
+  //
+  // This policy loops over tiles sequentially while collapsing inner loops
+  // into a single OpenMP parallel for loop enabling parallel loads/reads
+  // to/from the tile.
+  //
+  using KERNEL_EXEC_POL_OMP2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                    RAJA::ArgList<0, 1>,
+                                    RAJA::statement::Lambda<0>
+          > //closes collapse
+        > // closes Tile 0
+      > // closes Tile 1
+    >; // closes policy list
+
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
+                        RAJA::make_tuple(col_Range, row_Range),
+                        [=](int col, int row) {
+
+    Atview(col, row) = Aview(row, col);
+
+  });
+
+  checkResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
+#endif
+  //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
 
@@ -261,7 +296,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   for (int row = 0; row < N_r; ++row) {
     for (int col = 0; col < N_c; ++col) {
       if (Atview(row, col) != row) {
-        match = false;
+        match &= false;
       }
     }
   }
