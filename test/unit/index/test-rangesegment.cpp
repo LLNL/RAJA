@@ -49,7 +49,6 @@ TYPED_TEST(RangeSegmentTest, Constructors)
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
     RAJA::TypedRangeSegment<TypeParam> r2(0, -50);
-    std::cout << r2.size() << std::endl;
     ASSERT_EQ(17, r1.size());
     ASSERT_EQ(-50, r2.size());
   }

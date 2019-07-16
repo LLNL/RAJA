@@ -23,6 +23,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <limits>
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
@@ -35,6 +36,28 @@ namespace Iterators
 {
 
 // Containers
+
+#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+  template <typename Type, typename DifferenceType >
+  RAJA_HOST_DEVICE bool check_is_addition_overflow(Type lhs, DifferenceType rhs)
+  {
+    if (std::is_unsigned<Type>::value){
+      if ( (rhs > 0) && (lhs > std::numeric_limits<Type>::max() - rhs) ) return true;
+      if ( (rhs < 0) && (lhs < std::numeric_limits<Type>::min() - rhs) ) return true; 
+    }
+    return false;
+  }
+
+  template <typename Type, typename DifferenceType >
+  RAJA_HOST_DEVICE bool check_is_subtraction_overflow(Type lhs, DifferenceType rhs)
+  {
+    if (std::is_unsigned<Type>::value){
+      if ( (rhs > 0) && (lhs < std::numeric_limits<Type>::min() + rhs) ) return true;
+      if ( (rhs < 0) && (lhs > std::numeric_limits<Type>::max() + rhs) ) return true; 
+    }
+    return false;
+  }
+#endif
 
 template <typename Type = Index_type,
           typename DifferenceType = Type,
@@ -112,12 +135,18 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
       const difference_type& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_addition_overflow(val, rhs));
+    #endif
     val += rhs;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const difference_type& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_subtraction_overflow(val, rhs));
+    #endif
     val -= rhs;
     return *this;
   }
@@ -134,12 +163,12 @@ public:
     return *this;
   }
 
-  RAJA_HOST_DEVICE inline difference_type operator+(
+  RAJA_HOST_DEVICE inline stripped_value_type operator+(
       const numeric_iterator& rhs) const
   {
     return val + rhs.val;
   }
-  RAJA_HOST_DEVICE inline difference_type operator-(
+  RAJA_HOST_DEVICE inline stripped_value_type operator-(
       const numeric_iterator& rhs) const
   {
     return val - rhs.val;
@@ -147,24 +176,38 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator operator+(
       const difference_type& rhs) const
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_addition_overflow(val, rhs));
+    #endif
     return numeric_iterator(val + rhs);
   }
   RAJA_HOST_DEVICE inline numeric_iterator operator-(
       const difference_type& rhs) const
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_subtraction_overflow(val, rhs));
+    #endif
     return numeric_iterator(val - rhs);
   }
   RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(
       difference_type lhs,
       const numeric_iterator& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    return !check_is_addition_overflow(rhs.val, lhs) ? numeric_iterator(lhs + rhs.val) : rhs;
+    #else
     return numeric_iterator(lhs + rhs.val);
+    #endif
   }
   RAJA_HOST_DEVICE friend constexpr numeric_iterator operator-(
       difference_type lhs,
       const numeric_iterator& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    return !check_is_subtraction_overflow(rhs.val, lhs) ? numeric_iterator(lhs - rhs.val) : rhs;
+    #else
     return numeric_iterator(lhs - rhs.val);
+    #endif
   }
 
   RAJA_HOST_DEVICE inline value_type operator*() const
@@ -228,12 +271,18 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator+=(
       const difference_type& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_addition_overflow(val, rhs * stride));
+    #endif
     val += rhs * stride;
     return *this;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator-=(
       const difference_type& rhs)
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_subtraction_overflow(val, rhs * stride));
+    #endif
     val -= rhs * stride;
     return *this;
   }
@@ -258,11 +307,17 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_addition_overflow(val, rhs * stride));
+    #endif
     return strided_numeric_iterator(val + rhs * stride, stride);
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    assert(!check_is_subtraction_overflow(val, rhs * stride));
+    #endif
     return strided_numeric_iterator(val - rhs * stride, stride);
   }
 
@@ -311,7 +366,11 @@ public:
   }
   RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
   {
+    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+    return !check_is_addition_overflow(val, rhs * stride) ? value_type(val + rhs * stride) : rhs; 
+    #else
     return value_type(val + rhs * stride);
+    #endif
   }
 
 private:
