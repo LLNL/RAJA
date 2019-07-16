@@ -88,13 +88,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
-  // Define TILE dimensions (TILE_DIM x TILE_DIM)
+  // Define TILE size (TILE_SZ x TILE_SZ)
   //
-  const int TILE_DIM = 16;
+  const int TILE_SZ = 16;
 
   // Calculate number of tiles (Needed for C++ version)
-  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  const int outer_Dimc = (N_c - 1) / TILE_SZ + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_SZ + 1;
 
   //
   // Initialize matrix data
@@ -118,7 +118,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int bx = 0; bx < outer_Dimc; ++bx) {
 
       // Stack-allocated local array for data on a tile
-      int Tile[TILE_DIM][TILE_DIM];
+      int Tile[TILE_SZ][TILE_SZ];
 
       //
       // (1) Inner loops to read input matrix tile data into the array
@@ -126,11 +126,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
       //
-      for (int trow = 0; trow < TILE_DIM; ++trow) {
-        for (int tcol = 0; tcol < TILE_DIM; ++tcol) {
+      for (int trow = 0; trow < TILE_SZ; ++trow) {
+        for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
 
-          int col = bx * TILE_DIM + tcol;  // Matrix column index
-          int row = by * TILE_DIM + trow;  // Matrix row index
+          int col = bx * TILE_SZ + tcol;  // Matrix column index
+          int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -145,11 +145,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loop order is swapped from above so that output matrix
       //           data access is stride-1.
       //
-      for (int tcol = 0; tcol < TILE_DIM; ++tcol) {
-        for (int trow = 0; trow < TILE_DIM; ++trow) {
+      for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
+        for (int trow = 0; trow < TILE_SZ; ++trow) {
 
-          int col = bx * TILE_DIM + tcol;  // Matrix column index
-          int row = by * TILE_DIM + trow;  // Matrix row index
+          int col = bx * TILE_SZ + tcol;  // Matrix column index
+          int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -178,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   using TILE_MEM =
-    RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+    RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_SZ, TILE_SZ>>;
 
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
@@ -206,8 +206,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
@@ -257,8 +257,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using OPENMP_EXEC_POL =
   RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
 
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
@@ -298,18 +298,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
 #endif
 
+
   //--------------------------------------------------------------------------//
+#if defined(RAJA_ENABLE_CUDA)
+
   std::cout << "\n Running RAJA - CUDA matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-#if defined(RAJA_ENABLE_CUDA)
-
   using CUDA_EXEC_POL =
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
 
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
 
@@ -354,6 +355,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
+
+  //--------------------------------------------------------------------------//
+
+  //
+  // Clean up.
+  //
+  memoryManager::deallocate(A);
+  memoryManager::deallocate(At);
+
+  std::cout << "\n DONE!...\n";
+
   return 0;
 }
 

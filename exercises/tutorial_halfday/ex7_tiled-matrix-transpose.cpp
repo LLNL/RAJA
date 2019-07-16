@@ -87,11 +87,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define TILE dimensions
   //
-  const int TILE_DIM = 16;
+  const int TILE_SZ = 16;
 
   // Calculate number of tiles (needed for the c version)
-  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  const int outer_Dimc = (N_c - 1) / TILE_SZ + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_SZ + 1;
 
   //
   // Initialize matrix data
@@ -116,11 +116,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (1) Loops to iterate over tile entries
       //
-      for (int ty = 0; ty < TILE_DIM; ++ty) {
-        for (int tx = 0; tx < TILE_DIM; ++tx) {
+      for (int ty = 0; ty < TILE_SZ; ++ty) {
+        for (int tx = 0; tx < TILE_SZ; ++tx) {
 
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
+          int col = bx * TILE_SZ + tx;  // Matrix column index
+          int row = by * TILE_SZ + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -160,8 +160,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_SEQ =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::seq_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
@@ -192,8 +192,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_OMP =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
             RAJA::statement::For<0, RAJA::loop_exec,
               RAJA::statement::Lambda<0>
@@ -226,8 +226,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_OMP2 =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                     RAJA::ArgList<0, 1>,
                                     RAJA::statement::Lambda<0>
@@ -256,8 +256,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using KERNEL_EXEC_POL_CUDA =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
                                       RAJA::statement::Lambda<0>
@@ -278,7 +278,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
-  //----------------------------------------------------------------------------//
+
+  //--------------------------------------------------------------------------//
 
   //
   // Clean up.
