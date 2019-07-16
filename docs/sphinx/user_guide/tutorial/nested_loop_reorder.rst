@@ -56,13 +56,13 @@ We begin by defining three named **strongly-typed** variables for the loop
 index variables.
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 40-42
+                    :lines: 32-34
 
 We also define three **typed** range segments which bind the ranges to the
 index variable types via template specialization:
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 53-55
+                    :lines: 45-47
 
 When these features are used as in this example, the compiler will 
 generate error messages if the lambda expression index argument ordering
@@ -71,7 +71,7 @@ and types do not match the index ordering in the tuple.
 We present a complete example, and then describe its key elements:
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 62-75
+                    :lines: 54-67
 
 Here, the ``RAJA::kernel`` execution template takes two arguments: a tuple of 
 ranges, one for each level in the loop nest, and the lambda expression loop 
@@ -110,7 +110,7 @@ the 'i' loop is in the middle, and the 'k' loop is the innermost with the
 following policy:
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 83-91
+                    :lines: 75-83
 
 Note that we have simply reordered the nesting of the ``RAJA::statement::For``
 types. This is analogous to reordering 'for' statements in traditional C-style
@@ -129,7 +129,7 @@ the 'k' loop is in the middle, and the 'j' loop is the innermost with the
 following policy:
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 104-112
+                    :lines: 96-109
 
 For completeness,  analogous C-style loop nest would appear as::
 
@@ -149,7 +149,7 @@ For example, this version of the loop will generate a compilation error
 (note that the kernel execution policy is the same as in the previous example): 
 
 .. literalinclude:: ../../../../examples/tut_nested-loop-reorder.cpp
-                    :lines: 126-129
+                    :lines: 118-121
 
 If you carefully compare the range ordering in the tuple to the
 lambda argument types, you will see what's wrong.

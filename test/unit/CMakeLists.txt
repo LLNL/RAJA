@@ -73,6 +73,10 @@ raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
 
+raja_add_test(
+  NAME test-kernel-lambda-args
+  SOURCES test-kernel-lambda-args.cpp)
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)
