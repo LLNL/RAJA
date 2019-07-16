@@ -131,8 +131,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Define number of rows and columns of cells in the 2D mesh.
 //
-  const int DIM = 2;
-
   const int Nr_int = 5; 
   const int Nc_int = 8;
 
