@@ -24,11 +24,13 @@
 #include <type_traits>
 #include <utility>
 #include <limits>
+#include <string>
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/index/IndexValue.hpp"
+#include <typeinfo>
 
 namespace RAJA
 {
@@ -38,8 +40,15 @@ namespace Iterators
 // Containers
 
 #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-  template <typename Type, typename DifferenceType >
-  RAJA_HOST_DEVICE bool check_is_addition_overflow(Type lhs, DifferenceType rhs)
+  template <typename LType, typename RType>
+  std::string overflow_msg(LType lhs, RType rhs)
+  {
+    return "Iterator Overflow detected between operation of :\n\ttype : " + (std::string)typeid(lhs).name() + " val : " + std::to_string(lhs) + 
+	                                                    "\n\ttype : " + typeid(rhs).name() + " val : " + std::to_string(rhs) + "\n";
+  }
+
+  template <typename Type, typename DifferenceType>
+  RAJA_HOST_DEVICE bool is_addition_overflow(Type lhs, DifferenceType rhs)
   {
     if (std::is_unsigned<Type>::value){
       if ( (rhs > 0) && (lhs > std::numeric_limits<Type>::max() - rhs) ) return true;
@@ -48,14 +57,31 @@ namespace Iterators
     return false;
   }
 
-  template <typename Type, typename DifferenceType >
-  RAJA_HOST_DEVICE bool check_is_subtraction_overflow(Type lhs, DifferenceType rhs)
+  template <typename Type, typename DifferenceType>
+  RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs, DifferenceType rhs)
   {
     if (std::is_unsigned<Type>::value){
       if ( (rhs > 0) && (lhs < std::numeric_limits<Type>::min() + rhs) ) return true;
       if ( (rhs < 0) && (lhs > std::numeric_limits<Type>::max() + rhs) ) return true; 
     }
+    // Special case where operation is : signed(lhs) - unsigned(rhs).
+    if (std::is_unsigned<DifferenceType>::value){
+      if ( (lhs > 0) && (rhs < std::numeric_limits<DifferenceType>::min() + lhs) ) return true;
+      if ( (lhs < 0) ) return true;
+    }
     return false;
+  }
+
+  template <typename Type, typename DifferenceType >
+  RAJA_HOST_DEVICE void check_is_addition_overflow(Type lhs, DifferenceType rhs)
+  {
+    if (is_addition_overflow(lhs, rhs))  throw std::runtime_error(overflow_msg(lhs, rhs)) ;
+  }
+
+  template <typename Type, typename DifferenceType >
+  RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type lhs, DifferenceType rhs)
+  {
+    if (is_subtraction_overflow(lhs, rhs))  throw std::runtime_error(overflow_msg(lhs, rhs)) ;
   }
 #endif
 
@@ -136,7 +162,7 @@ public:
       const difference_type& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_addition_overflow(val, rhs));
+    check_is_addition_overflow(val, rhs);
     #endif
     val += rhs;
     return *this;
@@ -145,7 +171,7 @@ public:
       const difference_type& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_subtraction_overflow(val, rhs));
+    check_is_subtraction_overflow(val, rhs);
     #endif
     val -= rhs;
     return *this;
@@ -177,7 +203,7 @@ public:
       const difference_type& rhs) const
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_addition_overflow(val, rhs));
+    check_is_addition_overflow(val, rhs);
     #endif
     return numeric_iterator(val + rhs);
   }
@@ -185,7 +211,7 @@ public:
       const difference_type& rhs) const
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_subtraction_overflow(val, rhs));
+    check_is_subtraction_overflow(val, rhs);
     #endif
     return numeric_iterator(val - rhs);
   }
@@ -194,7 +220,7 @@ public:
       const numeric_iterator& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    return !check_is_addition_overflow(rhs.val, lhs) ? numeric_iterator(lhs + rhs.val) : rhs;
+    return is_addition_overflow(rhs.val, lhs) ? throw std::runtime_error(overflow_msg(lhs, rhs.val)) : numeric_iterator(lhs + rhs.val) ;
     #else
     return numeric_iterator(lhs + rhs.val);
     #endif
@@ -204,7 +230,7 @@ public:
       const numeric_iterator& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    return !check_is_subtraction_overflow(rhs.val, lhs) ? numeric_iterator(lhs - rhs.val) : rhs;
+    return is_subtraction_overflow(rhs.val, lhs) ? throw std::runtime_error(overflow_msg(lhs, rhs.val)) : numeric_iterator(lhs - rhs.val) ;
     #else
     return numeric_iterator(lhs - rhs.val);
     #endif
@@ -272,7 +298,7 @@ public:
       const difference_type& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_addition_overflow(val, rhs * stride));
+    check_is_addition_overflow(val, rhs * stride);
     #endif
     val += rhs * stride;
     return *this;
@@ -281,7 +307,7 @@ public:
       const difference_type& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_subtraction_overflow(val, rhs * stride));
+    check_is_subtraction_overflow(val, rhs * stride);
     #endif
     val -= rhs * stride;
     return *this;
@@ -308,7 +334,7 @@ public:
       const difference_type& rhs) const
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_addition_overflow(val, rhs * stride));
+    check_is_addition_overflow(val, rhs * stride);
     #endif
     return strided_numeric_iterator(val + rhs * stride, stride);
   }
@@ -316,7 +342,7 @@ public:
       const difference_type& rhs) const
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    assert(!check_is_subtraction_overflow(val, rhs * stride));
+    check_is_subtraction_overflow(val, rhs * stride);
     #endif
     return strided_numeric_iterator(val - rhs * stride, stride);
   }
@@ -366,11 +392,7 @@ public:
   }
   RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
   {
-    #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    return !check_is_addition_overflow(val, rhs * stride) ? value_type(val + rhs * stride) : rhs; 
-    #else
     return value_type(val + rhs * stride);
-    #endif
   }
 
 private:
