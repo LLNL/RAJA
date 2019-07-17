@@ -23,7 +23,9 @@ In the example, we add two vectors 'a' and 'b' of length N and
 store the result in vector 'c'. A simple C-style loop that does this is:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
-                    :lines: 72-74
+   :start-after: _cstyle_vector_add_start
+   :end-before: _cstyle_vector_add_end
+   :language: C++ 
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA Variants
@@ -51,7 +53,9 @@ For the RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
 policy type:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
-                    :lines: 86-88
+   :start-after: _rajaseq_vector_add_start
+   :end-before: _rajaseq_vector_add_end
+   :language: C++ 
 
 The RAJA sequential execution policy enforces strictly sequential execution; 
 in particular, no SIMD vectorization instructions or other substantial 
@@ -73,7 +77,9 @@ To run the kernel with OpenMP multi-threaded parallelism on a CPU, we use the
 ``RAJA::omp_parallel_for_exec`` execution policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
-                    :lines: 129-131
+   :start-after: _rajaomp_vector_add_start
+   :end-before: _rajaomp_vector_add_end
+   :language: C++ 
 
 This will distribute the loop iterations across CPU threads and run the 
 loop over threads in parallel.
@@ -82,7 +88,9 @@ Finally, to run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
-                    :lines: 143-146
+   :start-after: _rajacuda_vector_add_start
+   :end-before: _rajacuda_vector_add_end
+   :language: C++ 
 
 Note that the CUDA execution policy type accepts a template argument 
 ``CUDA_BLOCK_SIZE``, which specifies that each CUDA thread block launched 
