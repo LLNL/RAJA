@@ -10,9 +10,16 @@
 RAJA v0.9.0 Release Notes
 =========================
 
-This release contains feature enhancements and some minor bug fixes.
+This release contains feature enhancements, one breaking change, and some 
+minor bug fixes. 
 
-Notable changes include:
+  * Breaking change
+    * The atomic namespace in RAJA has been removed. Now, use atomic operations
+      as RAJA::atomicAdd(), not RAJA::atomic::atomicAdd(), for example. This
+      was done to make atomic usage consistent with other RAJA features, such
+      as reductions, scans, etc.
+
+Other notable changes include:
 
   * Features
     * The lambda statement interface has been extended in the RAJA kernel API.
