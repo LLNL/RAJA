@@ -10,7 +10,7 @@
 ///
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
+#include "gtest/gtest.h"
 #include <limits>
 
 template<typename T>
@@ -37,7 +37,7 @@ TYPED_TEST_CASE(StridedNumericIteratorTest, MyTypes);
 
 TYPED_TEST(NumericIteratorTest, simple)
 {
-  RAJA::Iterators::numeric_iterator<> i;
+  RAJA::Iterators::numeric_iterator<TypeParam> i;
   ASSERT_EQ(0, *i);
   ++i;
   ASSERT_EQ(1, *i);
@@ -51,12 +51,12 @@ TYPED_TEST(NumericIteratorTest, simple)
   ASSERT_EQ(2, *i);
   i -= 1;
   ASSERT_EQ(1, *i);
-  RAJA::Iterators::numeric_iterator<> five(5);
+  RAJA::Iterators::numeric_iterator<TypeParam> five(5);
   i += five;
   ASSERT_EQ(6, *i);
   i -= five;
   ASSERT_EQ(1, *i);
-  RAJA::Iterators::numeric_iterator<> three(3);
+  RAJA::Iterators::numeric_iterator<TypeParam> three(3);
   ASSERT_LE(three, three);
   ASSERT_LE(three, five);
   ASSERT_LT(three, five);
@@ -71,7 +71,7 @@ TYPED_TEST(NumericIteratorTest, simple)
 
 TYPED_TEST(StridedNumericIteratorTest, simple)
 {
-  RAJA::Iterators::strided_numeric_iterator<> i(0, 2);
+  RAJA::Iterators::strided_numeric_iterator<TypeParam> i(0, 2);
   ASSERT_EQ(0, *i);
   ++i;
   ASSERT_EQ(2, *i);
@@ -81,8 +81,8 @@ TYPED_TEST(StridedNumericIteratorTest, simple)
   ASSERT_EQ(4, *i);
   i -= 1;
   ASSERT_EQ(2, *i);
-  RAJA::Iterators::strided_numeric_iterator<> three(3, 2);
-  RAJA::Iterators::strided_numeric_iterator<> five(5, 2);
+  RAJA::Iterators::strided_numeric_iterator<TypeParam> three(3, 2);
+  RAJA::Iterators::strided_numeric_iterator<TypeParam> five(5, 2);
   ASSERT_LE(three, three);
   ASSERT_LE(three, five);
   ASSERT_LT(three, five);

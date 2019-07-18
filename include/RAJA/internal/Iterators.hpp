@@ -59,16 +59,22 @@ namespace Iterators
   }
 
   template <typename Type, typename DifferenceType>
-  RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs, DifferenceType rhs)
+  RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs, DifferenceType rhs, bool iterator_on_left = true)
   {
-    if (std::is_unsigned<Type>::value){
-      if ( (rhs > 0) && (lhs < std::numeric_limits<Type>::min() + rhs) ) return true;
-      if ( (rhs < 0) && (lhs > std::numeric_limits<Type>::max() + rhs) ) return true; 
-    }
-    // Special case where operation is : signed(lhs) - unsigned(rhs).
-    if (std::is_unsigned<DifferenceType>::value){
-      if ( (lhs > 0) && (rhs < std::numeric_limits<DifferenceType>::min() + lhs) ) return true;
-      if ( (lhs < 0) ) return true;
+    if (iterator_on_left){
+
+      if (std::is_unsigned<Type>::value){
+        if ( (rhs > 0) && (lhs < std::numeric_limits<Type>::min() + rhs) ) return true;
+        if ( (rhs < 0) && (lhs > std::numeric_limits<Type>::max() + rhs) ) return true;
+      }
+
+    }else{ // Special case where operation is : value(lhs) - iterator(rhs).
+
+      if (std::is_unsigned<DifferenceType>::value){
+        if ( (lhs > 0) && (rhs < std::numeric_limits<DifferenceType>::min() + lhs) ) return true;
+        if ( (lhs < 0) ) return true;
+      }
+
     }
     return false;
   }
@@ -231,7 +237,7 @@ public:
       const numeric_iterator& rhs)
   {
     #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-    return is_subtraction_overflow(rhs.val, lhs) ? throw std::runtime_error(overflow_msg(lhs, rhs.val)) : numeric_iterator(lhs - rhs.val) ;
+    return is_subtraction_overflow(rhs.val, lhs, false) ? throw std::runtime_error(overflow_msg(lhs, rhs.val)) : numeric_iterator(lhs - rhs.val) ;
     #else
     return numeric_iterator(lhs - rhs.val);
     #endif
