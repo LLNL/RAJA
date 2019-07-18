@@ -169,11 +169,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// Create loop bounds
-//
-  RAJA::RangeSegment col_range(0, N_r);
-  RAJA::RangeSegment row_range(0, N_c);
-
 // The following code illustrates pairing an offset layout and a RAJA view
 // object to simplify multidimensional indexing.
 // An offset layout is constructed by using the make_offset_layout method.
@@ -183,6 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // The example uses double braces to initiate the array object and its
 // subobjects.
 //
+  // _offsetlayout_views_start
   const int DIM = 2;
 
   RAJA::OffsetLayout<DIM> layout =
@@ -190,12 +186,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
+  // _offsetlayout_views_end
+
+//
+// Create range segments used in kernels
+//
+  // _offsetlayout_ranges_start
+  RAJA::RangeSegment col_range(0, N_r);
+  RAJA::RangeSegment row_range(0, N_c);
+  // _offsetlayout_ranges_end
 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
                "sequential)...\n";
 
+  // _offsetlayout_rajaseq_start
   using NESTED_EXEC_POL1 =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,    // row
@@ -215,6 +221,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        + input_latticeView(row, col - 1)
                                        + input_latticeView(row, col + 1);
                                  });
+  // _offsetlayout_rajaseq_end
 
   //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
   checkResult(output_lattice, lattice_ref, totCells);
