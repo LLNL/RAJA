@@ -43,8 +43,9 @@ namespace Iterators
   template <typename LType, typename RType>
   std::string overflow_msg(LType lhs, RType rhs)
   {
-    return "Iterator Overflow detected between operation of :\n\ttype : " + (std::string)typeid(lhs).name() + " val : " + std::to_string(lhs) + 
-	                                                    "\n\ttype : " + typeid(rhs).name() + " val : " + std::to_string(rhs) + "\n";
+    return "Iterator Overflow detected between operation of :\n\ttype : " 
+	    + (std::string)typeid(lhs).name() + " val : " + std::to_string(lhs) + 
+	    "\n\ttype : " + typeid(rhs).name() + " val : " + std::to_string(rhs) + "\n";
   }
 
   template <typename Type, typename DifferenceType>

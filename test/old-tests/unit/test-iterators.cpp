@@ -13,7 +13,29 @@
 #include "RAJA_gtest.hpp"
 #include <limits>
 
-TEST(NumericIterator, simple)
+template<typename T>
+class NumericIteratorTest : public ::testing::Test {};
+template<typename T>
+class StridedNumericIteratorTest : public ::testing::Test {};
+
+using MyTypes = ::testing::Types<RAJA::Index_type,
+                                 char,
+				 unsigned char,
+				 short,
+				 unsigned short,
+				 int,
+				 unsigned int,
+				 long,
+				 unsigned long,
+				 long int,
+				 unsigned long int,
+				 long long,
+				 unsigned long long>;
+
+TYPED_TEST_CASE(NumericIteratorTest, MyTypes);
+TYPED_TEST_CASE(StridedNumericIteratorTest, MyTypes);
+
+TYPED_TEST(NumericIteratorTest, simple)
 {
   RAJA::Iterators::numeric_iterator<> i;
   ASSERT_EQ(0, *i);
@@ -47,7 +69,7 @@ TEST(NumericIterator, simple)
   ASSERT_EQ(8 - five, three);
 }
 
-TEST(StridedNumericIterator, simple)
+TYPED_TEST(StridedNumericIteratorTest, simple)
 {
   RAJA::Iterators::strided_numeric_iterator<> i(0, 2);
   ASSERT_EQ(0, *i);
@@ -72,76 +94,75 @@ TEST(StridedNumericIterator, simple)
 }
 
 #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-TEST(NumericIterator, overflow)
+TYPED_TEST(NumericIteratorTest, overflow)
 {
-
-  ASSERT_ANY_THROW({
-    unsigned long val = 10;
-    RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    of_it -= 11;
-  });
-  ASSERT_ANY_THROW({
-    unsigned long val = std::numeric_limits<unsigned long>::max() - 10;
-    RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    of_it += 11;
-  });
-
-  ASSERT_ANY_THROW({
-    unsigned long val = 10;
-    RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    auto sum = of_it - 11u;
-    (void)sum;
-  });
-  ASSERT_ANY_THROW({
-    unsigned long val = std::numeric_limits<unsigned long>::max() - 10;
-    RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    auto sum = of_it + 11;
-    (void)sum;
-  });
-
-  ASSERT_ANY_THROW({
-    unsigned long val = 10;
-    const RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    auto sum = 8 - of_it;
-    (void)sum;
-  });
-  ASSERT_ANY_THROW({
-    unsigned long val = std::numeric_limits<unsigned long>::max() - 10;
-    const RAJA::Iterators::numeric_iterator<unsigned long> of_it(val);
-    auto sum = 11 + of_it;
-    (void)sum;
-  });
-
+  if (std::is_unsigned<TypeParam>::value) {
+    ASSERT_ANY_THROW({
+      TypeParam val = 10;
+      RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      of_it -= 11;
+    });
+    ASSERT_ANY_THROW({
+      TypeParam val = std::numeric_limits<TypeParam>::max() - 10;
+      RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      of_it += 11;
+    });
+  
+    ASSERT_ANY_THROW({
+      TypeParam val = 10;
+      RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      auto sum = of_it - 11u;
+      (void)sum;
+    });
+    ASSERT_ANY_THROW({
+      TypeParam val = std::numeric_limits<TypeParam>::max() - 10;
+      RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      auto sum = of_it + 11;
+      (void)sum;
+    });
+  
+    ASSERT_ANY_THROW({
+      TypeParam val = 10;
+      const RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      auto sum = 8 - of_it;
+      (void)sum;
+    });
+    ASSERT_ANY_THROW({
+      TypeParam val = std::numeric_limits<TypeParam>::max() - 10;
+      const RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
+      auto sum = 11 + of_it;
+      (void)sum;
+    });
+  } 
 }
 
-TEST(StridedNumericIterator, overflow)
+TYPED_TEST(StridedNumericIteratorTest, overflow)
 {
+  if (std::is_unsigned<TypeParam>::value){
+    ASSERT_ANY_THROW({
+      TypeParam val = 2;
+      RAJA::Iterators::strided_numeric_iterator<TypeParam> of_it(val, 2);
+      of_it -= 2;
+    });
+    ASSERT_ANY_THROW({
+      TypeParam val = std::numeric_limits<TypeParam>::max() - 2;
+      RAJA::Iterators::strided_numeric_iterator<TypeParam> of_it(val, 2);
+      of_it += 2;
+    });
 
-  ASSERT_ANY_THROW({
-    unsigned long val = 2;
-    RAJA::Iterators::strided_numeric_iterator<unsigned long> of_it(val, 2);
-    of_it -= 2;
-  });
-  ASSERT_ANY_THROW({
-    unsigned long val = std::numeric_limits<unsigned long>::max() - 2;
-    RAJA::Iterators::strided_numeric_iterator<unsigned long> of_it(val, 2);
-    of_it += 2;
-  });
-
-  ASSERT_ANY_THROW({
-    unsigned long val = 2;
-    RAJA::Iterators::strided_numeric_iterator<unsigned long> of_it(val, 2);
-    auto sum = of_it - 2;
-    (void)sum;
-  });
-  ASSERT_ANY_THROW({
-    unsigned long val = std::numeric_limits<unsigned long>::max() - 2;
-    RAJA::Iterators::strided_numeric_iterator<unsigned long> of_it(val, 2);
-    auto sum = of_it + 2;
-    (void)sum;
-  });
-
-  
+    ASSERT_ANY_THROW({
+      TypeParam val = 2;
+      RAJA::Iterators::strided_numeric_iterator<TypeParam> of_it(val, 2);
+      auto sum = of_it - 2;
+      (void)sum;
+    });
+    ASSERT_ANY_THROW({
+      TypeParam val = std::numeric_limits<TypeParam>::max() - 2;
+      RAJA::Iterators::strided_numeric_iterator<TypeParam> of_it(val, 2);
+      auto sum = of_it + 2;
+      (void)sum;
+    });
+  }
 }
 #endif
 
