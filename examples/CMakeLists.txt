@@ -42,8 +42,8 @@ raja_add_executable(
   SOURCES tut_scan.cpp)
 
 raja_add_executable(
-  NAME tut_atomic-binning
-  SOURCES tut_atomic-binning.cpp)
+  NAME tut_atomic-histogram
+  SOURCES tut_atomic-histogram.cpp)
 
 raja_add_executable(
   NAME tut_offset-layout

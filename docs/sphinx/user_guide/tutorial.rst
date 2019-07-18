@@ -226,7 +226,7 @@ iteration spaces, reductions, atomic operations, and scans.
    tutorial/indexset_segments.rst
    tutorial/vertexsum_coloring.rst
    tutorial/reductions.rst
-   tutorial/atomic_binning.rst
+   tutorial/atomic_histogram.rst
    tutorial/scan.rst
 
 .. _tutorialcomplex-label:

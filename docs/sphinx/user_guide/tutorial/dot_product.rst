@@ -26,7 +26,9 @@ In the example, we compute a vector dot product, 'dot = (a,b)', where
 C-style code to compute the dot product and print its value afterward is: 
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
-                    :lines: 73-79
+   :start-after: _csytle_dotprod_start
+   :end-before: _csytle_dotprod_end
+   :language: C++
 
 Note that this operation performs a *reduction*, a computational pattern that
 produces a single result from a set of values. Reductions present a variety
@@ -53,7 +55,9 @@ in which the reduction is used. Here is the RAJA sequential variant of the dot
 product computation:
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
-                    :lines: 87-94
+   :start-after: _rajaseq_atomic_histogram_start
+   :end-before: _rajaseq_atomic_histogram_end
+   :language: C++
 
 The sum reduction object is defined by specifying the reduction 
 policy ``RAJA::seq_reduce``, which matches the loop execution policy, and
@@ -64,7 +68,9 @@ we use the 'get' method to retrieve the reduced value.
 The OpenMP multi-threaded variant of the loop is implemented similarly:
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
-                    :lines: 104-111
+   :start-after: _rajaomp_dotprod_start
+   :end-before: _rajaomp_dotprod_end
+   :language: C++
 
 Here, we use the ``RAJA::omp_reduce`` reduce policy to match the OpenMP
 loop execution policy.
@@ -73,7 +79,9 @@ Finally, the RAJA CUDA variant is achieved by using appropriate loop
 execution and reduction policies:
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
-                    :lines: 122-130
+   :start-after: _rajacuda_dotprod_start
+   :end-before: _rajacuda_dotprod_end
+   :language: C++
 
 Here, the CUDA reduce policy ``RAJA::cuda_reduce`` matches the CUDA 
 loop execution policy. Note that the CUDA thread block size is not 
