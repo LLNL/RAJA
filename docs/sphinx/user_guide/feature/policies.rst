@@ -70,7 +70,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       chunk size inside an 
                                                       *existing* parallel 
                                                       region; i.e., apply ``omp                                                       for schedule(static, 
-                                                      CHUNK_SIZE>`` pragma
+                                                      CHUNK_SIZE)`` pragma
  omp_for_nowait_exec                    forall,       Parallel execution with
                                         kernel (For)  OpenMP CPU multithreading
                                                       inside an existing 
@@ -144,11 +144,8 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       internally; i.e.,
                                                       apply ``omp teams 
                                                       distribute parallel for 
-                                                      num_teams(datasize/
-                                                      ThreadsPerTeam) 
-                                                      thread_limit(
-                                                      ThreadsPerTeam)`` 
-                                                      pragma on loop 
+                                                      num_teams(datatasize/#)
+                                                      thread_limit(#)`` pragma
  omp_target_parallel_collapse_exec      kernel        Similar to above, but 
                                         (Collapse)    collapse 
                                                       *perfectly-nested*
@@ -158,7 +155,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       compiler determines number
                                                       of thread teams and 
                                                       threads per team
-======================================= ============= ==========================
+ ====================================== ============= ==========================
 
 The following notes apply to the execution policies described in the table 
 above.
