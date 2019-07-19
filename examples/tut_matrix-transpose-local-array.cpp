@@ -188,12 +188,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_localarray_start
   using TILE_MEM =
     RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  TILE_MEM Tile_Array;
   // _mattranspose_localarray_end
 
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
-
-  TILE_MEM Tile_Array;
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";

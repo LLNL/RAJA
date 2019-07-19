@@ -91,7 +91,8 @@ iteration space; thus, no conditional checks on loop bounds are needed
 inside inner loops.
 
 For the RAJA version of the matrix transpose kernel above, we define the
-type of the ``RAJA::LocalArray`` used for matrix entries in a tile: 
+type of the ``RAJA::LocalArray`` used for matrix entries in a tile and
+create an object to represent it: 
 
 .. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
    :start-after: // _mattranspose_localarray_start
