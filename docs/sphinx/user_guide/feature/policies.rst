@@ -136,7 +136,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
  ====================================== ============= ==========================
  OpenMP Target Execution Policies       Works with    Brief description
  ====================================== ============= ==========================
- omp_target_parallel_for_exec<#> forall               Create parallel target 
+ omp_target_parallel_for_exec<#>        forall        Create parallel target 
                                                       region and execute with 
                                                       given number of threads  
                                                       per team inside it. Number
@@ -158,7 +158,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       compiler determines number
                                                       of thread teams and 
                                                       threads per team
-====================================== ============= ===========================
+======================================= ============= ==========================
 
 The following notes apply to the execution policies described in the table 
 above.
