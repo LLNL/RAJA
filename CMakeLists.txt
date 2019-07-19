@@ -35,10 +35,10 @@ if (NOT RAJA_LOADED)
   set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
   # Build options
-  set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
-  set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
-  set(ENABLE_COPY_HEADERS Off CACHE Bool "")
-  set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
+  option(ENABLE_OPENMP "Build OpenMP support" ON)
+  option(ENABLE_CUDA "Build CUDA support" ON)
+  option(ENABLE_COPY_HEADERS "" OFF)
+  option(ENABLE_WARNINGS_AS_ERRORS "" OFF)
 
   set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
