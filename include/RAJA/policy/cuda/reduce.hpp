@@ -415,6 +415,10 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     {
       sd = new(tmpsd) RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>();
     }
+    else
+    {
+      sd = reinterpret_cast<RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> *>(tmpsd);
+    }
 
     __syncthreads();
 
