@@ -33,7 +33,7 @@ The following table summarizes RAJA policies for executing loops and kernels.
 
  ====================================== ============= ==========================
  Execution Policy                       Works with    Brief description
- ===================================== ============= ===========================
+ ====================================== ============= ==========================
  **Sequential/SIMD**
  seq_exec                               forall,       Strictly sequential
                                         kernel (For), execution
