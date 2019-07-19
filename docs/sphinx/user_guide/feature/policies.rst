@@ -29,12 +29,11 @@ be redefined and to work in new ways.
 RAJA Loop/Kernel Execution Policies
 -----------------------------------------------------
 
-The following table summarizes RAJA policies for executing loops and kernels.
+The following tables summarize RAJA policies for executing loops and kernels.
 
  ====================================== ============= ==========================
- Execution Policy                       Works with    Brief description
+ Sequential/SIMD Execution Policies     Works with    Brief description
  ====================================== ============= ==========================
- **Sequential/SIMD**
  seq_exec                               forall,       Strictly sequential
                                         kernel (For), execution
                                         scan
@@ -50,8 +49,11 @@ The following table summarizes RAJA policies for executing loops and kernels.
                                                       i.e., no loop decorations
                                                       (pragmas or intrinsics) in
                                                       RAJA implementation
- **OpenMP CPU multithreading**
- (see note below table)
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ OpenMP CPU Multithreading Policies     Works with    Brief description
+ ====================================== ============= ==========================
  omp_parallel_for_exec                  forall,       Create OpenMP parallel
                                         kernel (For), region and execute with 
                                         scan          CPU multithreading inside
@@ -76,8 +78,11 @@ The following table summarizes RAJA policies for executing loops and kernels.
                                                       synchronization after 
                                                       loop; i.e., apply
                                                       ``omp for nowait`` pragma
- **Intel Threading Building Blocks**
- (see note below table)
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ Threading Building Blocks Policies     Works with    Brief description
+ ====================================== ============= ==========================
  tbb_for_exec                           forall,       Execute loop iterations
                                         kernel (For), as tasks in parallel using
                                         scan          TBB ``parallel_for`` 
@@ -88,8 +93,11 @@ The following table summarizes RAJA policies for executing loops and kernels.
  tbb_for_dynamic                        forall,       Same as above, but use
                                         kernel (For), a dynamic scheduler
                                         scan  
- **CUDA** 
- (see notes below table)
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ CUDA Execution Policies                Works with    Brief description
+ ====================================== ============= ==========================
  cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
                                         kernel (For), in a CUDA kernel launched
                                         scan          with given thread-block
@@ -123,7 +131,11 @@ The following table summarizes RAJA policies for executing loops and kernels.
  cuda_block_z_loop                      kernel (For)  Map loop iterations to 
                                                       CUDA thread blocks in
                                                       z-dimension
- **OpenMP target**
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ OpenMP Target Execution Policies       Works with    Brief description
+ ====================================== ============= ==========================
  omp_target_parallel_for_exec<#> forall               Create parallel target 
                                                       region and execute with 
                                                       given number of threads  
