@@ -409,7 +409,12 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
     // Need to separate declaration and initialization for clang-cuda
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>)];
-    RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> * sd = new(tmpsd) RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>();
+    RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> * sd;
+
+    if (threadId == 0)  // create for only one thread
+    {
+      sd = new(tmpsd) RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>();
+    }
 
     __syncthreads();
 
@@ -437,7 +442,10 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
     __syncthreads();
 
-    sd->~SoAArray();
+    if (threadId == 0)  // destroy once
+    {
+      sd->~SoAArray();
+    }
   }
 
   return temp;
