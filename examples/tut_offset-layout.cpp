@@ -25,10 +25,9 @@
  *  lattice may be accessed through a row/col fashion, 
  *  the stencil may be expressed as the following sum
  * 
- *  output_lattice(row, col)
- *         = input_lattice(row, col)
- *         + input_lattice(row - 1, col) + input_lattice(row + 1, col)
- *         + input_lattice(row, col - 1) + input_lattice(row, col + 1)
+ *  output(row, col) = input(row, col) +
+ *                     input(row - 1, col) + input(row + 1, col) +
+ *                     input(row, col - 1) + input(row, col + 1)
  *
  *  We assume a lattice has N x N interior nodes 
  *  and a padded edge of zeros for a lattice
@@ -132,13 +131,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize lattice
 //
-  int* input_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* output_lattice = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* lattice_ref = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* input = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* output = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* output_ref = memoryManager::allocate<int>(totCells * sizeof(int));
 
-  std::memset(input_lattice, 0, totCells * sizeof(int));
-  std::memset(output_lattice, 0, totCells * sizeof(int));
-  std::memset(lattice_ref, 0, totCells * sizeof(int));
+  std::memset(input, 0, totCells * sizeof(int));
+  std::memset(output, 0, totCells * sizeof(int));
+  std::memset(output_ref, 0, totCells * sizeof(int));
 
 //
 // C-Style intialization
@@ -146,10 +145,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   for (int row = 1; row <= N_r; ++row) {
     for (int col = 1; col <= N_c; ++col) {
       int id = col + totCellsInCol * row;
-      input_lattice[id] = 1;
+      input[id] = 1;
     }
   }
-// printLattice(input_lattice, totCellsInRow, totCellsInCol);
+// printLattice(input, totCellsInRow, totCellsInCol);
 
 //
 // Generate reference solution
@@ -158,13 +157,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int col = 1; col <= N_c; ++col) {
 
       int id = col + totCellsInCol * row;
-      lattice_ref[id] = input_lattice[id] + input_lattice[id + 1]
-                        + input_lattice[id - 1]
-                        + input_lattice[id + totCellsInCol]
-                        + input_lattice[id - totCellsInCol];
+      output_ref[id] = input[id] + input[id + 1]
+                        + input[id - 1]
+                        + input[id + totCellsInCol]
+                        + input[id - totCellsInCol];
     }
   }
-// printLattice(lattice_ref, totCellsInRow, totCellsInCol);
+// printLattice(output_ref, totCellsInRow, totCellsInCol);
 
 //----------------------------------------------------------------------------//
 
@@ -184,8 +183,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::OffsetLayout<DIM> layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r, N_c}});
 
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> input_latticeView(input_lattice, layout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> output_latticeView(output_lattice, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> inputView(input, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> outputView(output, layout);
   // _offsetlayout_views_end
 
 //
@@ -214,17 +213,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
 
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                   outputView(row, col) =
+                                       inputView(row, col)
+                                       + inputView(row - 1, col)
+                                       + inputView(row + 1, col)
+                                       + inputView(row, col - 1)
+                                       + inputView(row, col + 1);
                                  });
   // _offsetlayout_rajaseq_end
 
-  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
+  //printLattice(output_ref, totCellsInRow, totCellsInCol);
+  checkResult(output, output_ref, totCells);
 
 //----------------------------------------------------------------------------//
 
@@ -245,16 +244,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
 
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                   outputView(row, col) =
+                                       inputView(row, col)
+                                       + inputView(row - 1, col)
+                                       + inputView(row + 1, col)
+                                       + inputView(row, col - 1)
+                                       + inputView(row, col + 1);
                                  });
 
-  //printLattice(lattice_ref, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
+  //printLattice(output_ref, totCellsInRow, totCellsInCol);
+  checkResult(output, output_ref, totCells);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -278,16 +277,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
                                  [=] RAJA_DEVICE(int col, int row) {
 
-                                   output_latticeView(row, col) =
-                                       input_latticeView(row, col)
-                                       + input_latticeView(row - 1, col)
-                                       + input_latticeView(row + 1, col)
-                                       + input_latticeView(row, col - 1)
-                                       + input_latticeView(row, col + 1);
+                                   outputView(row, col) =
+                                       inputView(row, col)
+                                       + inputView(row - 1, col)
+                                       + inputView(row + 1, col)
+                                       + inputView(row, col - 1)
+                                       + inputView(row, col + 1);
                                  });
 
-  //printLattice(output_lattice, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
+  //printLattice(output, totCellsInRow, totCellsInCol);
+  checkResult(output, output_ref, totCells);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -295,9 +294,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Clean up.
 //
-  memoryManager::deallocate(input_lattice);
-  memoryManager::deallocate(output_lattice);
-  memoryManager::deallocate(lattice_ref);
+  memoryManager::deallocate(input);
+  memoryManager::deallocate(output);
+  memoryManager::deallocate(output_ref);
 
   std::cout << "\n DONE!...\n";
   return 0;
