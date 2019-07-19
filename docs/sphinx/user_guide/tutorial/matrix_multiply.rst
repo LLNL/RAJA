@@ -39,16 +39,8 @@ this:
    :end-before: _matmult_cstyle_end
    :language: C++
 
-For the RAJA variants of the matrix multiple operation, we use 
-``RAJA::RangeSegment`` objects to define the matrix row and column and dot
-product iteration spaces:
-
-.. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-   :start-after: _matmult_ranges_start
-   :end-before: _matmult_ranges_end
-   :language: C++
-
-We also use ``RAJA::View`` objects, which allow us to access matrix
+For the RAJA variants of the matrix multiple operation presented below,
+we use ``RAJA::View`` objects, which allow us to access matrix
 entries in a multi-dimensional manner similar to the C-style version that
 uses macros. We create a two-dimensional N x N 'view'
 for each of the three matrices:
@@ -62,6 +54,14 @@ We show the most basic RAJA view usage here -- to simplify multi-dimensional
 array indexing. RAJA views can be used to abstract a variety of different 
 data layouts and access patterns, including stride permutations, offsets, etc. 
 For more information about RAJA views, see :ref:`view-label`.
+
+We also use the following ``RAJA::RangeSegment`` objects to define the matrix 
+row and column and dot product iteration spaces:
+
+.. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
+   :start-after: _matmult_ranges_start
+   :end-before: _matmult_ranges_end
+   :language: C++
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Should I Use RAJA::forall For Nested Loops?
@@ -282,11 +282,11 @@ We reiterate that although the policies are different, the kernels themselves
 are identical to the sequential and OpenMP variants above.
 
 Here is a policy that will distribute the row indices across CUDA thread 
-blocks and column indices across threads in each block:
+blocks and column indices across threads in the x dimension of each block:
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-   :start-after: _matmult_3lambdakernel_ompcollapse_start
-   :end-before: _matmult_3lambdakernel_ompcollapse_end
+   :start-after: _matmult_3lambdakernel_cuda_start
+   :end-before: _matmult_3lambdakernel_cuda_end
    :language: C++
 
 This is equivalent to defining a CUDA kernel with the lambda body inside
@@ -303,8 +303,8 @@ parameter that can be set at compile time. Within each tile, the kernel
 iterates are executed by CUDA threads.
 
 .. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
-   :start-after: _matmult_3lambdakernel_ompcollapse_start
-   :end-before: _matmult_3lambdakernel_ompcollapse_end
+   :start-after: _matmult_3lambdakernel_cudatiled_start
+   :end-before: _matmult_3lambdakernel_cudatiled_end
    :language: C++
 
 Note that the tiling mechanism requires a ``RAJA::statement::Tile`` type, 
@@ -316,5 +316,6 @@ we will discuss loop tiling in more detail including how it can be used to
 improve performance of certain algorithms.
 
 The file ``RAJA/examples/tut_matrix-multiply.cpp`` contains the complete 
-working code for all examples described in this section. It also contains 
-a raw CUDA version of the kernel for comparison. 
+working code for all examples described in this section, plus others that
+show a variety of ``RAJA::kernel`` execution policy types. It also contains 
+a raw CUDA version of the kernel for comparison.

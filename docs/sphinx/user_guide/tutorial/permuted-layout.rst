@@ -96,7 +96,7 @@ stride :math:`N \times N_c`.
 Example Code
 ^^^^^^^^^^^^^^^^^^^
 
-A complete working example that runs the batched matrix-multiplication 
+Complete working examples that run the batched matrix-multiplication 
 computation for both layouts and various RAJA execution policies is located
 in the file ``RAJA/examples/tut_batched-matrix-multiply.cpp``. It compares 
 the execution run times of the two layouts using three RAJA back-ends 
@@ -108,7 +108,7 @@ the execution run times of the two layouts using three RAJA back-ends
    :language: C++
 
 The only differences between the lambda loop body for layout 1 and layout 2
-are the names of the views. To make the algorithm code identical for all 
+cases are the names of the views. To make the algorithm code identical for all 
 cases, we would use type aliases for the view and layout types in a header
 file similarly to how we would abstract the execution policy out of the
 algorithm.

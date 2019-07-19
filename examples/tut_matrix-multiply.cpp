@@ -426,6 +426,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
   //
+  //
   using EXEC_POL4 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
