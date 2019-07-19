@@ -149,8 +149,8 @@ The following tables summarize RAJA policies for executing loops and kernels.
  omp_target_parallel_collapse_exec      kernel        Similar to above, but 
                                         (Collapse)    collapse 
                                                       *perfectly-nested*
-                                                      loops, which are specified
-                                                      in arguments to RAJA
+                                                      loops, indicated in 
+                                                      arguments to RAJA
                                                       Collapse statement. Note:
                                                       compiler determines number
                                                       of thread teams and 
@@ -230,11 +230,13 @@ Execution Policy                       Brief description
 **Serial**
 seq_segit                              Iterate over index set segments 
                                        sequentially
+
 **OpenMP CPU multithreading**          
 omp_parallel_segit                     Create OpenMP parallel region and 
                                        iterate over segments in parallel inside                                        it; i.e., apply ``omp parallel for`` 
                                        pragma on loop over segments
 omp_parallel_for_segit                 Same as above
+
 **Intel Threading Building Blocks**
 tbb_segit                              Iterate over index set segments in 
                                        parallel using a TBB 'parallel_for' 

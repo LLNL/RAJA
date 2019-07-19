@@ -78,13 +78,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\n Running RAJA OMP binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  // _rajeomp_atomic_histogram_start 
+  // _rajaomp_atomic_histogram_start 
   RAJA::forall<RAJA::omp_parallel_for_exec>(array_range, [=](int i) {
                           
     RAJA::atomicAdd<RAJA::omp_atomic>(&bins[array[i]], 1);
                                            
   });
-  // _rajeomp_atomic_histogram_end
+  // _rajaomp_atomic_histogram_end
 
   printBins(bins, M);
 
@@ -110,14 +110,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRunning RAJA CUDA binning" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  // _rajeocuda_atomic_histogram_start 
+  // _rajacuda_atomic_histogram_start 
   RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(array_range, 
     [=] RAJA_DEVICE(int i) {
                           
     RAJA::atomicAdd<RAJA::cuda_atomic>(&bins[array[i]], 1);
                                                  
   });
-  // _rajeocuda_atomic_histogram_end
+  // _rajacuda_atomic_histogram_end
 
   printBins(bins, M);
 
@@ -126,14 +126,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRunning RAJA CUDA binning with auto atomic" << std::endl;
   std::memset(bins, 0, M * sizeof(int));
 
-  // _rajeocuda_atomicauto_histogram_start 
+  // _rajacuda_atomicauto_histogram_start 
   RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(array_range, 
     [=] RAJA_DEVICE(int i) {
 
     RAJA::atomicAdd<RAJA::auto_atomic>(&bins[array[i]], 1);
 
   });
-  // _rajeocuda_atomicauto_histogram_end
+  // _rajacuda_atomicauto_histogram_end
 
   printBins(bins, M);
   
