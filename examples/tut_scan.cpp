@@ -87,7 +87,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_inclusive_seq_start
   RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N, out);
-  // _scan_inclusive_seq_start
+  // _scan_inclusive_seq_end
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
   printArray(out, N);  
@@ -217,7 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _scan_exclusive_cuda_plus_start
   RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(in, in + N, out,
                                        RAJA::operators::plus<int>{});
-  // _scan_exclusive_cuda_plus_start
+  // _scan_exclusive_cuda_plus_end
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
   printArray(out, N);
