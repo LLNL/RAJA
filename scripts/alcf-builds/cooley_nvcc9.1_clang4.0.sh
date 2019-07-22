@@ -13,6 +13,7 @@
 ##
 ##  > soft add +cmake-3.9.1 
 ##  > soft add +clang-4.0
+##  > soft add +cuda-9.1
 ##
 
 BUILD_SUFFIX=alcf-cooley-nvcc9.1_clang4.0

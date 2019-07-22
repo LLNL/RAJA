@@ -67,7 +67,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running C-version of vector addition...\n";
+  std::cout << "\n Running C-style vector addition...\n";
 
   // _cstyle_vector_add_start
   for (int i = 0; i < N; ++i) {
