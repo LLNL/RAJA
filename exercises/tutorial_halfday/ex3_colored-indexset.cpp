@@ -16,7 +16,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #3: Mesh vertex area with "colored" IndexSet
+ *  EXERCISE #3: Mesh vertex area with "colored" IndexSet
  *
  *  In this exercise, you will use a RAJA IndexSet containing 4 
  *  ListSegments to parallelize the mesh vertex area computation.
@@ -222,7 +222,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   ///
-  /// Exercise: Create a RAJA::TypedIndexSet object that holds four
+  /// TODO...
+  ///
+  /// EXERCISE: Create a RAJA::TypedIndexSet object that holds four
   ///           RAJA::TypedListSegment objects, one for each of the 
   ///           'idx' arrays above.
   ///
@@ -240,7 +242,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
   ///
-  /// Exercise: Implement the vertex sum kernel a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vertex sum kernel a RAJA::forall
   ///           method with execution policy type 
   ///
   ///            RAJA::ExecPolicy<RAJA::seq_segit, 
@@ -270,7 +274,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
   ///
-  /// Exercise: Implement the vertex sum kernel a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vertex sum kernel a RAJA::forall
   ///           method with execution policy type 
   ///
   ///            RAJA::ExecPolicy<RAJA::seq_segit, 

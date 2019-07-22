@@ -13,10 +13,10 @@
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
-//#define ENABLE_KERNEL //Exercise: Uncomment
+//#define ENABLE_KERNEL //EXERCISE: Uncomment
 
 /*
- *  Exercise #8: Matrix Transpose with Local Array
+ *  EXERCISE #8: Matrix Transpose with Local Array
  *
  *  In this exercise, your program will carry out the
  *  transpose of a matrix A using a tiling algorithm and a RAJA local array.
@@ -196,17 +196,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   ///
-  /// Exercise:
+  /// TODO..
   ///
-  ///   Implement the RAJA policy for a sequential matrix transpose with a local array.
-  ///   Use the statement InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<#>, ....>
-  ///   to allocate local array memory inside a kernel. The cpu_tile_mem policy
-  ///   specifies that memory should be allocated on the stack. The entries in the
-  ///   RAJA::ParamList identify RAJA local arrays in the parameter tuple to intialize.
+  /// EXERCISE:
   ///
-  ///   Use the statement ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec,
-  ///   to extract the tile local index of the Nth segment. The resulting index is
-  ///   stored in location T of the parameter tuple.
+  ///   Implement the RAJA policy for a sequential matrix transpose with a 
+  ///   local array. Use the statement 
+  ///
+  ///      InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<#>, ....>
+  ///
+  ///   to allocate local array memory inside a kernel. The cpu_tile_mem 
+  ///   policy specifies that memory should be allocated on the stack. The 
+  ///   entries in the RAJA::ParamList identify RAJA local arrays in the 
+  ///   parameter tuple to intialize.
+  ///
+  ///   Use the statement 
+  ///
+  ///      ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec, ...
+  ///
+  ///   to extract the tile local index of the Nth segment. The resulting 
+  ///   index is stored in location T of the parameter tuple.
   ///
 
 #if defined(ENABLE_KERNEL)
@@ -239,17 +248,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   ///
-  /// Exercise:
+  /// TODO...
   ///
-  ///   Implement the RAJA policy for an OpenMP matrix transpose with a local array.
-  ///   Use the statement InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<#>, ....>
+  /// EXERCISE:
+  ///
+  ///   Implement the RAJA policy for an OpenMP matrix transpose with a local 
+  ///   array. Use the statement 
+  ///   
+  ///      InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<#>, ....>
+  /// 
   ///   to allocate local array memory inside a kernel. The cpu_tile_mem policy
-  ///   specifies that memory should be allocated on the stack. The entries in the
-  ///   RAJA::ParamList identify RAJA local arrays in the parameter tuple to intialize.
+  ///   specifies that memory should be allocated on the stack. The entries 
+  ///   in the RAJA::ParamList identify RAJA local arrays in the parameter 
+  ///   tuple to intialize.
   ///
-  ///   Use the statement ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec,
-  ///   to extract the tile local index of the Nth segment. The resulting index is
-  ///   stored in location T of the parameter tuple.
+  ///   Use the statement 
+  ///
+  ///      ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec, ...
+  ///
+  ///   to extract the tile local index of the Nth segment. The resulting 
+  ///   index is stored in location T of the parameter tuple.
   ///
 
 #if defined(ENABLE_KERNEL)
@@ -282,20 +300,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   ///
-  /// Exercise:
+  /// TODO...
   ///
-  ///   Implement the RAJA policy for a cuda matrix transpose with a local array.
-  ///   Use the statement InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<#>, ....>
-  ///   to allocate local array memory inside a kernel. The cuda_shared_mem policy
-  ///   specifies that memory should be allocated using cuda shared memory. The entries in the
-  ///   RAJA::ParamList identify RAJA local arrays in the parameter tuple to intialize.
+  /// EXERCISE:
   ///
-  ///   Use the statement ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec,
-  ///   to extract the tile local index of the Nth segment. The resulting index is
-  ///   stored in location T of the parameter tuple.
+  ///   Implement the RAJA policy for a cuda matrix transpose with a local 
+  ///   array. Use the statement 
+  ///   
+  ///      InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<#>, ....>
   ///
-  ///   Note: After loading/reading from a local array it will be necessary to use the
-  ///   statment CudaSyncThreads to prevent race conditions.
+  ///   to allocate local array memory inside a kernel. The cuda_shared_mem 
+  ///   policy specifies that memory should be allocated using cuda shared 
+  ///   memory. The entries in the RAJA::ParamList identify RAJA local arrays 
+  ///   in the parameter tuple to intialize.
+  ///
+  ///   Use the statement 
+  ///   
+  ///      ForICount<N, RAJA::statement::Param<T>, ...
+  ///
+  ///   to extract the tile local index of the Nth segment. The resulting 
+  ///   index is stored in location T of the parameter tuple.
+  ///
+  ///   Note: After loading/reading from a local array it will be necessary 
+  ///   to use the statment CudaSyncThreads to prevent race conditions.
   ///
 
 #if defined(ENABLE_KERNEL)

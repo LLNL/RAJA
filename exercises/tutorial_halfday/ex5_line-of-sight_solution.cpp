@@ -17,7 +17,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #5: The line-of-sight problem.
+ *  EXERCISE #5: The line-of-sight problem.
  *
  *  In this exercise, you will use use RAJA scan operations to solve
  *  the 'line-of-sight'' problem, which is staed as:

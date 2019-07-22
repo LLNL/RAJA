@@ -17,7 +17,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #5: The line-of-sight problem.
+ *  EXERCISE #5: The line-of-sight problem.
  *
  *  In this exercise, you will use use RAJA scan operations to solve
  *  the 'line-of-sight'' problem, which is staed as:
@@ -147,7 +147,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   num_visible = 0;
 
   ///
-  /// Exercise: Implement the line-of-sight algorithm using RAJA constructs.
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the line-of-sight algorithm using RAJA constructs.
   ///           First, use a 'max' RAJA::inclusive_scan on the angle vector 
   ///           with RAJA::seq_exec execution policy. Then, use a RAJA::forall
   ///           template with the same execution policy to determine which
@@ -173,7 +175,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   num_visible = 0;
 
   ///
-  /// Exercise: Implement the line-of-sight algorithm using RAJA constructs.
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the line-of-sight algorithm using RAJA constructs.
   ///           First, use a 'max' RAJA::inclusive_scan on the angle vector 
   ///           with RAJA::omp_parallel_for_exec execution policy. Then, use 
   ///           a RAJA::forall template with the same execution policy to 
@@ -201,7 +205,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   num_visible = 0;
 
   ///
-  /// Exercise: Implement the line-of-sight algorithm using RAJA constructs.
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the line-of-sight algorithm using RAJA constructs.
   ///           First, use a 'max' RAJA::inclusive_scan on the angle vector 
   ///           with RAJA::cuda_exec execution policy. Then, use a 
   ///           RAJA::forall template with the same execution policy to 

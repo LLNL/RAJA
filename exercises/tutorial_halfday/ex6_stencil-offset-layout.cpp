@@ -15,7 +15,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #6: Offset layout stencil computation. 
+ *  EXERCISE #6: Offset layout stencil computation. 
  *
  *  In this exercise, you will use RAJA Layouts and Views to perform
  *  a simple 5-point stencil computation on a 2-dimensional Cartesian mesh.
@@ -201,7 +201,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(A, 0, int_cells * sizeof(int));
 
   ///
-  /// Exercise (Part A): 
+  /// TODO...
+  ///
+  /// EXERCISE (Part A): 
   ///
   ///   Fill in the stencil computation below where you use RAJA::View 
   ///   objects for accessing entries in the A and B arrays. You will use
@@ -279,7 +281,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(A, 0, int_cells * sizeof(int));
 
   ///
-  /// Exercise (Part B): 
+  /// TODO...
+  ///
+  /// EXERCISE (Part B): 
   ///
   ///   Fill in the stencil computation below where you use RAJA::View 
   ///   objects for accessing entries in the A and B arrays. You will use

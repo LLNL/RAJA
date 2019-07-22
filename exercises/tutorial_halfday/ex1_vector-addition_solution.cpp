@@ -14,7 +14,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #1: Vector Addition
+ *  EXERCISE #1: Vector Addition
  *
  *  In this exercise, you will compute c = a + b, where a, b, c are 
  *  integer vectors.

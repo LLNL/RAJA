@@ -15,7 +15,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #6: Offset layout stencil computation. 
+ *  EXERCISE #6: Offset layout stencil computation. 
  *
  *  In this exercise, you will use RAJA Layouts and Views to perform
  *  a simple 5-point stencil computation on a 2-dimensional Cartesian mesh.

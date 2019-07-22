@@ -16,7 +16,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #3: Mesh vertex area with "colored" IndexSet
+ *  EXERCISE #3: Mesh vertex area with "colored" IndexSet
  *
  *  In this exercise, you will use a RAJA IndexSet containing 4 
  *  ListSegments to parallelize the mesh vertex area computation.

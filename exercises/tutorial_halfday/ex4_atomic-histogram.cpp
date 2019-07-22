@@ -15,7 +15,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #4: Atomic histogram
+ *  EXERCISE #4: Atomic histogram
  *
  *  In this exercise, you will use use RAJA atomic operations to compute
  *  an array which represents a histogram of values in another array.
@@ -118,7 +118,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   ///
-  /// Exercise: Implement the atomic histogram kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::atomicAdd operation with RAJA::seq_atomic policy.
   ///
@@ -139,7 +141,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   ///
-  /// Exercise: Implement the atomic histogram kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::omp_parallel_for_exec execution policy type 
   ///           and a RAJA::atomicAdd operation with RAJA::omp_atomic policy.
   /// 
@@ -163,7 +167,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   ///
-  /// Exercise: Implement the atomic histogram kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::omp_parallel_for_exec execution policy type 
   ///           and a RAJA::atomicAdd operation with RAJA::auto_atomic policy.
   ///
@@ -186,7 +192,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   ///
-  /// Exercise: Implement the atomic histogram kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::cuda_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::cuda_atomic policy.
   ///
@@ -210,7 +218,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   ///
-  /// Exercise: Implement the atomic histogram kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::cuda_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::auto_atomic policy.
   ///

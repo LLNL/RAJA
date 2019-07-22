@@ -14,7 +14,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #1: Vector Addition
+ *  EXERCISE #1: Vector Addition
  *
  *  In this exercise, you will compute c = a + b, where a, b, c are 
  *  integer vectors.
@@ -97,7 +97,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
   ///
-  /// Exercise: Implement the vector addition kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::seq_exec execution policy type.
   ///
 
@@ -115,7 +117,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
   ///
-  /// Exercise: Implement the vector addition kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::simd_exec execution policy type.
   ///
 
@@ -133,7 +137,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA loop-exec vector addition...\n";
 
   ///
-  /// Exercise: Implement the vector addition kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::loop_exec execution policy type.
   ///
 
@@ -174,7 +180,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP multthreaded vector addition...\n";
 
   ///
-  /// Exercise: Implement the vector addition kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::omp_parallel_for_exec execution policy type.
   ///
 
@@ -194,7 +202,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
   ///
-  /// Exercise: Implement the vector addition kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::cuda_exec execution policy type.
   ///
 

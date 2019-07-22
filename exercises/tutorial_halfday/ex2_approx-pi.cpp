@@ -12,7 +12,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Exercise #2: Approximate pi using a Riemann sum
+ *  EXERCISE #2: Approximate pi using a Riemann sum
  *
  *  In this exercise, you will apprimate pi using the formula
  * 
@@ -79,7 +79,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential pi approximation...\n";
 
   ///
-  /// Exercise: Implement the pi approximation kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
   ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::ReduceSum object with RAJA::seq_reduce policy type
   ///           to accumulate the sum.
@@ -124,7 +126,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP pi approximation...\n";
 
   ///
-  /// Exercise: Implement the pi approximation kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
   ///           method with RAJA::omp_parallel_for_exec execution policy type 
   ///           and a RAJA::ReduceSum object with RAJA::omp_reduce policy type
   ///           to accumulate the sum.
@@ -148,7 +152,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA pi approximation...\n";
 
   ///
-  /// Exercise: Implement the pi approximation kernel using a RAJA::forall
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
   ///           method with RAJA::cuda_exec execution policy type and a 
   ///           RAJA::ReduceSum object with RAJA::cuda_reduce policy type
   ///           to accumulate the sum.

@@ -14,7 +14,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  Exercise #8: Matrix Transpose with Local Array
+ *  EXERCISE #8: Matrix Transpose with Local Array
  *
  *  In this exercise, your program will carry out the
  *  transpose of a matrix A using a tiling algorithm and RAJA local array.
@@ -189,20 +189,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-
-  ///
-  /// Exercise:
-  ///
-  ///   Implement the RAJA policy for a cuda matrix transpose with a local array.
-  ///   Use the statement InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<#>, ....>
-  ///   to allocate local array memory inside a kernel. The cpu_tile_mem policy
-  ///   specifies that memory should be allocated on the stack. The entries in the
-  ///   RAJA::ParamList identify RAJA local arrays in the parameter tuple to intialize.
-  ///
-  ///   Use the statement ForICount<N, RAJA::statement::Param<T>, RAJA::loop_exec,
-  ///   to extract the tile local index of the Nth segment. The resulting index is
-  ///   stored in location T of the parameter tuple.
-  ///
 
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<

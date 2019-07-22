@@ -12,8 +12,9 @@
 #include "RAJA/RAJA.hpp"
 
 #include "memoryManager.hpp"
+
 /*
- *  Exercise #7: Tiled Matrix Transpose
+ *  EXERCISE #7: Tiled Matrix Transpose
  *
  *  In this exercise, your program will carry out the transpose of a matrix A
  *  using a tiling algorithm. An input matrix A of dimension N_r x N_c

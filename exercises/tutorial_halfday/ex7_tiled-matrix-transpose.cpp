@@ -12,9 +12,10 @@
 #include "RAJA/RAJA.hpp"
 
 #include "memoryManager.hpp"
-//#define ENABLE_POLICY //Exercise: Uncomment
+//#define ENABLE_POLICY //EXERCISE: Uncomment
+
 /*
- *  Exercise #7: Tiled Matrix Transpose
+ *  EXERCISE #7: Tiled Matrix Transpose
  *
  *  In this exercise, your program will carry out the transpose of a matrix A
  *  using a tiling algorithm. An input matrix A of dimension N_r x N_c
@@ -137,8 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants will use the RAJA::kernel method to carryout the
-  // transpose.
+  // The following RAJA variants will use the RAJA::kernel method to 
+  // perform the matrix transpose operation.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
   // Further partioning of the iteration space is carried out in the
@@ -171,8 +172,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 #endif
+
   ///
-  /// Exercise:
+  /// TODO...
+  ///
+  /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
@@ -205,7 +209,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   ///
-  /// Exercise:
+  /// TODO...
+  ///
+  /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
@@ -238,7 +244,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   ///
-  /// Exercise:
+  /// TODO...
+  ///
+  /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///
@@ -270,7 +278,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   ///
-  /// Exercise:
+  /// TODO...
+  ///
+  /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
   ///

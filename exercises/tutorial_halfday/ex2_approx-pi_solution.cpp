@@ -12,7 +12,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Exercise #2: Approximate pi using a Riemann sum
+ *  EXERCISE #2: Approximate pi using a Riemann sum
  *
  *  In this exercise, you will apprimate pi using the formula
  * 
