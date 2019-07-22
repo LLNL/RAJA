@@ -213,7 +213,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
  
 // 
 // Create a RAJA IndexSet with four ListSegments, one for the indices of the
-// elements in each subsut. This will be used in the RAJA OpenMP and CUDA 
+// elements in each subset. This will be used in the RAJA OpenMP and CUDA 
 // variants of the vertex sum calculation.
 //
 // The IndexSet is a variadic template, where the template arguments
