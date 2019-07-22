@@ -20,7 +20,7 @@
  *  EXERCISE #5: The line-of-sight problem.
  *
  *  In this exercise, you will use use RAJA scan operations to solve
- *  the 'line-of-sight'' problem, which is staed as:
+ *  the 'line-of-sight'' problem, which is stated as:
  *
  *  Given an observation point X on a terrain map, and a set of points
  *  {Y0, Y1, Y2, ...} along a ray starting at X, find which points on the
