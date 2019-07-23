@@ -19,7 +19,7 @@ CPU stack-allocated arrays or GPU thread local and shared memory to be used
 within kernels. For more information about ``RAJA::LocalArray``, please 
 see :ref:`local_array-label`.
 
-Key RAJA features shown in this example incluse:
+Key RAJA features shown in this example include:
 
   * ``RAJA::kernel_param`` method with multiple lambda expressions
   * ``RAJA::statement::Tile`` type

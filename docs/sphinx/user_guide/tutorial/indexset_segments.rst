@@ -79,7 +79,7 @@ a default index type that RAJA defines and which is used in some RAJA
 constructs as a convenience for users who want a simple mechanism to apply
 index types consistently.
 
-It is important to understand what is happens when using list segments.
+It is important to understand what happens when using list segments.
 During loop execution, indices stored in the list segment are passed to the 
 loop body one-by-one, effectively mimicking an indirection array except that
 the indirection does not appear in the loop body. For example, we 
