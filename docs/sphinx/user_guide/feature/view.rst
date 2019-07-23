@@ -147,14 +147,14 @@ unit stride::
 Offset Layout
 ^^^^^^^^^^^^^^^^
 
-The ``RAJA::make_offset_layout`` method creates a ``RAJA::Layout`` object 
+The ``RAJA::make_offset_layout`` method creates a ``RAJA::OffsetLayout`` object 
 with offsets applied to the indices. For example,::
 
   double* C = new double[11]; 
 
   RAJA::Layout<1> layout = RAJA::make_offset_layout<1>({{-5}}, {{5}});
 
-  RAJA::View<double, RAJA::Layout<1> > Cview(C, layout);
+  RAJA::View<double, RAJA::OffsetLayout<1> > Cview(C, layout);
 
 creates a one-dimensional view with a layout that allows one to index into
 it using indices in :math:`[-5, 5]`. In other words, one can use the loop::
@@ -172,7 +172,8 @@ The arguments to the ``RAJA::make_offset_layout`` method are C++ arrays that
 hold the start and end values of the indices. RAJA offset layouts support
 any number of dimensions; for example::
 
-  RAJA::Layout<2> layout = RAJA::make_offset_layout<2>({{-1, -5}}, {{2, 5}});
+  RAJA::OffsetLayout<2> layout = 
+     RAJA::make_offset_layout<2>({{-1, -5}}, {{2, 5}});
 
 defines a two-dimensional layout that enables one to index into a view using 
 indices :math:`[-1, 2]` in the first dimension and indices :math:`[-5, 5]` in
@@ -183,11 +184,12 @@ sub-object.
 Permuted Offset Layout
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA::make_permuted_offset_layout`` method creates a ``RAJA::Layout`` 
-object with permutations and offsets applied to the indices. For example,::
+The ``RAJA::make_permuted_offset_layout`` method creates a 
+``RAJA::OffsetLayout`` object with permutations and offsets applied to the 
+indices. For example,::
 
   std::array< RAJA::idx_t, 2> perm {{1, 0}};
-  RAJA::Layout<2> layout = 
+  RAJA::OffsetLayout<2> layout = 
     RAJA::make_permuted_offset_layout<2>( {{-1, -5}}, {{2, 5}}, perm ); 
 
 Here, the two-dimensional index space is :math:`[-1, 2] \times [-5, 5]`, the
@@ -198,6 +200,10 @@ since the first index dimension has length 4.
 Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
 be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
 tutorial sections.
+
+.. note:: It is important to note some facts about RAJA Layout types:
+          * All layouts have a permutation. So a permuted layout and a "non-permuted" layout (i.e., default permutation) has the type ``RAJA::Layout``.
+          * Any layout with an offset has the type ``RAJA::OffsetLayout``. The ``RAJA::OffsetLayout`` type has a ``RAJA::Layout`` and offset data. This was an intentional design choice to avoid the overhead of offset computations in the ``RAJA::View`` data access operator when they are not needed.
 
 -------------------
 RAJA Index Mapping
