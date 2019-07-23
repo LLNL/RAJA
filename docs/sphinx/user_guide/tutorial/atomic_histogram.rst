@@ -35,16 +35,20 @@ atomic policies, please see :ref:`atomics-label`.
 
 All code snippets described below use the loop range:
 
-.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 49-49
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _range_atomic_histogram_start
+   :end-before: _range_atomic_histogram_end
+   :language: C++
 
 and the integer array 'bins' of length 'M' to accumulate the number of 
 occurrences of each value in the array.
 
 Here is the OpenMP version:
 
-.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 82-89
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _rajaomp_atomic_histogram_start
+   :end-before: _rajaomp_atomic_histogram_end
+   :language: C++
 
 Each slot in the 'bins' array is incremented by one when a value associated 
 with that slot is encountered. Note that the ``RAJA::atomicAdd`` 
@@ -53,8 +57,10 @@ loop execution policy.
 
 The CUDA version is similar:
 
-.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 118-125
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _rajacuda_atomic_histogram_start
+   :end-before: _rajacuda_atomic_histogram_end
+   :language: C++
 
 Here, the atomic add operation uses a CUDA atomic policy, which is compatible 
 with the CUDA loop execution policy.
@@ -69,10 +75,12 @@ applied.
 
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
-.. literalinclude:: ../../../../examples/tut_atomic-binning.cpp
-                    :lines: 134-140
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _rajacuda_atomicauto_histogram_start
+   :end-before: _rajacuda_atomicauto_histogram_end
+   :language: C++
 
 The same CUDA loop execution policy as in the previous example is used.
 
-The file ``RAJA/examples/tut_atomic-binning.cpp`` contains the complete 
+The file ``RAJA/examples/tut_atomic-histogram.cpp`` contains the complete 
 working example code.

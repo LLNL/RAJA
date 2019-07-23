@@ -45,29 +45,22 @@ Simple Loops (RAJA::forall)
 ---------------------------
 
 As noted earlier, a ``RAJA::forall`` template executes simple 
-(e.g., non-nested) loops. For example, a C-style loop like::
+(e.g., non-nested) loops. For example, a C-style loop that adds two vectors,
+like::
 
-  double* a = ...;
-  double* b = ...;
-  double* c = ...;
-  
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
 
-may be written in a RAJA form as::
+may be written using RAJA as::
 
-  double* a = ...;
-  double* b = ...;
-  double* c = ...;
-  
-  RAJA::forall<exec_policy>(iter_space I, [=] (index_type i) {
+  RAJA::forall<exec_policy>(RAJA::RangeSegment(0, N), [=] (int i) {
     c[i] = a[i] + b[i];
   });
 
 A ``RAJA::forall`` method is a template on an execution policy type and takes
 two arguments: an object describing the loop iteration space, such as a RAJA 
-segment or index set, and a lambda expression for the loop body. Applying 
+range segment (shown here), and a lambda expression for the loop body. Applying 
 different loop execution policies enables the loop to run in different ways; 
 e.g., using different programming model back-ends. Different iteration space 
 objects enable the loop iterates to be partitioned, reordered, run in 
@@ -98,9 +91,9 @@ A ``RAJA::kernel`` template provides ways to compose and execute arbitrary
 loop nests and other complex kernels. To introduce the RAJA *kernel* interface,
 consider a (N+1)-level C-style loop nest::
 
-  for (index_type iN = 0; iN < NN; ++iN) {
+  for (int iN = 0; iN < NN; ++iN) {
     ...
-       for (index_type i0 = 0; i0 < N0; ++i0) {s
+       for (int i0 = 0; i0 < N0; ++i0) {s
          \\ inner loop body
        }
   }
@@ -108,9 +101,9 @@ consider a (N+1)-level C-style loop nest::
 Note that we could write this by nesting ``RAJA::forall`` statements and
 it would work, assuming the execution policies were chosen properly::
 
-  RAJA::forall<exec_policyN>(IN, [=] (index_type iN) {
+  RAJA::forall<exec_policyN>(IN, [=] (int iN) {
     ...
-       RAJA::forall<exec_policy0>(I0, [=] (index_type i0)) {
+       RAJA::forall<exec_policy0>(I0, [=] (int i0)) {
          \\ inner loop body
        }
     ...
@@ -130,7 +123,7 @@ structure as a single entity, which simplifies the ability to apply kernel
 transformations and different parallel execution patterns by changing one 
 execution policy type.
 
-The loop nest may be written in a RAJA kernel form as::
+The loop nest may be written using the RAJA kernel interface as::
 
     using KERNEL_POL = 
       RAJA::KernelPolicy< RAJA::statement::For<N, exec_policyN, 
@@ -143,9 +136,9 @@ The loop nest may be written in a RAJA kernel form as::
                         >;
   
     RAJA::kernel< KERNEL_POL >(
-      RAJA::make_tuple(iter_space IN, ..., iter_space I0),
+      RAJA::make_tuple(RAJA::RangeSegment(0, NN), ..., RAJA::RangeSegment(0, N0),
 
-      [=] (index_type iN, ... , index_type i0) {
+      [=] (int iN, ... , int i0) {
          // inner loop body
       }
 

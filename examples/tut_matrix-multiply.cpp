@@ -46,9 +46,11 @@ const int DIM = 2;
 //
 // Define macros to simplify row-col indexing (non-RAJA implementations only)
 //
+// _matmult_macros_start
 #define A(r, c) A[c + N * r]
 #define B(r, c) B[c + N * r]
 #define C(r, c) C[c + N * r]
+// _matmult_macros_end
 
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
@@ -120,6 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_cstyle_start
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
 
@@ -127,10 +130,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int k = 0; k < N; ++k) {
         dot += A(row, k) * B(k, col);
       }
-
       C(row, col) = dot;
+
     }
   }
+  // _matmult_cstyle_end
+
   checkResult<double>(C, N);
 //printResult<double>(C, N);
 
@@ -138,25 +143,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// In the following RAJA implementations of matrix multiplication, we
-// use RAJA 'View' objects to access the matrix data. A RAJA view
-// holds a pointer to a data array and enables multi-dimensional indexing
-// into that data, similar to the macros we defined above.
+// We define RAJA range segments to define the ranges of
+// row, column, and dot-product loops for RAJA variants
 //
-  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, N);
-  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
-  RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
+  // _matmult_ranges_start
+  RAJA::RangeSegment row_range(0, N);
+  RAJA::RangeSegment col_range(0, N);
+  RAJA::RangeSegment dot_range(0, N);
+  // _matmult_ranges_end
 
 //----------------------------------------------------------------------------//
 
 //
-// Here, we define RAJA range segments to define the ranges of
-// row, column, and dot-product loops
+// For the RAJA implementations of matrix multiplication, we
+// use RAJA 'View' objects to access the matrix data. A RAJA view
+// holds a pointer to a data array and enables multi-dimensional indexing
+// into that data, similar to the macros we defined above.
 //
-  RAJA::RangeSegment row_range(0, N);
-  RAJA::RangeSegment col_range(0, N);
-  RAJA::RangeSegment dot_range(0, N);
-
+  // _matmult_views_start
+  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
+  // _matmult_views_end
 
 //----------------------------------------------------------------------------//
 
@@ -181,6 +189,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_outerforall_start
   RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
 
     for (int col = 0; col < N; ++col) {
@@ -194,6 +203,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   });
+  // _matmult_outerforall_end
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -215,6 +226,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_nestedforall_start
   RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
 
     RAJA::forall<RAJA::loop_exec>( col_range, [=](int col) {
@@ -228,6 +240,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   });
+  // _matmult_nestedforall_end
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -264,6 +278,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_basickernel_start
   using EXEC_POL =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::loop_exec,    // row
@@ -283,6 +298,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Cview(row, col) = dot;
 
   });
+  // _matmult_basickernel_end
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -294,6 +311,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_ompkernel_start
   using EXEC_POL1 =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
@@ -302,6 +320,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
+  // _matmult_ompkernel_end
 
   RAJA::kernel<EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
@@ -313,6 +332,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Cview(row, col) = dot;
 
   });
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -329,6 +349,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // as the previous implementation; i.e., col (outer) iterations run
   // sequentially, while row (inner) iterations execute in parallel.
   //
+  // _matmult_ompkernel_swap_start
   using EXEC_POL2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::loop_exec,                  // col
@@ -337,6 +358,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
+  // _matmult_ompkernel_swap_end
 
   RAJA::kernel<EXEC_POL2>( RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
@@ -348,6 +370,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Cview(row, col) = dot;
 
   });
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -401,6 +424,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This is equivalent to launching a CUDA kernel with grid dimension N
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
+  //
   //
   using EXEC_POL4 =
     RAJA::KernelPolicy<
@@ -498,6 +522,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // via a single value tuple parameter. This enables the same variable to be
   // by all three lambdas.
   //
+  // _matmult_3lambdakernel_seq_start
   using EXEC_POL6a =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::loop_exec,
@@ -532,6 +557,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   );
+  // _matmult_3lambdakernel_seq_end
 
   checkResult<double>(Cview, N);
   //printResult<double>(Cview, N);
@@ -548,7 +574,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args in statements (RAJA-POL6b)...\n";
 
-  //Alias for convenience
+  // _matmult_3lambdakernel_args_seq_start
+  // Alias for convenience
   using RAJA::statement::Segs;
   using RAJA::statement::Params;
 
@@ -558,9 +585,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::For<0, RAJA::loop_exec,
           RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
           RAJA::statement::For<2, RAJA::loop_exec,
-            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // inner loop: dot += ...
+            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
           >,
-            RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C(row, col) = dot
+          RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>  // C(row, col) = dot
         >
       >
     >;
@@ -586,6 +613,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   );
+  // _matmult_3lambdakernel_args_seq_end
 
   checkResult<double>(Cview, N);
   //printResult<double>(Cview, N);
@@ -598,6 +626,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_3lambdakernel_ompcollapse_start
   using EXEC_POL7 =
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
@@ -609,6 +638,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::Lambda<2>   // set C(row, col) = dot
       >
     >;
+  // _matmult_3lambdakernel_ompcollapse_end
 
   RAJA::kernel_param<EXEC_POL7>(
     RAJA::make_tuple(col_range, row_range, dot_range),
@@ -644,10 +674,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_3lambdakernel_cuda_start
   using EXEC_POL8 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_y_loop,    // row
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
             RAJA::statement::Lambda<0>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
@@ -658,6 +689,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
+  // _matmult_3lambdakernel_cuda_end
 
   RAJA::kernel_param<EXEC_POL8>(
     RAJA::make_tuple(col_range, row_range, dot_range),
@@ -690,6 +722,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  // _matmult_3lambdakernel_cudatiled_start
   using EXEC_POL9a =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -708,6 +741,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
+  // _matmult_3lambdakernel_cudatiled_end
 
   RAJA::kernel_param<EXEC_POL9a>(
     RAJA::make_tuple(col_range, row_range, dot_range),
