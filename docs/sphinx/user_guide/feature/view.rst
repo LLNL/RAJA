@@ -201,9 +201,14 @@ Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may
 be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
 tutorial sections.
 
-.. note:: It is important to note some facts about RAJA Layout types:
-          * All layouts have a permutation. So a permuted layout and a "non-permuted" layout (i.e., default permutation) has the type ``RAJA::Layout``.
-          * Any layout with an offset has the type ``RAJA::OffsetLayout``. The ``RAJA::OffsetLayout`` type has a ``RAJA::Layout`` and offset data. This was an intentional design choice to avoid the overhead of offset computations in the ``RAJA::View`` data access operator when they are not needed.
+.. note:: It is important to note some facts about RAJA Layout types. 
+          All layouts have a permutation. So a permuted layout and 
+          a "non-permuted" layout (i.e., default permutation) has the 
+          type ``RAJA::Layout``. Any layout with an offset has the 
+          type ``RAJA::OffsetLayout``. The ``RAJA::OffsetLayout`` type has 
+          a ``RAJA::Layout`` and offset data. This was an intentional design 
+          choice to avoid the overhead of offset computations in the 
+          ``RAJA::View`` data access operator when they are not needed.
 
 -------------------
 RAJA Index Mapping
