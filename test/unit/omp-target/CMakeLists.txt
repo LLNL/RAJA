@@ -13,6 +13,12 @@ if(ENABLE_TARGET_OPENMP)
     NAME test-omp-target-reductions
     SOURCES test-reductions.cpp)
   raja_add_test(
+    NAME test-omp-target-reduce-tupleminloc
+    SOURCES test-reduce-tupleminloc.cpp)
+  raja_add_test(
+    NAME test-omp-target-reduce-tuplemaxloc
+    SOURCES test-reduce-tuplemaxloc.cpp)
+  raja_add_test(
     NAME test-omp-target-kernel
     SOURCES kernel.cpp)
 endif(ENABLE_TARGET_OPENMP)
