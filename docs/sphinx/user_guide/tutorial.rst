@@ -173,11 +173,11 @@ with respect to RAJA usage. We describe them here.
    RAJA provides the macro ``RAJA_HOST_DEVICE`` to support the dual
    CUDA annotation ``__ host__ __device__``. This makes a lambda or function
    callable from CPU or CUDA device code. However, when CPU performance is 
-   important, **the host-device annotation should not be used on a lambda that
-   is used in a host (i.e., CPU) execution context**. Unfortunately, a loop 
-   kernel containing a lambda annotated in this way may run noticeably 
-   slower on a CPU than the same lambda with no annotation depending on the
-   version of the nvcc compiler you are using.
+   important, **the host-device annotation should be applied carefully on a 
+   lambda that is used in a host (i.e., CPU) execution context**. 
+   Unfortunately, a loop kernel containing a lambda annotated in this way 
+   may run noticeably slower on a CPU than the same lambda with no annotation 
+   depending on the version of the nvcc compiler you are using.
     
 
  * **Cannot use 'break' and 'continue' statements in a lambda.** 
@@ -202,8 +202,9 @@ with respect to RAJA usage. We describe them here.
  * **Local stack arrays are not captured by CUDA device lambdas.** 
 
    Although this is inconsistent with the C++ standard, attempting to access 
-   elements in a local stack array in a CUDA device lambda will generate a 
-   compilation error. One solution to this problem is to wrap the array in a 
+   elements in a local stack array in a CUDA device lambda may generate a 
+   compilation error depending on the version of the nvcc compiler you are 
+   using. One solution to this problem is to wrap the array in a 
    struct; for example::
 
      struct array_wrapper {
@@ -216,7 +217,9 @@ with respect to RAJA usage. We describe them here.
        // access entries of bounds.array
      } );
 
-   This may be resolved in a future release of the nvcc compiler.
+   This issue appears to be resolved in in the 10.1 release of the nvcc 
+   compiler. If you are using an earlier version of nvcc, an implementation
+   similar to the one above will be required. 
     
     
 ================
