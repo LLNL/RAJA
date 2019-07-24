@@ -47,10 +47,6 @@ raja_add_test(
   SOURCES test-rajavec.cpp)
 
 raja_add_test(
-  NAME test-iterators
-  SOURCES test-iterators.cpp)
-
-raja_add_test(
   NAME test-indexvalue
   SOURCES test-indexvalue.cpp)
 

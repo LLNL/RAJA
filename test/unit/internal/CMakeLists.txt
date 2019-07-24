@@ -6,13 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-rangesegment
-  SOURCES test-rangesegment.cpp)
+  NAME test-iterators
+  SOURCES test-iterators.cpp)
 
-raja_add_test(
-  NAME test-rangestridesegment
-  SOURCES test-rangestridesegment.cpp)
-
-raja_add_test(
-  NAME test-listsegment
-  SOURCES test-listsegment.cpp)
