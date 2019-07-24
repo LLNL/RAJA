@@ -120,6 +120,18 @@ TYPED_TEST(RangeStrideSegment, Sizes)
   // NEGATIVE STRIDE
   RAJA::TypedRangeStrideSegment<TypeParam> segment15(0, 20, -2);
   ASSERT_EQ(segment15.size(), 0);
+
+  // NEGATIVE INDICES
+  if (std::is_signed<TypeParam>::value) {
+    RAJA::TypedRangeStrideSegment<TypeParam> segment16(-10, -2, 2);
+    ASSERT_EQ(segment16.size(), 4);
+
+    RAJA::TypedRangeStrideSegment<TypeParam> segment17(-5, 5, 2);
+    ASSERT_EQ(segment17.size(), 5);
+
+    RAJA::TypedRangeStrideSegment<TypeParam> segment18(0, -5, 1);
+    ASSERT_EQ(segment18.size(), 0);
+  }
 }
 
 TYPED_TEST(RangeStrideSegment, Slices)
