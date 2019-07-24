@@ -5,15 +5,14 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
+set(RAJA_COMPILER "RAJA_COMPILER_XLC" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g9" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -qsmp=omp:noopt" CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,-z,muldefs" CACHE STRING "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -finline-functions" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -g -finline-functions" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
-
-set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -finline-functions -Xcompiler -fopenmp")
+set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qlanglvl=extended0x  -Xcompiler -qalias=noansi -Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 -Xcompiler -qsuppress=1500-036")
 
 set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0" CACHE STRING "")
@@ -24,3 +23,4 @@ set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
 set(RAJA_DATA_ALIGN 64 CACHE INT "")
 
 set(RAJA_HOST_CONFIG_LOADED On CACHE Bool "")
+
