@@ -11,7 +11,7 @@ RAJA v0.9.0 Release Notes
 =========================
 
 This release contains feature enhancements, one breaking change, and some 
-minor bug fixes. 
+bug fixes. 
 
   * Breaking change
     * The atomic namespace in RAJA has been removed. Now, use atomic operations
