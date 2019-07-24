@@ -7,9 +7,6 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-19.0.3/bin/icpc" CACHE PATH "")
-set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-19.0.3/bin/icc" CACHE PATH "")
-
 set(COMMON_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/g++")
 set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAGS} -O3 -march=native -ansi-alias -axCORE-AVX2 -diag-disable cpu-dispatch" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${COMMON_FLAGS} -O3 -g -march=native -ansi-alias -axCORE-AVX2 -diag-disable cpu-dispatch" CACHE STRING "")
