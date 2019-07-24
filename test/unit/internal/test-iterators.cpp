@@ -165,16 +165,3 @@ TYPED_TEST(StridedNumericIteratorTest, overflow)
   }
 }
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
