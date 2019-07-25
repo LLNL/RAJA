@@ -16,7 +16,8 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_gcc_7_3_1.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-7.3.1/bin/g++ \
+  -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \

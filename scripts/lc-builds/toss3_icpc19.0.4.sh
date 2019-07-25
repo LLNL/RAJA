@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-xl_2018.11.26
+BUILD_SUFFIX=lc_toss3-icpc-19.0.4
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -15,8 +15,9 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 module load cmake/3.9.2
 
 cmake \
-  -DCMAKE_BUILD_TYPE=Release\
-  -C ../host-configs/lc-builds/blueos/xl_2018_11_26.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-19.0.4/bin/icpc \
+  -C ../host-configs/lc-builds/toss3/icpc_X_gcc8headers.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

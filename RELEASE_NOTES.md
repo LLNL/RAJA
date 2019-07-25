@@ -4,18 +4,51 @@
 [comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
 [comment]: # (for details.)
 [comment]: # 
-[comment]: # (# SPDX-License-Identifier: (BSD-3-Clause))
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
 
 RAJA v0.9.0 Release Notes
 =========================
 
-This release introduces an extension to the kernel lambda statement.
+This release contains feature enhancements, one breaking change, and some 
+bug fixes. 
 
-   * Lambda arguments may now be specified in a lambda statement
-     using RAJA Segs, Param, and Offset types. By specifying lambda
-     arguments we relieve the requirement of utilizing all contents
-     in seg and param tuples.
+  * Breaking change
+    * The atomic namespace in RAJA has been removed. Now, use atomic operations
+      as RAJA::atomicAdd(), not RAJA::atomic::atomicAdd(), for example. This
+      was done to make atomic usage consistent with other RAJA features, such
+      as reductions, scans, etc.
+
+Other notable changes include:
+
+  * Features
+    * The lambda statement interface has been extended in the RAJA kernel API.
+      Earlier, when multiple lambda expressions were used in a kernel, they
+      were required to all have the same arguments, although not all 
+      arguments had to be used in each lambda expression. Now, lambda 
+      arguments may be specified in the RAJA::statement::Lambda type so 
+      that each lambda expression need only take the arguments it uses.
+      However, the previous usage pattern will continue to be supported.
+      To support the new interface, new statement types have been introduced 
+      to indicate iteration space variables (Segs), local variable/array 
+      parameters (Params), and index offsets (Offsets). The offsets can be used
+      with a For statement as a replacement for the ForICount statement. The
+      new API features are described in the RAJA User Guide.
+    * Minloc and maxloc reductions now support a tuple of index values. So 
+      now if you have a nested loop kernel with i, j, k loops, you can get
+      the 'loc' value out as an i, j, k triple.
+
+  * Bug Fixes:
+    * Small change to make RAJA Views work properly with OpenMP target kernels.
+    * Changes to fix OpenMP target back-end for XL compilers.
+    * Fix build issue with older versions of GNU compiler.
+    * Fixes to resolve issues associated with corner cases in choosing 
+      improper number of threads per block or number of thread blocks for
+      CUDA execution policies.
+
+  * Build changes/improvements:
+    * A few minor portability improvements
+
 
 RAJA v0.8.0 Release Notes
 =========================
@@ -39,6 +72,7 @@ Other notable changes include:
       yet documented and should be considered experimental.
     * Added AtomicLocalArray type which returns data elements wrapped
       in an AtomicRef object.
+
   * Bug Fixes:
     * Fixed issue in RangeStrideSegment iteration.
     * Fix 'align hint' macro to eliminate compile warning when XL compiler
