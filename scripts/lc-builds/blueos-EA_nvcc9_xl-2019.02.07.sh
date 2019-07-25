@@ -16,7 +16,8 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_xl_2019_02_07.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.02.07/bin/xlc++_r \
+  -C ../host-configs/lc-builds/blueos/nvcc_xl_2019_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \
