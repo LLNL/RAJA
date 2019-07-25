@@ -1,3 +1,10 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef camp_tuple_HPP__
 #define camp_tuple_HPP__
 
@@ -141,6 +148,10 @@ namespace internal
                               get<Indices>(rhs))...),
               *this);
     }
+
+    // solves problem where default copy assignment op is deleted by compiler
+    // when overridden
+    tuple_helper& operator=(const tuple_helper&) = default;
   };
 
   template <typename Types, typename Indices>

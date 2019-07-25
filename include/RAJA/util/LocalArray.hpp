@@ -8,20 +8,11 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
@@ -90,7 +81,7 @@ struct AtomicTypedLocalArray<AtomicPolicy, DataType, camp::idx_seq<Perm ...>,
                              RAJA::SizeList<Sizes ...>, IndexTypes ...>{
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
-  using atomic_ref_t = RAJA::atomic::AtomicRef<element_t, AtomicPolicy>;
+  using atomic_ref_t = RAJA::AtomicRef<element_t, AtomicPolicy>;
   using layout_t = RAJA::StaticLayout<camp::idx_seq<Perm ...>, Sizes ...>;
   static const camp::idx_t NumElem = layout_t::size();
 

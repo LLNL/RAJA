@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_VIEW_HPP
@@ -91,8 +83,7 @@ struct View {
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
     auto idx = stripIndexType(layout(args...));
-    auto &value = data[idx];
-    return value;
+    return data[idx];
   }
 };
 
@@ -146,12 +137,12 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
 #endif
 
 
-template <typename ViewType, typename AtomicPolicy = RAJA::atomic::auto_atomic>
+template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::atomic::AtomicRef<value_type, AtomicPolicy>;
+  using atomic_type = RAJA::AtomicRef<value_type, AtomicPolicy>;
 
   base_type base_;
 
@@ -173,12 +164,11 @@ struct AtomicViewWrapper {
  * for performance
  */
 template <typename ViewType>
-struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
+struct AtomicViewWrapper<ViewType, RAJA::seq_atomic> {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type =
-      RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+  using atomic_type = RAJA::AtomicRef<value_type, RAJA::seq_atomic>;
 
   base_type base_;
 

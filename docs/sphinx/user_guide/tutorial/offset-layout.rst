@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 .. _offset-label:
@@ -96,7 +90,9 @@ Then, we create two ``RAJA::View`` objects for each of the input and output
 lattice arrays.
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 194-200
+   :start-after: _offsetlayout_views_start
+   :end-before: _offsetlayout_views_end
+   :language: C++
 
 Here, the row index range is :math:`[-1, N_r]`, and the column index 
 range is :math:`[-1, N_c]`. The first argument to each call to the 
@@ -118,16 +114,20 @@ For the RAJA implementations of the example computation, we use two
 spaces for the interior cells:
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 182-183
+   :start-after: _offsetlayout_ranges_start
+   :end-before: _offsetlayout_ranges_end
+   :language: C++
 
 Here, is an implementation using ``RAJA::kernel`` multi-dimensional loop
 execution with a sequential execution policy.
 
 .. literalinclude:: ../../../../examples/tut_offset-layout.cpp
-                    :lines: 207-225
+   :start-after: _offsetlayout_rajaseq_start
+   :end-before: _offsetlayout_rajaseq_end
+   :language: C++
 
 Since the stencil operation is data parallel, any parallel execution policy 
 may be used. The file ``RAJA/examples/tut_offset-layout.cpp`` contains a 
 complete working example code with various parallel implementations. For more 
-details about ``RAJA::kernel`` concepts, 
-please see :ref:`loop_elements-kernel-label`. 
+information about using the ``RAJA::kernel`` interface, please see 
+:ref:`loop_elements-kernel-label`. 

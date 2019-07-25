@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_reduce_HPP
@@ -110,7 +102,7 @@ class ReduceMin;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMinLoc;
 
 /*!
@@ -161,7 +153,7 @@ class ReduceMax;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMaxLoc;
 
 /*!

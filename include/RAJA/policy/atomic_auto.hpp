@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_policy_atomic_auto_HPP
@@ -46,19 +38,17 @@
  */
 #if defined(__CUDA_ARCH__)
 #define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::cuda_atomic {}
+  RAJA::cuda_atomic {}
 #elif defined(RAJA_ENABLE_OPENMP)
 #define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::omp_atomic {}
+  RAJA::omp_atomic {}
 #else
 #define RAJA_AUTO_ATOMIC \
-  RAJA::atomic::seq_atomic {}
+  RAJA::seq_atomic {}
 #endif
 
 
 namespace RAJA
-{
-namespace atomic
 {
 
 //! Atomic policy that automatically does "the right thing"
@@ -153,7 +143,6 @@ atomicCAS(auto_atomic, T volatile *acc, T compare, T value)
 }
 
 
-}  // namespace atomic
 }  // namespace RAJA
 
 // make sure this define doesn't bleed out of this header

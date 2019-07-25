@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
 
-##
-## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-689114
-##
-## All rights reserved.
-##
-## This file is part of RAJA.
-##
-## For details about use and distribution, please read RAJA/LICENSE.
-##
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
 
 BUILD_SUFFIX=lc_blueos-EA-nvcc9-gcc7.3.1
 
@@ -23,7 +16,8 @@ module load cmake/3.9.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_gcc_7_3_1.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-7.3.1/bin/g++ \
+  -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \

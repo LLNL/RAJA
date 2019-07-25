@@ -8,20 +8,11 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_pattern_kernel_internal_HPP
@@ -36,8 +27,10 @@
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 #include "RAJA/util/chai_support.hpp"
+#include "RAJA/pattern/kernel/ArgHelper.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -77,9 +70,6 @@ struct ForTraitBase : public ForBase {
   using index_type = camp::nil;  // default to invalid type
   using policy_type = Policy;
   using type = ForTraitBase;  // make camp::value compatible
-};
-
-struct ParamBase {
 };
 
 template <typename Iterator>
@@ -258,10 +248,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<ParamIdx...> const &,
     Data &&data)
 {
-  camp::get<LoopIndex>(
-      data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
-                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
-                   camp::get<ParamIdx>(data.param_tuple)...);
+  camp::get<LoopIndex>(data.bodies)
+    ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
+     camp::get<ParamIdx>(data.param_tuple)...);
 }
 
 
@@ -276,6 +265,23 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
       camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
       camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
       std::forward<Data>(data));
+}
+
+RAJA_SUPPRESS_HD_WARN
+template<camp::idx_t LoopIndex, typename Data, typename... targLists>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,
+                                                       camp::list<targLists...> const &)
+{
+  camp::get<LoopIndex>(data.bodies)(extractor<targLists>::extract_arg(data)...);
+}
+
+//Helper to launch lambda with custom arguments
+template <camp::idx_t LoopIndex, typename targList, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data)
+{
+
+  invoke_custom_lambda<LoopIndex>(data,targList{});
+                                     
 }
 
 template <camp::idx_t ArgumentId, typename Data>

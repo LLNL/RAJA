@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 .. _atomics-label:
@@ -25,7 +19,7 @@ in this section.
 A complete working example code that shows RAJA atomic usage can be found in 
 :ref:`atomichist-label`.
 
-.. note:: * All RAJA atomic operations are in the namespace ``RAJA::atomic``.
+.. note:: * All RAJA atomic operations are in the namespace ``RAJA``.
 
 -----------------
 Atomic Operations
@@ -102,7 +96,7 @@ an integral sum on a CUDA GPU device::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
+    RAJA::atomicAdd< RAJA::cuda_atomic >(sum, 1);
 
   });
 
@@ -114,11 +108,11 @@ AtomicRef
 
 RAJA also provides an atomic interface similar to the C++20 'std::atomic_ref', 
 but which works for arbitrary memory locations. The class 
-``RAJA::atomic::AtomicRef`` provides an object-oriented interface to the 
+``RAJA::AtomicRef`` provides an object-oriented interface to the 
 atomic methods described above. For example, after the following operations:: 
 
   double val = 2.0;
-  RAJA::atomic::AtomicRef<double,  RAJA::omp_atomic > sum(&val);
+  RAJA::AtomicRef<double,  RAJA::omp_atomic > sum(&val);
 
   sum++;
   ++sum;

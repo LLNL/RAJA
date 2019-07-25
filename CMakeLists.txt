@@ -1,16 +1,8 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 cmake_policy(SET CMP0048 NEW)
@@ -47,6 +39,7 @@ if (NOT RAJA_LOADED)
   set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
   set(ENABLE_COPY_HEADERS Off CACHE Bool "")
   set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
+  set(ENABLE_GTEST_DEATH_TESTS On CACHE Bool "Enable tests asserting failure.")
 
   set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
@@ -94,6 +87,7 @@ endif ()
     endif ()
 
     include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
+
   endif()
 
   # Setup basic CMake options

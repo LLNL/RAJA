@@ -1,17 +1,8 @@
 ###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 if(ENABLE_TARGET_OPENMP)
@@ -21,6 +12,12 @@ if(ENABLE_TARGET_OPENMP)
   raja_add_test(
     NAME test-omp-target-reductions
     SOURCES test-reductions.cpp)
+  raja_add_test(
+    NAME test-omp-target-reduce-tupleminloc
+    SOURCES test-reduce-tupleminloc.cpp)
+  raja_add_test(
+    NAME test-omp-target-reduce-tuplemaxloc
+    SOURCES test-reduce-tuplemaxloc.cpp)
   raja_add_test(
     NAME test-omp-target-kernel
     SOURCES kernel.cpp)

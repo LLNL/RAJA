@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/RAJA.hpp"
@@ -384,14 +376,14 @@ CUDA_TEST(Kernel, CudaCollapse2)
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(1, N), RAJA::RangeSegment(1, N)),
       [=] RAJA_DEVICE(Index_type i, Index_type j) {
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1, i);
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2, j);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(sum1, i);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(sum2, j);
 
         if (i >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err, 1);
+          RAJA::atomicAdd<RAJA::cuda_atomic>(err, 1);
         }
         if (j >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err + 1, 1);
+          RAJA::atomicAdd<RAJA::cuda_atomic>(err + 1, 1);
         }
       });
 
@@ -522,7 +514,7 @@ CUDA_TEST(Kernel, SubRange_Complex)
                        RAJA::RangeSegment(0, 16),
                        RAJA::RangeSegment(0, 32)),
       [=] RAJA_HOST_DEVICE(Index_type i, Index_type j, Index_type k) {
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr + i, 1.0);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(ptr + i, 1.0);
       });
 
 
@@ -2177,7 +2169,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
                      RAJA::Index_type j,
                      RAJA::Index_type k) {
         trip_count += 1;
-        RAJA::atomic::atomicAdd<RAJA::atomic::auto_atomic>(ptr + i, (int)1);
+        RAJA::atomicAdd<RAJA::auto_atomic>(ptr + i, (int)1);
       });
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -2640,6 +2632,60 @@ CUDA_TEST(Kernel, CudaExec_1threadexec)
   long result = (long)trip_count;
 
   ASSERT_EQ(result, N * N * N * N);
+}
+
+
+
+CUDA_TEST(Kernel, CudaExec_fixedspillexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)2048;
+  constexpr long M = (long)32;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernelFixed<1024,
+      statement::Tile<0, statement::tile_fixed<1024>, cuda_block_x_loop,
+        For<0, cuda_thread_x_direct,
+          Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+  long *x = nullptr;
+  cudaErrchk(cudaMallocManaged(&x, (N+M) * sizeof(long)));
+  long *y = x;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+
+      [=] __device__(Index_type i) {
+        constexpr long M = (long)32; // M must be constexpr on the device
+        long a[M];
+        for (int j = 0; j < M; ++j) {
+          a[j] = x[i+j];
+          y[i+j] = a[j];
+        }
+        trip_count += 1;
+        for (int j = 0; j < M; ++j) {
+          x[i+j] = a[j];
+        }
+      });
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N);
+
+  cudaErrchk(cudaFree(x));
 }
 
 #endif

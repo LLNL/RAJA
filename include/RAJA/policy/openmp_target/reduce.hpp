@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_omp_target_reduce_HPP
@@ -193,6 +185,9 @@ struct TargetReduce
   {
   }
 
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp declare target
+#endif
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
@@ -205,6 +200,9 @@ struct TargetReduce
       }
     }
   }
+#ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
+#pragma omp end declare target
+#endif
 
   //! map result value back to host if not done already; return aggregate value
   operator T()
@@ -259,11 +257,11 @@ struct TargetReduceLoc
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
       : info(),
         val(Reducer::identity, Reducer::identity, info),
-        loc(init_loc, IndexType(-1), info),
+        loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
         initVal(init_val),
         finalVal(Reducer::identity),
         initLoc(init_loc),
-        finalLoc(IndexType(-1))
+        finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
   }
 
@@ -294,7 +292,7 @@ struct TargetReduceLoc
       info.isMapped = true;
     }
     finalVal = Reducer::identity;
-    finalLoc = IndexType(-1);
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
     Reducer{}(finalVal, finalLoc, initVal, initLoc);
     Reducer{}(finalVal, finalLoc, val.value, loc.value);
     return finalVal;
@@ -420,26 +418,26 @@ public:
 };
 
 //! specialization of ReduceMinLoc for omp_target_reduce
-template <typename T>
-class ReduceMinLoc<omp_target_reduce, T>
-    : public TargetReduceLoc<omp::minloc<T, Index_type>, T, Index_type>
+template <typename T, typename IndexType>
+class ReduceMinLoc<omp_target_reduce, T, IndexType>
+    : public TargetReduceLoc<omp::minloc<T, IndexType>, T, IndexType>
 {
 public:
 
-  using self = ReduceMinLoc<omp_target_reduce, T>;
+  using self = ReduceMinLoc<omp_target_reduce, T, IndexType>;
   using parent =
-      TargetReduceLoc<omp::minloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<omp::minloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  self &minloc(T rhsVal, Index_type rhsLoc)
+  self &minloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  const self &minloc(T rhsVal, Index_type rhsLoc) const
+  const self &minloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
@@ -448,26 +446,26 @@ public:
 
 
 //! specialization of ReduceMaxLoc for omp_target_reduce
-template <typename T>
-class ReduceMaxLoc<omp_target_reduce, T>
-    : public TargetReduceLoc<omp::maxloc<T, Index_type>, T, Index_type>
+template <typename T, typename IndexType>
+class ReduceMaxLoc<omp_target_reduce, T, IndexType>
+    : public TargetReduceLoc<omp::maxloc<T, IndexType>, T, IndexType>
 {
 public:
 
-  using self = ReduceMaxLoc<omp_target_reduce, T>;
+  using self = ReduceMaxLoc<omp_target_reduce, T, IndexType>;
   using parent =
-      TargetReduceLoc<omp::maxloc<T, Index_type>, T, Index_type>;
+      TargetReduceLoc<omp::maxloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  self &maxloc(T rhsVal, Index_type rhsLoc)
+  self &maxloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  const self &maxloc(T rhsVal, Index_type rhsLoc) const
+  const self &maxloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;

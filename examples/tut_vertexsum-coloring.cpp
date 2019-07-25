@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cmath>
@@ -119,6 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol_ref, 0, N_vert*N_vert * sizeof(double));
 
+  // _cstyle_vertexsum_start
   for (int j = 0 ; j < N_elem ; ++j) {
     for (int i = 0 ; i < N_elem ; ++i) {
       int ie = i + j*jeoff ;
@@ -129,6 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       vertexvol_ref[ iv[3] ] += elemvol[ie] / 4.0 ;
     }
   }
+  // _cstyle_vertexsum_end
 
 //std::cout << "\n Vertex volumes (reference)...\n";
 //printMeshData(vertexvol_ref, N_vert, jvoff);
@@ -140,6 +134,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_seq_vertexsum_start
   using EXEC_POL1 = 
     RAJA::KernelPolicy< 
       RAJA::statement::For<1, RAJA::seq_exec,    // j
@@ -159,6 +154,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
       vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_seq_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";
@@ -195,6 +191,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // First, gather the element indices for each color in a vector.
 //
+  // _colorvectors_vertexsum_start 
   std::vector<int> idx0;
   std::vector<int> idx1;
   std::vector<int> idx2;
@@ -218,6 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
+  // _colorvectors_vertexsum_end
  
 // 
 // Second, create a RAJA IndexSet with four ListSegments
@@ -225,6 +223,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The IndexSet is a variadic template, where the template arguments
 // are the segment types that the IndexSet can hold. 
 // 
+  // _colorindexset_vertexsum_start
   using SegmentType = RAJA::TypedListSegment<int>;
 
   RAJA::TypedIndexSet<SegmentType> colorset;
@@ -233,6 +232,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   colorset.push_back( SegmentType(&idx1[0], idx1.size()) ); 
   colorset.push_back( SegmentType(&idx2[0], idx2.size()) ); 
   colorset.push_back( SegmentType(&idx3[0], idx3.size()) ); 
+  // _colorindexset_vertexsum_end
 
 //----------------------------------------------------------------------------//
  
@@ -248,6 +248,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_seq_colorindexset_vertexsum_start
   using EXEC_POL2 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::seq_exec>;
 
@@ -258,6 +259,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_seq_colorindexset_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";
@@ -303,6 +305,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_cuda_colorindexset_vertexsum_start
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
@@ -313,6 +316,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_cuda_colorindexset_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";

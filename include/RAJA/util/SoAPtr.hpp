@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_SOA_PTR_HPP
@@ -83,12 +75,12 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, doing_min>, mempool>
+template <typename T, typename IndexType, bool doing_min, typename mempool>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
 {
-  using value_type = RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
-  using second_type = Index_type;
+  using second_type = IndexType;
 
 public:
   SoAPtr() = default;

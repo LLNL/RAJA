@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cmath>
@@ -27,7 +19,7 @@
 /*
  *  Batched Matrix Multiply Example
  *
- *  This example carries out batched matrix multiplication
+ *  This example performs batched matrix multiplication
  *  for matrices of dimension 3 x 3 using two different
  *  data layouts.
  *
@@ -129,18 +121,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Standard C++ arrays are used to hold the number of entries in each component.
 // This example uses double braces to initalize the array and its subobjects.
 // The layout object will index into the array as the following C macro would
-// #define Aview(e, r, c) A[c + N_c*(r + N_r*e)]
-//
-  std::array<RAJA::idx_t, 3> perm1 {{0, 1, 2}};
-  auto layout1 =
-      RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm1 );
+// #define Aview(e, r, c) A[c + N_c*(r + N_r*e)].
 //
 // RAJA::Layout objects may be templated on dimension, argument type, and 
 // index with unit stride. Here, the column index has unit stride (argument 2). 
-//  
+//
+  // _permutedlayout_defviews_start
+  std::array<RAJA::idx_t, 3> perm1 {{0, 1, 2}};
+  auto layout1 =
+      RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm1 );
+
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout1);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout1);
   RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout1);
+  // _permutedlayout_defviews_end
 
 //
 // Allocate space for data in layout 2
@@ -154,6 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // #define Aview2(e, r, c) A2[e + N*(c + N_c*r)]
 // In this case the element index has unit stride (argument 0). 
 //
+  // _permutedlayout_permviews_start
   std::array<RAJA::idx_t, 3> perm2 {{1, 2, 0}};
   auto layout2 =
       RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm2 );
@@ -161,6 +156,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
   RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Cview2(C2, layout2);
+  // _permutedlayout_permviews_end
 
 //
 // Initialize data
@@ -196,6 +192,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+    // _permutedlayout_batchedmatmult_omp_start
     RAJA::forall<RAJA::omp_parallel_for_exec>(
         RAJA::RangeSegment(0, N), [=](Index_type e) {
 
@@ -230,6 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                            + Aview(e, 2, 2) * Bview(e, 2, 2);
 
         });
+    // _permutedlayout_batchedmatmult_omp_end
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();

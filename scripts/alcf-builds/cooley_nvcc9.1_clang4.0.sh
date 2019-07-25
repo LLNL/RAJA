@@ -1,18 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-##
-## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-689114
-##
-## All rights reserved.
-##
-## This file is part of RAJA.
-##
-## For details about use and distribution, please read RAJA/LICENSE.
-##
+###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
 
 ##
 ## Execute these commands before running this script to
@@ -20,6 +13,7 @@
 ##
 ##  > soft add +cmake-3.9.1 
 ##  > soft add +clang-4.0
+##  > soft add +cuda-9.1
 ##
 
 BUILD_SUFFIX=alcf-cooley-nvcc9.1_clang4.0

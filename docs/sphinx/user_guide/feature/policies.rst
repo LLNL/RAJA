@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 .. _policies-label:
@@ -35,120 +29,133 @@ be redefined and to work in new ways.
 RAJA Loop/Kernel Execution Policies
 -----------------------------------------------------
 
-The following table summarizes RAJA policies for executing loops and kernels.
+The following tables summarize RAJA policies for executing loops and kernels.
 
-====================================== ============= ===========================
-Execution Policy                       Works with    Brief description
-====================================== ============= ===========================
-**Sequential/SIMD**
-seq_exec                               forall,       Strictly sequential
-                                       kernel (For), execution
-                                       scans
-simd_exec                              forall,       Try to force generation of
-                                       kernel (For), SIMD instructions via
-                                       scans         compiler hints in RAJA
-                                                     internal implementation
-loop_exec                              forall,       Allow compiler to generate
-                                       kernel (For), any optimizations, such as
-                                       scans         SIMD, that may be
-                                                     beneficial according to
-                                                     its heuristics;
-                                                     i.e., no loop decorations
-                                                     (pragmas or intrinsics) in
-                                                     RAJA implementation
-**OpenMP CPU multithreading**
-(see note below table)
-omp_parallel_for_exec                  forall,       Create OpenMP parallel
-                                       kernel (For), region and execute with CPU
-                                       scans         multithreading inside it;
-                                                     i.e., apply ``omp parallel
-                                                     for`` pragma on loop
-omp_for_exec                           forall,       Parallel execution with
-                                       kernel (For)  OpenMP CPU multithreading
-                                                     inside an *existing* 
-                                                     parallel region; i.e., 
-                                                     apply ``omp for`` pragma 
-                                                     on loop
-omp_for_static<CHUNK_SIZE>             forall,       Execute loop with OpenMP
-                                       kernel (For)  CPU multithreading using
-                                                     static schedule and given
-                                                     chunk size inside an 
-                                                     *existing* parallel region;
-                                                     i.e., apply ``omp for  
-                                                     schedule(static, 
-                                                     CHUNK_SIZE>`` pragma on 
-                                                     loop 
-omp_for_nowait_exec                    forall,       Parallel execution with
-                                       kernel (For)  OpenMP CPU multithreading
-                                                     inside an existing parallel
-                                                     region without
-                                                     synchronization after loop;
-                                                     i.e., apply
-                                                     ``omp for nowait`` pragma
-**Intel Threading Building Blocks**
-(see note below table)
-tbb_for_exec                           forall,       Execute loop iterations
-                                       kernel (For), as tasks in parallel using
-                                       scans         TBB ``parallel_for`` method
-tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use
-                                       kernel (For), a static scheduler with
-                                       scans         given chunk size
-tbb_for_dynamic                        forall,       Same as above, but use
-                                       kernel (For), a dynamic scheduler
-                                       scans 
-**CUDA** 
-(see notes below table)
-cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
-                                       kernel (For), in a CUDA kernel launched
-                                       scans         with given thread-block
-                                                     size. If none given, use
-                                                     default value of 256 
-                                                     threads/block 
-cuda_thread_x_direct                   kernel (For)  Map loop iterations to CUDA
-                                                     threads in x-dimension
-cuda_thread_y_direct                   kernel (For)  Map loop iterations to CUDA
-                                                     threads in y-dimension
-cuda_thread_z_direct                   kernel (For)  Map loop iterations to CUDA
-                                                     threads in z-dimension
-cuda_thread_x_loop                     kernel (For)  Extends thread-x-direct
-                                                     policy by adding a 
-                                                     block-stride loop
-cuda_thread_y_loop                     kernel (For)  Extends thread-y-direct
-                                                     policy by adding a 
-                                                     block-stride loop
-cuda_thread_z_loop                     kernel (For)  Extends thread-z-direct
-                                                     policy by adding a 
-                                                     block-stride loop
-cuda_block_x_loop                      kernel (For)  Map loop iterations to CUDA
-                                                     thread blocks in 
-                                                     x-dimension
-cuda_block_y_loop                      kernel (For)  Map loop iterations to CUDA
-                                                     thread blocks in 
-                                                     y-dimension
-cuda_block_z_loop                      kernel (For)  Map loop iterations to CUDA
-                                                     thread blocks in
-                                                     z-dimension
-**OpenMP target**
-omp_target_parallel_for_exec<ThreadsPerTeam> forall  Create parallel target 
-                                                     region and execute with 
-                                                     given number of threads  
-                                                     per team inside it. Number
-                                                     of teams is calculated
-                                                     internally; i.e.,
-                                                     apply ``omp teams 
-                                                     distribute parallel for 
-                                             num_teams(datasize/ThreadsPerTeam)
-                                                 thread_limit(ThreadsPerTeam)`` 
-                                                     pragma on loop 
-omp_target_parallel_collapse_exec      kernel        Similar to above, but 
-                                       (Collapse)    collapse *perfectly-nested*
-                                                     loops, which are specified
-                                                     in arguments to RAJA
-                                                     Collapse statement. Note:
-                                                     compiler determines number
-                                                     of thread teams and threads
-                                                     per team
-====================================== ============= ===========================
+ ====================================== ============= ==========================
+ Sequential/SIMD Execution Policies     Works with    Brief description
+ ====================================== ============= ==========================
+ seq_exec                               forall,       Strictly sequential
+                                        kernel (For), execution
+                                        scan
+ simd_exec                              forall,       Try to force generation of
+                                        kernel (For), SIMD instructions via
+                                        scan          compiler hints in RAJA
+                                                      internal implementation
+ loop_exec                              forall,       Allow compiler to generate
+                                        kernel (For), any optimizations, such as
+                                        scan          SIMD, that may be
+                                                      beneficial according to
+                                                      its heuristics;
+                                                      i.e., no loop decorations
+                                                      (pragmas or intrinsics) in
+                                                      RAJA implementation
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ OpenMP CPU Multithreading Policies     Works with    Brief description
+ ====================================== ============= ==========================
+ omp_parallel_for_exec                  forall,       Create OpenMP parallel
+                                        kernel (For), region and execute with 
+                                        scan          CPU multithreading inside
+                                                      it; i.e., apply ``omp 
+                                                      parallel for`` pragma 
+ omp_for_exec                           forall,       Parallel execution with
+                                        kernel (For)  OpenMP CPU multithreading
+                                                      inside an *existing* 
+                                                      parallel region; i.e., 
+                                                      apply ``omp for`` pragma 
+ omp_for_static<CHUNK_SIZE>             forall,       Execute loop with OpenMP
+                                        kernel (For)  CPU multithreading using
+                                                      static schedule and given
+                                                      chunk size inside an 
+                                                      *existing* parallel 
+                                                      region; i.e., apply ``omp                                                       for schedule(static, 
+                                                      CHUNK_SIZE)`` pragma
+ omp_for_nowait_exec                    forall,       Parallel execution with
+                                        kernel (For)  OpenMP CPU multithreading
+                                                      inside an existing 
+                                                      parallel region without
+                                                      synchronization after 
+                                                      loop; i.e., apply
+                                                      ``omp for nowait`` pragma
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ Threading Building Blocks Policies     Works with    Brief description
+ ====================================== ============= ==========================
+ tbb_for_exec                           forall,       Execute loop iterations
+                                        kernel (For), as tasks in parallel using
+                                        scan          TBB ``parallel_for`` 
+                                                      method
+ tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use
+                                        kernel (For), a static scheduler with
+                                        scan          given chunk size
+ tbb_for_dynamic                        forall,       Same as above, but use
+                                        kernel (For), a dynamic scheduler
+                                        scan  
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ CUDA Execution Policies                Works with    Brief description
+ ====================================== ============= ==========================
+ cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
+                                        kernel (For), in a CUDA kernel launched
+                                        scan          with given thread-block
+                                                      size. If none given, use
+                                                      default value of 256 
+                                                      threads/block 
+ cuda_thread_x_direct                   kernel (For)  Map loop iterations to 
+                                                      CUDA threads in 
+                                                      x-dimension
+ cuda_thread_y_direct                   kernel (For)  Map loop iterations to 
+                                                      CUDA threads in 
+                                                      y-dimension
+ cuda_thread_z_direct                   kernel (For)  Map loop iterations to 
+                                                      CUDA threads in 
+                                                      z-dimension
+ cuda_thread_x_loop                     kernel (For)  Extends thread-x-direct
+                                                      policy by adding a 
+                                                      block-stride loop
+ cuda_thread_y_loop                     kernel (For)  Extends thread-y-direct
+                                                      policy by adding a 
+                                                      block-stride loop
+ cuda_thread_z_loop                     kernel (For)  Extends thread-z-direct
+                                                      policy by adding a 
+                                                      block-stride loop
+ cuda_block_x_loop                      kernel (For)  Map loop iterations to 
+                                                      CUDA thread blocks in 
+                                                      x-dimension
+ cuda_block_y_loop                      kernel (For)  Map loop iterations to 
+                                                      CUDA thread blocks in 
+                                                      y-dimension
+ cuda_block_z_loop                      kernel (For)  Map loop iterations to 
+                                                      CUDA thread blocks in
+                                                      z-dimension
+ ====================================== ============= ==========================
+
+ ====================================== ============= ==========================
+ OpenMP Target Execution Policies       Works with    Brief description
+ ====================================== ============= ==========================
+ omp_target_parallel_for_exec<#>        forall        Create parallel target 
+                                                      region and execute with 
+                                                      given number of threads  
+                                                      per team inside it. Number
+                                                      of teams is calculated
+                                                      internally; i.e.,
+                                                      apply ``omp teams 
+                                                      distribute parallel for 
+                                                      num_teams(datatasize/#)
+                                                      thread_limit(#)`` pragma
+ omp_target_parallel_collapse_exec      kernel        Similar to above, but 
+                                        (Collapse)    collapse 
+                                                      *perfectly-nested*
+                                                      loops, indicated in 
+                                                      arguments to RAJA
+                                                      Collapse statement. Note:
+                                                      compiler determines number
+                                                      of thread teams and 
+                                                      threads per team
+ ====================================== ============= ==========================
 
 The following notes apply to the execution policies described in the table 
 above.
@@ -158,17 +165,6 @@ above.
           fixed for duration of run), or call the OpenMP routine 
           'omp_set_num_threads(nthreads)' (which allows changing number of 
           threads at runtime).
-
-OpenMP Target Policies
-^^^^^^^^^^^^^^^^^^^^^^^^
-* ``omp_target_parallel_for_exec<ThreadsPerTeam>`` - Execute a loop in parallel using an ``omp target parallel for`` pragma with given number of threads per team; e.g., if a GPU device is available, this is similar to launching a CUDA kernel with a thread block size of ThreadsPerTeam. 
-
-Intel Threading Building Blocks (TBB) Policies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* ``tbb_for_exec`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method.
-* ``tbb_for_static<CHUNK_SIZE>`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a static partitioner using given chunk size.
-* ``tbb_for_dynamic`` - Schedule loop iterations as tasks to execute in parallel using a TBB ``parallel_for`` method with a dynamic scheduler.
 
 .. note:: To control the number of TBB worker threads used by these policies:
           set the value of the environment variable 'TBB_NUM_WORKERS' (which is
@@ -187,16 +183,25 @@ Intel Threading Building Blocks (TBB) Policies
 
 Several notable constraints apply to RAJA CUDA thread-direct policies.
 
-.. note:: * Repeating thread direct policies with the same thread dimension in perfectly nested loops is not recommended. Your code may do something, but likely will not do what you expect and/or be correct.
-          * If multiple thread direct policies are used in a kernel (using different thread dimensions), the product of sizes of the corresponding iteration spaces must be :math:`\leq` 1024. You cannot launch a CUDA kernel with more than 1024 threads per block.
-          * **Thread-direct policies are recommended only for certain loop patterns, such as tiling.**
+.. note:: * Repeating thread direct policies with the same thread dimension  
+            in perfectly nested loops is not recommended. Your code may do 
+            something, but likely will not do what you expect and/or be correct.
+          * If multiple thread direct policies are used in a kernel (using 
+            different thread dimensions), the product of sizes of the 
+            corresponding iteration spaces must be :math:`\leq` 1024. You 
+            cannot launch a CUDA kernel with more than 1024 threads per block.
+          * **Thread-direct policies are recommended only for certain loop 
+            patterns, such as tiling.**
 
 Several notes regarding CUDA thread and block loop policies are also good to 
 know.
 
-.. note:: * There is no constraint on the product of sizes of the associated loop iteration space.
-          * These polices allow having a larger number of iterates than threads in the x, y, or z thread dimension.
-          * **Cuda thread and block loop policies are recommended for most loop patterns.**
+.. note:: * There is no constraint on the product of sizes of the associated 
+            loop iteration space.
+          * These polices allow having a larger number of iterates than 
+            threads in the x, y, or z thread dimension.
+          * **Cuda thread and block loop policies are recommended for most 
+            loop patterns.**
 
 .. _indexsetpolicy-label:
 
@@ -225,11 +230,13 @@ Execution Policy                       Brief description
 **Serial**
 seq_segit                              Iterate over index set segments 
                                        sequentially
+
 **OpenMP CPU multithreading**          
 omp_parallel_segit                     Create OpenMP parallel region and 
                                        iterate over segments in parallel inside                                        it; i.e., apply ``omp parallel for`` 
                                        pragma on loop over segments
 omp_parallel_for_segit                 Same as above
+
 **Intel Threading Building Blocks**
 tbb_segit                              Iterate over index set segments in 
                                        parallel using a TBB 'parallel_for' 
@@ -352,7 +359,7 @@ Here is an example illustrating use of the ``auto_atomic`` policy::
   RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
-    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(&sum, 1);
+    RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
 
   });
 
@@ -453,6 +460,14 @@ explanation along with examples of how they are used can be found in
   * ``statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
 
   * ``statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
+
+  * ``statement::Lambda< LambdaId, Args...>`` extension of the lambda statement; enabling lambda arguments to be specified at compile time.
+
+  * ``statement::Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
+
+  * ``statement::Offsets<...>`` argument to a Lambda statement; used to specify which segment offsets in a tuple will be used as lambda arguments.
+
+  * ``statement::Params<...>`` argument to a Lambda statement; used to specify which params in a tuple will be used as lambda arguments.
 
   * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 
