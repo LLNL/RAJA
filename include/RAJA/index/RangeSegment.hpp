@@ -92,8 +92,9 @@ struct TypedRangeSegment {
    * \param[in] end the ending value (exclusive) for the range
    */
   using StripStorageT = strip_index_type_t<StorageT>;
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
-      : m_begin(iterator(begin)), m_end(iterator(end))
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(const StripStorageT begin, const StripStorageT end)
+      : m_begin( begin > end ? throw std::runtime_error("RangeSegment : Ensure that begin <= end.") : iterator(begin)), 
+        m_end(iterator(end))
   {
   }
 
