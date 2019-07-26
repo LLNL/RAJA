@@ -13,8 +13,8 @@
 ##
 ## qsub -I -n 1 -A your_account -t 60 -q debug-cache-quad
 ##
-##  module load intel
-##  module load cmake-3.9.1
+##  module load intel/18.0.0.128
+##  module load cmake/3.9.1
 ##  to run "aprun ./main"
 ##
 
