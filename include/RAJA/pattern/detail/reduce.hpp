@@ -120,7 +120,10 @@ public:
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
 
-  RAJA_HOST_DEVICE ValueLoc& operator=(ValueLoc const &) = default;
+#if defined(CUDART_VERSION) && CUDART_VERSION < 9020
+  RAJA_HOST_DEVICE
+#endif
+  ValueLoc& operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
