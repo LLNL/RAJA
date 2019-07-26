@@ -33,10 +33,13 @@
 
 /*
   CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
+
+                    Uncomment to use when filling in exercises.
+
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
+*/
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {

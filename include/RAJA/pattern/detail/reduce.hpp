@@ -101,13 +101,13 @@ struct DefaultLoc {};
 template <typename T>
 struct DefaultLoc<T, false>  // any non-integral type
 {
-  RAJA_HOST_DEVICE constexpr T value() { return T(); }
+  RAJA_HOST_DEVICE constexpr T value() const { return T(); }
 };
 
 template <typename T>
 struct DefaultLoc<T, true>
 {
-  RAJA_HOST_DEVICE constexpr T value() { return -1; }
+  RAJA_HOST_DEVICE constexpr T value() const { return -1; }
 };
 
 template <typename T, typename IndexType, bool doing_min = true>
@@ -120,7 +120,10 @@ public:
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
 
-  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &) = default;
+#if defined(CUDART_VERSION) && CUDART_VERSION < 9020
+  RAJA_HOST_DEVICE
+#endif
+  ValueLoc& operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
