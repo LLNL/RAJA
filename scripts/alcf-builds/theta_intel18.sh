@@ -8,14 +8,19 @@
 ###############################################################################
 
 ##
-## Execute these commands before running this script to
-## set up your build environment:
+## The following command will request a node in the debug partition:
 ##
 ## qsub -I -n 1 -A your_account -t 60 -q debug-cache-quad
 ##
+## Example of running an executable:
+##
+## "aprun ./main"
+##
+## Execute these commands before running this script to
+## set up your build environment:
+##
 ##  module load intel/18.0.0.128
 ##  module load cmake/3.9.1
-##  to run "aprun ./main"
 ##
 
 BUILD_SUFFIX=alcf-theta-intel18.0
