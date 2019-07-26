@@ -8,8 +8,13 @@
 ###############################################################################
 
 ##
-## Execute these commands before running this script to
-## set up your build environment:
+## Execute these commands before running this script to build RAJA.
+##
+## First grab a node to compile and run your code:
+##
+## > qsub -I -n 1 -A <your_project> -t <# minutes> -q debug
+##
+## Then set up your build environment.
 ##
 ##  > soft add +cmake-3.9.1 
 ##  > soft add +clang-4.0
