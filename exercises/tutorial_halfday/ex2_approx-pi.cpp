@@ -88,10 +88,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::ReduceSum object with RAJA::seq_reduce policy type
   ///           to accumulate the sum.
-  /// 
+  ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
 
+  using EXEC_POL1   = RAJA::seq_exec;
+  using REDUCE_POL1 = RAJA::seq_reduce;
 
-  double seq_pi_val = 0.0;
+  RAJA::ReduceSum< REDUCE_POL1, double > seq_pi(0.0);
+
+  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=](int i) {
+      double x = (double(i) + 0.5) * dx;
+      seq_pi += dx / (1.0 + x * x);
+  });
+  double seq_pi_val = seq_pi.get() * 4.0; 
 
   std::cout << "\tpi = " << std::setprecision(prec) 
             << seq_pi_val << std::endl;
