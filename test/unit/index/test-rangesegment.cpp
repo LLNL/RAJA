@@ -39,7 +39,9 @@ TYPED_TEST(RangeSegmentTest, Constructors)
   ASSERT_EQ(moved, copied);
 
   // Test exception when begin > end
+#ifndef RAJA_ENABLE_CUDA
   ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> neg(20, 19));
+#endif
 
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
@@ -47,7 +49,9 @@ TYPED_TEST(RangeSegmentTest, Constructors)
     ASSERT_EQ(17, r1.size());
     ASSERT_EQ(12, r3.size());
 
+#ifndef RAJA_ENABLE_CUDA
     ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(0, -50));
+#endif
   }
 }
 
