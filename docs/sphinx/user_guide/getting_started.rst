@@ -26,7 +26,7 @@ them are described in :ref:`configopt-label`. To build and use RAJA in its
 simplest form requires:
 
 - C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ version 3.10 or greater.
+- `CMake <https://cmake.org/>`_ version 3.9 or greater.
 
 
 ==================

@@ -65,7 +65,7 @@ option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.9)
 
 if (NOT BLT_LOADED)
   if (DEFINED BLT_SOURCE_DIR)
