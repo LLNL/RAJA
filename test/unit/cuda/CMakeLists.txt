@@ -21,13 +21,13 @@ raja_add_test(
   NAME test-cuda-reduce-loc
   SOURCES test-reduce-loc.cpp)
 
-#raja_add_test(
-#  NAME test-cuda-reduce-tupleloc
-#  SOURCES test-reduce-tupleloc.cpp)
+raja_add_test(
+  NAME test-cuda-reduce-tupleloc
+  SOURCES test-reduce-tupleloc.cpp)
 
-#raja_add_test(
-#  NAME test-cuda-reduce-randloc
-#  SOURCES test-reduce-randloc.cpp)
+raja_add_test(
+  NAME test-cuda-reduce-randloc
+  SOURCES test-reduce-randloc.cpp)
 
 raja_add_test(
   NAME test-cuda-reduce-max
