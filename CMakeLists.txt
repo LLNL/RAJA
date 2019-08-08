@@ -38,11 +38,11 @@ project(RAJA LANGUAGES CXX C
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
-set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
-set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
-set(ENABLE_COPY_HEADERS Off CACHE Bool "")
-set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
-set(ENABLE_GTEST_DEATH_TESTS On CACHE Bool "Enable tests asserting failure.")
+set(ENABLE_OPENMP On CACHE BOOL "Build OpenMP support")
+set(ENABLE_CUDA Off CACHE BOOL "Build CUDA support")
+set(ENABLE_COPY_HEADERS Off CACHE BOOL "")
+set(ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
+set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
@@ -66,11 +66,7 @@ option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
-if (ENABLE_CUDA)
-  cmake_minimum_required(VERSION 3.9)
-else ()
-  cmake_minimum_required(VERSION 3.8.2)
-endif ()
+cmake_minimum_required(VERSION 3.9)
 
 if (NOT BLT_LOADED)
   if (DEFINED BLT_SOURCE_DIR)
