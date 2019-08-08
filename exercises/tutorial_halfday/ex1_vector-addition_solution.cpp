@@ -160,7 +160,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   checkResult(c, c_ref, N);
-//printArray(c, N); 
+//printArray(c, N);
 
 #endif
 
@@ -174,7 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  std::cout << "\n Running RAJA OpenMP multthreaded vector addition...\n";
+  std::cout << "\n Running RAJA OpenMP multithreaded vector addition...\n";
 
   using EXEC_POL4 = RAJA::omp_parallel_for_exec;
 
