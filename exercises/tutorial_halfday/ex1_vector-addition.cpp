@@ -55,6 +55,18 @@ void printArray(int* v, int len);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
+  RAJA::Layout<2> layout_a(3, 5);
+
+  int i = 0;
+  int j = 0;
+
+  layout_a.toIndices(12, i, j);
+  std::cout << "\n12 : (i, j) = " << i << " , " << j << "\n";
+
+  layout_a.toIndices(20, i, j);
+  std::cout << "\n20 : (i, j) = " << i << " , " << j << "\n";
+
+
   std::cout << "\n\nExercise #1: RAJA Vector Addition...\n";
 
 //
@@ -103,8 +115,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
-  ///           method and RAJA::seq_exec execution policy type.
+  ///           method and RAJA::seq_exec execution policy type. 
   ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
+
+  using EXEC_POL1 = RAJA::seq_exec;
+
+  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
+  });
 
   checkResult(c, c_ref, N);
 //printArray(c, N);

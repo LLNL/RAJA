@@ -94,9 +94,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  using EXEC_POL1 = RAJA::seq_exec;
-
   std::cout << "\n Running RAJA sequential vector addition...\n";
+
+  using EXEC_POL1 = RAJA::seq_exec;
 
   RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
@@ -113,9 +113,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  using EXEC_POL2 = RAJA::simd_exec;
-
   std::cout << "\n Running RAJA SIMD vector addition...\n";
+
+  using EXEC_POL2 = RAJA::simd_exec;
 
   RAJA::forall< EXEC_POL2 >(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
@@ -132,9 +132,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  using EXEC_POL3 = RAJA::loop_exec;
-
   std::cout << "\n Running RAJA loop-exec vector addition...\n";
+
+  using EXEC_POL3 = RAJA::loop_exec;
 
   RAJA::forall< EXEC_POL3 >(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i];
@@ -174,9 +174,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  using EXEC_POL4 = RAJA::omp_parallel_for_exec;
-
   std::cout << "\n Running RAJA OpenMP multthreaded vector addition...\n";
+
+  using EXEC_POL4 = RAJA::omp_parallel_for_exec;
 
   RAJA::forall< EXEC_POL4 >(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
@@ -195,9 +195,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  using EXEC_POL5 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
-
   std::cout << "\n Running RAJA CUDA vector addition...\n";
+
+  using EXEC_POL5 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 
   RAJA::forall< EXEC_POL5 >(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) {
     c[i] = a[i] + b[i];
