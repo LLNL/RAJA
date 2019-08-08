@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0048 NEW)
 
 # Set version number
