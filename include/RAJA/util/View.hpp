@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_VIEW_HPP
@@ -29,7 +21,9 @@
 #include <type_traits>
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/pattern/atomic.hpp"
+
 #include "RAJA/util/Layout.hpp"
 
 namespace RAJA
@@ -43,11 +37,8 @@ struct View {
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = typename std::remove_const<value_type>::type;
-  using nc_pointer_type = typename std::add_pointer<
-                              typename std::remove_const<
-                                  typename std::remove_pointer<pointer_type>::type
-                              >::type
-                          >::type;
+  using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
+      typename std::remove_pointer<pointer_type>::type>::type>::type;
   using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
 
   layout_type const layout;
@@ -64,10 +55,10 @@ struct View {
   {
   }
 
-  //We found the compiler-generated copy constructor does not actually copy-construct
-  //the object on the device in certain nvcc versions. 
-  //By explicitly defining the copy constructor we are able ensure proper behavior.
-  //Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
+  // We found the compiler-generated copy constructor does not actually
+  // copy-construct the object on the device in certain nvcc versions. By
+  // explicitly defining the copy constructor we are able ensure proper
+  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
   RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
       : layout(V.layout), data(V.data)
   {
@@ -75,7 +66,7 @@ struct View {
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
-          typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
+      typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
       : layout(rhs.layout), data(rhs.data)
   {
   }
@@ -87,9 +78,8 @@ struct View {
   template <typename... Args>
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
-    auto idx = convertIndex<Index_type>(layout(args...));
-    auto &value = data[idx];
-    return value;
+    auto idx = stripIndexType(layout(args...));
+    return data[idx];
   }
 };
 
@@ -119,7 +109,7 @@ struct TypedViewBase {
 
   RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
   {
-    return base_.operator()(convertIndex<Index_type>(args)...);
+    return base_.operator()(stripIndexType(args)...);
   }
 };
 
@@ -127,12 +117,12 @@ template <typename ValueType, typename LayoutType, typename... IndexTypes>
 using TypedView =
     TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
 
-template <typename ViewType, typename AtomicPolicy = RAJA::atomic::auto_atomic>
+template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::atomic::AtomicRef<value_type, AtomicPolicy>;
+  using atomic_type = RAJA::AtomicRef<value_type, AtomicPolicy>;
 
   base_type base_;
 
@@ -154,12 +144,11 @@ struct AtomicViewWrapper {
  * for performance
  */
 template <typename ViewType>
-struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
+struct AtomicViewWrapper<ViewType, RAJA::seq_atomic> {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
   using value_type = typename base_type::value_type;
-  using atomic_type =
-      RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+  using atomic_type = RAJA::AtomicRef<value_type, RAJA::seq_atomic>;
 
   base_type base_;
 

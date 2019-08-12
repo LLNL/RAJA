@@ -9,31 +9,23 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
 #include <iostream>
+
+#include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
+
+#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
 namespace RAJA
 {
@@ -53,11 +45,13 @@ namespace RAJA
  */
 #define PROFITABLE_ENTITY_THRESHOLD_BLOCK 100
 
-void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
-                                Index_type fastDim,
-                                Index_type midDim,
-                                Index_type slowDim)
+void buildLockFreeBlockIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment,
+                        RAJA::ListSegment,
+                        RAJA::RangeStrideSegment>& iset,
+    Index_type fastDim,
+    Index_type midDim,
+    Index_type slowDim)
 {
   int numThreads = getMaxOMPThreadsCPU();
 
@@ -116,86 +110,85 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
     }
   } else { /* 3d mesh */
 
-// this requires dependence graph - commenting out for now
+    // this requires dependence graph - commenting out for now
 
     /* Need at least 3 full planes per thread */
     /* and at least one segment per plane */
-/*
-    const int segmentsPerThread = 2;
-    int rowsPerSegment = slowDim / (segmentsPerThread * numThreads);
-    if (rowsPerSegment == 0) {
-      // printf("%d %d\n", 0, fastDim*midDim*slowDim) ;
-      iset.push_back(RAJA::RangeSegment(0, fastDim * midDim * slowDim));
-      printf(
-          "Failure to create lockfree indexset - not enough rows per "
-          "segment\n");
-      exit(-1);
-    } else {
-*/
-      /* This just sets up the schedule -- a truly safe */
-      /* execution of this schedule would require a check */
-      /* for completion of dependent threads before execution. */
+    /*
+        const int segmentsPerThread = 2;
+        int rowsPerSegment = slowDim / (segmentsPerThread * numThreads);
+        if (rowsPerSegment == 0) {
+          // printf("%d %d\n", 0, fastDim*midDim*slowDim) ;
+          iset.push_back(RAJA::RangeSegment(0, fastDim * midDim * slowDim));
+          printf(
+              "Failure to create lockfree indexset - not enough rows per "
+              "segment\n");
+          exit(-1);
+        } else {
+    */
+    /* This just sets up the schedule -- a truly safe */
+    /* execution of this schedule would require a check */
+    /* for completion of dependent threads before execution. */
 
-      /* We might want to force one thread if the */
-      /* profitability ratio is really bad, but for */
-      /* now use the brain dead approach. */
-/*
-      for (int lane = 0; lane < segmentsPerThread; ++lane) {
-        for (int i = 0; i < numThreads; ++i) {
-          Index_type startPlane = i * slowDim / numThreads;
-          Index_type endPlane = (i + 1) * slowDim / numThreads;
-          Index_type start = startPlane * fastDim * midDim;
-          Index_type end = endPlane * fastDim * midDim;
-          Index_type len = end - start;
-          // printf("%d %d\n", start + (lane  )*len/segmentsPerThread,
-          //                   start + (lane+1)*len/segmentsPerThread  );
-          iset.push_back(
-              RAJA::RangeSegment(start + (lane)*len / segmentsPerThread,
-                                 start + (lane + 1) * len / segmentsPerThread));
-        }
-      }
-*/
-      /* Allocate dependency graph structures for index set segments */
-/*
-      iset.initDependencyGraph();
-
-      if (segmentsPerThread == 1) {
-*/
-        /* This dependency graph should impose serialization */
-/*
-        for (int i = 0; i < numThreads; ++i) {
-          RAJA::DepGraphNode* task = iset.getSegmentInfo(i)->getDepGraphNode();
-          task->semaphoreValue() = ((i == 0) ? 0 : 1);
-          task->semaphoreReloadValue() = ((i == 0) ? 0 : 1);
-          if (i != numThreads - 1) {
-            task->numDepTasks() = 1;
-            task->depTaskNum(0) = i + 1;
+    /* We might want to force one thread if the */
+    /* profitability ratio is really bad, but for */
+    /* now use the brain dead approach. */
+    /*
+          for (int lane = 0; lane < segmentsPerThread; ++lane) {
+            for (int i = 0; i < numThreads; ++i) {
+              Index_type startPlane = i * slowDim / numThreads;
+              Index_type endPlane = (i + 1) * slowDim / numThreads;
+              Index_type start = startPlane * fastDim * midDim;
+              Index_type end = endPlane * fastDim * midDim;
+              Index_type len = end - start;
+              // printf("%d %d\n", start + (lane  )*len/segmentsPerThread,
+              //                   start + (lane+1)*len/segmentsPerThread  );
+              iset.push_back(
+                  RAJA::RangeSegment(start + (lane)*len / segmentsPerThread,
+                                     start + (lane + 1) * len /
+       segmentsPerThread));
+            }
           }
-        }
-      } else {
-*/
-        /* This dependency graph relies on omp schedule(static, 1) */
-        /* but allows a minimumal set of dependent tasks be used */
-/*
-        int borderSeg = numThreads * (segmentsPerThread - 1);
-        for (int i = 1; i < numThreads; ++i) {
-          RAJA::DepGraphNode* task = iset.getSegmentInfo(i)->getDepGraphNode();
-          task->semaphoreReloadValue() = 1;
-          task->numDepTasks() = 1;
-          task->depTaskNum(0) = borderSeg + i - 1;
+    */
+    /* Allocate dependency graph structures for index set segments */
+    /*
+          iset.initDependencyGraph();
 
-          RAJA::DepGraphNode* border_task =
-              iset.getSegmentInfo(borderSeg + i - 1)->getDepGraphNode();
-          border_task->semaphoreValue() = 1;
-          border_task->semaphoreReloadValue() = 1;
-          border_task->numDepTasks() = 1;
-          border_task->depTaskNum(0) = i;
-        }
-      }
+          if (segmentsPerThread == 1) {
+    */
+    /* This dependency graph should impose serialization */
+    /*
+            for (int i = 0; i < numThreads; ++i) {
+              RAJA::DepGraphNode* task =
+       iset.getSegmentInfo(i)->getDepGraphNode(); task->semaphoreValue() = ((i
+       == 0) ? 0 : 1); task->semaphoreReloadValue() = ((i == 0) ? 0 : 1); if (i
+       != numThreads - 1) { task->numDepTasks() = 1; task->depTaskNum(0) = i +
+       1;
+              }
+            }
+          } else {
+    */
+    /* This dependency graph relies on omp schedule(static, 1) */
+    /* but allows a minimumal set of dependent tasks be used */
+    /*
+            int borderSeg = numThreads * (segmentsPerThread - 1);
+            for (int i = 1; i < numThreads; ++i) {
+              RAJA::DepGraphNode* task =
+       iset.getSegmentInfo(i)->getDepGraphNode(); task->semaphoreReloadValue() =
+       1; task->numDepTasks() = 1; task->depTaskNum(0) = borderSeg + i - 1;
 
-      iset.finalizeDependencyGraph();
-    }
-*/
+              RAJA::DepGraphNode* border_task =
+                  iset.getSegmentInfo(borderSeg + i - 1)->getDepGraphNode();
+              border_task->semaphoreValue() = 1;
+              border_task->semaphoreReloadValue() = 1;
+              border_task->numDepTasks() = 1;
+              border_task->depTaskNum(0) = i;
+            }
+          }
+
+          iset.finalizeDependencyGraph();
+        }
+    */
   }
 
   /* Print the dependency schedule for segments */
@@ -213,14 +206,16 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
-                                Index_type const* domainToRange,
-                                int numEntity,
-                                int numRangePerDomain,
-                                int numEntityRange,
-                                Index_type* elemPermutation,
-                                Index_type* ielemPermutation)
+void buildLockFreeColorIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment,
+                        RAJA::ListSegment,
+                        RAJA::RangeStrideSegment>& iset,
+    Index_type const* domainToRange,
+    int numEntity,
+    int numRangePerDomain,
+    int numEntityRange,
+    Index_type* elemPermutation,
+    Index_type* ielemPermutation)
 {
   bool done = false;
   bool* isMarked = new bool[numEntity];
@@ -242,8 +237,8 @@ void buildLockFreeColorIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
     for (int j = 0; j < numRangePerDomain; ++j) {
       Index_type id = domainToRange[i * numRangePerDomain + j];
       Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
-      if (idx > numEntityRange * numRangePerDomain
-          || rangeToDomainCount[id] > numRangePerDomain) {
+      if (idx > numEntityRange * numRangePerDomain ||
+          rangeToDomainCount[id] > numRangePerDomain) {
         printf("foiled!\n");
         exit(-1);
       }
@@ -342,4 +337,4 @@ void buildLockFreeColorIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment,
   delete[] workset;
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA

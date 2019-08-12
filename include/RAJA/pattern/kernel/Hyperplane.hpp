@@ -9,32 +9,25 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_pattern_kernel_Hyperplane_HPP
 #define RAJA_pattern_kernel_Hyperplane_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel/For.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "camp/camp.hpp"
 
 #include <iostream>
 #include <type_traits>
+
+#include "camp/camp.hpp"
+
+#include "RAJA/pattern/kernel/For.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -43,7 +36,7 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that performs hyperplane iteration over multiple
+ * A RAJA::kernel statement that performs hyperplane iteration over multiple
  * indices.
  *
  * Given segments S0, S1, ...
@@ -89,7 +82,7 @@ template <camp::idx_t HpArgumentId,
           typename ExecPolicy,
           typename... EnclosedStmts>
 struct Hyperplane
-    : public internal::Statement<RAJA::ExecPolicy<HpExecPolicy, ExecPolicy>,
+    : public internal::Statement<ExecPolicy,
                                  EnclosedStmts...> {
 };
 
@@ -128,21 +121,19 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
-    using kernel_policy =
-        statement::Collapse<ExecPolicy,
-                            ArgList<Args...>,
-                            HyperplaneInner<HpArgumentId,
-                                            ArgList<Args...>,
-                                            EnclosedStmts...>>;
+    using kernel_policy = statement::Collapse<
+        ExecPolicy,
+        ArgList<Args...>,
+        HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
     ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);
 
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    idx_t hp_len = segment_length<HpArgumentId>(data)
-                   + VarOps::foldl(RAJA::operators::plus<idx_t>(),
-                                   segment_length<Args>(data)...);
+    idx_t hp_len = segment_length<HpArgumentId>(data) +
+                   VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                                 segment_length<Args>(data)...);
 
     /* Execute the outer loop over hyperplanes
      *
@@ -160,9 +151,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 template <camp::idx_t HpArgumentId,
           camp::idx_t... Args,
           typename... EnclosedStmts>
-struct StatementExecutor<HyperplaneInner<HpArgumentId,
-                                         ArgList<Args...>,
-                                         EnclosedStmts...>> {
+struct StatementExecutor<
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>> {
 
 
   template <typename Data>

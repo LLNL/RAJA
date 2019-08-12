@@ -8,27 +8,17 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #ifndef RAJA_policy_sequential_kernel_Collapse_HPP
 #define RAJA_policy_sequential_kernel_Collapse_HPP
 
-#include <RAJA/pattern/kernel.hpp>
+#include "RAJA/pattern/kernel.hpp"
 
 namespace RAJA
 {
@@ -41,8 +31,8 @@ namespace internal
 // Termination case for seq_exec collapsed loops
 //
 template <typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Collapse<seq_exec, ArgList<>, EnclosedStmts...>> {
+struct StatementExecutor<
+    statement::Collapse<seq_exec, ArgList<>, EnclosedStmts...>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -66,10 +56,8 @@ struct StatementExecutor<statement::Collapse<seq_exec,
   static RAJA_INLINE void exec(Data &data)
   {
     // compute next-most inner loop Executor
-    using next_loop_t =
-        StatementExecutor<statement::Collapse<seq_exec,
-                                              ArgList<ArgRest...>,
-                                              EnclosedStmts...>>;
+    using next_loop_t = StatementExecutor<
+        statement::Collapse<seq_exec, ArgList<ArgRest...>, EnclosedStmts...>>;
 
     auto len0 = segment_length<Arg0>(data);
 

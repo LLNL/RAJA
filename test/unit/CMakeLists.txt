@@ -1,26 +1,21 @@
 ###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
-
-raja_add_test(
-  NAME camp_tuple
-  SOURCES camp_tuple.cpp)
 
 raja_add_test(
   NAME test-atomic
   SOURCES test-atomic.cpp)
+
+raja_add_test(
+  NAME test-atomic-ref
+  SOURCES test-atomic-ref.cpp)
+
+raja_add_test(
+  NAME test-atomic-ref-auto
+  SOURCES test-atomic-ref-auto.cpp)
 
 raja_add_test(
   NAME test-region
@@ -59,8 +54,8 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
-  NAME kernel
-  SOURCES kernel.cpp)
+  NAME test-kernel
+  SOURCES test-kernel.cpp)
 
 raja_add_test(
   NAME test-multipolicy
@@ -69,6 +64,14 @@ raja_add_test(
 raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
+
+raja_add_test(
+  NAME test-sharedmem
+  SOURCES test-sharedmem.cpp)
+
+raja_add_test(
+  NAME test-kernel-lambda-args
+  SOURCES test-kernel-lambda-args.cpp)
 
 add_subdirectory(cpu)
 

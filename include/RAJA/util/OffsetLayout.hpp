@@ -3,39 +3,35 @@
  *
  * \file
  *
- * \brief   RAJA header file defining offset layout operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with offset indices
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_OFFSETLAYOUT_HPP
 #define RAJA_OFFSETLAYOUT_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/index/IndexValue.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/Permutations.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
 
 #include <array>
 #include <limits>
+
 #include "camp/camp.hpp"
+
+#include "RAJA/index/IndexValue.hpp"
+
+#include "RAJA/internal/LegacyCompatibility.hpp"
+
+#include "RAJA/util/Permutations.hpp"
+#include "RAJA/util/PermutedLayout.hpp"
 
 namespace RAJA
 {
@@ -93,7 +89,7 @@ private:
   }
 };
 
-}  // end internal namespace
+}  // namespace internal
 
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout

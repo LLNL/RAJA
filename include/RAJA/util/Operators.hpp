@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -12,18 +11,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_operators_HPP
@@ -31,18 +22,16 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
-#include "RAJA/util/concepts.hpp"
-
 #include <stdint.h>
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 #include <limits>
 #endif
+
+#include "RAJA/util/concepts.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -73,7 +62,7 @@ template <typename Arg1, typename Arg2>
 struct comparison_function : public binary_function<Arg1, Arg2, bool> {
 };
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
 namespace types
 {
@@ -170,7 +159,7 @@ template <typename T>
 struct largest<T, false, false, true, true> {
   using type = double;
 };
-}
+}  // namespace detail
 
 /*!
         \brief type lookup to return largest similar type. If running on GPU,
@@ -207,7 +196,7 @@ template <typename T, typename U>
 struct larger_of<T, U, false> {
   using type = U;
 };
-}
+}  // namespace detail
 
 template <typename T, typename U>
 struct larger_of {
@@ -215,7 +204,7 @@ struct larger_of {
       larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
 };
 
-}  // closing brace for types namespace
+}  // namespace types
 
 namespace detail
 {
@@ -276,21 +265,20 @@ struct floating_point_limits<long double> {
 }  // end namespace detail
 
 template <typename T>
-struct limits
-    : public std::
-          conditional<std::is_integral<T>::value,
-                      typename std::conditional<std::is_unsigned<T>::value,
-                                                detail::unsigned_limits<T>,
-                                                detail::signed_limits<T>>::type,
-                      detail::floating_point_limits<T>>::type {
+struct limits : public std::conditional<
+                    std::is_integral<T>::value,
+                    typename std::conditional<std::is_unsigned<T>::value,
+                                              detail::unsigned_limits<T>,
+                                              detail::signed_limits<T>>::type,
+                    detail::floating_point_limits<T>>::type {
 };
 
-#ifdef RAJA_CHECK_LIMITS
+#if defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {
-  return limits<T>::min() == std::numeric_limits<T>::min()
-         && limits<T>::max() == std::numeric_limits<T>::max();
+  return limits<T>::min() == std::numeric_limits<T>::min() &&
+         limits<T>::max() == std::numeric_limits<T>::max();
 }
 static_assert(check<char>(), "limits for char is broken");
 static_assert(check<unsigned char>(), "limits for unsigned char is broken");
@@ -422,14 +410,19 @@ struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
 };
 
 // comparison
-
+/*!
+ Checks if the candidate (rhs) value is strictly less than
+ the current value (lhs); if so the candidate is returned.
+ When this operator is used to cycle through an array
+ this ensures that the location of the first min/max is kept.
+*/
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag {
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    return (lhs < rhs) ? lhs : rhs;
+    return (rhs < lhs) ? rhs : lhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
   {
@@ -552,7 +545,7 @@ struct safe_plus
                       typename types::larger_of<Arg1, Arg2>::type>::type> {
 };
 
-}  // closing brace for operators namespace
+}  // namespace operators
 
 namespace concepts
 {
@@ -579,16 +572,16 @@ using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T>
 using is_unary_function = requires_<UnaryFunction, Ret, T>;
-}  // closing brace for detail
+}  // namespace detail
 
-}  // closing brace for concepts
+}  // namespace concepts
 
 namespace type_traits
 {
 DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
-}  // closing type_traits
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

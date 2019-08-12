@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -22,14 +14,14 @@
 
 // Tag type to dispatch to test bodies based on policy selected by multipolicy
 
-//struct mp_test_body;
+// struct mp_test_body;
 
 namespace test_policy
 {
 template <int i>
 struct mp_tag {
 };
-}
+}  // namespace test_policy
 
 // This functor implements different test bodies depending on the mock "policy"
 // selected by multipolicy, asserting the ranges of values that are selected in
@@ -58,7 +50,7 @@ void forall_impl(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
 {
   body(p, iter.size());
 }
-}
+}  // namespace test_policy
 
 using test_policy::mp_tag;
 

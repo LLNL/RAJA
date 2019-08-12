@@ -9,25 +9,18 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
-#include <cstddef>
 #include "RAJA/util/concepts.hpp"
+
+#include <cstddef>
 
 namespace RAJA
 {
@@ -43,7 +36,14 @@ enum class Policy {
   tbb
 };
 
-enum class Pattern { undefined, forall, region, reduce, taskgraph, synchronize };
+enum class Pattern {
+  undefined,
+  forall,
+  region,
+  reduce,
+  taskgraph,
+  synchronize
+};
 
 enum class Launch { undefined, sync, async };
 
@@ -113,7 +113,7 @@ namespace reduce
 struct ordered {
 };
 
-}  // end namespace wrapper
+}  // namespace reduce
 
 
 template <Policy Pol, Pattern Pat, typename... Args>

@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_LEGACY_COMPATIBILITY_HPP
@@ -28,21 +20,21 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <type_traits>
+#include <utility>
 
 #include "camp/camp.hpp"
+
+#include "RAJA/util/macros.hpp"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(__cplusplus >= 201103L,
               "C++ standards below 2011 are not "
               "supported" RAJA_STRINGIFY_HELPER(__cplusplus));
 #endif
-
-#include <cstdint>
-#include <functional>
-#include <iostream>
-#include <type_traits>
-#include <utility>
 
 #if __cplusplus > 201400L
 #define RAJA_CXX14_CONSTEXPR constexpr
@@ -64,13 +56,13 @@ static_assert(__cplusplus >= 201103L,
 #include <tuple>
 namespace VarOps
 {
-using std::tuple;
-using std::tuple_element;
-using std::tuple_cat;
 using std::get;
-using std::tuple_size;
 using std::make_tuple;
-}
+using std::tuple;
+using std::tuple_cat;
+using std::tuple_element;
+using std::tuple_size;
+}  // namespace VarOps
 // #endif
 
 namespace VarOps
@@ -100,12 +92,11 @@ template <typename Op,
           typename Arg3,
           typename... Rest>
 struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret =
-      typename foldl_impl<Op,
-                          typename std::result_of<Op(
-                              typename std::result_of<Op(Arg1, Arg2)>::type,
-                              Arg3)>::type,
-                          Rest...>::Ret;
+  using Ret = typename foldl_impl<
+      Op,
+      typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
+                                 Arg3)>::type,
+      Rest...>::Ret;
 };
 
 template <typename Op, typename Arg1>
@@ -319,6 +310,6 @@ struct get_arg_at<0> {
     return camp::forward<First>(first);
   }
 };
-}
+}  // namespace VarOps
 
 #endif

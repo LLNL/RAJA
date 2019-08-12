@@ -12,18 +12,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_forall_tbb_HPP
@@ -32,6 +24,8 @@
 #include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
+
+#include <tbb/tbb.h>
 
 #include "RAJA/util/types.hpp"
 
@@ -44,8 +38,6 @@
 #include "RAJA/internal/fault_tolerance.hpp"
 
 #include "RAJA/pattern/forall.hpp"
-
-#include <tbb/tbb.h>
 
 
 namespace RAJA
@@ -136,10 +128,10 @@ RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
                       tbb_static_partitioner{});
 }
 
-}  // closing brace for tbb namespace
-}  // closing brace for policy namespace
+}  // namespace tbb
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_TBB)
 

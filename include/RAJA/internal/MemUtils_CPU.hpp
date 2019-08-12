@@ -10,18 +10,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_MemUtils_CPU_HPP
@@ -29,14 +21,14 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
 
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
-    || defined(__MINGW32__) || defined(__BORLANDC__)
+#include "RAJA/util/types.hpp"
+
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || \
+    defined(__MINGW32__) || defined(__BORLANDC__)
 #define RAJA_PLATFORM_WINDOWS
 #include <malloc.h>
 #endif
@@ -63,8 +55,8 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #else
   char *mem = (char *)malloc(size + alignment + sizeof(void *));
   if (nullptr == mem) return nullptr;
-  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *))
-                         & ~(alignment - 1));
+  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *)) &
+                         ~(alignment - 1));
   // Store the original address one position behind what we give the user.
   ptr[-1] = mem;
   return ptr;
@@ -100,6 +92,6 @@ inline void free_aligned(void* ptr)
 #endif
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

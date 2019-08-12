@@ -11,31 +11,24 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_Types_HPP
 #define RAJA_Types_HPP
 
 #include "RAJA/config.hpp"
-#include "camp/helpers.hpp"
 
 #include <cstddef>
 
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
+
+#include "camp/helpers.hpp"
 
 namespace RAJA
 {
@@ -308,9 +301,9 @@ public:
   ///
   const Real_type* get() const { return dptr; }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -422,9 +415,9 @@ public:
     return ConstRestrictAlignedRealPtr(dptr);
   }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -723,6 +716,6 @@ typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
 
 #endif
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

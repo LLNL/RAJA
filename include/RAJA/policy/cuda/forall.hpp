@@ -13,18 +13,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_forall_cuda_HPP
@@ -34,9 +26,11 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include <algorithm>
+
 #include "RAJA/pattern/forall.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
@@ -47,13 +41,12 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
-#include <algorithm>
-
 namespace RAJA
 {
 
 namespace policy
 {
+
 namespace cuda
 {
 
@@ -68,13 +61,13 @@ namespace impl
  ******************************************************************************
  */
 RAJA_INLINE
-dim3 getGridDim(size_t len, dim3 blockDim)
+cuda_dim_t getGridDim(cuda_dim_member_t len, cuda_dim_t blockDim)
 {
-  size_t block_size = blockDim.x * blockDim.y * blockDim.z;
+  cuda_dim_member_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
-  size_t gridSize = (len + block_size - 1) / block_size;
+  cuda_dim_member_t gridSize = (len + block_size - 1) / block_size;
 
-  return gridSize;
+  return {gridSize, 1, 1};
 }
 
 /*!
@@ -107,9 +100,9 @@ __device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
 {
   unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-                          + (threadIdx.z * (blockDim.x * blockDim.y))
-                          + (threadIdx.y * blockDim.x) + threadIdx.x;
+  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) +
+                          (threadIdx.z * (blockDim.x * blockDim.y)) +
+                          (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
 __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
@@ -152,7 +145,7 @@ __launch_bounds__(BlockSize, 1) __global__
   }
 }
 
-}  // end impl namespace
+}  // namespace impl
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -167,38 +160,58 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using LOOP_BODY = camp::decay<LoopBody>;
+  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-  auto len = std::distance(begin, end);
+  auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
+  //
+  // Compute the requested iteration space size
+  //
+  Iterator begin = std::begin(iter);
+  Iterator end = std::end(iter);
+  IndexType len = std::distance(begin, end);
+
+  // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = impl::getGridDim(len, BlockSize);
+    //
+    // Compute the number of blocks
+    //
+    cuda_dim_t blockSize{BlockSize, 1, 1};
+    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
 
     RAJA_FT_BEGIN;
 
+    //
+    // Setup shared memory buffers
+    //
+    size_t shmem = 0;
     cudaStream_t stream = 0;
 
-    size_t shmem = 0;
 
-//  printf("gridsize = (%d,%d), blocksize = %d\n",
-//         (int)gridSize.x,
-//         (int)gridSize.y,
-//         (int)BlockSize);
+    //  printf("gridsize = (%d,%d), blocksize = %d\n",
+    //         (int)gridSize.x,
+    //         (int)gridSize.y,
+    //         (int)blockSize.x);
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
-        RAJA::cuda::make_launch_body(gridSize,
-                                     BlockSize,
-                                     shmem,
-                                     stream,
-                                     std::forward<LoopBody>(loop_body)),
-        std::move(begin),
-        len);
-    RAJA::cuda::peekAtLastError();
+    {
+      //
+      // Privatize the loop_body, using make_launch_body to setup reductions
+      //
+      LOOP_BODY body = RAJA::cuda::make_launch_body(
+          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
-    RAJA::cuda::launch(stream);
-    if (!Async) RAJA::cuda::synchronize(stream);
+
+      //
+      // Launch the kernels
+      //
+      void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+    }
+
+    if (!Async) { RAJA::cuda::synchronize(stream); }
 
     RAJA_FT_END;
   }
@@ -242,11 +255,11 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
   if (!Async) RAJA::cuda::synchronize();
 }
 
-}  // closing brace for cuda namespace
+}  // namespace cuda
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 

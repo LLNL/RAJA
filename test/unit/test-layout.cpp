@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -168,6 +160,8 @@ TEST(OffsetLayoutTest, View)
 
   ASSERT_EQ(data[0], view(1));
   ASSERT_EQ(data[9], view(10));
+
+  delete[] data;
 }
 
 
@@ -237,7 +231,8 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_layout({{3, 5}},
+                                 RAJA::as_array<RAJA::PERM_JI>::get());
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -371,7 +366,8 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
 TEST(LayoutTest, 2D_StrideOne)
 {
   typedef RAJA::Layout<2> my_layout;
-  typedef RAJA::Layout<2, ptrdiff_t, 0> my_layout_s1; // first index is stride-1
+  typedef RAJA::Layout<2, ptrdiff_t, 0>
+      my_layout_s1;  // first index is stride-1
 
   /*
    * Construct a 2D layout:
@@ -383,7 +379,8 @@ TEST(LayoutTest, 2D_StrideOne)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_layout({{3, 5}},
+                                 RAJA::as_array<RAJA::PERM_JI>::get());
 
 
   /*
@@ -392,12 +389,78 @@ TEST(LayoutTest, 2D_StrideOne)
   const my_layout_s1 layout_s1 = layout;
 
 
-
   // Check that we get the same layout
-  for (int i = 0;i < 3;++ i){
+  for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 15; ++j) {
 
-      ASSERT_EQ(layout(i,j), layout_s1(i,j));
+      ASSERT_EQ(layout(i, j), layout_s1(i, j));
     }
   }
 }
+
+TEST(LayoutTest, 2D_StaticLayout)
+{
+  RAJA::Layout<2> dynamic_layout(7, 5);
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ,7,5>;
+  
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 5; ++j) {
+
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+    }
+  }
+}
+
+TEST(LayoutTest, 2D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 5}},
+                               RAJA::as_array<RAJA::PERM_JI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JI, 7,5>;
+  
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+    }
+  }
+}
+
+TEST(LayoutTest, 3D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 13, 5}},
+                               RAJA::as_array<RAJA::PERM_JKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JKI, 7,13,5>;
+
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 13; ++j) {
+      for (int k = 0; k < 5; ++k) {
+        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
+      }
+    }
+  }
+}
+
+
+TEST(LayoutTest, 4D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 13, 5, 17}},
+                               RAJA::as_array<RAJA::PERM_LJKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_LJKI, 7,13,5,17>;
+
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 13; ++j) {
+      for (int k = 0; k < 5; ++k) {
+        for (int l = 0; l < 5; ++l) {
+          ASSERT_EQ(dynamic_layout(i, j, k, l), static_layout::s_oper(i,j,k,l));
+        } 
+      }
+    }
+  }
+}
+

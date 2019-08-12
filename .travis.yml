@@ -25,6 +25,11 @@ matrix:
     - COMPILER=g++
     - IMG=gcc7
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+  - compiler: gcc8
+    env:
+    - COMPILER=g++
+    - IMG=gcc8
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
   - compiler: clang6
     env:
     - COMPILER=clang++
@@ -35,15 +40,10 @@ matrix:
     - COMPILER=clang++
     - IMG=clang5
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang4
-    env:
-    - COMPILER=clang++
-    - IMG=clang4
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: intel-16
+  - compiler: intel18
     env:
     - COMPILER=/opt/intel/bin/icpc
-    - IMG=icc16
+    - IMG=icc18
     - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: nvcc
     env:
@@ -55,17 +55,25 @@ matrix:
     env:
     - COMPILER=g++
     - IMG=gcc49
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
-  - compiler: clang-4-debug
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_COVERAGE=On -DENABLE_TBB=On"
+  - compiler: clang-6-debug
     env:
     - COMPILER=clang++
-    - IMG=clang4
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
+    - IMG=clang6
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address"
+    - ASAN_OPTIONS=detect_leaks=0
+    - "LSAN_OPTIONS=verbosity=1:log_threads=1"
   - compiler: nvcc-debug
     env:
     - COMPILER=g++
     - IMG=nvcc9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_TBB=On"
+    - DO_TEST=no
+  - compiler: clang-cuda
+    env:
+    - COMPILER=clang++
+    - IMG=clang-cuda
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60"
     - DO_TEST=no
 
 before_install: # don't try to build and run intel when it's impossible
@@ -73,12 +81,16 @@ before_install: # don't try to build and run intel when it's impossible
   if [[ "x$encrypted_cd1f6303bca7_key" != "x" ]] ; then
     openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d
   else
-    export DO_TEST=no DO_BUILD=no
+    if [[ $COMPILER == *"icpc"* ]] ; then
+      export DO_TEST=no DO_BUILD=no
+    fi
   fi
+- export LSAN_OPTIONS
+- export ASAN_OPTIONS
 
-script: 
+script:
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
-- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
+- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
 after_success:
-- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/0b376529f626b50b7d4a9fb734e0e50d28b9b91e/codecov) -a "-f" >& /dev/null; fi

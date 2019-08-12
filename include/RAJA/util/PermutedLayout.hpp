@@ -3,35 +3,30 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout permutation operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with permuted stride orderings
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_PERMUTEDLAYOUT_HPP
 #define RAJA_PERMUTEDLAYOUT_HPP
 
+#include "RAJA/config.hpp"
+
 #include <iostream>
 
-#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
+
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"

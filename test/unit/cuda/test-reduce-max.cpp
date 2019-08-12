@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -28,7 +20,9 @@
 
 using namespace RAJA;
 
-using UnitIndexSet = TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = TypedIndexSet<RAJA::RangeSegment,
+                                   RAJA::ListSegment,
+                                   RAJA::RangeStrideSegment>;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
@@ -76,10 +70,9 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-
-    ReduceMax<cuda_reduce<block_size>, double> dmax0; dmax0.reset(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax2(BIG_VAL);
+    ReduceMax<cuda_reduce, double> dmax0; dmax0.reset(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax2(BIG_VAL);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
@@ -91,18 +84,19 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_HOST_DEVICE(int i) {
-        dmax0.max(dvalue[i]);
-        dmax1.max(2 * dvalue[i]);
-        dmax2.max(dvalue[i]);
-      });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_HOST_DEVICE(int i) {
+                                       dmax0.max(dvalue[i]);
+                                       dmax1.max(2 * dvalue[i]);
+                                       dmax2.max(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
 
-    //Reset values and run again
+    // Reset values and run again
     dmax0.reset(DEFAULT_VAL);
     dmax1.reset(DEFAULT_VAL);
     dmax2.reset(BIG_VAL);
@@ -117,18 +111,18 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
         dcurrentMax = RAJA_MAX(dcurrentMax, droll);
       }
 
-      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
-          dmax0.max(dvalue[i]);
-          dmax1.max(2 * dvalue[i]);
-          dmax2.max(dvalue[i]);
-        });
+      forall<cuda_exec<block_size> >(RangeSegment(0, TEST_VEC_LEN),
+                                     [=] RAJA_DEVICE(int i) {
+                                       dmax0.max(dvalue[i]);
+                                       dmax1.max(2 * dvalue[i]);
+                                       dmax2.max(dvalue[i]);
+                                     });
 
       ASSERT_FLOAT_EQ(dcurrentMax, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax * 2, dmax1.get());
       ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
     }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -156,8 +150,8 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax0(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
 
 
     double droll = dist(mt);
@@ -208,8 +202,8 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
 
     double dcurrentMax = DEFAULT_VAL;
 
-    ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
-    ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax0(DEFAULT_VAL);
+    ReduceMax<cuda_reduce, double> dmax1(DEFAULT_VAL);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0

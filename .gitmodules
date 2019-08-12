@@ -4,3 +4,6 @@
 [submodule "include/cub"]
 	path = tpl/cub
 	url = https://github.com/NVlabs/cub.git
+[submodule "include/camp"]
+	path = tpl/camp
+	url = https://github.com/llnl/camp

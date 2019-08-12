@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -34,15 +26,16 @@ const int N = 32000;
 
 // Unit Test Space Exploration
 
-using ExecTypes = std::tuple<
-    RAJA::seq_exec
-#if defined (RAJA_ENABLE_OPENMP)
-    ,RAJA::omp_parallel_for_exec
+using ExecTypes = std::tuple<RAJA::seq_exec
+#if defined(RAJA_ENABLE_OPENMP)
+                             ,
+                             RAJA::omp_parallel_for_exec
 #endif
-#if defined (RAJA_ENABLE_TBB)
-    ,RAJA::tbb_for_exec
+#if defined(RAJA_ENABLE_TBB)
+                             ,
+                             RAJA::tbb_for_exec
 #endif
->;
+                             >;
 
 using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
                                RAJA::operators::plus<double>,
@@ -223,4 +216,3 @@ REGISTER_TYPED_TEST_CASE_P(Scan,
                            exclusive_inplace_offset);
 
 INSTANTIATE_TYPED_TEST_CASE_P(ScanTests, Scan, CrossTypes);
-

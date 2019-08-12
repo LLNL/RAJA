@@ -1,8 +1,27 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for kernel conditional templates
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_pattern_kernel_Conditional_HPP
 #define RAJA_pattern_kernel_Conditional_HPP
 
 
 #include "RAJA/config.hpp"
+
+#include "RAJA/pattern/kernel/internal.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -14,31 +33,13 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that implements conditional control logic
+ * A RAJA::kernel statement that implements conditional control logic
  *
  */
 template <typename Condition, typename... EnclosedStmts>
 struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 };
 
-
-/*!
- * An expression that returns the value of the specified kernel::forall
- * parameter.
- *
- * This allows run-time values to affect the control logic within
- * kernel::forall policies.
- */
-template <camp::idx_t ParamId>
-struct Param {
-
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
-      -> decltype(camp::get<ParamId>(data.param_tuple))
-  {
-    return camp::get<ParamId>(data.param_tuple);
-  }
-};
 
 /*!
  * An expression that returns a compile time literal value.

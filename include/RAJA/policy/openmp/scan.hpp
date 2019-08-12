@@ -9,35 +9,27 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/config.hpp"
 
 #ifndef RAJA_scan_openmp_HPP
 #define RAJA_scan_openmp_HPP
 
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
-
-#include <omp.h>
+#include "RAJA/config.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <type_traits>
 #include <vector>
+
+#include <omp.h>
+
+#include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 
 namespace RAJA
 {

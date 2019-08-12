@@ -1,8 +1,213 @@
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC)
+[comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: # 
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+RAJA v0.9.0 Release Notes
+=========================
+
+This release contains feature enhancements, one breaking change, and some 
+bug fixes. 
+
+  * Breaking change
+    * The atomic namespace in RAJA has been removed. Now, use atomic operations
+      as RAJA::atomicAdd(), not RAJA::atomic::atomicAdd(), for example. This
+      was done to make atomic usage consistent with other RAJA features, such
+      as reductions, scans, etc.
+
+Other notable changes include:
+
+  * Features
+    * The lambda statement interface has been extended in the RAJA kernel API.
+      Earlier, when multiple lambda expressions were used in a kernel, they
+      were required to all have the same arguments, although not all 
+      arguments had to be used in each lambda expression. Now, lambda 
+      arguments may be specified in the RAJA::statement::Lambda type so 
+      that each lambda expression need only take the arguments it uses.
+      However, the previous usage pattern will continue to be supported.
+      To support the new interface, new statement types have been introduced 
+      to indicate iteration space variables (Segs), local variable/array 
+      parameters (Params), and index offsets (Offsets). The offsets can be used
+      with a For statement as a replacement for the ForICount statement. The
+      new API features are described in the RAJA User Guide.
+    * Minloc and maxloc reductions now support a tuple of index values. So 
+      now if you have a nested loop kernel with i, j, k loops, you can get
+      the 'loc' value out as an i, j, k triple.
+
+  * Bug Fixes:
+    * Small change to make RAJA Views work properly with OpenMP target kernels.
+    * Changes to fix OpenMP target back-end for XL compilers.
+    * Fix build issue with older versions of GNU compiler.
+    * Fixes to resolve issues associated with corner cases in choosing 
+      improper number of threads per block or number of thread blocks for
+      CUDA execution policies.
+
+  * Build changes/improvements:
+    * A few minor portability improvements
+
+
+RAJA v0.8.0 Release Notes
+=========================
+
+This release contains one major change and some minor improvements to 
+compilation and performance.
+
+Major changes include:
+
+  * Build system updated to use the latest version of BLT (or close to it). 
+    Depending on how one builds RAJA, this could require changes to how 
+    information is passed to CMake. Content has been added to the relevant 
+    sections of the RAJA User Guide which describes how this is done.
+
+Other notable changes include:
+
+  * Features (These are not yet documented and should be considered 
+    experimental. There will be documentation and usage examples in the
+    next RAJA release.)
+    * New thread, warp, and bitmask policies for CUDA. These are not
+      yet documented and should be considered experimental.
+    * Added AtomicLocalArray type which returns data elements wrapped
+      in an AtomicRef object.
+
+  * Bug Fixes:
+    * Fixed issue in RangeStrideSegment iteration.
+    * Fix 'align hint' macro to eliminate compile warning when XL compiler
+      is used with nvcc.
+    * Fix issues associated with CUDA architecture level (i.e., sm_*) set
+      too low and generated compiler warning/errors. Caveats for RAJA features
+      (mostly atomic operations) available at different CUDA architecture 
+      levels added to User Guide.
+
+  * Performance Improvements:
+    * Some performance improvements in RAJA::kernel usage with CUDA back-end.
+
+
+RAJA v0.7.0 Release Notes
+=========================
+
+This release contains several major changes, new features, a variety of bug 
+fixes, and expanded user documentation and accompanying example codes. For
+more information and details about any of the changes listed below, please 
+consult the RAJA documentation for the 0.7.0 release which is linked to 
+our Github project.
+
+Major changes include:
+
+  * RAJA::forallN methods were marked deprecated in the 0.6.0 release. They 
+    have been removed. All applications that contain nested loops and 
+    have been using forallN methods should convert them to use the RAJA::kernel
+    interface.
+  * RAJA::forall methods that take explicit loop bounds rather than segments  
+    (e.g., RAJA::forall(beg, end, ...) were marked deprecated in the 0.6.0
+    release. They have been removed. Hopefully, this will result in faster
+    compile times due to simpler template resolution. Users who have been 
+    passing loop bounds directly to forall methods should convert those
+    cases to use RAJA segments instead.
+  * CUDA execution policies for use in RAJA::kernel policies have been 
+    significantly reworked and redefined. The new set of policies are
+    much more flexible and provide improved run time performance.
+  * New, improved support for loop tiling algorithms and support for 
+    CPU cache blocking, CUDA GPU thread local data and shared memory is 
+    available. This includes RAJA::kernel policy statement types to make tile
+    numbers and local tile indices available in user kernels (TileTCount and
+    ForICount statement types), and a new RAJA::LocalArray type with various 
+    CPU and GPU memory policies. Due to these new features, RAJA 'shmem window'
+    statements have been removed.
+  * This release contains expanded documentation and example codes for the
+    RAJA::kernel interface, including loop tiling algorithms and support for
+    CPU cache blocking, CUDA GPU thread local data and shared memory.
+
+Other notable changes include:
+
+  * Features:
+    * Initial support for OpenMP target execution policies with RAJA::kernel
+      added.
+    * The RAJA::AtomicRef interface is now consistent with the 
+      C++20 std::atomic_ref interface.
+    * Atomic compare-exchange operations added.
+    * CUDA reduce policies no longer require a thread-block size parameter.
+    * New features considered preliminary with no significant documentation or
+      examples available yet:
+        * RAJA::statement::Reduce type for use in RAJA::kernel execution 
+          policies. This enables the ability to perform reductions and access
+          reduced values inside user kernels.
+        * Warp-level execution policies added for CUDA.
+
+  * Performance improvements:
+    * Better use of inline directives to improve likelihood of SIMD 
+      instruction generation with the Intel compiler.
+
+  * Bug fixes:
+    * Several CHAI integration issues resolved.
+    * Resolve issue with alignx directive when using XL compiler as host
+      compiler with CUDA.
+    * Fix issue associated with how XL compiler interprets OpenMP region
+      definition.
+    * Various tweaks to camp implementation to improve robustness.
+
+  * Build changes/improvements:
+    * The minimum required version of CMake has changed to 3.8 for all
+      programming model back-ends, except CUDA. The minimum CMake version
+      for CUDA support is 3.9.
+    * Improved support for clang-cuda compiler. Some features still do not
+      work with that compiler.
+    * Update NVIDIA cub module to version 1.8.0.
+    * Enable use of 'BLT_SOURCE_DIR' CMake variable to help prevent conflicts
+      with BLT versions in RAJA and other libraries used in applications.
+
+RAJA v0.6.0 Release Notes
+=========================
+
+This release contains two major changes, a variety of bug fixes and feature
+enhancements, and expanded user documentation and accompanying example codes.
+
+Major changes include:
+
+  * RAJA::forallN methods are marked deprecated. They will be removed in 
+    the 0.7.0 release.
+  * RAJA::forall methods that take loop bounds rather than segments  (e.g.,
+    RAJA::forall(beg, end, ...) are marked deprecated. They will be removed 
+    in the 0.7.0 release.
+  * RAJA::nested has been replaced with RAJA::kernel. The RAJA::kernel interface
+    is much more flexible and full featured. Going forward, it will be the 
+    supported interface for nested loops and more complex kernels in RAJA. 
+  * This release contains new documentation and example codes for the 
+    RAJA::kernel interface. The documentation described key features and
+    summarizes available 'statement' types. However, it remains a 
+    work-in-progress and expanded documentation with more examples will be 
+    available in future releases.
+  * Documentation of other RAJA features have been expanded and improved in
+    this release along with additional example codes.
+
+Other notable changes include:
+
+  * New or improved features: 
+      * RAJA CUDA reductions now work with host/device lambdas 
+      * List segments now work with RAJA::kernel loops.
+      * New and expanded collection of build files for LC and ALCF machines.
+        Hopefully, these will be helpful to folks getting started.
+
+  * Performance improvements: 
+      * Some RAJA::View use cases
+      * Unnecessary operations removed in min/max atomics
+    
+  * Bug fixes: 
+      * Issues in View with OffsetLayout fixed.
+      * Construction of a const View from a non-const View now works
+      * CUDA kernel no longer launched in RAJA::kernel loops when iteration 
+        space has size zero
+
+
 RAJA v0.5.3 Release Notes
 =========================
 
 This is a bugfix release that fixes bugs in the IndexSetBuilder methods. These
 methods now work correctly with the strongly-typed IndexSet.
+
 
 RAJA v0.5.2 Release Notes
 =========================
@@ -14,6 +219,7 @@ RangeStrideSegment class.
 It also adds a new CMake variable, RAJA_LOADED, that is used to determine
 whether RAJA's CMakeLists file has already been processed. This is useful when
 including RAJA as part of another CMake project.
+
 
 RAJA v0.5.1 Release Notes
 =========================

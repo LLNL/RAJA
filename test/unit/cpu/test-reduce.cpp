@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -29,27 +21,28 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/util/defines.hpp"
 
 #include "buildIndexSet.hpp"
 
 using namespace RAJA;
 
 
-using TestingTypes = ::testing::
-    Types<
-  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
-  std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
-#if defined (RAJA_ENABLE_OPENMP)
-  
-  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
-  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
+using TestingTypes = ::testing::Types<
+    std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>,
+    std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce>
+#if defined(RAJA_ENABLE_OPENMP)
+
+    ,
+    std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>,
+    std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,
+               omp_reduce_ordered>
 #endif
-#if defined (RAJA_ENABLE_TBB)
-          ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
-           ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
+#if defined(RAJA_ENABLE_TBB)
+    ,
+    std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>,
+    std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
 #endif
-        >;
+    >;
 
 template <typename Tuple>
 class IndexSetReduce : public ::testing::Test
@@ -124,7 +117,6 @@ TYPED_TEST(IndexSetReduce, ReduceMinTest)
     ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
     ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   }
- 
 }
 
 #if defined(RAJA_DEPRECATED_TESTS)
@@ -147,7 +139,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
   tmin1.minloc(-100.0, -1);
 
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+  forall<ISET_POLICY_T>(
       this->iset, [=](Index_type idx) {
         tmin0.minloc(1 * this->test_array[idx], idx);
         tmin1.minloc(this->test_array[idx], idx);
@@ -158,7 +150,7 @@ TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
   ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
   ASSERT_EQ(tmin1.get(), Real_type(-200.0));
 
-  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+  forall<ISET_POLICY_T>(
       this->iset, [=](Index_type idx) {
         tmin0.minloc(2 * this->test_array[idx], idx);
         tmin1.minloc(this->test_array[idx], idx);
@@ -187,7 +179,7 @@ TYPED_TEST(IndexSetReduce, ReduceMaxTest)
   this->test_array[ref_max_indx] = ref_max_val;
 
   ReduceMax<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20);
-  ReduceMax<REDUCE_POLICY_T, Real_type> tmax1(200.0);  
+  ReduceMax<REDUCE_POLICY_T, Real_type> tmax1(200.0);
 
   tmax1.max(100);
 
@@ -204,8 +196,8 @@ TYPED_TEST(IndexSetReduce, ReduceMaxTest)
     ASSERT_EQ(tmax1.get(), Real_type(200.0));
   }
 
- 
-  //reset data and run again
+
+  // reset data and run again
   tmax0.reset(-1.0e+20);
   tmax1.reset(200.0);
   tmax1.max(100);
@@ -220,7 +212,6 @@ TYPED_TEST(IndexSetReduce, ReduceMaxTest)
     ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
     ASSERT_EQ(tmax1.get(), Real_type(200.0));
   }
-   
 }
 
 TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
@@ -240,8 +231,8 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
 
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0;
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1;
-  
-  //Reset data 
+
+  // Reset data
   tmax0.reset(-1.0e+20, -1);
   tmax1.reset(200.0, -1);
   tmax1.maxloc(100.0, -1);
@@ -265,7 +256,6 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
   ASSERT_EQ(tmax1.get(), Real_type(200.0));
   ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
   ASSERT_EQ(tmax1.getLoc(), -1);
-
 }
 
 TYPED_TEST(IndexSetReduce, ReduceSumTest)
@@ -295,4 +285,43 @@ TYPED_TEST(IndexSetReduce, ReduceSumTest)
     ASSERT_FLOAT_EQ(Real_type(tsum0), Real_type(k * ref_sum));
     ASSERT_FLOAT_EQ(tsum1.get(), Real_type(k * this->iset.getLength() + 5.0));
   }
+}
+
+
+//
+// Test to make sure the first min/max location is returned
+//
+TEST(Reduce, MinMaxLoc)
+{
+
+  const int N = 25;
+  double *A = new double[N];
+
+  // generate random numbers between [1,10]
+  for (int i = 0; i < N; ++i) {
+    A[i] = rand() % 10 + 1;
+  }
+
+  // Set min to be at index 0
+  A[0] = 1;
+  A[5] = 1;
+  RAJA::ReduceMinLoc<RAJA::seq_reduce, double> tmin(1000, 2);
+  RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N),
+                                [=](RAJA::Index_type id) {
+                                  tmin.minloc(A[id], id);
+                                });
+  ASSERT_EQ(tmin.getLoc(), 0);
+
+
+  // Set max to be at index 0
+  A[0] = 10;
+  A[5] = 10;
+  RAJA::ReduceMaxLoc<RAJA::seq_reduce, double> tmax(-1, 1);
+  RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N),
+                                [=](RAJA::Index_type id) {
+                                  tmax.maxloc(A[id], id);
+                                });
+  ASSERT_EQ(tmax.getLoc(), 0);
+
+  delete[] A;
 }

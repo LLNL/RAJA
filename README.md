@@ -1,4 +1,13 @@
-RAJA v0.5.3
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC)
+[comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: # 
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+RAJA 
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -63,14 +72,11 @@ User Documentation
 The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
 is the best place to start learning about RAJA and how to use it.
 
-Other references that may be of interest include:
+To cite RAJA, please use the following references:
 
-  * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
-  * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
+* RAJA Performance Portability Layer. https://github.com/LLNL/RAJA
 
-To cite RAJA, please use the following reference:
-
-* R. D. Hornung and J. A. Keasler, [The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf), Tech Report, LLNL-TR-661403, Sep. 2014.
+* R. Hornung, H. Jones, J. Keasler, R. Neely, O. Pearce, S. Hammond, C. Trott, P. Lin, C. Vaughan, J. Cook, R. Hoekstra, B. Bergen, J. Payne, G. Womeldorff. ASC Tri-lab Co-design Level 2 Milestone Report 2015, Tech Report, LLNL-TR-677453, Sep. 2015.
 
 Related Software
 --------------------
@@ -116,13 +122,13 @@ The original developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Please see the {RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
+Please see the [RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
 Release
 -----------
 
-Copyright (c) 2016-2017, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-2019, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 

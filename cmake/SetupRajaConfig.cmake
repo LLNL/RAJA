@@ -1,16 +1,8 @@
 ###############################################################################
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-#    
-# Produced at the Lawrence Livermore National Laboratory
-#    
-# LLNL-CODE-689114
-# 
-# All rights reserved.
-#  
-# This file is part of RAJA.
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 ## Floating point options
@@ -56,10 +48,10 @@ else ()
     set(RAJA_USE_CLOCK   OFF CACHE BOOL "Use clock from time.h for timer"    )
 endif ()
 
-include(CheckFunctionExists)
-check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
-check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
-check_function_exists(_mm_malloc RAJA_HAVE_MM_MALLOC)
+include(CheckSymbolExists)
+check_symbol_exists(posix_memalign stdlib.h RAJA_HAVE_POSIX_MEMALIGN)
+check_symbol_exists(std::aligned_alloc stdlib.h RAJA_HAVE_ALIGNED_ALLOC)
+check_symbol_exists(_mm_malloc "" RAJA_HAVE_MM_MALLOC)
 
 # Set up RAJA_ENABLE prefixed options
 set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})

@@ -1,45 +1,43 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
 /// Source file containing tests for RAJA index set mechanics.
 ///
 
-#include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
+#include "gtest/gtest.h"
 
 #include <iostream>
 
 namespace RAJA
 {
-  template <typename T>
-  void PrintTo(const TypedRangeSegment<T>& s, ::std::ostream* os) {
-    *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')';
-  }
-
-  template <typename T>
-  void PrintTo(const TypedRangeStrideSegment<T>& s, ::std::ostream* os) {
-    *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')' << " by " << (*(s.begin() + 1) - *s.begin());
-  }
-
-  template <typename T>
-  void PrintTo(const TypedListSegment<T>& s, ::std::ostream* os) {
-    *os << "Address: " << &(*s.begin()) << "; Size: " << s.size() << "; Ownership: " << (s.getIndexOwnership() == RAJA::Owned ? "Owned" : "Unowned");
-  }
-
+template <typename T>
+void PrintTo(const TypedRangeSegment<T>& s, ::std::ostream* os)
+{
+  *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')';
 }
+
+template <typename T>
+void PrintTo(const TypedRangeStrideSegment<T>& s, ::std::ostream* os)
+{
+  *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')' << " by "
+      << (*(s.begin() + 1) - *s.begin());
+}
+
+template <typename T>
+void PrintTo(const TypedListSegment<T>& s, ::std::ostream* os)
+{
+  *os << "Address: " << &(*s.begin()) << "; Size: " << s.size()
+      << "; Ownership: "
+      << (s.getIndexOwnership() == RAJA::Owned ? "Owned" : "Unowned");
+}
+
+}  // namespace RAJA
 
 TEST(RangeStrideSegmentTest, sizes_no_roundoff)
 {
@@ -87,10 +85,10 @@ TEST(RangeStrideSegmentTest, sizes_primes)
   RAJA::RangeStrideSegment segment1(0, 7, 3);  // should produce 0,3,6
   ASSERT_EQ(segment1.size(), 3);
 
-  RAJA::RangeStrideSegment segment2(0, 13, 3); // should produce 0,3,6,9,12
+  RAJA::RangeStrideSegment segment2(0, 13, 3);  // should produce 0,3,6,9,12
   ASSERT_EQ(segment2.size(), 5);
 
-  RAJA::RangeStrideSegment segment3(0, 17, 5); // should produce 0,5,10,15
+  RAJA::RangeStrideSegment segment3(0, 17, 5);  // should produce 0,5,10,15
   ASSERT_EQ(segment3.size(), 4);
 }
 
@@ -116,20 +114,20 @@ RAJA_INDEX_VALUE(StrongType, "StrongType");
 
 TEST(RangeStrideSegmentTest, strongly_typed)
 {
-  RAJA::TypedRangeStrideSegment<StrongType> segment1(0, 7, 3);  // should produce 0,3,6
+  RAJA::TypedRangeStrideSegment<StrongType> segment1(
+      0, 7, 3);  // should produce 0,3,6
   ASSERT_EQ(segment1.size(), 3);
 
-  RAJA::TypedRangeStrideSegment<StrongType> segment2(0, 13, 3); // should produce 0,3,6,9,12
+  RAJA::TypedRangeStrideSegment<StrongType> segment2(
+      0, 13, 3);  // should produce 0,3,6,9,12
   ASSERT_EQ(segment2.size(), 5);
 
-  RAJA::TypedRangeStrideSegment<StrongType> segment3(0, 17, 5); // should produce 0,5,10,15
+  RAJA::TypedRangeStrideSegment<StrongType> segment3(
+      0, 17, 5);  // should produce 0,5,10,15
   ASSERT_EQ(segment3.size(), 4);
 
   std::vector<int> values(7, 0);
-  RAJA::forall<RAJA::seq_exec>(segment1,
-      [&](StrongType i){
-      values[*i] = 1;
-  });
+  RAJA::forall<RAJA::seq_exec>(segment1, [&](StrongType i) { values[*i] = 1; });
 
   ASSERT_EQ(values[0], 1);
   ASSERT_EQ(values[1], 0);
@@ -184,113 +182,108 @@ TEST(RangeStrideSegmentTest, sizes_reverse_roundoff1)
 
 TEST(RangeStrideSegmentTest, values_forward_stride1)
 {
-  RAJA::Index_type expected[] = {0,1,2,3,4,5};
-  RAJA::RangeStrideSegment segment(0,6,1);
+  RAJA::Index_type expected[] = {0, 1, 2, 3, 4, 5};
+  RAJA::RangeStrideSegment segment(0, 6, 1);
 
   ASSERT_EQ(segment.size(), 6);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
-  for(auto i : segment){
+  for (auto i : segment) {
     ASSERT_EQ(i, expected[j]);
-    ++ j;
+    ++j;
   }
 }
 
 TEST(RangeStrideSegmentTest, values_forward_stride3)
 {
-  RAJA::Index_type expected[] = {0,3,6,9,12};
-  RAJA::RangeStrideSegment segment(0,14,3);
+  RAJA::Index_type expected[] = {0, 3, 6, 9, 12};
+  RAJA::RangeStrideSegment segment(0, 14, 3);
 
   ASSERT_EQ(segment.size(), 5);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
-  for(auto i : segment){
+  for (auto i : segment) {
     ASSERT_EQ(i, expected[j]);
-    ++ j;
+    ++j;
   }
 }
 
 TEST(RangeStrideSegmentTest, values_reverse_stride1)
 {
-  RAJA::Index_type expected[] = {5,4,3,2,1,0};
-  RAJA::RangeStrideSegment segment(5,-1,-1);
+  RAJA::Index_type expected[] = {5, 4, 3, 2, 1, 0};
+  RAJA::RangeStrideSegment segment(5, -1, -1);
 
   ASSERT_EQ(segment.size(), 6);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
-  for(auto i : segment){
+  for (auto i : segment) {
     ASSERT_EQ(i, expected[j]);
-    ++ j;
+    ++j;
   }
 }
 
 
 TEST(RangeStrideSegmentTest, values_reverse_stride1_negative)
 {
-  RAJA::Index_type expected[] = {-10,-11,-12,-13};
-  RAJA::RangeStrideSegment segment(-10,-14,-1);
+  RAJA::Index_type expected[] = {-10, -11, -12, -13};
+  RAJA::RangeStrideSegment segment(-10, -14, -1);
 
   ASSERT_EQ(segment.size(), 4);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
-  for(auto i : segment){
+  for (auto i : segment) {
     ASSERT_EQ(i, expected[j]);
-    ++ j;
+    ++j;
   }
 }
 
 
 TEST(RangeStrideSegmentTest, zero_size)
 {
-  RAJA::RangeStrideSegment segment(3,2,1);
+  RAJA::RangeStrideSegment segment(3, 2, 1);
 
   ASSERT_EQ(segment.size(), 0);
-
 }
 
 TEST(RangeStrideSegmentTest, zero_size_reverse)
 {
-  RAJA::RangeStrideSegment segment(-3, 3,-1);
+  RAJA::RangeStrideSegment segment(-3, 3, -1);
 
   ASSERT_EQ(segment.size(), 0);
-
 }
-
 
 
 TEST(RangeStrideSegmentTest, forall_values_forward_stride3)
 {
-  RAJA::Index_type expected[] = {0,3,6,9,12};
-  RAJA::RangeStrideSegment segment(0,14,3);
+  RAJA::Index_type expected[] = {0, 3, 6, 9, 12};
+  RAJA::RangeStrideSegment segment(0, 14, 3);
 
   ASSERT_EQ(segment.size(), 5);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i)
-  {
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
 
 
-  for(auto i = segment.begin();i < segment.end();++i)
-  {
+  for (auto i = segment.begin(); i < segment.end(); ++i) {
     ASSERT_EQ(*i, expected[j++]);
   }
 
@@ -299,8 +292,7 @@ TEST(RangeStrideSegmentTest, forall_values_forward_stride3)
 
   j = 0;
 
-  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i)
-  {
+  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i) {
     ASSERT_EQ(i, expected[j++]);
   });
 
@@ -311,19 +303,18 @@ TEST(RangeStrideSegmentTest, forall_values_forward_stride3)
 
 TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
 {
-  RAJA::Index_type expected[] = {7,2,-3,-8};
-  RAJA::RangeStrideSegment segment(7,-11,-5);
+  RAJA::Index_type expected[] = {7, 2, -3, -8};
+  RAJA::RangeStrideSegment segment(7, -11, -5);
 
   ASSERT_EQ(segment.size(), 4);
 
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for (RAJA::Index_type i = 0; i < segment.size(); ++i) {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   }
 
   size_t j = 0;
 
-  for(auto i = segment.begin();i < segment.end();++i)
-  {
+  for (auto i = segment.begin(); i < segment.end(); ++i) {
     ASSERT_EQ(*i, expected[j++]);
   }
 
@@ -331,8 +322,7 @@ TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
 
   j = 0;
 
-  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i)
-  {
+  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i) {
     ASSERT_EQ(i, expected[j++]);
   });
 
@@ -342,7 +332,7 @@ TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
 
 TEST(RangeStrideSegmentTest, iterator_begin_end)
 {
-  RAJA::RangeStrideSegment segment(7,-11,-5);
+  RAJA::RangeStrideSegment segment(7, -11, -5);
 
   auto begin1 = segment.begin();
   auto begin2 = std::begin(segment);
@@ -351,45 +341,44 @@ TEST(RangeStrideSegmentTest, iterator_begin_end)
   auto end1 = segment.end();
   auto end2 = std::end(segment);
   ASSERT_EQ(end1, end2);
-
 }
 
 
 TEST(RangeStrideSegmentTest, iterator_distance)
 {
   {
-    RAJA::RangeStrideSegment segment1(0,10,1);
+    RAJA::RangeStrideSegment segment1(0, 10, 1);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 10);
   }
 
   {
-    RAJA::RangeStrideSegment segment1(10,20,1);
+    RAJA::RangeStrideSegment segment1(10, 20, 1);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 10);
   }
 
   {
-    RAJA::RangeStrideSegment segment1(0,5,2);
+    RAJA::RangeStrideSegment segment1(0, 5, 2);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 3);
   }
 
   {
-    RAJA::RangeStrideSegment segment1(10,20,2);
+    RAJA::RangeStrideSegment segment1(10, 20, 2);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 5);
   }
 
   {
-    RAJA::RangeStrideSegment segment1(20,10,-2);
+    RAJA::RangeStrideSegment segment1(20, 10, -2);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 5);
   }
 
   {
-    RAJA::RangeStrideSegment segment1(-10,10,3);
+    RAJA::RangeStrideSegment segment1(-10, 10, 3);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 7);
   }
 
 
   {
-    RAJA::RangeStrideSegment segment1(10,-10,-7);
+    RAJA::RangeStrideSegment segment1(10, -10, -7);
     ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 3);
   }
 }
@@ -413,7 +402,7 @@ TEST(SegmentTest, constructors)
   }
 
   {
-    RAJA::ListSegment first(RAJA::make_range(0,10));
+    RAJA::ListSegment first(RAJA::RangeSegment(0, 10));
     ASSERT_EQ(RAJA::Owned, first.getIndexOwnership());
 
     RAJA::ListSegment copied(first);
@@ -432,7 +421,7 @@ TEST(SegmentTest, constructors)
 TEST(SegmentTest, assignments)
 {
   {
-    auto r =  RAJA::make_range(RAJA::Index_type(), 5);
+    auto r = RAJA::RangeSegment(RAJA::Index_type(), 5);
     RAJA::RangeSegment seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::RangeSegment seg2 = std::move(r);
@@ -488,7 +477,6 @@ TEST(SegmentTest, swaps)
     ASSERT_EQ(r1, r4);
     ASSERT_EQ(r2, r3);
   }
-
 }
 
 TEST(SegmentTest, iterators)
@@ -510,7 +498,7 @@ TEST(SegmentTest, iterators)
     ASSERT_EQ(25, r1.size());
   }
   {
-    RAJA::Index_type data[5] = { 1, 3, 5, 7, 9 };
+    RAJA::Index_type data[5] = {1, 3, 5, 7, 9};
     RAJA::ListSegment r1(data, 5);
     ASSERT_EQ(1, *r1.begin());
     ASSERT_EQ(9, *(r1.end() - 1));

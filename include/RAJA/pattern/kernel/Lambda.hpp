@@ -8,39 +8,30 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #ifndef RAJA_pattern_kernel_Lambda_HPP
 #define RAJA_pattern_kernel_Lambda_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/kernel/internal.hpp"
+#include <iostream>
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/pattern/kernel/ArgHelper.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -50,16 +41,16 @@ namespace statement
 
 
 /*!
- * A kernel::forall statement that executes a lambda function.
+ * A RAJA::kernel statement that invokes a lambda function.
  *
- * The lambda is specified by it's index, which is defined by the order in
- * which it was specified in the call to kernel::forall.
+ * The lambda is specified by its index in the sequence of lambda arguments
+ * to a RAJA::kernel method.
  *
  * for example:
- * RAJA::kernel::forall(pol{}, make_tuple{s0, s1, s2}, lambda0, lambda1);
+ * RAJA::kernel<exec_pol>(make_tuple{s0, s1, s2}, lambda0, lambda1);
  *
  */
-template <camp::idx_t BodyIdx>
+template <camp::idx_t BodyIdx, typename... Args >
 struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
@@ -69,13 +60,32 @@ struct Lambda : internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <camp::idx_t LoopIndex>
-struct StatementExecutor<statement::Lambda<LoopIndex>> {
+template <camp::idx_t LambdaIndex>
+struct StatementExecutor<statement::Lambda<LambdaIndex>> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    invoke_lambda<LoopIndex>(std::forward<Data>(data));
+    invoke_lambda<LambdaIndex>(std::forward<Data>(data));
+  }
+};
+
+
+/*!
+ * A RAJA::kernel statement that invokes a lambda function
+ * with user specified arguments.
+ */
+template <camp::idx_t LambdaIndex,typename... Args>
+struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>> {
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+
+    //Convert SegList, ParamList into Seg, Param types, and store in a list
+    using targList = typename camp::flatten<camp::list<Args...>>::type;
+
+    invoke_lambda_with_args<LambdaIndex, targList>(std::forward<Data>(data));
   }
 };
 

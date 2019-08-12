@@ -3,34 +3,26 @@
  *
  * \file
  *
- * \brief   RAJA header file defining loop permutations for forallN templates.
+ * \brief   RAJA header file defining permutations
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_FORALLN_PERMUTATIONS_HPP
 #define RAJA_FORALLN_PERMUTATIONS_HPP
 
-
 #include "RAJA/config.hpp"
-#include "camp/camp.hpp"
 
 #include <array>
+
+#include "camp/camp.hpp"
 
 namespace RAJA
 {
@@ -199,6 +191,54 @@ using PERM_MLJIK = camp::idx_seq<4, 3, 1, 0, 2>;
 using PERM_MLJKI = camp::idx_seq<4, 3, 1, 2, 0>;
 using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
 using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
-}
+
+
+
+
+namespace internal 
+{
+
+
+template<camp::idx_t I, camp::idx_t J, camp::idx_t N, typename Perm>
+struct CalcInversePermutationElem
+{
+  static constexpr camp::idx_t value = 
+    camp::seq_at<J, Perm>::value == I ? J : CalcInversePermutationElem<I, J+1, N, Perm>::value;
+};
+
+template<camp::idx_t I, camp::idx_t N, typename Perm>
+struct CalcInversePermutationElem<I, N, N, Perm>
+{
+  static constexpr camp::idx_t value = I;
+};
+
+
+
+template<typename Range, typename Perm>
+struct InversePermutationHelper;
+
+template<camp::idx_t ... Range, camp::idx_t ... Perm>
+struct InversePermutationHelper<camp::idx_seq<Range...>, 
+                                camp::idx_seq<Perm...>>
+{
+  static_assert(sizeof...(Range) == sizeof...(Perm), "Fatal Error");
+  using type = camp::idx_seq< 
+    CalcInversePermutationElem<Range, 0, sizeof...(Range), camp::idx_seq<Perm...>>::value ...  
+  >;  
+};
+
+
+
+} // namespace internal
+
+
+
+/*!
+  Inverts a permutation
+*/
+template<typename Perm>
+using invert_permutation = typename internal::InversePermutationHelper<camp::make_idx_seq_t<camp::size<Perm>::value>, Perm>::type;
+
+}  // namespace RAJA
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

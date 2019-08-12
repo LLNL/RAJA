@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -28,7 +20,9 @@
 
 using namespace RAJA;
 
-using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                         RAJA::ListSegment,
+                                         RAJA::RangeStrideSegment>;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 8;
 
@@ -41,6 +35,35 @@ static std::mt19937 mt(rd());
 static std::uniform_real_distribution<double> dist(-10, 10);
 static std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
 
+struct Index {
+  RAJA::Index_type idx;
+  RAJA_HOST_DEVICE constexpr Index() : idx(-1) {}
+  RAJA_HOST_DEVICE constexpr Index(RAJA::Index_type idx) : idx(idx) {}
+  RAJA_HOST_DEVICE constexpr bool operator==(const Index& rhs) const { return (idx == rhs.idx); }
+};
+
+template <typename T>
+struct LocCompare {
+   RAJA_HOST_DEVICE constexpr T defaultVal() const { return T(); }
+   RAJA_HOST_DEVICE constexpr T getVal(int idx) const { return T(idx); }
+};
+
+template <>
+struct LocCompare<Index_type> {
+   RAJA_HOST_DEVICE constexpr Index_type defaultVal() const { return -1; }
+   RAJA_HOST_DEVICE constexpr Index_type getVal(int idx) const { return idx; }
+};
+
+template <typename T>
+struct LocConvert {
+   RAJA_HOST_DEVICE constexpr T get(const T& idx) const { return idx; }
+};
+
+template <>
+struct LocConvert<Index> {
+   RAJA_HOST_DEVICE constexpr Index_type get(const Index& i) const { return i.idx; }
+};
+
 static void reset(double* ptr, long length, double def)
 {
   for (long i = 0; i < length; ++i) {
@@ -50,69 +73,71 @@ static void reset(double* ptr, long length, double def)
 
 template <typename T>
 struct reduce_applier;
-template <typename T, typename U>
-struct reduce_applier<ReduceMinLoc<T, U>> {
+template <typename T, typename U, typename Index>
+struct reduce_applier<ReduceMinLoc<T, U, Index>> {
+  using IndexType = Index;
   static U def() { return DBL_MAX; }
   static U big() { return -500.0; }
   template <bool B>
   static void updatedvalue(U* dvalue,
-                                reduce::detail::ValueLoc<U, B>& randval,
-                                reduce::detail::ValueLoc<U, B>& dcurrent)
+                           reduce::detail::ValueLoc<U, Index, B>& randval,
+                           reduce::detail::ValueLoc<U, Index, B>& dcurrent)
   {
-    if (dvalue[randval.loc] > randval.val) {
-      dvalue[randval.loc] = randval.val;
+    if (dvalue[LocConvert<IndexType>().get(randval.loc)] > randval.val) {
+      dvalue[LocConvert<IndexType>().get(randval.loc)] = randval.val;
       apply(dcurrent, randval);
     }
   }
-  RAJA_HOST_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
-                                U const& val,
-                                Index_type i)
+  RAJA_HOST_DEVICE static void apply(ReduceMinLoc<T, U, Index> const& r,
+                                     U const& val,
+                                     Index i)
   {
     r.minloc(val, i);
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, B>& l,
-                                     reduce::detail::ValueLoc<U, B> const& r)
+  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, Index, B>& l,
+                                     reduce::detail::ValueLoc<U, Index, B> const& r)
   {
     l = l > r ? r : l;
   }
   template <bool B>
-  static void cmp(ReduceMinLoc<T, U>& l,
-                  reduce::detail::ValueLoc<U, B> const& r)
+  static void cmp(ReduceMinLoc<T, U, Index>& l,
+                  reduce::detail::ValueLoc<U, Index, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
   }
 };
-template <typename T, typename U>
-struct reduce_applier<ReduceMaxLoc<T, U>> {
+template <typename T, typename U, typename Index>
+struct reduce_applier<ReduceMaxLoc<T, U, Index>> {
+  using IndexType = Index;
   static U def() { return -DBL_MAX; }
   static U big() { return 500.0; }
   template <bool B>
   static void updatedvalue(U* dvalue,
-                                reduce::detail::ValueLoc<U, B>& randval,
-                                reduce::detail::ValueLoc<U, B>& dcurrent)
+                           reduce::detail::ValueLoc<U, Index, B>& randval,
+                           reduce::detail::ValueLoc<U, Index, B>& dcurrent)
   {
-    if (randval.val > dvalue[randval.loc]) {
-      dvalue[randval.loc] = randval.val;
+    if (randval.val > dvalue[LocConvert<IndexType>().get(randval.loc)]) {
+      dvalue[LocConvert<IndexType>().get(randval.loc)] = randval.val;
       apply(dcurrent, randval);
     }
   }
-  RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
-                                U const& val,
-                                Index_type i)
+  RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<T, U, Index> const& r,
+                                     U const& val,
+                                     Index i)
   {
     r.maxloc(val, i);
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, B>& l,
-                                     reduce::detail::ValueLoc<U, B> const& r)
+  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, Index, B>& l,
+                                     reduce::detail::ValueLoc<U, Index, B> const& r)
   {
     l = l > r ? l : r;
   }
   template <bool B>
-  static void cmp(ReduceMaxLoc<T, U>& l,
-                                   reduce::detail::ValueLoc<U, B> const& r)
+  static void cmp(ReduceMaxLoc<T, U, Index>& l,
+                  reduce::detail::ValueLoc<U, Index, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
@@ -146,11 +171,12 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
+  typedef typename applier::IndexType IndexType;
   using reducer = ReduceCUDA<TypeParam>;
   double* dvalue = reducer::dvalue;
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
+  reduce::detail::ValueLoc<double, IndexType> dcurrent(applier::def(), LocCompare<IndexType>().defaultVal());
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -164,14 +190,15 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      reduce::detail::ValueLoc<double> randval(droll, index);
+      reduce::detail::ValueLoc<double, IndexType> randval(droll, LocCompare<IndexType>().getVal(index));
       applier::updatedvalue(dvalue, randval, dcurrent);
 
-      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN), [=] RAJA_DEVICE(int i) {
-        applier::apply(dmin0, dvalue[i], i);
-        applier::apply(dmin1, 2 * dvalue[i], i);
-        applier::apply(dmin2, dvalue[i], i);
-      });
+      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN),
+                                    [=] RAJA_DEVICE(int i) {
+                                      applier::apply(dmin0, dvalue[i], IndexType(i));
+                                      applier::apply(dmin1, 2 * dvalue[i], IndexType(i));
+                                      applier::apply(dmin2, dvalue[i], IndexType(i));
+                                    });
 
       applier::cmp(dmin0, dcurrent);
 
@@ -193,11 +220,12 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
+  typedef typename applier::IndexType IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
+  reduce::detail::ValueLoc<double, IndexType> dcurrent(applier::def(), LocCompare<IndexType>().defaultVal());
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -213,13 +241,13 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 
     double droll = dist(mt);
     int index = int(dist2(mt));
-    reduce::detail::ValueLoc<double> randval(droll, index);
+    reduce::detail::ValueLoc<double, IndexType> randval(droll, LocCompare<IndexType>().getVal(index));
     applier::updatedvalue(dvalue, randval, dcurrent);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] RAJA_HOST_DEVICE(int i) {
-          applier::apply(dmin0, dvalue[i], i);
-          applier::apply(dmin1, 2 * dvalue[i], i);
+          applier::apply(dmin0, dvalue[i], IndexType(i));
+          applier::apply(dmin1, 2 * dvalue[i], IndexType(i));
         });
 
     ASSERT_FLOAT_EQ(double(dcurrent), double(dmin0));
@@ -241,6 +269,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;
+  typedef typename applier::IndexType IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   RangeSegment seg0(1, 230);
@@ -258,7 +287,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 
     reset(dvalue, TEST_VEC_LEN, applier::def());
 
-    reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
+    reduce::detail::ValueLoc<double, IndexType> dcurrent(applier::def(), LocCompare<IndexType>().defaultVal());
 
     TypeParam dmin0(applier::def(), -1);
     TypeParam dmin1(applier::def(), -1);
@@ -270,13 +299,13 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 3457;  // seg 3
 
     double droll = dist(mt);
-    reduce::detail::ValueLoc<double> randval(droll, index);
+    reduce::detail::ValueLoc<double, IndexType> randval(droll, LocCompare<IndexType>().getVal(index));
     applier::updatedvalue(dvalue, randval, dcurrent);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] RAJA_DEVICE(int i) {
-          applier::apply(dmin0, dvalue[i], i);
-          applier::apply(dmin1, 2 * dvalue[i], i);
+          applier::apply(dmin0, dvalue[i], IndexType(i));
+          applier::apply(dmin1, 2 * dvalue[i], IndexType(i));
         });
 
     ASSERT_FLOAT_EQ(dcurrent.val, double(dmin0));
@@ -292,9 +321,17 @@ REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
                            indexset_noalign);
 
 using MinLocTypes =
-    ::testing::Types<ReduceMinLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
 
 using MaxLocTypes =
-    ::testing::Types<ReduceMaxLoc<cuda_reduce<block_size>, double>>;
+    ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double>>;
 INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
+
+using MinLocTypesGenericIndex =
+    ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double, Index>>;
+INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceCUDA, MinLocTypesGenericIndex);
+
+using MaxLocTypesGenericIndex =
+    ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double, Index>>;
+INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceCUDA, MaxLocTypesGenericIndex);

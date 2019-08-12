@@ -8,34 +8,30 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_pattern_kernel_internal_HPP
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
+#include "RAJA/pattern/kernel/ArgHelper.hpp"
+
+#include <iterator>
 #include <type_traits>
 
 namespace RAJA
@@ -75,10 +71,10 @@ struct ForTraitBase : public ForBase {
   using type = ForTraitBase;  // make camp::value compatible
 };
 
-
 template <typename Iterator>
 struct iterable_difftype_getter {
-  using type = typename Iterator::iterator::difference_type;
+  using type = typename std::iterator_traits<
+      typename Iterator::iterator>::difference_type;
 };
 
 template <typename Segments>
@@ -94,7 +90,8 @@ using difftype_tuple_from_segments =
 
 template <typename Iterator>
 struct iterable_value_type_getter {
-  using type = typename Iterator::iterator::value_type;
+  using type =
+      typename std::iterator_traits<typename Iterator::iterator>::value_type;
 };
 
 template <typename Segments>
@@ -165,6 +162,20 @@ struct LoopData {
     camp::get<Idx>(offset_tuple) = i;
   }
 
+  template <typename ParamId, typename IndexT>
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_param(IndexT const &i)
+  {
+    using param_t = camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>;
+    camp::get<ParamId::param_idx>(param_tuple) = param_t(i);
+  }
+
+  template <typename ParamId>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto get_param() ->
+    camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
+  {
+    return camp::get<ParamId::param_idx>(param_tuple);
+  }
 
   template <camp::idx_t Idx>
   RAJA_HOST_DEVICE RAJA_INLINE int assign_begin()
@@ -203,6 +214,26 @@ struct LoopData {
     return get_begin_index_tuple_expanded(
         camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
   }
+
+
+  template <camp::idx_t... Idx>
+  RAJA_HOST_DEVICE RAJA_INLINE index_tuple_t
+  get_minimum_index_tuple_expanded(camp::idx_seq<Idx...> const &) const
+  {
+    return camp::make_tuple(
+        ((*camp::get<Idx>(segment_tuple).begin() <=
+          *camp::get<Idx>(segment_tuple).end())
+             ? *camp::get<Idx>(segment_tuple).begin()
+             : *(camp::get<Idx>(segment_tuple).end() - 1))...);
+  }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  index_tuple_t get_minimum_index_tuple() const
+  {
+    return get_minimum_index_tuple_expanded(
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{});
+  }
 };
 
 
@@ -214,34 +245,52 @@ template <camp::idx_t LoopIndex,
 RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
     camp::idx_seq<OffsetIdx...> const &,
     camp::idx_seq<ParamIdx...> const &,
-    Data &data)
+    Data &&data)
 {
-  camp::get<LoopIndex>(
-      data.bodies)((camp::get<OffsetIdx>(data.segment_tuple)
-                        .begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
-                   camp::get<ParamIdx>(data.param_tuple)...);
+  camp::get<LoopIndex>(data.bodies)
+    ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
+     camp::get<ParamIdx>(data.param_tuple)...);
 }
 
 
 template <camp::idx_t LoopIndex, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &data)
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
 {
-  using offset_tuple_t = typename Data::offset_tuple_t;
-  using param_tuple_t = typename Data::param_tuple_t;
+  using Data_t = camp::decay<Data>;
+  using offset_tuple_t = typename Data_t::offset_tuple_t;
+  using param_tuple_t = typename Data_t::param_tuple_t;
 
   invoke_lambda_expanded<LoopIndex>(
       camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
       camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-      data);
+      std::forward<Data>(data));
+}
+
+RAJA_SUPPRESS_HD_WARN
+template<camp::idx_t LoopIndex, typename Data, typename... targLists>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,
+                                                       camp::list<targLists...> const &)
+{
+  camp::get<LoopIndex>(data.bodies)(extractor<targLists>::extract_arg(data)...);
+}
+
+//Helper to launch lambda with custom arguments
+template <camp::idx_t LoopIndex, typename targList, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data)
+{
+
+  invoke_custom_lambda<LoopIndex>(data,targList{});
+                                     
 }
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator::difference_type
+    typename std::iterator_traits<
+        typename camp::at_v<typename Data::segment_tuple_t::TList,
+                            ArgumentId>::iterator>::difference_type
 {
-  return camp::get<ArgumentId>(data.segment_tuple).end()
-         - camp::get<ArgumentId>(data.segment_tuple).begin();
+  return camp::get<ArgumentId>(data.segment_tuple).end() -
+         camp::get<ArgumentId>(data.segment_tuple).begin();
 }
 
 
@@ -292,13 +341,8 @@ RAJA_INLINE void execute_statement_list(Data &&data)
       std::forward<Data>(data));
 }
 
-// Gives all GenericWrapper derived types something to enable_if on
-// in our thread_privatizer
-struct GenericWrapperBase {
-};
-
 template <typename Data, typename... EnclosedStmts>
-struct GenericWrapper : public GenericWrapperBase {
+struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
@@ -334,22 +378,42 @@ struct NestedPrivatizer {
 };
 
 
-/**
- * @brief specialization of internal::thread_privatize for any wrappers derived
- * from GenericWrapper
- */
-template <typename T>
-constexpr RAJA_INLINE typename std::
-    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
-              NestedPrivatizer<T>>::type
-    thread_privatize(T &wrapper)
-{
-  return NestedPrivatizer<T>{wrapper};
-}
-
-
 }  // end namespace internal
 
+namespace detail
+{
+
+
+template <typename T>
+struct get_statement_platform {
+  static constexpr Platform value =
+      get_platform_from_list<typename T::execution_policy_t,
+                             typename T::enclosed_statements_t>::value;
+};
+
+/*!
+ * Specialization to define the platform for an kernel::StatementList, and
+ * (by alias) a kernel::Policy
+ *
+ * This collects the Platform from each of it's statements, recursing into
+ * each of them.
+ */
+template <typename... Stmts>
+struct get_platform<RAJA::internal::StatementList<Stmts...>> {
+  static constexpr Platform value =
+      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
+};
+
+/*!
+ * Specialize for an empty statement list to be undefined
+ */
+template <>
+struct get_platform<RAJA::internal::StatementList<>> {
+  static constexpr Platform value = Platform::undefined;
+};
+
+
+}  // namespace detail
 }  // end namespace RAJA
 
 

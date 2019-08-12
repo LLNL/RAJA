@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef _TYPE_HELPER_HPP_
@@ -79,7 +71,7 @@ template <typename... Ts>
 struct product<std::tuple<>, std::tuple<Ts...>> {
   typedef std::tuple<> type;
 };
-}
+}  // namespace types
 
 
 namespace tt
@@ -132,7 +124,7 @@ struct apply<Fn, L<Ts...>> {
 template <template <class> class Outer, class T>
 using apply_t = typename apply<Outer, T>::type;
 
-} // closing brace for namespace tt
+}  // namespace tt
 
 
 namespace detail
@@ -144,7 +136,7 @@ template <template <class...> class T, typename... Ts>
 struct ForTesting<T<Ts...>> {
   using type = ::testing::Types<Ts...>;
 };
-}
+}  // namespace detail
 
 template <typename T>
 using ForTesting = typename ::detail::ForTesting<T>::type;

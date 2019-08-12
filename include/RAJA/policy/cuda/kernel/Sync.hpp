@@ -3,42 +3,34 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run kernel
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
  */
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_policy_cuda_kernel_Sync_HPP
 #define RAJA_policy_cuda_kernel_Sync_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/pattern/kernel.hpp"
-#include "camp/camp.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-//
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #include <cassert>
 #include <climits>
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
+#include "camp/camp.hpp"
+
+#include "RAJA/pattern/kernel.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 
@@ -48,36 +40,58 @@ namespace statement
 {
 
 /*!
- * A kernel::forall statement that performs a CUDA __syncthreads().
- *
- *
+ * A RAJA::kernel statement that performs a CUDA __syncthreads().
  */
 struct CudaSyncThreads : public internal::Statement<camp::nil> {
 };
+
+/*!
+ * A RAJA::kernel statement that performs a CUDA __syncwarp().
+ */
+struct CudaSyncWarp : public internal::Statement<camp::nil> {
+};
+
 
 }  // namespace statement
 
 namespace internal
 {
 
-template <typename Data, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::CudaSyncThreads, IndexCalc> {
+template <typename Data>
+struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
 
-  inline __device__ void exec(Data &, int, int) { __syncthreads(); }
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &, bool) { __syncthreads(); }
 
-  inline RAJA_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
-    // nop
+    return LaunchDims();
   }
+};
+
+template <typename Data>
+struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
+
+  static
+  inline
+  RAJA_DEVICE
+#if CUDART_VERSION >= 9000
+  void exec(Data &, bool) { __syncwarp(); }
+#else
+  void exec(Data &, bool) {  }
+#endif
 
 
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
-
-    return LaunchDim();
+    return LaunchDims();
   }
 };
 

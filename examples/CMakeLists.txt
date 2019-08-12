@@ -1,88 +1,94 @@
 ###############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 raja_add_executable(
-  NAME ex0-daxpy
-  SOURCES ex0-daxpy.cpp)
+  NAME tut_daxpy
+  SOURCES tut_daxpy.cpp)
 
 raja_add_executable(
-  NAME ex1-add-vectors
-  SOURCES ex1-add-vectors.cpp)
+  NAME tut_add-vectors
+  SOURCES tut_add-vectors.cpp)
 
 raja_add_executable(
-  NAME ex2-dot-product
-  SOURCES ex2-dot-product.cpp)
+  NAME tut_dot-product
+  SOURCES tut_dot-product.cpp)
 
 raja_add_executable(
-  NAME ex3-indexset-segments
-  SOURCES ex3-indexset-segments.cpp)
+  NAME tut_indexset-segments
+  SOURCES tut_indexset-segments.cpp)
 
 raja_add_executable(
-  NAME ex4-matrix-multiply
-  SOURCES ex4-matrix-multiply.cpp)
+  NAME tut_matrix-multiply
+  SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex4a-matrix-multiply-complexpol-shmem
-  SOURCES ex4a-matrix-multiply-complexpol-shmem.cpp)
+  NAME tut_nested-loop-reorder
+  SOURCES tut_nested-loop-reorder.cpp)
 
 raja_add_executable(
-  NAME ex5-nested-loop-reorder
-  SOURCES ex5-nested-loop-reorder.cpp)
+  NAME tut_vertexsum-coloring
+  SOURCES tut_vertexsum-coloring.cpp)
 
 raja_add_executable(
-  NAME ex6-vertexsum-coloring
-  SOURCES ex6-vertexsum-coloring.cpp)
-
-raja_add_executable(
-  NAME ex7-reductions
-  SOURCES ex7-reductions.cpp)
+  NAME tut_reductions
+  SOURCES tut_reductions.cpp)
   
 raja_add_executable(
-  NAME ex8-pi-reduce_vs_atomic
-  SOURCES ex8-pi-reduce_vs_atomic.cpp)
+  NAME tut_scan
+  SOURCES tut_scan.cpp)
 
 raja_add_executable(
-  NAME ex9-scan
-  SOURCES ex9-scan.cpp)
+  NAME tut_atomic-histogram
+  SOURCES tut_atomic-histogram.cpp)
 
 raja_add_executable(
-  NAME ex10-binning
-  SOURCES ex10-binning.cpp)
+  NAME tut_offset-layout
+  SOURCES tut_offset-layout.cpp)
 
 raja_add_executable(
-  NAME ex11-jacobi
-  SOURCES ex11-jacobi.cpp)
+  NAME tut_batched-matrix-multiply
+  SOURCES tut_batched-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME ex12-red-black-gauss-seidel
-  SOURCES ex12-red-black-gauss-seidel.cpp)
+  NAME tut_matrix-transpose-local-array
+  SOURCES tut_matrix-transpose-local-array.cpp)
 
 raja_add_executable(
-  NAME ex13-wave-eqn
-  SOURCES ex13-wave-eqn.cpp)
+  NAME tut_tiled-matrix-transpose
+  SOURCES tut_tiled-matrix-transpose.cpp)
+
+raja_add_executable(
+  NAME pi-reduce_vs_atomic
+  SOURCES pi-reduce_vs_atomic.cpp)
+
+raja_add_executable(
+  NAME jacobi
+  SOURCES jacobi.cpp)
+
+raja_add_executable(
+  NAME red-black-gauss-seidel
+  SOURCES red-black-gauss-seidel.cpp)
+
+raja_add_executable(
+  NAME wave-eqn
+  SOURCES wave-eqn.cpp)
   
-  
-if(ENABLE_CUDA)
 raja_add_executable(
-  NAME cuda-shmem-ltimes
-  SOURCES cuda-shmem-ltimes.cpp)
+  NAME ltimes
+  SOURCES ltimes.cpp)
+
+if(ENABLE_TARGET_OPENMP)
+  raja_add_executable(
+    NAME target-kernel
+    SOURCES omp-target-kernel.cpp)
+
+  raja_add_executable(
+    NAME omp-target-ltimes
+    SOURCES omp-target-ltimes.cpp)
 endif()
-
-raja_add_executable(
-  NAME cpu-shmem-ltimes
-  SOURCES cpu-shmem-ltimes.cpp)
 
 add_subdirectory(plugin)

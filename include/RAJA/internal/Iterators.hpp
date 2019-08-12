@@ -8,32 +8,24 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_ITERATORS_HPP
 #define RAJA_ITERATORS_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
 
 #include <iterator>
 #include <type_traits>
 #include <utility>
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -43,7 +35,7 @@ namespace Iterators
 // Containers
 
 template <typename Type = Index_type,
-          typename DifferenceType = Index_type,
+          typename DifferenceType = Type,
           typename PointerType = Type*>
 class numeric_iterator
 {
@@ -63,6 +55,9 @@ public:
       : val(rhs.val)
   {
   }
+
+  RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return 1; }
+
   RAJA_HOST_DEVICE inline bool operator==(const numeric_iterator& rhs) const
   {
     return val == rhs.val;
@@ -187,7 +182,7 @@ private:
 };
 
 template <typename Type = Index_type,
-          typename DifferenceType = Index_type,
+          typename DifferenceType = Type,
           typename PointerType = Type*>
 class strided_numeric_iterator
 {
@@ -242,15 +237,15 @@ public:
   RAJA_HOST_DEVICE inline difference_type operator+(
       const strided_numeric_iterator& rhs) const
   {
-    return (static_cast<difference_type>(val)
-            + (static_cast<difference_type>(rhs.val)))
-           / stride;
+    return (static_cast<difference_type>(val) +
+            (static_cast<difference_type>(rhs.val))) /
+           stride;
   }
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
-    difference_type diff = (static_cast<difference_type>(val)
-                            - (static_cast<difference_type>(rhs.val)));
+    difference_type diff = (static_cast<difference_type>(val) -
+                            (static_cast<difference_type>(rhs.val)));
 
     return (diff % stride != difference_type{0})
                ? (difference_type{1} + diff / stride)
@@ -259,12 +254,12 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(val + rhs * stride);
+    return strided_numeric_iterator(val + rhs * stride, stride);
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(val - rhs * stride);
+    return strided_numeric_iterator(val - rhs * stride, stride);
   }
 
   // Specialized comparison to allow normal iteration to work on off-stride
@@ -320,8 +315,9 @@ private:
   DifferenceType stride;
 };
 
-}  // closing brace for namespace Iterators
 
-}  // closing brace for namespace RAJA
+}  // namespace Iterators
+
+}  // namespace RAJA
 
 #endif /* RAJA_ITERATORS_HPP */

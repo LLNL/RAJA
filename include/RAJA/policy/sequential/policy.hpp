@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef policy_sequential_HPP
@@ -76,26 +68,16 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
-}  // end namespace policy
-}  // end namespace sequential
+}  // namespace sequential
+}  // namespace policy
 
 using policy::sequential::seq_exec;
+using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
-using policy::sequential::seq_reduce;
 
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Shared memory policies
-///
-///////////////////////////////////////////////////////////////////////
-///
 
-struct seq_shmem {
-};
-
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif

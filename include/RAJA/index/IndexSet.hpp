@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_IndexSet_HPP
@@ -93,8 +85,8 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, typename PARENT::value_type>::value
-                    || T0_TypeId == 0,
+  static_assert(std::is_same<value_type, typename PARENT::value_type>::value ||
+                    T0_TypeId == 0,
                 "All segments must have the same value_type");
 
   //! Construct empty index set
@@ -433,14 +425,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(int begin, int end)
+  TypedIndexSet<T0, TREST...> createSlice(int begin, int end)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int minSeg = RAJA::operators::maximum<int>{}(0, begin);
     int maxSeg = RAJA::operators::minimum<int>{}(end, getNumSegments());
     for (int i = minSeg; i < maxSeg; ++i) {
-      segment_push_into(i, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      segment_push_into(i, retVal, PUSH_BACK, PUSH_NOCOPY);
     }
     return retVal;
   }
@@ -452,14 +444,14 @@ public:
   /// This TypedIndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  TypedIndexSet<T0, TREST...> *createSlice(const int *segIds, int len)
+  TypedIndexSet<T0, TREST...> createSlice(const int *segIds, int len)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
 
     int numSeg = getNumSegments();
     for (int i = 0; i < len; ++i) {
       if (segIds[i] >= 0 && segIds[i] < numSeg) {
-        segment_push_into(segIds[i], *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(segIds[i], retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
@@ -476,13 +468,13 @@ public:
   /// iterator type must de-reference to an integral value.
   ///
   template <typename T>
-  TypedIndexSet<T0, TREST...> *createSlice(const T &segIds)
+  TypedIndexSet<T0, TREST...> createSlice(const T &segIds)
   {
-    TypedIndexSet<T0, TREST...> *retVal = new TypedIndexSet<T0, TREST...>();
+    TypedIndexSet<T0, TREST...> retVal;
     int numSeg = getNumSegments();
     for (auto &seg : segIds) {
       if (seg >= 0 && seg < numSeg) {
-        segment_push_into(seg, *retVal, PUSH_BACK, PUSH_NOCOPY);
+        segment_push_into(seg, retVal, PUSH_BACK, PUSH_NOCOPY);
       }
     }
     return retVal;
@@ -776,8 +768,8 @@ template <typename T>
 struct is_indexset_policy
     : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
-}
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

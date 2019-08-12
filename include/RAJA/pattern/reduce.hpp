@@ -9,26 +9,19 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_reduce_HPP
 #define RAJA_reduce_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/util/Operators.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -109,7 +102,7 @@ class ReduceMin;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMinLoc;
 
 /*!
@@ -160,7 +153,7 @@ class ReduceMax;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMaxLoc;
 
 /*!
@@ -187,6 +180,6 @@ class ReduceMaxLoc;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceSum;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

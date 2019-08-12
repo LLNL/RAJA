@@ -9,32 +9,25 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_scan_HPP
 #define RAJA_scan_HPP
 
 #include "RAJA/config.hpp"
+
+#include <iterator>
+#include <type_traits>
+
 #include "camp/concepts.hpp"
 #include "camp/helpers.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/Operators.hpp"
-
-#include <iterator>
-#include <type_traits>
 
 namespace RAJA
 {
@@ -377,6 +370,6 @@ inclusive_scan_inplace(Args &&... args)
   inclusive_scan_inplace(ExecPolicy{}, std::forward<Args>(args)...);
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

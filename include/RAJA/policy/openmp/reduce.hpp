@@ -12,18 +12,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_omp_reduce_HPP
@@ -33,17 +25,17 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include <memory>
+#include <vector>
+
+#include <omp.h>
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
+
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
-
-#include <omp.h>
-
-#include <memory>
-#include <vector>
 
 namespace RAJA
 {
@@ -71,7 +63,7 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
@@ -128,11 +120,11 @@ public:
   }
 };
 
-} /* detail */
+}  // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_OPENMP guard
 

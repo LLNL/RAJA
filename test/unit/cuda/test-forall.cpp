@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -28,7 +20,9 @@
 
 #include "RAJA_gtest.hpp"
 
-using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>;
+using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
+                                         RAJA::ListSegment,
+                                         RAJA::RangeStrideSegment>;
 
 const size_t block_size = 256;
 
@@ -191,10 +185,12 @@ CUDA_TEST_F(ForallCUDA, forall_range)
     ref_array[i] = parent[i] * parent[i];
   }
 
-  RAJA::forall<RAJA::cuda_exec<block_size>>(
-      RAJA::make_range(0, array_length), [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-        test_array[idx] = parent[idx] * parent[idx];
-      });
+  RAJA::forall<RAJA::cuda_exec<block_size>>(RAJA::RangeSegment(0, array_length),
+                                            [=] RAJA_HOST_DEVICE(
+                                                RAJA::Index_type idx) {
+                                              test_array[idx] =
+                                                  parent[idx] * parent[idx];
+                                            });
 
   for (RAJA::Index_type i = 0; i < array_length; ++i) {
     ASSERT_FLOAT_EQ(ref_array[i], test_array[i]);
@@ -222,7 +218,7 @@ CUDA_TEST_F(ForallCUDA, forall_icount_range)
   }
 
   RAJA::forall_Icount<RAJA::cuda_exec<block_size>>(
-      RAJA::make_range(0, array_length),
+      RAJA::RangeSegment(0, array_length),
       0,
       [=] RAJA_DEVICE(RAJA::Index_type icount, RAJA::Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
@@ -280,8 +276,8 @@ CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
     ref_array[i] = parent[is_indices[i]] * parent[is_indices[i]];
   }
 
-  RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit,
-                                       RAJA::cuda_exec<block_size>>>(
+  RAJA::forall_Icount<
+      RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<block_size>>>(
       iset, [=] RAJA_DEVICE(RAJA::Index_type icount, RAJA::Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
       });
