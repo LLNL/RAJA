@@ -144,15 +144,6 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace detail
 {
 
-// Top level MultiPolicy shouldn't select a CHAI execution space
-// Once a specific policy is selected, that policy will select the correct
-// policy... see policy_invoker in MultiPolicy.hpp
-template <typename SELECTOR, typename... POLICIES>
-struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
-  static constexpr Platform value = Platform::undefined;
-};
-
-
 template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   static_assert(index < size, "index must be in the range of possibilities");

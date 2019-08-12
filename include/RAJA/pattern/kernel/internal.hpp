@@ -31,6 +31,8 @@
 
 #include "RAJA/pattern/kernel/ArgHelper.hpp"
 
+#include "RAJA/internal/get_platform.hpp"
+
 #include <iterator>
 #include <type_traits>
 
@@ -379,41 +381,6 @@ struct NestedPrivatizer {
 
 
 }  // end namespace internal
-
-namespace detail
-{
-
-
-template <typename T>
-struct get_statement_platform {
-  static constexpr Platform value =
-      get_platform_from_list<typename T::execution_policy_t,
-                             typename T::enclosed_statements_t>::value;
-};
-
-/*!
- * Specialization to define the platform for an kernel::StatementList, and
- * (by alias) a kernel::Policy
- *
- * This collects the Platform from each of it's statements, recursing into
- * each of them.
- */
-template <typename... Stmts>
-struct get_platform<RAJA::internal::StatementList<Stmts...>> {
-  static constexpr Platform value =
-      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
-};
-
-/*!
- * Specialize for an empty statement list to be undefined
- */
-template <>
-struct get_platform<RAJA::internal::StatementList<>> {
-  static constexpr Platform value = Platform::undefined;
-};
-
-
-}  // namespace detail
 }  // end namespace RAJA
 
 

@@ -1,7 +1,6 @@
 #ifndef RAJA_get_platform_HPP
 #define RAJA_get_platform_HPP
 
-#include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
@@ -87,15 +86,6 @@ struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>
     : public get_platform_from_list<SEG, EXEC> {
 };
 
-
-/*!
- * specialization for combining the execution polices for a forallN policy.
- *
- */
-template <typename TAGS, typename... POLICIES>
-struct get_platform<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
-    : public get_platform_from_list<POLICIES...> {
-};
 
 template <typename T>
 struct get_statement_platform {

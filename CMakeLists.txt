@@ -104,7 +104,8 @@ set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
-  src/MemUtils_CUDA.cpp)
+  src/MemUtils_CUDA.cpp
+  src/PluginStrategy.cpp)
 
 set (raja_depends)
 

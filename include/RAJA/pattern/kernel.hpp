@@ -23,8 +23,6 @@
 #include "RAJA/internal/get_platform.hpp"
 #include "RAJA/util/plugins.hpp"
 
-#include "RAJA/pattern/shared_memory.hpp"
-
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
