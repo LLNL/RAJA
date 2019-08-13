@@ -297,10 +297,10 @@ which CMake variables to use for certain cases.
 
 * **OpenMP Compiler Options**
 
-   The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
-   compiler. Option syntax follows the CMake *list* pattern. Here is an example
-   showing how to specify OpenMP target back-end options for the clang compiler
-   as a CMake option::
+The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
+compiler. Option syntax follows the CMake *list* pattern. Here is an example
+showing how to specify OpenMP target back-end options for the clang compiler
+as a CMake option::
 
    cmake \
      ....
@@ -309,10 +309,14 @@ which CMake variables to use for certain cases.
 
 * **CUDA Compiler Options**
 
-When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables
-`CMAKE_CUDA_FLAGS_RELEASE`, `CMAKE_CUDA_FLAGS_DEBUG`, and 
-'CMAKE_CUDA_FLAGS_RELWITHDEBINFO` (corresponding to the standard CMake build
-types) are used to pass flags to nvcc.
+When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
+
+  * CMAKE_CUDA_FLAGS_RELEASE 
+  * CMAKE_CUDA_FLAGS_DEBUG
+  * CMAKE_CUDA_FLAGS_RELWITHDEBINFO 
+
+which corresponding to the standard CMake build types are used to pass flags 
+to nvcc.
 
 .. note:: When nvcc must pass options to the host compiler, the arguments
           can be included in these CMake variables. Each host compiler
