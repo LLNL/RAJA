@@ -2,6 +2,7 @@
 // Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
@@ -69,11 +70,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running C-version of dot product...\n";
 
+  // _csytle_dotprod_start
   double dot = 0.0;
 
   for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];
   }
+  // _csytle_dotprod_end
 
   std::cout << "\t (a, b) = " << dot << std::endl;
 
@@ -83,6 +86,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
+  // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -90,6 +94,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
 
   dot = seqdot.get();
+  // _rajaseq_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -100,6 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
+  // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -107,6 +114,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = ompdot.get();
+  // _rajaomp_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -118,6 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
+  // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
@@ -126,6 +136,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = cudot.get();
+  // _rajacuda_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);

@@ -2,6 +2,7 @@
 // Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
@@ -66,11 +67,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running C-version of vector addition...\n";
+  std::cout << "\n Running C-style vector addition...\n";
 
+  // _cstyle_vector_add_start
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
+  // _cstyle_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -82,9 +85,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
+  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
+  // _rajaseq_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -125,9 +130,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
+  // _rajaomp_vector_add_start
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
+  // _rajaomp_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -139,10 +146,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
+  // _rajacuda_vector_add_start
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });    
+  // _rajacuda_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);

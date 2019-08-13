@@ -35,12 +35,16 @@ a sequence of alternating values ('1' and '-1'). Then, two values near
 the middle of the array are set to '-100' and '100':
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 51-76
+   :start-after: _reductions_array_init_start
+   :end-before: _reductions_array_init_end
+   :language: C++
 
 We also define a range segment to iterate over the array:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 93-93
+   :start-after: _reductions_range_start
+   :end-before: _reductions_arange_end
+   :language: C++
 
 With these parameters and data initialization, all the code examples 
 presented below will generate the following results:
@@ -54,7 +58,9 @@ presented below will generate the following results:
 A sequential kernel that exercises all RAJA sequential reduction types is:
  
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 99-126
+   :start-after: _reductions_raja_seq_start
+   :end-before: _reductions_raja_seq_end
+   :language: C++
 
 Note that each reduction object takes an initial value at construction. Also,
 within the kernel, updating each reduction is done via an operator or method
@@ -68,13 +74,17 @@ For parallel multi-threading execution via OpenMP, the example can be run
 by replacing the execution and reduction policies with:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 134-135
+   :start-after: _reductions_raja_omppolicy_start
+   :end-before: _reductions_raja_omppolicy_end
+   :language: C++
 
 Similarly, the kernel containing the reductions can be run in parallel
 on a CUDA GPU using these policies:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
-                    :lines: 170-171
+   :start-after: _reductions_raja_cudapolicy_start
+   :end-before: _reductions_raja_cudapolicy_end
+   :language: C++
 
 .. note:: Each RAJA reduction type requires a reduction policy that must 
           be compatible with the execution policy for the kernel in which 

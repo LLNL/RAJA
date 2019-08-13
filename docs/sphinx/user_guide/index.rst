@@ -16,8 +16,8 @@ National Laboratory (LLNL), that enable architecture and programming model
 portability for high performance computing (HPC) applications. RAJA has two 
 main goals: 
 
-#. **To enable application portability with manageable disruption** to algorithms and programming styles.
-#. To achieve performance **comparable** to using various programming models (e.g., OpenMP, CUDA, etc.) directly.
+#. To enable application portability with manageable disruption to existing algorithms and programming styles.
+#. To achieve performance comparable to using common programming models (e.g., OpenMP, CUDA, etc.) directly.
 
 RAJA targets portable, parallel loop execution by providing building blocks
 that extend the generally-accepted *parallel for* idiom.
@@ -50,8 +50,8 @@ sequential,
 `SIMD <https://en.wikipedia.org/wiki/SIMD>`_, 
 `NVIDIA CUDA <https://developer.nvidia.com/about-cuda>`_, 
 `OpenMP <https://www.openmp.org>`_ CPU multi-threading and target offload. 
-Support for `Intel Threading Building Blocks (TBB) <https://www.threadingbuildingblocks.org>`_ and `AMD ROCm <https://rocm.github.io/>`_ support are under 
-development and considered experimental.
+OpenMP target offload support is incomplete and should be considered 
+experimental. Support for `Intel Threading Building Blocks (TBB) <https://www.threadingbuildingblocks.org>`_ and `AMD HIP <https://gpuopen.com/compute-product/hip-convert-cuda-to-portable-c-code/>`_ support are also under development.
 
 RAJA uses standard C++11 -- C++ is the predominant programming language in
 many LLNL applications. RAJA requirements and design are rooted in a 

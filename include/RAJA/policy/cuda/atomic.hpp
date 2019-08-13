@@ -32,8 +32,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 
 namespace detail
@@ -736,7 +734,6 @@ atomicCAS(cuda_atomic, T volatile *acc, T compare, T value)
 #endif
 }
 
-}  // namespace atomic
 }  // namespace RAJA
 
 

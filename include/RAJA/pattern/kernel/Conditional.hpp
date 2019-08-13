@@ -42,26 +42,6 @@ struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 
 
 /*!
- * An expression that returns the value of the specified RAJA::kernel
- * parameter.
- *
- * This allows run-time values to affect the control logic within
- * RAJA::kernel execution policies.
- */
-template <camp::idx_t ParamId>
-struct Param : public internal::ParamBase {
-
-  constexpr static camp::idx_t param_idx = ParamId;
-
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
-      -> decltype(camp::get<ParamId>(data.param_tuple))
-  {
-    return camp::get<ParamId>(data.param_tuple);
-  }
-};
-
-/*!
  * An expression that returns a compile time literal value.
  *
  */

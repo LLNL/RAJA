@@ -61,49 +61,54 @@ Next, we show how to construct the two data layouts using ``RAJA::View`` and
 ``RAJA::Layout`` objects. For more details on these RAJA concepts, please
 refer to :ref:`view-label`.
 
-Layout 1 is constructed as follows:
+The views for layout 1 are constructed as follows:
 
 .. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
-                    :lines: 98-101, 134-143
+   :start-after: _permutedlayout_defviews_start
+   :end-before: _permutedlayout_defviews_end
+   :language: C++
 
 The first argument to ``RAJA::make_permuted_layout`` is a C++ array
 whose entries correspond to the size of each array dimension; i.e., we have
 'N' :math:`N_r \times N_c` matrices. The second argument describes the
 striding order of the array dimensions. Note that since this case follows
 the default RAJA ordering convention (see :ref:`view-label`), we use the 
-identity permutation '(0,1,2)'.
+identity permutation '(0,1,2)'. For each matrix, the column index (index 2) 
+has unit stride and the row index (index 1) has stride 3 (number of columns). 
+The matrix index (index 0) has stride 9 (:math:`N_c \times N_r`).
 
-For each matrix, the column index (index 2) has unit stride and the row index
-(index 1) has stride 3 (number of columns). The matrix index (index 0) has
-stride 9 (:math:`N_c \times N_r`).
-
-Layout 2 is constructed similarly:
+The views for layout 2 are constructed similarly:
 
 .. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
-                    :lines: 157-163
+   :start-after: _permutedlayout_defviews_start
+   :end-before: _permutedlayout_defviews_end
+   :language: C++
 
 Here, the first argument to ``RAJA::make_permuted_layout`` is the same as in
-Layout 1 since we have the same number of matrices, matrix dimensions and we
+layout 1 since we have the same number of matrices, matrix dimensions and we
 will use the same indexing scheme to access the matrix entries. However, the
-permutation we use is '(1,2,0)'.
-
-This makes the matrix index (index 0) have unit stride, the column index 
-(index 2) for each matrix has stride N, which is the number of matrices, and
-the row index (index 1) has stride :math:`N \times N_c`.
+permutation we use is '(1,2,0)'. This makes the matrix index (index 0) have 
+unit stride, the column index (index 2) for each matrix has stride N, which 
+is the number of matrices, and the row index (index 1) has 
+stride :math:`N \times N_c`.
 
 ^^^^^^^^^^^^^^^^^^^
 Example Code
 ^^^^^^^^^^^^^^^^^^^
 
-A complete working example that runs the batched matrix-multiplication 
+Complete working examples that run the batched matrix-multiplication 
 computation for both layouts and various RAJA execution policies is located
-in the file ``RAJA/examples/offset-layout.cpp``. It compares the execution run 
-times of the two layouts using three RAJA back-ends (Sequential, OpenMP, and 
-CUDA). The code example below shows the OpenMP version:
+in the file ``RAJA/examples/tut_batched-matrix-multiply.cpp``. It compares 
+the execution run times of the two layouts using three RAJA back-ends 
+(Sequential, OpenMP, and CUDA). The OpenMP version for layout 1 looks like this:
 
 .. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
-                    :lines: 199-232
+   :start-after: _permutedlayout_batchedmatmult_omp_start
+   :end-before: _permutedlayout_batchedmatmult_omp_end
+   :language: C++
 
-All versions use the exact same lambda loop body showing that data orderings
-using RAJA can be altered similarly to execution policies without modifying
-application source code directly.
+The only differences between the lambda loop body for layout 1 and layout 2
+cases are the names of the views. To make the algorithm code identical for all 
+cases, we would use type aliases for the view and layout types in a header
+file similarly to how we would abstract the execution policy out of the
+algorithm.
