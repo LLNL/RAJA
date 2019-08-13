@@ -75,6 +75,15 @@ struct omp_for_nowait_exec
                                             omp::NoWait> {
 };
 
+struct omp_for_dependence_graph
+  : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::host,
+                                          omp::For,
+                                          omp::Static<1>> {
+};
+
 template <unsigned int N>
 struct omp_for_static : make_policy_pattern_launch_platform_t<Policy::openmp,
                                                               Pattern::forall,

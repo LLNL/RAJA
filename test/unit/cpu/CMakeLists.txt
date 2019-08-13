@@ -11,6 +11,10 @@ blt_add_library(
   DEPENDS_ON RAJA ${raja_depends})
 
 raja_add_test(
+  NAME main-graph
+  SOURCES main-graph.cpp)
+
+raja_add_test(
   NAME test-reduce
   SOURCES test-reduce.cpp
   DEPENDS_ON bis)

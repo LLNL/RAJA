@@ -18,7 +18,11 @@
 #include <iostream>
 #include <string>
 
+#include <atomic>
 #include "RAJA/internal/DepGraphNode.hpp"
+
+template<>
+struct std::atomic<int>;
 
 namespace RAJA
 {

@@ -37,6 +37,8 @@
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
+#include "RAJA/index/Graph.hpp"
+#include "RAJA/index/GraphStorage.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
@@ -139,54 +141,55 @@ RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
  ******************************************************************************
  */
 
-/*
- * TODO: Fix this!!!
- */
-
-/*
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY, typename ...
-SEG_TYPES>
-RAJA_INLINE void forall(
-    ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
-    const IndexSet<SEG_TYPES ...>& iset,
-    LOOP_BODY loop_body)
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const omp_for_dependence_graph&,
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
-  if (!iset.dependencyGraphSet()) {
-    std::cerr << "\n RAJA IndexSet dependency graph not set , "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    RAJA_ABORT_OR_THROW("IndexSet dependency graph");
-  }
+  RAJA_EXTRACT_BED_IT(iter);
 
-  IndexSet& ncis = (*const_cast<IndexSet*>(&iset));
+  //auto begin = std::begin(iter);
+  //auto end = std::end(iter);
+  //auto distance = std::distance(begin, end);
 
-  int num_seg = ncis.getNumSegments();
+  GraphStorageRange storage(iter);
 
 #pragma omp parallel for schedule(static, 1)
-  for (int isi = 0; isi < num_seg; ++isi) {
-    IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
-    DepGraphNode* task = seg_info->getDepGraphNode();
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    storage.wait(begin_it[i]);  //task->wait()
+    loop_body(begin_it[i]);
+    storage.completed(begin_it[i]);
+  }//end iterate over segments of index set
 
-    task->wait();
-
-    executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-    task->reset();
-
-    if (task->numDepTasks() != 0) {
-      for (int ii = 0; ii < task->numDepTasks(); ++ii) {
-        // Alternateively, we could get the return value of this call
-        // and actively launch the task if we are the last depedent
-        // task. In that case, we would not need the semaphore spin
-        // loop above.
-        int seg = task->depTaskNum(ii);
-        DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
-        dep->satisfyOne();
-      }
-    }
-
-  }  // iterate over segments of index set
+  //storage.reset(); //task->reset() for all tasks
 }
-*/
+
+
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount_impl(const omp_for_dependence_graph&,
+                   Iterable&& iter,
+                   IndexType icount,
+                   Func&& loop_body)
+{
+  RAJA_EXTRACT_BED_IT(iter);
+
+  //auto begin = std::begin(iter);
+  //auto end = std::end(iter);
+  //auto distance = std::distance(begin, end);
+
+  GraphStorageRange storage(iter);
+
+#pragma omp parallel for schedule(static, 1)
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    storage.wait(begin_it[i]);  //task->wait()
+    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
+    storage.completed(begin_it[i]);
+  }//end iterate over segments of index set
+
+  //storage.reset(); //task->reset() for all tasks
+}
+
 
 }  // namespace omp
 
