@@ -51,12 +51,12 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, bool doing_min, size_t size>
-class SoAArray< ::RAJA::reduce::detail::ValueLoc<T, doing_min>, size>
+template <typename T, typename IndexType, bool doing_min, size_t size>
+class SoAArray< ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, size>
 {
-  using value_type = ::RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using value_type = ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
-  using second_type = Index_type;
+  using second_type = IndexType;
 
 public:
   RAJA_HOST_DEVICE value_type get(size_t i) const

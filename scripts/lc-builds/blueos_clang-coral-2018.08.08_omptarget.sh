@@ -12,7 +12,7 @@ BUILD_SUFFIX=lc_blueos-clang-coral-2018.08.08_omptarget
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.9.2
+module load cmake/3.14.5
 
 ## NOTE: RAJA tests are turned off due to compilation issues.
 

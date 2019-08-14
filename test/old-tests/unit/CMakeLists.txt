@@ -6,10 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME camp_tuple
-  SOURCES camp_tuple.cpp)
-
-raja_add_test(
   NAME test-atomic
   SOURCES test-atomic.cpp)
 

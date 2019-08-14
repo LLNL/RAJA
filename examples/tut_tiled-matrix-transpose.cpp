@@ -62,10 +62,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA tiled matrix transpose example...\n";
 
   //
-  // Define num rows/cols in matrix
+  // Define num rows/cols in matrix, tile dimensions, and number of tiles.
   //
+  // _tiled_mattranspose_dims_start
   const int N_r = 56;
   const int N_c = 75;
+
+  const int TILE_DIM = 16;
+
+  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  // _tiled_mattranspose_dims_end
 
   //
   // Allocate matrix data
@@ -79,17 +86,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // holds a pointer to a data array and enables multi-dimensional indexing
   // into the data.
   //
+  // _tiled_mattranspose_views_start
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_c, N_r);
-
-  //
-  // Define TILE dimensions
-  //
-  const int TILE_DIM = 16;
-
-  // Calculate number of tiles (Needed for C++ version)
-  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  // _tiled_mattranspose_views_end
 
   //
   // Initialize matrix data
@@ -107,6 +107,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
+  // _cstyle_tiled_mattranspose_start
   //
   // (0) Outer loops to iterate over tiles
   //
@@ -130,6 +131,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       
     }
   }
+  // _cstyle_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -156,6 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // using sequential loops. The template parameter inside 
   // tile_fixed corresponds to the dimension size of the tile.
   //
+  // _raja_tiled_mattranspose_start
   using KERNEL_EXEC_POL = 
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::seq_exec,
@@ -173,6 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     [=](int col, int row) {
       Atview(col, row) = Aview(row, col);
   });
+  // _raja_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

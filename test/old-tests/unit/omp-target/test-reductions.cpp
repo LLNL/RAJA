@@ -36,6 +36,10 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
+  RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal, LocTup);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal, LocTup);
+
   ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(initVal));
   ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(initVal));
   ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(initVal));
@@ -43,6 +47,13 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)1);
   ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(initVal));
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
+
+  ASSERT_EQ((NumericType)reduce_minloctup.get(), (NumericType)(initVal));
+  ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(initVal));
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
 }
 
 REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
@@ -189,6 +200,33 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMinLoc)
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMinLocGenericIndex)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     Index() : idx(-1) {}
+     Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer(1024.0, Index(0));
+
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) { minloc_reducer.minloc(array[i], Index(i)); });
+
+  double raja_min = (double)minloc_reducer.get();
+  Index raja_loc = minloc_reducer.getLoc();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+  ASSERT_EQ(this->minloc, raja_loc.idx);
+}
+
 TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLoc)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
@@ -207,12 +245,41 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLoc)
   ASSERT_EQ(this->maxloc, raja_loc);
 }
 
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLocGenericIndex)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+
+  struct Index {
+     RAJA::Index_type idx;
+     Index() : idx(-1) {}
+     Index(RAJA::Index_type idx) : idx(idx) {}
+  };
+
+  RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer(0.0, Index());
+
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
+                           [=](int i) { maxloc_reducer.maxloc(array[i], Index(i)); });
+
+  double raja_max = (double)maxloc_reducer.get();
+  Index raja_loc = maxloc_reducer.getLoc();
+
+  ASSERT_FLOAT_EQ(this->max, raja_max);
+  ASSERT_EQ(this->maxloc, raja_loc.idx);
+}
+
 REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceSum,
                            ReduceMin,
                            ReduceMax,
                            ReduceMinLoc,
-                           ReduceMaxLoc);
+                           ReduceMinLocGenericIndex,
+                           ReduceMaxLoc,
+                           ReduceMaxLocGenericIndex);
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
                                 RAJA::omp_target_reduce>,

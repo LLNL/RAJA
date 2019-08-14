@@ -98,8 +98,8 @@ struct stride_calculator<n_dims, n_dims, IdxLin> {
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
 struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim> {
 public:
-  typedef IdxLin IndexLinear;
-  typedef camp::make_idx_seq_t<sizeof...(RangeInts)> IndexRange;
+  using IndexLinear = IdxLin;
+  using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();

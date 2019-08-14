@@ -376,14 +376,14 @@ CUDA_TEST(Kernel, CudaCollapse2)
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(1, N), RAJA::RangeSegment(1, N)),
       [=] RAJA_DEVICE(Index_type i, Index_type j) {
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1, i);
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2, j);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(sum1, i);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(sum2, j);
 
         if (i >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err, 1);
+          RAJA::atomicAdd<RAJA::cuda_atomic>(err, 1);
         }
         if (j >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(err + 1, 1);
+          RAJA::atomicAdd<RAJA::cuda_atomic>(err + 1, 1);
         }
       });
 
@@ -514,7 +514,7 @@ CUDA_TEST(Kernel, SubRange_Complex)
                        RAJA::RangeSegment(0, 16),
                        RAJA::RangeSegment(0, 32)),
       [=] RAJA_HOST_DEVICE(Index_type i, Index_type j, Index_type k) {
-        RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr + i, 1.0);
+        RAJA::atomicAdd<RAJA::cuda_atomic>(ptr + i, 1.0);
       });
 
 
@@ -2169,7 +2169,7 @@ CUDA_TEST(Kernel, CudaComplexNested)
                      RAJA::Index_type j,
                      RAJA::Index_type k) {
         trip_count += 1;
-        RAJA::atomic::atomicAdd<RAJA::atomic::auto_atomic>(ptr + i, (int)1);
+        RAJA::atomicAdd<RAJA::auto_atomic>(ptr + i, (int)1);
       });
   cudaErrchk(cudaDeviceSynchronize());
 
