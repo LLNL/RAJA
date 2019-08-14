@@ -56,8 +56,8 @@ template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T = void>
 struct ExecPolicy
     : public RAJA::make_policy_pattern_t<SEG_EXEC_POLICY_T::policy,
                                          RAJA::Pattern::forall> {
-  typedef SEG_ITER_POLICY_T seg_it;
-  typedef SEG_EXEC_POLICY_T seg_exec;
+  using seg_it = SEG_ITER_POLICY_T;
+  using seg_exec = SEG_EXEC_POLICY_T;
 };
 
 }  // end namespace indexset

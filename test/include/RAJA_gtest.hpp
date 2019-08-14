@@ -82,8 +82,8 @@
     class TestName : public CaseName<gtest_TypeParam_>                   \
     {                                                                    \
     private:                                                             \
-      typedef CaseName<gtest_TypeParam_> TestFixture;                    \
-      typedef gtest_TypeParam_ TypeParam;                                \
+      using TestFixture = CaseName<gtest_TypeParam_>;                    \
+      using TypeParam = gtest_TypeParam_;                                \
                                                                          \
     public:                                                              \
       virtual void TestBody();                                           \
