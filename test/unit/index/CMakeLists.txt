@@ -5,6 +5,14 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(unit)
+raja_add_test(
+  NAME test-rangesegment
+  SOURCES test-rangesegment.cpp)
 
-add_subdirectory(old-tests)
+raja_add_test(
+  NAME test-rangestridesegment
+  SOURCES test-rangestridesegment.cpp)
+
+raja_add_test(
+  NAME test-listsegment
+  SOURCES test-listsegment.cpp)

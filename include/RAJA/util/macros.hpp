@@ -117,7 +117,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
   (((dividend) + (divisor)-1) / (divisor))
 
 
-inline void RAJA_ABORT_OR_THROW(const char *str)
+inline int RAJA_ABORT_OR_THROW(const char *str)
 {
   if (std::getenv("RAJA_NO_EXCEPT") != nullptr) {
     std::abort();

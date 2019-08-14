@@ -14,14 +14,6 @@ raja_add_test(
   SOURCES test-atomic.cpp)
 
 raja_add_test(
-  NAME test-atomic-ref
-  SOURCES test-atomic-ref.cpp)
-
-raja_add_test(
-  NAME test-atomic-ref-auto
-  SOURCES test-atomic-ref-auto.cpp)
-
-raja_add_test(
   NAME test-region
   SOURCES test-region.cpp)
 
@@ -44,10 +36,6 @@ raja_add_test(
 raja_add_test(
   NAME test-rajavec
   SOURCES test-rajavec.cpp)
-
-raja_add_test(
-  NAME test-iterators
-  SOURCES test-iterators.cpp)
 
 raja_add_test(
   NAME test-indexvalue

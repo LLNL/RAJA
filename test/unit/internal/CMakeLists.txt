@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(unit)
+raja_add_test(
+  NAME test-iterators
+  SOURCES test-iterators.cpp)
 
-add_subdirectory(old-tests)
