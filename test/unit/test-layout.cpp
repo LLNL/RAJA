@@ -113,7 +113,7 @@ TEST(OffsetLayoutTest, 2D_IJ)
 
 TEST(OffsetLayoutTest, 2D_JI)
 {
-  typedef RAJA::OffsetLayout<2> my_layout;
+  using my_layout = RAJA::OffsetLayout<2>;
 
   /*
    * Construct a 2D layout:
@@ -167,7 +167,7 @@ TEST(OffsetLayoutTest, View)
 
 TEST(LayoutTest, 2D_IJ)
 {
-  typedef RAJA::Layout<2> my_layout;
+  using my_layout = RAJA::Layout<2>;
 
   /*
    * Construct a 2D layout:
@@ -219,7 +219,7 @@ TEST(LayoutTest, 2D_IJ)
 
 TEST(LayoutTest, 2D_JI)
 {
-  typedef RAJA::Layout<2> my_layout;
+  using my_layout = RAJA::Layout<2>;
 
   /*
    * Construct a 2D layout:
@@ -259,7 +259,7 @@ TEST(LayoutTest, 2D_JI)
 
 TEST(LayoutTest, 2D_IJ_ProjJ)
 {
-  typedef RAJA::Layout<2> my_layout;
+  using my_layout = RAJA::Layout<2>;
 
   /*
    * Construct a 2D projective layout:
@@ -309,7 +309,7 @@ TEST(LayoutTest, 2D_IJ_ProjJ)
 
 TEST(LayoutTest, 3D_KJI_ProjJ)
 {
-  typedef RAJA::Layout<3> my_layout;
+  using my_layout = RAJA::Layout<3>;
 
   /*
    * Construct a 3D projective layout:
@@ -365,9 +365,8 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
 
 TEST(LayoutTest, 2D_StrideOne)
 {
-  typedef RAJA::Layout<2> my_layout;
-  typedef RAJA::Layout<2, ptrdiff_t, 0>
-      my_layout_s1;  // first index is stride-1
+  using my_layout = RAJA::Layout<2>;
+  using my_layout_s1 = RAJA::Layout<2, ptrdiff_t, 0>; // first index is stride-1
 
   /*
    * Construct a 2D layout:
