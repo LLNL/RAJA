@@ -49,6 +49,7 @@ struct omp_atomic {
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAdd(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -63,6 +64,7 @@ RAJA_INLINE T atomicAdd(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicSub(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -77,6 +79,7 @@ RAJA_INLINE T atomicSub(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
@@ -85,6 +88,7 @@ RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
@@ -94,6 +98,7 @@ RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc)
 {
   T ret;
@@ -108,6 +113,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T val)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
@@ -117,6 +123,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T val)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc)
 {
   T ret;
@@ -131,6 +138,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T val)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
@@ -139,6 +147,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T val)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAnd(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -152,6 +161,7 @@ RAJA_INLINE T atomicAnd(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicOr(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -165,6 +175,7 @@ RAJA_INLINE T atomicOr(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicXor(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -178,6 +189,7 @@ RAJA_INLINE T atomicXor(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicExchange(omp_atomic, T volatile *acc, T value)
 {
   T ret;
@@ -191,6 +203,7 @@ RAJA_INLINE T atomicExchange(omp_atomic, T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
