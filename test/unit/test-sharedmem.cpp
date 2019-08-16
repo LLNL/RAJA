@@ -74,7 +74,7 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
     }
   }
 
-  using SharedTile = AtomicTypedLocalArray<RAJA::atomic::auto_atomic, double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
+  using SharedTile = AtomicTypedLocalArray<RAJA::auto_atomic, double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);

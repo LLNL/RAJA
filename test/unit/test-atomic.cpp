@@ -45,15 +45,15 @@ void testAtomicFunctionBasic()
 
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
-    RAJA::atomic::atomicAdd<AtomicPolicy>(dest + 0, (T)1);
-    RAJA::atomic::atomicSub<AtomicPolicy>(dest + 1, (T)1);
+    RAJA::atomicAdd<AtomicPolicy>(dest + 0, (T)1);
+    RAJA::atomicSub<AtomicPolicy>(dest + 1, (T)1);
 
-    RAJA::atomic::atomicMin<AtomicPolicy>(dest + 2, (T)i);
-    RAJA::atomic::atomicMax<AtomicPolicy>(dest + 3, (T)i);
-    RAJA::atomic::atomicInc<AtomicPolicy>(dest + 4);
-    RAJA::atomic::atomicInc<AtomicPolicy>(dest + 5, (T)16);
-    RAJA::atomic::atomicDec<AtomicPolicy>(dest + 6);
-    RAJA::atomic::atomicDec<AtomicPolicy>(dest + 7, (T)16);
+    RAJA::atomicMin<AtomicPolicy>(dest + 2, (T)i);
+    RAJA::atomicMax<AtomicPolicy>(dest + 3, (T)i);
+    RAJA::atomicInc<AtomicPolicy>(dest + 4);
+    RAJA::atomicInc<AtomicPolicy>(dest + 5, (T)16);
+    RAJA::atomicDec<AtomicPolicy>(dest + 6);
+    RAJA::atomicDec<AtomicPolicy>(dest + 7, (T)16);
   });
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -204,10 +204,10 @@ void testAtomicLogical()
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::Index_type offset = i / 8;
     RAJA::Index_type bit = i % 8;
-    RAJA::atomic::atomicAnd<AtomicPolicy>(dest_and + offset,
+    RAJA::atomicAnd<AtomicPolicy>(dest_and + offset,
                                           (T)(0xFF ^ (1 << bit)));
-    RAJA::atomic::atomicOr<AtomicPolicy>(dest_or + offset, (T)(1 << bit));
-    RAJA::atomic::atomicXor<AtomicPolicy>(dest_xor + offset, (T)(1 << bit));
+    RAJA::atomicOr<AtomicPolicy>(dest_or + offset, (T)(1 << bit));
+    RAJA::atomicXor<AtomicPolicy>(dest_xor + offset, (T)(1 << bit));
   });
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -453,25 +453,25 @@ void testAtomicLogicalPol_gpu()
 
 TEST(Atomic, basic_OpenMP_AtomicFunction)
 {
-  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::atomic::auto_atomic>();
-  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::atomic::omp_atomic>();
-  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::auto_atomic>();
+  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::omp_atomic>();
+  testAtomicFunctionPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
 }
 
 
 TEST(Atomic, basic_OpenMP_AtomicView)
 {
-  testAtomicViewPol<RAJA::omp_for_exec, RAJA::atomic::auto_atomic>();
-  testAtomicViewPol<RAJA::omp_for_exec, RAJA::atomic::omp_atomic>();
-  testAtomicViewPol<RAJA::omp_for_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicViewPol<RAJA::omp_for_exec, RAJA::auto_atomic>();
+  testAtomicViewPol<RAJA::omp_for_exec, RAJA::omp_atomic>();
+  testAtomicViewPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
 }
 
 
 TEST(Atomic, basic_OpenMP_Logical)
 {
-  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::atomic::auto_atomic>();
-  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::atomic::omp_atomic>();
-  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::auto_atomic>();
+  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::omp_atomic>();
+  testAtomicLogicalPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
 }
 
 #endif
@@ -480,21 +480,21 @@ TEST(Atomic, basic_OpenMP_Logical)
 
 GPU_TEST(Atomic, basic_CUDA_AtomicFunction)
 {
-  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::atomic::cuda_atomic>();
+  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 GPU_TEST(Atomic, basic_CUDA_AtomicView)
 {
-  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::atomic::cuda_atomic>();
+  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 
 GPU_TEST(Atomic, basic_CUDA_Logical)
 {
-  testAtomicLogicalPol<RAJA::cuda_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicLogicalPol<RAJA::cuda_exec<256>, RAJA::atomic::cuda_atomic>();
+  testAtomicLogicalPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicLogicalPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 
@@ -526,22 +526,22 @@ GPU_TEST(Atomic, basic_HIP_Logical)
 
 TEST(Atomic, basic_seq_AtomicFunction)
 {
-  testAtomicFunctionPol<RAJA::seq_exec, RAJA::atomic::auto_atomic>();
-  testAtomicFunctionPol<RAJA::seq_exec, RAJA::atomic::seq_atomic>();
-  testAtomicFunctionPol<RAJA::seq_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicFunctionPol<RAJA::seq_exec, RAJA::auto_atomic>();
+  testAtomicFunctionPol<RAJA::seq_exec, RAJA::seq_atomic>();
+  testAtomicFunctionPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
 
 TEST(Atomic, basic_seq_AtomicView)
 {
-  testAtomicViewPol<RAJA::seq_exec, RAJA::atomic::auto_atomic>();
-  testAtomicViewPol<RAJA::seq_exec, RAJA::atomic::seq_atomic>();
-  testAtomicViewPol<RAJA::seq_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicViewPol<RAJA::seq_exec, RAJA::auto_atomic>();
+  testAtomicViewPol<RAJA::seq_exec, RAJA::seq_atomic>();
+  testAtomicViewPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
 
 
 TEST(Atomic, basic_seq_Logical)
 {
-  testAtomicLogicalPol<RAJA::seq_exec, RAJA::atomic::auto_atomic>();
-  testAtomicLogicalPol<RAJA::seq_exec, RAJA::atomic::seq_atomic>();
-  testAtomicLogicalPol<RAJA::seq_exec, RAJA::atomic::builtin_atomic>();
+  testAtomicLogicalPol<RAJA::seq_exec, RAJA::auto_atomic>();
+  testAtomicLogicalPol<RAJA::seq_exec, RAJA::seq_atomic>();
+  testAtomicLogicalPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }

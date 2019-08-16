@@ -81,7 +81,7 @@ struct AtomicTypedLocalArray<AtomicPolicy, DataType, camp::idx_seq<Perm ...>,
                              RAJA::SizeList<Sizes ...>, IndexTypes ...>{
   DataType *m_arrayPtr = nullptr;
   using element_t = DataType;
-  using atomic_ref_t = RAJA::atomic::AtomicRef<element_t, AtomicPolicy>;
+  using atomic_ref_t = RAJA::AtomicRef<element_t, AtomicPolicy>;
   using layout_t = RAJA::StaticLayout<camp::idx_seq<Perm ...>, Sizes ...>;
   static const camp::idx_t NumElem = layout_t::size();
 

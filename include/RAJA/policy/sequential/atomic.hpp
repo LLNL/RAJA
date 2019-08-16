@@ -24,8 +24,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 struct seq_atomic {
 };
@@ -165,7 +163,6 @@ RAJA_INLINE T atomicCAS(seq_atomic, T volatile *acc, T compare, T value)
 }
 
 
-}  // namespace atomic
 }  // namespace RAJA
 
 

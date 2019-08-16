@@ -71,7 +71,7 @@ GPU_TEST(ChaiTest, Views)
   chai::ManagedArray<float> v1_array(10);
   chai::ManagedArray<float> v2_array(10);
 
-  typedef RAJA::ManagedArrayView<float, RAJA::Layout<1> > view;
+  using view = RAJA::ManagedArrayView<float, RAJA::Layout<1> >;
 
   view v1(v1_array, 10);
   view v2(v2_array, 10);

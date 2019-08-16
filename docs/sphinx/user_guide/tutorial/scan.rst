@@ -34,7 +34,9 @@ Each of the examples below uses the same integer arrays for input
 and output values. We set the input array and print them as follows:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 67-83
+   :start-after: _scan_array_init_start
+   :end-before: _scan_array_init_end
+   :language: C++
 
 This generates the following sequence of values in the 'in' array::
 
@@ -47,7 +49,9 @@ Inclusive Scans
 A sequential inclusive scan operation is performed by:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 93-93
+   :start-after: _scan_inclusive_seq_start
+   :end-before: _scan_inclusive_seq_end
+   :language: C++
 
 Since no operator is passed to the scan method, the default 'sum' operation 
 is applied and the result generated in the 'out' array is a prefix-sum based 
@@ -59,7 +63,9 @@ We can be explicit about the operation used in the scan by passing the
 'plus' operator to the scan method:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 103-104
+   :start-after: _scan_inclusive_seq_plus_start
+   :end-before: _scan_inclusive_seq_plus_end
+   :language: C++
 
 The result in the 'out' array is the same.
 
@@ -67,7 +73,9 @@ An inclusive parallel scan operation using OpenMP multi-threading is
 accomplished similarly by replacing the execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 156-157
+   :start-after: _scan_inclusive_omp_plus_start
+   :end-before: _scan_inclusive_omp_plus_end
+   :language: C++
 
 As is commonly done with RAJA, the only difference between this code and
 the previous one is that the execution policy is different. If we want to 
@@ -81,7 +89,9 @@ Exclusive Scans
 A sequential exclusive scan (plus) operation is performed by:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 114-115
+   :start-after: _scan_exclusive_seq_plus_start
+   :end-before: _scan_exclusive_seq_plus_end
+   :language: C++
 
 This generates the following sequence of values in the output array::
 
@@ -95,7 +105,9 @@ that, the output sequence is shifted one position to the right.
 Running the same scan operation on a GPU using CUDA is done by:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 199-200
+   :start-after: _scan_exclusive_cuda_plus_start
+   :end-before: _scan_exclusive_cuda_plus_end
+   :language: C++
 
 Note that we pass the number of threads per CUDA thread block as the template
 argument to the CUDA execution policy as we do in other cases.
@@ -111,7 +123,9 @@ directly so **only one array is passed to in-place scan methods.**
 Here is a sequential inclusive in-place scan that uses the 'minimum' operator:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 125-128
+   :start-after: _scan_inclusive_inplace_seq_min_start
+   :end-before: _scan_inclusive_inplace_seq_min_end
+   :language: C++
 
 Note that, before the scan, we copy the input array into the output array so 
 the result is generated in the output array. Doing this, we avoid having to
@@ -124,7 +138,9 @@ This generates the following sequence in the output array::
 Here is a sequential exclusive in-place scan that uses the 'maximum' operator:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 138-141
+   :start-after: _scan_exclusive_inplace_seq_max_start
+   :end-before: _scan_exclusive_inplace_seq_max_end
+   :language: C++
 
 This generates the following sequence in the output array::
 
@@ -137,16 +153,22 @@ As you may expect at this point, running an exclusive in-place prefix-sum
 operation using OpenMP is accomplished by: 
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 167-170
+   :start-after: _scan_exclusive_inplace_omp_plus_start
+   :end-before: _scan_exclusive_inplace_omp_plus_end
+   :language: C++
 
 This generates the following sequence in the output array (as we saw earlier)::
 
    0 3 2 4 19 26 31 48 57 63 81 82 92 92 106 119 123 134 146 15
 
+and the only difference is the execution policy template parameter.
+
 Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-                    :lines: 187-190
+   :start-after: _scan_exclusive_inplace_omp_plus_start
+   :end-before: _scan_exclusive_inplace_omp_plus_end
+   :language: C++
 
 The file ``RAJA/examples/tut_scan.cpp`` contains the complete 
 working example code.

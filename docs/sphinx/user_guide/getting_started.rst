@@ -26,7 +26,7 @@ them are described in :ref:`configopt-label`. To build and use RAJA in its
 simplest form requires:
 
 - C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ version 3.8.2 or greater for most back-ends, and version 3.9 or greater for CUDA.
+- `CMake <https://cmake.org/>`_ version 3.9 or greater.
 
 
 ==================
@@ -40,13 +40,19 @@ the command::
    $ git clone --recursive https://github.com/LLNL/RAJA.git
 
 The ``--recursive`` argument above is needed to pull in other projects
-that we use as Git *submodules*. Currently, we have only two:
+that we use as Git *submodules*. Currently, these submodule dependencies are:
 
 - `BLT build system <https://github.com/LLNL/blt>`_
+- `Camp portable utility library <https://github.com/LLNL/camp>`_
 - `NVIDIA CUB <https://github.com/NVlabs/cub>`_
 
-You probably don't need to know much about either of these projects to start
+You probably don't need to know much about these other projects to start
 using RAJA. But, if you want to know more, click on the links above.
+
+.. note:: The CMake variable ``CUB_DIR`` will be automatically set to the 
+          location of the cub submodule library when CUDA is enabled; to use 
+          a different version of the cub library, install it and set the 
+          ``CUB_DIR`` variable to the desired location when running CMake.
 
 After running the clone command, a copy of the RAJA repository will reside in
 a ``RAJA`` subdirectory where you ran the clone command. You will be on the 

@@ -31,7 +31,7 @@ struct type_cat;
 
 template <typename... Ss, typename... Ts>
 struct type_cat<std::tuple<Ss...>, std::tuple<Ts...>> {
-  typedef std::tuple<Ss..., Ts...> type;
+  using type = std::tuple<Ss..., Ts...>;
 };
 
 
@@ -42,34 +42,32 @@ template <typename S, typename... Ss, typename... Ts>
 struct product<std::tuple<S, Ss...>, std::tuple<Ts...>> {
   // the cartesian product of {S} and {Ts...}
   // is a list of pairs -- here: a std::tuple of 2-element std::tuples
-  typedef std::tuple<std::tuple<S, Ts>...> S_cross_Ts;
+  using S_cross_Ts = std::tuple<std::tuple<S, Ts>...>;
 
   // the cartesian product of {Ss...} and {Ts...} (computed recursively)
-  typedef
-      typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type Ss_cross_Ts;
+  using Ss_cross_Ts = typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type;
 
   // concatenate both products
-  typedef typename type_cat<S_cross_Ts, Ss_cross_Ts>::type type;
+  using type = typename type_cat<S_cross_Ts, Ss_cross_Ts>::type;
 };
 
 template <typename... Ss, typename... Ts, typename... Smembers>
 struct product<std::tuple<std::tuple<Smembers...>, Ss...>, std::tuple<Ts...>> {
   // the cartesian product of {S} and {Ts...}
   // is a list of pairs -- here: a std::tuple of 2-element std::tuples
-  typedef std::tuple<std::tuple<Smembers..., Ts>...> S_cross_Ts;
+  using S_cross_Ts = std::tuple<std::tuple<Smembers..., Ts>...>;
 
   // the cartesian product of {Ss...} and {Ts...} (computed recursively)
-  typedef
-      typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type Ss_cross_Ts;
+  using Ss_cross_Ts = typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type;
 
   // concatenate both products
-  typedef typename type_cat<S_cross_Ts, Ss_cross_Ts>::type type;
+  using type = typename type_cat<S_cross_Ts, Ss_cross_Ts>::type;
 };
 
 // end the recursion
 template <typename... Ts>
 struct product<std::tuple<>, std::tuple<Ts...>> {
-  typedef std::tuple<> type;
+  using type = std::tuple<>;
 };
 }  // namespace types
 

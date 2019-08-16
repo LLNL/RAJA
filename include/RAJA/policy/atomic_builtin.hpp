@@ -25,8 +25,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 
 //! Atomic policy that uses the compilers builtin __atomic_XXX routines
@@ -337,7 +335,6 @@ RAJA_INLINE T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value)
 }
 
 
-}  // namespace atomic
 }  // namespace RAJA
 
 // make sure this define doesn't bleed out of this header

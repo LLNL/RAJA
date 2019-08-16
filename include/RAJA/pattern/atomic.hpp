@@ -27,8 +27,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 
 /*!
@@ -92,7 +90,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(T volatile *acc, T value)
 {
-  return RAJA::atomic::atomicAdd(Policy{}, acc, value);
+  return RAJA::atomicAdd(Policy{}, acc, value);
 }
 
 
@@ -106,7 +104,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(T volatile *acc, T value)
 {
-  return RAJA::atomic::atomicSub(Policy{}, acc, value);
+  return RAJA::atomicSub(Policy{}, acc, value);
 }
 
 
@@ -120,7 +118,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(T volatile *acc, T value)
 {
-  return RAJA::atomic::atomicMin(Policy{}, acc, value);
+  return RAJA::atomicMin(Policy{}, acc, value);
 }
 
 
@@ -134,7 +132,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(T volatile *acc, T value)
 {
-  return RAJA::atomic::atomicMax(Policy{}, acc, value);
+  return RAJA::atomicMax(Policy{}, acc, value);
 }
 
 
@@ -147,7 +145,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc)
 {
-  return RAJA::atomic::atomicInc(Policy{}, acc);
+  return RAJA::atomicInc(Policy{}, acc);
 }
 
 
@@ -163,7 +161,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc, T compare)
 {
-  return RAJA::atomic::atomicInc(Policy{}, acc, compare);
+  return RAJA::atomicInc(Policy{}, acc, compare);
 }
 
 
@@ -176,7 +174,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc)
 {
-  return RAJA::atomic::atomicDec(Policy{}, acc);
+  return RAJA::atomicDec(Policy{}, acc);
 }
 
 
@@ -192,7 +190,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc, T compare)
 {
-  return RAJA::atomic::atomicDec(Policy{}, acc, compare);
+  return RAJA::atomicDec(Policy{}, acc, compare);
 }
 
 
@@ -209,7 +207,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T volatile *acc, T value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicAnd can only be used on integral types");
-  return RAJA::atomic::atomicAnd(Policy{}, acc, value);
+  return RAJA::atomicAnd(Policy{}, acc, value);
 }
 
 
@@ -226,7 +224,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T volatile *acc, T value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicOr can only be used on integral types");
-  return RAJA::atomic::atomicOr(Policy{}, acc, value);
+  return RAJA::atomicOr(Policy{}, acc, value);
 }
 
 
@@ -243,7 +241,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T volatile *acc, T value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicXor can only be used on integral types");
-  return RAJA::atomic::atomicXor(Policy{}, acc, value);
+  return RAJA::atomicXor(Policy{}, acc, value);
 }
 
 
@@ -257,7 +255,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(T volatile *acc, T value)
 {
-  return RAJA::atomic::atomicExchange(Policy{}, acc, value);
+  return RAJA::atomicExchange(Policy{}, acc, value);
 }
 
 
@@ -273,7 +271,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T volatile *acc, T compare, T value)
 {
-  return RAJA::atomic::atomicCAS(Policy{}, acc, compare, value);
+  return RAJA::atomicCAS(Policy{}, acc, compare, value);
 }
 
 /*!
@@ -283,7 +281,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T volatile *acc, T compare, T value)
  * arbitrary memory location.
  *
  * This object provides an OO interface to the global function calls provided
- * as RAJA::atomic::atomicXXX
+ * as RAJA::atomicXXX
  */
 template <typename T, typename Policy = auto_atomic>
 class AtomicRef
@@ -340,14 +338,14 @@ public:
   RAJA_HOST_DEVICE
   value_type exchange(value_type rhs) const
   {
-    return RAJA::atomic::atomicExchange<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicExchange<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type CAS(value_type compare, value_type rhs) const
   {
-    return RAJA::atomic::atomicCAS<Policy>(m_value_ptr, compare, rhs);
+    return RAJA::atomicCAS<Policy>(m_value_ptr, compare, rhs);
   }
 
   RAJA_INLINE
@@ -355,7 +353,7 @@ public:
   bool compare_exchange_strong(value_type& expect, value_type rhs) const
   {
     value_type compare = expect;
-    value_type old = RAJA::atomic::atomicCAS<Policy>(m_value_ptr, compare, rhs);
+    value_type old = RAJA::atomicCAS<Policy>(m_value_ptr, compare, rhs);
     if (compare == old) {
       return true;
     } else {
@@ -375,70 +373,70 @@ public:
   RAJA_HOST_DEVICE
   value_type operator++() const
   {
-    return RAJA::atomic::atomicInc<Policy>(m_value_ptr) + 1;
+    return RAJA::atomicInc<Policy>(m_value_ptr) + 1;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator++(int) const
   {
-    return RAJA::atomic::atomicInc<Policy>(m_value_ptr);
+    return RAJA::atomicInc<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator--() const
   {
-    return RAJA::atomic::atomicDec<Policy>(m_value_ptr) - 1;
+    return RAJA::atomicDec<Policy>(m_value_ptr) - 1;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator--(int) const
   {
-    return RAJA::atomic::atomicDec<Policy>(m_value_ptr);
+    return RAJA::atomicDec<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type fetch_add(value_type rhs) const
   {
-    return RAJA::atomic::atomicAdd<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicAdd<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator+=(value_type rhs) const
   {
-    return RAJA::atomic::atomicAdd<Policy>(m_value_ptr, rhs) + rhs;
+    return RAJA::atomicAdd<Policy>(m_value_ptr, rhs) + rhs;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type fetch_sub(value_type rhs) const
   {
-    return RAJA::atomic::atomicSub<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicSub<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator-=(value_type rhs) const
   {
-    return RAJA::atomic::atomicSub<Policy>(m_value_ptr, rhs) - rhs;
+    return RAJA::atomicSub<Policy>(m_value_ptr, rhs) - rhs;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type fetch_min(value_type rhs) const
   {
-    return RAJA::atomic::atomicMin<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicMin<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type min(value_type rhs) const
   {
-    value_type old = RAJA::atomic::atomicMin<Policy>(m_value_ptr, rhs);
+    value_type old = RAJA::atomicMin<Policy>(m_value_ptr, rhs);
     return old < rhs ? old : rhs;
   }
 
@@ -446,14 +444,14 @@ public:
   RAJA_HOST_DEVICE
   value_type fetch_max(value_type rhs) const
   {
-    return RAJA::atomic::atomicMax<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicMax<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type max(value_type rhs) const
   {
-    value_type old = RAJA::atomic::atomicMax<Policy>(m_value_ptr, rhs);
+    value_type old = RAJA::atomicMax<Policy>(m_value_ptr, rhs);
     return old > rhs ? old : rhs;
   }
 
@@ -461,42 +459,42 @@ public:
   RAJA_HOST_DEVICE
   value_type fetch_and(value_type rhs) const
   {
-    return RAJA::atomic::atomicAnd<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicAnd<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator&=(value_type rhs) const
   {
-    return RAJA::atomic::atomicAnd<Policy>(m_value_ptr, rhs) & rhs;
+    return RAJA::atomicAnd<Policy>(m_value_ptr, rhs) & rhs;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type fetch_or(value_type rhs) const
   {
-    return RAJA::atomic::atomicOr<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicOr<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator|=(value_type rhs) const
   {
-    return RAJA::atomic::atomicOr<Policy>(m_value_ptr, rhs) | rhs;
+    return RAJA::atomicOr<Policy>(m_value_ptr, rhs) | rhs;
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type fetch_xor(value_type rhs) const
   {
-    return RAJA::atomic::atomicXor<Policy>(m_value_ptr, rhs);
+    return RAJA::atomicXor<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator^=(value_type rhs) const
   {
-    return RAJA::atomic::atomicXor<Policy>(m_value_ptr, rhs) ^ rhs;
+    return RAJA::atomicXor<Policy>(m_value_ptr, rhs) ^ rhs;
   }
 
 private:
@@ -504,7 +502,6 @@ private:
 };
 
 
-}  // namespace atomic
 }  // namespace RAJA
 
 #endif

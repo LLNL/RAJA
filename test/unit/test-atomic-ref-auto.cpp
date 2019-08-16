@@ -23,7 +23,7 @@
 
 TEST(Atomic, basic_OpenMP_AtomicRef)
 {
-  testAtomicRefPol<RAJA::omp_for_exec, RAJA::atomic::auto_atomic>();
+  testAtomicRefPol<RAJA::omp_for_exec, RAJA::auto_atomic>();
 }
 
 #endif
@@ -32,7 +32,7 @@ TEST(Atomic, basic_OpenMP_AtomicRef)
 
 GPU_TEST(Atomic, basic_CUDA_AtomicRef)
 {
-  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
 }
 
 #endif
@@ -48,6 +48,6 @@ GPU_TEST(Atomic, basic_HIP_AtomicRef)
 
 TEST(Atomic, basic_seq_AtomicRef)
 {
-  testAtomicRefPol<RAJA::seq_exec, RAJA::atomic::auto_atomic>();
+  testAtomicRefPol<RAJA::seq_exec, RAJA::auto_atomic>();
 }
 

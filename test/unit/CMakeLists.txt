@@ -6,10 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME camp_tuple
-  SOURCES camp_tuple.cpp)
-
-raja_add_test(
   NAME test-atomic
   SOURCES test-atomic.cpp)
 
@@ -72,6 +68,10 @@ raja_add_test(
 raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
+
+raja_add_test(
+  NAME test-kernel-lambda-args
+  SOURCES test-kernel-lambda-args.cpp)
 
 add_subdirectory(cpu)
 

@@ -30,8 +30,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
 
 #if defined(RAJA_COMPILER_MSVC)
 
@@ -117,7 +115,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T val)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-  return RAJA::atomic::atomicInc(builtin_atomic{}, acc, val);
+  return RAJA::atomicInc(builtin_atomic{}, acc, val);
 }
 
 
@@ -142,7 +140,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T val)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-  return RAJA::atomic::atomicDec(builtin_atomic{}, acc, val);
+  return RAJA::atomicDec(builtin_atomic{}, acc, val);
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -207,13 +205,12 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
 {
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-  return RAJA::atomic::atomicCAS(builtin_atomic{}, acc, compare, value);
+  return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
 }
 
 #endif  // not defined RAJA_COMPILER_MSVC
 
 
-}  // namespace atomic
 }  // namespace RAJA
 
 #endif  // RAJA_ENABLE_OPENMP

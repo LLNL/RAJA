@@ -44,6 +44,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA reductions example...\n";
 
+  // _reductions_array_init_start
 //
 // Define array length
 //
@@ -70,6 +71,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   const int maxloc_ref = N / 2 + 1;
   a[maxloc_ref] = 100;
+  // _reductions_array_init_end
 
 //
 // Note: with this data initialization scheme, the following results will
@@ -86,12 +88,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Define index range for iterating over a elements in all examples
 //
+  // _reductions_range_start
   RAJA::RangeSegment arange(0, N);
+  // _reductions_range_end
 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential reductions...\n";
 
+  // _reductions_raja_seq_start
   using EXEC_POL1   = RAJA::seq_exec;
   using REDUCE_POL1 = RAJA::seq_reduce;
  
@@ -120,6 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << seq_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << seq_maxloc.get() << " , " 
                                << seq_maxloc.getLoc() << std::endl;
+  // _reductions_raja_seq_end
   
 
 //----------------------------------------------------------------------------//
@@ -127,8 +133,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP reductions...\n";
 
+  // _reductions_raja_omppolicy_start
   using EXEC_POL2   = RAJA::omp_parallel_for_exec;
   using REDUCE_POL2 = RAJA::omp_reduce;
+  // _reductions_raja_omppolicy_end
 
   RAJA::ReduceSum<REDUCE_POL2, int> omp_sum(0);
   RAJA::ReduceMin<REDUCE_POL2, int> omp_min(std::numeric_limits<int>::max());
@@ -163,8 +171,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA reductions...\n";
 
+  // _reductions_raja_cudapolicy_start
   using EXEC_POL3   = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
   using REDUCE_POL3 = RAJA::cuda_reduce;
+  // _reductions_raja_cudapolicy_end
 
   RAJA::ReduceSum<REDUCE_POL3, int> cuda_sum(0);
   RAJA::ReduceMin<REDUCE_POL3, int> cuda_min(std::numeric_limits<int>::max());
