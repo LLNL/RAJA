@@ -41,7 +41,7 @@ GPU_TEST(Atomic, basic_CUDA_AtomicRef)
 
 GPU_TEST(Atomic, basic_HIP_AtomicRef)
 {
-  testAtomicRefPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::auto_atomic>();
+  testAtomicRefPol_gpu<RAJA::hip_exec<256>, RAJA::auto_atomic>();
 }
 
 #endif

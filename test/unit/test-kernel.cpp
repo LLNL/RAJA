@@ -286,6 +286,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
     tsum += get_val(i) * 1.1 + j;
   });
 
+  hipDeviceSynchronize();
 
   hipErrchk(hipMemcpy(this->data, this->d_data, x_len*y_len*sizeof(double), hipMemcpyDeviceToHost));
   for (Index_type i = 0; i < x_len; ++i) {
@@ -819,14 +820,14 @@ GPU_TEST(Kernel_gpu, HipCollapse2)
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(1, N), RAJA::RangeSegment(1, N)),
       [=] RAJA_DEVICE(Index_type i, Index_type j) {
-        RAJA::atomic::atomicAdd<RAJA::hip_atomic>(d_sum1, i);
-        RAJA::atomic::atomicAdd<RAJA::hip_atomic>(d_sum2, j);
+        RAJA::atomicAdd<RAJA::hip_atomic>(d_sum1, i);
+        RAJA::atomicAdd<RAJA::hip_atomic>(d_sum2, j);
 
         if (i >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::hip_atomic>(d_err, 1);
+          RAJA::atomicAdd<RAJA::hip_atomic>(d_err, 1);
         }
         if (j >= 41) {
-          RAJA::atomic::atomicAdd<RAJA::hip_atomic>(d_err + 1, 1);
+          RAJA::atomicAdd<RAJA::hip_atomic>(d_err + 1, 1);
         }
       });
 
@@ -963,7 +964,7 @@ GPU_TEST(Kernel_gpu, SubRange_Complex)
                        RAJA::RangeSegment(0, 16),
                        RAJA::RangeSegment(0, 32)),
       [=] RAJA_HOST_DEVICE(Index_type i, Index_type j, Index_type k) {
-        RAJA::atomicAdd<RAJA::atomic::hip_atomic>(d_ptr + i, 1.0);
+        RAJA::atomicAdd<RAJA::hip_atomic>(d_ptr + i, 1.0);
       });
 
   hipErrchk(hipMemcpy(ptr, d_ptr, sizeof(double) * num_elem, hipMemcpyDeviceToHost));
@@ -3278,7 +3279,7 @@ GPU_TEST(Kernel, HipWarpLoop4)
       });
 
   //factor of 2 since wavefronts are 64-wide on AMD
-  ASSERT_EQ(trip_count.get(), 2*A*B); 
+  ASSERT_EQ(trip_count.get(), 2*A*B);
   ASSERT_EQ(value.get(), B*A*(A-1));
 
 }
@@ -3945,7 +3946,7 @@ GPU_TEST(Kernel_gpu, HipComplexNested)
                      RAJA::Index_type j,
                      RAJA::Index_type k) {
         trip_count += 1;
-        RAJA::atomicAdd<RAJA::atomic::auto_atomic>(d_ptr + i, (int)1);
+        RAJA::atomicAdd<RAJA::auto_atomic>(d_ptr + i, (int)1);
       });
   hipErrchk(hipMemcpy(ptr, d_ptr, sizeof(int) * N, hipMemcpyDeviceToHost));
 

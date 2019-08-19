@@ -300,13 +300,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
                "hip)...\n";
 
-  int* d_input_lattice  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
-  int* d_output_lattice = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+  int* d_input  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+  int* d_output = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
 
-  hipErrchk(hipMemcpy( d_input_lattice, input_lattice, totCells * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_input_latticeView (d_input_lattice, layout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_output_latticeView(d_output_lattice, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_inputView (d_input, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_outputView(d_output, layout);
 
   using NESTED_EXEC_POL3 =
     RAJA::KernelPolicy<
@@ -322,21 +322,21 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
                                  [=] RAJA_DEVICE(int col, int row) {
 
-                                   d_output_latticeView(row, col) =
-                                         d_input_latticeView(row, col)
-                                       + d_input_latticeView(row - 1, col)
-                                       + d_input_latticeView(row + 1, col)
-                                       + d_input_latticeView(row, col - 1)
-                                       + d_input_latticeView(row, col + 1);
+                                   d_outputView(row, col) =
+                                         d_inputView(row, col)
+                                       + d_inputView(row - 1, col)
+                                       + d_inputView(row + 1, col)
+                                       + d_inputView(row, col - 1)
+                                       + d_inputView(row, col + 1);
                                  });
 
-  hipErrchk(hipMemcpy( output_lattice, d_output_lattice, totCells * sizeof(int), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy( output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost ));
 
-  //printLattice(output_lattice, totCellsInRow, totCellsInCol);
-  checkResult(output_lattice, lattice_ref, totCells);
+  //printLattice(output, totCellsInRow, totCellsInCol);
+  checkResult(output, output_ref, totCells);
 
-  memoryManager::deallocate_gpu(d_input_lattice);
-  memoryManager::deallocate_gpu(d_output_lattice);
+  memoryManager::deallocate_gpu(d_input);
+  memoryManager::deallocate_gpu(d_output);
 #endif
 
 //----------------------------------------------------------------------------//

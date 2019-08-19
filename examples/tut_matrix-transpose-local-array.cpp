@@ -194,8 +194,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // **NOTE** Although the LocalArray is constructed
   // the array memory has not been allocated.
 
-  TILE_MEM RAJA_Tile;
-
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
@@ -589,13 +587,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Tile_Array(ty, tx) = Aview(row, col);
+        Tile_Array(ty, tx) = d_Aview(row, col);
 
       },
 
       [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Atview(col, row) = Tile_Array(ty, tx);
+        d_Atview(col, row) = Tile_Array(ty, tx);
 
       });
 

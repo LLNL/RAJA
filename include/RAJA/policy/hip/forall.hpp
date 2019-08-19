@@ -205,7 +205,7 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
       //
       // Launch the kernels
       //
-      hipLaunchKernelGGL(func, 
+      hipLaunchKernelGGL(func,
                          dim3(gridSize), dim3(BlockSize), shmem, stream,
                          body,
                          std::move(begin),

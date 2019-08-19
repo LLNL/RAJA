@@ -81,8 +81,8 @@ class TypedListSegment
   using CPU_memory = std::integral_constant<bool, false>;
 
   //! specialization for deallocation of GPU_memory
-  void deallocate(GPU_memory) { 
-#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
+  void deallocate(GPU_memory) {
+#if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(m_data));
 #elif defined(RAJA_ENABLE_HIP)
     hipErrchk(hipHostFree(m_data));
@@ -92,7 +92,7 @@ class TypedListSegment
   //! specialization for allocation of GPU_memory
   void allocate(GPU_memory)
   {
-#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaMallocManaged((void**)&m_data,
                                  m_size * sizeof(value_type),
                                  cudaMemAttachGlobal));

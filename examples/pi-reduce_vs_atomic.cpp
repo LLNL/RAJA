@@ -218,11 +218,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double* d_atomic_pi = memoryManager::allocate_gpu<double>(1);
   hipErrchk(hipMemcpy( d_atomic_pi, atomic_pi, 1 * sizeof(double), hipMemcpyHostToDevice ));
 
-  using ATOMIC_POL3 = RAJA::atomic::hip_atomic;
+  using ATOMIC_POL3 = RAJA::hip_atomic;
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomic::atomicAdd<ATOMIC_POL3>(d_atomic_pi, 4.0 / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL3>(d_atomic_pi, 4.0 / (1.0 + x * x));
   });
 
   hipErrchk(hipMemcpy( atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost ));

@@ -269,15 +269,15 @@ void testAtomicFunctionBasic_gpu()
   hipMemcpy(d_dest, dest, 8*sizeof(T), hipMemcpyHostToDevice);
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
-    RAJA::atomic::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
-    RAJA::atomic::atomicSub<AtomicPolicy>(d_dest + 1, (T)1);
+    RAJA::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
+    RAJA::atomicSub<AtomicPolicy>(d_dest + 1, (T)1);
 
-    RAJA::atomic::atomicMin<AtomicPolicy>(d_dest + 2, (T)i);
-    RAJA::atomic::atomicMax<AtomicPolicy>(d_dest + 3, (T)i);
-    RAJA::atomic::atomicInc<AtomicPolicy>(d_dest + 4);
-    RAJA::atomic::atomicInc<AtomicPolicy>(d_dest + 5, (T)16);
-    RAJA::atomic::atomicDec<AtomicPolicy>(d_dest + 6);
-    RAJA::atomic::atomicDec<AtomicPolicy>(d_dest + 7, (T)16);
+    RAJA::atomicMin<AtomicPolicy>(d_dest + 2, (T)i);
+    RAJA::atomicMax<AtomicPolicy>(d_dest + 3, (T)i);
+    RAJA::atomicInc<AtomicPolicy>(d_dest + 4);
+    RAJA::atomicInc<AtomicPolicy>(d_dest + 5, (T)16);
+    RAJA::atomicDec<AtomicPolicy>(d_dest + 6);
+    RAJA::atomicDec<AtomicPolicy>(d_dest + 7, (T)16);
   });
 
   hipDeviceSynchronize();
@@ -411,10 +411,10 @@ void testAtomicLogical_gpu()
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::Index_type offset = i / 8;
     RAJA::Index_type bit = i % 8;
-    RAJA::atomic::atomicAnd<AtomicPolicy>(d_dest_and + offset,
+    RAJA::atomicAnd<AtomicPolicy>(d_dest_and + offset,
                                           (T)(0xFF ^ (1 << bit)));
-    RAJA::atomic::atomicOr<AtomicPolicy>(d_dest_or + offset, (T)(1 << bit));
-    RAJA::atomic::atomicXor<AtomicPolicy>(d_dest_xor + offset, (T)(1 << bit));
+    RAJA::atomicOr<AtomicPolicy>(d_dest_or + offset, (T)(1 << bit));
+    RAJA::atomicXor<AtomicPolicy>(d_dest_xor + offset, (T)(1 << bit));
   });
 
   hipDeviceSynchronize();
@@ -504,21 +504,21 @@ GPU_TEST(Atomic, basic_CUDA_Logical)
 
 GPU_TEST(Atomic, basic_HIP_AtomicFunction)
 {
-  testAtomicFunctionPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicFunctionPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::hip_atomic>();
+  testAtomicFunctionPol_gpu<RAJA::hip_exec<256>, RAJA::auto_atomic>();
+  testAtomicFunctionPol_gpu<RAJA::hip_exec<256>, RAJA::hip_atomic>();
 }
 
 GPU_TEST(Atomic, basic_HIP_AtomicView)
 {
-  testAtomicViewPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicViewPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::hip_atomic>();
+  testAtomicViewPol_gpu<RAJA::hip_exec<256>, RAJA::auto_atomic>();
+  testAtomicViewPol_gpu<RAJA::hip_exec<256>, RAJA::hip_atomic>();
 }
 
 
 GPU_TEST(Atomic, basic_HIP_Logical)
 {
-  testAtomicLogicalPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::auto_atomic>();
-  testAtomicLogicalPol_gpu<RAJA::hip_exec<256>, RAJA::atomic::hip_atomic>();
+  testAtomicLogicalPol_gpu<RAJA::hip_exec<256>, RAJA::auto_atomic>();
+  testAtomicLogicalPol_gpu<RAJA::hip_exec<256>, RAJA::hip_atomic>();
 }
 
 

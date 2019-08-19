@@ -32,9 +32,6 @@
 
 namespace RAJA
 {
-namespace atomic
-{
-
 
 namespace detail
 {
@@ -631,7 +628,6 @@ atomicCAS(hip_atomic, T volatile *acc, T compare, T value)
   return detail::hip_atomicCAS(acc, compare, value);
 }
 
-}  // namespace atomic
 }  // namespace RAJA
 
 

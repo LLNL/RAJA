@@ -40,15 +40,15 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Data, camp::idx_t LoopIndex>
-struct HipStatementExecutor<Data, statement::Lambda<LoopIndex>> {
+template <typename Data, camp::idx_t LambdaIndex>
+struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex>> {
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){
-      invoke_lambda<LoopIndex>(data);
+      invoke_lambda<LambdaIndex>(data);
     }
   }
 
@@ -60,6 +60,35 @@ struct HipStatementExecutor<Data, statement::Lambda<LoopIndex>> {
     return LaunchDims();
   }
 };
+
+//
+
+template <typename Data, camp::idx_t LambdaIndex, typename... Args>
+struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>> {
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+
+    //Convert SegList, ParamList into Seg, Param types, and store in a list
+    using targList = typename camp::flatten<camp::list<Args...>>::type;
+
+    // Only execute the lambda if it hasn't been masked off
+    if(thread_active){
+      invoke_lambda_with_args<LambdaIndex, targList>(data);
+    }
+
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  {
+    return LaunchDims();
+  }
+};
+
 
 
 

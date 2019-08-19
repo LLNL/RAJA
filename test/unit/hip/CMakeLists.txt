@@ -22,6 +22,14 @@ raja_add_test(
   SOURCES test-reduce-loc.cpp)
 
 raja_add_test(
+  NAME test-hip-reduce-tupleloc
+  SOURCES test-reduce-tupleloc.cpp)
+
+raja_add_test(
+  NAME test-hip-reduce-randloc
+  SOURCES test-reduce-randloc.cpp)
+
+raja_add_test(
   NAME test-hip-reduce-max
   SOURCES test-reduce-max.cpp)
 

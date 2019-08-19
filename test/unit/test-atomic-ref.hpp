@@ -639,7 +639,7 @@ struct PreIncCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (++counter) - (T)1;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -655,7 +655,7 @@ struct PostIncCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter++);
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -671,7 +671,7 @@ struct AddEqCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter += (T)1) - (T)1;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -687,7 +687,7 @@ struct FetchAddCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return counter.fetch_add((T)1);
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -703,7 +703,7 @@ struct PreDecCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (--counter);
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -719,7 +719,7 @@ struct PostDecCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter--) - (T)1;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -735,7 +735,7 @@ struct SubEqCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return (counter -= (T)1);
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -751,7 +751,7 @@ struct FetchSubCountOp_gpu {
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
     return counter.fetch_sub((T)1) - (T)1;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> counter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
@@ -767,7 +767,7 @@ struct MaxEqOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.max((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -783,7 +783,7 @@ struct FetchMaxOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.fetch_max((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -799,7 +799,7 @@ struct MinEqOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.min((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -815,7 +815,7 @@ struct FetchMinOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.fetch_min((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -833,7 +833,7 @@ struct AndEqOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other &= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -849,7 +849,7 @@ struct FetchAndOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.fetch_and((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -865,7 +865,7 @@ struct OrEqOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other |= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -881,7 +881,7 @@ struct FetchOrOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.fetch_or((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -900,7 +900,7 @@ struct XorEqOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other ^= (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -919,7 +919,7 @@ struct FetchXorOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return other.fetch_xor((T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -935,7 +935,7 @@ struct LoadOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
   { return other.load(); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -951,7 +951,7 @@ struct OperatorTOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const
   { return other; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -967,7 +967,7 @@ struct StoreOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { other.store((T)i); return (T)i; }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -983,7 +983,7 @@ struct AssignOtherOp_gpu {
   RAJA_HOST_DEVICE
   T operator()(RAJA::Index_type i) const
   { return (other = (T)i); }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -1005,7 +1005,7 @@ struct CASOtherOp_gpu {
     }
     return received;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -1025,7 +1025,7 @@ struct CompareExchangeWeakOtherOp_gpu {
     while (!other.compare_exchange_weak(expect, (T)i)) {}
     return expect;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -1045,7 +1045,7 @@ struct CompareExchangeStrongOtherOp_gpu {
     while (!other.compare_exchange_strong(expect, (T)i)) {}
     return expect;
   }
-  RAJA::atomic::AtomicRef<T, AtomicPolicy> other;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
@@ -1237,5 +1237,3 @@ void testAtomicRefPol_gpu()
 
 
 #endif //defined(RAJA_ENABLE_HIP)
-
-

@@ -111,7 +111,7 @@ GPU_TEST(Chai, NestedView)
       >
     >;
 
-#if defined(RAJA_ENABLE_CUDA)  
+#if defined(RAJA_ENABLE_CUDA)
   using POLICY_GPU = 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -122,7 +122,7 @@ GPU_TEST(Chai, NestedView)
       >
     >;
 #elif defined(RAJA_ENABLE_HIP)
-  using POLICY_GPU = 
+  using POLICY_GPU =
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop,
@@ -233,11 +233,11 @@ void runLTimesTests(Index_type num_moments,
           >
         >
       >         
-    >;
+    >;          
 #elif defined(RAJA_ENABLE_HIP)
   using EXECPOL =
     RAJA::KernelPolicy<
-      statement::HipKernelAsync<    
+      statement::HipKernelAsync<
         statement::For<0, hip_block_x_loop,  // m
           statement::For<2, hip_block_y_loop,  // g
             statement::For<3, hip_thread_x_loop,  // z
@@ -247,8 +247,8 @@ void runLTimesTests(Index_type num_moments,
             >
           >
         >
-      >         
-    >;          
+      >
+    >;
 #endif
                  
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_moments),
