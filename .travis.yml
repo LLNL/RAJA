@@ -75,6 +75,14 @@ matrix:
     - IMG=clang-cuda
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60"
     - DO_TEST=no
+  - compiler: hip
+    env:
+      - COMPILER=g++
+      - IMG=rocm
+      - HCC_AMDGPU_TARGET=gfx900
+      - CMAKE_EXTRA_FLAGS="-DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off"
+      - DO_TEST=no
+
 
 before_install: # don't try to build and run intel when it's impossible
 - |
@@ -90,7 +98,7 @@ before_install: # don't try to build and run intel when it's impossible
 
 script:
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
-- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
+- docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS -e HCC_AMDGPU_TARGET rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/0b376529f626b50b7d4a9fb734e0e50d28b9b91e/codecov) -a "-f" >& /dev/null; fi
