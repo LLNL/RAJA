@@ -402,7 +402,6 @@ using make_signed_t = typename std::conditional <
     using parent = ::RAJA::IndexValue<TYPE, IDXT>;                   \
                                                                      \
   public:                                                            \
-    using IndexValueType = TYPE;                                     \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
     RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
         : parent::IndexValue(v)                                      \
