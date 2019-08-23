@@ -31,10 +31,13 @@ using namespace std;
  */
 CUDA_TEST(Chai, NestedSimple)
 {
-  typedef RAJA::KernelPolicy<
-      RAJA::statement::
-          For<0, RAJA::seq_exec, RAJA::statement::For<1, RAJA::seq_exec>>>
-      POLICY;
+  using POLICY = 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec, 
+        RAJA::statement::For<1, RAJA::seq_exec
+        >
+      >
+    >;
 
   using POLICY_GPU = RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
@@ -84,15 +87,23 @@ CUDA_TEST(Chai, NestedSimple)
 
 CUDA_TEST(Chai, NestedView)
 {
-  typedef RAJA::KernelPolicy<
-      RAJA::statement::
-          For<0, RAJA::seq_exec, RAJA::statement::For<1, RAJA::seq_exec>>>
-      POLICY;
-  typedef RAJA::KernelPolicy<
+  using POLICY = 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec, 
+        RAJA::statement::For<1, RAJA::seq_exec
+        >
+      >
+    >;
+
+  using POLICY_GPU = 
+    RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-          RAJA::statement::For<0, RAJA::cuda_thread_x_loop>>>>
-      POLICY_GPU;
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop
+          >
+        >
+      >
+    >;
 
   const int X = 16;
   const int Y = 16;
@@ -100,7 +111,7 @@ CUDA_TEST(Chai, NestedView)
   chai::ManagedArray<float> v1_array(X * Y);
   chai::ManagedArray<float> v2_array(X * Y);
 
-  typedef RAJA::ManagedArrayView<float, RAJA::Layout<2>> view;
+  using view = RAJA::ManagedArrayView<float, RAJA::Layout<2>>;
 
   view v1(v1_array, X, Y);
   view v2(v2_array, X, Y);
