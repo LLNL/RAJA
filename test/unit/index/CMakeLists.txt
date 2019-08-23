@@ -16,3 +16,7 @@ raja_add_test(
 raja_add_test(
   NAME test-listsegment
   SOURCES test-listsegment.cpp)
+
+raja_add_test(
+  NAME test-indexvalue
+  SOURCES test-indexvalue.cpp)
