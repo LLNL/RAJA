@@ -82,7 +82,6 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     return ret;
   }
 
-private:
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
   OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
       : base_{rhs}
