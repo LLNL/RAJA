@@ -155,7 +155,7 @@ endif ()
 
 find_package(camp QUIET)
 if (NOT camp_FOUND)
-  message(WARNING "External CAMP not found.")
+  message(STATUS "Using RAJA CAMP submodule.")
   add_subdirectory(tpl/camp)
 endif(NOT camp_FOUND)
 
