@@ -90,7 +90,3 @@ raja_add_executable(
   NAME omp-target-ltimes
   SOURCES omp-target-ltimes.cpp)
 endif()
-
-raja_add_executable(
-  NAME shifted-views
-  SOURCES shifted-views.cpp)
