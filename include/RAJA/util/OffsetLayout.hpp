@@ -91,19 +91,17 @@ private:
 
 }  // namespace internal
 
-template <size_t dims = 1, typename IdxLin = Index_type>
+template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout
-    : public internal::OffsetLayout_impl<camp::make_idx_seq_t<dims>, IdxLin> {
+    : public internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin> {
   using parent =
-      internal::OffsetLayout_impl<camp::make_idx_seq_t<dims>, IdxLin>;
+      internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>;
 
-  using internal::OffsetLayout_impl<camp::make_idx_seq_t<dims>,
+  using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
                                     IdxLin>::OffsetLayout_impl;
 
-  static constexpr size_t n_dims = dims;
-
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
-      const internal::OffsetLayout_impl<camp::make_idx_seq_t<dims>, IdxLin>&
+      const internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>&
           rhs)
       : parent{rhs}
   {
