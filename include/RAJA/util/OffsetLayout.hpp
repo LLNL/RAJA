@@ -49,7 +49,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
-  IdxLin offsets[sizeof...(RangeInts)];
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  IdxLin offsets[n_dims];
 
   constexpr RAJA_INLINE OffsetLayout_impl(
       std::array<IdxLin, sizeof...(RangeInts)> lower,

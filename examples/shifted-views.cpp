@@ -39,7 +39,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   printf("Shifted view \n");
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> B =  A.shift<DIM>({{10}},{{19}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> B =  A.shift({{10}},{{19}});
 
   for(int i=10; i<20; ++i) {
     printf("%d ",B(i));
