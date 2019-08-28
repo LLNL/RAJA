@@ -59,8 +59,8 @@ TEST(ViewTest, Shift1D)
     ASSERT_EQ(Bshift(i),B(i-N));
   }
 
-  delete a;
-  delete b;
+  delete[] a;
+  delete[] b;
 }
 
 TEST(ViewTest, Shift2D)
@@ -92,6 +92,6 @@ TEST(ViewTest, Shift2D)
     }
   }
 
-  delete a;
-  delete b;
+  delete[] a;
+  delete[] b;
 }
