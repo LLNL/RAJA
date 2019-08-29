@@ -31,7 +31,6 @@
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
 
-
 namespace RAJA
 {
 
