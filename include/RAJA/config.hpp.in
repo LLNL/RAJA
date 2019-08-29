@@ -71,6 +71,15 @@
 /*!
  ******************************************************************************
  *
+ * \brief Add bounds check to views and layouts
+ *
+ ******************************************************************************
+ */
+#cmakedefine ENABLE_BOUNDS_CHECK
+
+/*!
+ ******************************************************************************
+ *
  * \brief Programming model back-ends, plus CHAI enable/disable.
  *
  ******************************************************************************
@@ -178,6 +187,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+//
+// Runtime bounds checking for Views
+//
+#if defined(ENABLE_BOUNDS_CHECK)
+#define BOUNDS_CHECK
+#endif
 
 //
 //  Compiler-specific definitions for inline directives, data alignment

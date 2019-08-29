@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <limits>
+#include <cassert>
 
 #include "RAJA/index/IndexValue.hpp"
 
@@ -29,6 +30,7 @@
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
+
 
 namespace RAJA
 {
@@ -166,6 +168,21 @@ public:
   {
   }
 
+  /*!
+   * Methods to performs bounds checking in layout objects
+   */
+  template <camp::idx_t N>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck() const
+  {
+  }
+
+  template <camp::idx_t N, typename Idx, typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
+  {
+    assert(0 < idx && idx < sizes[N] && "View index out of bounds \n");
+    RAJA_UNUSED_VAR(idx);
+    BoundsCheck<N+1>(indices...);
+  }
 
   /*!
    * Computes a linear space index from specified indices.
@@ -174,10 +191,18 @@ public:
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
+
   template <typename... Indices>
+#if defined(BOUNDS_CHECK)
+  RAJA_INLINE RAJA_HOST_DEVICE IdxLin operator()(
+      Indices... indices) const
+  {
+    BoundsCheck<0>(indices...);
+#else
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
+#endif
     // dot product of strides and indices
 #ifdef RAJA_COMPILER_INTEL
     // Intel compiler has issues with Condition
