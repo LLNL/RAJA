@@ -52,8 +52,8 @@ TEST(ViewTest, Shift1D)
   }
 
   //shift view
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{10}},{{2*N-1}});
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{10}},{{2*N-1}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N}});
   for(int i=N; i<2*N; ++i) {
     ASSERT_EQ(Ashift(i),A(i-N));
     ASSERT_EQ(Bshift(i),B(i-N));
@@ -82,8 +82,8 @@ TEST(ViewTest, Shift2D)
   }
 
   //shift view
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N,N}},{{2*N-1,2*N-1}});
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N,N}},{{2*N-1,2*N-1}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N,N}});
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N,N}});
 
   for(int y=N; y<N+N; ++y) {
     for(int x=N; x<N+N; ++x) {

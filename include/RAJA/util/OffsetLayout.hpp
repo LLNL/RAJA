@@ -50,7 +50,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   Base base_;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  IdxLin offsets[n_dims];
+  IdxLin offsets[n_dims]={0}; //If not specified set to zero
 
   constexpr RAJA_INLINE OffsetLayout_impl(
       std::array<IdxLin, sizeof...(RangeInts)> lower,
@@ -63,6 +63,11 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(Self const& c)
       : base_(c.base_), offsets{c.offsets[RangeInts]...}
   {
+  }
+
+  RAJA_INLINE void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
+  {
+    for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
   }
 
   template <typename... Indices>

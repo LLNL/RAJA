@@ -79,14 +79,14 @@ struct View {
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA_HOST_DEVICE auto shift(const std::array<IdxLin, n_dims>& lower,
-                                          const std::array<IdxLin, n_dims>& upper)
+  RAJA_INLINE RAJA_HOST_DEVICE auto shift(const std::array<IdxLin, n_dims>& shift)
     -> decltype(RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, layout))
   {
     static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
    
-    RAJA::OffsetLayout<n_dims> layout = RAJA::make_offset_layout<n_dims>(lower, upper);
-    return RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, layout);
+    RAJA::OffsetLayout<n_dims> shift_layout(layout);
+    shift_layout.shift(shift);
+    return RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, shift_layout);
   }
 
   // making this specifically typed would require unpacking the layout,
