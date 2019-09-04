@@ -13,6 +13,9 @@
 #include "gtest/gtest.h"
 
 RAJA_INDEX_VALUE(TX, "TX");
+RAJA_INDEX_VALUE(TIX, "TIX");
+RAJA_INDEX_VALUE(TIY, "TIY");
+RAJA_INDEX_VALUE(TIL, "TIL");
 
 TEST(ViewTest, Const)
 {
@@ -64,9 +67,22 @@ TEST(ViewTest, Shift1D)
     ASSERT_EQ(Bshift(i),B(i-N));
   }
 
+  //typed view
   RAJA::forall<RAJA::loop_exec> (RAJA::TypedRangeSegment<TX>(N,2*N), [=] (TX tx) {
     ASSERT_EQ(Cshift(tx),C(tx-N));
   });
+
+  //typed layout
+  using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  TLayout myLayout(10);
+
+  RAJA::View<int, TLayout> D(a, myLayout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Dshift = D.shift({{N}});
+  
+  for(int i=N; i<2*N; ++i) {
+    ASSERT_EQ(Dshift(i),D(i-N));
+  }
+
 
   delete[] a;
   delete[] b;
