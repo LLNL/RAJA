@@ -12,6 +12,8 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
+RAJA_INDEX_VALUE(TX, "TX");
+
 TEST(ViewTest, Const)
 {
   using layout = RAJA::Layout<1>;
@@ -46,6 +48,7 @@ TEST(ViewTest, Shift1D)
   RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N-1}});
   RAJA::View<int, RAJA::OffsetLayout<DIM>> A(a,layout);
   RAJA::View<int, RAJA::Layout<DIM>> B(a,N);
+  RAJA::TypedView<int, RAJA::Layout<DIM>,TX> C(a,N);
 
   for(int i=0; i<N; ++i) {
     A(i) = i + 1;
@@ -54,10 +57,16 @@ TEST(ViewTest, Shift1D)
   //shift view
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N}});
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N}});
+  RAJA::TypedView<int, RAJA::OffsetLayout<DIM>, TX> Cshift = C.shift({{N}});
+
   for(int i=N; i<2*N; ++i) {
     ASSERT_EQ(Ashift(i),A(i-N));
     ASSERT_EQ(Bshift(i),B(i-N));
   }
+
+  RAJA::forall<RAJA::loop_exec> (RAJA::TypedRangeSegment<TX>(N,2*N), [=] (TX tx) {
+    ASSERT_EQ(Cshift(tx),C(tx-N));
+  });
 
   delete[] a;
   delete[] b;
