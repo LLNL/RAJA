@@ -17,7 +17,7 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_9_2_clang_upstream_2018_12_03.cmake \
-  -C ../host-configs/lc-builds/blueos/nvcc_clang_upstream_2018_12_03.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/nvcc_clang_upstream_2018_12_03.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=sm_60 \

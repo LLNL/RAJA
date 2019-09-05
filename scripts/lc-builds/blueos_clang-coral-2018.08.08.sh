@@ -17,7 +17,7 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/clang_coral_2018_08_08.cmake \
-  -C ../host-configs/lc-builds/blueos/clang_coral_2018_08_08.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/clang_coral_2018_08_08.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
