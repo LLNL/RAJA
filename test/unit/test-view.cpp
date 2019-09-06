@@ -78,7 +78,7 @@ TEST(ViewTest, Shift1D)
 
   RAJA::View<int, TLayout> D(a, myLayout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Dshift = D.shift({{N}});
-  
+
   for(int i=N; i<2*N; ++i) {
     ASSERT_EQ(Dshift(i),D(i-N));
   }
@@ -114,6 +114,21 @@ TEST(ViewTest, Shift2D)
     for(int x=N; x<N+N; ++x) {
       ASSERT_EQ(Ashift(y,x),A(y-N,x-N));
       ASSERT_EQ(Bshift(y,x),B(y-N,x-N));
+    }
+  }
+
+
+  //Permuted layout
+  std::array< RAJA::idx_t, 2> perm {{1, 0}};
+  RAJA::OffsetLayout<2> playout =
+    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N-1, N-1}}, perm );
+
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> C(a, playout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Cshift = C.shift({{N,N}});
+
+  for(int y=N; y<N+N; ++y) {
+    for(int x=N; x<N+N; ++x) {
+      ASSERT_EQ(Cshift(y,x),C(y-N,x-N));
     }
   }
 
