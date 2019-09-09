@@ -136,7 +136,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       directly.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x_.
+                                                      cuda_thread_x.
                                                       Multiple warps may be
                                                       created by using
                                                       cuda_thread_{yz}_
@@ -145,7 +145,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       using a warp-stride loop.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x_.
+                                                      cuda_thread_x.
                                                       Multiple warps may be
                                                       created by using
                                                       cuda_thread_{yz}_
@@ -158,7 +158,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       Multiple warps have
                                                       to be created by using
                                                       cuda_thread_{yz}_*
- cuda_warp_mask_loop<BitMask<..>>      kernel (For)   Policy to map work to
+ cuda_warp_mask_loop<BitMask<..>>       kernel (For)  Policy to map work to
                                                       threads within a warp
                                                       using a bit mask using
                                                       a warp-stride loop.
