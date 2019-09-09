@@ -192,15 +192,11 @@ public:
    */
 
   template <typename... Indices>
-#if defined(BOUNDS_CHECK)
-  RAJA_INLINE RAJA_HOST_DEVICE IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE BOUNDS_CHECK_constexpr IdxLin operator()(
       Indices... indices) const
   {
+#if defined (BOUNDS_CHECK)
     BoundsCheck<0>(indices...);
-#else
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
-      Indices... indices) const
-  {
 #endif
     // dot product of strides and indices
 #ifdef RAJA_COMPILER_INTEL

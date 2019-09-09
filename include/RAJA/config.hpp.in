@@ -192,6 +192,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #if defined(ENABLE_BOUNDS_CHECK)
 #define BOUNDS_CHECK
+#define BOUNDS_CHECK_constexpr
+#else
+#define BOUNDS_CHECK_constexpr constexpr
 #endif
 
 //
