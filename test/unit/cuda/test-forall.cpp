@@ -141,29 +141,29 @@ struct ForallCUDA : ::testing::Test {
                               ? array_length
                               : is_indices.size();
 
-    cudaMallocManaged((void **)&parent,
+    cudaErrchk( cudaMallocManaged((void **)&parent,
                       sizeof(Real_type) * max_size,
-                      cudaMemAttachGlobal);
+                      cudaMemAttachGlobal) );
     for (Index_type i = 0; i < max_size; ++i) {
       parent[i] = static_cast<Real_type>(rand() % 65536);
     }
 
-    cudaMallocManaged((void **)&test_array,
+    cudaErrchk( cudaMallocManaged((void **)&test_array,
                       sizeof(Real_type) * max_size,
-                      cudaMemAttachGlobal);
-    cudaMemset(test_array, 0, sizeof(Real_type) * max_size);
+                      cudaMemAttachGlobal) );
+    cudaErrchk( cudaMemset(test_array, 0, sizeof(Real_type) * max_size) );
 
-    cudaMallocManaged((void **)&ref_array,
+    cudaErrchk( cudaMallocManaged((void **)&ref_array,
                       sizeof(Real_type) * max_size,
-                      cudaMemAttachGlobal);
-    cudaMemset(ref_array, 0, sizeof(Real_type) * max_size);
+                      cudaMemAttachGlobal) );
+    cudaErrchk( cudaMemset(ref_array, 0, sizeof(Real_type) * max_size) );
   }
 
   virtual void TearDown()
   {
-    cudaFree(::test_array);
-    cudaFree(::ref_array);
-    cudaFree(::parent);
+    cudaErrchk( cudaFree(::test_array) );
+    cudaErrchk( cudaFree(::ref_array) );
+    cudaErrchk( cudaFree(::parent) );
     ::iset = UnitIndexSet();
     ::is_indices = RAJA::RAJAVec<RAJA::Index_type>();
   }
@@ -178,8 +178,8 @@ CUDA_TEST_F(ForallCUDA, forall_range)
   RAJA::Real_ptr test_array = ::test_array;
   RAJA::Real_ptr ref_array = ::ref_array;
 
-  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
-  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaErrchk( cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length) );
+  cudaErrchk( cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length) );
 
   for (RAJA::Index_type i = 0; i < array_length; ++i) {
     ref_array[i] = parent[i] * parent[i];
@@ -206,8 +206,8 @@ CUDA_TEST_F(ForallCUDA, forall_icount_range)
   RAJA::Real_ptr test_array = ::test_array;
   RAJA::Real_ptr ref_array = ::ref_array;
 
-  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
-  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaErrchk( cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length) );
+  cudaErrchk( cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length) );
 
   //
   // Generate reference result to check correctness.
@@ -238,8 +238,8 @@ CUDA_TEST_F(ForallCUDA, forall_indexset)
   RAJA::Real_ptr test_array = ::test_array;
   RAJA::Real_ptr ref_array = ::ref_array;
 
-  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
-  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaErrchk( cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length) );
+  cudaErrchk( cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length) );
 
   //
   // Generate reference result to check correctness.
@@ -268,8 +268,8 @@ CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
   RAJA::Real_ptr test_array = ::test_array;
   RAJA::Real_ptr ref_array = ::ref_array;
 
-  cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length);
-  cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length);
+  cudaErrchk( cudaMemset(test_array, 0, sizeof(RAJA::Real_type) * array_length) );
+  cudaErrchk( cudaMemset(ref_array, 0, sizeof(RAJA::Real_type) * array_length) );
 
   RAJA::Index_type test_alen = is_indices.size();
   for (RAJA::Index_type i = 0; i < test_alen; ++i) {

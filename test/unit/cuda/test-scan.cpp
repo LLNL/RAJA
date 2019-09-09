@@ -54,14 +54,14 @@ struct ScanCUDA : public ::testing::Test {
 
   static void SetUpTestCase()
   {
-    cudaMallocManaged((void**)&data,
+    cudaErrchk( cudaMallocManaged((void**)&data,
                       sizeof(data_type) * N,
-                      cudaMemAttachGlobal);
+                      cudaMemAttachGlobal) );
     std::iota(data, data + N, 1);
     std::shuffle(data, data + N, std::mt19937{std::random_device{}()});
   }
 
-  static void TearDownTestCase() { cudaFree(data); }
+  static void TearDownTestCase() { cudaErrchk( cudaFree(data) ); }
 };
 
 template <typename Tuple>
@@ -106,7 +106,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
   using Function = typename Info<TypeParam>::function;
 
   T* out;
-  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal) );
 
   RAJA::inclusive_scan(typename Info<TypeParam>::exec(),
                        ScanCUDA<TypeParam>::data,
@@ -115,7 +115,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
                        Function{});
 
   ASSERT_TRUE(check_inclusive<Function>(out, ScanCUDA<TypeParam>::data));
-  cudaFree(out);
+  cudaErrchk( cudaFree(out) );
 }
 
 CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
@@ -124,7 +124,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
   using Function = typename Info<TypeParam>::function;
 
   T* data;
-  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal) );
   std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::inclusive_scan_inplace(typename Info<TypeParam>::exec(),
@@ -133,7 +133,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
                                Function{});
 
   ASSERT_TRUE(check_inclusive<Function>(data, ScanCUDA<TypeParam>::data));
-  cudaFree(data);
+  cudaErrchk( cudaFree(data) );
 }
 
 CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
@@ -142,7 +142,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
   using Function = typename Info<TypeParam>::function;
 
   T* out;
-  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal) );
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
                        ScanCUDA<TypeParam>::data,
@@ -151,7 +151,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
                        Function{});
 
   ASSERT_TRUE(check_exclusive<Function>(out, ScanCUDA<TypeParam>::data));
-  cudaFree(out);
+  cudaErrchk( cudaFree(out) );
 }
 
 CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
@@ -160,7 +160,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
   using Function = typename Info<TypeParam>::function;
 
   T* data;
-  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal) );
   std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::exclusive_scan_inplace(typename Info<TypeParam>::exec(),
@@ -169,7 +169,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
                                Function{});
 
   ASSERT_TRUE(check_exclusive<Function>(data, ScanCUDA<TypeParam>::data));
-  cudaFree(data);
+  cudaErrchk( cudaFree(data) );
 }
 
 CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
@@ -178,7 +178,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
   using Function = typename Info<TypeParam>::function;
 
   T* out;
-  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal) );
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
                        ScanCUDA<TypeParam>::data,
@@ -188,7 +188,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
                        T(2));
 
   ASSERT_TRUE(check_exclusive<Function>(out, ScanCUDA<TypeParam>::data, T(2)));
-  cudaFree(out);
+  cudaErrchk( cudaFree(out) );
 }
 
 CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
@@ -197,14 +197,14 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
   using Function = typename Info<TypeParam>::function;
 
   T* data;
-  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  cudaErrchk( cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal) );
   std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::exclusive_scan_inplace(
       typename Info<TypeParam>::exec(), data, data + N, Function{}, T(2));
 
   ASSERT_TRUE(check_exclusive<Function>(data, ScanCUDA<TypeParam>::data, T(2)));
-  cudaFree(data);
+  cudaErrchk( cudaFree(data) );
 }
 
 REGISTER_TYPED_TEST_CASE_P(ScanCUDA,

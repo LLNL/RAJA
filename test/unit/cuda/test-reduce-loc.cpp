@@ -153,12 +153,12 @@ public:
   static double* dvalue;
   static void SetUpTestCase()
   {
-    cudaMallocManaged((void**)&dvalue,
+    cudaErrchk( cudaMallocManaged((void**)&dvalue,
                       sizeof(double) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal);
+                      cudaMemAttachGlobal) );
     reset(dvalue, TEST_VEC_LEN, applier::def());
   }
-  static void TearDownTestCase() { cudaFree(dvalue); }
+  static void TearDownTestCase() { cudaErrchk( cudaFree(dvalue) ); }
 };
 
 template <typename Reducer>
