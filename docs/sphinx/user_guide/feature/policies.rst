@@ -134,40 +134,40 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_warp_direct                       kernel (For)  Policy to map work to
                                                       threads within a warp
                                                       directly.
-						      Cannot be used in
-						      conjunction with
-						      cuda_thread_x_.
-						      Multiple warps may be
-						      created by using
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_.
+                                                      Multiple warps may be
+                                                      created by using
                                                       cuda_thread_{yz}_
  cuda_warp_loop                         kernel (For)  Policy to map work to
                                                       threads within a warp
                                                       using a warp-stride loop.
-						      Cannot be used in
-						      conjunction with
-						      cuda_thread_x_.
-						      Multiple warps may be
-						      created by using
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_.
+                                                      Multiple warps may be
+                                                      created by using
                                                       cuda_thread_{yz}_
  cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work to
                                                       threads within a warp
-						      using a bit mask.
-						      Cannot be used in
-						      conjunction with
-						      cuda_thread_x_*.
-						      Multiple warps have
-						      to be created by using
-						      cuda_thread_{yz}_*
+                                                      using a bit mask.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_*.
+                                                      Multiple warps have
+                                                      to be created by using
+                                                      cuda_thread_{yz}_*
  cuda_warp_mask_loop<BitMask<..>>      kernel (For)   Policy to map work to
                                                       threads within a warp
-						      using a bit mask using
-						      a warp-stride loop.
-						      Cannot be used in
-						      conjunction with
-						      cuda_thread_x_*.
-						      Multiple warps have
-						      to be created by using
-						      cuda_thread_{yz}_*
+                                                      using a bit mask using
+                                                      a warp-stride loop.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_*.
+                                                      Multiple warps have
+                                                      to be created by using
+                                                      cuda_thread_{yz}_*
  cuda_block_reduce                      kernel        Carries out reductions
                                         (Reduce)      across a single CUDA
                                                       thread block
