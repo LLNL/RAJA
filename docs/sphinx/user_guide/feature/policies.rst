@@ -131,6 +131,49 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_block_z_loop                      kernel (For)  Map loop iterations to 
                                                       CUDA thread blocks in
                                                       z-dimension
+ cuda_warp_direct                       kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      directly.
+						      Cannot be used in
+						      conjunction with
+						      cuda_thread_x_.
+						      Multiple warps may be
+						      created by using
+                                                      cuda_thread_{yz}_
+ cuda_warp_loop                         kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      using a warp-stride loop.
+						      Cannot be used in
+						      conjunction with
+						      cuda_thread_x_.
+						      Multiple warps may be
+						      created by using
+                                                      cuda_thread_{yz}_
+ cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work to
+                                                      threads within a warp
+						      using a bit mask.
+						      Cannot be used in
+						      conjunction with
+						      cuda_thread_x_*.
+						      Multiple warps have
+						      to be created by using
+						      cuda_thread_{yz}_*
+ cuda_warp_mask_loop<BitMask<..>>      kernel (For)   Policy to map work to
+                                                      threads within a warp
+						      using a bit mask using
+						      a warp-stride loop.
+						      Cannot be used in
+						      conjunction with
+						      cuda_thread_x_*.
+						      Multiple warps have
+						      to be created by using
+						      cuda_thread_{yz}_*
+ cuda_block_reduce                      kernel        Carries out reductions
+                                        (Reduce)      across a single CUDA
+                                                      thread block
+ cuda_warp_reduce                       kernel        Carries out reductions
+                                        (Reduce)      across a single CUDA
+                                                      thread warp
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
@@ -473,7 +516,11 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
 
-  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier. Note that a similar thread barrier for OpenMP will be added soon.
+  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier.
+
+  * ``statement::CudaSyncWarp`` provides CUDA '__syncwarp()' barrier.
+
+  * ``statement::OmpSyncThreads`` provides the OpenMP '#pragma omp barrier' directive.
 
   * ``statement::InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The 'ParamList' entries indicate which local array objects in a tuple will be initialized. The 'EnclosedStatements' contain the code in which the local array will be accessed; e.g., initialization operations.
 
