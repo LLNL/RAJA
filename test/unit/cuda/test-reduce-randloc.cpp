@@ -119,7 +119,7 @@ struct CUDAReduceLocRandTest : public ::testing::Test
   public:
   virtual void SetUp()
   {
-    cudaMallocManaged( &data, sizeof(int) * array_length, cudaMemAttachGlobal );
+    cudaErrchk(cudaMallocManaged(&data, sizeof(int) * array_length, cudaMemAttachGlobal));
 
     // setting data values
     int count = 0;
@@ -133,7 +133,7 @@ struct CUDAReduceLocRandTest : public ::testing::Test
   }
 
   virtual void TearDown() {
-    cudaFree( data );
+    cudaErrchk(cudaFree(data));
   }
 
   // make all values equal
