@@ -24,9 +24,9 @@ void testAtomicFunctionBasic()
 // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&dest, sizeof(T) * 8) );
+  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * 8));
 
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 
 #else
   T *dest = new T[8];
@@ -57,7 +57,7 @@ void testAtomicFunctionBasic()
   });
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
 
   EXPECT_EQ((T)N, dest[0]);
@@ -71,7 +71,7 @@ void testAtomicFunctionBasic()
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaFree(dest) );
+  cudaErrchk(cudaFree(dest));
 #else
   delete[] dest;
 #endif
@@ -106,12 +106,12 @@ void testAtomicViewBasic()
 // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *source = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&source, sizeof(T) * N) );
+  cudaErrchk(cudaMallocManaged((void **)&source, sizeof(T) * N));
 
   T *dest = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&dest, sizeof(T) * N / 2) );
+  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * N / 2));
 
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 #else
   T *source = new T[N];
   T *dest = new T[N / 2];
@@ -138,7 +138,7 @@ void testAtomicViewBasic()
   });
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
 
   for (RAJA::Index_type i = 0; i < N / 2; ++i) {
@@ -146,8 +146,8 @@ void testAtomicViewBasic()
   }
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaFree(source) );
-  cudaErrchk( cudaFree(dest) );
+  cudaErrchk(cudaFree(source));
+  cudaErrchk(cudaFree(dest));
 #else
   delete[] source;
   delete[] dest;
@@ -179,15 +179,15 @@ void testAtomicLogical()
 // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *dest_and = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&dest_and, sizeof(T) * N) );
+  cudaErrchk(cudaMallocManaged((void **)&dest_and, sizeof(T) * N));
 
   T *dest_or = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&dest_or, sizeof(T) * N) );
+  cudaErrchk(cudaMallocManaged((void **)&dest_or, sizeof(T) * N));
 
   T *dest_xor = nullptr;
-  cudaErrchk( cudaMallocManaged((void **)&dest_xor, sizeof(T) * N) );
+  cudaErrchk(cudaMallocManaged((void **)&dest_xor, sizeof(T) * N));
 
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 #else
   T *dest_and = new T[N];
   T *dest_or = new T[N];
@@ -211,7 +211,7 @@ void testAtomicLogical()
   });
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
 
   for (RAJA::Index_type i = 0; i < N; ++i) {
@@ -221,9 +221,9 @@ void testAtomicLogical()
   }
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk( cudaFree(dest_and) );
-  cudaErrchk( cudaFree(dest_or) );
-  cudaErrchk( cudaFree(dest_xor) );
+  cudaErrchk(cudaFree(dest_and));
+  cudaErrchk(cudaFree(dest_or));
+  cudaErrchk(cudaFree(dest_xor));
 #else
   delete[] dest_and;
   delete[] dest_or;

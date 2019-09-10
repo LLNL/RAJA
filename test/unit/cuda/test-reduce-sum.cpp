@@ -36,32 +36,32 @@ public:
   static void SetUpTestCase()
   {
 
-    cudaErrchk( cudaMallocManaged((void**)&dvalue,
+    cudaErrchk(cudaMallocManaged((void**)&dvalue,
                       sizeof(double) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal) );
+                      cudaMemAttachGlobal));
 
     for (int i = 0; i < TEST_VEC_LEN; ++i) {
       dvalue[i] = dinit_val;
     }
 
-    cudaErrchk( cudaMallocManaged((void**)&ivalue,
+    cudaErrchk(cudaMallocManaged((void**)&ivalue,
                       sizeof(int) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal) );
+                      cudaMemAttachGlobal));
 
     for (int i = 0; i < TEST_VEC_LEN; ++i) {
       ivalue[i] = iinit_val;
     }
 
-    cudaErrchk( cudaMallocManaged((void**)&rand_dvalue,
+    cudaErrchk(cudaMallocManaged((void**)&rand_dvalue,
                       sizeof(double) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal) );
+                      cudaMemAttachGlobal));
   }
 
   static void TearDownTestCase()
   {
-    cudaErrchk( cudaFree(dvalue) );
-    cudaErrchk( cudaFree(rand_dvalue) );
-    cudaErrchk( cudaFree(ivalue) );
+    cudaErrchk(cudaFree(dvalue));
+    cudaErrchk(cudaFree(rand_dvalue));
+    cudaErrchk(cudaFree(ivalue));
   }
 
   static double* dvalue;

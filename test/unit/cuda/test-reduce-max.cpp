@@ -50,12 +50,12 @@ public:
   static double* dvalue;
   static void SetUpTestCase()
   {
-    cudaErrchk( cudaMallocManaged((void**)&dvalue,
+    cudaErrchk(cudaMallocManaged((void**)&dvalue,
                       sizeof(double) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal) );
+                      cudaMemAttachGlobal));
     reset(dvalue, TEST_VEC_LEN);
   }
-  static void TearDownTestCase() { cudaErrchk( cudaFree(dvalue) ); }
+  static void TearDownTestCase() { cudaErrchk(cudaFree(dvalue)); }
 };
 
 double* ReduceMaxCUDA::dvalue = nullptr;

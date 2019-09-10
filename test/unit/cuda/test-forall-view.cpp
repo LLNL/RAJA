@@ -34,9 +34,9 @@ struct ForallViewCUDA : ::testing::Test {
       arr_h[i] = double(rand() % 65536);
     }
 
-    cudaErrchk( cudaMalloc((void**)&arr_d, alen * sizeof(double)) );
+    cudaErrchk(cudaMalloc((void**)&arr_d, alen * sizeof(double)));
 
-    cudaErrchk( cudaMemcpy(arr_d, arr_h, alen * sizeof(double), cudaMemcpyHostToDevice) );
+    cudaErrchk(cudaMemcpy(arr_d, arr_h, alen * sizeof(double), cudaMemcpyHostToDevice));
   }
 
   virtual void TearDown()
@@ -61,7 +61,7 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewLayout)
                                         view(i) = test_val;
                                       });
 
-  cudaErrchk( cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost) );
+  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
 
   for (Index_type i = 0; i < alen; ++i) {
     EXPECT_EQ(arr_h[i], test_val);
@@ -84,7 +84,7 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
                                         view(i) = test_val;
                                       });
 
-  cudaErrchk( cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost) );
+  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
 
   for (Index_type i = 0; i < alen; ++i) {
     EXPECT_EQ(arr_h[i], test_val);
@@ -123,5 +123,5 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
     }
   }
 
-  cudaErrchk( cudaFree(box) );
+  cudaErrchk(cudaFree(box));
 }
