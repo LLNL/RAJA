@@ -171,7 +171,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   using reducer = ReduceCUDA<TypeParam>;
   double* dvalue = reducer::dvalue;
   reset(dvalue, TEST_VEC_LEN, applier::def());
@@ -220,7 +220,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
@@ -269,7 +269,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   RangeSegment seg0(1, 230);

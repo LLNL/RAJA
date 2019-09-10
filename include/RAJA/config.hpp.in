@@ -163,7 +163,7 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 //                        as min length of range segments (an integer multiple
 //                        of RANGE_ALIGN)
 //
-//     DATA_ALIGN - used in compiler-specific intrinsics and typedefs
+//     DATA_ALIGN - used in compiler-specific intrinsics and type aliases
 //                  to specify alignment of data, loop bounds, etc.;
 //                  units of "bytes"
 
@@ -182,7 +182,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //  Compiler-specific definitions for inline directives, data alignment
 //  intrinsics, and SIMD vector pragmas
 //
-//  Variables for compiler instrinsics, directives, typedefs
+//  Variables for compiler instrinsics, directives, type aliases
 //
 //     RAJA_INLINE - macro to enforce method inlining
 //
