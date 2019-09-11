@@ -34,6 +34,18 @@
 namespace RAJA
 {
 
+template<typename layout>
+struct add_offset
+{
+  using type = RAJA::OffsetLayout<layout::n_dims>;
+};
+
+template<typename IdxLin, typename...DimTypes>
+struct add_offset<RAJA::TypedLayout<IdxLin,camp::tuple<DimTypes...>>>
+{
+  using type = RAJA::TypedOffsetLayout<IdxLin,camp::tuple<DimTypes...>>;
+};
+
 template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
@@ -79,14 +91,18 @@ struct View {
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA_HOST_DEVICE auto shift(const std::array<IdxLin, n_dims>& shift)
-    -> decltype(RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, layout))
+  RAJA_INLINE RAJA_HOST_DEVICE auto
+  shift(const std::array<IdxLin, n_dims>& shift)
+  -> decltype(RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, layout))
+  //-> decltype(RAJA::View<ValueType, typename add_offset<layout_type>::type >(data, layout))
   {
     static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
 
+    //typename add_offset<layout_type>::type;
     RAJA::OffsetLayout<n_dims> shift_layout(layout);
     shift_layout.shift(shift);
     return RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, shift_layout);
+    //return RAJA::View<ValueType, add_offset<layout_type>::type>(data, shift_layout);
   }
 
   // making this specifically typed would require unpacking the layout,
