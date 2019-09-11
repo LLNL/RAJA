@@ -210,6 +210,27 @@ tutorial sections.
           choice to avoid the overhead of offset computations in the 
           ``RAJA::View`` data access operator when they are not needed.
 
+Shifting Views
+^^^^^^^^^^^^^^^^
+
+RAJA Views include a shift method enabling users to generate a new View with offsets
+to the base View indicies. The base View may be templated with either a standard
+Layout or an OffsetLayout. The generated View will be templated using an
+OffsetLayout. The example below illustrates shifting view indices by N, ::
+
+  int N_r = 10;
+  int N_c = 15;
+  int *a_ptr = new int[N_r*N_c];
+
+  RAJA::View<int, RAJA::Layout<DIM>> A(a_ptr,N_r,N_c);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N,N}});
+
+  for(int y=N; y<N_c+N; ++y) {
+    for(int x=N; x<N_r+N; ++x) {
+    Ashift(x,y) = ...
+    }
+  }
+
 -------------------
 RAJA Index Mapping
 -------------------
