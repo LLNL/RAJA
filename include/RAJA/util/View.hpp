@@ -34,6 +34,9 @@
 namespace RAJA
 {
 
+//Helpers to convert
+//layouts -> OffsetLayouts
+//Typedlayouts -> TypedOffsetLayouts
 template<typename layout>
 struct add_offset
 {
@@ -91,18 +94,15 @@ struct View {
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA_HOST_DEVICE auto
+  RAJA_INLINE RAJA::View<ValueType, typename add_offset<layout_type>::type>
   shift(const std::array<IdxLin, n_dims>& shift)
-  -> decltype(RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, layout))
-  //-> decltype(RAJA::View<ValueType, typename add_offset<layout_type>::type >(data, layout))
   {
     static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
 
-    //typename add_offset<layout_type>::type;
-    RAJA::OffsetLayout<n_dims> shift_layout(layout);
+    typename add_offset<layout_type>::type shift_layout(layout);
     shift_layout.shift(shift);
-    return RAJA::View<ValueType, RAJA::OffsetLayout<n_dims>>(data, shift_layout);
-    //return RAJA::View<ValueType, add_offset<layout_type>::type>(data, shift_layout);
+
+    return RAJA::View<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
   }
 
   // making this specifically typed would require unpacking the layout,
@@ -140,14 +140,15 @@ struct TypedViewBase {
   RAJA_INLINE void set_data(PointerType data_ptr) { base_.set_data(data_ptr); }
 
   template <size_t n_dims=Base::layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA_HOST_DEVICE auto shift(const std::array<IdxLin, n_dims>& shift)
-    -> decltype(RAJA::TypedViewBase<ValueType, ValueType *, RAJA::OffsetLayout<n_dims>, IndexTypes...>(base_.data, base_.layout))
+  RAJA_INLINE RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>
+  shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims==Base::layout_type::n_dims, "Dimension mismatch in view shift");
 
-    RAJA::OffsetLayout<n_dims> shift_layout(base_.layout);
+    typename add_offset<LayoutType>::type shift_layout(base_.layout);
     shift_layout.shift(shift);
-    return RAJA::TypedViewBase<ValueType,ValueType *, RAJA::OffsetLayout<n_dims>,IndexTypes...>(base_.data, shift_layout);
+
+    return RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>(base_.data, shift_layout);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const

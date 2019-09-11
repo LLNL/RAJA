@@ -57,9 +57,9 @@ TEST(TypedLayoutTest, 1D)
 
   TIX x{5};
   TIY y{0};
-  l.toIndices(TIL{10}, y, x);
-  ASSERT_EQ(x, TIX{0});
-  ASSERT_EQ(y, TIY{2});
+  l.toIndices(TIL{10}, x, y);
+  ASSERT_EQ(x, TIX{2});
+  ASSERT_EQ(y, TIY{0});
 }
 
 

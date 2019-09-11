@@ -57,9 +57,10 @@ TEST(ViewTest, Shift1D)
     A(i) = i + 1;
   }
 
-  //shift view
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N}});
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N}});
+
+  //TypedView
   RAJA::TypedView<int, RAJA::OffsetLayout<DIM>, TX> Cshift = C.shift({{N}});
 
   for(int i=N; i<2*N; ++i) {
@@ -67,22 +68,23 @@ TEST(ViewTest, Shift1D)
     ASSERT_EQ(Bshift(i),B(i-N));
   }
 
-  //typed view
+
   RAJA::forall<RAJA::loop_exec> (RAJA::TypedRangeSegment<TX>(N,2*N), [=] (TX tx) {
-    ASSERT_EQ(Cshift(tx),C(tx-N));
+      ASSERT_EQ(Cshift(tx),C(tx-N));
   });
 
-  //typed layout
+  //TypedOffsetLayout + View
   using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
+
   TLayout myLayout(10);
 
   RAJA::View<int, TLayout> D(a, myLayout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Dshift = D.shift({{N}});
+  RAJA::View<int, TOffsetLayout> Dshift = D.shift({{N}});
 
-  for(int i=N; i<2*N; ++i) {
-    ASSERT_EQ(Dshift(i),D(i-N));
-  }
-
+  RAJA::forall<RAJA::loop_exec> (RAJA::TypedRangeSegment<TIX>(N,2*N), [=] (TIX i) {
+      ASSERT_EQ(Dshift(i),D(i-N));
+    });
 
   delete[] a;
   delete[] b;

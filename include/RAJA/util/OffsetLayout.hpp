@@ -65,7 +65,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   {
   }
 
-  RAJA_INLINE void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
+  void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
   {
     for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
   }
@@ -127,12 +127,12 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
 
    // Pull in base coonstructors
    using Base::Base;
-   
-   template <typename... Indices>
-   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(Indices... indices) const
-   {
-      return IdxLin(Base::operator()(stripIndexType(indices - Base::offsets[Base::RangeInts])...));
-   }
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
+  {
+    return IdxLin(Base::operator()(stripIndexType(indices)...));
+  }
+
 };
 
 
