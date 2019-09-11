@@ -210,13 +210,30 @@ tutorial sections.
           choice to avoid the overhead of offset computations in the 
           ``RAJA::View`` data access operator when they are not needed.
 
+Typed Layouts
+^^^^^^^^^^^^^
+
+RAJA provides typed variants of ``RAJA::Layout`` and ``RAJA::OffsetLayout``
+enabling user specified index types. Basic usage requires specifying types for
+the linear index, and the multi-dimensional indicies. The following example creates
+typed layouts wherein the linear index is of type TIL and the multidimensional
+indices are TIX, TIY,::
+
+   RAJA_INDEX_VALUE(TIX, "TIX");
+   RAJA_INDEX_VALUE(TIY, "TIY");
+   RAJA_INDEX_VALUE(TIL, "TIL");
+
+   RAJA::TypedLayout<TIL, RAJA::tuple<TIX,TIY>> layout(10,10);
+   RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX,TIY>> offLayout(10,10);;
+
 Shifting Views
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 RAJA Views include a shift method enabling users to generate a new View with offsets
-to the base View indicies. The base View may be templated with either a standard
-Layout or an OffsetLayout. The generated View will be templated using an
-OffsetLayout. The example below illustrates shifting view indices by N, ::
+to the base View layout. The base View may be templated with either a standard
+Layout, OffsetLayout and the typed variants. The generated View will be templated using
+an OffsetLayout or TypedOffsetLayout depending if the base view employed a typed layout.
+The example below illustrates shifting view indices by :math:`N`, ::
 
   int N_r = 10;
   int N_c = 15;
