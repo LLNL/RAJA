@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-8.1.0/bin/g++ \
+  -C ../.gitlab/conf/host-configs/toss_3_x86_64_ib/gcc_8_1_0.cmake \
   -C ../host-configs/lc-builds/toss3/gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \

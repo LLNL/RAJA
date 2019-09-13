@@ -16,13 +16,13 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
+  -C ../.gitlab/conf/host-configs/toss_3_x86_64_ib/clangcuda_6_0_0_nvcc_8_0.cmake \
   -C ../host-configs/lc-builds/toss3/clangcuda_6_0_0_nvcc_8_0.cmake \
   -DENABLE_OPENMP=Off \
   -DENABLE_CLANG_CUDA=On \
   -DBLT_CLANG_CUDA_ARCH=sm_35 \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=sm_35 \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-8.0 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-8.3.1/bin/g++ \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/gcc-8.3.1.cmake \
   -C ../host-configs/lc-builds/blueos/gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \

@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/pgi/pgi-19.7/bin/pgc++ \
+  -C ../.gitlab/conf/host-configs/toss_3_x86_64_ib/pgi_19_7.cmake \
   -C ../host-configs/lc-builds/toss3/pgi_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
