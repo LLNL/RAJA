@@ -8,7 +8,6 @@
 ###############################################################################
 
 BUILD_SUFFIX=lc_blueos-pgi-19.7
-RAJA_HOSTCONFIG=../host-configs/lc-builds/blueos/pgi_X.cmake
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -17,8 +16,8 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/pgi/pgi-19.7/bin/pgc++ \
-  -C ${RAJA_HOSTCONFIG} \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/pgi_19_7.cmake \
+  -C ../host-configs/lc-builds/blueos/pgi_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

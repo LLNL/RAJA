@@ -16,11 +16,10 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_clang_coral_2018_08_08.cmake \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_9_2_clang_coral_2018_08_08.cmake \
+  -C ../host-configs/lc-builds/blueos/nvcc_clang.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.2.148 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-9.2.148/bin/nvcc \
   -DCUDA_ARCH=sm_60 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
