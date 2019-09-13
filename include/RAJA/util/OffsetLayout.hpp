@@ -49,7 +49,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
-  IdxLin offsets[sizeof...(RangeInts)];
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  IdxLin offsets[n_dims]={0}; //If not specified set to zero
 
   constexpr RAJA_INLINE OffsetLayout_impl(
       std::array<IdxLin, sizeof...(RangeInts)> lower,
@@ -62,6 +63,11 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(Self const& c)
       : base_(c.base_), offsets{c.offsets[RangeInts]...}
   {
+  }
+
+  void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
+  {
+    for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
   }
 
   template <typename... Indices>
@@ -81,7 +87,6 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     return ret;
   }
 
-private:
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
   OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
       : base_{rhs}
@@ -94,7 +99,7 @@ private:
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout
     : public internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin> {
-  using parent =
+  using Base =
       internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>;
 
   using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
@@ -103,10 +108,33 @@ struct OffsetLayout
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
       const internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>&
           rhs)
-      : parent{rhs}
+      : Base{rhs}
   {
   }
 };
+
+//TypedOffsetLayout
+template <typename IdxLin, typename DimTuple>
+struct TypedOffsetLayout;
+
+template <typename IdxLin, typename... DimTypes>
+struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
+: public OffsetLayout<sizeof...(DimTypes), Index_type>
+{
+   using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
+   using Base = OffsetLayout<sizeof...(DimTypes), Index_type>;
+   using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+
+   // Pull in base coonstructors
+   using Base::Base;
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
+  {
+    return IdxLin(Base::operator()(stripIndexType(indices)...));
+  }
+
+};
+
 
 template <size_t n_dims, typename IdxLin = Index_type>
 auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,

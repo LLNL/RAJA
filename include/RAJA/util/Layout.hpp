@@ -182,11 +182,9 @@ public:
 #ifdef RAJA_COMPILER_INTEL
     // Intel compiler has issues with Condition
     return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
-
 #else
-    return VarOps::sum<IdxLin>(
-        ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
-            indices, strides[RangeInts]))...);
+    return VarOps::sum<IdxLin>
+      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides[RangeInts]) )...);
 #endif
   }
 
@@ -306,9 +304,8 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
-  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
-      Indices... indices) const
+      DimTypes... indices) const
   {
     return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
@@ -324,13 +321,12 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
-  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              Indices &... indices) const
+                                              DimTypes &... indices) const
   {
     toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
                     std::forward<IdxLin>(linear_index),
-                    std::forward<Indices &>(indices)...);
+                    std::forward<DimTypes &>(indices)...);
   }
 
 private:
