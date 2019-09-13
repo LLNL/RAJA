@@ -7,5 +7,5 @@
 
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2019.04.19/bin/xlc++_r" CACHE PATH "" )
 
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-10.1.168" CACHE PATH "" )
-set(CMAKE_CUDA_COMPILER "/usr/tce/packages/cuda/cuda-10.1.168/bin/nvcc" CACHE PATH "" )
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-10.1.243" CACHE PATH "" )
+set(CMAKE_CUDA_COMPILER "/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc" CACHE PATH "" )

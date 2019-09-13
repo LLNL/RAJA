@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.08.20/bin/xlc++_r \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/xl_2019_08_20.cmake \
   -C ../host-configs/lc-builds/blueos/xl_2019_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
