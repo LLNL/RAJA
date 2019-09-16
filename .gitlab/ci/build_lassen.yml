@@ -1,0 +1,154 @@
+############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+############################################################################
+
+####
+# Shared configuration of jobs for lassen
+.build_lassen:
+  variables:
+  tags:
+    - shell
+    - lassen
+  stage: build
+  extends: .build_blueos_3_ppc64le_ib_p9_script
+  except:
+    refs:
+      - /_lnone/
+    variables:
+      - $RAJA_CI_LASSEN == "OFF"
+
+# Lassen build jobs
+build_lassen_clang_6_0_0:
+  variables:
+    COMPILER: "clang_6_0_0"
+  extends: .build_lassen
+
+build_lassen_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "clang_coral_2018_08_08"
+  extends: .build_lassen
+
+build_lassen_clang_upstream_2018_12_03:
+  variables:
+    COMPILER: "clang_upstream_2018_12_03"
+  extends: .build_lassen
+
+# TODO : fix issue causing failure here
+# The configuration is incomplete compared to the script
+# scripts/lc-builds/toss3_clangcuda6.0.0_nvcc8.0.sh
+# This statement is also true for some jobs currently passing.
+build_lassen_clangcuda_upstream_2018_12_03_nvcc_9_2:
+  variables:
+    COMPILER: "clangcuda_upstream_2018_12_03_nvcc_9_2"
+  extends: .build_lassen
+  allow_failure: true
+
+build_lassen_gcc_4_9_3:
+  variables:
+    COMPILER: "gcc_4_9_3"
+  extends: .build_lassen
+
+build_lassen_gcc_7_3_1:
+  variables:
+    COMPILER: "gcc_7_3_1"
+  extends: .build_lassen
+
+build_lassen_nvcc_10_clang_6_0_0:
+  variables:
+    COMPILER: "nvcc_10_clang_6_0_0"
+  extends: .build_lassen
+
+build_lassen_nvcc_10_gcc_7_3_1:
+  variables:
+    COMPILER: "nvcc_10_gcc_7_3_1"
+  extends: .build_lassen
+
+build_lassen_nvcc_10_xl_2019_02_07:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_02_07"
+  extends: .build_lassen
+
+build_lassen_nvcc_10_xl_2019_04_19:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_04_19"
+  extends: .build_lassen
+
+build_lassen_nvcc_10_xl_2019_06_12:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_06_12"
+  extends: .build_lassen
+
+build_lassen_nvcc_8_0_gcc_4_9_3:
+  variables:
+    COMPILER: "nvcc_8_0_gcc_4_9_3"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_1_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "nvcc_9_1_clang_coral_2018_08_08"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_clang_6_0_0:
+  variables:
+    COMPILER: "nvcc_10_clang_6_0_0"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "nvcc_9_2_clang_coral_2018_08_08"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_clang_upstream_2018_12_03:
+  variables:
+    COMPILER: "nvcc_9_2_clang_upstream_2018_12_03"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_gcc_7_3_1:
+  variables:
+    COMPILER: "nvcc_9_2_gcc_7_3_1"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_xl_2019_02_07:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2019_02_07"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_xl_2019_04_19:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2019_04_19"
+  extends: .build_lassen
+
+build_lassen_nvcc_9_2_xl_2019_06_12:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2019_06_12"
+  extends: .build_lassen
+
+build_lassen_pgi_19_7:
+  variables:
+    COMPILER: "pgi_19_7"
+  extends: .build_lassen
+  allow_failure: true
+
+build_lassen_xl_2019_02_07:
+  variables:
+    COMPILER: "xl_2019_02_07"
+  extends: .build_lassen
+  allow_failure: true
+
+build_lassen_xl_2019_04_19:
+  variables:
+    COMPILER: "xl_2019_04_19"
+  extends: .build_lassen
+  allow_failure: true
+
+build_lassen_xl_2019_06_12:
+  variables:
+    COMPILER: "xl_2019_06_12"
+  extends: .build_lassen
+  allow_failure: true
+
+
+
