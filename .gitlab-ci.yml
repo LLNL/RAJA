@@ -15,30 +15,34 @@ before_script:
 after_script:
   - date
 
-# There are no tests for now
+# There are no tests for now.
 stages:
   - allocate_resources
   - build
   - test
   - release_resources
 
-# This is not a job, but contains project specific build commands
-# If an allocation exist with the name defined in this pipeline, the job will use it
-.build_quartz_script:
+# This is not a job, but contains project specific build commands.
+# If an allocation exist with the name defined in this pipeline, the job will use it.
+.build_toss_3_x86_64_ib_script:
   script:
     - echo ${BUILD_QUARTZ_ALLOC_NAME}
     - export JOBID=$(squeue -h --name=${BUILD_QUARTZ_ALLOC_NAME} --format=%A)
     - echo ${JOBID}
     - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 10 -N 1 -n 1 -c 4 scripts/gitlab/build_and_test.sh
 
-# Butte uses a very different job allocation system, building on login nodes is recommended
-.build_butte_script:
+# Butte uses a very different job allocation system.
+.build_blueos_3_ppc64le_ib_script:
   script:
     - lalloc 1 scripts/gitlab/build_and_test.sh
 
+.build_blueos_3_ppc64le_ib_p9_script:
+  extends: .build_blueos_3_ppc64le_ib_script
 
-# This is where jobs are included
+
+# This is where jobs are included.
 include:
   - local: .gitlab/ci/build_quartz.yml
   - local: .gitlab/ci/build_butte.yml
+  - local: .gitlab/ci/build_lassen.yml
 

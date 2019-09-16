@@ -14,9 +14,10 @@
     - shell
     - butte
   stage: build
-  extends: .build_butte_script
-  except:
-    - /_bnone/
+  extends: .build_blueos_3_ppc64le_ib_script
+  only:
+    variables:
+      - $RAJA_CI_BUTTE == "ON"
   allow_failure: true
 
 
