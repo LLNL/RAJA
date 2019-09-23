@@ -39,9 +39,8 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+
+  RAJA_EXTRACT_BED_IT(iter);
 
   // Reset if exceed CUDA threads per block limit.
   int tperteam = ThreadsPerTeam;
@@ -52,7 +51,7 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
 
   // calculate number of teams based on user defined threads per team
   // datasize is distance between begin() and end() of iterable
-  auto numteams = RAJA_DIVIDE_CEILING_INT( distance, tperteam );
+  auto numteams = RAJA_DIVIDE_CEILING_INT( distance_it, tperteam );
   if ( numteams > tperteam )
   {
     // Omp target reducers will write team # results, into Threads-sized array.
@@ -63,9 +62,9 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
 // thread_limit(tperteam) unused due to XL seg fault (when tperteam != distance)
 #pragma omp target teams distribute parallel for num_teams(numteams) \
     schedule(static, 1) map(to : body)
-  for (Index_type i = 0; i < distance; ++i) {
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     Body ib = body;
-    ib(begin[i]);
+    ib(begin_it[i]);
   }
 
 }
@@ -77,15 +76,14 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+
+  RAJA_EXTRACT_BED_IT(iter);
+
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to                                                           \
-        : body)
-  for (Index_type i = 0; i < distance; ++i) {
+    map(to : body)
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     Body ib = body;
-    ib(begin[i]);
+    ib(begin_it[i]);
   }
 }
 
