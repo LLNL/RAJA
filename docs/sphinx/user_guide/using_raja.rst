@@ -21,16 +21,19 @@ CMake Configuration File
 
 As part of the RAJA installation, we provide a ``RAJA-config.cmake`` file. If
 your application uses CMake, this can be used with CMake's find_package
-capability to import RAJA into your CMake project.
+capability to import RAJA into your CMake project. RAJA also relies on the
+``camp`` library. This is bundled with the RAJA repository, and will install a
+``camp-config.cmake`` file that also works with CMake's find_package.
 
-To use the configuration file, you can add the following command to your CMake
+To use the configuration files, you can add the following command to your CMake
 project::
 
+  find_package(camp)
   find_package(RAJA)
 
-Then, pass the path of RAJA to CMake when you configure your code::
+Then, pass the path of RAJA and camp to CMake when you configure your code::
 
-  cmake -DRAJA_DIR=<path-to-raja>/share/raja/cmake
+  cmake -DRAJA_DIR=<path-to-raja>/share/raja/cmake -Dcamp_DIR=<path-to-raja>/lib/camp/cmake ..
 
 The ``RAJA-config.cmake`` file provides the following variables:
 
