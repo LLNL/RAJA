@@ -1,0 +1,147 @@
+############################################################################
+# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+############################################################################
+
+####
+# This is the share configuration of jobs for butte
+
+.build_butte:
+  variables:
+  tags:
+    - shell
+    - butte
+  stage: build
+  extends: .build_butte_script
+  except:
+    - /_bnone/
+  allow_failure: true
+
+
+####
+# Here are all butte build jobs
+
+build_butte_clang_6_0_0:
+  variables:
+    COMPILER: "clang_6_0_0"
+  extends: .build_butte
+
+build_butte_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "clang_coral_2018_08_08"
+  extends: .build_butte
+
+build_butte_clang_upstream_2018_12_03:
+  variables:
+    COMPILER: "clang_upstream_2018_12_03"
+  extends: .build_butte
+
+build_butte_clangcuda_upstream_2018_12_03_nvcc_9_2:
+  variables:
+    COMPILER: "clangcuda_upstream_2018_12_03_nvcc_9_2"
+  extends: .build_butte
+
+build_butte_gcc_4_9_3:
+  variables:
+    COMPILER: "gcc_4_9_3"
+  extends: .build_butte
+
+build_butte_gcc_7_3_1:
+  variables:
+    COMPILER: "gcc_7_3_1"
+  extends: .build_butte
+
+build_butte_nvcc_10_clang_6_0_0:
+  variables:
+    COMPILER: "nvcc_10_clang_6_0_0"
+  extends: .build_butte
+
+build_butte_nvcc_10_gcc_7_3_1:
+  variables:
+    COMPILER: "nvcc_10_gcc_7_3_1"
+  extends: .build_butte
+
+build_butte_nvcc_10_xl_2019_02_07:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_02_07"
+  extends: .build_butte
+
+build_butte_nvcc_10_xl_2019_04_19:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_04_19"
+  extends: .build_butte
+
+build_butte_nvcc_10_xl_2019_06_12:
+  variables:
+    COMPILER: "nvcc_10_xl_2019_06_12"
+  extends: .build_butte
+
+build_butte_nvcc_8_0_gcc_4_9_3:
+  variables:
+    COMPILER: "nvcc_8_0_gcc_4_9_3"
+  extends: .build_butte
+
+build_butte_nvcc_9_1_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "nvcc_9_1_clang_coral_2018_08_08"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_clang_6_0_0:
+  variables:
+    COMPILER: "nvcc_10_clang_6_0_0"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_clang_coral_2018_08_08:
+  variables:
+    COMPILER: "nvcc_9_2_clang_coral_2018_08_08"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_clang_upstream_2018_12_03:
+  variables:
+    COMPILER: "nvcc_9_2_clang_upstream_2018_12_03"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_gcc_7_3_1:
+  variables:
+    COMPILER: "nvcc_9_2_gcc_7_3_1"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_xl_2019_02_07:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2019_02_07"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_xl_2019_04_19:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2018_04_19"
+  extends: .build_butte
+
+build_butte_nvcc_9_2_xl_2019_06_12:
+  variables:
+    COMPILER: "nvcc_9_2_xl_2019_06_12"
+  extends: .build_butte
+
+build_butte_pgi_19_7:
+  variables:
+    COMPILER: "pgi_19_7"
+  extends: .build_butte
+
+build_butte_xl_2019_02_07:
+  variables:
+    COMPILER: "xl_2019_02_07"
+  extends: .build_butte
+
+build_butte_xl_2019_04_19:
+  variables:
+    COMPILER: "xl_2018_04_19"
+  extends: .build_butte
+
+build_butte_xl_2019_06_12:
+  variables:
+    COMPILER: "xl_2019_06_12"
+  extends: .build_butte
+
+
+
