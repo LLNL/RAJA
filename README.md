@@ -125,21 +125,51 @@ The original developers of RAJA are:
 Please see the [RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
-Release
+License
 -----------
 
-Copyright (c) 2016-2019, Lawrence Livermore National Security, LLC.
+RAJA is licensed under the BSD 3-Clause license,
+(BSD-3-Clause or https://opensource.org/licenses/BSD-3-Clause).
 
-Produced at the Lawrence Livermore National Laboratory.
+Copyrights and patents in the RAJA project are retained by contributors.
+No copyright assignment is required to contribute to RAJA.
 
-All rights reserved.
-
+Unlimited Open Source - BSD 3-clause Distribution
 `LLNL-CODE-689114`  `OCEC-16-063`
 
-Unlimited Open Source - BSD Distribution
-
-For release details and restrictions, please read the RELEASE, LICENSE,
-and NOTICE files, also linked here:
+For release details and restrictions, please see the information in the
+following:
 - [RELEASE](./RELEASE)
 - [LICENSE](./LICENSE)
 - [NOTICE](./NOTICE)
+
+
+SPDX usage
+------------
+
+Individual files contain SPDX tags instead of the full license text.
+This enables machine processing of license information based on the SPDX
+License Identifiers that are available here: https://spdx.org/licenses/
+
+Files that are licensed as BSD 3-Clause contain the following
+text in the license header:
+
+    SPDX-License-Identifier: (BSD-3-Clause)
+
+External Packages
+-------------------
+RAJA bundles its external dependencies as submodules in the git repository.
+These packages are covered by various permissive licenses.  A summary listing
+follows. See the license included with each package for full details.
+
+PackageName: BLT  
+PackageHomePage: https://github.com/LLNL/blt
+PackageLicenseDeclared: BSD-3-Clause  
+
+PackageName: camp
+PackageHomePage: https://github.com/LLNL/camp  
+PackageLicenseDeclared: BSD-3-Clause
+
+PackageName: CUB  
+PackageHomePage: https://github.com/NVlabs/cub
+PackageLicenseDeclared: BSD-3-Clause  
