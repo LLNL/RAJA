@@ -43,16 +43,12 @@ namespace statement
  * A RAJA::kernel statement that performs a CUDA __syncthreads().
  */
 struct CudaSyncThreads : public internal::Statement<camp::nil> {
-  private:
-  CudaSyncThreads() = default;
 };
 
 /*!
  * A RAJA::kernel statement that performs a CUDA __syncwarp().
  */
 struct CudaSyncWarp : public internal::Statement<camp::nil> {
-  private:
-  CudaSyncWarp() = default;
 };
 
 
