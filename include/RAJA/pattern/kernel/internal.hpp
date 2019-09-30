@@ -47,6 +47,8 @@ using StatementList = camp::list<Stmts...>;
 
 template <typename ExecPolicy, typename... EnclosedStmts>
 struct Statement {
+  Statement() = delete;
+
   using enclosed_statements_t = StatementList<EnclosedStmts...>;
   using execution_policy_t = ExecPolicy;
 };

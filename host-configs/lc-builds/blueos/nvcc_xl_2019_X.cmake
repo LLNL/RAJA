@@ -18,6 +18,11 @@ set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "-g -lineinfo -O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 
+# Suppressed XLC warnings:
+# - 1500-029 cannot inline
+# - 1500-036 nostrict optimizations may alter code semantics
+#   (can be countered with -qstrict, with less optimization)
+
 set(RAJA_RANGE_ALIGN 4 CACHE STRING "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE STRING "")
 set(RAJA_DATA_ALIGN 64 CACHE STRING "")
