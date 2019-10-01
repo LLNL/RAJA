@@ -144,8 +144,7 @@ endif ()
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
-    chai
-    umpire)
+    chai)
 endif ()
 
 if (ENABLE_TBB)
