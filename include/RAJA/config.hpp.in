@@ -198,8 +198,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ASSERT(EXP) assert( (EXP) )
 #endif
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && defined(__CUDA_ARCH__)
 #define RAJA_ASSERT(EXP) asm ("trap;")
+#endif
+
+#if defined(NDEBUG)
+#define RAJA_ASSERT(EXP) abort();
 #endif
 
 #else

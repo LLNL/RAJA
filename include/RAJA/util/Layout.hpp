@@ -173,7 +173,7 @@ public:
   template<camp::idx_t N, typename Idx>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
   {
-    printf("View index %ld is out of bounds (0, %ld) \n" ,static_cast<long int>(idx), static_cast<long int>(sizes[N]));
+    printf("View index %ld is out of bounds [0, %ld) \n" ,static_cast<long int>(idx), static_cast<long int>(sizes[N]));
     RAJA_ASSERT(0 < idx && idx < sizes[N] && "View index out of bounds \n");
   }
 
