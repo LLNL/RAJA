@@ -193,8 +193,18 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #if defined(ENABLE_BOUNDS_CHECK)
 #define BOUNDS_CHECK
 #define BOUNDS_CHECK_constexpr
+
+#if !defined(NDEBUG)
+#define RAJA_ASSERT(EXP) assert( (EXP) )
+#endif
+
+#if defined(NDEBUG)
+#define RAJA_ASSERT(EXP) asm ("trap;")
+#endif
+
 #else
 #define BOUNDS_CHECK_constexpr constexpr
+#define RAJA_ASSERT(EXP)
 #endif
 
 //

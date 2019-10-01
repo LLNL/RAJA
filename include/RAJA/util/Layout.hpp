@@ -170,6 +170,13 @@ public:
   /*!
    * Methods to performs bounds checking in layout objects
    */
+  template<camp::idx_t N, typename Idx>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
+  {
+    printf("View index %ld is out of bounds (0, %ld) \n" ,static_cast<long int>(idx), static_cast<long int>(sizes[N]));
+    RAJA_ASSERT(0 < idx && idx < sizes[N] && "View index out of bounds \n");
+  }
+
   template <camp::idx_t N>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck() const
   {
@@ -178,7 +185,7 @@ public:
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    assert(0 < idx && idx < sizes[N] && "View index out of bounds \n");
+    if(!(0<idx && idx < sizes[N])) BoundsCheckError<N>(idx);
     RAJA_UNUSED_VAR(idx);
     BoundsCheck<N+1>(indices...);
   }
