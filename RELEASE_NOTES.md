@@ -18,12 +18,16 @@ Notable changes include:
       * Added a shift method to RAJA::View, which allows one to create a new
         view object from an existing one that is shifted in index space from 
         the original. 
-      * Added support for RAJA::TypedView, so that the index type can be 
-        specified as a template parameter.
-      * Added support for RAJA::TypedOffsetLayout, so that the index type can be 
+      * Added support for RAJA::TypedView and RAJA::TypedOffsetLayout, so that 
+        the index type can be specified as a template parameter.
       * Added helper functions to convert a RAJA::Layout object to a 
         RAJA::OffsetLayout object and RAJA::TypedLayout to 
         RAJA::TypedOffsetLayout.
+      * Added a bounds checking option to RAJA Layout types as a debugging
+        feature. This is a compile-time option that will report user errors
+        when given View or Layout indices are out-of-bounds. See View/Layout
+        section in user guide for instructions on enabling this and how this
+        feature works.
       * Documentation enhancements.
 
   * Bug fixes:
