@@ -230,6 +230,20 @@ using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
 using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
 using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
 
+/*!
+ * Maps segment indices to CUDA threads.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical threads to fit all of the direct map requests.
+ * For example, a segment of size 2000 will not fit, and trigger a runtime
+ * error.
+ */
+template<int dim>
+struct cuda_block_xyz_direct{};
+
+using cuda_block_x_direct = cuda_block_xyz_direct<0>;
+using cuda_block_y_direct = cuda_block_xyz_direct<1>;
+using cuda_block_z_direct = cuda_block_xyz_direct<2>;
+
 
 /*!
  * Maps segment indices to CUDA blocks.

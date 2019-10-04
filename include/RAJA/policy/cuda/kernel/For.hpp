@@ -601,6 +601,54 @@ struct CudaStatementExecutor<
   }
 };
 
+/*
+ * Executor for block work sharing inside CudaKernel.
+ * Mapping directly from blockIdx.xyz to indicies
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int BlockDim,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t>;
+
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    auto len = segment_length<ArgumentId>(data);
+    auto i = get_cuda_dim<BlockDim>(blockIdx);
+
+    // Assign the x thread to the argument
+    data.template assign_offset<ArgumentId>(i);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active && (i<len));
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    auto len = segment_length<ArgumentId>(data);
+
+    // request one block per element in the segment
+    LaunchDims dims;
+    set_cuda_dim<BlockDim>(dims.blocks, len);
+
+    // combine with enclosed statements
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return dims.max(enclosed_dims);
+  }
+};
 
 
 /*
