@@ -288,11 +288,13 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   // reduce per warp values
   if (numThreads > policy::hip::WARP_SIZE) {
 
-    __shared__ RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> sd;
+    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>)];
+    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd = 
+      reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0) {
-      sd.set(warpNum, temp);
+      sd->set(warpNum, temp);
     }
 
     __syncthreads();
@@ -301,7 +303,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
       // read per warp values
       if (warpId * policy::hip::WARP_SIZE < numThreads) {
-        temp = sd.get(warpId);
+        temp = sd->get(warpId);
       } else {
         temp = identity;
       }

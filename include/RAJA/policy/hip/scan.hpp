@@ -25,7 +25,7 @@
 #include <iterator>
 #include <type_traits>
 
-#if defined(__HCC__)
+#if defined(__HIPCC__)
 #define ROCPRIM_HIP_API 1
 #include "rocprim/device/device_scan.hpp"
 #elif defined(__CUDACC__)
@@ -59,7 +59,7 @@ void inclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
                                       temp_storage_bytes,
                                       begin,
@@ -82,7 +82,7 @@ void inclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       hip::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
                                       temp_storage_bytes,
                                       begin,
@@ -127,7 +127,7 @@ void exclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
                                       temp_storage_bytes,
                                       begin,
@@ -151,7 +151,7 @@ void exclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       hip::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
                                               temp_storage_bytes,
                                               begin,
@@ -198,7 +198,7 @@ void inclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(
       d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
 #elif defined(__CUDACC__)
@@ -210,7 +210,7 @@ void inclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       hip::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(
       d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
 #elif defined(__CUDACC__)
@@ -247,7 +247,7 @@ void exclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
                                       temp_storage_bytes,
                                       begin,
@@ -271,7 +271,7 @@ void exclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       hip::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-#if defined(__HCC__)
+#if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
                                       temp_storage_bytes,
                                       begin,

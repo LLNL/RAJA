@@ -157,7 +157,7 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
-#if defined(__HCC__)
+#if defined(__HIPCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
 #elif defined(__CUDACC__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
