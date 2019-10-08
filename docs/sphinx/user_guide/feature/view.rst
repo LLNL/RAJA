@@ -288,7 +288,7 @@ will always return zero for each dimension with zero extent. For example::
 
 
 ------------------------------------
-RAJA View Bounds Checking
+RAJA View/Layouts Bounds Checking
 ------------------------------------
 
 The RAJA CMake variable ``ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
