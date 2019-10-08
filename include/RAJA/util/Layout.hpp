@@ -231,6 +231,16 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
+#if defined(BOUNDS_CHECK)
+    RAJA::Index_type totSize{1};
+    for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
+    if(linear_index < 0 || linear_index >= totSize) {
+      printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
+             static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
+      RAJA_ASSERT(linear_index < 0 || linear_index >= totSize);
+     }
+#endif
+
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
                                    inv_mods[RangeInts])...);
   }
