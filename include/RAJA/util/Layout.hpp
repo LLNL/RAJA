@@ -200,10 +200,10 @@ public:
    */
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE BOUNDS_CHECK_constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
       Indices... indices) const
   {
-#if defined (BOUNDS_CHECK)
+#if defined (RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
 #endif
     // dot product of strides and indices
@@ -231,7 +231,7 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
-#if defined(BOUNDS_CHECK)
+#if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     RAJA::Index_type totSize{1};
     for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
     if(linear_index < 0 || linear_index >= totSize) {

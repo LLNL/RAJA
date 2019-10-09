@@ -75,7 +75,7 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_BOUNDS_CHECK
+#cmakedefine RAJA_ENABLE_BOUNDS_CHECK
 
 /*!
  ******************************************************************************
@@ -190,9 +190,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Runtime bounds checking for Views
 //
-#if defined(ENABLE_BOUNDS_CHECK)
-#define BOUNDS_CHECK
-#define BOUNDS_CHECK_constexpr
+#if defined(RAJA_ENABLE_BOUNDS_CHECK)
+#define RAJA_BOUNDS_CHECK_INTERNAL
+#define RAJA_BOUNDS_CHECK_constexpr
 
 #if !defined(NDEBUG)
 #define RAJA_ASSERT(EXP) assert( (EXP) )
@@ -211,7 +211,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #endif
 
 #else
-#define BOUNDS_CHECK_constexpr constexpr
+#define RAJA_BOUNDS_CHECK_constexpr constexpr
 #define RAJA_ASSERT(EXP)
 #endif
 

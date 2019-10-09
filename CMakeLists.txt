@@ -63,7 +63,7 @@ option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
 option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
-option(ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
+option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 

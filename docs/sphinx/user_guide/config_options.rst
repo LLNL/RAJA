@@ -104,7 +104,7 @@ and their default settings:
       =========================   ======================
       Variable                    Default
       =========================   ======================
-      ENABLE_BOUNDS_CHECK         Off
+      RAJA_ENABLE_BOUNDS_CHECK    Off
       =========================   ======================
      
 * **Programming model back-ends**

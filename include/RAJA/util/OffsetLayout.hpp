@@ -93,10 +93,10 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   }
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE BOUNDS_CHECK_constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
       Indices... indices) const
   {
-#if defined (BOUNDS_CHECK)
+#if defined (RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
 #endif
     return base_((indices - offsets[RangeInts])...);

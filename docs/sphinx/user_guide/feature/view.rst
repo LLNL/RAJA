@@ -291,7 +291,7 @@ will always return zero for each dimension with zero extent. For example::
 RAJA View/Layouts Bounds Checking
 ------------------------------------
 
-The RAJA CMake variable ``ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
+The RAJA CMake variable ``RAJA_ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
 runtime bounds checking for RAJA Views. Bounds checking is accomplished within
 RAJA layouts (both offset and standard layouts). Upon an out of bounds error, 
 RAJA will abort the program and print the index which went out of bounds as
