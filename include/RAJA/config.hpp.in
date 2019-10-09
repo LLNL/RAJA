@@ -198,11 +198,15 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ASSERT(EXP) assert( (EXP) )
 #endif
 
+//
+//TODO: Once HIP is supported use asm("s_trap 2");
+//      to halt HIP kernels.
+//
 #if defined(NDEBUG) && defined(__CUDA_ARCH__)
 #define RAJA_ASSERT(EXP) asm ("trap;")
 #endif
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
 #define RAJA_ASSERT(EXP) abort();
 #endif
 
