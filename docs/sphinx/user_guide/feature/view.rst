@@ -287,6 +287,7 @@ will always return zero for each dimension with zero extent. For example::
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
+<<<<<<< HEAD
 -------------------
 RAJA Atomic Views
 -------------------
@@ -322,3 +323,15 @@ Here, we create a one-dimensional view for the histogram data array. Then,
 we create an atomic view from that, which we use in the RAJA loop to 
 compute the histogram entries. Since the view is atomic, only one OpenMP
 thread can write to each entry at a time.
+
+------------------------------------
+RAJA View/Layouts Bounds Checking
+------------------------------------
+
+The RAJA CMake variable ``RAJA_ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
+runtime bounds checking for RAJA Views. This may be a useful debugging aid for
+users. When bounds checkoing is turned off (default case), there is no 
+additional run time overhead incurred. Bounds checking is accomplished within
+RAJA layouts (both offset and standard layouts). Upon an out of bounds error, 
+RAJA will abort the program and print the index that is out of bounds as
+well the value of the index and bounds.
