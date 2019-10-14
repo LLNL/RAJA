@@ -177,10 +177,10 @@ template <typename Data, typename Exec>
 __global__ void CudaKernelLauncher(Data data)
 {
 
-  using data_t = camp::decay<Data>;
-  data_t private_data = data;
+  // using data_t = camp::decay<Data>;
+  // data_t private_data = data;
 
-  Exec::exec(private_data, true);
+  Exec::exec(data, true);
 }
 
 
@@ -196,11 +196,11 @@ __launch_bounds__(BlockSize, 1) __global__
     void CudaKernelLauncherFixed(Data data)
 {
 
-  using data_t = camp::decay<Data>;
-  data_t private_data = data;
+  //using data_t = camp::decay<Data>;
+  //data_t private_data = data;
 
   // execute the the object
-  Exec::exec(private_data, true);
+  Exec::exec(data, true);
 }
 
 
