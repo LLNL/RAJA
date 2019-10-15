@@ -231,11 +231,9 @@ using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
 using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
 
 /*!
- * Maps segment indices to CUDA threads.
+ * Maps segment indices to CUDA blocks.
  * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * physical blocks to fit all of the direct map requests.
  */
 template<int dim>
 struct cuda_block_xyz_direct{};
