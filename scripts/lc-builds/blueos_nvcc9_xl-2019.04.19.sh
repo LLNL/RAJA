@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.04./bin/xlc++_r \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.04.19/bin/xlc++_r \
   -C ../host-configs/lc-builds/blueos/nvcc_xl_2019_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
