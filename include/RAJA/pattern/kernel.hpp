@@ -104,10 +104,8 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
-  util::PluginContext p_context;
-  p_context.platform = detail::get_platform<PolicyType>::value;
-
-  util::callPreLaunchPlugins(p_context); 
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -140,7 +138,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType>(loop_data);
 
-  util::callPostLaunchPlugins(p_context);
+  util::callPostLaunchPlugins(context);
 }
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>

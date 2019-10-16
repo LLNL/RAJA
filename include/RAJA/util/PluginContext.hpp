@@ -17,12 +17,20 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/internal/get_platform.hpp"
+
 namespace RAJA {
 namespace util {
 
 struct PluginContext {
   Platform platform;
 };
+
+template<typename Policy>
+PluginContext make_context()
+{
+  return PluginContext{detail::get_platform<Policy>::value};
+}
 
 } // closing brace for util namespace
 } // closing brace for RAJA namespace
