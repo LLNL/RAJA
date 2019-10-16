@@ -32,8 +32,6 @@
 
 #include "RAJA/pattern/kernel/internal.hpp"
 
-#include <iostream>
-
 namespace RAJA
 {
 

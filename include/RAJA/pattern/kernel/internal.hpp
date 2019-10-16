@@ -31,8 +31,6 @@
 
 #include "RAJA/pattern/kernel/ArgHelper.hpp"
 
-#include "RAJA/internal/get_platform.hpp"
-
 #include <iterator>
 #include <type_traits>
 
