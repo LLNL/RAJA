@@ -13,8 +13,8 @@ Plugins
 *******
 
 RAJA provides a plugin mechanism to support optional components that provide
-additional functionality to make writing applications easier. Currently,
-there is only library that provides a RAJA plugin: CHAI.
+additional functionality to make writing applications easier. Currently, there
+is only one library that provides a RAJA plugin: CHAI.
 
 =======
 CHAI
