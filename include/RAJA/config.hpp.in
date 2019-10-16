@@ -71,6 +71,15 @@
 /*!
  ******************************************************************************
  *
+ * \brief Add bounds check to views and layouts
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_BOUNDS_CHECK
+
+/*!
+ ******************************************************************************
+ *
  * \brief Programming model back-ends, plus CHAI enable/disable.
  *
  ******************************************************************************
@@ -177,6 +186,33 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+//
+// Runtime bounds checking for Views
+//
+#if defined(RAJA_ENABLE_BOUNDS_CHECK)
+#define RAJA_BOUNDS_CHECK_INTERNAL
+#define RAJA_BOUNDS_CHECK_constexpr
+
+#if !defined(NDEBUG)
+#define RAJA_ASSERT(EXP) assert( (EXP) )
+#endif
+
+//
+//TODO: Once HIP is supported use asm("s_trap 2");
+//      to halt HIP kernels.
+//
+#if defined(NDEBUG) && defined(__CUDA_ARCH__)
+#define RAJA_ASSERT(EXP) asm ("trap;")
+#endif
+
+#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
+#define RAJA_ASSERT(EXP) abort();
+#endif
+
+#else
+#define RAJA_BOUNDS_CHECK_constexpr constexpr
+#define RAJA_ASSERT(EXP)
+#endif
 
 //
 //  Compiler-specific definitions for inline directives, data alignment

@@ -25,9 +25,25 @@
 #include "RAJA/pattern/atomic.hpp"
 
 #include "RAJA/util/Layout.hpp"
+#include "RAJA/util/OffsetLayout.hpp"
 
 namespace RAJA
 {
+
+//Helpers to convert
+//layouts -> OffsetLayouts
+//Typedlayouts -> TypedOffsetLayouts
+template<typename layout>
+struct add_offset
+{
+  using type = RAJA::OffsetLayout<layout::n_dims>;
+};
+
+template<typename IdxLin, typename...DimTypes>
+struct add_offset<RAJA::TypedLayout<IdxLin,camp::tuple<DimTypes...>>>
+{
+  using type = RAJA::TypedOffsetLayout<IdxLin,camp::tuple<DimTypes...>>;
+};
 
 template <typename ValueType,
           typename LayoutType,
@@ -73,6 +89,18 @@ struct View {
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
+  template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
+  RAJA_INLINE RAJA::View<ValueType, typename add_offset<layout_type>::type>
+  shift(const std::array<IdxLin, n_dims>& shift)
+  {
+    static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
+
+    typename add_offset<layout_type>::type shift_layout(layout);
+    shift_layout.shift(shift);
+
+    return RAJA::View<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
+  }
+
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>
@@ -106,6 +134,18 @@ struct TypedViewBase {
   }
 
   RAJA_INLINE void set_data(PointerType data_ptr) { base_.set_data(data_ptr); }
+
+  template <size_t n_dims=Base::layout_type::n_dims, typename IdxLin = Index_type>
+  RAJA_INLINE RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>
+  shift(const std::array<IdxLin, n_dims>& shift)
+  {
+    static_assert(n_dims==Base::layout_type::n_dims, "Dimension mismatch in view shift");
+
+    typename add_offset<LayoutType>::type shift_layout(base_.layout);
+    shift_layout.shift(shift);
+
+    return RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>(base_.data, shift_layout);
+  }
 
   RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
   {
