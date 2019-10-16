@@ -70,10 +70,35 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
   }
 
+  template<camp::idx_t N, typename Idx>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
+  {
+    printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
+           static_cast<int>(N), static_cast<long int>(idx),
+           static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
+    RAJA_ASSERT(offsets[N] < idx && idx < (offsets[N] + base_.sizes[N]) && "Layout index out of bounds \n");
+  }
+
+  template <camp::idx_t N>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck() const
+  {
+  }
+
+  template <camp::idx_t N, typename Idx, typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
+  {
+    if(!(0<idx && idx < base_.sizes[N])) BoundsCheckError<N>(idx);
+    RAJA_UNUSED_VAR(idx);
+    BoundsCheck<N+1>(indices...);
+  }
+
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
       Indices... indices) const
   {
+#if defined (RAJA_BOUNDS_CHECK_INTERNAL)
+    BoundsCheck<0>(indices...);
+#endif
     return base_((indices - offsets[RangeInts])...);
   }
 
