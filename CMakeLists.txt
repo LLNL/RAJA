@@ -62,6 +62,7 @@ option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
 option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
+option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -160,8 +161,7 @@ endif ()
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
-    chai
-    umpire)
+    chai)
 endif ()
 
 if (ENABLE_TBB)
@@ -172,7 +172,7 @@ endif ()
 
 find_package(camp QUIET)
 if (NOT camp_FOUND)
-  message(WARNING "External CAMP not found.")
+  message(STATUS "Using RAJA CAMP submodule.")
   add_subdirectory(tpl/camp)
 endif(NOT camp_FOUND)
 

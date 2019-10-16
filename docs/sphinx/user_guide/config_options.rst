@@ -98,6 +98,14 @@ and their default settings:
       =========================   ======================
       ENABLE_WARNINGS_AS_ERRORS   Off
       =========================   ======================
+
+     RAJA Views/Layouts may be configured to check for out of bounds 
+     indexing:
+      =========================   ======================
+      Variable                    Default
+      =========================   ======================
+      RAJA_ENABLE_BOUNDS_CHECK    Off
+      =========================   ======================
      
 * **Programming model back-ends**
 
