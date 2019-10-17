@@ -285,7 +285,7 @@ RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                size_t &max_blocks, size_t num_threads)
 {
-  static CudaOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+  static CudaOccMaxBlocksVariableThreadsData data = {0, 0, 0, 0};
 
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
