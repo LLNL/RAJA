@@ -340,7 +340,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   }
 
   inline static void max_blocks(int shmem_size,
-      size_t &max_blocks, int actual_threads)
+      size_t &max_blocks, size_t actual_threads)
   {
     auto func = kernelGetter_t::get();
 
