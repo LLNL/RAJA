@@ -275,8 +275,8 @@ void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
 struct CudaOccMaxBlocksVariableThreadsData
 {
   int prev_shmem_size;
-  int prev_num_threads;
-  int max_blocks;
+  size_t prev_num_threads;
+  size_t max_blocks;
   int multiProcessorCount;
 };
 
@@ -290,8 +290,11 @@ void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
 
+    int max_blocks(0);
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.max_blocks, func, num_threads, shmem_size));
+    &max_blocks, func, static_cast<int>(num_threads), shmem_size));
+
+    data.max_blocks = max_blocks;
 
     if (data.multiProcessorCount < 0) {
 
