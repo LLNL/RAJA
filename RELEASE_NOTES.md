@@ -30,6 +30,12 @@ Notable changes include:
         feature works.
       * Documentation enhancements.
 
+  * API Change.
+      * The type alias RAJA::IndexSet that was marked as deprecated previously
+        has been removed. Now, all index set usage must use the type 
+        RAJA::TypedIndexSet and specify all segment types (as template 
+        parameters) that the index set may potentially hold.
+
   * Bug fixes:
       * Fix for issue in OpenMP target offload back-end that previously caused
         some RAJA Performance Suite kernels to seg fault when built with the
@@ -41,6 +47,12 @@ Notable changes include:
         inside a lambda expression.
 
   * Build changes/improvements:
+      * RAJA now enforces a minimum CUDA compute capability of sm_35. Users
+        can use the CMake variable 'CUDA_ARCH' to specify this. If not 
+        specified, the value of sm_35 will be used and an informational 
+        messaeg will be emitted indicating this. If a user attempts to set
+        the value lower than sm_35, CMake will error out and a message will
+        be emitted indicating why this happened.
       * Transition to using camp as a submodule after its open source release
         (https://github.com/llnl/camp). 
       * Made minimum required CMake version 3.9.
