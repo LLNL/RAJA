@@ -17,7 +17,7 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++ \
-  -C ../host-configs/lc-builds/blueos/clang_upstream_X.cmake \
+  -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
