@@ -104,7 +104,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
-  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::PluginContext context{util::make_context<PolicyType>()};
   util::callPreLaunchPlugins(context); 
 
   // TODO: test that all policy members model the Executor policy concept

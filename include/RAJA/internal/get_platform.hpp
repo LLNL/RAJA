@@ -1,8 +1,8 @@
 #ifndef RAJA_get_platform_HPP
 #define RAJA_get_platform_HPP
 
+#include "RAJA/util/Operators.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA

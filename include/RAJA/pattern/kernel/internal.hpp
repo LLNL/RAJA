@@ -29,6 +29,7 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
+#include "RAJA/pattern/detail/Privatizer.hpp"
 #include "RAJA/pattern/kernel/ArgHelper.hpp"
 
 #include <iterator>
