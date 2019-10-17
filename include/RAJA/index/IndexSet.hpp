@@ -749,13 +749,6 @@ private:
 };
 
 
-RAJA_DEPRECATE_ALIAS(
-    "IndexSet will be deprecated soon. Please transition to TypedIndexSet")
-typedef TypedIndexSet<RAJA::RangeSegment,
-                      RAJA::ListSegment,
-                      RAJA::RangeStrideSegment>
-    IndexSet;
-
 namespace type_traits
 {
 

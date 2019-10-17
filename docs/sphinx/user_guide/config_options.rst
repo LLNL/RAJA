@@ -339,10 +339,17 @@ stage of compilation that is suitable for the SASS architecture you specify.
 Alternatively, you may specify the PTX and SASS architectures, using 
 appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
 
-.. note:: RAJA requires a minimum CUDA architecture level of `sm_35` to use 
-          all supported CUDA features. Mostly, the architecture level affects 
+.. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use 
+          all supported CUDA features.** Mostly, the architecture level affects 
           which RAJA CUDA atomic operations are available and how they are 
           implemented inside RAJA. This is described in :ref:`atomics-label`.
+
+          * If you do not specify a value for `CUDA_ARCH`, it will be set to
+            `sm_35` and CMake will emit a status message indicatting this is
+            the case.
+
+          * If you give a `CUDA_ARCH` value less than `sm_35` (e.g., `sm_30`),
+            CMake will report this and stop processing. 
 
 
 .. _configopt-raja-hostconfig-label:
