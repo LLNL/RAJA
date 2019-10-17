@@ -106,9 +106,9 @@ size_t get_size(cuda_dim_t dims)
   if(dims.x == 0 && dims.y == 0 && dims.z == 0){
     return 0;
   }
-  return size_t(dims.x ? dims.x : 1) *
-         size_t(dims.y ? dims.y : 1) *
-         size_t(dims.z ? dims.z : 1);
+  return (dims.x ? dims.x : 1) *
+         (dims.y ? dims.y : 1) *
+         (dims.z ? dims.z : 1);
 }
 
 struct LaunchDims {
@@ -162,8 +162,8 @@ struct LaunchDims {
   }
 
   RAJA_INLINE
-  int num_threads() const {
-    return int(get_size(threads));
+  size_t num_threads() const {
+    return get_size(threads);
   }
 
 
@@ -219,7 +219,7 @@ struct CudaOccMaxBlocksThreadsData
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
-                                       size_t &max_blocks, int &max_threads)
+                                       size_t &max_blocks, size_t &max_threads)
 {
   static CudaOccMaxBlocksThreadsData data = {-1, -1, -1};
 
@@ -244,7 +244,7 @@ struct CudaOccMaxBlocksFixedThreadsData
   int multiProcessorCount;
 };
 
-template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
+template < typename RAJA_UNUSED_ARG(UniqueMarker), size_t num_threads, typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                size_t &max_blocks)
@@ -283,7 +283,7 @@ struct CudaOccMaxBlocksVariableThreadsData
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
-                               size_t &max_blocks, int num_threads)
+                               size_t &max_blocks, size_t num_threads)
 {
   static CudaOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
 
