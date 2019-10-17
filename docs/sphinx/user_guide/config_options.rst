@@ -307,12 +307,12 @@ which CMake variables to use for certain cases.
 
 The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
 compiler. Option syntax follows the CMake *list* pattern. Here is an example
-showing how to specify OpenMP target back-end options for the clang compiler
-as a CMake option::
+showing how to specify OpenMP target back-end options for NVIDIA GPUs using 
+the clang compiler as a CMake option::
 
    cmake \
      ....
-     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda;-fopenmp-implicit-declare-target" 
+     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" 
      ....
 
 * **CUDA Compiler Options**
@@ -358,14 +358,13 @@ appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
 
 .. _configopt-raja-hostconfig-label:
 
-=======================
-RAJA Host-Config Files
-=======================
+=======================================
+RAJA Example Build Configuration Files
+=======================================
 
-The ``RAJA/host-configs`` directory contains subdirectories with files that 
-define configurations for various platforms and compilers at LLNL. 
-These serve as examples of *CMake cache files* that can be passed to CMake 
-using the '-C' option. This option initializes the CMake cache with the 
-configuration specified in each file. For examples of how they are used for 
-specific CMake configurations, see the build scripts in ``RAJA/scripts`` 
-subdirectories that can be used to drive the RAJA 'host-config' files. 
+The ``RAJA/scripts`` directory contains subdirectories with a variety of 
+build scripts we use to build and test RAJA on various platforms with 
+various compilers. These scripts pass files (*CMake cache files*) in 
+the ``RAJA/host-configs`` directory to CMake using the '-C' option. 
+These files serve as useful examples of how to configure RAJA prior to
+compilation.
