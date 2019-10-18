@@ -118,7 +118,7 @@ struct CUDAReduceLocTest : public ::testing::Test
     array = RAJA::allocate_aligned_type<double *>(RAJA::DATA_ALIGN,
                                                   ydim * sizeof(double *));
 
-    cudaMallocManaged( &data, sizeof(double) * array_length, cudaMemAttachGlobal );
+    cudaErrchk(cudaMallocManaged(&data, sizeof(double) * array_length, cudaMemAttachGlobal));
 
     dataview.set_data( data );
 
@@ -142,7 +142,7 @@ struct CUDAReduceLocTest : public ::testing::Test
 
   virtual void TearDown() {
     RAJA::free_aligned(array);
-    cudaFree( data );
+    cudaErrchk(cudaFree(data));
   }
 
   // make all values equal

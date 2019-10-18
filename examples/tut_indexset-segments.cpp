@@ -31,7 +31,7 @@
  *    -  Index range segment 
  *    -  Index list segment 
  *    -  Strided index range segment 
- *    -  IndexSet segment container
+ *    -  TypedIndexSet segment container
  *    -  Hierarchical execution policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -106,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 //
 // In the following, we show RAJA versions of the daxpy operation and 
-// using different Segment constructs and IndexSets. These are all 
+// using different Segment constructs and TypedIndexSets. These are all 
 // run sequentially. The only thing that changes in these versions is
 // the object passed to the 'forall' method that defines the iteration
 // space.

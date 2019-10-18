@@ -36,8 +36,7 @@ struct ForallViewCUDA : ::testing::Test {
 
     cudaErrchk(cudaMalloc((void**)&arr_d, alen * sizeof(double)));
 
-    cudaErrchk(cudaMemcpy(
-        arr_d, arr_h, alen * sizeof(double), cudaMemcpyHostToDevice));
+    cudaErrchk(cudaMemcpy(arr_d, arr_h, alen * sizeof(double), cudaMemcpyHostToDevice));
   }
 
   virtual void TearDown()
@@ -62,8 +61,7 @@ GPU_TEST_F(ForallViewCUDA, ForallViewLayout)
                                         view(i) = test_val;
                                       });
 
-  cudaErrchk(
-      cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
+  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
 
   for (Index_type i = 0; i < alen; ++i) {
     EXPECT_EQ(arr_h[i], test_val);
@@ -86,8 +84,7 @@ GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
                                         view(i) = test_val;
                                       });
 
-  cudaErrchk(
-      cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
+  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
 
   for (Index_type i = 0; i < alen; ++i) {
     EXPECT_EQ(arr_h[i], test_val);
@@ -103,9 +100,9 @@ GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
   const Index_type N = 2;
   const Index_type boxSize = (N + 2) * (N + 2);
 
-  cudaMallocManaged((void**)&box,
+  cudaErrchk(cudaMallocManaged((void**)&box,
                     boxSize * sizeof(Index_type),
-                    cudaMemAttachGlobal);
+                    cudaMemAttachGlobal));
 
   RAJA::OffsetLayout<DIM> layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{2, 2}});
@@ -126,5 +123,5 @@ GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
     }
   }
 
-  cudaFree(box);
+  cudaErrchk(cudaFree(box));
 }

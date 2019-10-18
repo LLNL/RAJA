@@ -133,7 +133,7 @@ Other usages can be found under:
 
 As the RAJA codebase evolves, there may come a point where features once used have been replaced with more viable options. To aid users in transitioning from an older API call to a preferred API, we introduce deprecation macros which should *cautiously* and *effectively* be used by RAJA developers.
 
-The following macros are defined by RAJA that assist with defining deprecation attributes for Functions, Types (structs/classes), `typedefs`, and type aliases:
+The following macros are defined by RAJA that assist with defining deprecation attributes for Functions, Types (structs/classes), and type aliases:
 
 * `RAJA_DEPRECATE("Message")`
 * `RAJA_DEPRECATE_ALIAS("Message")` -- this will **only** work with a C++14 - enabled compiler
@@ -175,12 +175,6 @@ int forall(Exec && p, Index1, Index2, Body &&) {
   return 0;
 }
 
-
-// Deprecating a typedef
-////////////////////////////////////////////////////////////////////////////////
-
-RAJA_DEPRECATE("RAJA::Index_type will be removed in 2019 (JK)")
-typedef unsigned long Index_type;
 
 // Deprecating a type alias (requires C++14)
 ////////////////////////////////////////////////////////////////////////////////

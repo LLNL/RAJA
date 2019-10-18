@@ -51,7 +51,7 @@ GPU_TEST(ChaiTest, Simple)
   RAJA::forall<RAJA::cuda_exec<16> >(RAJA::RangeSegment(0, 10), [=] __device__(int i) {
     v2[i] *= 2.0f;
   });
-#elif defined(RAJA_ENABLE_HIPA)
+#elif defined(RAJA_ENABLE_HIP)
   RAJA::forall<RAJA::hip_exec<16> >(RAJA::RangeSegment(0, 10), [=] __device__(int i) {
     v2[i] *= 2.0f;
   });

@@ -31,7 +31,7 @@
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    -  Index list segment
- *    -  IndexSet segment container
+ *    -  TypedIndexSet segment container
  *    -  Hierarchical execution policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Since none of the elements with the same number share a common vertex,
 // we can iterate over each subset ("color") in parallel.
 //
-// We use RAJA ListSegments and a RAJA IndexSet to define the element 
+// We use RAJA ListSegments and a RAJA TypedIndexSet to define the element 
 // partitioning. 
 //
 
@@ -222,10 +222,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _colorvectors_vertexsum_end
  
 // 
-// Second, create a RAJA IndexSet with four ListSegments
+// Second, create a RAJA TypedIndexSet with four ListSegments
 //
-// The IndexSet is a variadic template, where the template arguments
-// are the segment types that the IndexSet can hold. 
+// The TypedIndexSet is a variadic template, where the template arguments
+// are the segment types that the TypedIndexSet can hold. 
 // 
   // _colorindexset_vertexsum_start
   using SegmentType = RAJA::TypedListSegment<int>;
@@ -241,7 +241,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
  
 //
-// RAJA vertex volume calculation - sequential IndexSet version 
+// RAJA vertex volume calculation - sequential TypedIndexSet version 
 // (sequential iteration over segments, 
 //  sequential iteration of each segment)
 //
@@ -273,7 +273,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 //
-// RAJA vertex volume calculation - OpenMP IndexSet version
+// RAJA vertex volume calculation - OpenMP TypedIndexSet version
 // (sequential iteration over segments, 
 //  OpenMP parallel iteration of each segment)
 //
@@ -301,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 //
-// RAJA vertex volume calculation - CUDA IndexSet version
+// RAJA vertex volume calculation - CUDA TypedIndexSet version
 // (sequential iteration over segments, 
 //  CUDA parallel execution of each segment)
 //

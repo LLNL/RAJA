@@ -449,7 +449,7 @@ void testAtomicRefCount(RAJA::RangeSegment seg,
       hit[(RAJA::Index_type)val] = true;
       });
 #if defined(RAJA_ENABLE_CUDA)
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
   EXPECT_EQ(countop.final, count[0]);
   for (RAJA::Index_type i = 0; i < seg.size(); i++) {
@@ -474,7 +474,7 @@ void testAtomicRefOther(RAJA::RangeSegment seg, T* count, T* list)
       list[i] = val;
       });
 #if defined(RAJA_ENABLE_CUDA)
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
   EXPECT_LE(otherop.final_min, count[0]);
   EXPECT_GE(otherop.final_max, count[0]);
@@ -496,12 +496,12 @@ void testAtomicRefIntegral()
   // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *count = nullptr;
-  cudaMallocManaged((void **)&count, sizeof(T) * 1);
+  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
   T *list;
-  cudaMallocManaged((void **)&list, sizeof(T) * N);
+  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
   bool *hit;
-  cudaMallocManaged((void **)&hit, sizeof(bool) * N);
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
+  cudaErrchk(cudaDeviceSynchronize());
 #else
   T *count  = new T[1];
   T *list   = new T[N];
@@ -540,9 +540,9 @@ void testAtomicRefIntegral()
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchXorOtherOp>(seg, count, list);
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(hit);
-  cudaFree(list);
-  cudaFree(count);
+  cudaErrchk(cudaFree(hit));
+  cudaErrchk(cudaFree(list));
+  cudaErrchk(cudaFree(count));
 #else
   delete[] hit;
   delete[] list;
@@ -563,12 +563,12 @@ void testAtomicRefFloating()
   // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *count = nullptr;
-  cudaMallocManaged((void **)&count, sizeof(T) * 1);
+  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
   T *list;
-  cudaMallocManaged((void **)&list, sizeof(T) * N);
+  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
   bool *hit;
-  cudaMallocManaged((void **)&hit, sizeof(bool) * N);
-  cudaDeviceSynchronize();
+  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
+  cudaErrchk(cudaDeviceSynchronize());
 #else
   T *count  = new T[1];
   T *list   = new T[N];
@@ -600,9 +600,9 @@ void testAtomicRefFloating()
   testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchMinOtherOp>(seg, count, list);
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(hit);
-  cudaFree(list);
-  cudaFree(count);
+  cudaErrchk(cudaFree(hit));
+  cudaErrchk(cudaFree(list));
+  cudaErrchk(cudaFree(count));
 #else
   delete[] hit;
   delete[] list;
