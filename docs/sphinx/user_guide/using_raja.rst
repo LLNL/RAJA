@@ -35,22 +35,10 @@ Then, pass the path of RAJA to CMake when you configure your code::
 
   cmake -DRAJA_DIR=<path-to-raja>/share/raja/cmake
 
-The ``RAJA-config.cmake`` file provides the following variables:
-
-======================   ===================================
-Variable                 Default
-======================   ===================================
-``RAJA_INCLUDE_DIR``     Include directory for RAJA headers.
-``RAJA_LIB_DIR``         Library directory for RAJA.
-``RAJA_COMPILE_FLAGS``   C++ flags used to compile RAJA.
-======================   ===================================
-
-It also provides the ``RAJA`` target, that can be used natively by CMake to add
-a dependency on RAJA. For example::
+The ``RAJA-config.cmake`` file provides a ``RAJA`` target, that can be used
+natively by CMake to add a dependency on RAJA. For example::
 
   add_executable(my-app.exe
                  my-app.cpp)
 
   target_link_libraries(my-app.exe RAJA)
-
-  target_include_directories(my-app.exe ${RAJA_INCLUDE_DIR}
