@@ -28,7 +28,11 @@ Notable changes include:
         when given View or Layout indices are out-of-bounds. See View/Layout
         section in user guide for instructions on enabling this and how this
         feature works.
-      * Documentation enhancements.
+      * We've added a RAJA Template Project on GitHub, which shows how to
+        use RAJA in an application, either as a Git submodule or as an
+        externally installed library that you link your application against.
+        The template project is linked to the main RAJA project page on GitHub. 
+      * Miscellaneous documentation enhancements.
 
   * API Change.
       * The type alias RAJA::IndexSet that was marked as deprecated previously
