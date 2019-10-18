@@ -106,9 +106,9 @@ size_t get_size(cuda_dim_t dims)
   if(dims.x == 0 && dims.y == 0 && dims.z == 0){
     return 0;
   }
-  return (dims.x ? dims.x : 1) *
-         (dims.y ? dims.y : 1) *
-         (dims.z ? dims.z : 1);
+  return size_t(dims.x ? dims.x : 1) *
+         size_t(dims.y ? dims.y : 1) *
+         size_t(dims.z ? dims.z : 1);
 }
 
 struct LaunchDims {
@@ -191,7 +191,7 @@ struct CudaFixedMaxBlocksData
 };
 
 RAJA_INLINE
-size_t cuda_max_blocks(int block_size)
+size_t cuda_max_blocks(size_t block_size)
 {
   static CudaFixedMaxBlocksData data = {-1, -1};
 
