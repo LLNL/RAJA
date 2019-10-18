@@ -287,7 +287,6 @@ will always return zero for each dimension with zero extent. For example::
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
-<<<<<<< HEAD
 -------------------
 RAJA Atomic Views
 -------------------
