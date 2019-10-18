@@ -66,7 +66,7 @@ commands in the top-level RAJA directory (in-source builds are not allowed!):
 More details about RAJA configuration options are located in the User 
 Documentation.
 
-We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a git
+We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
 
 User Documentation

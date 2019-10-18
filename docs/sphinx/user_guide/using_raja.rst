@@ -13,7 +13,10 @@ Using RAJA in Your Application
 ******************************
 
 Using RAJA in an application requires two things: ensuring the header files
-are visible, and linking against the RAJA library.
+are visible, and linking against the RAJA library. We maintain a 
+`RAJA Template Project <https://github.com/LLNL/RAJA-project-template>`_
+shows how to use RAJA in a CMake project, either as a Git submodule or
+as an externally installed library that you link your application against.
 
 ========================
 CMake Configuration File
@@ -40,7 +43,6 @@ Variable                 Default
 ``RAJA_INCLUDE_DIR``     Include directory for RAJA headers.
 ``RAJA_LIB_DIR``         Library directory for RAJA.
 ``RAJA_COMPILE_FLAGS``   C++ flags used to compile RAJA.
-``RAJA_NVCC_FLAGS``      CUDA flags used to compile RAJA.
 ======================   ===================================
 
 It also provides the ``RAJA`` target, that can be used natively by CMake to add
