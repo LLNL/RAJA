@@ -275,25 +275,18 @@ GPU_TYPED_TEST_P(HIPReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
   RAJA::RangeSegment colrange(0, ydim);
   RAJA::RangeSegment rowrange(0, xdim);
 
-  double *buf = new double[array_length];
-  for (int i=0;i<array_length;i++) buf[i] = 50000;
-
-  hipMemcpy(this->d_data, buf, array_length*sizeof(double), hipMemcpyHostToDevice);
-
   // FIRST TEST: original unequal values
   at_v<TypeParam, 0> minmaxloc_reducer(applygpu::extremeval(), RAJA::make_tuple(0, 0));
+
   RAJA::View<double, RAJA::Layout<2>> d_dataview(this->d_data, xdim, ydim);
-  double *d_data = this->d_data;
+
   RAJA::kernel<ExecutionPol>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_DEVICE (int c, int r) {
-                             applygpu::apply(minmaxloc_reducer, d_data[r+c*xdim], RAJA::make_tuple(c, r));
+                             auto ii = RAJA::make_tuple(c, r);
+                             applygpu::apply(minmaxloc_reducer, d_dataview(r, c), RAJA::make_tuple(c, r));
                            });
 
-  hipDeviceSynchronize();
-
   RAJA::tuple<int, int> raja_loc = minmaxloc_reducer.getLoc();
-
-  printf("minmax = %f, locx = %d, locy = %d\n", (double)minmaxloc_reducer.get(), RAJA::get<0>(raja_loc), RAJA::get<1>(raja_loc));
 
   ASSERT_FLOAT_EQ(this->getminormax(applygpu::minormax()), (double)minmaxloc_reducer.get());
   ASSERT_EQ(this->getlocX(applygpu::minormax()), RAJA::get<0>(raja_loc));
