@@ -131,17 +131,17 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_block_z_direct                    kernel (For)  Map loop iterations to
                                                       CUDA thread blocks in
                                                       z-dimension
- cuda_block_x_loop                     kernel (For)   Extends block-x-direct
+ cuda_block_x_loop                      kernel (For)  Extends block-x-direct
                                                       policy by adding a
                                                       grid-stride loop.
 						      Intended for occupancy
 						      based cuda launcher
- cuda_block_y_loop                     kernel (For)   Extends block-y-direct
+ cuda_block_y_loop                      kernel (For)  Extends block-y-direct
                                                       policy by adding a
                                                       grid-stride loop.
 						      Intended for occupancy
 						      based cuda launcher
- cuda_block_z_loop                     kernel (For)   Extends block-z-direct
+ cuda_block_z_loop                      kernel (For)  Extends block-z-direct
                                                       policy by adding a
                                                       grid-stride loop.
 						      Intended for occupancy
