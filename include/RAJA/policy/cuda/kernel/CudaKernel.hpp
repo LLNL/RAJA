@@ -153,14 +153,14 @@ using CudaKernelFixedAsync =
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads
- * Thre kernel launch is synchronous.
+ * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernel = CudaKernelFixed<1024, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernelAsync = CudaKernelFixedAsync<1024, EnclosedStmts...>;

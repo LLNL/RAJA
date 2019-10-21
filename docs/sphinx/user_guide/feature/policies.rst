@@ -122,15 +122,30 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_thread_z_loop                     kernel (For)  Extends thread-z-direct
                                                       policy by adding a 
                                                       block-stride loop
- cuda_block_x_loop                      kernel (For)  Map loop iterations to 
-                                                      CUDA thread blocks in 
+ cuda_block_x_direct                    kernel (For)  Map loop iterations to
+                                                      CUDA thread blocks in
                                                       x-dimension
- cuda_block_y_loop                      kernel (For)  Map loop iterations to 
-                                                      CUDA thread blocks in 
+ cuda_block_y_direct                    kernel (For)  Map loop iterations to
+                                                      CUDA thread blocks in
                                                       y-dimension
- cuda_block_z_loop                      kernel (For)  Map loop iterations to 
+ cuda_block_z_direct                    kernel (For)  Map loop iterations to
                                                       CUDA thread blocks in
                                                       z-dimension
+ cuda_block_x_loop                     kernel (For)   Extends block-x-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
+ cuda_block_y_loop                     kernel (For)   Extends block-y-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
+ cuda_block_z_loop                     kernel (For)   Extends block-z-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
  cuda_warp_direct                       kernel (For)  Policy to map work to
                                                       threads within a warp
                                                       directly.
@@ -514,7 +529,13 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 
-  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
+  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous, CudaKernelAsync provides an asynchronous version.
+
+  * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CUDA::Kernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous, CudaKernelFixedAsync provides an asynchronous version.
+
+  * ``statement::CudaKernelOcc<EnclosedStatements>`` a RAJA::kernel statement that launches a RAJA CUDA kernel using the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::block/thread_direct policies. This kernel launch is synchronous, CudaKernelOccAsync provides an asynchronous version.
+  
+  * ``statement::CudaKernelExp<num_blocks, num_threads, EnclosedStatements>``  A RAJA::kernel statement that launches a RAJA CUDA kernel with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous, CudaKernelExpAsync provides an asynchronous version.
 
   * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier.
 
