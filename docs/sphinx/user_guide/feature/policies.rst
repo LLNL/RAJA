@@ -529,13 +529,21 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 
-  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous, CudaKernelAsync provides an asynchronous version.
+  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
 
-  * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CUDA::Kernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous, CudaKernelFixedAsync provides an asynchronous version.
+  * ``statement::CudaKernelAsync< EnclosedStatements>`` asynchronous version of CudaKernel.
 
-  * ``statement::CudaKernelOcc<EnclosedStatements>`` a RAJA::kernel statement that launches a RAJA CUDA kernel using the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::block/thread_direct policies. This kernel launch is synchronous, CudaKernelOccAsync provides an asynchronous version.
+  * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CudaKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.
+
+  * ``statement::CudaKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of CudaKernelFixed.
+
+  * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
+
+  * ``statement::CudaKernelOccAsync<EnclosedStatements>`` asynchronous version of CudaKernelOcc.
   
-  * ``statement::CudaKernelExp<num_blocks, num_threads, EnclosedStatements>``  A RAJA::kernel statement that launches a RAJA CUDA kernel with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous, CudaKernelExpAsync provides an asynchronous version.
+  * ``statement::CudaKernelExp<num_blocks, num_threads, EnclosedStatements>`` similar to CudaKernelOcc but with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous.
+
+  * ``statement::CudaKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of CudaKernelExp.
 
   * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier.
 
