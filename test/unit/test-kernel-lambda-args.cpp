@@ -598,6 +598,53 @@ using CudaTypes2 =
         > //CudaKernel
       > //close kernel policy
     > //close list
+  ,
+  RAJA::list<
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+      RAJA::statement::For<4, RAJA::cuda_block_y_direct,
+        RAJA::statement::For<3, RAJA::cuda_block_x_direct,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
+            //Initalize thread private value
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
+              >
+             >,
+
+            //Slide window across matrix
+             RAJA::statement::For<2, RAJA::seq_exec,
+
+              //Load matrix into tile
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
+                >
+              >,
+              //perform matrix multiplcation
+              RAJA::statement::CudaSyncThreads,
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
+                >
+              >,
+              RAJA::statement::CudaSyncThreads
+            >, //sliding window
+
+            //Write memory out to global matrix
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
+              >
+             >
+         > //Create shared memory
+        >//For 3
+       >//For 4
+        > //CudaKernel
+      > //close kernel policy
+    > //close list
   >;//close types
 
 INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiply, CudaTypes2);

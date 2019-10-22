@@ -409,6 +409,32 @@ using CUDATypes =
         > //CudaKernel
       > //kernel policy
     > //list
+  ,
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<3, RAJA::cuda_block_y_direct,
+          RAJA::statement::For<2, RAJA::cuda_block_x_direct,
+
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<0> > >,
+              RAJA::statement::CudaSyncThreads,
+
+                //Read data from shared memory
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                    RAJA::statement::Lambda<1> > >,
+                RAJA::statement::CudaSyncThreads
+              > //close shared memory scope
+            >//for 2
+          >//for 3
+        > //CudaKernel
+      > //kernel policy
+    > //list
   >; //types
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, TypedLocalMem, CUDATypes);
