@@ -5,6 +5,6 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-if (ENABLE_CHAI)
-  add_subdirectory(chai)
-endif(ENABLE_CHAI)
+raja_add_executable(
+  NAME plugin-example
+  SOURCES test-plugin.cpp counter-plugin.cpp)

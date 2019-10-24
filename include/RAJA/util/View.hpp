@@ -27,10 +27,6 @@
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 
-#if defined(RAJA_ENABLE_CHAI)
-#include "chai/ManagedArray.hpp"
-#endif
-
 namespace RAJA
 {
 
@@ -160,22 +156,6 @@ struct TypedViewBase {
 template <typename ValueType, typename LayoutType, typename... IndexTypes>
 using TypedView =
     TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
-
-#if defined(RAJA_ENABLE_CHAI)
-
-template <typename ValueType, typename LayoutType>
-using ManagedArrayView =
-    View<ValueType, LayoutType, chai::ManagedArray<ValueType>>;
-
-
-template <typename ValueType, typename LayoutType, typename... IndexTypes>
-using TypedManagedArrayView = TypedViewBase<ValueType,
-                                            chai::ManagedArray<ValueType>,
-                                            LayoutType,
-                                            IndexTypes...>;
-
-#endif
-
 
 template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {
