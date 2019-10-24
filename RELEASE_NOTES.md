@@ -18,8 +18,8 @@ Notable changes include:
       * Added CUDA block direct execution policies, which can be used to map
         loop iterations directly to CUDA thread block. These are analogous to
         the pre-existing thread direct policies. The new block direct policies
-        can provide better performance for kernels that the block loop policies
-        when load balancing is an issue. Please see the RAJA User Guide for 
+        can provide better performance for kernels than the block loop policies
+        when load balancing may be an issue. Please see the RAJA User Guide for 
         a description of all available RAJA execution policies.
       * Added a plugin registry feature that will allow plugins to be linked
         into RAJA that can act before and after kernel launches. One benefit
@@ -44,7 +44,7 @@ Notable changes include:
         externally installed library that you link your application against.
         It is available here: https://github.com/LLNL/RAJA-project-template.
         It is also linked to the main RAJA project page on GitHub. 
-      * Various user documentation imporvements.
+      * Various user documentation improvements.
 
   * API Change.
       * The type alias RAJA::IndexSet that was marked deprecated previously

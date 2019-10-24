@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(RAJA_COMPILER "RAJA_COMPILER_PGT" CACHE STRING "")
+set(RAJA_COMPILER "RAJA_COMPILER_PGI" CACHE STRING "")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fast -mp" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -fast -mp" CACHE STRING "")
