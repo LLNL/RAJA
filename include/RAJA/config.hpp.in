@@ -89,7 +89,6 @@
 #cmakedefine RAJA_ENABLE_TBB
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
-#cmakedefine RAJA_ENABLE_CHAI
 
 /*!
  ******************************************************************************
