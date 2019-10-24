@@ -396,7 +396,7 @@ This release contains some new RAJA features, plus a bunch of internal changes
 including more tests, conversion of nearly all unit tests to use Google Test, 
 improved testing coverage, and compilation portability improvements (e.g., 
 Intel, nvcc, msvc). Also, the prefix for all RAJA source files has been changed
-from *.cxx to *.cpp for consistency with the header file prefix conversion in 
+from 'cxx'to 'cpp' for consistency with the header file prefix conversion in 
 the last release. The source file prefix change should not require users to 
 change anything.
 
