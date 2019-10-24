@@ -23,6 +23,9 @@ namespace RAJA {
 namespace util {
 
 struct PluginContext {
+  PluginContext(const Platform p) :
+    platform(p) {}
+
   Platform platform;
 };
 
