@@ -66,7 +66,7 @@ Notable changes include:
       * RAJA now enforces a minimum CUDA compute capability of sm_35. Users
         can use the CMake variable 'CUDA_ARCH' to specify this. If not 
         specified, the value of sm_35 will be used and an informational 
-        messaeg will be emitted indicating this. If a user attempts to set
+        message will be emitted indicating this. If a user attempts to set
         the value lower than sm_35, CMake will error out and a message will
         be emitted indicating why this happened.
       * Transition to using camp as a submodule after its open source release
