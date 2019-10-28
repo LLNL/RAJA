@@ -7,7 +7,7 @@
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
 
-Version v0.10.0 -- Release date 2019-xx-xx
+Version v0.10.0 -- Release date 2019-10-31
 ==========================================
 
 This release contains new features, several notable changes, and some bug fixes.
