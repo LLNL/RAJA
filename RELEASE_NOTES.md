@@ -15,27 +15,39 @@ This release contains new features, several notable changes, and some bug fixes.
 Notable changes include:
 
   * New features:
+      * Added CUDA block direct execution policies, which can be used to map
+        loop iterations directly to CUDA thread block. These are analogous to
+        the pre-existing thread direct policies. The new block direct policies
+        can provide better performance for kernels than the block loop policies
+        when load balancing may be an issue. Please see the RAJA User Guide for 
+        a description of all available RAJA execution policies.
+      * Added a plugin registry feature that will allow plugins to be linked
+        into RAJA that can act before and after kernel launches. One benefit
+        of this is that RAJA no longer has an explicit CHAI dependency if RAJA 
+        is used with CHAI. Future benefits will include integration with other
+        tools for performance analysis, etc.
       * Added a shift method to RAJA::View, which allows one to create a new
         view object from an existing one that is shifted in index space from 
-        the original. 
+        the original. Please see the RAJA User Guide for details.
       * Added support for RAJA::TypedView and RAJA::TypedOffsetLayout, so that 
         the index type can be specified as a template parameter.
       * Added helper functions to convert a RAJA::Layout object to a 
         RAJA::OffsetLayout object and RAJA::TypedLayout to 
-        RAJA::TypedOffsetLayout.
+        RAJA::TypedOffsetLayout. Please see the RAJA User Guide for details.
       * Added a bounds checking option to RAJA Layout types as a debugging
         feature. This is a compile-time option that will report user errors
         when given View or Layout indices are out-of-bounds. See View/Layout
-        section in user guide for instructions on enabling this and how this
-        feature works.
+        section in the RAjA User Guide for instructions on enabling this and 
+        how this feature works. 
       * We've added a RAJA Template Project on GitHub, which shows how to
         use RAJA in an application, either as a Git submodule or as an
         externally installed library that you link your application against.
-        The template project is linked to the main RAJA project page on GitHub. 
-      * Miscellaneous documentation enhancements.
+        It is available here: https://github.com/LLNL/RAJA-project-template.
+        It is also linked to the main RAJA project page on GitHub. 
+      * Various user documentation improvements.
 
   * API Change.
-      * The type alias RAJA::IndexSet that was marked as deprecated previously
+      * The type alias RAJA::IndexSet that was marked deprecated previously
         has been removed. Now, all index set usage must use the type 
         RAJA::TypedIndexSet and specify all segment types (as template 
         parameters) that the index set may potentially hold.
@@ -54,7 +66,7 @@ Notable changes include:
       * RAJA now enforces a minimum CUDA compute capability of sm_35. Users
         can use the CMake variable 'CUDA_ARCH' to specify this. If not 
         specified, the value of sm_35 will be used and an informational 
-        messaeg will be emitted indicating this. If a user attempts to set
+        message will be emitted indicating this. If a user attempts to set
         the value lower than sm_35, CMake will error out and a message will
         be emitted indicating why this happened.
       * Transition to using camp as a submodule after its open source release
@@ -384,7 +396,7 @@ This release contains some new RAJA features, plus a bunch of internal changes
 including more tests, conversion of nearly all unit tests to use Google Test, 
 improved testing coverage, and compilation portability improvements (e.g., 
 Intel, nvcc, msvc). Also, the prefix for all RAJA source files has been changed
-from *.cxx to *.cpp for consistency with the header file prefix conversion in 
+from 'cxx'to 'cpp' for consistency with the header file prefix conversion in 
 the last release. The source file prefix change should not require users to 
 change anything.
 
