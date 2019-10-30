@@ -7,17 +7,22 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-clang-upstream-2018.12.03
+BUILD_SUFFIX=lc_blueos-nvcc10-clang8.0.1
 
-rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/clang_upstream_2018_12_03.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-8.0.1/bin/clang++ \
+  -C ../host-configs/lc-builds/blueos/nvcc_clang_X.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_CUDA=On \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.1.243 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc \
+  -DCUDA_ARCH=sm_70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

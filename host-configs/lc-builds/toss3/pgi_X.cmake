@@ -5,13 +5,11 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
+set(RAJA_COMPILER "RAJA_COMPILER_PGI" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-coral-2018.08.08/bin/clang++" CACHE PATH "")
-
-set(CMAKE_CXX_FLAGS_RELEASE "-O3" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fast -mp" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -fast -mp" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -mp" CACHE STRING "")
 
 set(RAJA_RANGE_ALIGN 4 CACHE STRING "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE STRING "")

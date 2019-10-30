@@ -13,7 +13,10 @@ Using RAJA in Your Application
 ******************************
 
 Using RAJA in an application requires two things: ensuring the header files
-are visible, and linking against the RAJA library.
+are visible, and linking against the RAJA library. We maintain a 
+`RAJA Template Project <https://github.com/LLNL/RAJA-project-template>`_
+shows how to use RAJA in a CMake project, either as a Git submodule or
+as an externally installed library that you link your application against.
 
 ========================
 CMake Configuration File
