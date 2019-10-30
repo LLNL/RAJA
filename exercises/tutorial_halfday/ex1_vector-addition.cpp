@@ -37,10 +37,13 @@
 
 /*
   CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
+
+                    Uncomment to use when filling in exercises. 
+
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
+*/
 
 //
 // Functions for checking and printing arrays
@@ -51,6 +54,18 @@ void printArray(int* v, int len);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
+
+  RAJA::Layout<2> layout_a(3, 5);
+
+  int i = 0;
+  int j = 0;
+
+  layout_a.toIndices(12, i, j);
+  std::cout << "\n12 : (i, j) = " << i << " , " << j << "\n";
+
+  layout_a.toIndices(20, i, j);
+  std::cout << "\n20 : (i, j) = " << i << " , " << j << "\n";
+
 
   std::cout << "\n\nExercise #1: RAJA Vector Addition...\n";
 
@@ -100,8 +115,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
-  ///           method and RAJA::seq_exec execution policy type.
+  ///           method and RAJA::seq_exec execution policy type. 
   ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
+
+  using EXEC_POL1 = RAJA::seq_exec;
+
+  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
+  });
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -163,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   checkResult(c, c_ref, N);
-//printArray(c, N); 
+//printArray(c, N);
 
 #endif
 
@@ -177,7 +200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c, 0, N * sizeof(int));
 
-  std::cout << "\n Running RAJA OpenMP multthreaded vector addition...\n";
+  std::cout << "\n Running RAJA OpenMP multithreaded vector addition...\n";
 
   ///
   /// TODO...

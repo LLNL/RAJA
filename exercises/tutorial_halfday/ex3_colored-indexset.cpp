@@ -16,9 +16,9 @@
 #include "memoryManager.hpp"
 
 /*
- *  EXERCISE #3: Mesh vertex area with "colored" IndexSet
+ *  EXERCISE #3: Mesh vertex area with "colored" TypedIndexSet
  *
- *  In this exercise, you will use a RAJA IndexSet containing 4 
+ *  In this exercise, you will use a RAJA TypedIndexSet containing 4 
  *  ListSegments to parallelize the mesh vertex area computation.
  *  A sum is computed at each vertex on a logically-Cartesian 2D mesh
  *  where the sum represents the vertex "area" as an average of the 4
@@ -27,7 +27,7 @@
  *  contributions may be written to the same vertex value at the same time,
  *  the elements are partitioned into 4 subsets, where no two elements in
  *  each subset share a vertex. A ListSegment enumerates the elements in
- *  each subset. When the ListSegments are put into an IndexSet, the entire
+ *  each subset. When the ListSegments are put into an TypedIndexSet, the entire
  *  computation can be executed with one RAJA::forall() statement, where
  *  you iterate over the segments sequentially and execute each segment in
  *  parallel. This exercise illustrates how RAJA can be used to enable one 
@@ -42,7 +42,7 @@
  *  RAJA features you will use:
  *    - `forall` loop iteration template method
  *    -  Index list segment
- *    -  IndexSet segment container
+ *    -  TypedIndexSet segment container
  *    -  Hierarchical execution policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -50,10 +50,13 @@
 
 /*
   CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
+
+                    Uncomment to use when filling in exercises.
+
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
+*/
 
 //
 // Functions to check and print result.
@@ -65,7 +68,7 @@ void printMeshData(double* v, int n, int joff);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #3: Mesh vertex area with 'colored' IndexSet...\n";
+  std::cout << "\n\nExercise #3: Mesh vertex area with 'colored' TypedIndexSet...\n";
 
 //
 // 2D mesh has N^2 elements (N+1)^2 vertices.
@@ -148,7 +151,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Since none of the elements with the same number share a common vertex,
 // we can iterate over each subset ("color") in parallel.
 //
-// We use RAJA ListSegments and a RAJA IndexSet to define the element 
+// We use RAJA ListSegments and a RAJA TypedIndexSet to define the element 
 // partitioning. 
 //
 
@@ -212,12 +215,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
  
 // 
-// Create a RAJA IndexSet with four ListSegments, one for the indices of the
-// elements in each subset. This will be used in the RAJA OpenMP and CUDA 
+// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of 
+// the elements in each subset. This will be used in the RAJA OpenMP and CUDA 
 // variants of the vertex sum calculation.
 //
-// The IndexSet is a variadic template, where the template arguments
-// are the segment types that the IndexSet can hold. 
+// The TypedIndexSet is a variadic template, where the template arguments
+// are the segment types that the TypedIndexSet can hold. 
 // 
 
 
@@ -231,7 +234,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA OpenMP vertex sum calculation using IndexSet (sequential iteration 
+// RAJA OpenMP vertex sum calculation using TypedIndexSet (sequential iteration 
 // over segments, OpenMP parallel iteration of each segment)
 //----------------------------------------------------------------------------//
 
@@ -263,7 +266,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA CUDA vertex sum calculation using IndexSet (sequential iteration 
+// RAJA CUDA vertex sum calculation using TypedIndexSet (sequential iteration 
 // over segments, CUDA kernel launched for each segment)
 //----------------------------------------------------------------------------//
 

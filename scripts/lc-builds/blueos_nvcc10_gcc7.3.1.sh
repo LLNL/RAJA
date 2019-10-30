@@ -12,7 +12,7 @@ BUILD_SUFFIX=lc_blueos-nvcc10-gcc7.3.1
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.9.2
+module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -20,8 +20,8 @@ cmake \
   -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.1.168 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.1.168/bin/nvcc \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.1.243 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc \
   -DCUDA_ARCH=sm_70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

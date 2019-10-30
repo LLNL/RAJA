@@ -58,8 +58,8 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
   double *A, *B;
 #if defined(RAJA_ENABLE_CUDA)
   size_t Arr_sz = N_rows * N_cols;
-  cudaMallocManaged(&A,  sizeof(double) * Arr_sz);
-  cudaMallocManaged(&B, sizeof(double)  * Arr_sz);
+  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * Arr_sz));
+  cudaErrchk(cudaMallocManaged(&B, sizeof(double)  * Arr_sz));
 #else
   A  = new double[N_rows * N_cols];
   B  = new double[N_rows * N_cols];
@@ -116,8 +116,8 @@ CUDA_TYPED_TEST_P(TypedLocalMem, Basic)
   }
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(A);
-  cudaFree(B);
+  cudaErrchk(cudaFree(A));
+  cudaErrchk(cudaFree(B));
 #else
   delete [] A;
   delete [] B;
@@ -156,10 +156,10 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
 
   double *A, *At, *B, *Bt;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged(&A,  sizeof(double) * N_rows * N_cols);
-  cudaMallocManaged(&At, sizeof(double) * N_rows * N_cols);
-  cudaMallocManaged(&B,  sizeof(double) * N_rows * N_cols);
-  cudaMallocManaged(&Bt, sizeof(double) * N_rows * N_cols);
+  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * N_rows * N_cols));
+  cudaErrchk(cudaMallocManaged(&At, sizeof(double) * N_rows * N_cols));
+  cudaErrchk(cudaMallocManaged(&B,  sizeof(double) * N_rows * N_cols));
+  cudaErrchk(cudaMallocManaged(&Bt, sizeof(double) * N_rows * N_cols));
 #else
   A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
@@ -226,10 +226,10 @@ CUDA_TYPED_TEST_P(MatTranspose, Basic)
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(A);
-  cudaFree(At);
-  cudaFree(B);
-  cudaFree(Bt);
+  cudaErrchk(cudaFree(A));
+  cudaErrchk(cudaFree(At));
+  cudaErrchk(cudaFree(B));
+  cudaErrchk(cudaFree(Bt));
 #else
   delete [] A;
   delete [] At;
@@ -409,6 +409,32 @@ using CUDATypes =
         > //CudaKernel
       > //kernel policy
     > //list
+  ,
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<3, RAJA::cuda_block_y_direct,
+          RAJA::statement::For<2, RAJA::cuda_block_x_direct,
+
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<0> > >,
+              RAJA::statement::CudaSyncThreads,
+
+                //Read data from shared memory
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                    RAJA::statement::Lambda<1> > >,
+                RAJA::statement::CudaSyncThreads
+              > //close shared memory scope
+            >//for 2
+          >//for 3
+        > //CudaKernel
+      > //kernel policy
+    > //list
   >; //types
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, TypedLocalMem, CUDATypes);
@@ -450,10 +476,10 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
 
   double *A, *B, *C, *C_sol;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged(&A,  sizeof(double) * N * M);
-  cudaMallocManaged(&B,  sizeof(double) * M * P);
-  cudaMallocManaged(&C,  sizeof(double) * N * P);
-  cudaMallocManaged(&C_sol,  sizeof(double) * N * P);
+  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * N * M));
+  cudaErrchk(cudaMallocManaged(&B,  sizeof(double) * M * P));
+  cudaErrchk(cudaMallocManaged(&C,  sizeof(double) * N * P));
+  cudaErrchk(cudaMallocManaged(&C_sol,  sizeof(double) * N * P));
 #else
   A  = new double[N * M];
   B  = new double[M * P];
@@ -558,10 +584,10 @@ CUDA_TYPED_TEST_P(MatMultiply, shmem)
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(A);
-  cudaFree(B);
-  cudaFree(C);
-  cudaFree(C_sol);
+  cudaErrchk(cudaFree(A));
+  cudaErrchk(cudaFree(B));
+  cudaErrchk(cudaFree(C));
+  cudaErrchk(cudaFree(C_sol));
 #else
   delete [] A;
   delete [] B;
@@ -613,10 +639,10 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
 
   double *A, *B, *C, *C_sol;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged(&A,  sizeof(double) * N * M);
-  cudaMallocManaged(&B,  sizeof(double) * M * P);
-  cudaMallocManaged(&C,  sizeof(double) * N * P);
-  cudaMallocManaged(&C_sol,  sizeof(double) * N * P);
+  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * N * M));
+  cudaErrchk(cudaMallocManaged(&B,  sizeof(double) * M * P));
+  cudaErrchk(cudaMallocManaged(&C,  sizeof(double) * N * P));
+  cudaErrchk(cudaMallocManaged(&C_sol,  sizeof(double) * N * P));
 #else
   A  = new double[N * M];
   B  = new double[M * P];
@@ -718,10 +744,10 @@ CUDA_TYPED_TEST_P(MatMultiplyScalar, shmem)
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaFree(A);
-  cudaFree(B);
-  cudaFree(C);
-  cudaFree(C_sol);
+  cudaErrchk(cudaFree(A));
+  cudaErrchk(cudaFree(B));
+  cudaErrchk(cudaFree(C));
+  cudaErrchk(cudaFree(C_sol));
 #else
   delete [] A;
   delete [] B;

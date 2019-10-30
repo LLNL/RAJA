@@ -8,15 +8,20 @@
 ###############################################################################
 
 ##
-## Execute these commands before running this script to
-## set up your build environment:
+## Execute these commands before running this script to build RAJA.
 ##
-## qsub -I -n 1 -A your_account -t 60 -q debug-cache-quad
+## First grab a node to compile and run your code:
 ##
-##  module load intel
-##  module load cmake-3.9.1
-##  to run "aprun ./main"
+## > qsub -I -n 1 -A <your_project> -t <# minutes> -q debug-cache-quad
 ##
+## Then set up your build environment.
+##
+##  module load intel/18.0.0.128
+##  module load cmake/3.9.1
+##
+## Example of running an executable:
+##
+## "aprun ./main"
 
 BUILD_SUFFIX=alcf-theta-intel18.0
 

@@ -98,6 +98,14 @@ and their default settings:
       =========================   ======================
       ENABLE_WARNINGS_AS_ERRORS   Off
       =========================   ======================
+
+     RAJA Views/Layouts may be configured to check for out of bounds 
+     indexing:
+      =========================   ======================
+      Variable                    Default
+      =========================   ======================
+      RAJA_ENABLE_BOUNDS_CHECK    Off
+      =========================   ======================
      
 * **Programming model back-ends**
 
@@ -297,22 +305,26 @@ which CMake variables to use for certain cases.
 
 * **OpenMP Compiler Options**
 
-   The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
-   compiler. Option syntax follows the CMake *list* pattern. Here is an example
-   showing how to specify OpenMP target back-end options for the clang compiler
-   as a CMake option::
+The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
+compiler. Option syntax follows the CMake *list* pattern. Here is an example
+showing how to specify OpenMP target back-end options for NVIDIA GPUs using 
+the clang compiler as a CMake option::
 
    cmake \
      ....
-     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda;-fopenmp-implicit-declare-target" 
+     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" 
      ....
 
 * **CUDA Compiler Options**
 
-When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables
-`CMAKE_CUDA_FLAGS_RELEASE`, `CMAKE_CUDA_FLAGS_DEBUG`, and 
-'CMAKE_CUDA_FLAGS_RELWITHDEBINFO` (corresponding to the standard CMake build
-types) are used to pass flags to nvcc.
+When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
+
+  * CMAKE_CUDA_FLAGS_RELEASE 
+  * CMAKE_CUDA_FLAGS_DEBUG
+  * CMAKE_CUDA_FLAGS_RELWITHDEBINFO 
+
+which corresponding to the standard CMake build types are used to pass flags 
+to nvcc.
 
 .. note:: When nvcc must pass options to the host compiler, the arguments
           can be included in these CMake variables. Each host compiler
@@ -331,22 +343,28 @@ stage of compilation that is suitable for the SASS architecture you specify.
 Alternatively, you may specify the PTX and SASS architectures, using 
 appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
 
-.. note:: RAJA requires a minimum CUDA architecture level of `sm_35` to use 
-          all supported CUDA features. Mostly, the architecture level affects 
+.. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use 
+          all supported CUDA features.** Mostly, the architecture level affects 
           which RAJA CUDA atomic operations are available and how they are 
           implemented inside RAJA. This is described in :ref:`atomics-label`.
+
+          * If you do not specify a value for `CUDA_ARCH`, it will be set to
+            `sm_35` and CMake will emit a status message indicatting this is
+            the case.
+
+          * If you give a `CUDA_ARCH` value less than `sm_35` (e.g., `sm_30`),
+            CMake will report this and stop processing. 
 
 
 .. _configopt-raja-hostconfig-label:
 
-=======================
-RAJA Host-Config Files
-=======================
+=======================================
+RAJA Example Build Configuration Files
+=======================================
 
-The ``RAJA/host-configs`` directory contains subdirectories with files that 
-define configurations for various platforms and compilers at LLNL. 
-These serve as examples of *CMake cache files* that can be passed to CMake 
-using the '-C' option. This option initializes the CMake cache with the 
-configuration specified in each file. For examples of how they are used for 
-specific CMake configurations, see the build scripts in ``RAJA/scripts`` 
-subdirectories that can be used to drive the RAJA 'host-config' files. 
+The ``RAJA/scripts`` directory contains subdirectories with a variety of 
+build scripts we use to build and test RAJA on various platforms with 
+various compilers. These scripts pass files (*CMake cache files*) in 
+the ``RAJA/host-configs`` directory to CMake using the '-C' option. 
+These files serve as useful examples of how to configure RAJA prior to
+compilation.

@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <limits>
+#include <cassert>
 
 #include "RAJA/index/IndexValue.hpp"
 
@@ -98,8 +99,8 @@ struct stride_calculator<n_dims, n_dims, IdxLin> {
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
 struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim> {
 public:
-  typedef IdxLin IndexLinear;
-  typedef camp::make_idx_seq_t<sizeof...(RangeInts)> IndexRange;
+  using IndexLinear = IdxLin;
+  using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
@@ -166,6 +167,29 @@ public:
   {
   }
 
+  /*!
+   * Methods to performs bounds checking in layout objects
+   */
+  template<camp::idx_t N, typename Idx>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
+  {
+    printf("Error at index %d, value %ld is not within bounds [0, %ld] \n",
+           static_cast<int>(N), static_cast<long int>(idx), static_cast<long int>(sizes[N] - 1));
+    RAJA_ASSERT(0 < idx && idx < (sizes[N]) && "Layout index out of bounds \n");
+  }
+
+  template <camp::idx_t N>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck() const
+  {
+  }
+
+  template <camp::idx_t N, typename Idx, typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
+  {
+    if(!(0<idx && idx < sizes[N])) BoundsCheckError<N>(idx);
+    RAJA_UNUSED_VAR(idx);
+    BoundsCheck<N+1>(indices...);
+  }
 
   /*!
    * Computes a linear space index from specified indices.
@@ -174,19 +198,21 @@ public:
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
+
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
       Indices... indices) const
   {
+#if defined (RAJA_BOUNDS_CHECK_INTERNAL)
+    BoundsCheck<0>(indices...);
+#endif
     // dot product of strides and indices
 #ifdef RAJA_COMPILER_INTEL
     // Intel compiler has issues with Condition
     return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
-
 #else
-    return VarOps::sum<IdxLin>(
-        ((IdxLin)detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(
-            indices, strides[RangeInts]))...);
+    return VarOps::sum<IdxLin>
+      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides[RangeInts]) )...);
 #endif
   }
 
@@ -205,6 +231,16 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &&... indices) const
   {
+#if defined(RAJA_BOUNDS_CHECK_INTERNAL)
+    RAJA::Index_type totSize{1};
+    for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
+    if(linear_index < 0 || linear_index >= totSize) {
+      printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
+             static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
+      RAJA_ASSERT(linear_index < 0 || linear_index >= totSize);
+     }
+#endif
+
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
                                    inv_mods[RangeInts])...);
   }
@@ -306,9 +342,8 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
-  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
-      Indices... indices) const
+      DimTypes... indices) const
   {
     return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
@@ -324,13 +359,12 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
-  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              Indices &... indices) const
+                                              DimTypes &... indices) const
   {
     toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
                     std::forward<IdxLin>(linear_index),
-                    std::forward<Indices &>(indices)...);
+                    std::forward<DimTypes &>(indices)...);
   }
 
 private:

@@ -104,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   //printResult<int>(Aview, N_r, N_c);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of tiled matrix transpose...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
@@ -135,7 +135,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-  //----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
 
   //
   // The following RAJA variants will use the RAJA::kernel method to 
@@ -149,12 +150,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 
-  //----------------------------------------------------------------------------//
-  std::cout << "\n Running sequential tiled matrix transpose ...\n";
+//----------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA sequential tiled matrix transpose ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   //
-  // The following policy carries out the transpose
+  // The following policy performs the matrix transpose operation
   // using sequential loops. The template parameter inside
   // tile_fixed corresponds to the dimension size of the tile.
   //
@@ -179,13 +180,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
+  ///   and the kernel policy above.
   ///
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-  //----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running openmp tiled matrix transpose -  parallel top inner loop...\n";
+  std::cout << "\n Running RAJA openmp tiled matrix transpose -  parallel top inner loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -214,13 +217,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
+  ///   and the kernel policy above.
   ///
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
-  //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running openmp tiled matrix transpose - collapsed inner loops...\n";
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA openmp tiled matrix transpose - collapsed inner loops...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -236,7 +241,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                     RAJA::ArgList<0, 1>,
-                                    RAJA::statement::Lambda<0>
+            RAJA::statement::Lambda<0>
           > //closes collapse
         > // closes Tile 0
       > // closes Tile 1
@@ -249,14 +254,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
+  ///   and the kernel policy above.
   ///
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
-  //----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running cuda tiled matrix transpose ...\n";
+  std::cout << "\n Running RAJA CUDA tiled matrix transpose ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -268,7 +275,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                                      RAJA::statement::Lambda<0>
+                 RAJA::statement::Lambda<0>
               >
             >
           >
@@ -283,6 +290,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE:
   ///
   ///   Implement the matrix tranpose kernel using the RAJA kernel API
+  ///   and the kernel policy above.
   ///
 
   checkResult<int>(Atview, N_c, N_r);

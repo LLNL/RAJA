@@ -12,13 +12,14 @@ BUILD_SUFFIX=lc_blueos-clang-coral-2018.08.08_omptarget
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.9.2
+module load cmake/3.14.5
 
 ## NOTE: RAJA tests are turned off due to compilation issues.
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/clang_coral_2018_08_08.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-coral-2018.08.08/bin/clang++ \
+  -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=Off \
   -DENABLE_TARGET_OPENMP=On \

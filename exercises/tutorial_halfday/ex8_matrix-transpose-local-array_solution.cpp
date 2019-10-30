@@ -106,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   // printResult<int>(Aview, N_r, N_c);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix transpose...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
@@ -163,7 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
   //
   // The following RAJA variants use the RAJA::Kernel
@@ -185,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   TILE_MEM RAJA_Tile;
 
-  //--------------------------------------------------------------------------//
+//--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
@@ -234,8 +234,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
+//--------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - OpenMP (parallel outer loop) matrix "
                "transpose example ...\n";
 
@@ -285,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  //--------------------------------------------------------------------------//
+//--------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running RAJA - CUDA matrix transpose example ...\n";

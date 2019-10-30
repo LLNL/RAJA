@@ -44,24 +44,24 @@ struct Index {
 
 template <typename T>
 struct LocCompare {
-   RAJA_HOST_DEVICE constexpr T defaultVal() { return T(); }
-   RAJA_HOST_DEVICE constexpr T getVal(int idx) { return T(idx); }
+   RAJA_HOST_DEVICE constexpr T defaultVal() const { return T(); }
+   RAJA_HOST_DEVICE constexpr T getVal(int idx) const { return T(idx); }
 };
 
 template <>
 struct LocCompare<Index_type> {
-   RAJA_HOST_DEVICE constexpr Index_type defaultVal() { return -1; }
-   RAJA_HOST_DEVICE constexpr Index_type getVal(int idx) { return idx; }
+   RAJA_HOST_DEVICE constexpr Index_type defaultVal() const { return -1; }
+   RAJA_HOST_DEVICE constexpr Index_type getVal(int idx) const { return idx; }
 };
 
 template <typename T>
 struct LocConvert {
-   RAJA_HOST_DEVICE constexpr T get(const T& idx) { return idx; }
+   RAJA_HOST_DEVICE constexpr T get(const T& idx) const { return idx; }
 };
 
 template <>
 struct LocConvert<Index> {
-   RAJA_HOST_DEVICE constexpr Index_type get(const Index& i) { return i.idx; }
+   RAJA_HOST_DEVICE constexpr Index_type get(const Index& i) const { return i.idx; }
 };
 
 static void reset(double* ptr, long length, double def)
@@ -153,12 +153,12 @@ public:
   static double* dvalue;
   static void SetUpTestCase()
   {
-    cudaMallocManaged((void**)&dvalue,
+    cudaErrchk(cudaMallocManaged((void**)&dvalue,
                       sizeof(double) * TEST_VEC_LEN,
-                      cudaMemAttachGlobal);
+                      cudaMemAttachGlobal));
     reset(dvalue, TEST_VEC_LEN, applier::def());
   }
-  static void TearDownTestCase() { cudaFree(dvalue); }
+  static void TearDownTestCase() { cudaErrchk(cudaFree(dvalue)); }
 };
 
 template <typename Reducer>
@@ -171,7 +171,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   using reducer = ReduceCUDA<TypeParam>;
   double* dvalue = reducer::dvalue;
   reset(dvalue, TEST_VEC_LEN, applier::def());
@@ -220,7 +220,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
@@ -269,7 +269,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;
-  typedef typename applier::IndexType IndexType;
+  using IndexType = typename applier::IndexType;
   double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
   RangeSegment seg0(1, 230);

@@ -71,6 +71,15 @@
 /*!
  ******************************************************************************
  *
+ * \brief Add bounds check to views and layouts
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_BOUNDS_CHECK
+
+/*!
+ ******************************************************************************
+ *
  * \brief Programming model back-ends, plus CHAI enable/disable.
  *
  ******************************************************************************
@@ -80,7 +89,6 @@
 #cmakedefine RAJA_ENABLE_TBB
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
-#cmakedefine RAJA_ENABLE_CHAI
 
 /*!
  ******************************************************************************
@@ -164,7 +172,7 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 //                        as min length of range segments (an integer multiple
 //                        of RANGE_ALIGN)
 //
-//     DATA_ALIGN - used in compiler-specific intrinsics and typedefs
+//     DATA_ALIGN - used in compiler-specific intrinsics and type aliases
 //                  to specify alignment of data, loop bounds, etc.;
 //                  units of "bytes"
 
@@ -178,12 +186,39 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+//
+// Runtime bounds checking for Views
+//
+#if defined(RAJA_ENABLE_BOUNDS_CHECK)
+#define RAJA_BOUNDS_CHECK_INTERNAL
+#define RAJA_BOUNDS_CHECK_constexpr
+
+#if !defined(NDEBUG)
+#define RAJA_ASSERT(EXP) assert( (EXP) )
+#endif
+
+//
+//TODO: Once HIP is supported use asm("s_trap 2");
+//      to halt HIP kernels.
+//
+#if defined(NDEBUG) && defined(__CUDA_ARCH__)
+#define RAJA_ASSERT(EXP) asm ("trap;")
+#endif
+
+#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
+#define RAJA_ASSERT(EXP) abort();
+#endif
+
+#else
+#define RAJA_BOUNDS_CHECK_constexpr constexpr
+#define RAJA_ASSERT(EXP)
+#endif
 
 //
 //  Compiler-specific definitions for inline directives, data alignment
 //  intrinsics, and SIMD vector pragmas
 //
-//  Variables for compiler instrinsics, directives, typedefs
+//  Variables for compiler instrinsics, directives, type aliases
 //
 //     RAJA_INLINE - macro to enforce method inlining
 //

@@ -12,7 +12,7 @@ BUILD_SUFFIX=lc_blueos-clangcuda-upstream-2018.12.03_nvcc-9.2
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.9.2
+module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \

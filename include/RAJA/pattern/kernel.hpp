@@ -20,8 +20,8 @@
 
 #include "RAJA/config.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
@@ -31,8 +31,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
-
-#include "RAJA/util/chai_support.hpp"
 
 namespace RAJA
 {
@@ -106,8 +104,8 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
-
-  detail::setChaiExecutionSpace<PolicyType>();
+  util::PluginContext context{util::make_context<PolicyType>()};
+  util::callPreLaunchPlugins(context); 
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -140,8 +138,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType>(loop_data);
 
-
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
 }
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>

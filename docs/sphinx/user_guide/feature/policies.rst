@@ -122,15 +122,73 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_thread_z_loop                     kernel (For)  Extends thread-z-direct
                                                       policy by adding a 
                                                       block-stride loop
- cuda_block_x_loop                      kernel (For)  Map loop iterations to 
-                                                      CUDA thread blocks in 
+ cuda_block_x_direct                    kernel (For)  Map loop iterations to
+                                                      CUDA thread blocks in
                                                       x-dimension
- cuda_block_y_loop                      kernel (For)  Map loop iterations to 
-                                                      CUDA thread blocks in 
+ cuda_block_y_direct                    kernel (For)  Map loop iterations to
+                                                      CUDA thread blocks in
                                                       y-dimension
- cuda_block_z_loop                      kernel (For)  Map loop iterations to 
+ cuda_block_z_direct                    kernel (For)  Map loop iterations to
                                                       CUDA thread blocks in
                                                       z-dimension
+ cuda_block_x_loop                      kernel (For)  Extends block-x-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
+ cuda_block_y_loop                      kernel (For)  Extends block-y-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
+ cuda_block_z_loop                      kernel (For)  Extends block-z-direct
+                                                      policy by adding a
+                                                      grid-stride loop.
+						      Intended for occupancy
+						      based cuda launcher
+ cuda_warp_direct                       kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      directly.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x.
+                                                      Multiple warps may be
+                                                      created by using
+                                                      cuda_thread_{yz}_
+ cuda_warp_loop                         kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      using a warp-stride loop.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x.
+                                                      Multiple warps may be
+                                                      created by using
+                                                      cuda_thread_{yz}_
+ cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      using a bit mask.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_*.
+                                                      Multiple warps have
+                                                      to be created by using
+                                                      cuda_thread_{yz}_*
+ cuda_warp_mask_loop<BitMask<..>>       kernel (For)  Policy to map work to
+                                                      threads within a warp
+                                                      using a bit mask using
+                                                      a warp-stride loop.
+                                                      Cannot be used in
+                                                      conjunction with
+                                                      cuda_thread_x_*.
+                                                      Multiple warps have
+                                                      to be created by using
+                                                      cuda_thread_{yz}_*
+ cuda_block_reduce                      kernel        Carries out reductions
+                                        (Reduce)      across a single CUDA
+                                                      thread block
+ cuda_warp_reduce                       kernel        Carries out reductions
+                                        (Reduce)      across a single CUDA
+                                                      thread warp
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
@@ -471,9 +529,27 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
 
-  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them.
+  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
 
-  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier. Note that a similar thread barrier for OpenMP will be added soon.
+  * ``statement::CudaKernelAsync< EnclosedStatements>`` asynchronous version of CudaKernel.
+
+  * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CudaKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.
+
+  * ``statement::CudaKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of CudaKernelFixed.
+
+  * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
+
+  * ``statement::CudaKernelOccAsync<EnclosedStatements>`` asynchronous version of CudaKernelOcc.
+  
+  * ``statement::CudaKernelExp<num_blocks, num_threads, EnclosedStatements>`` similar to CudaKernelOcc but with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous.
+
+  * ``statement::CudaKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of CudaKernelExp.
+
+  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier.
+
+  * ``statement::CudaSyncWarp`` provides CUDA '__syncwarp()' barrier.
+
+  * ``statement::OmpSyncThreads`` provides the OpenMP '#pragma omp barrier' directive.
 
   * ``statement::InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The 'ParamList' entries indicate which local array objects in a tuple will be initialized. The 'EnclosedStatements' contain the code in which the local array will be accessed; e.g., initialization operations.
 

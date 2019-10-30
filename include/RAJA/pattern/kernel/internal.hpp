@@ -29,7 +29,7 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/pattern/kernel/ArgHelper.hpp"
 
 #include <iterator>
@@ -47,6 +47,8 @@ using StatementList = camp::list<Stmts...>;
 
 template <typename ExecPolicy, typename... EnclosedStmts>
 struct Statement {
+  Statement() = delete;
+
   using enclosed_statements_t = StatementList<EnclosedStmts...>;
   using execution_policy_t = ExecPolicy;
 };
@@ -380,48 +382,6 @@ struct NestedPrivatizer {
 
 
 }  // end namespace internal
-
-
-#if defined(RAJA_ENABLE_CHAI)
-
-namespace detail
-{
-
-
-template <typename T>
-struct get_statement_platform {
-  static constexpr Platform value =
-      get_platform_from_list<typename T::execution_policy_t,
-                             typename T::enclosed_statements_t>::value;
-};
-
-/*!
- * Specialization to define the platform for an kernel::StatementList, and
- * (by alias) a kernel::Policy
- *
- * This collects the Platform from each of it's statements, recursing into
- * each of them.
- */
-template <typename... Stmts>
-struct get_platform<RAJA::internal::StatementList<Stmts...>> {
-  static constexpr Platform value =
-      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
-};
-
-/*!
- * Specialize for an empty statement list to be undefined
- */
-template <>
-struct get_platform<RAJA::internal::StatementList<>> {
-  static constexpr Platform value = Platform::undefined;
-};
-
-
-}  // namespace detail
-
-#endif  // RAJA_ENABLE_CHAI
-
-
 }  // end namespace RAJA
 
 
