@@ -41,4 +41,4 @@ natively by CMake to add a dependency on RAJA. For example::
   add_executable(my-app.exe
                  my-app.cpp)
 
-  target_link_libraries(my-app.exe RAJA)
+  target_link_libraries(my-app.exe PUBLIC RAJA)
