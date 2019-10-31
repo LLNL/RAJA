@@ -17,7 +17,7 @@ scans, reductions, atomics, etc. Each policy is a type that is passed to
 a RAJA template method or class to specialize its behavior. Typically, the
 policy indicates which programming model back-end to use and sometimes
 provides additional information about the execution pattern, such as
-number of CUDA threads per threadblock, whether execution is synchronous
+number of CUDA threads per thread block, whether execution is synchronous
 or asynchronous, etc.
 
 As RAJA functionality is expanded, new policies will be added and some may
@@ -30,6 +30,8 @@ RAJA Loop/Kernel Execution Policies
 -----------------------------------------------------
 
 The following tables summarize RAJA policies for executing loops and kernels.
+Please see notes below policy descriptions for additional usage details and
+caveats.
 
  ====================================== ============= ==========================
  Sequential/SIMD Execution Policies     Works with    Brief description
@@ -101,94 +103,92 @@ The following tables summarize RAJA policies for executing loops and kernels.
  cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
                                         kernel (For), in a CUDA kernel launched
                                         scan          with given thread-block
-                                                      size. If none given, use
-                                                      default value of 256 
-                                                      threads/block 
- cuda_thread_x_direct                   kernel (For)  Map loop iterations to 
-                                                      CUDA threads in 
-                                                      x-dimension
- cuda_thread_y_direct                   kernel (For)  Map loop iterations to 
-                                                      CUDA threads in 
-                                                      y-dimension
- cuda_thread_z_direct                   kernel (For)  Map loop iterations to 
-                                                      CUDA threads in 
-                                                      z-dimension
- cuda_thread_x_loop                     kernel (For)  Extends thread-x-direct
-                                                      policy by adding a 
-                                                      block-stride loop
- cuda_thread_y_loop                     kernel (For)  Extends thread-y-direct
-                                                      policy by adding a 
-                                                      block-stride loop
- cuda_thread_z_loop                     kernel (For)  Extends thread-z-direct
-                                                      policy by adding a 
-                                                      block-stride loop
- cuda_block_x_direct                    kernel (For)  Map loop iterations to
-                                                      CUDA thread blocks in
-                                                      x-dimension
- cuda_block_y_direct                    kernel (For)  Map loop iterations to
-                                                      CUDA thread blocks in
-                                                      y-dimension
- cuda_block_z_direct                    kernel (For)  Map loop iterations to
-                                                      CUDA thread blocks in
-                                                      z-dimension
- cuda_block_x_loop                      kernel (For)  Extends block-x-direct
-                                                      policy by adding a
+                                                      size. If block size not
+                                                      given, the default value 
+                                                      of 256 threads/block is 
+                                                      used. 
+ cuda_thread_x_direct                   kernel (For)  Map loop iterates
+                                                      directly to CUDA threads
+                                                      in x-dimension, one
+                                                      iterate per thread 
+                                                      (see note below about
+                                                      limitations)
+ cuda_thread_y_direct                   kernel (For)  Same as above, but map
+                                                      to threads in y-dimension
+ cuda_thread_z_direct                   kernel (For)  Same as above, but map
+                                                      to threads in z-dimension
+ cuda_thread_x_loop                     kernel (For)  Similar to thread-x-direct
+                                                      policy, but use a 
+                                                      block-stride loop which
+                                                      doesn't limit number of 
+                                                      loop iterates
+ cuda_thread_y_loop                     kernel (For)  Same as above, but for
+                                                      threads in y-dimension
+ cuda_thread_z_loop                     kernel (For)  Same as above, but for
+                                                      threads in z-dimension
+ cuda_block_x_direct                    kernel (For)  Map loop iterates 
+                                                      directly to CUDA thread 
+                                                      blocks in x-dimension,
+                                                      one iterate per block
+ cuda_block_y_direct                    kernel (For)  Same as above, but map 
+                                                      to blocks in y-dimension
+ cuda_block_z_direct                    kernel (For)  Same as above, but map
+                                                      to blocks in z-dimension
+ cuda_block_x_loop                      kernel (For)  Similar to block-x-direct
+                                                      policy, but use a
                                                       grid-stride loop.
 						      Intended for occupancy
 						      based cuda launcher
- cuda_block_y_loop                      kernel (For)  Extends block-y-direct
-                                                      policy by adding a
-                                                      grid-stride loop.
-						      Intended for occupancy
-						      based cuda launcher
- cuda_block_z_loop                      kernel (For)  Extends block-z-direct
-                                                      policy by adding a
-                                                      grid-stride loop.
-						      Intended for occupancy
-						      based cuda launcher
- cuda_warp_direct                       kernel (For)  Policy to map work to
-                                                      threads within a warp
-                                                      directly.
+ cuda_block_y_loop                      kernel (For)  Same as above, but use
+                                                      blocks in y-dimension
+ cuda_block_z_loop                      kernel (For)  Same as above, but use
+                                                      blocks in z-dimension
+ cuda_warp_direct                       kernel (For)  Map work to threads 
+                                                      in a warp directly.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x.
-                                                      Multiple warps may be
+                                                      cuda_thread_x_* policies.
+                                                      Multiple warps can be
                                                       created by using
-                                                      cuda_thread_{yz}_
+                                                      cuda_thread_y/z_* 
+                                                      policies. 
  cuda_warp_loop                         kernel (For)  Policy to map work to
-                                                      threads within a warp
+                                                      threads in a warp
                                                       using a warp-stride loop.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x.
-                                                      Multiple warps may be
+                                                      cuda_thread_x_* policies.
+                                                      Multiple warps can be
                                                       created by using
-                                                      cuda_thread_{yz}_
- cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work to
-                                                      threads within a warp
-                                                      using a bit mask.
+                                                      cuda_thread_y/z_*
+                                                      policies. 
+ cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work 
+                                                      directly to threads in a 
+                                                      warp using a bit mask.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x_*.
-                                                      Multiple warps have
-                                                      to be created by using
-                                                      cuda_thread_{yz}_*
+                                                      cuda_thread_x_* policies.
+                                                      Multiple warps can
+                                                      be created by using
+                                                      cuda_thread_y/z_*
+                                                      policies.
  cuda_warp_mask_loop<BitMask<..>>       kernel (For)  Policy to map work to
-                                                      threads within a warp
-                                                      using a bit mask using
+                                                      threads in a warp
+                                                      using a bit mask and
                                                       a warp-stride loop.
                                                       Cannot be used in
                                                       conjunction with
-                                                      cuda_thread_x_*.
-                                                      Multiple warps have
-                                                      to be created by using
-                                                      cuda_thread_{yz}_*
- cuda_block_reduce                      kernel        Carries out reductions
+                                                      cuda_thread_x_* policies.
+                                                      Multiple warps can
+                                                      be created by using
+                                                      cuda_thread_y/z_*
+                                                      policies.
+ cuda_block_reduce                      kernel        Perform a reduction
                                         (Reduce)      across a single CUDA
-                                                      thread block
- cuda_warp_reduce                       kernel        Carries out reductions
+                                                      thread block.
+ cuda_warp_reduce                       kernel        Perform a reduction
                                         (Reduce)      across a single CUDA
-                                                      thread warp
+                                                      thread warp.
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
@@ -202,7 +202,8 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       internally; i.e.,
                                                       apply ``omp teams 
                                                       distribute parallel for 
-                                                      num_teams(datatasize/#)
+                                                      num_teams(iteration space
+                                                      size/#)
                                                       thread_limit(#)`` pragma
  omp_target_parallel_collapse_exec      kernel        Similar to above, but 
                                         (Collapse)    collapse 
@@ -215,8 +216,7 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       threads per team
  ====================================== ============= ==========================
 
-The following notes apply to the execution policies described in the table 
-above.
+The following notes provide additional information about policy usage.
 
 .. note:: To control the number of threads used by OpenMP policies
           set the value of the environment variable 'OMP_NUM_THREADS' (which is
@@ -239,19 +239,22 @@ above.
 
           This allows changing number of workers at runtime.
 
-Several notable constraints apply to RAJA CUDA thread-direct policies.
+Several notable constraints apply to RAJA CUDA *thread-direct* policies.
 
 .. note:: * Repeating thread direct policies with the same thread dimension  
             in perfectly nested loops is not recommended. Your code may do 
             something, but likely will not do what you expect and/or be correct.
           * If multiple thread direct policies are used in a kernel (using 
             different thread dimensions), the product of sizes of the 
-            corresponding iteration spaces must be :math:`\leq` 1024. You 
-            cannot launch a CUDA kernel with more than 1024 threads per block.
+            corresponding iteration spaces cannot be greater than the 
+            maximum allowable threads per block. Typically, this is 
+            equ:math:`\leq` 1024; i.e., attempting to launch a CUDA kernel 
+            with more than 1024 threads per block will cause the CUDA runtime 
+            to complain about *illegal launch parameters.* 
           * **Thread-direct policies are recommended only for certain loop 
             patterns, such as tiling.**
 
-Several notes regarding CUDA thread and block loop policies are also good to 
+Several notes regarding CUDA thread and block *loop* policies are also good to 
 know.
 
 .. note:: * There is no constraint on the product of sizes of the associated 
@@ -260,6 +263,13 @@ know.
             threads in the x, y, or z thread dimension.
           * **Cuda thread and block loop policies are recommended for most 
             loop patterns.**
+
+Finally
+
+.. note:: CUDA block-direct policies may be preferable to block-loop policies
+          in situations where block load balancing may be an issue as the
+          block-direct policies may yield better performance.
+
 
 .. _indexsetpolicy-label:
 

@@ -167,12 +167,12 @@ follows. See the license included with each package for full details.
 
 PackageName: BLT  
 PackageHomePage: https://github.com/LLNL/blt
-PackageLicenseDeclared: BSD-3-Clause  
+PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: camp
-PackageHomePage: https://github.com/LLNL/camp  
+PackageHomePage: https://github.com/LLNL/camp
 PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: CUB  
 PackageHomePage: https://github.com/NVlabs/cub
-PackageLicenseDeclared: BSD-3-Clause  
+PackageLicenseDeclared: BSD-3-Clause
