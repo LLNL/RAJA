@@ -30,6 +30,8 @@ RAJA Loop/Kernel Execution Policies
 -----------------------------------------------------
 
 The following tables summarize RAJA policies for executing loops and kernels.
+Please see notes below policy descriptions for additional usage details and
+caveats.
 
  ====================================== ============= ==========================
  Sequential/SIMD Execution Policies     Works with    Brief description
@@ -80,12 +82,6 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       ``omp for nowait`` pragma
  ====================================== ============= ==========================
 
-.. note:: To control the number of threads used by OpenMP policies
-          set the value of the environment variable 'OMP_NUM_THREADS' (which is
-          fixed for duration of run), or call the OpenMP routine 
-          'omp_set_num_threads(nthreads)' (which allows changing number of 
-          threads at runtime).
-
  ====================================== ============= ==========================
  Threading Building Blocks Policies     Works with    Brief description
  ====================================== ============= ==========================
@@ -100,21 +96,6 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                         kernel (For), a dynamic scheduler
                                         scan  
  ====================================== ============= ==========================
-
-.. note:: To control the number of TBB worker threads used by these policies:
-          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
-          fixed for duration of run), or create a 'task_scheduler_init' object::
-
-            tbb::task_scheduler_init TBBinit( nworkers );
-
-            // do some parallel work
-
-            TBBinit.terminate();
-            TBBinit.initialize( new_nworkers );
-
-            // do some more parallel work
-
-          This allows changing number of workers at runtime.
 
  ====================================== ============= ==========================
  CUDA Execution Policies                Works with    Brief description
@@ -210,31 +191,6 @@ The following tables summarize RAJA policies for executing loops and kernels.
                                                       thread warp.
  ====================================== ============= ==========================
 
-Several notable constraints apply to RAJA CUDA thread-direct policies.
-
-.. note:: * Repeating thread direct policies with the same thread dimension  
-            in perfectly nested loops is not recommended. Your code may do 
-            something, but likely will not do what you expect and/or be correct.
-          * If multiple thread direct policies are used in a kernel (using 
-            different thread dimensions), the product of sizes of the 
-            corresponding iteration spaces cannot be greater than the 
-            maximum allowable threads per block. Typically, this is 
-            equ:math:`\leq` 1024; i.e., attempting to launch a CUDA kernel 
-            with more than 1024 threads per block will cause the CUDA runtime 
-            to complain about *illegal launch parameters.* 
-          * **Thread-direct policies are recommended only for certain loop 
-            patterns, such as tiling.**
-
-Several notes regarding CUDA thread and block loop policies are also good to 
-know.
-
-.. note:: * There is no constraint on the product of sizes of the associated 
-            loop iteration space.
-          * These polices allow having a larger number of iterates than 
-            threads in the x, y, or z thread dimension.
-          * **Cuda thread and block loop policies are recommended for most 
-            loop patterns.**
-
  ====================================== ============= ==========================
  OpenMP Target Execution Policies       Works with    Brief description
  ====================================== ============= ==========================
@@ -259,6 +215,61 @@ know.
                                                       of thread teams and 
                                                       threads per team
  ====================================== ============= ==========================
+
+The following notes provide additional information about policy usage.
+
+.. note:: To control the number of threads used by OpenMP policies
+          set the value of the environment variable 'OMP_NUM_THREADS' (which is
+          fixed for duration of run), or call the OpenMP routine 
+          'omp_set_num_threads(nthreads)' (which allows changing number of 
+          threads at runtime).
+
+.. note:: To control the number of TBB worker threads used by these policies:
+          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
+          fixed for duration of run), or create a 'task_scheduler_init' object::
+
+            tbb::task_scheduler_init TBBinit( nworkers );
+
+            // do some parallel work
+
+            TBBinit.terminate();
+            TBBinit.initialize( new_nworkers );
+
+            // do some more parallel work
+
+          This allows changing number of workers at runtime.
+
+Several notable constraints apply to RAJA CUDA *thread-direct* policies.
+
+.. note:: * Repeating thread direct policies with the same thread dimension  
+            in perfectly nested loops is not recommended. Your code may do 
+            something, but likely will not do what you expect and/or be correct.
+          * If multiple thread direct policies are used in a kernel (using 
+            different thread dimensions), the product of sizes of the 
+            corresponding iteration spaces cannot be greater than the 
+            maximum allowable threads per block. Typically, this is 
+            equ:math:`\leq` 1024; i.e., attempting to launch a CUDA kernel 
+            with more than 1024 threads per block will cause the CUDA runtime 
+            to complain about *illegal launch parameters.* 
+          * **Thread-direct policies are recommended only for certain loop 
+            patterns, such as tiling.**
+
+Several notes regarding CUDA thread and block *loop* policies are also good to 
+know.
+
+.. note:: * There is no constraint on the product of sizes of the associated 
+            loop iteration space.
+          * These polices allow having a larger number of iterates than 
+            threads in the x, y, or z thread dimension.
+          * **Cuda thread and block loop policies are recommended for most 
+            loop patterns.**
+
+Finally
+
+.. note:: CUDA block-direct policies may be preferable to block-loop policies
+          in situations where block load balancing may be an issue as the
+          block-direct policies may yield better performance.
+
 
 .. _indexsetpolicy-label:
 
