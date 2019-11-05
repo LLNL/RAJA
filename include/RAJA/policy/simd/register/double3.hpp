@@ -15,58 +15,55 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_HPP
-#define RAJA_pattern_vector_HPP
+#ifndef RAJA_policy_simd_register_double3_HPP
+#define RAJA_policy_simd_register_double3_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/macros.hpp"
+
+// Include SIMD intrinsics header file
+#include <immintrin.h>
+#include <cmath>
+
 
 namespace RAJA
 {
 
 
-/*!
- * \file
- * Vector operation functions in the namespace RAJA
-
- *
- */
-
-  template<typename T, size_t NUM_ELEM>
-  class SimdRegister;
-
-
-  /**
-   * A specialization for a single element SIMD register.
-   * We will implement this as a scalar value, and let the compiler use
-   * whatever registers it deems appropriate.
-   */
-  template<typename T>
-  class SimdRegister<T, 1>{
+  template<>
+  class SimdRegister<double, 3>{
     public:
-      using self_type = SimdRegister<T, 1>;
-      using element_type = T;
+      using self_type = SimdRegister<double, 3>;
+      using element_type = double;
 
-      static constexpr size_t s_num_elem = 1;
-      static constexpr size_t s_byte_width = sizeof(T);
+      static constexpr size_t s_num_elem = 3;
+      static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
+      // Using a 256-bit (4 double) vector, but padding out the upper most
+      // value
+      using simd_type = __m256d;
+
+
     private:
-      T m_value;
+      simd_type m_value;
+
+      // Mask used to mask off the upper double from the vector
+      using mask_type = __m256i;
+      static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
 
     public:
 
       /*!
        * @brief Default constructor, zeros register contents
        */
-      SimdRegister() : m_value(0) {
+      SimdRegister() : m_value(_mm256_setzero_pd()) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
-      SimdRegister(T const &c) : m_value(c) {}
+      explicit SimdRegister(simd_type const &c) : m_value(c) {}
 
 
       /*!
@@ -74,13 +71,12 @@ namespace RAJA
        */
       SimdRegister(self_type const &c) : m_value(c.m_value) {}
 
-
       /*!
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */
       void load(element_type const *ptr){
-        m_value = ptr[0];
+        m_value = _mm256_maskload_pd(ptr, s_mask);
       }
 
       /*!
@@ -91,8 +87,11 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
-      void load(element_type const *ptr, size_t ){
-        m_value = ptr[0];
+      void load(element_type const *ptr, size_t stride){
+        m_value =_mm256_set_pd(0.0,
+                              ptr[2*stride],
+                              ptr[stride],
+                              ptr[0]);
       }
 
 
@@ -101,7 +100,7 @@ namespace RAJA
        * locations.
        */
       void store(element_type *ptr) const{
-        ptr[0] = m_value;
+        _mm256_maskstore_pd(ptr, m_value, s_mask);
       }
 
       /*!
@@ -112,10 +111,11 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
-      void store(element_type *ptr, size_t) const{
-        ptr[0] = m_value;
+      void store(element_type *ptr, size_t stride) const{
+        for(size_t i = 0;i < s_num_elem;++ i){
+          ptr[i*stride] = m_value[i];
+        }
       }
-
 
       /*!
        * @brief Get scalar value from vector register
@@ -125,8 +125,8 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type operator[](IDX) const
-      {return m_value;}
+      element_type operator[](IDX i) const
+      {return m_value[i];}
 
 
       /*!
@@ -136,8 +136,8 @@ namespace RAJA
        */
       template<typename IDX>
       RAJA_INLINE
-      void set(IDX , element_type value)
-      {m_value = value;}
+      void set(IDX i, element_type value)
+      {m_value[i] = value;}
 
       /*!
        * @brief Set entire vector to a single scalar value
@@ -146,7 +146,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(element_type value)
       {
-        m_value = value;
+        m_value = _mm256_set1_pd(value);
         return *this;
       }
 
@@ -171,7 +171,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        return self_type(m_value + x.m_value);
+        return self_type(_mm256_add_pd(m_value, x.m_value));
       }
 
       /*!
@@ -182,7 +182,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator+=(self_type const &x)
       {
-        m_value = m_value + x.m_value;
+        m_value = _mm256_add_pd(m_value, x.m_value);
         return *this;
       }
 
@@ -194,7 +194,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        return self_type(m_value - x.m_value);
+        return self_type(_mm256_sub_pd(m_value, x.m_value));
       }
 
       /*!
@@ -205,7 +205,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator-=(self_type const &x)
       {
-        m_value = m_value - x.m_value;
+        m_value = _mm256_sub_pd(m_value, x.m_value);
         return *this;
       }
 
@@ -217,7 +217,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
-        return self_type(m_value * x.m_value);
+        return self_type(_mm256_mul_pd(m_value, x.m_value));
       }
 
       /*!
@@ -228,7 +228,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator*=(self_type const &x)
       {
-        m_value = m_value * x.m_value;
+        m_value = _mm256_mul_pd(m_value, x.m_value);
         return *this;
       }
 
@@ -240,7 +240,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        return self_type(m_value / x.m_value);
+        return self_type(_mm256_div_pd(m_value, x.m_value));
       }
 
       /*!
@@ -251,7 +251,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator/=(self_type const &x)
       {
-        m_value = m_value / x.m_value;
+        m_value = _mm256_div_pd(m_value, x.m_value);
         return *this;
       }
 
@@ -262,7 +262,8 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        return m_value;
+        auto hsum = _mm256_hadd_pd(m_value, m_value);
+        return hsum[0] + m_value[2];
       }
 
       /*!
@@ -273,9 +274,8 @@ namespace RAJA
       RAJA_INLINE
       element_type dot(self_type const &x) const
       {
-        return m_value*x.m_value;
+        return self_type(_mm256_mul_pd(m_value, x.m_value)).sum();
       }
-
 
       /*!
        * @brief Returns the largest element
@@ -284,7 +284,17 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        return m_value;
+        // permute the first two and last two lanes of the register
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+
+        // take the minimum value of each lane
+        // this gives us b=XXYY where
+        // X = min(a[0], a[1])
+        // Y = min(a[2], a[3])
+        simd_type b = _mm256_max_pd(m_value, a);
+
+        // now take the minimum of a lower and upper lane
+        return std::max<double>(b[0], b[2]);
       }
 
       /*!
@@ -294,16 +304,25 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        return m_value;
+        // permute the first two and last two lanes of the register
+        // m_value = ABCD
+        // a = AACC
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+
+        // take the minimum value of each lane
+        // this gives us b=XXYY where
+        // X = min(a[0], a[1])
+        // Y = min(a[2], a[3])
+        simd_type b = _mm256_min_pd(m_value, a);
+
+        // now take the minimum of a lower and upper lane
+        return std::min<double>(b[0], b[2]);
       }
   };
 
+
+
 }  // namespace RAJA
-
-
-#include <RAJA/policy/simd/register/double2.hpp>
-#include <RAJA/policy/simd/register/double3.hpp>
-#include <RAJA/policy/simd/register/double4.hpp>
 
 
 #endif

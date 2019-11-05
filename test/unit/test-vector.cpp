@@ -16,18 +16,22 @@
 
 
 
-using TestTypes = ::testing::Types<RAJA::SimdRegister<double, 1>,
+using TestTypes = ::testing::Types<RAJA::SimdRegister<int, 1>,
+                                   RAJA::SimdRegister<float, 1>,
+                                   RAJA::SimdRegister<double, 1>,
+                                   RAJA::SimdRegister<double, 2>,
+                                   RAJA::SimdRegister<double, 3>,
                                    RAJA::SimdRegister<double, 4>>;
 
 
 
 template <typename NestedPolicy>
-class VectorTest : public ::testing::Test
+class RegisterTest : public ::testing::Test
 {
 protected:
 
-  VectorTest() = default;
-  virtual ~VectorTest() = default;
+  RegisterTest() = default;
+  virtual ~RegisterTest() = default;
 
   virtual void SetUp()
   {
@@ -37,7 +41,7 @@ protected:
   {
   }
 };
-TYPED_TEST_CASE_P(VectorTest);
+TYPED_TEST_CASE_P(RegisterTest);
 
 
 /*
@@ -45,42 +49,75 @@ TYPED_TEST_CASE_P(VectorTest);
  * things, like constexpr out all of the intrinsics.
  */
 
-TYPED_TEST_P(VectorTest, SimdRegisterSetGet)
+TYPED_TEST_P(RegisterTest, SimdRegisterSetGet)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem];
+  element_t A[num_elem];
   register_t x;
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
+    A[i] = (element_t)(drand48()*1000.0);
     x.set(i, A[i]);
   }
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_EQ(x[i], A[i]);
+    ASSERT_DOUBLE_EQ(x[i], A[i]);
   }
 
 }
 
 
-
-
-TYPED_TEST_P(VectorTest, SimdRegisterAdd)
+TYPED_TEST_P(RegisterTest, SimdRegisterLoad)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem], B[num_elem];
+  element_t A[num_elem*2];
+  for(size_t i = 0;i < num_elem*2; ++ i){
+    A[i] = (element_t)(drand48()*1000.0);
+  }
+
+
+  // load stride-1 from pointer
+  register_t x;
+  x.load(A);
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(x[i], A[i]);
+  }
+
+  // load stride-2from pointer
+  register_t y;
+  y.load(A, 2);
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(y[i], A[i*2]);
+  }
+}
+
+
+
+TYPED_TEST_P(RegisterTest, SimdRegisterAdd)
+{
+
+  using register_t = TypeParam;
+
+  using element_t = typename register_t::element_type;
+  static constexpr size_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem], B[num_elem];
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
-    B[i] = drand48();
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -100,19 +137,20 @@ TYPED_TEST_P(VectorTest, SimdRegisterAdd)
 
 }
 
-TYPED_TEST_P(VectorTest, SimdRegisterSubtract)
+TYPED_TEST_P(RegisterTest, SimdRegisterSubtract)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem], B[num_elem];
+  element_t A[num_elem], B[num_elem];
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
-    B[i] = drand48();
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -131,19 +169,20 @@ TYPED_TEST_P(VectorTest, SimdRegisterSubtract)
   }
 }
 
-TYPED_TEST_P(VectorTest, SimdRegisterMultiply)
+TYPED_TEST_P(RegisterTest, SimdRegisterMultiply)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem], B[num_elem];
+  element_t A[num_elem], B[num_elem];
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
-    B[i] = drand48();
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -162,19 +201,20 @@ TYPED_TEST_P(VectorTest, SimdRegisterMultiply)
   }
 }
 
-TYPED_TEST_P(VectorTest, SimdRegisterDivide)
+TYPED_TEST_P(RegisterTest, SimdRegisterDivide)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem], B[num_elem];
+  element_t A[num_elem], B[num_elem];
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
-    B[i] = drand48()+1.0;
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0)+1.0;
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -193,20 +233,21 @@ TYPED_TEST_P(VectorTest, SimdRegisterDivide)
   }
 }
 
-TYPED_TEST_P(VectorTest, SimdRegisterDotProduct)
+TYPED_TEST_P(RegisterTest, SimdRegisterDotProduct)
 {
 
   using register_t = TypeParam;
 
+  using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  double A[num_elem], B[num_elem];
+  element_t A[num_elem], B[num_elem];
   register_t x, y;
 
-  double expected = 0.0;
+  element_t expected = 0.0;
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = drand48();
-    B[i] = drand48();
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
     expected += A[i]*B[i];
@@ -216,12 +257,63 @@ TYPED_TEST_P(VectorTest, SimdRegisterDotProduct)
 
 }
 
+TYPED_TEST_P(RegisterTest, SimdRegisterMax)
+{
+  using register_t = TypeParam;
 
-REGISTER_TYPED_TEST_CASE_P(VectorTest, SimdRegisterSetGet,
+  using element_t = typename register_t::element_type;
+  static constexpr size_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem];
+  register_t x;
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    A[i] = (element_t)(drand48()*1000.0);
+    x.set(i, A[i]);
+  }
+
+  element_t expected = A[0];
+  for(size_t i = 1;i < num_elem;++ i){
+    expected = expected > A[i] ? expected : A[i];
+  }
+
+  ASSERT_DOUBLE_EQ(x.max(), expected);
+
+}
+
+TYPED_TEST_P(RegisterTest, SimdRegisterMin)
+{
+  using register_t = TypeParam;
+
+  using element_t = typename register_t::element_type;
+  static constexpr size_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem];
+  register_t x;
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    A[i] = (element_t)(drand48()*1000.0);
+    x.set(i, A[i]);
+  }
+
+  element_t expected = A[0];
+  for(size_t i = 1;i < num_elem;++ i){
+    expected = expected < A[i] ? expected : A[i];
+  }
+
+  ASSERT_DOUBLE_EQ(x.min(), expected);
+
+}
+
+
+REGISTER_TYPED_TEST_CASE_P(RegisterTest, SimdRegisterSetGet,
+                                       SimdRegisterLoad,
                                        SimdRegisterAdd,
                                        SimdRegisterSubtract,
                                        SimdRegisterMultiply,
                                        SimdRegisterDivide,
-                                       SimdRegisterDotProduct);
+                                       SimdRegisterDotProduct,
+                                       SimdRegisterMax,
+                                       SimdRegisterMin);
 
-INSTANTIATE_TYPED_TEST_CASE_P(SIMD, VectorTest, TestTypes);
+INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, TestTypes);
