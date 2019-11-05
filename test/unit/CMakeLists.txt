@@ -72,6 +72,10 @@ raja_add_test(
 raja_add_test(
   NAME test-kernel-lambda-args
   SOURCES test-kernel-lambda-args.cpp)
+  
+raja_add_test(
+  NAME test-vector
+  SOURCES test-vector.cpp)
 
 add_subdirectory(cpu)
 
