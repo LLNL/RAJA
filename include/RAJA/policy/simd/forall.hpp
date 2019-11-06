@@ -59,6 +59,53 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   }
 }
 
+
+template <typename Value, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const simd_fixed_exec<Value> &,
+                             Iterable &&iter,
+                             Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+
+  using index_type = camp::decay<decltype(*begin)>;
+  using simd_index_type = FixedRegisterIndex<index_type, Value>;
+
+  for (decltype(distance) i = 0; i < distance; i+=Value::s_num_elem) {
+    loop_body(simd_index_type(*(begin + i)));
+  }
+}
+
+
+template <typename Value, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const simd_stream_exec<Value> &,
+                             Iterable &&iter,
+                             Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+
+  auto distance_simd = distance - (distance%Value::s_num_elem);
+  auto distance_remainder = distance - distance_simd;
+
+  using index_type = camp::decay<decltype(*begin)>;
+  using simd_index_type = StreamRegisterIndex<index_type, Value>;
+
+  // Streaming SIMD loop for complete elements
+  for (decltype(distance) i = 0; i < distance_simd; i+=Value::s_num_elem) {
+    loop_body(simd_index_type(*(begin + i), Value::s_num_elem));
+  }
+
+  // Postamble for reamining elements
+  if(distance_remainder > 0){
+    loop_body(simd_index_type(*(begin + distance_simd), distance_remainder));
+  }
+
+}
+
+
 }  // namespace simd
 
 }  // namespace policy

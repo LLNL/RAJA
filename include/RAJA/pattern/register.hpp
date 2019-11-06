@@ -40,8 +40,6 @@ namespace RAJA
 }  // namespace RAJA
 
 
-#include <RAJA/policy/sequential/register.hpp>
-#include <RAJA/policy/simd/register.hpp>
 
 
 #endif

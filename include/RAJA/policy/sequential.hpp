@@ -25,6 +25,7 @@
 #include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/sequential/reduce.hpp"
+#include "RAJA/policy/sequential/register.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 
 
