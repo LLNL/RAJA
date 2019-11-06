@@ -34,10 +34,6 @@ raja_add_test(
   SOURCES test-rajavec.cpp)
 
 raja_add_test(
-  NAME test-span
-  SOURCES test-span.cpp)
-
-raja_add_test(
   NAME test-kernel
   SOURCES test-kernel.cpp)
 
