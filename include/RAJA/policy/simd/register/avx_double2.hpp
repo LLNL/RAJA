@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_double2_HPP
-#define RAJA_policy_simd_register_double2_HPP
+#ifndef RAJA_policy_simd_register_avx_double2_HPP
+#define RAJA_policy_simd_register_avx_double2_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -31,9 +31,9 @@ namespace RAJA
 
 
   template<>
-  class SimdRegister<double, 2>{
+  class Register<simd_register, double, 2>{
     public:
-      using self_type = SimdRegister<double, 2>;
+      using self_type = Register<simd_register, double, 2>;
       using element_type = double;
 
       static constexpr size_t s_num_elem = 2;
@@ -50,19 +50,19 @@ namespace RAJA
       /*!
        * @brief Default constructor, zeros register contents
        */
-      SimdRegister() : m_value(_mm_setzero_pd()) {
+      Register() : m_value(_mm_setzero_pd()) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
-      explicit SimdRegister(simd_type const &c) : m_value(c) {}
+      explicit Register(simd_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
-      SimdRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : m_value(c.m_value) {}
 
       /*!
        * @brief Load operation, assuming scalars are in consecutive memory
@@ -284,6 +284,16 @@ namespace RAJA
       }
 
       /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmax(self_type a) const
+      {
+        return self_type(_mm_max_pd(m_value, a.m_value));
+      }
+
+      /*!
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
@@ -298,6 +308,16 @@ namespace RAJA
 
         // return the lower lane
         return b[0];
+      }
+
+      /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmin(self_type a) const
+      {
+        return self_type(_mm_min_pd(m_value, a.m_value));
       }
   };
 

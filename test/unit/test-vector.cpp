@@ -6,24 +6,32 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for basic vector operations
+/// Source file containing tests for basic simd/simt vector operations
 ///
 
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
+#include "RAJA/pattern/register.hpp"
 #include "RAJA/pattern/vector.hpp"
 
+namespace RAJA{
+template<typename T, size_t N>
+using SimdRegister = Register<simd_register, T, N>;
+}
 
-
-using TestTypes = ::testing::Types<RAJA::SimdRegister<int, 1>,
+using RegisterTestTypes = ::testing::Types<RAJA::SimdRegister<int, 1>,
                                    RAJA::SimdRegister<float, 1>,
                                    RAJA::SimdRegister<double, 1>,
                                    RAJA::SimdRegister<double, 2>,
                                    RAJA::SimdRegister<double, 3>,
-                                   RAJA::SimdRegister<double, 4>>;
+                                   RAJA::SimdRegister<double, 4>,
+                                   RAJA::FixedVector<RAJA::SimdRegister<double,1>, 27>,
+                                   RAJA::FixedVector<RAJA::SimdRegister<double,2>, 27>,
+                                   RAJA::FixedVector<RAJA::SimdRegister<double,3>, 27>,
+                                   RAJA::FixedVector<RAJA::SimdRegister<double,4>, 27>>;
 
-
+//usingRegister TestTypes = ::testing::Types<RAJA::FixedVector<RAJA::SimdRegister<double,4>, 27>>;
 
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test
@@ -316,4 +324,4 @@ REGISTER_TYPED_TEST_CASE_P(RegisterTest, SimdRegisterSetGet,
                                        SimdRegisterMax,
                                        SimdRegisterMin);
 
-INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, TestTypes);
+INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, RegisterTestTypes);

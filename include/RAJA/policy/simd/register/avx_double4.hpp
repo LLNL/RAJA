@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_double3_HPP
-#define RAJA_policy_simd_register_double3_HPP
+#ifndef RAJA_policy_simd_register_double4_HPP
+#define RAJA_policy_simd_register_double4_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -31,52 +31,50 @@ namespace RAJA
 
 
   template<>
-  class SimdRegister<double, 3>{
+  class Register<simd_register, double, 4>{
     public:
-      using self_type = SimdRegister<double, 3>;
+      using self_type = Register<simd_register, double, 4>;
       using element_type = double;
 
-      static constexpr size_t s_num_elem = 3;
+      static constexpr size_t s_num_elem = 4;
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-      // Using a 256-bit (4 double) vector, but padding out the upper most
-      // value
       using simd_type = __m256d;
-
 
     private:
       simd_type m_value;
-
-      // Mask used to mask off the upper double from the vector
-      using mask_type = __m256i;
-      static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
 
     public:
 
       /*!
        * @brief Default constructor, zeros register contents
        */
-      SimdRegister() : m_value(_mm256_setzero_pd()) {
+      RAJA_INLINE
+      Register() : m_value(_mm256_setzero_pd()) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
-      explicit SimdRegister(simd_type const &c) : m_value(c) {}
+      RAJA_INLINE
+      explicit Register(simd_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
-      SimdRegister(self_type const &c) : m_value(c.m_value) {}
+      RAJA_INLINE
+      Register(self_type const &c) : m_value(c.m_value) {}
+
 
       /*!
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */
+      RAJA_INLINE
       void load(element_type const *ptr){
-        m_value = _mm256_maskload_pd(ptr, s_mask);
+        m_value = _mm256_loadu_pd(ptr);
       }
 
       /*!
@@ -87,20 +85,23 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
+      RAJA_INLINE
       void load(element_type const *ptr, size_t stride){
-        m_value =_mm256_set_pd(0.0,
+        m_value =_mm256_set_pd(ptr[3*stride],
                               ptr[2*stride],
                               ptr[stride],
                               ptr[0]);
       }
 
 
+
       /*!
        * @brief Store operation, assuming scalars are in consecutive memory
        * locations.
        */
+      RAJA_INLINE
       void store(element_type *ptr) const{
-        _mm256_maskstore_pd(ptr, m_value, s_mask);
+        _mm256_storeu_pd(ptr, m_value);
       }
 
       /*!
@@ -111,6 +112,7 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
+      RAJA_INLINE
       void store(element_type *ptr, size_t stride) const{
         for(size_t i = 0;i < s_num_elem;++ i){
           ptr[i*stride] = m_value[i];
@@ -263,7 +265,7 @@ namespace RAJA
       element_type sum() const
       {
         auto hsum = _mm256_hadd_pd(m_value, m_value);
-        return hsum[0] + m_value[2];
+        return hsum[0] + hsum[2];
       }
 
       /*!
@@ -285,7 +287,7 @@ namespace RAJA
       element_type max() const
       {
         // permute the first two and last two lanes of the register
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
         // this gives us b=XXYY where
@@ -298,6 +300,16 @@ namespace RAJA
       }
 
       /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmax(self_type a) const
+      {
+        return self_type(_mm256_max_pd(m_value, a.m_value));
+      }
+
+      /*!
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
@@ -307,7 +319,7 @@ namespace RAJA
         // permute the first two and last two lanes of the register
         // m_value = ABCD
         // a = AACC
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
         // this gives us b=XXYY where
@@ -317,6 +329,16 @@ namespace RAJA
 
         // now take the minimum of a lower and upper lane
         return std::min<double>(b[0], b[2]);
+      }
+
+      /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmin(self_type a) const
+      {
+        return self_type(_mm256_min_pd(m_value, a.m_value));
       }
   };
 

@@ -44,11 +44,14 @@ struct simd_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Platform::host> {
 };
 
+struct simd_register{};
+
 }  // end of namespace simd
 
 }  // end of namespace policy
 
 using policy::simd::simd_exec;
+using policy::simd::simd_register;
 
 }  // end of namespace RAJA
 

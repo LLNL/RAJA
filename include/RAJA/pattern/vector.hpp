@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining vector operations.
+ * \brief   RAJA header file defining SIMD/SIMT register operations.
  *
  ******************************************************************************
  */
@@ -22,6 +22,8 @@
 
 #include "RAJA/util/macros.hpp"
 
+#include <array>
+
 namespace RAJA
 {
 
@@ -33,46 +35,56 @@ namespace RAJA
  *
  */
 
-  template<typename T, size_t NUM_ELEM>
-  class SimdRegister;
+  template<typename REGISTER_TYPE, size_t NUM_ELEM>
+  class FixedVector;
 
-
-  /**
-   * A specialization for a single element SIMD register.
-   * We will implement this as a scalar value, and let the compiler use
-   * whatever registers it deems appropriate.
-   */
-  template<typename T>
-  class SimdRegister<T, 1>{
+  template<template<typename, typename, size_t> class REGISTER_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t NUM_REG_ELEM, size_t NUM_ELEM>
+  class FixedVector<REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>, NUM_ELEM>
+  {
     public:
-      using self_type = SimdRegister<T, 1>;
-      using element_type = T;
+      using full_register_type =
+          REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>;
+      static constexpr size_t s_num_register_elem = NUM_REG_ELEM;
 
-      static constexpr size_t s_num_elem = 1;
-      static constexpr size_t s_byte_width = sizeof(T);
+      using self_type = FixedVector<full_register_type, NUM_ELEM>;
+      using element_type = ELEMENT_TYPE;
+
+
+      static constexpr size_t s_num_elem = NUM_ELEM;
+      static constexpr size_t s_byte_width = sizeof(element_type);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-    private:
-      T m_value;
 
+      static constexpr size_t s_num_full_registers = s_num_elem / s_num_register_elem;
+
+      static constexpr size_t s_num_full_elem = s_num_full_registers*s_num_register_elem;
+
+      static constexpr size_t s_num_partial_registers =
+          s_num_full_elem == s_num_elem ? 0 : 1;
+
+      static constexpr size_t s_num_partial_elem = s_num_elem - s_num_full_elem;
+
+      using partial_register_type =
+          REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
+
+    private:
+      std::array<full_register_type, s_num_full_registers> m_full_registers;
+      std::array<partial_register_type, s_num_partial_registers> m_partial_register;
     public:
+
 
       /*!
        * @brief Default constructor, zeros register contents
        */
-      SimdRegister() : m_value(0) {
-      }
-
-      /*!
-       * @brief Copy constructor from underlying simd register
-       */
-      SimdRegister(T const &c) : m_value(c) {}
-
+      FixedVector() = default;
 
       /*!
        * @brief Copy constructor
        */
-      SimdRegister(self_type const &c) : m_value(c.m_value) {}
+      FixedVector(self_type const &c) :
+        m_full_registers(c.m_full_registers),
+        m_partial_register(c.m_partial_register)
+          {}
 
 
       /*!
@@ -80,7 +92,12 @@ namespace RAJA
        * locations.
        */
       void load(element_type const *ptr){
-        m_value = ptr[0];
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i].load(ptr + i*s_num_register_elem);
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0].load(ptr + s_num_full_elem);
+        }
       }
 
       /*!
@@ -91,8 +108,13 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
-      void load(element_type const *ptr, size_t ){
-        m_value = ptr[0];
+      void load(element_type const *ptr, size_t stride){
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0].load(ptr + stride*s_num_full_elem, stride);
+        }
       }
 
 
@@ -101,7 +123,12 @@ namespace RAJA
        * locations.
        */
       void store(element_type *ptr) const{
-        ptr[0] = m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i].store(ptr + i*s_num_register_elem);
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0].store(ptr + s_num_full_elem);
+        }
       }
 
       /*!
@@ -112,21 +139,38 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
-      void store(element_type *ptr, size_t) const{
-        ptr[0] = m_value;
+      void store(element_type *ptr, size_t stride) const{
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i].store(ptr + i*stride*s_num_register_elem, stride);
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0].store(ptr + stride*s_num_full_elem, stride);
+        }
       }
 
 
       /*!
-       * @brief Get scalar value from vector register
+       * @brief Get scalar value from vector
+       * This will not be the most efficient due to the offset calculation.
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
-      constexpr
-      RAJA_INLINE
-      element_type operator[](IDX) const
-      {return m_value;}
+      element_type operator[](size_t i) const
+      {
+        // compute the register
+        size_t r = i/s_num_register_elem;
+
+        // compute the element in the register (equiv: i % s_num_register_elem)
+        size_t e = i - (r*s_num_register_elem);
+
+//        printf("i=%d, r=%d, e=%d, s_num_register_elem=%d\n",
+//            (int)i, (int)r, (int)e, (int)s_num_register_elem);
+
+        if(r < s_num_full_registers){
+          return m_full_registers[r][e];
+        }
+        return m_partial_register[0][e];
+      }
 
 
       /*!
@@ -134,10 +178,24 @@ namespace RAJA
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
-      template<typename IDX>
-      RAJA_INLINE
-      void set(IDX , element_type value)
-      {m_value = value;}
+      void set(size_t i, element_type value)
+      {
+        // compute the register
+        size_t r = i/s_num_register_elem;
+
+        // compute the element in the register (equiv: i % s_num_register_elem)
+        size_t e = i - (r*s_num_register_elem);
+
+//        printf("i=%d, r=%d, e=%d, s_num_register_elem=%d\n",
+//            (int)i, (int)r, (int)e, (int)s_num_register_elem);
+
+        if(r < s_num_full_registers){
+          m_full_registers[r].set(e, value);
+        }
+        else{
+          m_partial_register[0].set(e, value);
+        }
+      }
 
       /*!
        * @brief Set entire vector to a single scalar value
@@ -146,8 +204,12 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(element_type value)
       {
-        m_value = value;
-        return *this;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = value;
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] = value;
+        }
       }
 
       /*!
@@ -158,7 +220,12 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(self_type const &x)
       {
-        m_value = x.m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] = x.m_partial_register[0];
+        }
         return *this;
       }
 
@@ -171,7 +238,16 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        return self_type(m_value + x.m_value);
+        self_type result(*this);
+
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] += x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          result.m_partial_register[0] += x.m_partial_register[0];
+        }
+
+        return result;
       }
 
       /*!
@@ -182,7 +258,13 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator+=(self_type const &x)
       {
-        m_value = m_value + x.m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] += x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] += x.m_partial_register[0];
+        }
+
         return *this;
       }
 
@@ -194,7 +276,16 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        return self_type(m_value - x.m_value);
+        self_type result(*this);
+
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] -= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          result.m_partial_register[0] -= x.m_partial_register[0];
+        }
+
+        return result;
       }
 
       /*!
@@ -205,7 +296,13 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator-=(self_type const &x)
       {
-        m_value = m_value - x.m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] -= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] -= x.m_partial_register[0];
+        }
+
         return *this;
       }
 
@@ -217,7 +314,16 @@ namespace RAJA
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
-        return self_type(m_value * x.m_value);
+        self_type result(*this);
+
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] *= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          result.m_partial_register[0] *= x.m_partial_register[0];
+        }
+
+        return result;
       }
 
       /*!
@@ -228,7 +334,13 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator*=(self_type const &x)
       {
-        m_value = m_value * x.m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] *= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] *= x.m_partial_register[0];
+        }
+
         return *this;
       }
 
@@ -240,7 +352,16 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        return self_type(m_value / x.m_value);
+        self_type result(*this);
+
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] /= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          result.m_partial_register[0] /= x.m_partial_register[0];
+        }
+
+        return result;
       }
 
       /*!
@@ -251,7 +372,13 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator/=(self_type const &x)
       {
-        m_value = m_value / x.m_value;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] /= x.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] /= x.m_partial_register[0];
+        }
+
         return *this;
       }
 
@@ -262,7 +389,14 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        return m_value;
+        element_type result = (element_type)0;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result += m_full_registers[i].sum();
+        }
+        if(s_num_partial_registers){
+          result += m_partial_register[0].sum();
+        }
+        return result;
       }
 
       /*!
@@ -273,7 +407,14 @@ namespace RAJA
       RAJA_INLINE
       element_type dot(self_type const &x) const
       {
-        return m_value*x.m_value;
+        element_type result = (element_type)0;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          result += m_full_registers[i].dot(x.m_full_registers[i]);
+        }
+        if(s_num_partial_registers){
+          result += m_partial_register[0].dot(x.m_partial_register[0]);
+        }
+        return result;
       }
 
 
@@ -284,7 +425,18 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        return m_value;
+        if(s_num_full_registers == 0){
+          return m_partial_register[0].max();
+        }
+
+        element_type result = (element_type)m_full_registers[0].max();
+        for(size_t i = 1;i < s_num_full_registers;++ i){
+          result = std::max<double>(result, m_full_registers[i].max());
+        }
+        if(s_num_partial_registers){
+          result = std::max<double>(result, m_partial_register[0].max());
+        }
+        return result;
       }
 
       /*!
@@ -294,16 +446,23 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        return m_value;
+        if(s_num_full_registers == 0){
+          return m_partial_register[0].min();
+        }
+
+        element_type result = (element_type)m_full_registers[0].min();
+        for(size_t i = 1;i < s_num_full_registers;++ i){
+          result = std::min<double>(result, m_full_registers[i].min());
+        }
+        if(s_num_partial_registers){
+          result = std::min<double>(result, m_partial_register[0].min());
+        }
+        return result;
       }
+
   };
 
 }  // namespace RAJA
-
-
-#include <RAJA/policy/simd/register/double2.hpp>
-#include <RAJA/policy/simd/register/double3.hpp>
-#include <RAJA/policy/simd/register/double4.hpp>
 
 
 #endif

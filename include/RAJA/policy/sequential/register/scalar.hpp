@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining vector operations.
+ * \brief   RAJA header file defining SIMD/SIMT register operations.
  *
  ******************************************************************************
  */
@@ -15,54 +15,51 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_double4_HPP
-#define RAJA_policy_simd_register_double4_HPP
+#ifndef RAJA_policy_sequential_register_scalar_HPP
+#define RAJA_policy_sequential_register_scalar_HPP
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/macros.hpp"
-
-// Include SIMD intrinsics header file
-#include <immintrin.h>
-#include <cmath>
-
+#include<RAJA/pattern/register.hpp>
 
 namespace RAJA
 {
 
 
-  template<>
-  class SimdRegister<double, 4>{
+  /**
+   * A specialization for a single element register.
+   * We will implement this as a scalar value, and let the compiler use
+   * whatever registers it deems appropriate.
+   */
+  template<typename REGISTER_POLICY, typename T>
+  class Register<REGISTER_POLICY, T, 1>{
     public:
-      using self_type = SimdRegister<double, 4>;
-      using element_type = double;
+      using self_type = Register<REGISTER_POLICY, T, 1>;
+      using element_type = T;
 
-      static constexpr size_t s_num_elem = 4;
-      static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
+      static constexpr size_t s_num_elem = 1;
+      static constexpr size_t s_byte_width = sizeof(T);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-      using simd_type = __m256d;
-
     private:
-      simd_type m_value;
+      T m_value;
 
     public:
 
       /*!
        * @brief Default constructor, zeros register contents
        */
-      SimdRegister() : m_value(_mm256_setzero_pd()) {
+      Register() : m_value(0) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
-      explicit SimdRegister(simd_type const &c) : m_value(c) {}
+      Register(T const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
-      SimdRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : m_value(c.m_value) {}
 
 
       /*!
@@ -70,7 +67,7 @@ namespace RAJA
        * locations.
        */
       void load(element_type const *ptr){
-        m_value = _mm256_loadu_pd(ptr);
+        m_value = ptr[0];
       }
 
       /*!
@@ -81,13 +78,9 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
-      void load(element_type const *ptr, size_t stride){
-        m_value =_mm256_set_pd(ptr[3*stride],
-                              ptr[2*stride],
-                              ptr[stride],
-                              ptr[0]);
+      void load(element_type const *ptr, size_t ){
+        m_value = ptr[0];
       }
-
 
 
       /*!
@@ -95,7 +88,7 @@ namespace RAJA
        * locations.
        */
       void store(element_type *ptr) const{
-        _mm256_storeu_pd(ptr, m_value);
+        ptr[0] = m_value;
       }
 
       /*!
@@ -106,11 +99,10 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
-      void store(element_type *ptr, size_t stride) const{
-        for(size_t i = 0;i < s_num_elem;++ i){
-          ptr[i*stride] = m_value[i];
-        }
+      void store(element_type *ptr, size_t) const{
+        ptr[0] = m_value;
       }
+
 
       /*!
        * @brief Get scalar value from vector register
@@ -120,8 +112,8 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type operator[](IDX i) const
-      {return m_value[i];}
+      element_type operator[](IDX) const
+      {return m_value;}
 
 
       /*!
@@ -131,8 +123,8 @@ namespace RAJA
        */
       template<typename IDX>
       RAJA_INLINE
-      void set(IDX i, element_type value)
-      {m_value[i] = value;}
+      void set(IDX , element_type value)
+      {m_value = value;}
 
       /*!
        * @brief Set entire vector to a single scalar value
@@ -141,7 +133,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(element_type value)
       {
-        m_value = _mm256_set1_pd(value);
+        m_value = value;
         return *this;
       }
 
@@ -166,7 +158,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        return self_type(_mm256_add_pd(m_value, x.m_value));
+        return self_type(m_value + x.m_value);
       }
 
       /*!
@@ -177,7 +169,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator+=(self_type const &x)
       {
-        m_value = _mm256_add_pd(m_value, x.m_value);
+        m_value = m_value + x.m_value;
         return *this;
       }
 
@@ -189,7 +181,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        return self_type(_mm256_sub_pd(m_value, x.m_value));
+        return self_type(m_value - x.m_value);
       }
 
       /*!
@@ -200,7 +192,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator-=(self_type const &x)
       {
-        m_value = _mm256_sub_pd(m_value, x.m_value);
+        m_value = m_value - x.m_value;
         return *this;
       }
 
@@ -212,7 +204,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
-        return self_type(_mm256_mul_pd(m_value, x.m_value));
+        return self_type(m_value * x.m_value);
       }
 
       /*!
@@ -223,7 +215,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator*=(self_type const &x)
       {
-        m_value = _mm256_mul_pd(m_value, x.m_value);
+        m_value = m_value * x.m_value;
         return *this;
       }
 
@@ -235,7 +227,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        return self_type(_mm256_div_pd(m_value, x.m_value));
+        return self_type(m_value / x.m_value);
       }
 
       /*!
@@ -246,7 +238,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator/=(self_type const &x)
       {
-        m_value = _mm256_div_pd(m_value, x.m_value);
+        m_value = m_value / x.m_value;
         return *this;
       }
 
@@ -257,8 +249,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        auto hsum = _mm256_hadd_pd(m_value, m_value);
-        return hsum[0] + hsum[2];
+        return m_value;
       }
 
       /*!
@@ -269,8 +260,9 @@ namespace RAJA
       RAJA_INLINE
       element_type dot(self_type const &x) const
       {
-        return self_type(_mm256_mul_pd(m_value, x.m_value)).sum();
+        return m_value*x.m_value;
       }
+
 
       /*!
        * @brief Returns the largest element
@@ -279,17 +271,17 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        // permute the first two and last two lanes of the register
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
+        return m_value;
+      }
 
-        // take the minimum value of each lane
-        // this gives us b=XXYY where
-        // X = min(a[0], a[1])
-        // Y = min(a[2], a[3])
-        simd_type b = _mm256_max_pd(m_value, a);
-
-        // now take the minimum of a lower and upper lane
-        return std::max<double>(b[0], b[2]);
+      /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmax(self_type a) const
+      {
+        return self_type(std::max<element_type>(m_value, a.m_value));
       }
 
       /*!
@@ -299,23 +291,20 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        // permute the first two and last two lanes of the register
-        // m_value = ABCD
-        // a = AACC
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
-
-        // take the minimum value of each lane
-        // this gives us b=XXYY where
-        // X = min(a[0], a[1])
-        // Y = min(a[2], a[3])
-        simd_type b = _mm256_min_pd(m_value, a);
-
-        // now take the minimum of a lower and upper lane
-        return std::min<double>(b[0], b[2]);
+        return m_value;
       }
+
+      /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      self_type vmin(self_type a) const
+      {
+        return self_type(std::min<element_type>(m_value, a.m_value));
+      }
+
   };
-
-
 
 }  // namespace RAJA
 
