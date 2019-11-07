@@ -117,6 +117,8 @@ class StreamRegisterIndex {
 };
 
 
+
+
 struct simd_register{};
 
 }  // end of namespace simd

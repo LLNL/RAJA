@@ -76,6 +76,16 @@ namespace RAJA
         m_length(c.m_length)
           {}
 
+      /*!
+       * @brief Scalar constructor (broadcast)
+       */
+      RAJA_INLINE
+      StreamVector(element_type const &c) : m_length(s_num_elem)
+      {
+        for(size_t i = 0;i < s_num_registers;++ i){
+          m_registers[i] = c;
+        }
+      }
 
       /*!
        * @brief Get scalar value from vector

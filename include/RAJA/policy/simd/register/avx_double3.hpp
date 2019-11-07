@@ -75,6 +75,13 @@ namespace RAJA
       Register(self_type const &c) : m_value(c.m_value) {}
 
       /*!
+       * @brief Construct from scalar.
+       * Sets all elements to same value (broadcast).
+       */
+      RAJA_INLINE
+      Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
+
+      /*!
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */

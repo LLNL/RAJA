@@ -87,6 +87,20 @@ namespace RAJA
         m_partial_register(c.m_partial_register)
           {}
 
+      /*!
+       * @brief Scalar constructor (broadcast)
+       */
+      RAJA_INLINE
+      FixedVector(element_type const &c)
+      {
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = c;
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] = c;
+        }
+      }
+
 
       /*!
        * @brief Load constructor, assuming scalars are in consecutive memory

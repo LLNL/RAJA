@@ -457,7 +457,7 @@ TEST(StreamVectorTest, TestFixedForall)
   delete[] B;
   delete[] C;
 }
-#endif
+
 TEST(StreamVectorTest, TestStreamForall)
 {
   using TypeParam = RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>;
@@ -492,6 +492,48 @@ TEST(StreamVectorTest, TestStreamForall)
 
   for(size_t i = 0;i < N;i ++){
     ASSERT_DOUBLE_EQ(A[i]*B[i], C[i]);
+  }
+
+  delete[] A;
+  delete[] B;
+  delete[] C;
+}
+#endif
+
+TEST(StreamVectorTest, TestStreamForallRef)
+{
+  using TypeParam = RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>;
+  using register_t = TypeParam;
+
+  using element_t = typename register_t::element_type;
+
+
+  size_t N = 8000 + (100*drand48());
+
+  element_t *A = new element_t[N];
+  element_t *B = new element_t[N];
+  element_t *C = new element_t[N];
+  for(size_t i = 0;i < N; ++ i){
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
+    C[i] = 0.0;
+  }
+
+  using policy_t = RAJA::simd_stream_exec<register_t>;
+
+  RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
+      [=](RAJA::StreamRegisterIndex<size_t, register_t> i)
+  {
+    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> x(i, A);
+    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> y(i, B);
+    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> z(i, C);
+    z = (x*y)+3;
+
+  });
+
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_DOUBLE_EQ(A[i]*B[i]+3, C[i]);
   }
 
   delete[] A;

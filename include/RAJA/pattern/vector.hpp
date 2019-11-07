@@ -20,6 +20,7 @@
 
 #include "RAJA/pattern/vector/FixedVector.hpp"
 #include "RAJA/pattern/vector/StreamVector.hpp"
+#include "RAJA/pattern/vector/VectorRef.hpp"
 
 
 #endif
