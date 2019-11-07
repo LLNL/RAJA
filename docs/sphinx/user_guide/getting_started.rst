@@ -88,8 +88,9 @@ RAJA uses CMake to configure a build. A basic configuration looks like::
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
 
-.. note:: Builds must be *out-of-source*.  RAJA does not allow building in
-          the source directory, so you must create a build directory.
+.. note:: * RAJA requires a minimum CMake version of 3.9.
+          * Builds must be *out-of-source*.  RAJA does not allow building in
+            the source directory, so you must create a build directory.
 
 When you run CMake, it will provide output about the compiler that has been 
 found and which features are discovered. Some RAJA features, like OpenMP 

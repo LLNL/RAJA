@@ -10,7 +10,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 9)
+set(RAJA_VERSION_MINOR 10)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -50,7 +50,6 @@ option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
@@ -63,10 +62,29 @@ option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
 option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
+option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 cmake_minimum_required(VERSION 3.9)
+
+if (ENABLE_CUDA)
+  if (DEFINED CUDA_ARCH)
+    if (CUDA_ARCH MATCHES "^sm_*")
+      if ("${CUDA_ARCH}" STRLESS "sm_35") 
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
+      endif()
+    endif()
+    if (CUDA_ARCH MATCHES "^compute_*")
+      if ("${CUDA_ARCH}" STRLESS "compute_35")
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
+      endif()
+    endif()
+  else()
+    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
+    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
+  endif()
+endif()
 
 if (NOT BLT_LOADED)
   if (DEFINED BLT_SOURCE_DIR)
@@ -104,7 +122,8 @@ set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
-  src/MemUtils_CUDA.cpp)
+  src/MemUtils_CUDA.cpp
+  src/PluginStrategy.cpp)
 
 set (raja_depends)
 
@@ -143,8 +162,7 @@ endif ()
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
-    chai
-    umpire)
+    chai)
 endif ()
 
 if (ENABLE_TBB)
@@ -155,7 +173,7 @@ endif ()
 
 find_package(camp QUIET)
 if (NOT camp_FOUND)
-  message(WARNING "External CAMP not found.")
+  message(STATUS "Using RAJA CAMP submodule.")
   add_subdirectory(tpl/camp)
 endif(NOT camp_FOUND)
 

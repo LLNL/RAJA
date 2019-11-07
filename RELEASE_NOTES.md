@@ -7,8 +7,78 @@
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
 
-RAJA v0.9.0 Release Notes
-=========================
+Version v0.10.0 -- Release date 2019-10-31
+==========================================
+
+This release contains new features, several notable changes, and some bug fixes.
+
+Notable changes include:
+
+  * New features:
+      * Added CUDA block direct execution policies, which can be used to map
+        loop iterations directly to CUDA thread block. These are analogous to
+        the pre-existing thread direct policies. The new block direct policies
+        can provide better performance for kernels than the block loop policies
+        when load balancing may be an issue. Please see the RAJA User Guide for 
+        a description of all available RAJA execution policies.
+      * Added a plugin registry feature that will allow plugins to be linked
+        into RAJA that can act before and after kernel launches. One benefit
+        of this is that RAJA no longer has an explicit CHAI dependency if RAJA 
+        is used with CHAI. Future benefits will include integration with other
+        tools for performance analysis, etc.
+      * Added a shift method to RAJA::View, which allows one to create a new
+        view object from an existing one that is shifted in index space from 
+        the original. Please see the RAJA User Guide for details.
+      * Added support for RAJA::TypedView and RAJA::TypedOffsetLayout, so that 
+        the index type can be specified as a template parameter.
+      * Added helper functions to convert a RAJA::Layout object to a 
+        RAJA::OffsetLayout object and RAJA::TypedLayout to 
+        RAJA::TypedOffsetLayout. Please see the RAJA User Guide for details.
+      * Added a bounds checking option to RAJA Layout types as a debugging
+        feature. This is a compile-time option that will report user errors
+        when given View or Layout indices are out-of-bounds. See View/Layout
+        section in the RAjA User Guide for instructions on enabling this and 
+        how this feature works. 
+      * We've added a RAJA Template Project on GitHub, which shows how to
+        use RAJA in an application, either as a Git submodule or as an
+        externally installed library that you link your application against.
+        It is available here: https://github.com/LLNL/RAJA-project-template.
+        It is also linked to the main RAJA project page on GitHub. 
+      * Various user documentation improvements.
+
+  * API Change.
+      * The type alias RAJA::IndexSet that was marked deprecated previously
+        has been removed. Now, all index set usage must use the type 
+        RAJA::TypedIndexSet and specify all segment types (as template 
+        parameters) that the index set may potentially hold.
+
+  * Bug fixes:
+      * Fix for issue in OpenMP target offload back-end that previously caused
+        some RAJA Performance Suite kernels to seg fault when built with the
+        XL compiler.
+      * Removed an internal RAJA class constructor to prevent users to do
+        potentially incorrect, and very difficult to hunt down, things in 
+        their code that are technically not supported in RAJA, such as
+        inserting RAJA::statement::CudaSyncThreads() in arbitrary places 
+        inside a lambda expression.
+
+  * Build changes/improvements:
+      * RAJA now enforces a minimum CUDA compute capability of sm_35. Users
+        can use the CMake variable 'CUDA_ARCH' to specify this. If not 
+        specified, the value of sm_35 will be used and an informational 
+        message will be emitted indicating this. If a user attempts to set
+        the value lower than sm_35, CMake will error out and a message will
+        be emitted indicating why this happened.
+      * Transition to using camp as a submodule after its open source release
+        (https://github.com/llnl/camp). 
+      * Made minimum required CMake version 3.9.
+      * Update BLT build system submodule to newer version 
+        (SHA-1 hash: 96419df).
+      * Cleaned up compiler warnings in OpenMP target back-end implementation.
+
+
+Version v0.9.0 -- Release date 2019-07-25
+=========================================
 
 This release contains feature enhancements, one breaking change, and some 
 bug fixes. 
@@ -50,8 +120,8 @@ Other notable changes include:
     * A few minor portability improvements
 
 
-RAJA v0.8.0 Release Notes
-=========================
+Version v0.8.0 -- Release date 2019-03-28
+=========================================
 
 This release contains one major change and some minor improvements to 
 compilation and performance.
@@ -86,8 +156,8 @@ Other notable changes include:
     * Some performance improvements in RAJA::kernel usage with CUDA back-end.
 
 
-RAJA v0.7.0 Release Notes
-=========================
+Version v0.7.0 -- Release date 2019-02-07
+=========================================
 
 This release contains several major changes, new features, a variety of bug 
 fixes, and expanded user documentation and accompanying example codes. For
@@ -159,8 +229,9 @@ Other notable changes include:
     * Enable use of 'BLT_SOURCE_DIR' CMake variable to help prevent conflicts
       with BLT versions in RAJA and other libraries used in applications.
 
-RAJA v0.6.0 Release Notes
-=========================
+
+Version v0.6.0 -- Release date 2018-07-27
+=========================================
 
 This release contains two major changes, a variety of bug fixes and feature
 enhancements, and expanded user documentation and accompanying example codes.
@@ -202,15 +273,15 @@ Other notable changes include:
         space has size zero
 
 
-RAJA v0.5.3 Release Notes
-=========================
+Version v0.5.3 -- Release date 2018-01-31
+=========================================
 
 This is a bugfix release that fixes bugs in the IndexSetBuilder methods. These
 methods now work correctly with the strongly-typed IndexSet.
 
 
-RAJA v0.5.2 Release Notes
-=========================
+Version v0.5.2 -- Release date 2018-01-30
+=========================================
 
 This release fixes some small bugs, including compiler warnings issued for
 deprecated features, type narrowing, and the slice method for the
@@ -221,8 +292,8 @@ whether RAJA's CMakeLists file has already been processed. This is useful when
 including RAJA as part of another CMake project.
 
 
-RAJA v0.5.1 Release Notes
-=========================
+Version v0.5.1 -- Release date 2018-01-17
+=========================================
 
 This release contains fixes for compiler warnings with newer GCC and Clang
 compilers, and allows strongly-typed indices to work with RangeStrideSegment.
@@ -231,8 +302,8 @@ Additionally, the index type for all segments in an IndexSet needs to be the
 same. This requirement is enforced with a static_assert.
 
 
-RAJA v0.5.0 Release Notes
-=========================
+Version v0.5.0 -- Release date 2018-01-11
+=========================================
 
 This release contains a variety of bug fixes, removes nvcc compiler
 warnings, addition of unit tests to expand coverage, and a variety of 
@@ -286,3 +357,161 @@ version include:
   * Added aliases for several ``camp`` types in the RAJA namespace; e.g.,
     ``camp::make_tuple`` can now be accessed as ``RAJA::make_tuple``. This 
     change makes the RAJA API more consistent and clear.
+
+
+Version v0.4.1 -- Release date 2017-10-11
+=========================================
+
+This release contains a bugfix for warnings when using the -Wpedantic flag.
+
+
+Version v0.4.0 -- Release date 2017-10-11
+=========================================
+
+This release contains minor fixes for issues in the previous v0.3.1 release, 
+plus some improvements to documentation, reduction performance, improved 
+portability across a growing set of compilers and environments (e.g., Windows),
+namespace refactoring to avoid cyclic dependencies and leverage argument-
+dependent lookup, etc. In addition, the RAJA backend for Intel TBB is now 
+off by default, whereas previously it was on by default.
+
+A few major changes are included in this version:
+
+  * Changes to the way RAJA is configured and built. We are now using the 
+    BLT build system which is a Git submodule of RAJA. In addition to 
+    requiring the '--recursive' option to be passed to 'git clone', this 
+    introduces the following major change: RAJA_ENABLE_XXX options passed to 
+    CMake are now just ENABLE_XXX.
+
+  * A new API and implementation for nested-loop RAJA constructs has been 
+    added. It is still a work in progress, but users are welcome to try it 
+    out and provide feedback. Eventually, RAJA::nested::forall will replace 
+    RAJA::forallN.
+
+
+Version v0.3.1 -- Release date 2017-09-21
+=========================================
+
+This release contains some new RAJA features, plus a bunch of internal changes 
+including more tests, conversion of nearly all unit tests to use Google Test, 
+improved testing coverage, and compilation portability improvements (e.g., 
+Intel, nvcc, msvc). Also, the prefix for all RAJA source files has been changed
+from 'cxx'to 'cpp' for consistency with the header file prefix conversion in 
+the last release. The source file prefix change should not require users to 
+change anything.
+
+New features included in this release:
+
+  * Execution policy modifications and additions: 
+     
+      * seq_exec is now strictly sequential (no SIMD, etc.) 
+      * simd_exec will force SIMD vectorization 
+      * loop_exec (new policy) will allow compiler to optimize however it can, 
+        including SIMD. 
+
+    So, loop_exec is really what our previous simd_exec policy was before, 
+    and 'no vector' pragmas have been added to all sequential implementations. 
+
+    NOTE: SIMD changes are still being evaluated with different compilers on 
+    different platforms. More information will be provided as we learn more.
+
+  * Added support for atomic operations (min, max, inc, dec, and, or, xor, 
+    exchange, and CAS) for all programming model backends. These appear in the 
+    RAJA::atomic namespace. 
+
+  * Support added for Intel Threading Building Blocks backend (considered 
+    experimental at this point). 
+
+  * Added macros that will be used to mark features for future deprecation 
+    (please watch for this as we will be deprecating some features in the 
+    next release).
+
+  * Added support for C++17 if CMake knows about it.
+
+  * Remove limit on number of ordered OpenMP reductions that can be used in 
+    a kernel.
+
+  * Remove compile-time error from memutils, add portable aligned allocator.
+
+  * Improved ListSegment implementation.
+
+  * RAJA::Index_type is now ptrdiff_t instead of int.
+
+Notable bug fixes included in this release:
+
+  * Fixed strided_numeric_iterator to apply stride sign in comparison.
+
+  * Bug in RangeStrideSegment when using CUDA is fixed.
+
+  * Fixed reducer logic for openmp_ordered policy.
+
+
+Version v0.3.0 -- Release date 2017-07-13
+=========================================
+
+This release contains breaking changes and is not backward compatible with 
+prior versions. The largest change is a re-organization of header files, 
+and the switch to .hpp as a file extension for all headers.
+
+New features included in this release:
+
+  * Re-organization of header files.
+
+  * Renaming of file extensions.
+
+  * Rudimentary OpenMP 4.5 support.
+
+  * CHAI support.
+
+
+Version v0.2.5 -- Release date 2017-03-28
+=========================================
+
+This release includes some small fixes, as well as an initial re-organization 
+of the RAJA header files as we move towards a more flexible usage model.
+
+
+Version v0.2.4 -- Release date 2017-02-22
+=========================================
+
+This release includes the following changes:
+
+ * Initial support of clang-cuda compiler.
+
+ * New, faster OpenMP reductions.
+
+N.B. The default OpenMP reductions are no longer performed in a ordered 
+     fashion, so results may not be reproducible. The old reductions are 
+     still available with the policy RAJA::omp_reduce_ordered.
+
+
+Version v0.2.3 -- Release date 2016-12-15
+=========================================
+
+Hotfix to update the URLs used for fetching clang during Travis builds.
+
+
+Version v0.2.2 -- Release date 2016-12-14
+=========================================
+
+Bugfix release that address an error when launching forall cuda kernels 
+with a 0-length range.
+
+
+Version v0.2.1 -- Release date 2016-12-07
+=========================================
+
+This release contains fixes for compiler warnings and removes the usage of 
+the custom FindCUDA CMake package.
+
+
+Version v0.2.0 -- Release date 2016-12-02
+=========================================
+
+Includes internal changes for performance and code maintenance.
+
+
+Version v0.1.0 -- Release date 2016-06-22
+=========================================
+
+Initial release.
