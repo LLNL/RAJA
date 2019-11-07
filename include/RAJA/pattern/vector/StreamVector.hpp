@@ -460,6 +460,31 @@ namespace RAJA
 
   };
 
+
+  template<typename ST, typename REGISTER_TYPE, size_t MAX_ELEM>
+  StreamVector<REGISTER_TYPE, MAX_ELEM>
+  operator+(ST x, StreamVector<REGISTER_TYPE, MAX_ELEM> const &y){
+    return StreamVector<REGISTER_TYPE, MAX_ELEM>(x) + y;
+  }
+
+  template<typename ST, typename REGISTER_TYPE, size_t MAX_ELEM>
+  StreamVector<REGISTER_TYPE, MAX_ELEM>
+  operator-(ST x, StreamVector<REGISTER_TYPE, MAX_ELEM> const &y){
+    return StreamVector<REGISTER_TYPE, MAX_ELEM>(x) - y;
+  }
+
+  template<typename ST, typename REGISTER_TYPE, size_t MAX_ELEM>
+  StreamVector<REGISTER_TYPE, MAX_ELEM>
+  operator*(ST x, StreamVector<REGISTER_TYPE, MAX_ELEM> const &y){
+    return StreamVector<REGISTER_TYPE, MAX_ELEM>(x) * y;
+  }
+
+  template<typename ST, typename REGISTER_TYPE, size_t MAX_ELEM>
+  StreamVector<REGISTER_TYPE, MAX_ELEM>
+  operator/(ST x, StreamVector<REGISTER_TYPE, MAX_ELEM> const &y){
+    return StreamVector<REGISTER_TYPE, MAX_ELEM>(x) / y;
+  }
+
 }  // namespace RAJA
 
 

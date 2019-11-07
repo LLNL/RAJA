@@ -335,6 +335,36 @@ namespace RAJA
 
   };
 
+
+  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
+  typename REGISTER_INDEX::register_type
+  operator+(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
+    using register_type = typename REGISTER_INDEX::register_type;
+    return register_type(x) + y.load();
+  }
+
+  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
+  typename REGISTER_INDEX::register_type
+  operator-(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
+    using register_type = typename REGISTER_INDEX::register_type;
+    return register_type(x) - y.load();
+  }
+
+  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
+  typename REGISTER_INDEX::register_type
+  operator*(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
+    using register_type = typename REGISTER_INDEX::register_type;
+    return register_type(x) * y.load();
+  }
+
+  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
+  typename REGISTER_INDEX::register_type
+  operator/(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
+    using register_type = typename REGISTER_INDEX::register_type;
+    return register_type(x) / y.load();
+  }
+
+
 }  // namespace RAJA
 
 

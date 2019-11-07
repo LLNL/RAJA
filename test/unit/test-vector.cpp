@@ -527,13 +527,14 @@ TEST(StreamVectorTest, TestStreamForallRef)
     RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> x(i, A);
     RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> y(i, B);
     RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> z(i, C);
-    z = (x*y)+3;
+
+    z = 3+(x*(5/y))+9;
 
   });
 
 
   for(size_t i = 0;i < N;i ++){
-    ASSERT_DOUBLE_EQ(A[i]*B[i]+3, C[i]);
+    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
 
   delete[] A;

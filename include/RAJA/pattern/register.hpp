@@ -37,6 +37,31 @@ namespace RAJA
   class Register;
 
 
+
+  template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  Register<REGISTER_POLICY, RT, NUM_ELEM>
+  operator+(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
+    return Register<REGISTER_POLICY, RT, NUM_ELEM>(x) + y;
+  }
+
+  template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  Register<REGISTER_POLICY, RT, NUM_ELEM>
+  operator-(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
+    return Register<REGISTER_POLICY, RT, NUM_ELEM>(x) - y;
+  }
+
+  template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  Register<REGISTER_POLICY, RT, NUM_ELEM>
+  operator*(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
+    return Register<REGISTER_POLICY, RT, NUM_ELEM>(x) * y;
+  }
+
+  template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  Register<REGISTER_POLICY, RT, NUM_ELEM>
+  operator/(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
+    return Register<REGISTER_POLICY, RT, NUM_ELEM>(x) / y;
+  }
+
 }  // namespace RAJA
 
 
