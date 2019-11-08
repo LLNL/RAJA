@@ -31,9 +31,9 @@ namespace RAJA
 
 
   template<>
-  class Register<simd_register, double, 2>{
+  class Register<simd_avx_register, double, 2>{
     public:
-      using self_type = Register<simd_register, double, 2>;
+      using self_type = Register<simd_avx_register, double, 2>;
       using element_type = double;
 
       static constexpr size_t s_num_elem = 2;

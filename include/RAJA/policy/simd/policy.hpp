@@ -91,8 +91,6 @@ class VectorIndex {
 
 
 
-struct simd_register{};
-
 }  // end of namespace simd
 
 }  // end of namespace policy
@@ -100,7 +98,6 @@ struct simd_register{};
 using policy::simd::simd_exec;
 using policy::simd::simd_vector_exec;
 using policy::simd::VectorIndex;
-using policy::simd::simd_register;
 
 }  // end of namespace RAJA
 

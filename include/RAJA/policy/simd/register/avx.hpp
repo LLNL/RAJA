@@ -15,33 +15,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_HPP
-#define RAJA_policy_simd_register_HPP
+#ifndef RAJA_policy_simd_register_avx_HPP
+#define RAJA_policy_simd_register_avx_HPP
 
-#include<RAJA/pattern/register.hpp>
-#include<RAJA/policy/simd/policy.hpp>
-
-#ifdef __AVX__
-#include<RAJA/policy/simd/register/avx.hpp>
-#endif
-
-namespace RAJA
-{
-namespace policy
-{
-  namespace simd
-  {
-
-    // This sets the default SIMD register that will be used
-    // Individual registers can
-    using simd_register = simd_avx_register;
-  }
+namespace RAJA {
+  struct simd_avx_register {};
 }
 
 
-
-  using policy::simd::simd_register;
-
-}
-
 #endif
+
+#include<RAJA/policy/simd/register/avx_double2.hpp>
+#include<RAJA/policy/simd/register/avx_double3.hpp>
+#include<RAJA/policy/simd/register/avx_double4.hpp>

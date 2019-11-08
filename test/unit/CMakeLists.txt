@@ -74,6 +74,10 @@ raja_add_test(
   SOURCES test-kernel-lambda-args.cpp)
   
 raja_add_test(
+  NAME test-register
+  SOURCES test-register.cpp)
+
+raja_add_test(
   NAME test-vector
   SOURCES test-vector.cpp)
 

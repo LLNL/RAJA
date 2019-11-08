@@ -31,9 +31,9 @@ namespace RAJA
 
 
   template<>
-  class Register<simd_register, double, 3>{
+  class Register<simd_avx_register, double, 3>{
     public:
-      using self_type = Register<simd_register, double, 3>;
+      using self_type = Register<simd_avx_register, double, 3>;
       using element_type = double;
 
       static constexpr size_t s_num_elem = 3;
@@ -50,7 +50,7 @@ namespace RAJA
 
       // Mask used to mask off the upper double from the vector
       using mask_type = __m256i;
-      static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
+      //static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
 
     public:
 
@@ -87,7 +87,7 @@ namespace RAJA
        */
       RAJA_INLINE
       void load(element_type const *ptr){
-        m_value = _mm256_maskload_pd(ptr, s_mask);
+        m_value = _mm256_maskload_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0});
       }
 
       /*!
@@ -113,7 +113,7 @@ namespace RAJA
        */
       RAJA_INLINE
       void store(element_type *ptr) const{
-        _mm256_maskstore_pd(ptr, m_value, s_mask);
+        _mm256_maskstore_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0}, m_value);
       }
 
       /*!

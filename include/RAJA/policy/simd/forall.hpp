@@ -59,24 +59,7 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   }
 }
 
-//
-//template <typename Value, typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const simd_vector_exec<VectorIndex<>> &,
-//                             Iterable &&iter,
-//                             Func &&loop_body)
-//{
-//  auto begin = std::begin(iter);
-//  auto end = std::end(iter);
-//  auto distance = std::distance(begin, end);
-//
-//  using index_type = camp::decay<decltype(*begin)>;
-//  using simd_index_type = FixedRegisterIndex<index_type, Value>;
-//
-//  for (decltype(distance) i = 0; i < distance; i+=Value::s_num_elem) {
-//    loop_body(simd_index_type(*(begin + i)));
-//  }
-//}
-//
+
 
 template <typename VectorType, typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const simd_vector_exec<VectorType> &,
