@@ -519,17 +519,16 @@ TEST(StreamVectorTest, TestStreamForallRef)
     C[i] = 0.0;
   }
 
+  RAJA::View<double, RAJA::Layout<1>> X(A, N);
+  RAJA::View<double, RAJA::Layout<1>> Y(B, N);
+  RAJA::View<double, RAJA::Layout<1>> Z(C, N);
+
   using policy_t = RAJA::simd_stream_exec<register_t>;
 
   RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
       [=](RAJA::StreamRegisterIndex<size_t, register_t> i)
   {
-    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> x(i, A);
-    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> y(i, B);
-    RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true> z(i, C);
-
-    z = 3+(x*(5/y))+9;
-
+    Z[i] = 3+(X[i]*(5/Y[i]))+9;
   });
 
 

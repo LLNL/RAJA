@@ -100,6 +100,11 @@ class StreamRegisterIndex {
     explicit StreamRegisterIndex(index_type value, size_t length) : m_value(value), m_length(length) {}
 
     RAJA_INLINE
+    void set(index_type x) {
+      m_value = x;
+    }
+
+    RAJA_INLINE
     constexpr
     index_type operator*() const {
       return m_value;

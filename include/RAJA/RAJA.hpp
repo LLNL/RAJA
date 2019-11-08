@@ -44,6 +44,11 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
 
+//
+// Generic templates to describe SIMD/SIMT registers and vectors
+//
+#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 //
 // All platforms must support sequential execution.

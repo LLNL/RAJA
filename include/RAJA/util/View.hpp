@@ -109,6 +109,24 @@ struct View {
     auto idx = stripIndexType(layout(args...));
     return data[idx];
   }
+
+  // making this specifically typed would require unpacking the layout,
+  // this is easier to maintain
+  //RAJA::StreamRegisterIndex<size_t, register_t>
+  //RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true>
+  template <typename Arg, typename REGISTER>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  VectorRef<StreamRegisterIndex<Arg, REGISTER>, pointer_type, true>
+  operator[](RAJA::StreamRegisterIndex<Arg, REGISTER> arg) const
+  {
+    using idx_type = StreamRegisterIndex<Arg, REGISTER>;
+    using ref_type = VectorRef<idx_type, pointer_type, true>;
+
+    auto idx = stripIndexType(layout(*arg));
+
+    arg.set(Arg(idx));
+    return ref_type(arg, data);
+  }
 };
 
 template <typename ValueType,
