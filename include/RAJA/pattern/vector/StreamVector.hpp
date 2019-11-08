@@ -46,6 +46,8 @@ namespace RAJA
       using self_type = StreamVector<register_type, MAX_ELEM>;
       using element_type = ELEMENT_TYPE;
 
+      static constexpr size_t s_is_fixed = false;
+
       static constexpr size_t s_num_elem = MAX_ELEM;
       static constexpr size_t s_num_registers =
           s_num_elem / s_num_register_elem;
@@ -128,13 +130,13 @@ namespace RAJA
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        m_length = s_num_elem;
-        for(size_t i = 0;i < s_num_registers;++ i){
-          m_registers[i].load(ptr + i*s_num_register_elem);
-        }
-      }
+//      RAJA_INLINE
+//      void load(element_type const *ptr){
+//        m_length = s_num_elem;
+//        for(size_t i = 0;i < s_num_registers;++ i){
+//          m_registers[i].load(ptr + i*s_num_register_elem);
+//        }
+//      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -145,7 +147,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride){
+      void load(element_type const *ptr, size_t stride = 1){
         m_length = s_num_elem;
         for(size_t i = 0;i < s_num_registers;++ i){
           m_registers[i].load(ptr + i*s_num_register_elem*stride, stride);
@@ -157,17 +159,17 @@ namespace RAJA
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */
-      void load_n(element_type const *ptr, size_t len){
-        if(len == s_num_elem){
-          load(ptr);
-        }
-        else{
-          m_length = len;
-          for(size_t i = 0;i < len;++ i){
-            set(i, ptr[i]);
-          }
-        }
-      }
+//      void load_n(element_type const *ptr, size_t len){
+//        if(len == s_num_elem){
+//          load(ptr);
+//        }
+//        else{
+//          m_length = len;
+//          for(size_t i = 0;i < len;++ i){
+//            set(i, ptr[i]);
+//          }
+//        }
+//      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -177,7 +179,7 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
-      void load_n(element_type const *ptr, size_t len, size_t stride){
+      void load_n(element_type const *ptr, size_t len, size_t stride = 1){
         if(len == s_num_elem){
           load(ptr, stride);
         }
@@ -194,18 +196,18 @@ namespace RAJA
        * @brief Store operation, assuming scalars are in consecutive memory
        * locations.
        */
-      void store(element_type *ptr) const{
-        if(m_length == s_num_elem){
-          for(size_t i = 0;i < s_num_registers;++ i){
-            m_registers[i].store(ptr + i*s_num_register_elem);
-          }
-        }
-        else{
-          for(size_t i = 0;i < m_length;++ i){
-            ptr[i] = (*this)[i];
-          }
-        }
-      }
+//      void store(element_type *ptr) const{
+//        if(m_length == s_num_elem){
+//          for(size_t i = 0;i < s_num_registers;++ i){
+//            m_registers[i].store(ptr + i*s_num_register_elem);
+//          }
+//        }
+//        else{
+//          for(size_t i = 0;i < m_length;++ i){
+//            ptr[i] = (*this)[i];
+//          }
+//        }
+//      }
 
       /*!
        * @brief Strided store operation, where scalars are stored in memory
@@ -215,7 +217,7 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
-      void store(element_type *ptr, size_t stride) const{
+      void store(element_type *ptr, size_t stride = 1) const{
         if(m_length == s_num_elem){
           for(size_t i = 0;i < s_num_registers;++ i){
             m_registers[i].store(ptr + i*s_num_register_elem*stride, stride);

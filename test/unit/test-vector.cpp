@@ -50,7 +50,12 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 8000;// + (100*drand48());
+  size_t N = 8000;
+  // If we are not using fixed vectors, add some random number of elements
+  // to the array to test some postamble code generation.
+  if(!vector_t::s_is_fixed){
+    N += (100*drand48());
+  }
 
   element_t *A = new element_t[N];
   element_t *B = new element_t[N];

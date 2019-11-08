@@ -27,6 +27,92 @@
 namespace RAJA
 {
 
+//  namespace internal
+//  {
+//
+//    template<typename VECTOR_TYPE, bool STRIDE_ONE>
+//    struct VectorRefLoadStoreHelper;
+//
+//    template<typename REGISTER_TYPE, size_t NUM_ELEM>
+//    struct VectorRefLoadStoreHelper<FixedVector<REGISTER_TYPE, NUM_ELEM>, false>{
+//
+//        using vector_type = FixedVector<REGISTER_TYPE, NUM_ELEM>;
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static vector_type load(PTR data, IDX, IDX stride){
+//          vector_type value;
+//          value.load(data, stride);
+//          return value;
+//        }
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static void store(vector_type value, PTR data, IDX stride){
+//          value.store(data, stride);
+//        }
+//    };
+//
+//    template<typename REGISTER_TYPE, size_t NUM_ELEM>
+//    struct VectorRefLoadStoreHelper<FixedVector<REGISTER_TYPE, NUM_ELEM>, true>{
+//
+//        using vector_type = FixedVector<REGISTER_TYPE, NUM_ELEM>;
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static vector_type load(PTR data, IDX, IDX){
+//          vector_type value;
+//          value.load(data);
+//          return value;
+//        }
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static void store(vector_type value, PTR data, IDX){
+//          value.store(data);
+//        }
+//    };
+//
+//    template<typename REGISTER_TYPE, size_t NUM_ELEM>
+//    struct VectorRefLoadStoreHelper<StreamVector<VARGS...>, false>{
+//
+//        using vector_type = StreamVector<VARGS...>;
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static vector_type load(PTR data, IDX length, IDX stride){
+//          vector_type value;
+//          value.load_n(data, length, stride);
+//          return value;
+//        }
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static void store(vector_type value, PTR data, IDX stride){
+//          value.store(data, stride);
+//        }
+//    };
+//
+//    template<typename REGISTER_TYPE, size_t NUM_ELEM>
+//    struct VectorRefLoadStoreHelper<StreamVector<VARGS...>, true>{
+//
+//        using vector_type = StreamVector<VARGS...>;
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static vector_type load(PTR data, IDX length, IDX){
+//          vector_type value;
+//          value.load_n(data, length);
+//          return value;
+//        }
+//
+//        template<typename PTR, typename IDX>
+//        RAJA_INLINE
+//        static void store(vector_type value, PTR data, IDX){
+//          value.store(data);
+//        }
+//    };
+//  }
 
 /*!
  * \file
@@ -53,7 +139,7 @@ namespace RAJA
       index_type m_linear_index;
       index_type m_length;
       pointer_type m_data;
-      size_t m_stride;
+      index_type m_stride;
 
     public:
 
@@ -95,6 +181,7 @@ namespace RAJA
       RAJA_INLINE
       void store(vector_type value) const
       {
+//        internal::VectorRefLoadStoreHelper<vector_type, STRIDE_ONE>::store(value, m_data+m_linear_index, m_stride);
         if(STRIDE_ONE){
           value.store(m_data+m_linear_index);
         }
@@ -112,10 +199,10 @@ namespace RAJA
       {
         vector_type value;
         if(STRIDE_ONE){
-          value.load(m_data+m_linear_index);
+          value.load_n(m_data+m_linear_index, m_length);
         }
         else{
-          value.load(m_data+m_linear_index, m_stride);
+          value.load_n(m_data+m_linear_index, m_length, m_stride);
         }
         return value;
       }

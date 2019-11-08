@@ -127,7 +127,7 @@ struct View {
 
     // Stuff it back into the index
     using ref_type = VectorRef<REGISTER, linear_index_type, pointer_type, true>;
-    return ref_type(idx, REGISTER::s_num_elem, data, 1);
+    return ref_type(idx, arg.size(), data, 1);
   }
 };
 

@@ -49,6 +49,7 @@ namespace RAJA
       using self_type = FixedVector<full_register_type, NUM_ELEM>;
       using element_type = ELEMENT_TYPE;
 
+      static constexpr size_t s_is_fixed = true;
 
       static constexpr size_t s_num_elem = NUM_ELEM;
       static constexpr size_t s_byte_width = sizeof(element_type);
@@ -106,15 +107,15 @@ namespace RAJA
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        */
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i].load(ptr + i*s_num_register_elem);
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0].load(ptr + s_num_full_elem);
-        }
-      }
+//      RAJA_INLINE
+//      void load(element_type const *ptr){
+//        for(size_t i = 0;i < s_num_full_registers;++ i){
+//          m_full_registers[i].load(ptr + i*s_num_register_elem);
+//        }
+//        if(s_num_partial_registers){
+//          m_partial_register[0].load(ptr + s_num_full_elem);
+//        }
+//      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -125,7 +126,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride){
+      void load(element_type const *ptr, size_t stride = 1){
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
         }
@@ -134,20 +135,31 @@ namespace RAJA
         }
       }
 
+      /*!
+       * @brief Load constructor, assuming scalars are in consecutive memory
+       * locations.
+       *
+       * Since this is a Fixed length vector, the length arguments is ignored
+       */
+      RAJA_INLINE
+      void load_n(element_type const *ptr, size_t , size_t stride = 1){
+        load(ptr, stride);
+      }
+
 
       /*!
        * @brief Store operation, assuming scalars are in consecutive memory
        * locations.
        */
-      RAJA_INLINE
-      void store(element_type *ptr) const{
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i].store(ptr + i*s_num_register_elem);
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0].store(ptr + s_num_full_elem);
-        }
-      }
+//      RAJA_INLINE
+//      void store(element_type *ptr) const{
+//        for(size_t i = 0;i < s_num_full_registers;++ i){
+//          m_full_registers[i].store(ptr + i*s_num_register_elem);
+//        }
+//        if(s_num_partial_registers){
+//          m_partial_register[0].store(ptr + s_num_full_elem);
+//        }
+//      }
 
       /*!
        * @brief Strided store operation, where scalars are stored in memory
@@ -158,7 +170,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      void store(element_type *ptr, size_t stride) const{
+      void store(element_type *ptr, size_t stride = 1) const{
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i].store(ptr + i*stride*s_num_register_elem, stride);
         }
