@@ -52,6 +52,7 @@ struct View {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
+  using linear_index_type = typename layout_type::IndexLinear;
   using nc_value_type = typename std::remove_const<value_type>::type;
   using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
       typename std::remove_pointer<pointer_type>::type>::type>::type;
@@ -59,6 +60,8 @@ struct View {
 
   layout_type const layout;
   pointer_type data;
+
+
 
   template <typename... Args>
   RAJA_INLINE constexpr View(pointer_type data_ptr, Args... dim_sizes)
@@ -116,16 +119,15 @@ struct View {
   //RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true>
   template <typename Arg, typename REGISTER>
   RAJA_HOST_DEVICE RAJA_INLINE
-  VectorRef<StreamRegisterIndex<Arg, REGISTER>, pointer_type, true>
-  operator[](RAJA::StreamRegisterIndex<Arg, REGISTER> arg) const
+  VectorRef<REGISTER, linear_index_type, pointer_type, true>
+  operator[](RAJA::VectorIndex<Arg, REGISTER> arg) const
   {
-    using idx_type = StreamRegisterIndex<Arg, REGISTER>;
-    using ref_type = VectorRef<idx_type, pointer_type, true>;
+    // Compute the linear index
+    linear_index_type idx = stripIndexType(layout(*arg));
 
-    auto idx = stripIndexType(layout(*arg));
-
-    arg.set(Arg(idx));
-    return ref_type(arg, data);
+    // Stuff it back into the index
+    using ref_type = VectorRef<REGISTER, linear_index_type, pointer_type, true>;
+    return ref_type(idx, REGISTER::s_num_elem, data, 1);
   }
 };
 

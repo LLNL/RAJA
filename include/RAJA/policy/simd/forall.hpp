@@ -59,9 +59,27 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   }
 }
 
+//
+//template <typename Value, typename Iterable, typename Func>
+//RAJA_INLINE void forall_impl(const simd_vector_exec<VectorIndex<>> &,
+//                             Iterable &&iter,
+//                             Func &&loop_body)
+//{
+//  auto begin = std::begin(iter);
+//  auto end = std::end(iter);
+//  auto distance = std::distance(begin, end);
+//
+//  using index_type = camp::decay<decltype(*begin)>;
+//  using simd_index_type = FixedRegisterIndex<index_type, Value>;
+//
+//  for (decltype(distance) i = 0; i < distance; i+=Value::s_num_elem) {
+//    loop_body(simd_index_type(*(begin + i)));
+//  }
+//}
+//
 
-template <typename Value, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const simd_fixed_exec<Value> &,
+template <typename VectorType, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const simd_vector_exec<VectorType> &,
                              Iterable &&iter,
                              Func &&loop_body)
 {
@@ -69,33 +87,15 @@ RAJA_INLINE void forall_impl(const simd_fixed_exec<Value> &,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 
-  using index_type = camp::decay<decltype(*begin)>;
-  using simd_index_type = FixedRegisterIndex<index_type, Value>;
-
-  for (decltype(distance) i = 0; i < distance; i+=Value::s_num_elem) {
-    loop_body(simd_index_type(*(begin + i)));
-  }
-}
-
-
-template <typename Value, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const simd_stream_exec<Value> &,
-                             Iterable &&iter,
-                             Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-
-  auto distance_simd = distance - (distance%Value::s_num_elem);
+  auto distance_simd = distance - (distance%VectorType::s_num_elem);
   auto distance_remainder = distance - distance_simd;
 
   using index_type = camp::decay<decltype(*begin)>;
-  using simd_index_type = StreamRegisterIndex<index_type, Value>;
+  using simd_index_type = VectorIndex<index_type, VectorType>;
 
-  // Streaming SIMD loop for complete elements
-  for (decltype(distance) i = 0; i < distance_simd; i+=Value::s_num_elem) {
-    loop_body(simd_index_type(*(begin + i), Value::s_num_elem));
+  // Streaming loop for complete vector widths
+  for (decltype(distance) i = 0; i < distance_simd; i+=VectorType::s_num_elem) {
+    loop_body(simd_index_type(*(begin + i), VectorType::s_num_elem));
   }
 
   // Postamble for reamining elements

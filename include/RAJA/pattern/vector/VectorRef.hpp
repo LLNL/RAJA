@@ -35,17 +35,23 @@ namespace RAJA
  *
  */
 
-  template<typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
+  template<typename VECTOR_TYPE, typename INDEX_TYPE,
+           typename POINTER_TYPE, bool STRIDE_ONE>
   class VectorRef {
     public:
-      using self_type = VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE>;
-      using register_index_type = REGISTER_INDEX;
-      using register_type = typename register_index_type::register_type;
-      using element_type = typename register_type::element_type;
+      using self_type =
+          VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE>;
+
+      using vector_type = VECTOR_TYPE;
+      using index_type = INDEX_TYPE;
       using pointer_type = POINTER_TYPE;
 
+      using element_type = typename vector_type::element_type;
+
+
     private:
-      register_index_type m_index;
+      index_type m_linear_index;
+      index_type m_length;
       pointer_type m_data;
       size_t m_stride;
 
@@ -56,36 +62,29 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      VectorRef() : m_index(), m_data() {};
+      VectorRef() : m_linear_index(0), m_length(0), m_data(), m_stride(0) {};
 
       /*!
-       * @brief Stride-1 constructor
+       * @brief Constructor
        */
       RAJA_INLINE
-      VectorRef(register_index_type index, pointer_type pointer) :
-      m_index(index),
-      m_data(pointer),
-      m_stride(1)
-          {}
-
-
-      /*!
-       * @brief Strided constructor
-       */
-      RAJA_INLINE
-      VectorRef(register_index_type index, pointer_type pointer, size_t stride) :
-      m_index(index),
+      VectorRef(index_type lin_index, index_type length, pointer_type pointer, index_type stride) :
+      m_linear_index(lin_index),
+      m_length(length),
       m_data(pointer),
       m_stride(stride)
           {}
+
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
       VectorRef(self_type const &c) :
-      m_index(c.m_index),
-      m_data(c.m_data)
+      m_linear_index(c.m_linear_index),
+      m_length(c.m_length),
+      m_data(c.m_data),
+      m_stride(c.m_stride)
           {}
 
 
@@ -94,13 +93,13 @@ namespace RAJA
        * @param value Value to set all vector elements to
        */
       RAJA_INLINE
-      void store(register_type value) const
+      void store(vector_type value) const
       {
         if(STRIDE_ONE){
-          value.store(m_data+*m_index);
+          value.store(m_data+m_linear_index);
         }
         else{
-          value.store(m_data+*m_index, m_stride);
+          value.store(m_data+m_linear_index, m_stride);
         }
       }
 
@@ -109,20 +108,26 @@ namespace RAJA
        * @param value Value to set all vector elements to
        */
       RAJA_INLINE
-      register_type load() const
+      vector_type load() const
       {
-        register_type value;
+        vector_type value;
         if(STRIDE_ONE){
-          value.load(m_data+*m_index);
+          value.load(m_data+m_linear_index);
         }
         else{
-          value.load(m_data+*m_index, m_stride);
+          value.load(m_data+m_linear_index, m_stride);
         }
         return value;
       }
 
+      /*!
+       * @brief Automatic conversion to the underlying vector_type.
+       *
+       * This allows the use of a VectorRef in an expression, and lets the
+       * compiler automatically convert a VectorRef into a load().
+       */
       RAJA_INLINE
-      operator register_type() const {
+      operator vector_type() const {
         return load();
       }
 
@@ -132,7 +137,7 @@ namespace RAJA
        * @param value Value to set all vector elements to
        */
       RAJA_INLINE
-      self_type const &operator=(register_type value)
+      self_type const &operator=(vector_type value)
       {
         store(value);
         return *this;
@@ -145,7 +150,6 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
-      constexpr
       RAJA_INLINE
       element_type operator[](IDX i) const
       {
@@ -162,7 +166,7 @@ namespace RAJA
       RAJA_INLINE
       void set(IDX i, element_type value)
       {
-        register_type x = load();
+        vector_type x = load();
         x[i] = value;
         store(x);
       }
@@ -174,7 +178,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(element_type value)
       {
-        register_type x = value;
+        vector_type x = value;
         store(x);
         return *this;
       }
@@ -186,7 +190,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      register_type operator+(register_type const &x) const
+      vector_type operator+(vector_type const &x) const
       {
         return load() + x;
       }
@@ -197,7 +201,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      self_type const &operator+=(register_type const &x)
+      self_type const &operator+=(vector_type const &x)
       {
         store(load() + x);
         return *this;
@@ -209,7 +213,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      register_type operator-(register_type const &x) const
+      vector_type operator-(vector_type const &x) const
       {
         return load() - x;
       }
@@ -220,7 +224,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      self_type const &operator-=(register_type const &x)
+      self_type const &operator-=(vector_type const &x)
       {
         store(load() - x);
         return *this;
@@ -232,7 +236,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      register_type operator*(register_type const &x) const
+      vector_type operator*(vector_type const &x) const
       {
         return load() * x;
       }
@@ -243,7 +247,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      self_type const &operator*=(register_type const &x)
+      self_type const &operator*=(vector_type const &x)
       {
         store(load() * x);
         return *this;
@@ -255,7 +259,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      register_type operator/(register_type const &x) const
+      vector_type operator/(vector_type const &x) const
       {
         return load() / x;
       }
@@ -266,7 +270,7 @@ namespace RAJA
        * @return Value of (*this)+x
        */
       RAJA_INLINE
-      self_type const &operator/=(register_type const &x)
+      self_type const &operator/=(vector_type const &x)
       {
         store(load() / x);
         return *this;
@@ -288,7 +292,7 @@ namespace RAJA
        * @return Value of (*this) dot x
        */
       RAJA_INLINE
-      element_type dot(register_type const &x) const
+      element_type dot(vector_type const &x) const
       {
         return load().dot(x);
       }
@@ -308,7 +312,7 @@ namespace RAJA
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      register_type vmax(register_type a) const
+      vector_type vmax(vector_type a) const
       {
         return load().vmax(a);
       }
@@ -328,7 +332,7 @@ namespace RAJA
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      register_type vmin(register_type a) const
+      vector_type vmin(vector_type a) const
       {
         return load().vmin(a);
       }
@@ -336,32 +340,29 @@ namespace RAJA
   };
 
 
-  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
-  typename REGISTER_INDEX::register_type
-  operator+(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
-    using register_type = typename REGISTER_INDEX::register_type;
-    return register_type(x) + y.load();
+
+  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  VECTOR_TYPE
+  operator+(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+    return VECTOR_TYPE(x) + y.load();
   }
 
-  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
-  typename REGISTER_INDEX::register_type
-  operator-(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
-    using register_type = typename REGISTER_INDEX::register_type;
-    return register_type(x) - y.load();
+  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  VECTOR_TYPE
+  operator-(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+    return VECTOR_TYPE(x) - y.load();
   }
 
-  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
-  typename REGISTER_INDEX::register_type
-  operator*(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
-    using register_type = typename REGISTER_INDEX::register_type;
-    return register_type(x) * y.load();
+  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  VECTOR_TYPE
+  operator*(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+    return VECTOR_TYPE(x) * y.load();
   }
 
-  template<typename ST, typename REGISTER_INDEX, typename POINTER_TYPE, bool STRIDE_ONE>
-  typename REGISTER_INDEX::register_type
-  operator/(ST x, VectorRef<REGISTER_INDEX, POINTER_TYPE, STRIDE_ONE> const &y){
-    using register_type = typename REGISTER_INDEX::register_type;
-    return register_type(x) / y.load();
+  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  VECTOR_TYPE
+  operator/(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+    return VECTOR_TYPE(x) / y.load();
   }
 
 

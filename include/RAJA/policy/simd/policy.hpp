@@ -44,70 +44,37 @@ struct simd_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Platform::host> {
 };
 
-template<typename VALUE_TYPE>
-struct simd_fixed_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
+template<typename VECTOR_TYPE>
+struct simd_vector_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::forall,
                                                          Launch::undefined,
                                                          Platform::host> {
 
-  using value_type = VALUE_TYPE;
-};
-
-template<typename VALUE_TYPE>
-struct simd_stream_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                         Pattern::forall,
-                                                         Launch::undefined,
-                                                         Platform::host> {
-
-  using value_type = VALUE_TYPE;
+  using vector_type = VECTOR_TYPE;
 };
 
 
 
-template<typename IDX, typename REGISTER>
-class FixedRegisterIndex {
+
+
+template<typename IDX, typename VECTOR_TYPE>
+class VectorIndex {
   public:
     using index_type = IDX;
-    using register_type = REGISTER;
+    using vector_type = VECTOR_TYPE;
 
     RAJA_INLINE
-    FixedRegisterIndex() : m_value(0) {}
+    constexpr
+    VectorIndex() : m_index(0), m_length(vector_type::s_num_elem) {}
 
     RAJA_INLINE
-    explicit FixedRegisterIndex(index_type value) : m_value(value) {}
+    constexpr
+    VectorIndex(index_type value, size_t length) : m_index(value), m_length(length) {}
 
     RAJA_INLINE
     constexpr
     index_type operator*() const {
-      return m_value;
-    }
-
-  private:
-    index_type m_value;
-};
-
-
-template<typename IDX, typename REGISTER>
-class StreamRegisterIndex {
-  public:
-    using index_type = IDX;
-    using register_type = REGISTER;
-
-    RAJA_INLINE
-    StreamRegisterIndex() : m_value(0), m_length(REGISTER::s_num_elem) {}
-
-    RAJA_INLINE
-    explicit StreamRegisterIndex(index_type value, size_t length) : m_value(value), m_length(length) {}
-
-    RAJA_INLINE
-    void set(index_type x) {
-      m_value = x;
-    }
-
-    RAJA_INLINE
-    constexpr
-    index_type operator*() const {
-      return m_value;
+      return m_index;
     }
 
     RAJA_INLINE
@@ -117,7 +84,7 @@ class StreamRegisterIndex {
     }
 
   private:
-    index_type m_value;
+    index_type m_index;
     size_t m_length;
 };
 
@@ -131,10 +98,8 @@ struct simd_register{};
 }  // end of namespace policy
 
 using policy::simd::simd_exec;
-using policy::simd::simd_fixed_exec;
-using policy::simd::simd_stream_exec;
-using policy::simd::FixedRegisterIndex;
-using policy::simd::StreamRegisterIndex;
+using policy::simd::simd_vector_exec;
+using policy::simd::VectorIndex;
 using policy::simd::simd_register;
 
 }  // end of namespace RAJA

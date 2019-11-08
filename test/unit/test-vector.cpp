@@ -503,9 +503,9 @@ TEST(StreamVectorTest, TestStreamForall)
 TEST(StreamVectorTest, TestStreamForallRef)
 {
   using TypeParam = RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>;
-  using register_t = TypeParam;
+  using vector_t = TypeParam;
 
-  using element_t = typename register_t::element_type;
+  using element_t = typename vector_t::element_type;
 
 
   size_t N = 8000 + (100*drand48());
@@ -523,10 +523,10 @@ TEST(StreamVectorTest, TestStreamForallRef)
   RAJA::View<double, RAJA::Layout<1>> Y(B, N);
   RAJA::View<double, RAJA::Layout<1>> Z(C, N);
 
-  using policy_t = RAJA::simd_stream_exec<register_t>;
+  using policy_t = RAJA::simd_vector_exec<vector_t>;
 
   RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
-      [=](RAJA::StreamRegisterIndex<size_t, register_t> i)
+      [=](RAJA::VectorIndex<size_t, vector_t> i)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;
   });
