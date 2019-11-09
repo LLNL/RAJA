@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_fixedvector_HPP
-#define RAJA_pattern_vector_fixedvector_HPP
+#ifndef RAJA_pattern_vector_vector_HPP
+#define RAJA_pattern_vector_vector_HPP
 
 #include "RAJA/config.hpp"
 
@@ -35,25 +35,30 @@ namespace RAJA
  *
  */
 
-  template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  class FixedVector;
+  template<typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  class Vector;
 
-  template<template<typename, typename, size_t> class REGISTER_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t NUM_REG_ELEM, size_t NUM_ELEM>
-  class FixedVector<REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>, NUM_ELEM>
+  template<template<typename, typename, size_t> class REGISTER_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t NUM_REG_ELEM, size_t NUM_ELEM, bool FIXED_LENGTH>
+  class Vector<REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>, NUM_ELEM, FIXED_LENGTH>
   {
     public:
       using full_register_type =
           REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>;
       static constexpr size_t s_num_register_elem = NUM_REG_ELEM;
 
-      using self_type = FixedVector<full_register_type, NUM_ELEM>;
+      using self_type = Vector<full_register_type, NUM_ELEM, FIXED_LENGTH>;
       using element_type = ELEMENT_TYPE;
 
-      static constexpr size_t s_is_fixed = true;
+
+      static constexpr size_t s_is_fixed = FIXED_LENGTH;
 
       static constexpr size_t s_num_elem = NUM_ELEM;
       static constexpr size_t s_byte_width = sizeof(element_type);
       static constexpr size_t s_bit_width = s_byte_width*8;
+
+
+      static_assert(s_num_elem % s_num_register_elem == 0 || s_is_fixed,
+          "Vector must use a whole number of registers if it's variable length");
 
 
       static constexpr size_t s_num_full_registers = s_num_elem / s_num_register_elem;
@@ -71,28 +76,32 @@ namespace RAJA
     private:
       std::array<full_register_type, s_num_full_registers> m_full_registers;
       std::array<partial_register_type, s_num_partial_registers> m_partial_register;
+
+      size_t m_length;
     public:
 
 
       /*!
        * @brief Default constructor, zeros register contents
        */
-      FixedVector() = default;
+      RAJA_INLINE
+      Vector() : m_length(s_num_elem){}
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      FixedVector(self_type const &c) :
+      Vector(self_type const &c) :
         m_full_registers(c.m_full_registers),
-        m_partial_register(c.m_partial_register)
+        m_partial_register(c.m_partial_register),
+        m_length(c.m_length)
           {}
 
       /*!
        * @brief Scalar constructor (broadcast)
        */
       RAJA_INLINE
-      FixedVector(element_type const &c)
+      Vector(element_type const &c)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] = c;
@@ -100,33 +109,20 @@ namespace RAJA
         if(s_num_partial_registers){
           m_partial_register[0] = c;
         }
+        m_length = s_num_elem;
       }
 
 
-      /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       */
-//      RAJA_INLINE
-//      void load(element_type const *ptr){
-//        for(size_t i = 0;i < s_num_full_registers;++ i){
-//          m_full_registers[i].load(ptr + i*s_num_register_elem);
-//        }
-//        if(s_num_partial_registers){
-//          m_partial_register[0].load(ptr + s_num_full_elem);
-//        }
-//      }
+
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
        * locations ptr, ptr+stride, ptr+2*stride, etc.
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
       void load(element_type const *ptr, size_t stride = 1){
+        m_length = s_num_elem;
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
         }
@@ -139,27 +135,22 @@ namespace RAJA
        * @brief Load constructor, assuming scalars are in consecutive memory
        * locations.
        *
-       * Since this is a Fixed length vector, the length arguments is ignored
+       * For fixed length vectors, the length arguments is ignored, otherwise
+       * only the specified number of values is read in.
        */
       RAJA_INLINE
-      void load_n(element_type const *ptr, size_t , size_t stride = 1){
-        load(ptr, stride);
+      void load_n(element_type const *ptr, size_t length, size_t stride = 1){
+        m_length = length;
+        if(s_is_fixed || length == s_num_elem){
+          load(ptr, stride);
+        }
+        else{
+          for(size_t i = 0;i < length;++ i){
+            set(i, ptr[i*stride]);
+          }
+        }
       }
 
-
-      /*!
-       * @brief Store operation, assuming scalars are in consecutive memory
-       * locations.
-       */
-//      RAJA_INLINE
-//      void store(element_type *ptr) const{
-//        for(size_t i = 0;i < s_num_full_registers;++ i){
-//          m_full_registers[i].store(ptr + i*s_num_register_elem);
-//        }
-//        if(s_num_partial_registers){
-//          m_partial_register[0].store(ptr + s_num_full_elem);
-//        }
-//      }
 
       /*!
        * @brief Strided store operation, where scalars are stored in memory
@@ -171,11 +162,18 @@ namespace RAJA
        */
       RAJA_INLINE
       void store(element_type *ptr, size_t stride = 1) const{
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i].store(ptr + i*stride*s_num_register_elem, stride);
+        if(s_is_fixed || m_length == s_num_elem){
+          for(size_t i = 0;i < s_num_full_registers;++ i){
+            m_full_registers[i].store(ptr + i*stride*s_num_register_elem, stride);
+          }
+          if(s_num_partial_registers){
+            m_partial_register[0].store(ptr + stride*s_num_full_elem, stride);
+          }
         }
-        if(s_num_partial_registers){
-          m_partial_register[0].store(ptr + stride*s_num_full_elem, stride);
+        else{
+          for(size_t i = 0;i < m_length;++ i){
+            ptr[i*stride] = (*this)[i];
+          }
         }
       }
 
@@ -195,10 +193,12 @@ namespace RAJA
         // compute the element in the register (equiv: i % s_num_register_elem)
         size_t e = i - (r*s_num_register_elem);
 
-        if(r < s_num_full_registers){
+        if(!s_is_fixed || r < s_num_full_registers){
           return m_full_registers[r][e];
         }
-        return m_partial_register[0][e];
+        else{
+          return m_partial_register[0][e];
+        }
       }
 
 
@@ -216,7 +216,7 @@ namespace RAJA
         // compute the element in the register (equiv: i % s_num_register_elem)
         size_t e = i - (r*s_num_register_elem);
 
-        if(r < s_num_full_registers){
+        if(!s_is_fixed || r < s_num_full_registers){
           m_full_registers[r].set(e, value);
         }
         else{
@@ -237,7 +237,7 @@ namespace RAJA
         if(s_num_partial_registers){
           m_partial_register[0] = value;
         }
-        return *this;
+        m_length = s_num_elem;
       }
 
       /*!
@@ -248,12 +248,12 @@ namespace RAJA
       RAJA_INLINE
       self_type const &operator=(self_type const &x)
       {
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = x.m_full_registers[i];
+        m_full_registers = x.m_full_registers;
+        if(s_is_fixed && s_num_partial_registers){
+          m_partial_register = x.m_partial_register;
         }
-        if(s_num_partial_registers){
-          m_partial_register[0] = x.m_partial_register[0];
-        }
+        m_length = x.m_length;
+
         return *this;
       }
 
@@ -266,15 +266,8 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        self_type result(*this);
-
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] += x.m_full_registers[i];
-        }
-        if(s_num_partial_registers){
-          result.m_partial_register[0] += x.m_partial_register[0];
-        }
-
+        self_type result = *this;
+        result += x;
         return result;
       }
 
@@ -289,9 +282,10 @@ namespace RAJA
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] += x.m_full_registers[i];
         }
-        if(s_num_partial_registers){
+        if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] += x.m_partial_register[0];
         }
+        m_length = std::min(m_length, x.m_length);
 
         return *this;
       }
@@ -304,15 +298,8 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        self_type result(*this);
-
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] -= x.m_full_registers[i];
-        }
-        if(s_num_partial_registers){
-          result.m_partial_register[0] -= x.m_partial_register[0];
-        }
-
+        self_type result = *this;
+        result -= x;
         return result;
       }
 
@@ -327,9 +314,10 @@ namespace RAJA
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] -= x.m_full_registers[i];
         }
-        if(s_num_partial_registers){
+        if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] -= x.m_partial_register[0];
         }
+        m_length = std::min(m_length, x.m_length);
 
         return *this;
       }
@@ -342,15 +330,8 @@ namespace RAJA
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
-        self_type result(*this);
-
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] *= x.m_full_registers[i];
-        }
-        if(s_num_partial_registers){
-          result.m_partial_register[0] *= x.m_partial_register[0];
-        }
-
+        self_type result = *this;
+        result *= x;
         return result;
       }
 
@@ -365,9 +346,10 @@ namespace RAJA
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] *= x.m_full_registers[i];
         }
-        if(s_num_partial_registers){
+        if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] *= x.m_partial_register[0];
         }
+        m_length = std::min(m_length, x.m_length);
 
         return *this;
       }
@@ -380,15 +362,8 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        self_type result(*this);
-
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] /= x.m_full_registers[i];
-        }
-        if(s_num_partial_registers){
-          result.m_partial_register[0] /= x.m_partial_register[0];
-        }
-
+        self_type result = *this;
+        result /= x;
         return result;
       }
 
@@ -403,9 +378,10 @@ namespace RAJA
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] /= x.m_full_registers[i];
         }
-        if(s_num_partial_registers){
+        if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] /= x.m_partial_register[0];
         }
+        m_length = std::min(m_length, x.m_length);
 
         return *this;
       }
@@ -418,11 +394,18 @@ namespace RAJA
       element_type sum() const
       {
         element_type result = (element_type)0;
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result += m_full_registers[i].sum();
+        if(m_length == s_num_elem){
+          for(size_t i = 0;i < s_num_full_registers;++ i){
+            result += m_full_registers[i].sum();
+          }
+          if(s_num_partial_registers){
+            result += m_partial_register[0].sum();
+          }
         }
-        if(s_num_partial_registers){
-          result += m_partial_register[0].sum();
+        else{
+          for(size_t i = 0;i < m_length;++ i){
+            result += (*this)[i];
+          }
         }
         return result;
       }
@@ -431,18 +414,14 @@ namespace RAJA
        * @brief Dot product of two vectors
        * @param x Other vector to dot with this vector
        * @return Value of (*this) dot x
+       *
+       * NOTE: we could really do something more optimized here!
        */
       RAJA_INLINE
       element_type dot(self_type const &x) const
       {
-        element_type result = (element_type)0;
-        for(size_t i = 0;i < s_num_full_registers;++ i){
-          result += m_full_registers[i].dot(x.m_full_registers[i]);
-        }
-        if(s_num_partial_registers){
-          result += m_partial_register[0].dot(x.m_partial_register[0]);
-        }
-        return result;
+        self_type z = (*this) * x;
+        return z.sum();
       }
 
 
@@ -453,18 +432,27 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        if(s_num_full_registers == 0){
-          return m_partial_register[0].max();
-        }
+        if(s_is_fixed || m_length == s_num_elem){
+          if(s_num_full_registers == 0){
+            return m_partial_register[0].max();
+          }
 
-        element_type result = (element_type)m_full_registers[0].max();
-        for(size_t i = 1;i < s_num_full_registers;++ i){
-          result = std::max<double>(result, m_full_registers[i].max());
+          element_type result = (element_type)m_full_registers[0].max();
+          for(size_t i = 1;i < s_num_full_registers;++ i){
+            result = std::max<double>(result, m_full_registers[i].max());
+          }
+          if(s_num_partial_registers){
+            result = std::max<double>(result, m_partial_register[0].max());
+          }
+          return result;
         }
-        if(s_num_partial_registers){
-          result = std::max<double>(result, m_partial_register[0].max());
+        else{
+          element_type result = (*this)[0];
+          for(size_t i = 0;i < m_length;++ i){
+            result = std::max(result, (*this)[i]);
+          }
+          return result;
         }
-        return result;
       }
 
       /*!
@@ -474,46 +462,62 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        if(s_num_full_registers == 0){
-          return m_partial_register[0].min();
-        }
+        if(s_is_fixed || m_length == s_num_elem){
+          if(s_num_full_registers == 0){
+            return m_partial_register[0].min();
+          }
 
-        element_type result = (element_type)m_full_registers[0].min();
-        for(size_t i = 1;i < s_num_full_registers;++ i){
-          result = std::min<double>(result, m_full_registers[i].min());
+          element_type result = (element_type)m_full_registers[0].min();
+          for(size_t i = 1;i < s_num_full_registers;++ i){
+            result = std::min<double>(result, m_full_registers[i].min());
+          }
+          if(s_num_partial_registers){
+            result = std::min<double>(result, m_partial_register[0].min());
+          }
+          return result;
         }
-        if(s_num_partial_registers){
-          result = std::min<double>(result, m_partial_register[0].min());
+        else{
+          element_type result = (*this)[0];
+          for(size_t i = 0;i < m_length;++ i){
+            result = std::min(result, (*this)[i]);
+          }
+          return result;
         }
-        return result;
       }
 
   };
 
 
 
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM>
-  FixedVector<REGISTER_TYPE, NUM_ELEM>
-  operator+(ST x, FixedVector<REGISTER_TYPE, NUM_ELEM> const &y){
-    return FixedVector<REGISTER_TYPE, NUM_ELEM>(x) + y;
+  template<typename REGISTER_TYPE, size_t NUM_ELEM>
+  using FixedVector = Vector<REGISTER_TYPE, NUM_ELEM, true>;
+
+  template<typename REGISTER_TYPE, size_t NUM_ELEM>
+  using StreamVector = Vector<REGISTER_TYPE, NUM_ELEM, false>;
+
+
+  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
+  operator+(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
+    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) + y;
   }
 
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM>
-  FixedVector<REGISTER_TYPE, NUM_ELEM>
-  operator-(ST x, FixedVector<REGISTER_TYPE, NUM_ELEM> const &y){
-    return FixedVector<REGISTER_TYPE, NUM_ELEM>(x) - y;
+  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
+  operator-(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
+    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) - y;
   }
 
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM>
-  FixedVector<REGISTER_TYPE, NUM_ELEM>
-  operator*(ST x, FixedVector<REGISTER_TYPE, NUM_ELEM> const &y){
-    return FixedVector<REGISTER_TYPE, NUM_ELEM>(x) * y;
+  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
+  operator*(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
+    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) * y;
   }
 
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM>
-  FixedVector<REGISTER_TYPE, NUM_ELEM>
-  operator/(ST x, FixedVector<REGISTER_TYPE, NUM_ELEM> const &y){
-    return FixedVector<REGISTER_TYPE, NUM_ELEM>(x) / y;
+  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
+  operator/(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
+    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) / y;
   }
 
 }  // namespace RAJA

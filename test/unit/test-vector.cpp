@@ -12,8 +12,6 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-#include "RAJA/pattern/register.hpp"
-#include "RAJA/pattern/vector.hpp"
 
 
 using VectorTestTypes = ::testing::Types<
@@ -22,6 +20,9 @@ using VectorTestTypes = ::testing::Types<
     RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 4>,
     RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>>;
 
+
+//using VectorTestTypes = ::testing::Types<
+//    RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,4>, 8>>;
 
 template <typename Policy>
 class VectorTest : public ::testing::Test

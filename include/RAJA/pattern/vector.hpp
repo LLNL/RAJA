@@ -18,8 +18,7 @@
 #ifndef RAJA_pattern_vector_HPP
 #define RAJA_pattern_vector_HPP
 
-#include "RAJA/pattern/vector/FixedVector.hpp"
-#include "RAJA/pattern/vector/StreamVector.hpp"
+#include "RAJA/pattern/vector/Vector.hpp"
 #include "RAJA/pattern/vector/VectorRef.hpp"
 
 

@@ -12,8 +12,6 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-#include "RAJA/pattern/register.hpp"
-
 
 using RegisterTestTypes = ::testing::Types<
                                    RAJA::Register<RAJA::simd_register, int, 1>,
