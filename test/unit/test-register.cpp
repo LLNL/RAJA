@@ -12,7 +12,12 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-
+#if RAJA_SIMD_REGISTER_WIDTH == 0
+    using RegisterTestTypes = ::testing::Types<
+                           RAJA::Register<RAJA::simd_register, int, 1>,
+                           RAJA::Register<RAJA::simd_register, float, 1>,
+                           RAJA::Register<RAJA::simd_register, double, 1>>;
+#else
 using RegisterTestTypes = ::testing::Types<
                                    RAJA::Register<RAJA::simd_register, int, 1>,
                                    RAJA::Register<RAJA::simd_register, float, 1>,
@@ -28,7 +33,7 @@ using RegisterTestTypes = ::testing::Types<
                                    RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>,
                                    RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 12>,
                                    RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 16>>;
-
+#endif
 
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test

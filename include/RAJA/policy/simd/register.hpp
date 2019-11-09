@@ -23,7 +23,24 @@
 
 #ifdef __AVX__
 #include<RAJA/policy/simd/register/avx.hpp>
+#ifndef RAJA_SIMD_REGISTER_TYPE
+#define RAJA_SIMD_REGISTER_TYPE simd_avx_register
+#define RAJA_SIMD_REGISTER_WIDTH 256
 #endif
+#endif
+
+
+namespace RAJA
+{
+  struct simd_scalar_register {};
+}
+
+
+#ifndef RAJA_SIMD_REGISTER_TYPE
+#define RAJA_SIMD_REGISTER_TYPE RAJA::simd_scalar_register
+#define RAJA_SIMD_REGISTER_WIDTH 0
+#endif
+
 
 namespace RAJA
 {
@@ -34,7 +51,7 @@ namespace policy
 
     // This sets the default SIMD register that will be used
     // Individual registers can
-    using simd_register = simd_avx_register;
+    using simd_register = RAJA_SIMD_REGISTER_TYPE;
   }
 }
 
