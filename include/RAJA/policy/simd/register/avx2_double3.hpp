@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef __AVX__
+#ifdef __AVX2__
 
-#ifndef RAJA_policy_simd_register_avx_double3_HPP
-#define RAJA_policy_simd_register_avx_double3_HPP
+#ifndef RAJA_policy_simd_register_avx2_double3_HPP
+#define RAJA_policy_simd_register_avx2_double3_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -33,9 +33,9 @@ namespace RAJA
 
 
   template<>
-  class Register<simd_avx_register, double, 3>{
+  class Register<simd_avx2_register, double, 3>{
     public:
-      using self_type = Register<simd_avx_register, double, 3>;
+      using self_type = Register<simd_avx2_register, double, 3>;
       using element_type = double;
 
       static constexpr size_t s_num_elem = 3;
@@ -357,5 +357,4 @@ namespace RAJA
 
 #endif
 
-#endif //__AVX__
-
+#endif //__AVX2__

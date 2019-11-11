@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef __AVX__
+#ifdef __AVX2__
 
-#ifndef RAJA_policy_simd_register_avx_double3_HPP
-#define RAJA_policy_simd_register_avx_double3_HPP
+#ifndef RAJA_policy_simd_register_avx2_double4_HPP
+#define RAJA_policy_simd_register_avx2_double4_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -33,26 +33,19 @@ namespace RAJA
 
 
   template<>
-  class Register<simd_avx_register, double, 3>{
+  class Register<simd_avx2_register, double, 4>{
     public:
-      using self_type = Register<simd_avx_register, double, 3>;
+      using self_type = Register<simd_avx2_register, double, 4>;
       using element_type = double;
 
-      static constexpr size_t s_num_elem = 3;
+      static constexpr size_t s_num_elem = 4;
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-      // Using a 256-bit (4 double) vector, but padding out the upper most
-      // value
       using simd_type = __m256d;
-
 
     private:
       simd_type m_value;
-
-      // Mask used to mask off the upper double from the vector
-      using mask_type = __m256i;
-      //static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
 
     public:
 
@@ -76,6 +69,7 @@ namespace RAJA
       RAJA_INLINE
       Register(self_type const &c) : m_value(c.m_value) {}
 
+
       /*!
        * @brief Construct from scalar.
        * Sets all elements to same value (broadcast).
@@ -89,7 +83,7 @@ namespace RAJA
        */
       RAJA_INLINE
       void load(element_type const *ptr){
-        m_value = _mm256_maskload_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0});
+        m_value = _mm256_loadu_pd(ptr);
       }
 
       /*!
@@ -102,11 +96,11 @@ namespace RAJA
        */
       RAJA_INLINE
       void load(element_type const *ptr, size_t stride){
-        m_value =_mm256_set_pd(0.0,
-                              ptr[2*stride],
-                              ptr[stride],
-                              ptr[0]);
+        m_value = _mm256_i64gather_pd(ptr,
+                                      _mm256_set_epi64x(3*stride, 2*stride, stride, 0),
+                                      sizeof(element_type));
       }
+
 
 
       /*!
@@ -115,7 +109,7 @@ namespace RAJA
        */
       RAJA_INLINE
       void store(element_type *ptr) const{
-        _mm256_maskstore_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0}, m_value);
+        _mm256_storeu_pd(ptr, m_value);
       }
 
       /*!
@@ -279,7 +273,7 @@ namespace RAJA
       element_type sum() const
       {
         auto hsum = _mm256_hadd_pd(m_value, m_value);
-        return hsum[0] + m_value[2];
+        return hsum[0] + hsum[2];
       }
 
       /*!
@@ -300,10 +294,13 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        // permute the first two lanes of the register
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+        // permute the first two and last two lanes of the register
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
+        // this gives us b=XXYY where
+        // X = min(a[0], a[1])
+        // Y = min(a[2], a[3])
         simd_type b = _mm256_max_pd(m_value, a);
 
         // now take the minimum of a lower and upper lane
@@ -327,12 +324,15 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        // permute the first two lanes of the register
+        // permute the first two and last two lanes of the register
         // m_value = ABCD
         // a = AACC
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x01);
+        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
+        // this gives us b=XXYY where
+        // X = min(a[0], a[1])
+        // Y = min(a[2], a[3])
         simd_type b = _mm256_min_pd(m_value, a);
 
         // now take the minimum of a lower and upper lane
@@ -357,5 +357,4 @@ namespace RAJA
 
 #endif
 
-#endif //__AVX__
-
+#endif //__AVX2__

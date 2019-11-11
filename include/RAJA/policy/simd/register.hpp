@@ -21,11 +21,19 @@
 #include<RAJA/pattern/register.hpp>
 #include<RAJA/policy/simd/policy.hpp>
 
+
+#ifdef __AVX2__
+#include<RAJA/policy/simd/register/avx2.hpp>
+#ifndef RAJA_SIMD_REGISTER_TYPE
+#define RAJA_SIMD_REGISTER_TYPE simd_avx2_register
+#endif
+#endif
+
+
 #ifdef __AVX__
 #include<RAJA/policy/simd/register/avx.hpp>
 #ifndef RAJA_SIMD_REGISTER_TYPE
 #define RAJA_SIMD_REGISTER_TYPE simd_avx_register
-#define RAJA_SIMD_REGISTER_WIDTH 256
 #endif
 #endif
 
@@ -38,7 +46,6 @@ namespace RAJA
 
 #ifndef RAJA_SIMD_REGISTER_TYPE
 #define RAJA_SIMD_REGISTER_TYPE RAJA::simd_scalar_register
-#define RAJA_SIMD_REGISTER_WIDTH 0
 #endif
 
 

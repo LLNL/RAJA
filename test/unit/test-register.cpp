@@ -12,29 +12,34 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-#if RAJA_SIMD_REGISTER_WIDTH == 0
+
     using RegisterTestTypes = ::testing::Types<
-                           RAJA::Register<RAJA::simd_register, int, 1>,
-                           RAJA::Register<RAJA::simd_register, float, 1>,
-                           RAJA::Register<RAJA::simd_register, double, 1>>;
-#else
-using RegisterTestTypes = ::testing::Types<
-                                   RAJA::Register<RAJA::simd_register, int, 1>,
-                                   RAJA::Register<RAJA::simd_register, float, 1>,
-                                   RAJA::Register<RAJA::simd_register, double, 1>,
-                                   RAJA::Register<RAJA::simd_register, double, 2>,
-                                   RAJA::Register<RAJA::simd_register, double, 3>,
-                                   RAJA::Register<RAJA::simd_register, double, 4>,
-                                   RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,1>, 27>,
-                                   RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,2>, 27>,
-                                   RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,3>, 27>,
-                                   RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,4>, 27>,
-                                   RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 4>,
-                                   RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>,
-                                   RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 12>,
-                                   RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 16>>;
+#ifdef __AVX__
+       RAJA::Register<RAJA::simd_avx_register, double, 2>,
+       RAJA::Register<RAJA::simd_avx_register, double, 3>,
+       RAJA::Register<RAJA::simd_avx_register, double, 4>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,1>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,3>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
 #endif
 
+#ifdef __AVX2__
+       RAJA::Register<RAJA::simd_avx2_register, double, 2>,
+       RAJA::Register<RAJA::simd_avx2_register, double, 3>,
+       RAJA::Register<RAJA::simd_avx2_register, double, 4>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,1>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
+#endif
+       RAJA::Register<RAJA::simd_scalar_register, int, 1>,
+       RAJA::Register<RAJA::simd_scalar_register, float, 1>,
+       RAJA::Register<RAJA::simd_scalar_register, double, 1>>;
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test
 {

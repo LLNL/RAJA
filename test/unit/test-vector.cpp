@@ -13,17 +13,19 @@
 #include "gtest/gtest.h"
 
 
-#if RAJA_SIMD_REGISTER_WIDTH == 0
 using VectorTestTypes = ::testing::Types<
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,1>, 4>>;
-#else
-using VectorTestTypes = ::testing::Types<
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,4>, 4>,
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_register, double,4>, 8>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 4>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_register, double,4>, 8>>;
+
+#ifdef __AVX__
+    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
+    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
+    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
+    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
 #endif
 
+    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>,
+    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 5>,
+    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 1>,
+    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>>;
 
 template <typename Policy>
 class VectorTest : public ::testing::Test

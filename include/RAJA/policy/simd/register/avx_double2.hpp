@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining vector operations.
+ * \brief   RAJA header file defining a SIMD register abstraction.
  *
  ******************************************************************************
  */
@@ -14,6 +14,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifdef __AVX__
 
 #ifndef RAJA_policy_simd_register_avx_double2_HPP
 #define RAJA_policy_simd_register_avx_double2_HPP
@@ -334,3 +336,6 @@ namespace RAJA
 
 
 #endif
+
+#endif //__AVX__
+
