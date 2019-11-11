@@ -57,47 +57,12 @@ struct simd_vector_exec : make_policy_pattern_launch_platform_t<Policy::sequenti
 
 
 
-template<typename IDX, typename VECTOR_TYPE>
-class VectorIndex {
-  public:
-    using index_type = IDX;
-    using vector_type = VECTOR_TYPE;
-
-    RAJA_INLINE
-    constexpr
-    VectorIndex() : m_index(0), m_length(vector_type::s_num_elem) {}
-
-    RAJA_INLINE
-    constexpr
-    VectorIndex(index_type value, size_t length) : m_index(value), m_length(length) {}
-
-    RAJA_INLINE
-    constexpr
-    index_type operator*() const {
-      return m_index;
-    }
-
-    RAJA_INLINE
-    constexpr
-    size_t size() const {
-      return m_length;
-    }
-
-  private:
-    index_type m_index;
-    size_t m_length;
-};
-
-
-
-
 }  // end of namespace simd
 
 }  // end of namespace policy
 
 using policy::simd::simd_exec;
 using policy::simd::simd_vector_exec;
-using policy::simd::VectorIndex;
 
 }  // end of namespace RAJA
 

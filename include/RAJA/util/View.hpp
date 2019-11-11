@@ -30,6 +30,14 @@
 namespace RAJA
 {
 
+namespace internal
+{
+
+  // Helper to unpack VectorIndex
+
+} // namespace internal
+
+
 //Helpers to convert
 //layouts -> OffsetLayouts
 //Typedlayouts -> TypedOffsetLayouts
