@@ -45,8 +45,8 @@ namespace util {
   template <typename T>
   class Registry {
   public:
-    typedef T type;
-    typedef RegistryEntry<T> entry;
+    using type = T;
+    using entry = RegistryEntry<T>;
 
     class node;
     class iterator;
