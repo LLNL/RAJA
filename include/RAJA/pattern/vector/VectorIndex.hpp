@@ -33,20 +33,24 @@ namespace RAJA
       using vector_type = VECTOR_TYPE;
 
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       constexpr
       VectorIndex() : m_index(0), m_length(vector_type::s_num_elem) {}
 
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       constexpr
       VectorIndex(index_type value, size_t length) : m_index(value), m_length(length) {}
 
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       constexpr
-      index_type operator*() const {
+      index_type const &operator*() const {
         return m_index;
       }
 
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       constexpr
       size_t size() const {
         return m_length;

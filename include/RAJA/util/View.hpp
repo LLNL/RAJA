@@ -23,6 +23,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -33,7 +34,136 @@ namespace RAJA
 namespace internal
 {
 
+  // Helper that strips the Vector type from an argument
+  template<typename ARG>
+  struct StripVectorIndex {
+      using arg_type = ARG;
+      using vector_type = RAJA::simd_scalar_register;
+      static constexpr bool s_is_vector = false;
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      arg_type const &get(arg_type const &arg){
+        return arg;
+      }
+  };
+
+  template<typename IDX, typename VECTOR_TYPE>
+  struct StripVectorIndex<VectorIndex<IDX, VECTOR_TYPE>> {
+      using arg_type = IDX;
+      using vector_type = VECTOR_TYPE;
+      static constexpr bool s_is_vector = true;
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      arg_type const &get(VectorIndex<IDX, VECTOR_TYPE> const &arg){
+        return *arg;
+      }
+  };
+
+  template<typename ARG>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  auto stripVectorIndex(ARG const &arg) ->
+  typename StripVectorIndex<ARG>::arg_type const &
+  {
+    return StripVectorIndex<ARG>::get(arg);
+  }
+
+  template<camp::idx_t I, typename ... ARGS>
+  struct ExtractVectorArg;
+
+  template<camp::idx_t I, typename ARG0, typename ... ARG_REST>
+  struct ExtractVectorArg<I, ARG0, ARG_REST...>{
+      using strip_index_t = StripVectorIndex<ARG0>;
+      using next_t = ExtractVectorArg<I+1, ARG_REST...>;
+
+      static constexpr camp::idx_t s_num_vector_args =
+          (strip_index_t::s_is_vector ? 1 : 0) + next_t::s_num_vector_args;
+
+      static constexpr camp::idx_t s_vector_arg_idx =
+          (strip_index_t::s_is_vector ? I : next_t::s_vector_arg_idx);
+
+      using vector_type =
+          typename std::conditional<strip_index_t::s_is_vector,
+          typename strip_index_t::vector_type,
+          typename next_t::vector_type>::type;
+  };
+
+  // Termination case
+  template<camp::idx_t I>
+  struct ExtractVectorArg<I>{
+      static constexpr camp::idx_t s_num_vector_args = 0;
+      static constexpr camp::idx_t s_vector_arg_idx = -1;
+      using vector_type = RAJA::simd_scalar_register;
+  };
+
   // Helper to unpack VectorIndex
+  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType, bool IsVector>
+  struct ViewVectorArgsHelper;
+
+  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType>
+  struct ViewVectorArgsHelper<IdxLin, ValueType, PointerType, ExtractType, true> {
+
+      // Count how many VectorIndex arguments there are
+      static constexpr size_t s_num_vector_args = ExtractType::s_num_vector_args;
+
+      // Make sure we don't have conflicting arguments
+      static_assert(s_num_vector_args < 2, "View only supports a single VectorIndex at a time");
+
+
+      // We cannot compute this yet.
+      // TODO: figure out how this might be computed...
+      static constexpr bool s_is_stride_one = false;
+
+
+      // Compute a Vector type
+      using vector_type = typename ExtractType::vector_type;
+
+      using type = VectorRef<vector_type, IdxLin, PointerType, s_is_stride_one>;
+
+      template<typename Args>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      type createReturn(IdxLin lin_index, Args args, PointerType pointer, IdxLin stride){
+        auto arg = camp::get<ExtractType::s_vector_arg_idx>(args);
+        return type(lin_index, arg.size(), pointer, stride);
+      }
+  };
+
+  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType>
+  struct ViewVectorArgsHelper<IdxLin, ValueType, PointerType, ExtractType, false> {
+
+      // We cannot compute this yet.
+      // TODO: figure out how this might be computed...
+      static constexpr bool s_is_stride_one = false;
+
+
+      using type = ValueType&;
+
+      template<typename Args>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      type createReturn(IdxLin lin_index, Args , PointerType pointer, IdxLin ){
+        return pointer[lin_index];
+      }
+  };
+
+
+
+  template<typename IdxLin, typename ValueType, typename PointerType, typename ... ARGS>
+  using ViewVectorHelper = ViewVectorArgsHelper<IdxLin, ValueType, PointerType,
+      ExtractVectorArg<0, ARGS...>, ExtractVectorArg<0, ARGS...>::s_num_vector_args >= 1>;
+
+
 
 } // namespace internal
 
@@ -115,27 +245,29 @@ struct View {
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto operator()(Args... args) const ->
+  typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
   {
-    auto idx = stripIndexType(layout(args...));
-    return data[idx];
+    using helper_t = internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>;
+
+    auto idx = stripIndexType(layout(internal::stripVectorIndex(args)...));
+    return helper_t::createReturn(idx, camp::make_tuple(args...), data, 1);
   }
 
-  // making this specifically typed would require unpacking the layout,
-  // this is easier to maintain
-  //RAJA::StreamRegisterIndex<size_t, register_t>
-  //RAJA::VectorRef<RAJA::StreamRegisterIndex<size_t, register_t>, double*, true>
-  template <typename Arg, typename REGISTER>
+
+  template <typename Arg>
   RAJA_HOST_DEVICE RAJA_INLINE
-  VectorRef<REGISTER, linear_index_type, pointer_type, true>
-  operator[](RAJA::VectorIndex<Arg, REGISTER> arg) const
+  auto operator[](Arg arg) const ->
+  typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Arg>::type
   {
+    using helper_t = internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Arg>;
+
     // Compute the linear index
-    linear_index_type idx = stripIndexType(layout(*arg));
+    linear_index_type idx = stripIndexType(layout(internal::stripVectorIndex(arg)));
 
     // Stuff it back into the index
-    using ref_type = VectorRef<REGISTER, linear_index_type, pointer_type, true>;
-    return ref_type(idx, arg.size(), data, 1);
+    return helper_t::createReturn(idx, camp::make_tuple(arg), data, 1);
   }
 };
 
