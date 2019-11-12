@@ -472,7 +472,7 @@ struct greater : public detail::comparison_function<Arg1, Arg2> {
   RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
                                              const Arg2& rhs) const
   {
-    return lhs >= rhs;
+    return lhs > rhs;
   }
 };
 
@@ -481,7 +481,7 @@ struct less : public detail::comparison_function<Arg1, Arg2> {
   RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
                                              const Arg2& rhs) const
   {
-    return lhs <= rhs;
+    return lhs < rhs;
   }
 };
 
