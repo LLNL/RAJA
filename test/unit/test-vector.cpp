@@ -22,6 +22,13 @@ using VectorTestTypes = ::testing::Types<
     RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
 #endif
 
+#ifdef __AVX2__
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
+#endif
+
     RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>,
     RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 5>,
     RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 1>,
@@ -146,6 +153,11 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 //    Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
 //  });
 
+
+  //
+  // Test inner loop SIMD
+  //
+
   RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, N),
       [=](size_t i){
 
@@ -162,6 +174,9 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   }
 
 
+  //
+  // Test outer loop SIMD
+  //
 
   RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
       [=](RAJA::VectorIndex<size_t, vector_t> i){
