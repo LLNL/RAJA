@@ -248,7 +248,10 @@ struct floating_point_limits<double> {
   {
     return -DBL_MAX;
   }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() { return DBL_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() 
+  { 
+     return DBL_MAX; 
+  }
 };
 
 template <>
