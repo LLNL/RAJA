@@ -88,6 +88,12 @@ namespace RAJA
           {}
 
 
+      RAJA_INLINE
+      element_type *get_pointer() const
+      {
+        return &m_data[m_linear_index];
+      }
+
       /*!
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to

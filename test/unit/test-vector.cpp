@@ -54,7 +54,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 8000;
+  size_t N = 100*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
@@ -93,6 +93,98 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(VectorTest, ForallVectorRef1d);
+TYPED_TEST_P(VectorTest, ForallVectorRef2d)
+{
+  using vector_t = TypeParam;
+
+  using element_t = typename vector_t::element_type;
+
+
+  size_t N = 128, M = 16*vector_t::s_num_elem;
+  // If we are not using fixed vectors, add some random number of elements
+  // to the array to test some postamble code generation.
+  if(!vector_t::s_is_fixed){
+    N += (10*drand48());
+    M += (10*drand48());
+  }
+
+  element_t *A = new element_t[N*M];
+  element_t *B = new element_t[N*M];
+  element_t *C = new element_t[N*M];
+  for(size_t i = 0;i < N*M; ++ i){
+    A[i] = (element_t)(drand48()*1000.0);
+    B[i] = (element_t)(drand48()*1000.0);
+    C[i] = 0.0;
+  }
+
+  RAJA::View<double, RAJA::Layout<2>> X(A, N, M);
+  RAJA::View<double, RAJA::Layout<2>> Y(B, N, M);
+  RAJA::View<double, RAJA::Layout<2>> Z(C, N, M);
+
+  using policy_t = RAJA::simd_vector_exec<vector_t>;
+
+  ASSERT_EQ(A, X(0, RAJA::VectorIndex<size_t, vector_t>(0, 1)).get_pointer());
+  ASSERT_EQ(A+M, X(1, RAJA::VectorIndex<size_t, vector_t>(0, 1)).get_pointer());
+  ASSERT_EQ(A+1, X(0, RAJA::VectorIndex<size_t, vector_t>(1, 1)).get_pointer());
+
+
+//      RAJA::KernelPolicy<
+//        RAJA::statement::For<0, RAJA::loop_exec,
+//          RAJA::statement::For<1, RAJA::simd_vector_exec<vector_t>,
+//            RAJA::statement::Lambda<0>
+//          >
+//        >
+//      >;
+
+
+//  RAJA::kernel<policy_t>(
+//      RAJA::make_tuple(RAJA::TypedRangeSegment<size_t>(0, N),
+//                       RAJA::TypedRangeSegment<size_t>(0, M)),
+//
+//      [=](size_t i, RAJA::VectorIndex<size_t, vector_t> j)
+//  {
+//    Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+//  });
+
+  RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, N),
+      [=](size_t i){
+
+    RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, M),
+        [=](RAJA::VectorIndex<size_t, vector_t> j){
+
+      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+    });
+
+  });
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+  }
+
+
+
+  RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
+      [=](RAJA::VectorIndex<size_t, vector_t> i){
+
+    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, M),
+        [=](size_t j){
+
+      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+    });
+
+  });
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+  }
+
+
+  delete[] A;
+  delete[] B;
+  delete[] C;
+}
+
+
+REGISTER_TYPED_TEST_CASE_P(VectorTest, ForallVectorRef1d, ForallVectorRef2d);
 
 INSTANTIATE_TYPED_TEST_CASE_P(SIMD, VectorTest, VectorTestTypes);
