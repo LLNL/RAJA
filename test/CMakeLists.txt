@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+include_directories(include)
+
 add_subdirectory(unit)
 
 add_subdirectory(old-tests)

@@ -9,3 +9,11 @@ raja_add_test(
   NAME test-iterators
   SOURCES test-iterators.cpp)
 
+raja_add_test(
+  NAME test-rajavec
+  SOURCES test-rajavec.cpp)
+
+raja_add_test(
+  NAME test-span
+  SOURCES test-span.cpp)
+

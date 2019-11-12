@@ -1,6 +1,6 @@
 *******************************************************************************
 
-RAJA: ................................, version 0.8.0
+RAJA: ................................, version 0.10.0
 
 Copyright (c) 2016-19, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
@@ -16,7 +16,8 @@ Rich Hornung (hornung1@llnl.gov)
 David Beckingsale (beckingsale1@llnl.gov)
 Jason Burmark (burmark1@llnl.gov)
 Robert Chen (chen59@llnl.gov)
-Matt Cordery (cordery1@llnl.gov)
+Matt Cordery (mcorder@us.ibm.com)
+Mike Davis (davis291@llnl.gov)
 Jeff Hammond (jeff.science@gmail.com)
 Holger Jones (jones19@llnl.gov)
 Jeff Keasler (keasler1@llnl.gov)
