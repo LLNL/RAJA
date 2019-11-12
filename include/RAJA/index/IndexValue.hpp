@@ -366,8 +366,8 @@ template<typename FROM>
 using make_signed_t = typename std::conditional < 
                                   std::is_floating_point<FROM>::value,
                                     std::common_type<FROM>,
-				    std::make_signed<FROM>
-			        >::type::type;
+                                    std::make_signed<FROM>
+                               >::type::type;
 
 }  // namespace RAJA
 
@@ -394,17 +394,17 @@ using make_signed_t = typename std::conditional <
 /*!
  * \brief Helper Macro to create new Index types.
  * \param TYPE the name of the type
+ * \param IDXT the index types value type
  * \param NAME a string literal to identify this index type
  */
 #define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
   class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
   {                                                                  \
-    using parent = ::RAJA::IndexValue<TYPE, IDXT>;                   \
-                                                                     \
   public:                                                            \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
-        : parent::IndexValue(v)                                      \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                              \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue() {}               \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)               \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue(v)                 \
     {                                                                \
     }                                                                \
     static inline std::string getName() { return NAME; }             \
