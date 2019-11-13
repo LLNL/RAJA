@@ -16,20 +16,6 @@ RAJA_INDEX_VALUE(TIL, "TIL");
 template<typename T>
 class ViewTest : public ::testing::Test {};
 
-using integralTypes = ::testing::Types<RAJA::Index_type,
-                                       char,
-                                       unsigned char,
-                                       short,
-                                       unsigned short,
-                                       int,
-                                       unsigned int,
-                                       long,
-                                       unsigned long,
-                                       long int,
-                                       unsigned long int,
-                                       long long,
-                                       unsigned long long>;
-
 using allTypes = ::testing::Types<RAJA::Index_type,
                                   char,
                                   unsigned char,
