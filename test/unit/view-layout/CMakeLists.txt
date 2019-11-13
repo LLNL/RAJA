@@ -8,3 +8,7 @@
 raja_add_test(
   NAME new-test-layout
   SOURCES new-test-layout.cpp)
+
+raja_add_test(
+  NAME new-test-view
+  SOURCES new-test-view.cpp)
