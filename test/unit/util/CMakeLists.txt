@@ -6,5 +6,13 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-float-limits
+  SOURCES test-float-limits.cpp)
+
+raja_add_test(
+  NAME test-integral-limits
+  SOURCES test-integral-limits.cpp)
+
+raja_add_test(
   NAME test-timer
   SOURCES test-timer.cpp)
