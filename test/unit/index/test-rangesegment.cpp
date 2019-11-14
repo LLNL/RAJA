@@ -5,11 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing unit tests for RangeSegment
+///
+
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
 template<typename T>
-class RangeSegmentTest : public ::testing::Test {};
+class RangeSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char, 
@@ -25,9 +29,9 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 long long,
 				 unsigned long long>;
 
-TYPED_TEST_CASE(RangeSegmentTest, MyTypes);
+TYPED_TEST_CASE(RangeSegmentUnitTest, MyTypes);
 
-TYPED_TEST(RangeSegmentTest, Constructors)
+TYPED_TEST(RangeSegmentUnitTest, Constructors)
 {
   RAJA::TypedRangeSegment<TypeParam> first(0, 10);
   RAJA::TypedRangeSegment<TypeParam> copied(first);
@@ -55,7 +59,7 @@ TYPED_TEST(RangeSegmentTest, Constructors)
   }
 }
 
-TYPED_TEST(RangeSegmentTest, Assignments)
+TYPED_TEST(RangeSegmentUnitTest, Assignments)
 {
   auto r = RAJA::TypedRangeSegment<TypeParam>(RAJA::Index_type(), 5);
   RAJA::TypedRangeSegment<TypeParam> seg1 = r;
@@ -64,7 +68,7 @@ TYPED_TEST(RangeSegmentTest, Assignments)
   ASSERT_EQ(seg2, seg1);
 }
 
-TYPED_TEST(RangeSegmentTest, Swaps)
+TYPED_TEST(RangeSegmentUnitTest, Swaps)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 5);
   RAJA::TypedRangeSegment<TypeParam> r2(1, 6);
@@ -75,7 +79,7 @@ TYPED_TEST(RangeSegmentTest, Swaps)
   ASSERT_EQ(r2, r3);
 }
 
-TYPED_TEST(RangeSegmentTest, Iterators)
+TYPED_TEST(RangeSegmentUnitTest, Iterators)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
   ASSERT_EQ(0, *r1.begin());
@@ -90,7 +94,7 @@ TYPED_TEST(RangeSegmentTest, Iterators)
   }
 }
 
-TYPED_TEST(RangeSegmentTest, Slices)
+TYPED_TEST(RangeSegmentUnitTest, Slices)
 {
   auto r = RAJA::TypedRangeSegment<TypeParam>(0, 125);
   
@@ -100,7 +104,7 @@ TYPED_TEST(RangeSegmentTest, Slices)
   ASSERT_EQ(110, *(s.end()));
 }
 
-TYPED_TEST(RangeSegmentTest, Equality)
+TYPED_TEST(RangeSegmentUnitTest, Equality)
 {
   auto r1 = RAJA::TypedRangeSegment<TypeParam>(0, 125);
   auto r2 = RAJA::TypedRangeSegment<TypeParam>(0, 125);

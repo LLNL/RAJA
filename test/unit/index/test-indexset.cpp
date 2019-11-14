@@ -6,40 +6,115 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA index set mechanics.
+/// Source file containing unit tests for IndexSet class.
 ///
 
 #include "gtest/gtest.h"
 
-#include "buildIndexSet.hpp"
-
 #include "RAJA/RAJA.hpp"
 
-class IndexSetTest : public ::testing::Test
+TEST(IndexSetUnitTest, Empty)
 {
-protected:
-  virtual void SetUp()
-  {
-    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      buildIndexSet(index_sets_, static_cast<IndexSetBuildMethod>(ibuild));
-    }
+  RAJA::TypedIndexSet<> is;
+  ASSERT_EQ(0, is.size());
+  ASSERT_EQ(is.begin(), is.end());
 
-    getIndices(is_indices, index_sets_[0]);
-  }
+  RAJA::TypedIndexSet<> is2;
+  ASSERT_EQ(is2.size(), is.size());
+  is.swap(is2);
+  ASSERT_EQ(is2.size(), is.size());
+}
 
-  RAJA::RAJAVec<RAJA::Index_type> is_indices;
-  UnitIndexSet index_sets_[NumBuildMethods];
-};
-
-TEST_F(IndexSetTest, IndexSetEquality)
+TEST(IndexSetUnitTest, ConstructAndCompare)
 {
-  for (unsigned ibuild = 1; ibuild < NumBuildMethods; ++ibuild) {
-    EXPECT_EQ(index_sets_[ibuild], index_sets_[1]);
-  }
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
+  using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
+  RIndexSetType isr;
+  ASSERT_EQ(1, isr.getNumTypes());
+  isr.push_back(RangeSegType(1, 3));
+  isr.push_front(RangeSegType(0, 1));
+  ASSERT_EQ(2, isr.size()); 
+  ASSERT_EQ(3, isr.getLength()); 
+  const RangeSegType& rs0 = isr.getSegment<const RangeSegType>(0);
+  const RangeSegType& rs1 = isr.getSegment<const RangeSegType>(1);
+  ASSERT_EQ(1, rs0.size());
+  ASSERT_EQ(2, rs1.size());
+  ASSERT_TRUE(isr.compareSegmentById(0, isr));
+  ASSERT_TRUE(isr.compareSegmentById(1, isr));
+
+  RIndexSetType isr2;
+  isr2.push_back(RangeSegType(0, 3));
+  ASSERT_TRUE(isr != isr2);
+  ASSERT_FALSE(isr == isr2);
+  ASSERT_NE(isr.size(), isr2.size());
+  ASSERT_EQ(isr.getLength(), isr2.getLength());
+
+  using ListSegType = RAJA::TypedListSegment<int>; 
+  using RLIndexSetType = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
+  RLIndexSetType isrl;
+  ASSERT_EQ(2, isrl.getNumTypes());
+  int idx[ ] = {0, 2, 4, 5};
+  ListSegType lseg(idx, 4); 
+  isrl.push_back(lseg);
+  isrl.push_back(RangeSegType(6, 8));
+  ASSERT_EQ(2, isrl.size()); 
+  ASSERT_EQ(6, isrl.getLength()); 
+  const ListSegType ls0 = isrl.getSegment<const ListSegType>(0);
+  const RangeSegType rs11 = isrl.getSegment<const RangeSegType>(1);
+  ASSERT_EQ(4, ls0.size());
+  ASSERT_EQ(2, rs11.size());
+
+  ASSERT_FALSE(isrl.compareSegmentById(0, isr));
+  ASSERT_FALSE(isr.compareSegmentById(1, isrl));
+
+  RIndexSetType isr3(isr);
+  RLIndexSetType isrl3 = isrl;
+  ASSERT_TRUE(isr == isr3);
+  ASSERT_FALSE(isrl != isrl3);
+  ASSERT_FALSE(isr3 == isrl3);
+  ASSERT_TRUE(isr3 != isrl3);
+}
+
+TEST(IndexSetUnitTest, Swap)
+{
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
+  using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
+  RIndexSetType iset1;
+  RangeSegType range(0, 10);
+  iset1.push_back(range);
+  iset1.push_back_nocopy(&range);
+  iset1.push_front(range);
+  iset1.push_front_nocopy(&range);
+  RIndexSetType iset2;
+
+  ASSERT_EQ(4, iset1.size());
+  ASSERT_EQ(40, iset1.getLength());
+  ASSERT_EQ(0, iset2.size());
+  ASSERT_EQ(0, iset2.getLength());
+
+  iset1.swap(iset2);
+
+  ASSERT_EQ(4, iset2.size());
+  ASSERT_EQ(40, iset2.getLength());
+  ASSERT_EQ(0, iset1.size());
+  ASSERT_EQ(0, iset1.getLength());
+}
+
+#if 0
+TEST(IndexSetUnitTest, CompareSegments)
+{
+}
+
+TEST(IndexSetUnitTest, Slice)
+{
+}
+
+TEST(IndexSetUnitTest, CUDAAccess)
+{
 }
 
 #if !defined(RAJA_COMPILER_XLC12)
-TEST_F(IndexSetTest, conditionalOperation_even_indices)
+TEST_F(IndexSetUnitTest, conditionalOperation_even_indices)
 {
 
   RAJA::RAJAVec<RAJA::Index_type> even_indices;
@@ -61,7 +136,7 @@ TEST_F(IndexSetTest, conditionalOperation_even_indices)
   }
 }
 
-TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
+TEST_F(IndexSetUnitTest, conditionalOperation_lt300_indices)
 {
   RAJA::RAJAVec<RAJA::Index_type> lt300_indices;
   getIndicesConditional(lt300_indices,
@@ -82,50 +157,4 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
   }
 }
 #endif  // !defined(RAJA_COMPILER_XLC12)
-
-TEST(IndexSet, empty)
-{
-  RAJA::TypedIndexSet<> is;
-  ASSERT_EQ(0, is.size());
-  ASSERT_EQ(is.begin(), is.end());
-  RAJA::TypedIndexSet<> is2;
-  ASSERT_EQ(is2.size(), is.size());
-  is.swap(is2);
-  ASSERT_EQ(is2.size(), is.size());
-}
-
-TEST(IndexSet, compare)
-{
-  using RangeIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment>;
-  RangeIndexSet is1, is2;
-  is1.push_back(RAJA::RangeSegment(0, 10));
-  is2.push_back(RAJA::RangeSegment(0, 5));
-  is2.push_back(RAJA::RangeSegment(5, 10));
-  ASSERT_TRUE(is1 != is2);
-  ASSERT_FALSE(is1 == is2);
-  ASSERT_NE(is1.size(), is2.size());
-  ASSERT_EQ(is1.getLength(), is2.getLength());
-}
-
-TEST(IndexSet, swap)
-{
-  UnitIndexSet iset1;
-  RAJA::RangeSegment range(0, 10);
-  iset1.push_back(range);
-  iset1.push_back_nocopy(&range);
-  iset1.push_front(range);
-  iset1.push_front_nocopy(&range);
-  UnitIndexSet iset2;
-
-  ASSERT_EQ(4l, iset1.size());
-  ASSERT_EQ(40lu, iset1.getLength());
-  ASSERT_EQ(0l, iset2.size());
-  ASSERT_EQ(0lu, iset2.getLength());
-
-  iset1.swap(iset2);
-
-  ASSERT_EQ(4l, iset2.size());
-  ASSERT_EQ(40lu, iset2.getLength());
-  ASSERT_EQ(0l, iset1.size());
-  ASSERT_EQ(0lu, iset1.getLength());
-}
+#endif
