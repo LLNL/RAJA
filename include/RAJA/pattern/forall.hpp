@@ -461,7 +461,7 @@ RAJA_INLINE void forall(Args&&... args)
   util::callPreLaunchPlugins(context); 
 
   RAJA_FORCEINLINE_RECURSIVE
-  forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
   util::callPostLaunchPlugins(context);
 }
