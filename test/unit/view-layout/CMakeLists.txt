@@ -12,3 +12,7 @@ raja_add_test(
 raja_add_test(
   NAME new-test-view
   SOURCES new-test-view.cpp)
+
+raja_add_test(
+  NAME single-test-view
+  SOURCES single-test-view.cpp)
