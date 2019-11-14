@@ -3,10 +3,8 @@
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-###############################################################################
+################################################################################
 
-include_directories(include)
-
-add_subdirectory(unit)
-
-add_subdirectory(integration)
+raja_add_test(
+  NAME test-plugin
+  SOURCES test_plugin.cpp plugin_for_test.cpp)
