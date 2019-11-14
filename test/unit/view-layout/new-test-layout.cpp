@@ -50,30 +50,28 @@ TYPED_TEST(LayoutTest, Constructors)
   ASSERT_EQ(y, TypeParam{2});
 }
 
-TYPED_TEST(OffsetLayoutTest, OffsetVsRegular)
+TEST(LayoutTest, OffsetVsRegular)
 {
-
-  const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> layout =
-    RAJA::make_permuted_layout({{6, 6}},
-                               RAJA::as_array<RAJA::Perm<1, 0>>::get());
-  //  const auto offset =
-  const RAJA::TypedOffsetLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> offset =
+  const auto layout =
+      RAJA::make_permuted_layout({{6, 6}},
+                                 RAJA::as_array<RAJA::Perm<1, 0>>::get());
+  const auto offset =
       RAJA::make_permuted_offset_layout({{0, 0}},
                                         {{5, 5}},
                                         RAJA::as_array<RAJA::PERM_JI>::get());
+
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
-  for (TypeParam j = 0; j < 6; ++j) {
-    for (TypeParam i = 0; i < 6; ++i) {
+  for (int j = 0; j < 6; ++j) {
+    for (int i = 0; i < 6; ++i) {
       ASSERT_EQ(offset(i, j), layout(i, j))
           << layout.strides[0] << layout.strides[1];
     }
   }
 }
 
-
-TYPED_TEST(OffsetLayoutTest, 2D_IJ)
+TEST(OffsetLayoutTest, 2D_IJ)
 {
   /*
    * Construct a 2D layout:
@@ -82,8 +80,7 @@ TYPED_TEST(OffsetLayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const RAJA::TypedOffsetLayout<TypeParam, RAJA::tuple<TypeParam,TypeParam>> layout =
-    RAJA::make_offset_layout<2>({{-1, -2}}, {{1, 0}});
+  const auto layout = RAJA::make_offset_layout<2>({{-1, -2}}, {{1, 0}});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -100,7 +97,6 @@ TYPED_TEST(OffsetLayoutTest, 2D_IJ)
    */
   ASSERT_EQ(8, layout(1, 0));
 }
-
 
 TYPED_TEST(LayoutTest, 2D_IJ)
 {
@@ -157,46 +153,34 @@ TYPED_TEST(LayoutTest, 2D_IJ)
 
 }
 
-
-TYPED_TEST(LayoutTest, 2D_JI)
+TEST(OffsetLayoutTest, 2D_JI)
 {
-  using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
+  using my_layout = RAJA::OffsetLayout<2>;
 
   /*
    * Construct a 2D layout:
    *
-   * I is stride 1
-   * J is stride 3
-   *
-   * Linear indices range from [0, 15)
-   *
+   * (-1, 0), (0, 0), (1, 0)
+   * (-1, -1), (0, -1), (1, -1)
+   * (-1, -2), (0, -2), (1, -2)
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}},
-                                 RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_offset_layout({{-1, -2}},
+                                        {{1, 0}},
+                                        RAJA::as_array<RAJA::PERM_JI>::get());
 
-  ASSERT_EQ(0, layout(0, 0));
+  /*
+   * First element, (-1, -2), should have index 0.
+   * things.
+   */
+  ASSERT_EQ(0, layout(-1, -2));
 
-  ASSERT_EQ(1, layout(1, 0));
-  ASSERT_EQ(3, layout(3, 0));
+  ASSERT_EQ(1, layout(-0, -2));
 
-  ASSERT_EQ(3, layout(0, 1));
-  ASSERT_EQ(15, layout(0, 5));
-
-  // Check that we get the identity (mod 15)
-  TypeParam pK = 0;
-  for (int k = 0; k < 20; ++k) {
-
-    // inverse map
-    TypeParam i, j;
-    layout.toIndices(k, i, j);
-
-    // forward map
-    TypeParam k2 = layout(i, j);
-
-    ASSERT_EQ(k % 15, k2);
-    pK++;
-  }
+  /*
+   * Last element, (1, 0), should have index 8.
+   */
+  ASSERT_EQ(8, layout(1, 0));
 }
 
 TYPED_TEST(LayoutTest, 2D_IJ_ProjJ)
@@ -250,10 +234,9 @@ TYPED_TEST(LayoutTest, 2D_IJ_ProjJ)
   }
 }
 
-TYPED_TEST(LayoutTest, 3D_KJI_ProjJ)
+TEST(LayoutTest, 3D_KJI_ProjJ)
 {
-  //using my_layout = RAJA::Layout<3>;
-  using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam, TypeParam>>;
+  using my_layout = RAJA::Layout<3>;
 
   /*
    * Construct a 3D projective layout:
@@ -289,14 +272,14 @@ TYPED_TEST(LayoutTest, 3D_KJI_ProjJ)
   ASSERT_EQ(12, layout(0, 0, 4));
 
   // Check that we get the identity (mod 21)
-  for (TypeParam x = 0; x < 40; ++x) {
+  for (int x = 0; x < 40; ++x) {
 
     // inverse map
-    TypeParam i, j, k;
+    int i, j, k;
     layout.toIndices(x, i, j, k);
 
     // forward map
-    TypeParam x2 = layout(i, j, k);
+    int x2 = layout(i, j, k);
 
     // check ident
     ASSERT_EQ(x % 21, x2);
@@ -341,14 +324,11 @@ TEST(LayoutTest, 2D_StrideOne)
 }
 
 
-TEST(LayoutTest, 2D_StaticLayout)
+TYPED_TEST(LayoutTest, 2D_StaticLayout)
 {
   RAJA::Layout<2> dynamic_layout(7, 5);
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,RAJA::tuple<int,int>,7,5>;
-  
-  //Breaks here...
-  static_layout::s_oper(0,0);
-#if 0
+  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,RAJA::list<int,int>,7,5>;
+
   // Check that we get the same layout
   for (int i = 0; i < 7; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -356,7 +336,7 @@ TEST(LayoutTest, 2D_StaticLayout)
       ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
     }
   }
-#endif
+
 }
 
 TEST(LayoutTest, 2D_PermutedStaticLayout)
