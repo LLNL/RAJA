@@ -154,11 +154,6 @@ TEST(IndexSetUnitTest, Slice)
   const RangeSegType rs41 = iset4.getSegment<const RangeSegType>(1);
   ASSERT_EQ(4, *rs41.begin());
   ASSERT_EQ(6, *rs41.end());
-
-#if 0 // segment interval?
-  std::cout << "begin = " << iset1.getSegmentIntervalBegin(0) << std::endl; 
-  std::cout << "end = " << iset1.getSegmentIntervalEnd(0) << std::endl; 
-#endif
 }
 
 TEST(IndexSetUnitTest, ConditionalEvenIndices)
