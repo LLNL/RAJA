@@ -17,14 +17,14 @@ template<typename T>
 class IndexValueUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
-				 int,
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 long long,
-				 unsigned long long>;
+                                 int,
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 long long,
+                                 unsigned long long>;
 
 TYPED_TEST_CASE(IndexValueUnitTest, MyTypes);
 
