@@ -344,8 +344,11 @@ TEST(LayoutTest, 2D_StrideOne)
 TEST(LayoutTest, 2D_StaticLayout)
 {
   RAJA::Layout<2> dynamic_layout(7, 5);
-  using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ,7,5>;
-
+  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,RAJA::tuple<int,int>,7,5>;
+  
+  //Breaks here...
+  static_layout::s_oper(0,0);
+#if 0
   // Check that we get the same layout
   for (int i = 0; i < 7; ++i) {
     for (int j = 0; j < 5; ++j) {
@@ -353,6 +356,7 @@ TEST(LayoutTest, 2D_StaticLayout)
       ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
     }
   }
+#endif
 }
 
 TEST(LayoutTest, 2D_PermutedStaticLayout)
