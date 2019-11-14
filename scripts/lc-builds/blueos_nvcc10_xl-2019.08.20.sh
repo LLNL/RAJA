@@ -7,21 +7,22 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-nvcc9.1-clang-coral-2018.08.08
+BUILD_SUFFIX=lc_blueos-nvcc10-xl_2019.08.20
 
-rm -rf build_${BUILD_SUFFIX} >/dev/null
+rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../host-configs/lc-builds/blueos/nvcc_clang_coral_2018_08_08.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.08.20/bin/xlc++_r \
+  -C ../host-configs/lc-builds/blueos/nvcc_xl_2019_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-9.1.85 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-9.1.85/bin/nvcc \
-  -DCUDA_ARCH=sm_60 \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.1.243 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc \
+  -DCUDA_ARCH=sm_70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

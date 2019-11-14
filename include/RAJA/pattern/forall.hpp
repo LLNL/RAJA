@@ -77,7 +77,8 @@
 #include "RAJA/pattern/detail/forall.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
 
 
 namespace RAJA
@@ -272,13 +273,15 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "an "
                 "TypedIndexSet policy by mistake?");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
+
 }
 
 /*!
@@ -298,13 +301,16 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
                 "an "
                 "TypedIndexSet policy by mistake?");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
+
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<IdxSet>(c),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
+
 }
 
 /*!
@@ -328,14 +334,16 @@ forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       icount,
                       std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
+
 }
 
 
@@ -355,13 +363,14 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
 }
 
 //
@@ -391,13 +400,15 @@ forall(ExecutionPolicy&& p,
        const IndexType len,
        LoopBody&& loop_body)
 {
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                TypedListSegment<ArrayIdxType>(idx, len, Unowned),
                std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
+
 }
 
 /*!
@@ -427,8 +438,8 @@ forall_Icount(ExecutionPolicy&& p,
               const OffsetType icount,
               LoopBody&& loop_body)
 {
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   // turn into an iterator
   forall_Icount(std::forward<ExecutionPolicy>(p),
@@ -436,7 +447,8 @@ forall_Icount(ExecutionPolicy&& p,
                 icount,
                 std::forward<LoopBody>(loop_body));
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
+
 }
 
 /*!
@@ -447,13 +459,13 @@ forall_Icount(ExecutionPolicy&& p,
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   RAJA_FORCEINLINE_RECURSIVE
-  forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
 }
 
 /*!
@@ -465,12 +477,12 @@ RAJA_INLINE void forall(Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall_Icount(Args&&... args)
 {
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context); 
 
   forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
 
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
 }
 
 namespace detail

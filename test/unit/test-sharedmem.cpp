@@ -644,25 +644,23 @@ using HIPTypes =
         RAJA::statement::For<3, RAJA::hip_block_y_loop,
           RAJA::statement::For<2, RAJA::hip_block_x_loop,
 
-           RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
+            RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
 
-             //Load data into shared memory
+              //Load data into shared memory
               RAJA::statement::For<1, RAJA::hip_thread_y_direct,
                 RAJA::statement::For<0, RAJA::hip_thread_x_direct,
-                  RAJA::statement::Lambda<0>
-                                   >
-                                 >,
+                  RAJA::statement::Lambda<0> > >,
               RAJA::statement::HipSyncThreads,
 
                 //Read data from shared memory
                 RAJA::statement::For<1, RAJA::hip_thread_y_direct,
                   RAJA::statement::For<0, RAJA::hip_thread_x_direct,
-                    RAJA::statement::Lambda<1> > >
-               ,RAJA::statement::HipSyncThreads
+                    RAJA::statement::Lambda<1> > >,
+                RAJA::statement::HipSyncThreads
               > //close shared memory scope
             >//for 2
         >//for 3
-        > //CudaKernel
+        > //HipKernel
       > //kernel policy
     > //list
   >; //types

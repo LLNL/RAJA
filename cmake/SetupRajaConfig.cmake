@@ -60,7 +60,6 @@ set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
 set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
 set(RAJA_ENABLE_HIP ${ENABLE_HIP})
-set(RAJA_ENABLE_CHAI ${ENABLE_CHAI})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
 
 # Configure a header file with all the variables we found.

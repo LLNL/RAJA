@@ -33,6 +33,8 @@
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/plugins.hpp"
+#include "RAJA/util/Registry.hpp"
 
 
 //
@@ -146,8 +148,6 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
-
-
 
 #include "RAJA/pattern/scan.hpp"
 

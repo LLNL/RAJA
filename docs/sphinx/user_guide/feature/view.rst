@@ -34,7 +34,7 @@ multi-dimensional indexing and different indexing layouts, RAJA provides
 ``RAJA::View`` and ``RAJA::Layout`` classes.
 
 ----------
-RAJA View
+RAJA Views
 ----------
 
 A ``RAJA::View`` object wraps a pointer and enables various indexing schemes
@@ -83,7 +83,7 @@ accesses array entries with unit stride. The loop::
 access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... * N :subscript:`(j+1)`.
 
 ------------
-RAJA Layout
+RAJA Layouts
 ------------
 
 ``RAJA::Layout`` objects support other indexing patterns with different
@@ -152,7 +152,7 @@ with offsets applied to the indices. For example,::
 
   double* C = new double[11]; 
 
-  RAJA::Layout<1> layout = RAJA::make_offset_layout<1>({{-5}}, {{5}});
+  RAJA::Layout<1> layout = RAJA::make_offset_layout<1>( {{-5}}, {{5}} );
 
   RAJA::View<double, RAJA::OffsetLayout<1> > Cview(C, layout);
 
@@ -223,28 +223,29 @@ indices are TIX, TIY,::
    RAJA_INDEX_VALUE(TIY, "TIY");
    RAJA_INDEX_VALUE(TIL, "TIL");
 
-   RAJA::TypedLayout<TIL, RAJA::tuple<TIX,TIY>> layout(10,10);
-   RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX,TIY>> offLayout(10,10);;
+   RAJA::TypedLayout<TIL, RAJA::tuple<TIX,TIY>> layout(10, 10);
+   RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX,TIY>> offLayout(10, 10);;
 
 Shifting Views
 ^^^^^^^^^^^^^^
 
-RAJA Views include a shift method enabling users to generate a new View with offsets
-to the base View layout. The base View may be templated with either a standard
-Layout, OffsetLayout and the typed variants. The generated View will be templated using
-an OffsetLayout or TypedOffsetLayout depending if the base view employed a typed layout.
-The example below illustrates shifting view indices by :math:`N`, ::
+RAJA Views include a shift method enabling users to generate a new View with 
+offsets to the base View layout. The base View may be templated with either a 
+standard Layout, OffsetLayout and the typed variants. The generated View will 
+use an OffsetLayout or TypedOffsetLayout depending on whether the base 
+view employed a typed layout. The example below illustrates shifting view 
+indices by :math:`N`, ::
 
   int N_r = 10;
   int N_c = 15;
-  int *a_ptr = new int[N_r*N_c];
+  int *a_ptr = new int[N_r * N_c];
 
-  RAJA::View<int, RAJA::Layout<DIM>> A(a_ptr,N_r,N_c);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N,N}});
+  RAJA::View<int, RAJA::Layout<DIM>> A(a_ptr, N_r, N_c);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> Ashift = A.shift( {{N,N}} );
 
-  for(int y=N; y<N_c+N; ++y) {
-    for(int x=N; x<N_r+N; ++x) {
-    Ashift(x,y) = ...
+  for(int y = N; y < N_c + N; ++y) {
+    for(int x = N; x < N_r + N; ++x) {
+      Ashift(x,y) = ...
     }
   }
 
@@ -286,13 +287,50 @@ will always return zero for each dimension with zero extent. For example::
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
+-------------------
+RAJA Atomic Views
+-------------------
+
+Any ``RAJA::View`` object can be made *atomic* so that any update to a 
+data entry accessed via the view can only be performed one thread (CPU or GPU)
+at a time. For example, suppose you have an integer array of length N, whose 
+element values are in the set {0, 1, 2, ..., M-1}, where M < N. You want to 
+build a histogram array of length M such that the i-th entry in the array is 
+the number of occurrences of the value i in the original array. Here is one 
+way to do this in parallel using OpenMP and a RAJA atomic view::
+
+  using EXEC_POL = RAJA::omp_parallel_for_exec;
+  using ATOMIC_POL = RAJA::omp_atomic
+
+  int* array = new double[N]; 
+  int* hist_dat = new double[M]; 
+
+  // initialize array entries to values in {0, 1, 2, ..., M-1}...
+  // initialize hist_dat to all zeros...
+
+  // Create a 1-dimensional view for histogram array
+  RAJA::View<int, RAJA::Layout<1> > hist_view(hist_dat, M); 
+
+  // Create an atomic view for histogram array
+  auto hist_atomic_view = RAJA::make_atomic_view<ATOMIC_POL>(hist_view);
+
+  RAJA::forall< EXEC_POL >(RAJA::RangeSegment(0, N), [=] (int i) {
+    hist_atomic_view( array[i] ) += 1;
+  } );
+
+Here, we create a one-dimensional view for the histogram data array. Then,
+we create an atomic view from that, which we use in the RAJA loop to 
+compute the histogram entries. Since the view is atomic, only one OpenMP
+thread can write to each entry at a time.
 
 ------------------------------------
 RAJA View/Layouts Bounds Checking
 ------------------------------------
 
 The RAJA CMake variable ``RAJA_ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
-runtime bounds checking for RAJA Views. Bounds checking is accomplished within
+runtime bounds checking for RAJA Views. This may be a useful debugging aid for
+users. When bounds checkoing is turned off (default case), there is no 
+additional run time overhead incurred. Bounds checking is accomplished within
 RAJA layouts (both offset and standard layouts). Upon an out of bounds error, 
-RAJA will abort the program and print the index which went out of bounds as
+RAJA will abort the program and print the index that is out of bounds as
 well the value of the index and bounds.

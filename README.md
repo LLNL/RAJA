@@ -54,9 +54,9 @@ To clone the repo, use the command:
     git clone --recursive https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
-compiler that supports the C++11 standard. The simplest way to build the code 
-is to do the following in the top-level RAJA directory (in-source builds 
-are not allowed!):
+compiler that supports the C++11 standard. The simplest way to build the code,
+using your system default compiler, is to run the following sequence of 
+commands in the top-level RAJA directory (in-source builds are not allowed!):
 
     mkdir build
     cd build
@@ -65,6 +65,9 @@ are not allowed!):
 
 More details about RAJA configuration options are located in the User 
 Documentation.
+
+We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
+submodule or as an installed library.
 
 User Documentation
 -------------------
@@ -164,12 +167,12 @@ follows. See the license included with each package for full details.
 
 PackageName: BLT  
 PackageHomePage: https://github.com/LLNL/blt
-PackageLicenseDeclared: BSD-3-Clause  
+PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: camp
-PackageHomePage: https://github.com/LLNL/camp  
+PackageHomePage: https://github.com/LLNL/camp
 PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: CUB  
 PackageHomePage: https://github.com/NVlabs/cub
-PackageLicenseDeclared: BSD-3-Clause  
+PackageLicenseDeclared: BSD-3-Clause

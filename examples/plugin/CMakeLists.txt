@@ -5,6 +5,6 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-raja_add_test(
-  NAME test-plugin
-  SOURCES test_plugin.cpp plugin_for_test.cpp)
+raja_add_executable(
+  NAME plugin-example
+  SOURCES test-plugin.cpp counter-plugin.cpp)

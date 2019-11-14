@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-xl_2019.02.07
+BUILD_SUFFIX=lc_blueos-clang-8.0.1
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -16,9 +16,9 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.02.07/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/xl_2019_X.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-8.0.1/bin/clang++ \
+  -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ..
+  .. 
