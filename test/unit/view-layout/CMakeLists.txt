@@ -10,9 +10,9 @@ raja_add_test(
   SOURCES new-test-layout.cpp)
 
 raja_add_test(
-  NAME new-test-view
-  SOURCES new-test-view.cpp)
+  NAME single-test-layout
+  SOURCES single-test-layout.cpp)
 
 raja_add_test(
-  NAME single-test-view
-  SOURCES single-test-view.cpp)
+  NAME new-test-view
+  SOURCES new-test-view.cpp)
