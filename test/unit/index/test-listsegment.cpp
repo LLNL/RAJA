@@ -5,12 +5,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing unit tests for ListSegment
+///
+
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 #include <vector>
 
 template<typename T>
-class ListSegmentTest : public ::testing::Test {};
+class ListSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char,
@@ -27,10 +31,10 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 double,
 				 float>;
 
-TYPED_TEST_CASE(ListSegmentTest, MyTypes);
+TYPED_TEST_CASE(ListSegmentUnitTest, MyTypes);
 
 
-TYPED_TEST(ListSegmentTest, Constructors)
+TYPED_TEST(ListSegmentUnitTest, Constructors)
 {
   std::vector<TypeParam> idx;
   for (TypeParam i = 0; i < 5; ++i){
@@ -51,7 +55,7 @@ TYPED_TEST(ListSegmentTest, Constructors)
   ASSERT_EQ(list1, container); 
 }
 
-TYPED_TEST(ListSegmentTest, Swaps)
+TYPED_TEST(ListSegmentUnitTest, Swaps)
 {
   std::vector<TypeParam> idx1;
   std::vector<TypeParam> idx2;
@@ -76,7 +80,7 @@ TYPED_TEST(ListSegmentTest, Swaps)
   ASSERT_EQ(list2, list4);
 }
 
-TYPED_TEST(ListSegmentTest, Equality)
+TYPED_TEST(ListSegmentUnitTest, Equality)
 {
   std::vector<TypeParam> idx1{5,3,1,2};
   RAJA::TypedListSegment<TypeParam> list( idx1 );
@@ -90,7 +94,7 @@ TYPED_TEST(ListSegmentTest, Equality)
   ASSERT_EQ(list.indicesEqual( &idx2.begin()[0], idx2.size() ), true);
 }
 
-TYPED_TEST(ListSegmentTest, Iterators)
+TYPED_TEST(ListSegmentUnitTest, Iterators)
 {
   std::vector<TypeParam> idx1{5,3,1,2};
   RAJA::TypedListSegment<TypeParam> list( idx1 );

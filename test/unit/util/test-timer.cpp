@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for basic timer operation
+/// Source file containing unit tests for Timer class
 ///
 
 #include "gtest/gtest.h"
@@ -21,7 +21,7 @@
 #include <thread>
 
 
-TEST(TimerTest, No1)
+TEST(TimerUnitTest, No1)
 {
   auto timer = RAJA::Timer();
 
@@ -45,7 +45,7 @@ TEST(TimerTest, No1)
 }
 
 
-TEST(TimerTest, No2)
+TEST(TimerUnitTest, No2)
 {
   RAJA::Timer timer;
 
@@ -65,7 +65,7 @@ TEST(TimerTest, No2)
 }
 
 
-TEST(TimerTest, No3)
+TEST(TimerUnitTest, No3)
 {
   RAJA::Timer timer;
 

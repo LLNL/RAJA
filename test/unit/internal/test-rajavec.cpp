@@ -6,13 +6,13 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJAVec
+/// Source file containing unit tests for RAJAVec
 ///
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
-TEST(RAJAVec, basic_test)
+TEST(RAJAVecUnitTest, basic_test)
 {
   RAJA::RAJAVec<int> a;
 

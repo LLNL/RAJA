@@ -21,11 +21,6 @@ raja_add_test(
   DEPENDS_ON bis)
 
 raja_add_test(
-  NAME test-indexset
-  SOURCES test-indexset.cpp
-  DEPENDS_ON bis)
-
-raja_add_test(
   NAME test-segments
   SOURCES test-segments.cpp)
 
