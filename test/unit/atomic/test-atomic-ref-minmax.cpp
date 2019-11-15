@@ -46,19 +46,19 @@ TEST( AtomicRefUnitTest, MinMaxTest )
   // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
   //testAtomicMinMax<int, RAJA::auto_atomic>();
   //testAtomicMinMax<int, RAJA::cuda_atomic>();
-  testAtomicMinMax<int, RAJA::omp_atomic>();
+  //testAtomicMinMax<int, RAJA::omp_atomic>();
   testAtomicMinMax<int, RAJA::builtin_atomic>();
   testAtomicMinMax<int, RAJA::seq_atomic>();
 
   //testAtomicMinMax<float, RAJA::auto_atomic>();
   //testAtomicMinMax<float, RAJA::cuda_atomic>();
-  testAtomicMinMax<float, RAJA::omp_atomic>();
+  //testAtomicMinMax<float, RAJA::omp_atomic>();
   testAtomicMinMax<float, RAJA::builtin_atomic>();
   testAtomicMinMax<float, RAJA::seq_atomic>();
 
   //testAtomicMinMax<double, RAJA::auto_atomic>();
   //testAtomicMinMax<double, RAJA::cuda_atomic>();
-  testAtomicMinMax<double, RAJA::omp_atomic>();
+  //testAtomicMinMax<double, RAJA::omp_atomic>();
   testAtomicMinMax<double, RAJA::builtin_atomic>();
   testAtomicMinMax<double, RAJA::seq_atomic>();
 }

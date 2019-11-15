@@ -55,19 +55,19 @@ TEST( AtomicRefUnitTest, ExchangesTest )
   // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
   //testAtomicExchanges<int, RAJA::auto_atomic>();
   //testAtomicExchanges<int, RAJA::cuda_atomic>();
-  testAtomicExchanges<int, RAJA::omp_atomic>();
+  //testAtomicExchanges<int, RAJA::omp_atomic>();
   testAtomicExchanges<int, RAJA::builtin_atomic>();
   testAtomicExchanges<int, RAJA::seq_atomic>();
 
   //testAtomicExchanges<float, RAJA::auto_atomic>();
   //testAtomicExchanges<float, RAJA::cuda_atomic>();
-  testAtomicExchanges<float, RAJA::omp_atomic>();
+  //testAtomicExchanges<float, RAJA::omp_atomic>();
   testAtomicExchanges<float, RAJA::builtin_atomic>();
   testAtomicExchanges<float, RAJA::seq_atomic>();
 
   //testAtomicExchanges<double, RAJA::auto_atomic>();
   //testAtomicExchanges<double, RAJA::cuda_atomic>();
-  testAtomicExchanges<double, RAJA::omp_atomic>();
+  //testAtomicExchanges<double, RAJA::omp_atomic>();
   testAtomicExchanges<double, RAJA::builtin_atomic>();
   testAtomicExchanges<double, RAJA::seq_atomic>();
 }

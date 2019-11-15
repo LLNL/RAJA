@@ -57,19 +57,19 @@ TEST( AtomicRefUnitTest, AddSubTest )
   // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
   //testAtomicAddSub<int, RAJA::auto_atomic>();
   //testAtomicAddSub<int, RAJA::cuda_atomic>();
-  testAtomicAddSub<int, RAJA::omp_atomic>();
+  //testAtomicAddSub<int, RAJA::omp_atomic>();
   testAtomicAddSub<int, RAJA::builtin_atomic>();
   testAtomicAddSub<int, RAJA::seq_atomic>();
 
   //testAtomicAddSub<float, RAJA::auto_atomic>();
   //testAtomicAddSub<float, RAJA::cuda_atomic>();
-  testAtomicAddSub<float, RAJA::omp_atomic>();
+  //testAtomicAddSub<float, RAJA::omp_atomic>();
   testAtomicAddSub<float, RAJA::builtin_atomic>();
   testAtomicAddSub<float, RAJA::seq_atomic>();
 
   //testAtomicAddSub<double, RAJA::auto_atomic>();
   //testAtomicAddSub<double, RAJA::cuda_atomic>();
-  testAtomicAddSub<double, RAJA::omp_atomic>();
+  //testAtomicAddSub<double, RAJA::omp_atomic>();
   testAtomicAddSub<double, RAJA::builtin_atomic>();
   testAtomicAddSub<double, RAJA::seq_atomic>();
 }

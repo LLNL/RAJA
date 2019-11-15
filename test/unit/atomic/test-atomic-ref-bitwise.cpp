@@ -54,7 +54,7 @@ TEST( AtomicRefUnitTest, BitwiseTest )
   // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
   //testAtomicBitwise<int, RAJA::auto_atomic>();
   //testAtomicBitwise<int, RAJA::cuda_atomic>();
-  testAtomicBitwise<unsigned int, RAJA::omp_atomic>();
+  //testAtomicBitwise<unsigned int, RAJA::omp_atomic>();
   testAtomicBitwise<unsigned int, RAJA::builtin_atomic>();
   testAtomicBitwise<unsigned int, RAJA::seq_atomic>();
 
