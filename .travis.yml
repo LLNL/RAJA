@@ -78,7 +78,7 @@ matrix:
   - compiler: hip
     env:
       - COMPILER=g++
-      - IMG=rocm
+      - IMG=hip
       - HCC_AMDGPU_TARGET=gfx900
       - CMAKE_EXTRA_FLAGS="-DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off"
       - DO_TEST=no
