@@ -6,14 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-atomic
-  SOURCES test-atomic.cpp)
-
-raja_add_test(
-  NAME test-atomic-ref
-  SOURCES test-atomic-ref.cpp)
-
-raja_add_test(
   NAME test-atomic-ref-constructor
   SOURCES test-atomic-ref-constructor.cpp)
 
@@ -36,7 +28,3 @@ raja_add_test(
 raja_add_test(
   NAME test-atomic-ref-bitwise
   SOURCES test-atomic-ref-bitwise.cpp)
-
-raja_add_test(
-  NAME test-atomic-ref-auto
-  SOURCES test-atomic-ref-auto.cpp)
