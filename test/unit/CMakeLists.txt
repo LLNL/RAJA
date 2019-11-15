@@ -8,3 +8,4 @@
 add_subdirectory(index)
 add_subdirectory(internal)
 add_subdirectory(util)
+add_subdirectory(atomic)
