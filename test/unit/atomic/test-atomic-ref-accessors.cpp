@@ -36,22 +36,32 @@ void testAtomicAccessors()
 
 TEST( AtomicRefUnitTest, AccessorsTest )
 {
-  testAtomicAccessors<int, RAJA::auto_atomic>();
-  testAtomicAccessors<int, RAJA::cuda_atomic>();
-  testAtomicAccessors<int, RAJA::omp_atomic>();
   testAtomicAccessors<int, RAJA::builtin_atomic>();
   testAtomicAccessors<int, RAJA::seq_atomic>();
 
-  testAtomicAccessors<float, RAJA::auto_atomic>();
-  testAtomicAccessors<float, RAJA::cuda_atomic>();
-  testAtomicAccessors<float, RAJA::omp_atomic>();
   testAtomicAccessors<float, RAJA::builtin_atomic>();
   testAtomicAccessors<float, RAJA::seq_atomic>();
 
-  testAtomicAccessors<double, RAJA::auto_atomic>();
-  testAtomicAccessors<double, RAJA::cuda_atomic>();
-  testAtomicAccessors<double, RAJA::omp_atomic>();
   testAtomicAccessors<double, RAJA::builtin_atomic>();
   testAtomicAccessors<double, RAJA::seq_atomic>();
+
+  #if defined(RAJA_ENABLE_OPENMP)
+  testAtomicAccessors<int, RAJA::omp_atomic>();
+
+  testAtomicAccessors<float, RAJA::omp_atomic>();
+
+  testAtomicAccessors<double, RAJA::omp_atomic>();
+  #endif
+
+  #if defined(RAJA_ENABLE_CUDA)
+  testAtomicAccessors<int, RAJA::auto_atomic>();
+  testAtomicAccessors<int, RAJA::cuda_atomic>();
+
+  testAtomicAccessors<float, RAJA::auto_atomic>();
+  testAtomicAccessors<float, RAJA::cuda_atomic>();
+
+  testAtomicAccessors<double, RAJA::auto_atomic>();
+  testAtomicAccessors<double, RAJA::cuda_atomic>();
+  #endif
 }
 

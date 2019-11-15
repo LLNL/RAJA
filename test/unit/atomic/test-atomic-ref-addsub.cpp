@@ -32,8 +32,8 @@ void testAtomicAddSub()
   T val4 = --test1;
   T val5 = test1--;
   ASSERT_EQ( test1, (T)0 );
-  ASSERT_EQ( val2, (T)1 );
-  ASSERT_EQ( val3, (T)1 );
+  ASSERT_EQ( val4, (T)1 );
+  ASSERT_EQ( val5, (T)1 );
 
   // test add/sub ops
   test1 += (T)23;
