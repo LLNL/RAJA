@@ -31,19 +31,22 @@ void testAtomicBitwise()
   ASSERT_EQ( result, (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
-  test1 &= (T)0;
+  result = (test1 &= (T)0);
   ASSERT_EQ( test1, (T)0 );
+  ASSERT_EQ( result, (T)0 );
 
-  test1 |= (T)1;
+  result = (test1 |= (T)1);
   ASSERT_EQ( test1, (T)1 );
+  ASSERT_EQ( result, (T)1 );
 
   // test xor
   result = test1.fetch_xor( (T)1 );
   ASSERT_EQ( result, (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  test1 ^= (T)1;
+  result = (test1 ^= (T)1);
   ASSERT_EQ( test1, (T)1 );
+  ASSERT_EQ( result, (T)1 );
 }
 
 TEST( AtomicRefUnitTest, BitwiseTest )

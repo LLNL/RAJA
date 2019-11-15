@@ -36,16 +36,20 @@ void testAtomicAddSub()
   ASSERT_EQ( val5, (T)1 );
 
   // test add/sub ops
-  test1 += (T)23;
+  T val6 = (test1 += (T)23);
   ASSERT_EQ( test1, (T)23 );
-  test1 -= (T)22;
+  ASSERT_EQ( val6, (T)23 );
+  T val7 = (test1 -= (T)22);
   ASSERT_EQ( test1, (T)1 );
+  ASSERT_EQ( val7, (T)1 );
 
   // test add/sub methods
-  test1.fetch_add( (T)23 );
+  T val8 = test1.fetch_add( (T)23 );
   ASSERT_EQ( test1, (T)24 );
-  test1.fetch_sub( (T)23 );
+  ASSERT_EQ( val8, (T)1 );
+  T val9 = test1.fetch_sub( (T)23 );
   ASSERT_EQ( test1, (T)1 );
+  ASSERT_EQ( val9, (T)24 );
 }
 
 TEST( AtomicRefUnitTest, AddSubTest )
