@@ -134,6 +134,116 @@ void modulus_test()
 }
 
 template<typename T>
+void logical_and_test()
+{
+  using And = RAJA::operators::logical_and<T>;
+
+  And a;
+  T i0 = static_cast<T>(0);
+  T i1 = static_cast<T>(1);
+  T i2 = static_cast<T>(2);
+  T j0 = static_cast<T>(0);
+  T j1 = static_cast<T>(1);
+  T j2 = static_cast<T>(2);
+  ASSERT_FALSE(a(i0,j0));
+  ASSERT_FALSE(a(i0,j1));
+  ASSERT_FALSE(a(i1,j0));
+  ASSERT_TRUE(a(i1,j1));
+  ASSERT_TRUE(a(i2,j2));
+  if (std::is_signed<T>::value) {
+    i1 = static_cast<T>(-1);
+    j1 = static_cast<T>(-1);
+    ASSERT_FALSE(a(i0,j1));
+    ASSERT_FALSE(a(i1,j0));
+    ASSERT_TRUE(a(i1,j1));
+  }
+}
+
+template<typename T>
+void logical_or_test()
+{
+  using Or = RAJA::operators::logical_or<T>;
+
+  Or o;
+  T i0 = static_cast<T>(0);
+  T i1 = static_cast<T>(1);
+  T i2 = static_cast<T>(2);
+  T j0 = static_cast<T>(0);
+  T j1 = static_cast<T>(1);
+  T j2 = static_cast<T>(2);
+  ASSERT_FALSE(o(i0,j0));
+  ASSERT_TRUE(o(i0,j1));
+  ASSERT_TRUE(o(i1,j0));
+  ASSERT_TRUE(o(i1,j1));
+  ASSERT_TRUE(o(i2,j2));
+  if (std::is_signed<T>::value) {
+    i1 = static_cast<T>(-1);
+    j1 = static_cast<T>(-1);
+    ASSERT_TRUE(o(i0,j1));
+    ASSERT_TRUE(o(i1,j0));
+    ASSERT_TRUE(o(i1,j1));
+  }
+}
+
+template<typename T>
+void logical_not_test()
+{
+  using Not = RAJA::operators::logical_not<T>;
+
+  Not n;
+  T i0 = static_cast<T>(0);
+  T i1 = static_cast<T>(1);
+  ASSERT_FALSE(n(i1));
+  ASSERT_TRUE(n(i0));
+  if (std::is_signed<T>::value) {
+    i1 = static_cast<T>(-1);
+    ASSERT_FALSE(n(i1));
+  }
+}
+
+template<typename T>
+void bit_or_test()
+{
+  using Or = RAJA::operators::bit_or<T>;
+
+  Or o;
+  T i = static_cast<T>(0010);
+  T j = static_cast<T>(0001);
+  T k = static_cast<T>(0111);
+  ASSERT_EQ(o(i,j), 0011);
+  ASSERT_EQ(o(i,k), 0111);
+  ASSERT_EQ(o(j,k), 0111);
+}
+
+template<typename T>
+void bit_and_test()
+{
+  using And = RAJA::operators::bit_and<T>;
+
+  And a;
+  T i = static_cast<T>(0010);
+  T j = static_cast<T>(0001);
+  T k = static_cast<T>(0111);
+  ASSERT_EQ(a(i,j), 0000);
+  ASSERT_EQ(a(i,k), 0010);
+  ASSERT_EQ(a(j,k), 0001);
+}
+
+template<typename T>
+void bit_xor_test()
+{
+  using Xor = RAJA::operators::bit_xor<T>;
+
+  Xor x;
+  T i = static_cast<T>(0010);
+  T j = static_cast<T>(0001);
+  T k = static_cast<T>(0111);
+  ASSERT_EQ(x(i,j), 0011);
+  ASSERT_EQ(x(i,k), 0101);
+  ASSERT_EQ(x(j,k), 0110);
+}
+
+template<typename T>
 void maximum_test()
 {
   using Max = RAJA::operators::maximum<T>;
@@ -297,13 +407,18 @@ TYPED_TEST(OperatorsFloatingUnitTest, divides) { divides_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, modulus) { modulus_test<TypeParam>(); }
 
-//TYPED_TEST(OperatorsIntegralUnitTest, logical_and) { logical_and<TypeParam>(); }
-//TYPED_TEST(OperatorsIntegralUnitTest, logical_or) { logical_or<TypeParam>(); }
-//TYPED_TEST(OperatorsIntegralUnitTest, logical_not) { logical_not<TypeParam>(); }
-//
-//TYPED_TEST(OperatorsIntegralUnitTest, bit_or) { bit_or<TypeParam>(); }
-//TYPED_TEST(OperatorsIntegralUnitTest, bit_and) { bit_and<TypeParam>(); }
-//TYPED_TEST(OperatorsIntegralUnitTest, bit_xor) { bit_xor<TypeParam>(); }
+TYPED_TEST(OperatorsIntegralUnitTest, logical_and) { logical_and_test<TypeParam>(); }
+TYPED_TEST(OperatorsFloatingUnitTest, logical_and) { logical_and_test<TypeParam>(); }
+
+TYPED_TEST(OperatorsIntegralUnitTest, logical_or) { logical_or_test<TypeParam>(); }
+TYPED_TEST(OperatorsFloatingUnitTest, logical_or) { logical_or_test<TypeParam>(); }
+
+TYPED_TEST(OperatorsIntegralUnitTest, logical_not) { logical_not_test<TypeParam>(); }
+TYPED_TEST(OperatorsFloatingUnitTest, logical_not) { logical_not_test<TypeParam>(); }
+
+TYPED_TEST(OperatorsIntegralUnitTest, bit_or) { bit_or_test<TypeParam>(); }
+TYPED_TEST(OperatorsIntegralUnitTest, bit_and) { bit_and_test<TypeParam>(); }
+TYPED_TEST(OperatorsIntegralUnitTest, bit_xor) { bit_xor_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, minimum) { minimum_test<TypeParam>(); }
 TYPED_TEST(OperatorsFloatingUnitTest, minimum) { minimum_test<TypeParam>(); }
@@ -328,4 +443,3 @@ TYPED_TEST(OperatorsFloatingUnitTest, greater_eq) { greater_eq_test<TypeParam>()
 
 TYPED_TEST(OperatorsIntegralUnitTest, less_eq) { less_eq_test<TypeParam>(); }
 TYPED_TEST(OperatorsFloatingUnitTest, less_eq) { less_eq_test<TypeParam>(); }
-
