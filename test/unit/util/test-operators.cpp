@@ -12,31 +12,39 @@
 #include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
 
+#ifndef INTEGRAL_TYPES
+  #define INTEGRAL_TYPES \
+    RAJA::Index_type,    \
+    char,                \
+    unsigned char,       \
+    short,               \
+    unsigned short,      \
+    int,                 \
+    unsigned int,        \
+    long,                \
+    unsigned long,       \
+    long int,            \
+    unsigned long int,   \
+    long long,           \
+    unsigned long long
+#endif // INTEGRAL_TYPES
+
+#ifndef FLOATING_TYPES
+  #define FLOATING_TYPES \
+    float,               \
+    double
+#endif // FLOATING_TYPES
+
 template<typename T>
 class OperatorsUnitTest : public ::testing::Test {};
 template<typename T>
 class OperatorsIntegralUnitTest : public ::testing::Test {};
-template<typename T>
-class OperatorsFloatingUnitTest : public ::testing::Test {};
 
-using MyIntegralTypes = ::testing::Types<RAJA::Index_type,
-                                         char,
-                                         unsigned char,
-                                         short,
-                                         unsigned short,
-                                         int,
-                                         unsigned int,
-                                         long,
-                                         unsigned long,
-                                         long int,
-                                         unsigned long int,
-                                         long long,
-                                         unsigned long long>;
+using MyTypes = ::testing::Types<INTEGRAL_TYPES, FLOATING_TYPES>;
+using MyIntegralTypes = ::testing::Types<INTEGRAL_TYPES>;
 
-using MyFloatTypes = ::testing::Types<float, double>;
-
+TYPED_TEST_CASE(OperatorsUnitTest, MyTypes);
 TYPED_TEST_CASE(OperatorsIntegralUnitTest, MyIntegralTypes);
-TYPED_TEST_CASE(OperatorsFloatingUnitTest, MyFloatTypes);
 
 template<typename T>
 void plus_test()
@@ -393,53 +401,84 @@ void less_eq_test()
   }
 }
 
-TYPED_TEST(OperatorsIntegralUnitTest, plus) { plus_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, plus) { plus_test<TypeParam>(); }
+template<typename T>
+void identity_test()
+{
+  using Ident = RAJA::operators::identity<T>;
 
-TYPED_TEST(OperatorsIntegralUnitTest, minus) { minus_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, minus) { minus_test<TypeParam>(); }
+  Ident id;
+  T i = static_cast<T>(0);
+  T j = static_cast<T>(1);
+  ASSERT_EQ(id(i), 0);
+  ASSERT_EQ(id(j), 1);
 
-TYPED_TEST(OperatorsIntegralUnitTest, multiplies) { multiplies_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, multiplies) { multiplies_test<TypeParam>(); }
+  if (std::is_signed<T>::value) {
+    j = static_cast<T>(-1);
+    ASSERT_EQ(id(j), -1);
+  }
+}
 
-TYPED_TEST(OperatorsIntegralUnitTest, divides) { divides_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, divides) { divides_test<TypeParam>(); }
+template<typename T>
+void project1st_test()
+{
+  using Proj1 = RAJA::operators::project1st<T, T>;
+
+  Proj1 p;
+  T i = static_cast<T>(0);
+  T j = static_cast<T>(1);
+  ASSERT_EQ(p(i,j), 0);
+  ASSERT_EQ(p(j,i), 1);
+
+  if (std::is_signed<T>::value) {
+    j = static_cast<T>(-1);
+    ASSERT_EQ(p(i,j), 0);
+    ASSERT_EQ(p(j,i), -1);
+  }
+}
+
+template<typename T>
+void project2nd_test()
+{
+  using Proj2 = RAJA::operators::project2nd<T, T>;
+
+  Proj2 p;
+  T i = static_cast<T>(0);
+  T j = static_cast<T>(1);
+  ASSERT_EQ(p(i,j), 1);
+  ASSERT_EQ(p(j,i), 0);
+
+  if (std::is_signed<T>::value) {
+    j = static_cast<T>(-1);
+    ASSERT_EQ(p(i,j), -1);
+    ASSERT_EQ(p(j,i), 0);
+  }
+}
+
+TYPED_TEST(OperatorsUnitTest, plus) { plus_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, minus) { minus_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, multiplies) { multiplies_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, divides) { divides_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, modulus) { modulus_test<TypeParam>(); }
 
-TYPED_TEST(OperatorsIntegralUnitTest, logical_and) { logical_and_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, logical_and) { logical_and_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, logical_or) { logical_or_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, logical_or) { logical_or_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, logical_not) { logical_not_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, logical_not) { logical_not_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, logical_and) { logical_and_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, logical_or) { logical_or_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, logical_not) { logical_not_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, bit_or) { bit_or_test<TypeParam>(); }
 TYPED_TEST(OperatorsIntegralUnitTest, bit_and) { bit_and_test<TypeParam>(); }
 TYPED_TEST(OperatorsIntegralUnitTest, bit_xor) { bit_xor_test<TypeParam>(); }
 
-TYPED_TEST(OperatorsIntegralUnitTest, minimum) { minimum_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, minimum) { minimum_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, minimum) { minimum_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, maximum) { maximum_test<TypeParam>(); }
 
-TYPED_TEST(OperatorsIntegralUnitTest, maximum) { maximum_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, maximum) { maximum_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, equal_to) { equal_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, not_equal_to) { not_equal_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, greater) { greater_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, less) { less_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, greater_eq) { greater_eq_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, less_eq) { less_eq_test<TypeParam>(); }
 
-TYPED_TEST(OperatorsIntegralUnitTest, equal_to) { equal_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, equal_to) { equal_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, not_equal_to) { not_equal_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, not_equal_to) { not_equal_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, greater) { greater_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, greater) { greater_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, less) { less_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, less) { less_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, greater_eq) { greater_eq_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, greater_eq) { greater_eq_test<TypeParam>(); }
-
-TYPED_TEST(OperatorsIntegralUnitTest, less_eq) { less_eq_test<TypeParam>(); }
-TYPED_TEST(OperatorsFloatingUnitTest, less_eq) { less_eq_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, identity) { identity_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, project1st) { project1st_test<TypeParam>(); }
+TYPED_TEST(OperatorsUnitTest, project2nd) { project2nd_test<TypeParam>(); }
