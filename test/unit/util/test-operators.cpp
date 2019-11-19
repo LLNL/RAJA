@@ -134,6 +134,42 @@ void modulus_test()
 }
 
 template<typename T>
+void maximum_test()
+{
+  using Max = RAJA::operators::maximum<T>;
+
+  Max m;
+  T i = static_cast<T>(5);
+  T j = static_cast<T>(2);
+  ASSERT_EQ(m(i,j), i);
+
+  if (std::is_signed<T>::value) {
+    i = static_cast<T>(-5);
+    j = static_cast<T>(-2);
+    ASSERT_EQ(m(i,j), j);
+  }
+}
+
+
+template<typename T>
+void minimum_test()
+{
+  using Min = RAJA::operators::minimum<T>;
+
+  Min m;
+  T i = static_cast<T>(5);
+  T j = static_cast<T>(2);
+  ASSERT_EQ(m(i,j), j);
+
+  if (std::is_signed<T>::value) {
+    i = static_cast<T>(-5);
+    j = static_cast<T>(-2);
+    ASSERT_EQ(m(i,j), i);
+  }
+}
+
+
+template<typename T>
 void equal_test()
 {
   using Eq = RAJA::operators::equal_to<T>;
@@ -260,6 +296,20 @@ TYPED_TEST(OperatorsIntegralUnitTest, divides) { divides_test<TypeParam>(); }
 TYPED_TEST(OperatorsFloatingUnitTest, divides) { divides_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, modulus) { modulus_test<TypeParam>(); }
+
+//TYPED_TEST(OperatorsIntegralUnitTest, logical_and) { logical_and<TypeParam>(); }
+//TYPED_TEST(OperatorsIntegralUnitTest, logical_or) { logical_or<TypeParam>(); }
+//TYPED_TEST(OperatorsIntegralUnitTest, logical_not) { logical_not<TypeParam>(); }
+//
+//TYPED_TEST(OperatorsIntegralUnitTest, bit_or) { bit_or<TypeParam>(); }
+//TYPED_TEST(OperatorsIntegralUnitTest, bit_and) { bit_and<TypeParam>(); }
+//TYPED_TEST(OperatorsIntegralUnitTest, bit_xor) { bit_xor<TypeParam>(); }
+
+TYPED_TEST(OperatorsIntegralUnitTest, minimum) { minimum_test<TypeParam>(); }
+TYPED_TEST(OperatorsFloatingUnitTest, minimum) { minimum_test<TypeParam>(); }
+
+TYPED_TEST(OperatorsIntegralUnitTest, maximum) { maximum_test<TypeParam>(); }
+TYPED_TEST(OperatorsFloatingUnitTest, maximum) { maximum_test<TypeParam>(); }
 
 TYPED_TEST(OperatorsIntegralUnitTest, equal_to) { equal_test<TypeParam>(); }
 TYPED_TEST(OperatorsFloatingUnitTest, equal_to) { equal_test<TypeParam>(); }
