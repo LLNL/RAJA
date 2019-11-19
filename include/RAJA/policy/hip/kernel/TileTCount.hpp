@@ -214,7 +214,6 @@ struct HipStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
     auto t0 = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
     auto t_stride = get_hip_dim<ThreadDim>(dim3(blockDim.x,blockDim.y,blockDim.z));
     auto i0 = t0 * chunk_size;
