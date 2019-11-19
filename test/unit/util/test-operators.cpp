@@ -369,6 +369,7 @@ void greater_eq_test()
   T i2 = static_cast<T>(5);
   T j = static_cast<T>(4);
   ASSERT_TRUE(g(i,j));
+  ASSERT_TRUE(g(i,i2));
   ASSERT_FALSE(g(j,i));
 
   if (std::is_signed<T>::value) {
@@ -376,6 +377,7 @@ void greater_eq_test()
     i2 = static_cast<T>(-4);
     j = static_cast<T>(-5);
     ASSERT_TRUE(g(i,j));
+    ASSERT_TRUE(g(i,i2));
     ASSERT_FALSE(g(j,i));
   }
 }
@@ -390,6 +392,7 @@ void less_eq_test()
   T i2 = static_cast<T>(4);
   T j = static_cast<T>(5);
   ASSERT_TRUE(l(i,j));
+  ASSERT_TRUE(l(i,i2));
   ASSERT_FALSE(l(j,i));
 
   if (std::is_signed<T>::value) {
@@ -397,6 +400,7 @@ void less_eq_test()
     i2 = static_cast<T>(-5);
     j = static_cast<T>(-4);
     ASSERT_TRUE(l(i,j));
+    ASSERT_TRUE(l(i,i2));
     ASSERT_FALSE(l(j,i));
   }
 }
