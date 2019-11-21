@@ -10,16 +10,11 @@ env:
   - DO_TEST=yes
 matrix:
   include:
-  - compiler: gcc49
-    env:
-    - COMPILER=g++
-    - IMG=gcc49
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DRAJA_DEPRECATED_TESTS=On"
   - compiler: gcc6
     env:
     - COMPILER=g++
     - IMG=gcc6
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DRAJA_DEPRECATED_TESTS=On"
   - compiler: gcc7
     env:
     - COMPILER=g++
@@ -51,10 +46,10 @@ matrix:
     - IMG=nvcc9
     - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
     - DO_TEST=no
-  - compiler: gcc-4.9-debug
+  - compiler: gcc-8-debug
     env:
     - COMPILER=g++
-    - IMG=gcc49
+    - IMG=gcc8
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_COVERAGE=On -DENABLE_TBB=On"
   - compiler: clang-6-debug
     env:
