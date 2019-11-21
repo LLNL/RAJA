@@ -10,14 +10,15 @@ set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 include(CheckCXXCompilerFlag)
 if(RAJA_CXX_STANDARD_FLAG MATCHES default)
   if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
-    #TODO set BLT_CXX_STANDARD
+    #TODO set BLT_CXX_STD
+    #NOTE @trws: did not do this as it does not behave correctly
     set(CMAKE_CXX_STANDARD 17)
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
     set(CMAKE_CXX_STANDARD 14)
   elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
     set(CMAKE_CXX_STANDARD 14)
   else() #cmake has no idea what to do, do it ourselves...
-    foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
+    foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y")
       CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
       if(COMPILER_SUPPORTS_${flag_var})
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
@@ -69,7 +70,7 @@ if ( MSVC )
 endif()
 
 if (ENABLE_CUDA)
-  set(CMAKE_CUDA_STANDARD 11)
+  set(CMAKE_CUDA_STANDARD 14)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda --expt-relaxed-constexpr")
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
