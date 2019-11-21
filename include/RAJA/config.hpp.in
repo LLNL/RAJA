@@ -31,7 +31,13 @@
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
 
-static_assert(__cplusplus >= 201402L,
+#if defined(_MSVC_LANG)
+#define RAJA_CXX_VER _MSVC_LANG
+#else
+#define RAJA_CXX_VER __cplusplus
+#endif
+
+static_assert(RAJA_CXX_VER >= 201402L,
               "RAJA requires at least basic C++14 to operate correctly, your "
               "compiler and/or standard library does not claim support for "
               "C++14");
