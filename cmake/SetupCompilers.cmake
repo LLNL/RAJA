@@ -9,14 +9,14 @@ set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 
 include(CheckCXXCompilerFlag)
 if(RAJA_CXX_STANDARD_FLAG MATCHES default)
-  if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+  if("cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     #TODO set BLT_CXX_STD
     #NOTE @trws: did not do this as it does not behave correctly
     set(CMAKE_CXX_STANDARD 17)
-  elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  elseif("cxx_std_14" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     set(CMAKE_CXX_STANDARD 14)
-  elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
   else() #cmake has no idea what to do, do it ourselves...
     foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y")
       CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})

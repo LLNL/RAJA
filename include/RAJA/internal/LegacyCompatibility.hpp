@@ -20,6 +20,7 @@
 
 #include "RAJA/config.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <iostream>
@@ -30,28 +31,18 @@
 
 #include "RAJA/util/macros.hpp"
 
+#if (!defined(CAMP_HAS_FOLD_EXPRESSIONS)) && \
+    defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603
+#define CAMP_HAS_FOLD_EXPRESSIONS 1
+#endif
+
+
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(__cplusplus >= 201103L,
               "C++ standards below 2011 are not "
               "supported" RAJA_STRINGIFY_HELPER(__cplusplus));
 #endif
 
-#if __cplusplus > 201400L
-#define RAJA_CXX14_CONSTEXPR constexpr
-#else
-#define RAJA_CXX14_CONSTEXPR
-#endif
-
-// #if defined(RAJA_USE_CUDA)
-// #include <thrust/tuple.h>
-// namespace VarOps {
-//     using thrust::tuple;
-//     using thrust::tuple_element;
-//     using thrust::get;
-//     using thrust::tuple_size;
-//     using thrust::make_tuple;
-// }
-// #else
 #include <array>
 #include <tuple>
 namespace VarOps
@@ -73,36 +64,11 @@ namespace VarOps
 // Forward
 
 // FoldL
-template <typename Op, typename... Rest>
-struct foldl_impl;
-
-template <typename Op, typename Arg1>
-struct foldl_impl<Op, Arg1> {
-  using Ret = Arg1;
-};
-
-template <typename Op, typename Arg1, typename Arg2>
-struct foldl_impl<Op, Arg1, Arg2> {
-  using Ret = typename std::result_of<Op(Arg1, Arg2)>::type;
-};
-
-template <typename Op,
-          typename Arg1,
-          typename Arg2,
-          typename Arg3,
-          typename... Rest>
-struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret = typename foldl_impl<
-      Op,
-      typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
-                                 Arg3)>::type,
-      Rest...>::Ret;
-};
 
 template <typename Op, typename Arg1>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
     Op&& RAJA_UNUSED_ARG(operation),
-    Arg1&& arg) -> typename foldl_impl<Op, Arg1>::Ret
+    Arg1&& arg)
 {
   return camp::forward<Arg1>(arg);
 }
@@ -110,8 +76,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
 template <typename Op, typename Arg1, typename Arg2>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Arg1&& arg1,
-                                                  Arg2&& arg2) ->
-    typename foldl_impl<Op, Arg1, Arg2>::Ret
+                                                  Arg2&& arg2)
 {
   return camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
                                       camp::forward<Arg2>(arg2));
@@ -126,8 +91,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Arg1&& arg1,
                                                   Arg2&& arg2,
                                                   Arg3&& arg3,
-                                                  Rest&&... rest) ->
-    typename foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>::Ret
+                                                  Rest&&... rest)
 {
   return foldl(camp::forward<Op>(operation),
                camp::forward<Op>(operation)(
@@ -142,42 +106,38 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
 {
+#ifdef CAMP_HAS_FOLD_EXPRESSIONS
+  return (... + args);
+#else
   return foldl(RAJA::operators::plus<Result>(), args...);
+#endif
 }
 
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
 {
-  return foldl(RAJA::operators::maximum<Result>(), args...);
+  return std::max({args...});
 }
 
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result min(Args... args)
 {
-  return foldl(RAJA::operators::minimum<Result>(), args...);
+  return std::min({args...});
 }
 
-// template<typename Result, size_t N>
-// struct product_first_n;
-//
-// template<typename Result>
-// struct product_first_n<Result, 0>{
-//     static Result value = 1;
-//     template<typename ... Args>
-//     constexpr product_first_n(Args...args) : value{1} { }
-// };
-//
-// template<typename Result, size_t N>
-// struct product_first_n{
-//     static Result value = product_first_n<Result, N-1>(args...)::value;
-//     template<typename FirstArg, typename ... Args>
-//     constexpr product_first_n(FirstArg arg1, Args...args)
-//     : value() { }
-// };
+template <typename Result, typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result product(Args... args)
+{
+#ifdef CAMP_HAS_FOLD_EXPRESSIONS
+  return (... * args);
+#else
+  return foldl(RAJA::operators::multiplies<Result>(), args...);
+#endif
+}
 
 template <template <class...> class Seq, class First, class... Ints>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
-    const Seq<First, Ints...>) -> Seq<Ints..., First>
+    const Seq<First, Ints...>)
 {
   return Seq<Ints..., First>{};
 }
@@ -191,27 +151,8 @@ template <size_t... Ints>
 using index_sequence = camp::int_seq<size_t, Ints...>;
 
 // Invoke
-
-template <typename Fn, size_t... Sequence, typename TupleLike>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto invoke_with_order(
-    TupleLike&& t,
-    Fn&& f,
-    index_sequence<Sequence...>) -> decltype(f(get<Sequence>(t)...))
-{
-  return f(get<Sequence>(t)...);
-}
-
-template <typename Fn, typename TupleLike>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto invoke(TupleLike&& t, Fn&& f)
-    -> decltype(
-        invoke_with_order(t,
-                          f,
-                          make_index_sequence<tuple_size<TupleLike>::value>{}))
-{
-  return invoke_with_order(t,
-                           f,
-                           make_index_sequence<tuple_size<TupleLike>::value>{});
-}
+using camp::invoke;
+using camp::invoke_with_order;
 
 // Ignore helper
 template <typename... Args>
@@ -238,78 +179,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void assign_args(ToT&& dst,
   ignore_args((dst[To] = args)...);
 }
 
-// Get nth element of parameter pack
-template <size_t index, size_t first, size_t... rest>
-struct get_at {
-  static constexpr size_t value = get_at<index - 1, rest...>::value;
-};
-
-template <size_t first, size_t... rest>
-struct get_at<0, first, rest...> {
-  static constexpr size_t value = first;
-};
-
-// Get nth element of parameter pack
-template <size_t index, typename first, typename... rest>
-struct get_type_at {
-  using type = typename get_type_at<index - 1, rest...>::type;
-};
-
-template <typename first, typename... rest>
-struct get_type_at<0, first, rest...> {
-  using type = first;
-};
-
-// Get offset of element of parameter pack
-template <size_t diff, size_t off, size_t match, size_t... rest>
-struct get_offset_impl {
-  static constexpr size_t value =
-      get_offset_impl<match - get_at<off + 1, rest...>::value,
-                      off + 1,
-                      match,
-                      rest...>::value;
-};
-
-template <size_t off, size_t match, size_t... rest>
-struct get_offset_impl<0, off, match, rest...> {
-  static constexpr size_t value = off;
-};
-
-template <size_t match, size_t first, size_t... rest>
-struct get_offset
-    : public get_offset_impl<match - first, 0, match, first, rest...> {
-};
-
-// Get nth element of argument list
-// TODO: add specializations to make this compile faster and with less
-// recursion
-template <size_t index>
-struct get_arg_at {
-  template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
-      First&& RAJA_UNUSED_ARG(first),
-      Rest&&... rest)
-      -> decltype(
-          camp::forward<typename VarOps::get_type_at<index - 1, Rest...>::type>(
-              get_arg_at<index - 1>::value(camp::forward<Rest>(rest)...)))
-  {
-    static_assert(index < sizeof...(Rest) + 1, "index is past the end");
-    return camp::forward<
-        typename VarOps::get_type_at<index - 1, Rest...>::type>(
-        get_arg_at<index - 1>::value(camp::forward<Rest>(rest)...));
-  }
-};
-
-template <>
-struct get_arg_at<0> {
-  template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
-      First&& first,
-      Rest&&... RAJA_UNUSED_ARG(rest)) -> decltype(camp::forward<First>(first))
-  {
-    return camp::forward<First>(first);
-  }
-};
 }  // namespace VarOps
 
 #endif
