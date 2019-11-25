@@ -175,3 +175,71 @@ TEST(LayoutUnitTest, 2D_StrideOne)
     }
   }
 }
+
+TEST(StaticLayoutUnitTest, 2D_StaticLayout)
+{
+  RAJA::Layout<2> dynamic_layout(7, 5);
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ,7,5>;
+  
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 5; ++j) {
+
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+    }
+  }
+}
+
+TEST(StaticLayoutUnitTest, 2D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 5}},
+                               RAJA::as_array<RAJA::PERM_JI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JI, 7,5>;
+  
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 5; ++j) {
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+    }
+  }
+}
+
+TEST(StaticLayoutUnitTest, 3D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 13, 5}},
+                               RAJA::as_array<RAJA::PERM_JKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JKI, 7,13,5>;
+
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 13; ++j) {
+      for (int k = 0; k < 5; ++k) {
+        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
+      }
+    }
+  }
+}
+
+
+TEST(StaticLayoutUnitTest, 4D_PermutedStaticLayout)
+{
+  auto dynamic_layout = 
+    RAJA::make_permuted_layout({{7, 13, 5, 17}},
+                               RAJA::as_array<RAJA::PERM_LJKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_LJKI, 7,13,5,17>;
+
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < 13; ++j) {
+      for (int k = 0; k < 5; ++k) {
+        for (int l = 0; l < 5; ++l) {
+          ASSERT_EQ(dynamic_layout(i, j, k, l), static_layout::s_oper(i,j,k,l));
+        } 
+      }
+    }
+  }
+}
+
+
