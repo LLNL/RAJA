@@ -9,10 +9,7 @@
 #include "gtest/gtest.h"
 
 template<typename T>
-class LayoutUnitTest : public ::testing::Test {};
-
-template<typename T>
-class OffsetLayoutUnitTest : public ::testing::Test {};
+class TypedLayoutUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
 				 short,
@@ -27,10 +24,9 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 unsigned long long>;
 
 
-TYPED_TEST_CASE(LayoutUnitTest, MyTypes);
-TYPED_TEST_CASE(OffsetLayoutUnitTest, MyTypes);
+TYPED_TEST_CASE(TypedLayoutUnitTest, MyTypes);
 
-TYPED_TEST(LayoutUnitTest, Constructors)
+TYPED_TEST(TypedLayoutUnitTest, Constructors)
 {
 
   const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,5);
@@ -48,7 +44,7 @@ TYPED_TEST(LayoutUnitTest, Constructors)
   ASSERT_EQ(y, TypeParam{2});
 }
 
-TYPED_TEST(LayoutUnitTest, 2D_IJ)
+TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
 {
   using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
 
@@ -103,7 +99,7 @@ TYPED_TEST(LayoutUnitTest, 2D_IJ)
 
 }
 
-TYPED_TEST(LayoutUnitTest, 2D_IJ_ProjJ)
+TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
 {
   using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
 
@@ -154,7 +150,7 @@ TYPED_TEST(LayoutUnitTest, 2D_IJ_ProjJ)
   }
 }
 
-TYPED_TEST(LayoutUnitTest, 2D_StaticLayout)
+TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2> dynamic_layout(7, 5);
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,RAJA::list<TypeParam,TypeParam>,7,5>;
@@ -169,7 +165,7 @@ TYPED_TEST(LayoutUnitTest, 2D_StaticLayout)
 
 }
 
-TYPED_TEST(LayoutUnitTest, 2D_PermutedStaticLayout)
+TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
 {
   auto dynamic_layout =
     RAJA::make_permuted_layout({{7, 5}},
@@ -185,7 +181,7 @@ TYPED_TEST(LayoutUnitTest, 2D_PermutedStaticLayout)
   }
 }
 
-TYPED_TEST(LayoutUnitTest, 3D_PermutedStaticLayout)
+TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 {
   auto dynamic_layout =
     RAJA::make_permuted_layout({{7, 13, 5}},
@@ -205,7 +201,7 @@ TYPED_TEST(LayoutUnitTest, 3D_PermutedStaticLayout)
 }
 
 
-TYPED_TEST(LayoutUnitTest, 4D_PermutedStaticLayout)
+TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
 {
   auto dynamic_layout =
     RAJA::make_permuted_layout({{7, 13, 5, 17}},
