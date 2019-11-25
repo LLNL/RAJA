@@ -26,7 +26,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 
 TYPED_TEST_CASE(TypedLayoutUnitTest, MyTypes);
 
-TYPED_TEST(TypedLayoutUnitTest, Constructors)
+TYPED_TEST(TypedLayoutUnitTest, TypedLayoutConstructors)
 {
 
   const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,5);
