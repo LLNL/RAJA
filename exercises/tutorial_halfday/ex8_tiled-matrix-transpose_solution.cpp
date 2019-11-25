@@ -12,10 +12,9 @@
 #include "RAJA/RAJA.hpp"
 
 #include "memoryManager.hpp"
-//#define ENABLE_POLICY //EXERCISE: Uncomment
 
 /*
- *  EXERCISE #7: Tiled Matrix Transpose
+ *  EXERCISE #8: Tiled Matrix Transpose
  *
  *  In this exercise, your program will carry out the transpose of a matrix A
  *  using a tiling algorithm. An input matrix A of dimension N_r x N_c
@@ -32,9 +31,7 @@
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
  *    - Tiling statement
  *
- * Note: Policies are disabled, uncomment the #define
- *       preprocessor above prior to starting exercise.
- *       If CUDA is enabled, CUDA unified memory is used.
+ * Note: if CUDA is enabled, CUDA unified memory is used.
  */
 
 //
@@ -57,7 +54,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #7: RAJA Tiled Matrix Transpose...\n";
+  std::cout << "\n\nExercise #8: RAJA Tiled Matrix Transpose...\n";
 
   //
   // Define num rows/cols in matrix
@@ -80,13 +77,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
 
   //
-  //Construct a permuted layout such that the column index has stride 1
+  // Construct a permuted layout for At so that the column index has stride 1
   //
-  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, std::array<RAJA::idx_t, 2>{{1, 0}});
+  std::array<RAJA::idx_t, 2> At_perm {{1, 0}};
+  RAJA::Layout<2> perm_layout = 
+    RAJA::make_permuted_layout({{N_c, N_r}}, At_perm);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
-  // Define TILE dimensions
+  // Define TILE size in each dimension
   //
   const int TILE_SZ = 16;
 
@@ -139,8 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants will use the RAJA::kernel method to 
-  // perform the matrix transpose operation.
+  // The following RAJA variants will use the RAJA::kernel method to carryout the
+  // transpose.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
   // Further partioning of the iteration space is carried out in the
@@ -150,16 +149,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 
-//----------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA sequential tiled matrix transpose ...\n";
+  //----------------------------------------------------------------------------//
+  std::cout << "\n RAJA Running sequential tiled matrix transpose ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   //
-  // The following policy performs the matrix transpose operation
+  // The following policy carries out the transpose
   // using sequential loops. The template parameter inside
   // tile_fixed corresponds to the dimension size of the tile.
   //
-#if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_SEQ =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
@@ -172,16 +170,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
-#endif
 
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE:
-  ///
-  ///   Implement the matrix tranpose kernel using the RAJA kernel API
-  ///   and the kernel policy above.
-  ///
+  RAJA::kernel<KERNEL_EXEC_POL_SEQ>( RAJA::make_tuple(col_Range, row_Range),
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -196,7 +189,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-#if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_OMP =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
@@ -209,16 +201,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
-#endif
 
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE:
-  ///
-  ///   Implement the matrix tranpose kernel using the RAJA kernel API
-  ///   and the kernel policy above.
-  ///
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
+                          RAJA::make_tuple(col_Range, row_Range),
+                          [=](int col, int row) {
+
+    Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -234,7 +224,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // into a single OpenMP parallel for loop enabling parallel loads/reads
   // to/from the tile.
   //
-#if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_OMP2 =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
@@ -246,16 +235,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         > // closes Tile 0
       > // closes Tile 1
     >; // closes policy list
-#endif
 
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE:
-  ///
-  ///   Implement the matrix tranpose kernel using the RAJA kernel API
-  ///   and the kernel policy above.
-  ///
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
+                        RAJA::make_tuple(col_Range, row_Range),
+                        [=](int col, int row) {
+
+    Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -267,7 +254,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-#if defined(ENABLE_POLICY)
   using KERNEL_EXEC_POL_CUDA =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -275,28 +261,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                 RAJA::statement::Lambda<0>
+                RAJA::statement::Lambda<0>
               >
             >
           >
         >
       >
     >;
-#endif
 
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE:
-  ///
-  ///   Implement the matrix tranpose kernel using the RAJA kernel API
-  ///   and the kernel policy above.
-  ///
+  RAJA::kernel<KERNEL_EXEC_POL_CUDA>(
+                           RAJA::make_tuple(col_Range, row_Range),
+                           [=] RAJA_DEVICE (int col, int row) {
+
+                             Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
-
   //--------------------------------------------------------------------------//
 
   //
