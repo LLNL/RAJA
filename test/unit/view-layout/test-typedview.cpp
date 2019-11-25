@@ -14,7 +14,7 @@ RAJA_INDEX_VALUE(TIY, "TIY");
 RAJA_INDEX_VALUE(TIL, "TIL");
 
 template<typename T>
-class ViewTest : public ::testing::Test {};
+class ViewUnitTest : public ::testing::Test {};
 
 using allTypes = ::testing::Types<RAJA::Index_type,
                                   char,
@@ -30,9 +30,9 @@ using allTypes = ::testing::Types<RAJA::Index_type,
                                   long long,
                                   unsigned long long, float , double>;
 
-TYPED_TEST_CASE(ViewTest, allTypes);
+TYPED_TEST_CASE(ViewUnitTest, allTypes);
 
-TYPED_TEST(ViewTest, Constructors)
+TYPED_TEST(ViewUnitTest, Constructors)
 {
 
   using layout = RAJA::Layout<1>;
@@ -56,7 +56,7 @@ TYPED_TEST(ViewTest, Constructors)
   RAJA::View<TypeParam const, layout> const_view2(const_view);
 }
 
-TYPED_TEST(ViewTest, Shift1D)
+TYPED_TEST(ViewUnitTest, Shift1D)
 {
 
   int N = 10;
@@ -110,7 +110,7 @@ TYPED_TEST(ViewTest, Shift1D)
 }
 
 
-TYPED_TEST(ViewTest, Shift2D)
+TYPED_TEST(ViewUnitTest, Shift2D)
 {
 
   int N = 10;

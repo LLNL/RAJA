@@ -8,7 +8,7 @@
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-TEST(LayoutTest, OffsetVsRegular)
+TEST(LayoutUnitTest, OffsetVsRegular)
 {
   const auto layout =
       RAJA::make_permuted_layout({{6, 6}},
@@ -29,7 +29,7 @@ TEST(LayoutTest, OffsetVsRegular)
   }
 }
 
-TEST(OffsetLayoutTest, 2D_IJ)
+TEST(OffsetLayoutUnitTest, 2D_IJ)
 {
   /*
    * Construct a 2D layout:
@@ -57,7 +57,7 @@ TEST(OffsetLayoutTest, 2D_IJ)
 }
 
 
-TEST(OffsetLayoutTest, 2D_JI)
+TEST(OffsetLayoutUnitTest, 2D_JI)
 {
   using my_layout = RAJA::OffsetLayout<2>;
 
@@ -87,7 +87,7 @@ TEST(OffsetLayoutTest, 2D_JI)
   ASSERT_EQ(8, layout(1, 0));
 }
 
-TEST(LayoutTest, 3D_KJI_ProjJ)
+TEST(LayoutUnitTest, 3D_KJI_ProjJ)
 {
   using my_layout = RAJA::Layout<3>;
 
@@ -142,7 +142,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   }
 }
 
-TEST(LayoutTest, 2D_StrideOne)
+TEST(LayoutUnitTest, 2D_StrideOne)
 {
   using my_layout = RAJA::Layout<2>;
   using my_layout_s1 = RAJA::Layout<2, ptrdiff_t, 0>; // first index is stride-1

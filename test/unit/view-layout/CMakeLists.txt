@@ -6,13 +6,13 @@
 ###############################################################################
 
 raja_add_test(
-  NAME new-test-layout
-  SOURCES new-test-layout.cpp)
+  NAME test-typedlayout
+  SOURCES test-typedlayout.cpp)
+
+raja_add_test(
+  NAME test-typedview
+  SOURCES test-typedview.cpp)
 
 raja_add_test(
   NAME single-test-layout
   SOURCES single-test-layout.cpp)
-
-raja_add_test(
-  NAME new-test-view
-  SOURCES new-test-view.cpp)
