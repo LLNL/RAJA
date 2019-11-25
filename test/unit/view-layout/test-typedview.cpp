@@ -17,6 +17,9 @@ template<typename T>
 class TypedViewUnitTest : public ::testing::Test {};
 
 template<typename T>
+class OffsetLayoutViewUnitTest : public ::testing::Test {};
+
+template<typename T>
 class TypedIntegralViewUnitTest : public ::testing::Test {};
 
 using allTypes = ::testing::Types<RAJA::Index_type,
@@ -48,6 +51,7 @@ using IntegralTypes = ::testing::Types<RAJA::Index_type,
                                   unsigned long long>;
 
 TYPED_TEST_CASE(TypedViewUnitTest, allTypes);
+TYPED_TEST_CASE(OffsetLayoutViewUnitTest, allTypes);
 TYPED_TEST_CASE(TypedIntegralViewUnitTest, allTypes);
 
 TYPED_TEST(TypedViewUnitTest, Constructors)
@@ -181,6 +185,29 @@ TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
   }
 
   delete[] a;
+}
+
+TYPED_TEST(OffsetLayoutViewUnitTest, View)
+{
+  TypeParam* data = new TypeParam[10];
+
+  using layout = RAJA::OffsetLayout<>;
+
+  /*
+   * View is constructed by passing in the layout.
+   */
+  std::array<RAJA::Index_type, 1> lower{{1}};
+  std::array<RAJA::Index_type, 1> upper{{10}};
+  RAJA::View<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
+
+  for (int i = 0; i < 10; i++) {
+    data[i] = i;
+  }
+
+  ASSERT_EQ(data[0], view(1));
+  ASSERT_EQ(data[9], view(10));
+
+  delete[] data;
 }
 
 TYPED_TEST(TypedViewUnitTest, Shift1D)
