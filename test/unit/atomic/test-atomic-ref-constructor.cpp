@@ -58,6 +58,12 @@ TEST( AtomicRefUnitTest, BasicConstructorsTest )
   testAtomicBasicConstructors<int, RAJA::builtin_atomic>();
   testAtomicBasicConstructors<int, RAJA::seq_atomic>();
 
+  testAtomicBasicConstructors<unsigned int, RAJA::builtin_atomic>();
+  testAtomicBasicConstructors<unsigned int, RAJA::seq_atomic>();
+
+  testAtomicBasicConstructors<unsigned long long int, RAJA::builtin_atomic>();
+  testAtomicBasicConstructors<unsigned long long int, RAJA::seq_atomic>();
+
   testAtomicBasicConstructors<float, RAJA::builtin_atomic>();
   testAtomicBasicConstructors<float, RAJA::seq_atomic>();
 
@@ -67,6 +73,10 @@ TEST( AtomicRefUnitTest, BasicConstructorsTest )
   #if defined(RAJA_ENABLE_OPENMP)
   testAtomicBasicConstructors<int, RAJA::omp_atomic>();
 
+  testAtomicBasicConstructors<unsigned int, RAJA::omp_atomic>();
+
+  testAtomicBasicConstructors<unsigned long long int, RAJA::omp_atomic>();
+
   testAtomicBasicConstructors<float, RAJA::omp_atomic>();
 
   testAtomicBasicConstructors<double, RAJA::omp_atomic>();
@@ -75,6 +85,12 @@ TEST( AtomicRefUnitTest, BasicConstructorsTest )
   #if defined(RAJA_ENABLE_CUDA)
   testAtomicBasicConstructors<int, RAJA::auto_atomic>();
   testAtomicBasicConstructors<int, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructors<unsigned int, RAJA::auto_atomic>();
+  testAtomicBasicConstructors<unsigned int, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructors<unsigned long long int, RAJA::auto_atomic>();
+  testAtomicBasicConstructors<unsigned long long int, RAJA::cuda_atomic>();
 
   testAtomicBasicConstructors<float, RAJA::auto_atomic>();
   testAtomicBasicConstructors<float, RAJA::cuda_atomic>();
