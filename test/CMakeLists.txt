@@ -7,6 +7,8 @@
 
 include_directories(include)
 
+add_subdirectory(functional)
+
 add_subdirectory(integration)
 
 add_subdirectory(unit)
