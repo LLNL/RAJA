@@ -16,7 +16,7 @@
 //#define ENABLE_KERNEL //EXERCISE: Uncomment
 
 /*
- *  EXERCISE #8: Matrix Transpose with Local Array
+ *  EXERCISE #9: Matrix Transpose with Local Array
  *
  *  In this exercise, your program will carry out the
  *  transpose of a matrix A using a tiling algorithm and a RAJA local array.
@@ -63,7 +63,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA shared matrix transpose example...\n";
+  std::cout << "\n\nExercise #9: RAJA shared matrix transpose example...\n";
 
   //
   // Define num rows/cols in matrix
