@@ -53,7 +53,11 @@ struct simd_vector_exec : make_policy_pattern_launch_platform_t<Policy::sequenti
   using vector_type = VECTOR_TYPE;
 };
 
-
+struct vector_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                         Pattern::forall,
+                                                         Launch::undefined,
+                                                         Platform::host> {
+};
 
 
 
@@ -63,6 +67,7 @@ struct simd_vector_exec : make_policy_pattern_launch_platform_t<Policy::sequenti
 
 using policy::simd::simd_exec;
 using policy::simd::simd_vector_exec;
+using policy::simd::vector_exec;
 
 }  // end of namespace RAJA
 

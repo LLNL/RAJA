@@ -88,6 +88,34 @@ RAJA_INLINE void forall_impl(const simd_vector_exec<VectorType> &,
 
 }
 
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const vector_exec&,
+                             Iterable &&iter,
+                             Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  using diff_t = decltype(distance);
+
+  using vector_index_type = typename Iterable::value_type;
+  using vector_type = typename vector_index_type::vector_type;
+
+  diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
+  diff_t distance_remainder = distance - distance_simd;
+
+  // Streaming loop for complete vector widths
+  for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
+    loop_body(vector_index_type(*(begin + i), vector_type::s_num_elem));
+  }
+
+  // Postamble for reamining elements
+  if(distance_remainder > 0){
+    loop_body(vector_index_type(*(begin + distance_simd), distance_remainder));
+  }
+
+}
+
 
 }  // namespace simd
 

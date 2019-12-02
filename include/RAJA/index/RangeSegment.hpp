@@ -87,8 +87,10 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(DiffT begin, DiffT end)
-      : m_begin(iterator{begin}), m_end(iterator{end})
+  //RAJA_HOST_DEVICE constexpr TypedRangeSegment(DiffT begin, DiffT end)
+  template<typename T0, typename T1>
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(T0 begin, T1 end)
+      : m_begin(iterator{DiffT(begin)}), m_end(iterator{DiffT(end)})
   {
   }
 

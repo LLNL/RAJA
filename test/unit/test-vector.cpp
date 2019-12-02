@@ -15,23 +15,23 @@
 
 using VectorTestTypes = ::testing::Types<
 
-#ifdef __AVX__
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
-#endif
-
-#ifdef __AVX2__
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
-#endif
-
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>,
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 5>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 1>,
+//#ifdef __AVX__
+//    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
+//    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
+//    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
+//    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
+//#endif
+//
+//#ifdef __AVX2__
+//       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
+//       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
+//       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
+//       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
+//#endif
+//
+//    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>,
+//    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 5>,
+//    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 1>,
     RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>>;
 
 template <typename Policy>
@@ -107,13 +107,13 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 128, M = 16*vector_t::s_num_elem;
+  size_t N = 4, M = 4*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
-  if(!vector_t::s_is_fixed){
-    N += (10*drand48());
-    M += (10*drand48());
-  }
+//  if(!vector_t::s_is_fixed){
+//    N += (10*drand48());
+//    M += (10*drand48());
+//  }
 
   element_t *A = new element_t[N*M];
   element_t *B = new element_t[N*M];
@@ -128,70 +128,86 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   RAJA::View<double, RAJA::Layout<2>> Y(B, N, M);
   RAJA::View<double, RAJA::Layout<2>> Z(C, N, M);
 
-  using policy_t = RAJA::simd_vector_exec<vector_t>;
+//  using policy_t = RAJA::simd_vector_exec<vector_t>;
+
+  //
+  // Make sure the indexing is working as expected, and that the
+  // View returns a vector object
+  //
 
   ASSERT_EQ(A, X(0, RAJA::VectorIndex<size_t, vector_t>(0, 1)).get_pointer());
   ASSERT_EQ(A+M, X(1, RAJA::VectorIndex<size_t, vector_t>(0, 1)).get_pointer());
   ASSERT_EQ(A+1, X(0, RAJA::VectorIndex<size_t, vector_t>(1, 1)).get_pointer());
 
+  using policy_t =
+      RAJA::KernelPolicy<
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<1, RAJA::loop_exec, //vector_exec,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >;
 
-//      RAJA::KernelPolicy<
-//        RAJA::statement::For<0, RAJA::loop_exec,
-//          RAJA::statement::For<1, RAJA::simd_vector_exec<vector_t>,
-//            RAJA::statement::Lambda<0>
-//          >
-//        >
-//      >;
 
+  RAJA::kernel<policy_t>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<size_t>(0, N),
+                      RAJA::TypedRangeSegment<RAJA::VectorIndex<size_t, vector_t>, ptrdiff_t>(0, M)),
+         // RAJA::TypedRangeSegment<size_t>(0, M)),
 
-//  RAJA::kernel<policy_t>(
-//      RAJA::make_tuple(RAJA::TypedRangeSegment<size_t>(0, N),
-//                       RAJA::TypedRangeSegment<size_t>(0, M)),
-//
-//      [=](size_t i, RAJA::VectorIndex<size_t, vector_t> j)
-//  {
-//    Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
-//  });
+      [=](size_t i, size_t j) //RAJA::VectorIndex<size_t, vector_t> j)
+  {
+    //printf("i=%d, j=%d, size=%d\n", (int)i, (int)j, (int)j.size());
+    printf("i=%d, j=%d\n", (int)i, (int)j);
+    //Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+  });
 
 
   //
   // Test inner loop SIMD
   //
 
-  RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, N),
-      [=](size_t i){
-
-    RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, M),
-        [=](RAJA::VectorIndex<size_t, vector_t> j){
-
-      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
-    });
-
-  });
-
-  for(size_t i = 0;i < N;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
-  }
+//  RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, N),
+//      [=](size_t i){
+//
+//    RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<size_t, vector_t>>(0, M),
+//        [=](RAJA::VectorIndex<size_t, vector_t> j){
+//
+//      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+//    });
+//
+//  });
+//
+//  for(size_t i = 0;i < N;i ++){
+//    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+//  }
+//
+//
+//  RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<size_t, vector_t>, ptrdiff_t>(0, 27),
+//       [=](RAJA::VectorIndex<size_t, vector_t> j){
+//
+//    printf("j=%d, size=%d\n", (int)*j, (int)j.size());
+//
+//  });
 
 
   //
   // Test outer loop SIMD
   //
 
-  RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
-      [=](RAJA::VectorIndex<size_t, vector_t> i){
-
-    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, M),
-        [=](size_t j){
-
-      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
-    });
-
-  });
-
-  for(size_t i = 0;i < N;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
-  }
+//  RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
+//      [=](RAJA::VectorIndex<size_t, vector_t> i){
+//
+//    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<size_t>(0, M),
+//        [=](size_t j){
+//
+//      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+//    });
+//
+//  });
+//
+//  for(size_t i = 0;i < N;i ++){
+//    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+//  }
 
 
   delete[] A;
