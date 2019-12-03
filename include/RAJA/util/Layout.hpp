@@ -382,7 +382,7 @@ private:
   {
     Index_type locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
-    VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
+    VarOps::ignore_args((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
   }
 };
 
