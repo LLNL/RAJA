@@ -106,12 +106,13 @@ RAJA_INLINE void forall_impl(const vector_exec&,
 
   // Streaming loop for complete vector widths
   for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
-    loop_body(vector_index_type(*(begin + i), vector_type::s_num_elem));
+    loop_body(*(begin + i));
   }
 
   // Postamble for reamining elements
   if(distance_remainder > 0){
-    loop_body(vector_index_type(*(begin + distance_simd), distance_remainder));
+    begin.set_vector_length(distance_remainder);
+    loop_body(*(begin + distance_simd));
   }
 
 }

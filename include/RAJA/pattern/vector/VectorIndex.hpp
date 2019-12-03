@@ -26,9 +26,24 @@
 namespace RAJA
 {
 
+  namespace internal{
+
+    struct VectorIndexBase {};
+
+
+    template<typename FROM>
+    struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<VectorIndexBase, FROM>::value>::type>
+    {
+        using type = typename FROM::value_type;
+    };
+
+
+  }
+
   template<typename IDX, typename VECTOR_TYPE>
-  class VectorIndex {
+  class VectorIndex : public internal::VectorIndexBase {
     public:
+      using value_type = strip_index_type_t<IDX>;
       using index_type = IDX;
       using vector_type = VECTOR_TYPE;
 
@@ -88,22 +103,35 @@ namespace RAJA
   public:
     using value_type = Type;
     using vector_type = VectorType;
+    using vector_index_type = RAJA::VectorIndex<Type, VectorType>;
     using difference_type = DifferenceType;
     using pointer = PointerType;
     using reference = value_type&;
     using iterator_category = std::random_access_iterator_tag;
 
-    RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0) {}
+    RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0), length(vector_type::s_num_elem) {}
     RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs)
-        : val(rhs)
+        : val(rhs), length(vector_type::s_num_elem)
+    {
+    }
+    RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs, const difference_type& len)
+        : val(rhs), length(len)
     {
     }
     RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
-        : val(rhs.val)
+        : val(rhs.val), length(rhs.length)
     {
     }
 
-    RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return vector_type::s_num_elem; }
+    RAJA_HOST_DEVICE constexpr inline DifferenceType get_stride() const
+    {
+      return vector_type::s_num_elem;
+    }
+
+    RAJA_HOST_DEVICE inline void set_vector_length(DifferenceType len)
+    {
+      length = len;
+    }
 
     RAJA_HOST_DEVICE inline bool operator==(const numeric_iterator& rhs) const
     {
@@ -191,41 +219,42 @@ namespace RAJA
     RAJA_HOST_DEVICE inline numeric_iterator operator+(
         const difference_type& rhs) const
     {
-      return numeric_iterator(val + rhs);
+      return numeric_iterator(val + rhs, length);
     }
     RAJA_HOST_DEVICE inline numeric_iterator operator-(
         const difference_type& rhs) const
     {
-      return numeric_iterator(val - rhs);
+      return numeric_iterator(val - rhs, length);
     }
     RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(
         difference_type lhs,
         const numeric_iterator& rhs)
     {
-      return numeric_iterator(lhs + rhs.val);
+      return numeric_iterator(lhs + rhs.val, rhs.length);
     }
     RAJA_HOST_DEVICE friend constexpr numeric_iterator operator-(
         difference_type lhs,
         const numeric_iterator& rhs)
     {
-      return numeric_iterator(lhs - rhs.val);
+      return numeric_iterator(lhs - rhs.val, rhs.length);
     }
 
-    RAJA_HOST_DEVICE inline value_type operator*() const
+    RAJA_HOST_DEVICE inline vector_index_type operator*() const
     {
-      return value_type(val);
+      return vector_index_type(val, length);
     }
-    RAJA_HOST_DEVICE inline value_type operator->() const
+    RAJA_HOST_DEVICE inline vector_index_type operator->() const
     {
-      return value_type(val);
+      return vector_index_type(val, length);
     }
-    RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
+    RAJA_HOST_DEVICE constexpr vector_index_type operator[](difference_type rhs) const
     {
-      return value_type(val + rhs);
+      return vector_index_type(val + rhs, length);
     }
 
   private:
     difference_type val;
+    difference_type length;
   };
   } //namespace Iterators
 
