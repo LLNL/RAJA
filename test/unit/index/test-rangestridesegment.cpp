@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing unit tests for RangeSTrideSegment
+///
+
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-//includetemplate<typename T>
-//us
-
 template<typename T>
-class RangeStrideSegment : public ::testing::Test {};
+class RangeStrideSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char, 
@@ -28,9 +29,9 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 long long,
 				 unsigned long long>;
 
-TYPED_TEST_CASE(RangeStrideSegment, MyTypes);
+TYPED_TEST_CASE(RangeStrideSegmentUnitTest, MyTypes);
 
-TYPED_TEST(RangeStrideSegment, Constructors)
+TYPED_TEST(RangeStrideSegmentUnitTest, Constructors)
 {
     RAJA::TypedRangeStrideSegment<TypeParam> first(0, 10, 2);
     RAJA::TypedRangeStrideSegment<TypeParam> copied(first);
@@ -39,7 +40,7 @@ TYPED_TEST(RangeStrideSegment, Constructors)
     ASSERT_EQ(moved, copied);
 }
 
-TYPED_TEST(RangeStrideSegment, Assignments)
+TYPED_TEST(RangeStrideSegmentUnitTest, Assignments)
 {
     auto r = RAJA::make_strided_range<TypeParam>(static_cast<TypeParam>(0), 
 		                                 static_cast<TypeParam>(5), 
@@ -50,7 +51,7 @@ TYPED_TEST(RangeStrideSegment, Assignments)
     ASSERT_EQ(seg2, seg1);
 }
 
-TYPED_TEST(RangeStrideSegment, Swaps)
+TYPED_TEST(RangeStrideSegmentUnitTest, Swaps)
 {
     RAJA::TypedRangeStrideSegment<TypeParam> r1(0, 5, 2);
     RAJA::TypedRangeStrideSegment<TypeParam> r2(1, 6, 1);
@@ -61,7 +62,7 @@ TYPED_TEST(RangeStrideSegment, Swaps)
     ASSERT_EQ(r2, r3);
 }
 
-TYPED_TEST(RangeStrideSegment, Iterators)
+TYPED_TEST(RangeStrideSegmentUnitTest, Iterators)
 {
     RAJA::TypedRangeStrideSegment<TypeParam> r1(0, 100, 4);
     ASSERT_EQ(0, *r1.begin());
@@ -71,7 +72,7 @@ TYPED_TEST(RangeStrideSegment, Iterators)
     ASSERT_EQ(25, r1.size());
 }
 
-TYPED_TEST(RangeStrideSegment, Sizes)
+TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 {
   RAJA::TypedRangeStrideSegment<TypeParam> segment1(0, 20, 1);
   ASSERT_EQ(segment1.size(), 20);
@@ -134,7 +135,7 @@ TYPED_TEST(RangeStrideSegment, Sizes)
   }
 }
 
-TYPED_TEST(RangeStrideSegment, Slices)
+TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
 {
   auto r = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
   auto s = r.slice(0, 5);
@@ -144,7 +145,7 @@ TYPED_TEST(RangeStrideSegment, Slices)
   ASSERT_EQ(10, *s.end());
 }
 
-TYPED_TEST(RangeStrideSegment, Equality)
+TYPED_TEST(RangeStrideSegmentUnitTest, Equality)
 {
   auto r1 = RAJA::TypedRangeStrideSegment<TypeParam>(0, 10, 1);
   auto r2 = RAJA::TypedRangeStrideSegment<TypeParam>(0, 10, 1);

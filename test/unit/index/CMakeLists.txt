@@ -6,6 +6,18 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-indexset
+  SOURCES test-indexset.cpp)
+
+raja_add_test(
+  NAME test-indexvalue
+  SOURCES test-indexvalue.cpp)
+
+raja_add_test(
+  NAME test-listsegment
+  SOURCES test-listsegment.cpp)
+
+raja_add_test(
   NAME test-rangesegment
   SOURCES test-rangesegment.cpp)
 
@@ -13,10 +25,3 @@ raja_add_test(
   NAME test-rangestridesegment
   SOURCES test-rangestridesegment.cpp)
 
-raja_add_test(
-  NAME test-listsegment
-  SOURCES test-listsegment.cpp)
-
-raja_add_test(
-  NAME test-indexvalue
-  SOURCES test-indexvalue.cpp)

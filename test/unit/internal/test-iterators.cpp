@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for internal RAJA Iterators
+/// Source file containing unit tests for numeric_iterator
 ///
 
 #include "RAJA/RAJA.hpp"
@@ -14,9 +14,9 @@
 #include <limits>
 
 template<typename T>
-class NumericIteratorTest : public ::testing::Test {};
+class NumericIteratorUnitTest : public ::testing::Test {};
 template<typename T>
-class StridedNumericIteratorTest : public ::testing::Test {};
+class StridedNumericIteratorUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char,
@@ -32,10 +32,10 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 				 long long,
 				 unsigned long long>;
 
-TYPED_TEST_CASE(NumericIteratorTest, MyTypes);
-TYPED_TEST_CASE(StridedNumericIteratorTest, MyTypes);
+TYPED_TEST_CASE(NumericIteratorUnitTest, MyTypes);
+TYPED_TEST_CASE(StridedNumericIteratorUnitTest, MyTypes);
 
-TYPED_TEST(NumericIteratorTest, simple)
+TYPED_TEST(NumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::numeric_iterator<TypeParam> i;
   ASSERT_EQ(0, *i);
@@ -69,7 +69,7 @@ TYPED_TEST(NumericIteratorTest, simple)
   ASSERT_EQ(8 - five, three);
 }
 
-TYPED_TEST(StridedNumericIteratorTest, simple)
+TYPED_TEST(StridedNumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::strided_numeric_iterator<TypeParam> i(0, 2);
   ASSERT_EQ(0, *i);
@@ -94,7 +94,7 @@ TYPED_TEST(StridedNumericIteratorTest, simple)
 }
 
 #if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
-TYPED_TEST(NumericIteratorTest, overflow)
+TYPED_TEST(NumericIteratorUnitTest, overflow)
 {
   if (std::is_unsigned<TypeParam>::value) {
     ASSERT_ANY_THROW({
@@ -136,7 +136,7 @@ TYPED_TEST(NumericIteratorTest, overflow)
   } 
 }
 
-TYPED_TEST(StridedNumericIteratorTest, overflow)
+TYPED_TEST(StridedNumericIteratorUnitTest, overflow)
 {
   if (std::is_unsigned<TypeParam>::value){
     ASSERT_ANY_THROW({

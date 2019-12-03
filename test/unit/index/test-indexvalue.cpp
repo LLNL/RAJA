@@ -5,28 +5,32 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing unit tests for IndexValue
+///
+
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h" 
 
 
 template<typename T>
-class IndexValueTest : public ::testing::Test {};
+class IndexValueUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
-				 int,
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 long long,
-				 unsigned long long>;
+                                 int,
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 long long,
+                                 unsigned long long>;
 
-TYPED_TEST_CASE(IndexValueTest, MyTypes);
+TYPED_TEST_CASE(IndexValueUnitTest, MyTypes);
 
 RAJA_INDEX_VALUE(StrongTypeIndex, "Strong Type")
 
-TYPED_TEST(IndexValueTest, Construct)
+TYPED_TEST(IndexValueUnitTest, Construct)
 {
   StrongTypeIndex a;
   ASSERT_EQ(0l, *a);
@@ -42,7 +46,7 @@ TYPED_TEST(IndexValueTest, Construct)
   ASSERT_EQ(std::string("Test Type"), TestType::getName());
 }
 
-TYPED_TEST(IndexValueTest, PrePostIncrement)
+TYPED_TEST(IndexValueUnitTest, PrePostIncrement)
 {
   StrongTypeIndex a;
   ASSERT_EQ(0l, *a++);
@@ -58,7 +62,7 @@ TYPED_TEST(IndexValueTest, PrePostIncrement)
   ASSERT_EQ((TypeParam)2, *b);
 }
 
-TYPED_TEST(IndexValueTest, PrePostDecrement)
+TYPED_TEST(IndexValueUnitTest, PrePostDecrement)
 {
   StrongTypeIndex a(3);
   ASSERT_EQ(3l, *a--);
@@ -74,7 +78,7 @@ TYPED_TEST(IndexValueTest, PrePostDecrement)
   ASSERT_EQ((TypeParam)1, *b);
 }
 
-TYPED_TEST(IndexValueTest, StrongTypesArith)
+TYPED_TEST(IndexValueUnitTest, StrongTypesArith)
 {
   StrongTypeIndex a(8);
   StrongTypeIndex b(2);
@@ -149,7 +153,7 @@ TYPED_TEST(IndexValueTest, StrongTypesArith)
   ASSERT_EQ(TestType(2), d);
 }
 
-TYPED_TEST(IndexValueTest, IndexTypeArith)
+TYPED_TEST(IndexValueUnitTest, IndexTypeArith)
 {
   StrongTypeIndex a(8);
   RAJA::Index_type b(2);
@@ -224,7 +228,7 @@ TYPED_TEST(IndexValueTest, IndexTypeArith)
   ASSERT_EQ(RAJA::Index_type(2), d);
 }
 
-TYPED_TEST(IndexValueTest, StrongTypeCompare)
+TYPED_TEST(IndexValueUnitTest, StrongTypeCompare)
 {
   StrongTypeIndex v1(5);
   StrongTypeIndex v2(6);
@@ -252,7 +256,7 @@ TYPED_TEST(IndexValueTest, StrongTypeCompare)
   ASSERT_NE(v3, v4);
 }
 
-TYPED_TEST(IndexValueTest, IndexTypeCompare)
+TYPED_TEST(IndexValueUnitTest, IndexTypeCompare)
 {
   StrongTypeIndex v(5);
   RAJA::Index_type v_lower(4);

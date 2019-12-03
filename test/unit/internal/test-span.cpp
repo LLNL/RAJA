@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for Span
+/// Source file containing unit tests for Span
 ///
 
 #include "RAJA/RAJA.hpp"
@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 
 template<typename T>
-class SpanTest : public ::testing::Test {};
+class SpanUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char,
@@ -30,10 +30,10 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  long long,
                                  unsigned long long>;
 
-TYPED_TEST_CASE(SpanTest, MyTypes);
+TYPED_TEST_CASE(SpanUnitTest, MyTypes);
 
 constexpr int DATA_SIZE = 4;
-TYPED_TEST(SpanTest, simple)
+TYPED_TEST(SpanUnitTest, simple)
 {
 
   TypeParam data[DATA_SIZE];
@@ -66,7 +66,7 @@ TYPED_TEST(SpanTest, simple)
 
 }
 
-TYPED_TEST(SpanTest, slice)
+TYPED_TEST(SpanUnitTest, slice)
 {
   TypeParam data[DATA_SIZE];
   for (int i = 0; i < DATA_SIZE; i++)

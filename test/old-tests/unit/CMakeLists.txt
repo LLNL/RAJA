@@ -22,10 +22,6 @@ raja_add_test(
   SOURCES test-view.cpp)
 
 raja_add_test(
-  NAME test-integral-limits
-  SOURCES test-integral-limits.cpp)
-
-raja_add_test(
   NAME test-kernel
   SOURCES test-kernel.cpp)
 
