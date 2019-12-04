@@ -16,23 +16,23 @@
 using VectorTestTypes = ::testing::Types<
 
 #ifdef __AVX__
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
+    RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+    RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
+    RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+    RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
 #endif
 
 #ifdef __AVX2__
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
 #endif
 
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>,
-    RAJA::FixedVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 5>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 1>,
-    RAJA::StreamVector<RAJA::Register<RAJA::simd_scalar_register, double,1>, 3>
+    RAJA::FixedVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>,
+    RAJA::FixedVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 5>,
+    RAJA::StreamVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 1>,
+    RAJA::StreamVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>
 >;
 
 template <typename Policy>
@@ -82,9 +82,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   RAJA::View<double, RAJA::Layout<1>> Y(B, N);
   RAJA::View<double, RAJA::Layout<1>> Z(C, N);
 
-  using policy_t = RAJA::simd_vector_exec<vector_t>;
 
-  RAJA::forall<policy_t>(RAJA::TypedRangeSegment<size_t>(0, N),
+  RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<size_t, vector_t>>(0, N),
       [=](RAJA::VectorIndex<size_t, vector_t> i)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;

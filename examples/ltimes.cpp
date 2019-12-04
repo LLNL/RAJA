@@ -315,7 +315,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-  using vector_t = RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>;
+  using vector_t = RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>;
   using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),

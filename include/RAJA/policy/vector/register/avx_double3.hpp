@@ -17,8 +17,8 @@
 
 #ifdef __AVX__
 
-#ifndef RAJA_policy_simd_register_avx_double3_HPP
-#define RAJA_policy_simd_register_avx_double3_HPP
+#ifndef RAJA_policy_vector_register_avx_double3_HPP
+#define RAJA_policy_vector_register_avx_double3_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -33,9 +33,9 @@ namespace RAJA
 
 
   template<>
-  class Register<simd_avx_register, double, 3>{
+  class Register<vector_avx_register, double, 3>{
     public:
-      using self_type = Register<simd_avx_register, double, 3>;
+      using self_type = Register<vector_avx_register, double, 3>;
       using element_type = double;
 
       static constexpr size_t s_num_elem = 3;

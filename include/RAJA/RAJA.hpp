@@ -61,9 +61,10 @@
 #include "RAJA/policy/loop.hpp"
 
 //
-// All platforms should support simd execution.
+// All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
+#include "RAJA/policy/vector.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
 #include "RAJA/policy/tbb.hpp"

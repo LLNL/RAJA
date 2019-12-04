@@ -15,31 +15,31 @@
 
     using RegisterTestTypes = ::testing::Types<
 #ifdef __AVX__
-       RAJA::Register<RAJA::simd_avx_register, double, 2>,
-       RAJA::Register<RAJA::simd_avx_register, double, 3>,
-       RAJA::Register<RAJA::simd_avx_register, double, 4>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,1>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,3>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx_register, double,4>, 8>,
+       RAJA::Register<RAJA::vector_avx_register, double, 2>,
+       RAJA::Register<RAJA::vector_avx_register, double, 3>,
+       RAJA::Register<RAJA::vector_avx_register, double, 4>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,1>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,3>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
 #endif
 
 #ifdef __AVX2__
-       RAJA::Register<RAJA::simd_avx2_register, double, 2>,
-       RAJA::Register<RAJA::simd_avx2_register, double, 3>,
-       RAJA::Register<RAJA::simd_avx2_register, double, 4>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,1>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,3>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>,
+       RAJA::Register<RAJA::vector_avx2_register, double, 2>,
+       RAJA::Register<RAJA::vector_avx2_register, double, 3>,
+       RAJA::Register<RAJA::vector_avx2_register, double, 4>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,1>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
+       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 27>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
+       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
 #endif
-       RAJA::Register<RAJA::simd_scalar_register, int, 1>,
-       RAJA::Register<RAJA::simd_scalar_register, float, 1>,
-       RAJA::Register<RAJA::simd_scalar_register, double, 1>>;
+       RAJA::Register<RAJA::vector_scalar_register, int, 1>,
+       RAJA::Register<RAJA::vector_scalar_register, float, 1>,
+       RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test
 {
@@ -64,7 +64,7 @@ TYPED_TEST_CASE_P(RegisterTest);
  * things, like constexpr out all of the intrinsics.
  */
 
-TYPED_TEST_P(RegisterTest, SimdRegisterSetGet)
+TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
 {
 
   using register_t = TypeParam;
@@ -86,7 +86,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterSetGet)
 }
 
 
-TYPED_TEST_P(RegisterTest, SimdRegisterLoad)
+TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 {
 
   using register_t = TypeParam;
@@ -119,7 +119,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterLoad)
 
 
 
-TYPED_TEST_P(RegisterTest, SimdRegisterAdd)
+TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
 {
 
   using register_t = TypeParam;
@@ -152,7 +152,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterAdd)
 
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterSubtract)
+TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
 {
 
   using register_t = TypeParam;
@@ -184,7 +184,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterSubtract)
   }
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterMultiply)
+TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
 {
 
   using register_t = TypeParam;
@@ -216,7 +216,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterMultiply)
   }
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterDivide)
+TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
 {
 
   using register_t = TypeParam;
@@ -248,7 +248,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterDivide)
   }
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterDotProduct)
+TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
 {
 
   using register_t = TypeParam;
@@ -272,7 +272,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterDotProduct)
 
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterMax)
+TYPED_TEST_P(RegisterTest, VectorRegisterMax)
 {
   using register_t = TypeParam;
 
@@ -296,7 +296,7 @@ TYPED_TEST_P(RegisterTest, SimdRegisterMax)
 
 }
 
-TYPED_TEST_P(RegisterTest, SimdRegisterMin)
+TYPED_TEST_P(RegisterTest, VectorRegisterMin)
 {
   using register_t = TypeParam;
 
@@ -321,15 +321,15 @@ TYPED_TEST_P(RegisterTest, SimdRegisterMin)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(RegisterTest, SimdRegisterSetGet,
-                                       SimdRegisterLoad,
-                                       SimdRegisterAdd,
-                                       SimdRegisterSubtract,
-                                       SimdRegisterMultiply,
-                                       SimdRegisterDivide,
-                                       SimdRegisterDotProduct,
-                                       SimdRegisterMax,
-                                       SimdRegisterMin);
+REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSetGet,
+                                       VectorRegisterLoad,
+                                       VectorRegisterAdd,
+                                       VectorRegisterSubtract,
+                                       VectorRegisterMultiply,
+                                       VectorRegisterDivide,
+                                       VectorRegisterDotProduct,
+                                       VectorRegisterMax,
+                                       VectorRegisterMin);
 
 INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, RegisterTestTypes);
 

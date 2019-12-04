@@ -15,37 +15,34 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_HPP
-#define RAJA_policy_simd_register_HPP
+#ifndef RAJA_policy_vector_register_HPP
+#define RAJA_policy_vector_register_HPP
 
 #include<RAJA/pattern/register.hpp>
-#include<RAJA/policy/simd/policy.hpp>
+#include<RAJA/policy/vector/policy.hpp>
 
 
 #ifdef __AVX2__
-#include<RAJA/policy/simd/register/avx2.hpp>
-#ifndef RAJA_SIMD_REGISTER_TYPE
-#define RAJA_SIMD_REGISTER_TYPE simd_avx2_register
+#include<RAJA/policy/vector/register/avx2.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_avx2_register
 #endif
 #endif
 
 
 #ifdef __AVX__
-#include<RAJA/policy/simd/register/avx.hpp>
-#ifndef RAJA_SIMD_REGISTER_TYPE
-#define RAJA_SIMD_REGISTER_TYPE simd_avx_register
+#include<RAJA/policy/vector/register/avx.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_avx_register
 #endif
 #endif
 
 
-namespace RAJA
-{
-  struct simd_scalar_register {};
-}
 
-
-#ifndef RAJA_SIMD_REGISTER_TYPE
-#define RAJA_SIMD_REGISTER_TYPE RAJA::simd_scalar_register
+// The scalar register is always supported (doesn't require any SIMD/SIMT)
+#include<RAJA/policy/vector/register/scalar.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_scalar_register
 #endif
 
 
@@ -53,18 +50,18 @@ namespace RAJA
 {
 namespace policy
 {
-  namespace simd
+  namespace vector
   {
 
     // This sets the default SIMD register that will be used
     // Individual registers can
-    using simd_register = RAJA_SIMD_REGISTER_TYPE;
+    using vector_register = RAJA_VECTOR_REGISTER_TYPE;
   }
 }
 
 
 
-  using policy::simd::simd_register;
+  using policy::vector::vector_register;
 
 }
 

@@ -3,7 +3,9 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA simd policy definitions.
+ * \brief   Header file containing RAJA headers for SIMD segment execution.
+ *
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
@@ -15,9 +17,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_sequential_register_HPP
-#define RAJA_policy_sequential_register_HPP
+#ifndef RAJA_vector_HPP
+#define RAJA_vector_HPP
 
-#include<RAJA/policy/sequential/register/scalar.hpp>
+#include "RAJA/policy/vector/forall.hpp"
+#include "RAJA/policy/vector/policy.hpp"
+#include "RAJA/policy/vector/register.hpp"
+#include "RAJA/policy/vector/kernel/For.hpp"
+#include "RAJA/policy/vector/kernel/ForICount.hpp"
 
-#endif
+#endif  // closing endif for header file include guard

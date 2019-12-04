@@ -38,7 +38,7 @@ namespace internal
   template<typename ARG>
   struct StripVectorIndex {
       using arg_type = ARG;
-      using vector_type = RAJA::simd_scalar_register;
+      using vector_type = RAJA::vector_scalar_register;
       static constexpr bool s_is_vector = false;
 
 
@@ -101,7 +101,7 @@ namespace internal
   struct ExtractVectorArg<I>{
       static constexpr camp::idx_t s_num_vector_args = 0;
       static constexpr camp::idx_t s_vector_arg_idx = -1;
-      using vector_type = RAJA::simd_scalar_register;
+      using vector_type = RAJA::vector_scalar_register;
   };
 
   // Helper to unpack VectorIndex

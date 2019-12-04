@@ -17,19 +17,19 @@
 
 #ifdef __AVX__
 
-#ifndef RAJA_policy_simd_register_avx_HPP
-#define RAJA_policy_simd_register_avx_HPP
+#ifndef RAJA_policy_vector_register_avx_HPP
+#define RAJA_policy_vector_register_avx_HPP
 
 namespace RAJA {
-  struct simd_avx_register {};
+  struct vector_avx_register {};
 }
 
 
 #endif
 
-#include<RAJA/policy/simd/register/avx_double2.hpp>
-#include<RAJA/policy/simd/register/avx_double3.hpp>
-#include<RAJA/policy/simd/register/avx_double4.hpp>
+#include<RAJA/policy/vector/register/avx_double2.hpp>
+#include<RAJA/policy/vector/register/avx_double3.hpp>
+#include<RAJA/policy/vector/register/avx_double4.hpp>
 
 
 #endif // __AVX__

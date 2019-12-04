@@ -22,7 +22,6 @@
 
 #include "RAJA/policy/simd/forall.hpp"
 #include "RAJA/policy/simd/policy.hpp"
-#include "RAJA/policy/simd/register.hpp"
 #include "RAJA/policy/simd/kernel/For.hpp"
 #include "RAJA/policy/simd/kernel/ForICount.hpp"
 

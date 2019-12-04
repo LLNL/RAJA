@@ -23,8 +23,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef RAJA_forall_vector_HPP
+#define RAJA_forall_vector_HPP
 
 #include "RAJA/config.hpp"
 
@@ -35,33 +35,47 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/vector/policy.hpp"
 
 namespace RAJA
 {
 namespace policy
 {
-namespace simd
+namespace vector
 {
 
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const simd_exec &,
+RAJA_INLINE void forall_impl(const vector_exec&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
+  using diff_t = decltype(distance);
+
+  using vector_index_type = typename Iterable::value_type;
+  using vector_type = typename vector_index_type::vector_type;
+
+  diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
+  diff_t distance_remainder = distance - distance_simd;
+
+  // Streaming loop for complete vector widths
+  for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
     loop_body(*(begin + i));
   }
+
+  // Postamble for reamining elements
+  if(distance_remainder > 0){
+    begin.set_vector_length(distance_remainder);
+    loop_body(*(begin + distance_simd));
+  }
+
 }
 
 
-
-}  // namespace simd
+}  // namespace vector
 
 }  // namespace policy
 
