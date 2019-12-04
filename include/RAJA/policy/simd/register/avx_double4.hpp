@@ -60,6 +60,7 @@ namespace RAJA
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
+      constexpr
       explicit Register(simd_type const &c) : m_value(c) {}
 
 
@@ -67,6 +68,7 @@ namespace RAJA
        * @brief Copy constructor
        */
       RAJA_INLINE
+      constexpr
       Register(self_type const &c) : m_value(c.m_value) {}
 
 
@@ -96,10 +98,15 @@ namespace RAJA
        */
       RAJA_INLINE
       void load(element_type const *ptr, size_t stride){
-        m_value =_mm256_set_pd(ptr[3*stride],
+        if(stride == 1){
+          load(ptr);
+        }
+        else{
+          m_value =_mm256_set_pd(ptr[3*stride],
                               ptr[2*stride],
                               ptr[stride],
                               ptr[0]);
+        }
       }
 
 
@@ -123,8 +130,13 @@ namespace RAJA
        */
       RAJA_INLINE
       void store(element_type *ptr, size_t stride) const{
-        for(size_t i = 0;i < s_num_elem;++ i){
-          ptr[i*stride] = m_value[i];
+        if(stride == 1){
+          store(ptr);
+        }
+        else{
+          for(size_t i = 0;i < s_num_elem;++ i){
+            ptr[i*stride] = m_value[i];
+          }
         }
       }
 

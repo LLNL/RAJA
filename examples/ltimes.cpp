@@ -272,6 +272,79 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 {
+  std::cout << "\n Running RAJA vectorized version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+       statement::For<0, loop_exec,  // m
+         statement::For<1, loop_exec,  // d
+           statement::For<2, loop_exec,  // g
+             statement::For<3, vector_exec,  // z
+               statement::Lambda<0>
+             >
+           >
+         >
+       >
+     >;
+
+
+
+  using vector_t = RAJA::StreamVector<RAJA::Register<RAJA::simd_avx2_register, double,4>, 8>;
+  using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
+
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<VecIZ>(0, num_z));
+
+  RAJA::Timer timer;
+  timer.start();
+
+  RAJA::kernel<EXECPOL>( segments,
+    [=] (IM m, ID d, IG g, VecIZ z) {
+       phi(m, g, z) += L(m, d) * psi(d, g, z);
+    }
+  );
+
+  timer.stop();
+  std::cout << "  RAJA vectorized version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+}
+
+
+//----------------------------------------------------------------------------//
+
+{
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -393,7 +466,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                         RAJA::SizeList<tile_m, tile_g, tile_z>,
                         IM, IG, IZ>;
   shmem_phi_t shmem_phi;
- 
 
   RAJA::Timer timer;
   timer.start();

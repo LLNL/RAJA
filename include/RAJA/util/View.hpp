@@ -271,6 +271,71 @@ struct View {
   }
 };
 
+
+
+namespace internal {
+
+  /**
+   * This class will help strip strongly typed
+   *
+   * This default implementation static_asserts that Expected==Arg, otherwise
+   * it's an error.  This enforces types for the TypedView.
+   *
+   * Specialization where expected type is same as argument type.
+   * In this case, there is no VectorIndex to unpack, just strip any strongly
+   * typed indices.
+   */
+  template<typename Expected, typename Arg>
+  struct TypedViewVectorHelper{
+    static_assert(std::is_convertible<Arg, Expected>::value,
+        "Argument isn't compatible");
+
+    using type = strip_index_type_t<Arg>;
+
+    static RAJA_HOST_DEVICE RAJA_INLINE
+    type extract(Arg arg){
+      return stripIndexType(arg);
+    }
+  };
+
+
+  /**
+   * Specialization where expected type is wrapped in a VectorIndex type
+   *
+   * In this case, there is no VectorIndex to unpack, just strip any strongly
+   * typed indices.
+   */
+  template<typename Expected, typename Arg, typename VectorType>
+  struct TypedViewVectorHelper<Expected, RAJA::VectorIndex<Arg, VectorType> >{
+
+    static_assert(std::is_convertible<Arg, Expected>::value,
+        "Argument isn't compatible");
+
+    using arg_type = strip_index_type_t<Arg>;
+
+    using type = RAJA::VectorIndex<arg_type, VectorType>;
+
+    static constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    type extract(RAJA::VectorIndex<Arg, VectorType> vec_arg){
+      return type(stripIndexType(*vec_arg), vec_arg.size());
+    }
+  };
+
+
+
+  template<typename Expected, typename Arg>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr
+  auto vectorArgExtractor(Arg const &arg) ->
+  typename TypedViewVectorHelper<Expected, Arg>::type
+  {
+    return TypedViewVectorHelper<Expected, Arg>::extract(arg);
+  }
+
+}
+
+
 template <typename ValueType,
           typename PointerType,
           typename LayoutType,
@@ -307,10 +372,21 @@ struct TypedViewBase {
     return RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>(base_.data, shift_layout);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
+//  RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
+//  {
+//    return base_.operator()(stripIndexType(args)...);
+//  }
+
+
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto operator()(Args... args) const ->
+  decltype(base_.operator()(internal::vectorArgExtractor<IndexTypes>(args)...))
   {
-    return base_.operator()(stripIndexType(args)...);
+    return base_.operator()(internal::vectorArgExtractor<IndexTypes>(args)...);
   }
+
+
 };
 
 template <typename ValueType, typename LayoutType, typename... IndexTypes>

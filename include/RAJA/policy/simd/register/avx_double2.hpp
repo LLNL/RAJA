@@ -52,18 +52,23 @@ namespace RAJA
       /*!
        * @brief Default constructor, zeros register contents
        */
+      RAJA_INLINE
       Register() : m_value(_mm_setzero_pd()) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
+      RAJA_INLINE
+      constexpr
       explicit Register(simd_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
+      RAJA_INLINE
+      constexpr
       Register(self_type const &c) : m_value(c.m_value) {}
 
       /*!
@@ -77,6 +82,7 @@ namespace RAJA
        * @brief Load operation, assuming scalars are in consecutive memory
        * locations.
        */
+      RAJA_INLINE
       void load(element_type const *ptr){
         m_value = _mm_loadu_pd(ptr);
       }
@@ -89,8 +95,14 @@ namespace RAJA
        * Note: this could be done with "gather" instructions if they are
        * available. (like in avx2, but not in avx)
        */
+      RAJA_INLINE
       void load(element_type const *ptr, size_t stride){
-        m_value = _mm_set_pd(ptr[stride], ptr[0]);
+        if(stride == 1){
+          load(ptr);
+        }
+        else{
+          m_value = _mm_set_pd(ptr[stride], ptr[0]);
+        }
       }
 
 
@@ -98,6 +110,7 @@ namespace RAJA
        * @brief Store operation, assuming scalars are in consecutive memory
        * locations.
        */
+      RAJA_INLINE
       void store(element_type *ptr) const{
         _mm_storeu_pd(ptr, m_value);
       }
@@ -110,9 +123,15 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
+      RAJA_INLINE
       void store(element_type *ptr, size_t stride) const{
-        ptr[0] = m_value[0];
-        ptr[stride] = m_value[1];
+        if(stride == 1){
+          store(ptr);
+        }
+        else{
+          ptr[0] = m_value[0];
+          ptr[stride] = m_value[1];
+        }
       }
 
       /*!
