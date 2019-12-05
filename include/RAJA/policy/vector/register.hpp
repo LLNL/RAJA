@@ -39,6 +39,14 @@
 
 
 
+#ifdef __ALTIVEC__
+#include<RAJA/policy/vector/register/altivec.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_altivec_register
+#endif
+#endif
+
+
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 #include<RAJA/policy/vector/register/scalar.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
