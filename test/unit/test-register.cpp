@@ -18,28 +18,37 @@
        RAJA::Register<RAJA::vector_avx_register, double, 2>,
        RAJA::Register<RAJA::vector_avx_register, double, 3>,
        RAJA::Register<RAJA::vector_avx_register, double, 4>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,1>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,3>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,1>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,2>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,3>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 27>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
 #endif
 
 #ifdef __AVX2__
        RAJA::Register<RAJA::vector_avx2_register, double, 2>,
        RAJA::Register<RAJA::vector_avx2_register, double, 3>,
        RAJA::Register<RAJA::vector_avx2_register, double, 4>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,1>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,1>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,4>, 27>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
 #endif
        RAJA::Register<RAJA::vector_scalar_register, int, 1>,
        RAJA::Register<RAJA::vector_scalar_register, float, 1>,
-       RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
+       RAJA::Register<RAJA::vector_scalar_register, double, 1>,
+
+       // Test automatically wrapped types to make things easier for users
+       RAJA::StreamVector<double>,
+       RAJA::StreamVector<double, 2>,
+       RAJA::FixedVector<double, 1>,
+       RAJA::FixedVector<double, 2>,
+       RAJA::FixedVector<double, 4>,
+       RAJA::FixedVector<double, 8>,
+       RAJA::FixedVector<double, 16>>;
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test
 {

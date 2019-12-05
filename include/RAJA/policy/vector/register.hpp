@@ -55,13 +55,25 @@ namespace policy
 
     // This sets the default SIMD register that will be used
     // Individual registers can
-    using vector_register = RAJA_VECTOR_REGISTER_TYPE;
+    using vector_register_type = RAJA_VECTOR_REGISTER_TYPE;
   }
 }
 
 
 
-  using policy::vector::vector_register;
+  using policy::vector::vector_register_type;
+
+//RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+
+  template<typename T, size_t UNROLL = 1>
+  using StreamVector = StreamVectorExt<
+      RAJA::Register<RAJA::vector_register_type, T, RAJA::RegisterTraits<RAJA::vector_register_type, T>::s_num_elem>,
+      RAJA::RegisterTraits<RAJA::vector_register_type, T>::s_num_elem * UNROLL>;
+
+  template<typename T, size_t NumElem>
+  using FixedVector = FixedVectorExt<
+      RAJA::Register<RAJA::vector_register_type, T, RAJA::RegisterTraits<RAJA::vector_register_type, T>::s_num_elem>,
+      NumElem>;
 
 }
 

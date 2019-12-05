@@ -16,24 +16,33 @@
 using VectorTestTypes = ::testing::Types<
 
 #ifdef __AVX__
-    RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
-    RAJA::FixedVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
-    RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
-    RAJA::StreamVector<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
+    RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+    RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
+    RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
+    RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 8>,
 #endif
 
 #ifdef __AVX2__
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
-       RAJA::FixedVector<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
-       RAJA::StreamVector<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,2>, 27>,
+       RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,3>, 27>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,4>, 4>,
+       RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_avx2_register, double,4>, 8>,
 #endif
 
-    RAJA::FixedVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>,
-    RAJA::FixedVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 5>,
-    RAJA::StreamVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 1>,
-    RAJA::StreamVector<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>
->;
+    RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>,
+    RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_scalar_register, double,1>, 5>,
+    RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_scalar_register, double,1>, 1>,
+    RAJA::StreamVectorExt<RAJA::Register<RAJA::vector_scalar_register, double,1>, 3>,
+
+    // Test automatically wrapped types to make things easier for users
+    RAJA::StreamVector<double>,
+    RAJA::StreamVector<double, 2>,
+    RAJA::FixedVector<double, 1>,
+    RAJA::FixedVector<double, 2>,
+    RAJA::FixedVector<double, 4>,
+    RAJA::FixedVector<double, 8>,
+    RAJA::FixedVector<double, 16>>;
+
 
 template <typename Policy>
 class VectorTest : public ::testing::Test

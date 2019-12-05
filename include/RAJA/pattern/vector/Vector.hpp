@@ -74,8 +74,8 @@ namespace RAJA
           REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
 
     private:
-      std::array<full_register_type, s_num_full_registers> m_full_registers;
-      std::array<partial_register_type, s_num_partial_registers> m_partial_register;
+      full_register_type m_full_registers[s_num_full_registers];
+      partial_register_type m_partial_register[s_num_partial_registers];
 
       size_t m_length;
     public:
@@ -84,22 +84,30 @@ namespace RAJA
       /*!
        * @brief Default constructor, zeros register contents
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       Vector() : m_length(s_num_elem){}
 
       /*!
        * @brief Copy constructor
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       Vector(self_type const &c) :
-        m_full_registers(c.m_full_registers),
-        m_partial_register(c.m_partial_register),
         m_length(c.m_length)
-          {}
+      {
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = c.m_full_registers[i];
+        }
+        if(s_num_partial_registers){
+          m_partial_register[0] = c.m_partial_register[0];
+        }
+      }
 
       /*!
        * @brief Scalar constructor (broadcast)
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       Vector(element_type const &c)
       {
@@ -120,6 +128,7 @@ namespace RAJA
        * locations ptr, ptr+stride, ptr+2*stride, etc.
        *
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void load(element_type const *ptr, size_t stride = 1){
         m_length = s_num_elem;
@@ -138,6 +147,7 @@ namespace RAJA
        * For fixed length vectors, the length arguments is ignored, otherwise
        * only the specified number of values is read in.
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void load_n(element_type const *ptr, size_t length, size_t stride = 1){
         m_length = length;
@@ -160,6 +170,7 @@ namespace RAJA
        * Note: this could be done with "scatter" instructions if they are
        * available.
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void store(element_type *ptr, size_t stride = 1) const{
         if(s_is_fixed || m_length == s_num_elem){
@@ -184,6 +195,7 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type operator[](size_t i) const
       {
@@ -207,6 +219,7 @@ namespace RAJA
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void set(size_t i, element_type value)
       {
@@ -228,8 +241,9 @@ namespace RAJA
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(element_type value)
+      self_type &operator=(element_type value)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] = value;
@@ -245,8 +259,9 @@ namespace RAJA
        * @param x Vector to copy
        * @return Value of (*this)
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(self_type const &x)
+      self_type &operator=(self_type const &x)
       {
         m_full_registers = x.m_full_registers;
         if(s_is_fixed && s_num_partial_registers){
@@ -263,6 +278,7 @@ namespace RAJA
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
@@ -276,8 +292,9 @@ namespace RAJA
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator+=(self_type const &x)
+      self_type &operator+=(self_type const &x)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] += x.m_full_registers[i];
@@ -285,7 +302,7 @@ namespace RAJA
         if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] += x.m_partial_register[0];
         }
-        m_length = std::min(m_length, x.m_length);
+        m_length = RAJA::min(m_length, x.m_length);
 
         return *this;
       }
@@ -295,6 +312,7 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
@@ -308,8 +326,9 @@ namespace RAJA
        * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator-=(self_type const &x)
+      self_type &operator-=(self_type const &x)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] -= x.m_full_registers[i];
@@ -317,7 +336,7 @@ namespace RAJA
         if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] -= x.m_partial_register[0];
         }
-        m_length = std::min(m_length, x.m_length);
+        m_length = RAJA::min(m_length, x.m_length);
 
         return *this;
       }
@@ -327,6 +346,7 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
@@ -340,8 +360,9 @@ namespace RAJA
        * @param x Vector to multiple with this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator*=(self_type const &x)
+      self_type &operator*=(self_type const &x)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] *= x.m_full_registers[i];
@@ -349,7 +370,7 @@ namespace RAJA
         if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] *= x.m_partial_register[0];
         }
-        m_length = std::min(m_length, x.m_length);
+        m_length = RAJA::min(m_length, x.m_length);
 
         return *this;
       }
@@ -359,6 +380,7 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
@@ -372,8 +394,9 @@ namespace RAJA
        * @param x Vector to divide by
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator/=(self_type const &x)
+      self_type &operator/=(self_type const &x)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] /= x.m_full_registers[i];
@@ -381,7 +404,7 @@ namespace RAJA
         if(s_is_fixed && s_num_partial_registers){
           m_partial_register[0] /= x.m_partial_register[0];
         }
-        m_length = std::min(m_length, x.m_length);
+        m_length = RAJA::min(m_length, x.m_length);
 
         return *this;
       }
@@ -390,6 +413,7 @@ namespace RAJA
        * @brief Sum the elements of this vector
        * @return Sum of the values of the vectors scalar elements
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type sum() const
       {
@@ -417,6 +441,7 @@ namespace RAJA
        *
        * NOTE: we could really do something more optimized here!
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type dot(self_type const &x) const
       {
@@ -429,6 +454,7 @@ namespace RAJA
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type max() const
       {
@@ -439,17 +465,17 @@ namespace RAJA
 
           element_type result = (element_type)m_full_registers[0].max();
           for(size_t i = 1;i < s_num_full_registers;++ i){
-            result = std::max<double>(result, m_full_registers[i].max());
+            result = RAJA::max<double>(result, m_full_registers[i].max());
           }
           if(s_num_partial_registers){
-            result = std::max<double>(result, m_partial_register[0].max());
+            result = RAJA::max<double>(result, m_partial_register[0].max());
           }
           return result;
         }
         else{
           element_type result = (*this)[0];
           for(size_t i = 0;i < m_length;++ i){
-            result = std::max(result, (*this)[i]);
+            result = RAJA::max(result, (*this)[i]);
           }
           return result;
         }
@@ -459,6 +485,7 @@ namespace RAJA
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type min() const
       {
@@ -469,17 +496,17 @@ namespace RAJA
 
           element_type result = (element_type)m_full_registers[0].min();
           for(size_t i = 1;i < s_num_full_registers;++ i){
-            result = std::min<double>(result, m_full_registers[i].min());
+            result = RAJA::min<double>(result, m_full_registers[i].min());
           }
           if(s_num_partial_registers){
-            result = std::min<double>(result, m_partial_register[0].min());
+            result = RAJA::min<double>(result, m_partial_register[0].min());
           }
           return result;
         }
         else{
           element_type result = (*this)[0];
           for(size_t i = 0;i < m_length;++ i){
-            result = std::min(result, (*this)[i]);
+            result = RAJA::min(result, (*this)[i]);
           }
           return result;
         }
@@ -490,31 +517,39 @@ namespace RAJA
 
 
   template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  using FixedVector = Vector<REGISTER_TYPE, NUM_ELEM, true>;
+  using FixedVectorExt = Vector<REGISTER_TYPE, NUM_ELEM, true>;
 
   template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  using StreamVector = Vector<REGISTER_TYPE, NUM_ELEM, false>;
+  using StreamVectorExt = Vector<REGISTER_TYPE, NUM_ELEM, false>;
 
 
   template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
   operator+(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
     return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) + y;
   }
 
   template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
   operator-(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
     return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) - y;
   }
 
   template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
   operator*(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
     return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) * y;
   }
 
   template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
   operator/(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
     return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) / y;

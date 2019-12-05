@@ -22,6 +22,18 @@
 
 namespace RAJA {
   struct vector_avx_register {};
+
+  template<typename T>
+  struct RegisterTraits<vector_avx_register, T>{
+      using register_type = vector_avx_register;
+      using element_type = T;
+
+
+      static constexpr size_t s_bit_width = 256;
+      static constexpr size_t s_byte_width = 32;
+      static constexpr size_t s_num_elem = s_byte_width / sizeof(T);
+
+  };
 }
 
 

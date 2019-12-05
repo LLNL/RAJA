@@ -36,6 +36,15 @@ namespace RAJA
   template<typename REGISTER_POLICY, typename T, size_t NUM_ELEM>
   class Register;
 
+  template<typename REGISTER_POLICY, typename T>
+  struct RegisterTraits{
+      using register_type = REGISTER_POLICY;
+      using element_type = T;
+
+      static constexpr size_t s_num_elem = 1;
+      static constexpr size_t s_byte_width = sizeof(T);
+      static constexpr size_t s_bit_width = s_byte_width*8;
+  };
 
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>

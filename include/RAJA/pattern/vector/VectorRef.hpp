@@ -61,13 +61,17 @@ namespace RAJA
       /*!
        * @brief Default constructor, zeros register contents
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       VectorRef() : m_linear_index(0), m_length(0), m_data(), m_stride(0) {};
 
       /*!
        * @brief Constructor
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       VectorRef(index_type lin_index, index_type length, pointer_type pointer, index_type stride) :
       m_linear_index(lin_index),
       m_length(length),
@@ -79,7 +83,9 @@ namespace RAJA
       /*!
        * @brief Copy constructor
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       VectorRef(self_type const &c) :
       m_linear_index(c.m_linear_index),
       m_length(c.m_length),
@@ -88,7 +94,9 @@ namespace RAJA
           {}
 
 
+      RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       element_type *get_pointer() const
       {
         return &m_data[m_linear_index];
@@ -98,6 +106,7 @@ namespace RAJA
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void store(vector_type value) const
       {
@@ -113,6 +122,7 @@ namespace RAJA
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type load() const
       {
@@ -132,6 +142,7 @@ namespace RAJA
        * This allows the use of a VectorRef in an expression, and lets the
        * compiler automatically convert a VectorRef into a load().
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       operator vector_type() const {
         return load();
@@ -142,8 +153,9 @@ namespace RAJA
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(vector_type value)
+      self_type &operator=(vector_type value)
       {
         store(value);
         return *this;
@@ -156,6 +168,7 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type operator[](IDX i) const
       {
@@ -169,6 +182,7 @@ namespace RAJA
        * @param value Value of scalar to set
        */
       template<typename IDX>
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       void set(IDX i, element_type value)
       {
@@ -181,6 +195,7 @@ namespace RAJA
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &operator=(element_type value)
       {
@@ -195,6 +210,7 @@ namespace RAJA
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type operator+(vector_type const &x) const
       {
@@ -206,8 +222,9 @@ namespace RAJA
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator+=(vector_type const &x)
+      self_type &operator+=(vector_type const &x)
       {
         store(load() + x);
         return *this;
@@ -218,6 +235,7 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type operator-(vector_type const &x) const
       {
@@ -229,8 +247,9 @@ namespace RAJA
        * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator-=(vector_type const &x)
+      self_type &operator-=(vector_type const &x)
       {
         store(load() - x);
         return *this;
@@ -241,6 +260,7 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type operator*(vector_type const &x) const
       {
@@ -252,8 +272,9 @@ namespace RAJA
        * @param x Vector to multiple with this register
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator*=(vector_type const &x)
+      self_type &operator*=(vector_type const &x)
       {
         store(load() * x);
         return *this;
@@ -275,8 +296,9 @@ namespace RAJA
        * @param x Vector to divide by
        * @return Value of (*this)+x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator/=(vector_type const &x)
+      self_type &operator/=(vector_type const &x)
       {
         store(load() / x);
         return *this;
@@ -286,6 +308,7 @@ namespace RAJA
        * @brief Sum the elements of this vector
        * @return Sum of the values of the vectors scalar elements
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type sum() const
       {
@@ -297,6 +320,7 @@ namespace RAJA
        * @param x Other vector to dot with this vector
        * @return Value of (*this) dot x
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type dot(vector_type const &x) const
       {
@@ -307,6 +331,7 @@ namespace RAJA
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type max() const
       {
@@ -317,6 +342,7 @@ namespace RAJA
        * @brief Returns element-wise largest values
        * @return Vector of the element-wise max values
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type vmax(vector_type a) const
       {
@@ -327,6 +353,7 @@ namespace RAJA
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type min() const
       {
@@ -337,6 +364,7 @@ namespace RAJA
        * @brief Returns element-wise largest values
        * @return Vector of the element-wise max values
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type vmin(vector_type a) const
       {

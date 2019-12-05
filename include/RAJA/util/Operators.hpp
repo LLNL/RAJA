@@ -582,6 +582,28 @@ DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
 }  // namespace type_traits
 
+
+
+
+template<typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE
+constexpr T const &
+min(T const & a,  T const &b)
+{
+  return a < b ? a : b;
+}
+
+template<typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE
+constexpr T const &
+max(T const & a,  T const &b)
+{
+  return a > b ? a : b;
+}
+
+
 }  // namespace RAJA
 
 #endif  // closing endif for header file include guard
