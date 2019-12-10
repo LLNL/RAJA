@@ -12,6 +12,10 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA_unit_forone.hpp"
+#endif
+
 template <typename T, typename AtomicPolicy>
 void testAtomicAccessors()
 {
@@ -41,27 +45,33 @@ template <typename T, typename AtomicPolicy>
 void testAtomicAccessorsCUDA()
 {
   T * memaddr = nullptr;
+  T * result = nullptr;
   cudaErrchk(cudaMallocManaged((void **)&memaddr, sizeof(T)));
+  cudaErrchk(cudaMallocManaged((void **)&result, sizeof(T)));
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test store method with op()
-  test1.store( (T)19 );
-  ASSERT_EQ( test1, 19 );
+  forone<<<1,1>>>( [=] __device__ () {test1.store( (T)19 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( test1, (T)19 );
 
   // test assignment operator
-  test1 = (T)23;
-  ASSERT_EQ( test1, 23 );
+  forone<<<1,1>>>( [=] __device__ () {test1 = (T)23;} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( test1, (T)23 );
 
   // test load method
-  test1 = (T)29;
-  ASSERT_EQ( test1.load(), 29 );
+  forone<<<1,1>>>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)29 );
 
   cudaErrchk(cudaDeviceSynchronize());
 
   cudaErrchk(cudaFree(memaddr));
+  cudaErrchk(cudaFree(result));
 }
 #endif
 

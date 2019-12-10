@@ -12,6 +12,10 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA_unit_forone.hpp"
+#endif
+
 template <typename T, typename AtomicPolicy>
 void testAtomicMinMax()
 {
@@ -46,35 +50,41 @@ void testAtomicMinMax()
 template <typename T, typename AtomicPolicy>
 void testAtomicMinMaxCUDA()
 {
+  T * result = nullptr;
   T * memaddr = nullptr;
+  cudaErrchk(cudaMallocManaged(&result, sizeof(T)));
   cudaErrchk(cudaMallocManaged(&memaddr, sizeof(T)));
   memaddr[0] = (T)91;
   cudaErrchk(cudaDeviceSynchronize());
-  T result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test min
-  result = test1.fetch_min( (T)87 );
-  ASSERT_EQ( result, (T)91 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)87 );
 
-  result = test1.min( (T)83 );
-  ASSERT_EQ( result, (T)83 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)83 );
 
   // test max
-  result = test1.fetch_max( (T)87 );
-  ASSERT_EQ( result, (T)83 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)87 );
 
-  result = test1.max( (T)91 );
-  ASSERT_EQ( result, (T)91 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)91 );
 
-  cudaErrchk(cudaFree(memaddr));
   cudaErrchk(cudaDeviceSynchronize());
+  cudaErrchk(cudaFree(result));
+  cudaErrchk(cudaFree(memaddr));
 }
 #endif
 

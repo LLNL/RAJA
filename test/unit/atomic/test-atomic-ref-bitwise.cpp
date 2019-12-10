@@ -12,6 +12,10 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA_unit_forone.hpp"
+#endif
+
 template <typename T, typename AtomicPolicy>
 void testAtomicBitwise()
 {
@@ -55,42 +59,50 @@ template <typename T, typename AtomicPolicy>
 void testAtomicBitwiseCUDA()
 {
   T * memaddr = nullptr;
+  T * result = nullptr;
   cudaErrchk(cudaMallocManaged((void **)&memaddr, sizeof(T)));
+  cudaErrchk(cudaMallocManaged((void **)&result, sizeof(T)));
   memaddr[0] = (T)1;
   cudaErrchk(cudaDeviceSynchronize());
-  T result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test and/or
-  result = test1.fetch_and( (T)0 );
-  ASSERT_EQ( result, (T)1 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  result = test1.fetch_or( (T)1 );
-  ASSERT_EQ( result, (T)0 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
-  result = (test1 &= (T)0);
+  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
+  cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
-  ASSERT_EQ( result, (T)0 );
+  ASSERT_EQ( result[0], (T)0 );
 
-  result = (test1 |= (T)1);
+  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
+  cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
-  ASSERT_EQ( result, (T)1 );
+  ASSERT_EQ( result[0], (T)1 );
 
   // test xor
-  result = test1.fetch_xor( (T)1 );
-  ASSERT_EQ( result, (T)1 );
+  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  result = (test1 ^= (T)1);
+  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
+  cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
-  ASSERT_EQ( result, (T)1 );
+  ASSERT_EQ( result[0], (T)1 );
 
   cudaErrchk(cudaDeviceSynchronize());
   cudaErrchk(cudaFree(memaddr));
+  cudaErrchk(cudaFree(result));
 }
 #endif
 
