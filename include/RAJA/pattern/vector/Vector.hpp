@@ -263,9 +263,11 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator=(self_type const &x)
       {
-        m_full_registers = x.m_full_registers;
+        for(size_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = x.m_full_registers[i];
+        }
         if(s_is_fixed && s_num_partial_registers){
-          m_partial_register = x.m_partial_register;
+          m_partial_register[0] = x.m_partial_register[0];
         }
         m_length = x.m_length;
 

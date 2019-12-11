@@ -369,6 +369,37 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
   return temp;
 }
 
+/*!
+ * Allreduce values in a warp, or partial warp.
+ *
+ * We assume an entire warp, and that the warp is spanned by threadIdx.x
+ *
+ * This does a butterfly pattern, which allows us to stop early, leaving
+ * an allreduced subset of lanes.
+ *
+ */
+
+template <typename Combiner, size_t NumLaneBits, typename T>
+RAJA_DEVICE RAJA_INLINE T partial_warp_allreduce(T val)
+{
+  //int threadId = threadIdx.x;
+
+  T temp = val;
+
+  // reduce each warp
+  static constexpr int num_lanes = 1 << (NumLaneBits);
+  static_assert(num_lanes > 0 && num_lanes <= 32,
+      "Invalid number of lanes for reduction");
+
+  for (int i = 1; i < num_lanes; i *= 2) {
+    T rhs = __shfl_xor_sync(0xffffffff, temp, i);
+    Combiner{}(temp, rhs);
+  }
+
+  return temp;
+}
+
+
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)

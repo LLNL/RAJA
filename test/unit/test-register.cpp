@@ -10,8 +10,7 @@
 ///
 
 #include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
-
+#include "RAJA_gtest.hpp"
 
     using RegisterTestTypes = ::testing::Types<
 #ifdef __AVX__
@@ -49,6 +48,9 @@
        RAJA::FixedVector<double, 4>,
        RAJA::FixedVector<double, 8>,
        RAJA::FixedVector<double, 16>>;
+
+//using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
+
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test
 {
@@ -161,6 +163,10 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
 
 }
 
+
+
+
+
 TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
 {
 
@@ -170,7 +176,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   static constexpr size_t num_elem = register_t::s_num_elem;
 
   element_t A[num_elem], B[num_elem];
-  register_t x, y;
+  register_t x;
+  register_t y;
 
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(drand48()*1000.0);
@@ -182,15 +189,9 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   register_t z = x-y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z[i], A[i] - B[i]);
+    ASSERT_EQ(z[i], A[i] - B[i]);
   }
 
-  register_t z2 = x;
-  z2 -= y;
-
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z2[i], A[i] - B[i]);
-  }
 }
 
 TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
@@ -329,6 +330,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
 
 }
 
+//REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSubtract);
 
 REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSetGet,
                                        VectorRegisterLoad,
@@ -343,4 +345,163 @@ REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSetGet,
 INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, RegisterTestTypes);
 
 
+#if defined(RAJA_ENABLE_CUDA)
+
+
+CUDA_TEST(RegisterTestCuda, CudaWarp32)
+{
+  using namespace RAJA::statement;
+
+  using element_t = double;
+  size_t N = 2;
+
+  element_t *data = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&data,
+                    sizeof(element_t) * N*32,
+                    cudaMemAttachGlobal));
+
+  element_t *result = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&result,
+                    sizeof(element_t) * N,
+                    cudaMemAttachGlobal));
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+  for(int i = 0;i < N*32;++ i){
+    data[i] = 1000*drand48();
+  }
+
+  for(int i = 0;i < N;++ i){
+    result[i] = 0.0;
+  }
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  using register_t = RAJA::Register<RAJA::vector_cuda_warp_register<5>, element_t, 32>;
+
+
+  using Pol = RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+          RAJA::statement::Lambda<0>
+            >
+          >
+        >
+       >;
+
+  RAJA::kernel<Pol>(
+
+      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
+
+      [=] __device__(int i0){
+        int i = (i0>>5)<<5;
+
+        register_t value;
+        value.load(data + i);
+
+        element_t s = value.sum();
+
+        if((i0 & 31) == 0){
+           result[i0>>5] = s;
+        }
+      });
+
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  for(int i = 0;i < N;++ i){
+    element_t expected = data[i*32];
+    for(int j = 1;j <32;++ j){
+      expected += data[i*32+j];
+    }
+    ASSERT_DOUBLE_EQ(expected, result[i]);
+  }
+
+
+
+}
+
+
+CUDA_TEST(RegisterTestCuda, CudaWarp16)
+{
+  using namespace RAJA::statement;
+
+  using element_t = double;
+  size_t N = 2;
+
+  element_t *data = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&data,
+                    sizeof(element_t) * N*32,
+                    cudaMemAttachGlobal));
+
+  element_t *result = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&result,
+                    sizeof(element_t) * N*2,
+                    cudaMemAttachGlobal));
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+  for(int i = 0;i < N*32;++ i){
+    data[i] = 1000*drand48();
+  }
+
+  for(int i = 0;i < N*2;++ i){
+    result[i] = 0.0;
+  }
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  using register_t = RAJA::Register<RAJA::vector_cuda_warp_register<4>, element_t, 16>;
+
+
+  using Pol = RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+          RAJA::statement::Lambda<0>
+            >
+          >
+        >
+       >;
+
+  RAJA::kernel<Pol>(
+
+      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
+
+      [=] __device__(int i0){
+        int i = (i0>>4)<<4;
+        register_t value;
+        value.load(data + i);
+        element_t s = value.sum();
+        if(value.is_root()){
+           result[i0>>4] = s;
+        }
+      });
+
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  for(int i = 0;i < N*2;++ i){
+    element_t expected = data[i*16];
+    for(int j = 1;j <16;++ j){
+      expected += data[i*16+j];
+    }
+    ASSERT_DOUBLE_EQ(expected, result[i]);
+  }
+
+
+
+}
+
+
+#endif // RAJA_ENABLE_CUDA
 

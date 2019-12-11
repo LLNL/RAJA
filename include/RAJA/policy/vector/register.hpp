@@ -39,7 +39,7 @@
 
 
 
-#ifdef __ALTIVEC__
+#ifdef __ALTIVEC_AJK__
 #include<RAJA/policy/vector/register/altivec.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
 #define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_altivec_register

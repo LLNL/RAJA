@@ -262,7 +262,9 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        return self_type(m_value / x.m_value);
+        self_type result(*this);
+        result /= x;
+        return result;
       }
 
       /*!
@@ -348,4 +350,4 @@ namespace RAJA
 
 #endif
 
-#endif //__AVX2__
+#endif

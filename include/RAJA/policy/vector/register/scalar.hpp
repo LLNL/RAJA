@@ -31,10 +31,13 @@ namespace RAJA
    * whatever registers it deems appropriate.
    */
   template<typename REGISTER_POLICY, typename T>
-  class Register<REGISTER_POLICY, T, 1>{
+  class Register<REGISTER_POLICY, T, 1> :
+    public internal::RegisterBase<Register<REGISTER_POLICY, T, 1>>
+  {
     public:
       using self_type = Register<REGISTER_POLICY, T, 1>;
       using element_type = T;
+      using register_type = T;
 
       static constexpr size_t s_num_elem = 1;
       static constexpr size_t s_byte_width = sizeof(T);
@@ -73,16 +76,6 @@ namespace RAJA
 
 
       /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        m_value = ptr[0];
-      }
-
-      /*!
        * @brief Strided load constructor, when scalars are located in memory
        * locations ptr, ptr+stride, ptr+2*stride, etc.
        *
@@ -92,19 +85,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void load(element_type const *ptr, size_t ){
+      void load(element_type const *ptr, size_t = 1){
         m_value = ptr[0];
-      }
-
-
-      /*!
-       * @brief Store operation, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void store(element_type *ptr) const{
-        ptr[0] = m_value;
       }
 
       /*!
@@ -117,7 +99,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void store(element_type *ptr, size_t) const{
+      void store(element_type *ptr, size_t = 1) const{
         ptr[0] = m_value;
       }
 
@@ -131,7 +113,7 @@ namespace RAJA
       constexpr
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      element_type operator[](IDX) const
+      element_type get(IDX) const
       {return m_value;}
 
 
@@ -146,131 +128,52 @@ namespace RAJA
       void set(IDX , element_type value)
       {m_value = value;}
 
-      /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator=(element_type value)
-      {
-        m_value = value;
-        return *this;
-      }
 
-      /*!
-       * @brief Assign one register to antoher
-       * @param x Vector to copy
-       * @return Value of (*this)
-       */
+
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(self_type const &x)
-      {
-        m_value = x.m_value;
-        return *this;
+      static
+      self_type broadcast(element_type const &a){
+        return self_type(a);
       }
 
 
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return self_type(m_value + x.m_value);
+      static
+      void copy(self_type &dst, self_type const &src){
+        dst.m_value = src.m_value;
       }
 
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator+=(self_type const &x)
-      {
-        m_value = m_value + x.m_value;
-        return *this;
+      static
+      self_type add(self_type const &a, self_type const &b){
+        return self_type(a.m_value + b.m_value);
       }
 
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return self_type(m_value - x.m_value);
+      static
+      self_type subtract(self_type const &a, self_type const &b){
+        return self_type(a.m_value - b.m_value);
       }
 
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator-=(self_type const &x)
-      {
-        m_value = m_value - x.m_value;
-        return *this;
+      static
+      self_type multiply(self_type const &a, self_type const &b){
+        return self_type(a.m_value * b.m_value);
       }
 
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator*(self_type const &x) const
-      {
-        return self_type(m_value * x.m_value);
+      static
+      self_type divide(self_type const &a, self_type const &b){
+        return self_type(a.m_value / b.m_value);
       }
 
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator*=(self_type const &x)
-      {
-        m_value = m_value * x.m_value;
-        return *this;
-      }
 
-      /*!
-       * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator/(self_type const &x) const
-      {
-        return self_type(m_value / x.m_value);
-      }
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator/=(self_type const &x)
-      {
-        m_value = m_value / x.m_value;
-        return *this;
-      }
 
       /*!
        * @brief Sum the elements of this vector
@@ -278,21 +181,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       element_type sum() const
       {
         return m_value;
-      }
-
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        return m_value*x.m_value;
       }
 
 
@@ -302,6 +194,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       element_type max() const
       {
         return m_value;
