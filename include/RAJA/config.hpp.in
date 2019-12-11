@@ -331,8 +331,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
-// Detect altivec
-#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1)
+// Detect altivec, but disable if NVCC is being used due to some bad interactions
+#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1) && !defined(__NVCC__)
 #define RAJA_ALTIVEC
 #endif
 
