@@ -62,12 +62,6 @@ REGISTER_TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP,
 using constructor_types =
     ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
                      std::tuple<RAJA::omp_target_reduce, float>,
-                     std::tuple<RAJA::omp_target_reduce, double>,
-                     std::tuple<RAJA::omp_target_reduce, int>,
-                     std::tuple<RAJA::omp_target_reduce, float>,
-                     std::tuple<RAJA::omp_target_reduce, double>,
-                     std::tuple<RAJA::omp_target_reduce, int>,
-                     std::tuple<RAJA::omp_target_reduce, float>,
                      std::tuple<RAJA::omp_target_reduce, double>>;
 
 
