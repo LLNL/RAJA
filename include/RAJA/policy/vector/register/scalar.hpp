@@ -132,45 +132,39 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type broadcast(element_type const &a){
-        return self_type(a);
+      void broadcast(element_type const &a){
+        m_value = a;
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      void copy(self_type &dst, self_type const &src){
-        dst.m_value = src.m_value;
+      void copy(self_type const &src){
+        m_value = src.m_value;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type add(self_type const &a, self_type const &b){
-        return self_type(a.m_value + b.m_value);
+      self_type add(self_type const &b) const {
+        return self_type(m_value + b.m_value);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type subtract(self_type const &a, self_type const &b){
-        return self_type(a.m_value - b.m_value);
+      self_type subtract(self_type const &b) const {
+        return self_type(m_value - b.m_value);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type multiply(self_type const &a, self_type const &b){
-        return self_type(a.m_value * b.m_value);
+      self_type multiply(self_type const &b) const {
+        return self_type(m_value * b.m_value);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type divide(self_type const &a, self_type const &b){
-        return self_type(a.m_value / b.m_value);
+      self_type divide(self_type const &b) const {
+        return self_type(m_value / b.m_value);
       }
 
 

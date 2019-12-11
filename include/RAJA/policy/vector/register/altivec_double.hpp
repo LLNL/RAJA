@@ -153,45 +153,39 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type broadcast(element_type const &a){
-        return self_type(a);
+      void broadcast(element_type const &a){
+        m_value = register_type{a, a};
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      void copy(self_type &dst, self_type const &src){
-        dst.m_value = src.m_value;
+      void copy(self_type const &src){
+        m_value = src.m_value;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type add(self_type const &a, self_type const &b){
-        return self_type(vec_add(a.m_value, b.m_value));
+      self_type add(self_type const &b) const {
+        return self_type(vec_add(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type subtract(self_type const &a, self_type const &b){
-        return self_type(vec_sub(a.m_value, b.m_value));
+      self_type subtract(self_type const &b) const {
+        return self_type(vec_sub(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type multiply(self_type const &a, self_type const &b){
-        return self_type(vec_mul(a.m_value, b.m_value));
+      self_type multiply(self_type const &b) const {
+        return self_type(vec_mul(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type divide(self_type const &a, self_type const &b){
-        return self_type(vec_div(a.m_value, b.m_value));
+      self_type divide(self_type const &b) const {
+        return self_type(vec_div(m_value, b.m_value));
       }
 
       /*!
@@ -204,16 +198,6 @@ namespace RAJA
         return m_value[0] + m_value[1];
       }
 
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        return self_type((*this) * x).sum();
-      }
 
       /*!
        * @brief Returns the largest element

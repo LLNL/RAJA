@@ -51,28 +51,28 @@ namespace RAJA
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator+(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
-    return register_t::add(register_t(x), y);
+    return register_t(x).add(y);
   }
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator-(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
-    return register_t::subtract(register_t(x), y);
+    return register_t(x).subtract(y);
   }
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator*(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
-    return register_t::multiply(register_t(x), y);
+    return register_t(x).multiply(y);
   }
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator/(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
-    return register_t::divide(register_t(x), y);
+    return register_t(x).divide(y);
   }
 
   namespace internal {
@@ -123,7 +123,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator=(element_type value)
       {
-        *getThis() = self_type::broadcast(value);
+        getThis()->broadcast(value);
         return *this;
       }
 
@@ -136,7 +136,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator=(self_type const &x)
       {
-        self_type::copy(*getThis(), x);
+        getThis()->copy(x);
         return *this;
       }
 
@@ -163,7 +163,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        return self_type::add(*getThis(), x);
+        return getThis()->add(x);
       }
 
 
@@ -176,7 +176,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator+=(self_type const &x)
       {
-        *getThis() = self_type::add(*getThis(), x);
+        *getThis() = getThis()->add(x);
         return *getThis();
       }
 
@@ -189,7 +189,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        return self_type::subtract(*getThis(), x);
+        return getThis()->subtract(x);
       }
 
       /*!
@@ -201,7 +201,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator-=(self_type const &x)
       {
-        *getThis() = self_type::subtract(*getThis(), x);
+        *getThis() = getThis()->subtract(x);
         return *getThis();
       }
 
@@ -214,7 +214,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator*(self_type const &x) const
       {
-        return self_type::multiply(*getThis(), x);
+        return getThis()->multiply(x);
       }
 
       /*!
@@ -226,22 +226,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator*=(self_type const &x)
       {
-        *getThis() = self_type::multiply(*getThis(), x);
-        return *getThis();
-      }
-
-
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator/=(self_type const &x)
-      {
-        *getThis() = self_type::divide(*getThis(), x);
+        *getThis() = getThis()->multiply(x);
         return *getThis();
       }
 
@@ -254,7 +239,20 @@ namespace RAJA
       RAJA_HOST_DEVICE
       self_type operator/(self_type const &x) const
       {
-        return self_type::divide(getThis(), x);
+        return getThis()->divide(x);
+      }
+
+      /*!
+       * @brief Divide this vector by another vector
+       * @param x Vector to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator/=(self_type const &x)
+      {
+        *getThis() = getThis()->divide(x);
+        return *getThis();
       }
 
 
@@ -267,7 +265,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       element_type dot(self_type const &x) const
       {
-        return ((*static_cast<self_type const *>(this)) * x).sum();
+        return ((*getThis()) * x).sum();
       }
 
   };

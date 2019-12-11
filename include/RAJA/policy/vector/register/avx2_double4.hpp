@@ -141,7 +141,7 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type operator[](IDX i) const
+      element_type get(IDX i) const
       {return m_value[i];}
 
 
@@ -155,120 +155,41 @@ namespace RAJA
       void set(IDX i, element_type value)
       {m_value[i] = value;}
 
-      /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(element_type value)
-      {
-        m_value = _mm256_set1_pd(value);
-        return *this;
-      }
-
-      /*!
-       * @brief Assign one register to antoher
-       * @param x Vector to copy
-       * @return Value of (*this)
-       */
-      RAJA_INLINE
-      self_type const &operator=(self_type const &x)
-      {
-        m_value = x.m_value;
-        return *this;
+      void broadcast(element_type const &value){
+        m_value =  _mm256_set1_pd(value);
       }
 
 
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return self_type(_mm256_add_pd(m_value, x.m_value));
+      void copy(self_type const &src){
+        m_value = src.m_value;
       }
 
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator+=(self_type const &x)
-      {
-        m_value = _mm256_add_pd(m_value, x.m_value);
-        return *this;
+      self_type add(self_type const &b) const {
+        return self_type(_mm256_add_pd(m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return self_type(_mm256_sub_pd(m_value, x.m_value));
+      self_type subtract(self_type const &b) const {
+        return self_type(_mm256_sub_pd(m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator-=(self_type const &x)
-      {
-        m_value = _mm256_sub_pd(m_value, x.m_value);
-        return *this;
+      self_type multiply(self_type const &b) const {
+        return self_type(_mm256_mul_pd(m_value, b.m_value));
       }
 
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator*(self_type const &x) const
-      {
-        return self_type(_mm256_mul_pd(m_value, x.m_value));
-      }
-
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator*=(self_type const &x)
-      {
-        m_value = _mm256_mul_pd(m_value, x.m_value);
-        return *this;
-      }
-
-      /*!
-       * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type operator/(self_type const &x) const
-      {
-        return self_type(_mm256_div_pd(m_value, x.m_value));
-      }
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator/=(self_type const &x)
-      {
-        m_value = _mm256_div_pd(m_value, x.m_value);
-        return *this;
+      self_type divide(self_type const &b) const {
+        return self_type(_mm256_div_pd(m_value, b.m_value));
       }
 
       /*!
@@ -282,16 +203,6 @@ namespace RAJA
         return hsum[0] + hsum[2];
       }
 
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        return self_type(_mm256_mul_pd(m_value, x.m_value)).sum();
-      }
 
       /*!
        * @brief Returns the largest element

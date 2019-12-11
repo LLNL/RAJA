@@ -152,45 +152,39 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type broadcast(element_type const &value){
-        return self_type( _mm256_set1_pd(value));
+      void broadcast(element_type const &value){
+        m_value =  _mm256_set1_pd(value);
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      void copy(self_type &dst, self_type const &src){
-        dst.m_value = src.m_value;
+      void copy(self_type const &src){
+        m_value = src.m_value;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type add(self_type const &a, self_type const &b){
-        return self_type(_mm256_add_pd(a.m_value, b.m_value));
+      self_type add(self_type const &b) const {
+        return self_type(_mm256_add_pd(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type subtract(self_type const &a, self_type const &b){
-        return self_type(_mm256_sub_pd(a.m_value, b.m_value));
+      self_type subtract(self_type const &b) const {
+        return self_type(_mm256_sub_pd(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type multiply(self_type const &a, self_type const &b){
-        return self_type(_mm256_mul_pd(a.m_value, b.m_value));
+      self_type multiply(self_type const &b) const {
+        return self_type(_mm256_mul_pd(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static
-      self_type divide(self_type const &a, self_type const &b){
-        return self_type(_mm256_div_pd(a.m_value, b.m_value));
+      self_type divide(self_type const &b) const {
+        return self_type(_mm256_div_pd(m_value, b.m_value));
       }
 
 
