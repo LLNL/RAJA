@@ -22,6 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
+#include "RAJA/pattern/register.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -33,7 +34,9 @@ namespace RAJA
 
 
   template<>
-  class Register<vector_avx2_register, double, 4>{
+  class Register<vector_avx2_register, double, 4>:
+    public internal::RegisterBase<Register<vector_avx2_register, double, 4>>
+  {
     public:
       using self_type = Register<vector_avx2_register, double, 4>;
       using element_type = double;
@@ -42,8 +45,6 @@ namespace RAJA
       static constexpr size_t s_num_elem = 4;
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
-
-
 
     private:
       register_type m_value;
@@ -80,14 +81,6 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
-      /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        m_value = _mm256_loadu_pd(ptr);
-      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -98,9 +91,9 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride){
+      void load(element_type const *ptr, size_t stride = 1){
         if(stride == 1){
-          load(ptr);
+          m_value = _mm256_loadu_pd(ptr);
         }
         else{
           m_value = _mm256_i64gather_pd(ptr,

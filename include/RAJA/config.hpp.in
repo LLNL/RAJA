@@ -331,6 +331,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
+// Detect altivec
+#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1)
+#define RAJA_ALTIVEC
+#endif
+
 
 #elif defined(RAJA_COMPILER_CLANG)
 //
@@ -362,6 +367,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
+
+// Detect altivec, but only seems to work since Clang 9
+#if defined(__ALTIVEC__) && (__clang_major__ >= 9 ) && (__ALTIVEC__ == 1)
+#define RAJA_ALTIVEC
+#endif
+
 
 #else
 

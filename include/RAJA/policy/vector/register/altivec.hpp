@@ -15,10 +15,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef __ALTIVEC__
-
 #ifndef RAJA_policy_vector_register_altivec_HPP
 #define RAJA_policy_vector_register_altivec_HPP
+
+#include "RAJA/config.hpp"
+#ifdef RAJA_ALTIVEC
+
+
 
 #include<altivec.h>
 
@@ -44,10 +47,7 @@ namespace RAJA {
   };
 }
 
-
-#endif
-
 #include<RAJA/policy/vector/register/altivec_double.hpp>
 
-
-#endif // __AVX__
+#endif // RAJA_ALTIVEC
+#endif // guard

@@ -18,6 +18,7 @@
 #ifndef RAJA_policy_vector_register_HPP
 #define RAJA_policy_vector_register_HPP
 
+#include "RAJA/config.hpp"
 #include<RAJA/pattern/register.hpp>
 #include<RAJA/policy/vector/policy.hpp>
 
@@ -39,7 +40,7 @@
 
 
 
-#ifdef __ALTIVEC_AJK__
+#ifdef RAJA_ALTIVEC
 #include<RAJA/policy/vector/register/altivec.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
 #define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_altivec_register

@@ -63,7 +63,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register(T const &c) : m_value(c) {}
+      Register(element_type const &c) : m_value(c) {}
 
 
       /*!

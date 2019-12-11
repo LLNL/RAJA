@@ -22,6 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
+#include "RAJA/pattern/register.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -33,7 +34,9 @@ namespace RAJA
 
 
   template<>
-  class Register<vector_avx_register, double, 3>{
+  class Register<vector_avx_register, double, 3> :
+  public internal::RegisterBase<Register<vector_avx_register, double, 3>>
+  {
     public:
       using self_type = Register<vector_avx_register, double, 3>;
       using element_type = double;
@@ -46,14 +49,8 @@ namespace RAJA
       static constexpr size_t s_bit_width = s_byte_width*8;
 
 
-
-
     private:
       register_type m_value;
-
-      // Mask used to mask off the upper double from the vector
-      using mask_type = __m256i;
-      //static constexpr mask_type s_mask = (__m256i)(__v4di){ -1, -1, -1, 0};
 
     public:
 
@@ -86,14 +83,6 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
-      /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        m_value = _mm256_maskload_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0});
-      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -104,9 +93,9 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride){
+      void load(element_type const *ptr, size_t stride = 1){
         if(stride==1){
-          load(ptr);
+          m_value = _mm256_maskload_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0});
         }
         else{
           m_value =_mm256_set_pd(0.0,
@@ -117,14 +106,6 @@ namespace RAJA
       }
 
 
-      /*!
-       * @brief Store operation, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_INLINE
-      void store(element_type *ptr) const{
-        _mm256_maskstore_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0}, m_value);
-      }
 
       /*!
        * @brief Strided store operation, where scalars are stored in memory
@@ -137,12 +118,12 @@ namespace RAJA
       RAJA_INLINE
       void store(element_type *ptr, size_t stride) const{
         if(stride == 1){
-          store(ptr);
+          _mm256_maskstore_pd(ptr, (__m256i)(__v4di){ -1, -1, -1, 0}, m_value);
         }
         else{
-          for(size_t i = 0;i < s_num_elem;++ i){
-            ptr[i*stride] = m_value[i];
-          }
+          ptr[0] = m_value[0];
+          ptr[stride] = m_value[1];
+          ptr[2*stride] = m_value[2];
         }
       }
 
@@ -154,7 +135,7 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type operator[](IDX i) const
+      element_type get(IDX i) const
       {return m_value[i];}
 
 
@@ -168,121 +149,49 @@ namespace RAJA
       void set(IDX i, element_type value)
       {m_value[i] = value;}
 
-      /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(element_type value)
-      {
-        m_value = _mm256_set1_pd(value);
-        return *this;
-      }
-
-      /*!
-       * @brief Assign one register to antoher
-       * @param x Vector to copy
-       * @return Value of (*this)
-       */
-      RAJA_INLINE
-      self_type const &operator=(self_type const &x)
-      {
-        m_value = x.m_value;
-        return *this;
+      static
+      self_type broadcast(element_type const &value){
+        return self_type( _mm256_set1_pd(value));
       }
 
 
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return self_type(_mm256_add_pd(m_value, x.m_value));
+      static
+      void copy(self_type &dst, self_type const &src){
+        dst.m_value = src.m_value;
       }
 
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator+=(self_type const &x)
-      {
-        m_value = _mm256_add_pd(m_value, x.m_value);
-        return *this;
+      static
+      self_type add(self_type const &a, self_type const &b){
+        return self_type(_mm256_add_pd(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return self_type(_mm256_sub_pd(m_value, x.m_value));
+      static
+      self_type subtract(self_type const &a, self_type const &b){
+        return self_type(_mm256_sub_pd(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator-=(self_type const &x)
-      {
-        m_value = _mm256_sub_pd(m_value, x.m_value);
-        return *this;
+      static
+      self_type multiply(self_type const &a, self_type const &b){
+        return self_type(_mm256_mul_pd(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator*(self_type const &x) const
-      {
-        return self_type(_mm256_mul_pd(m_value, x.m_value));
+      static
+      self_type divide(self_type const &a, self_type const &b){
+        return self_type(_mm256_div_pd(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator*=(self_type const &x)
-      {
-        m_value = _mm256_mul_pd(m_value, x.m_value);
-        return *this;
-      }
-
-      /*!
-       * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type operator/(self_type const &x) const
-      {
-        return self_type(_mm256_div_pd(m_value, x.m_value));
-      }
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator/=(self_type const &x)
-      {
-        m_value = _mm256_div_pd(m_value, x.m_value);
-        return *this;
-      }
 
       /*!
        * @brief Sum the elements of this vector

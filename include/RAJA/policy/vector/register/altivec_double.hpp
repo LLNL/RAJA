@@ -15,17 +15,23 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef __ALTIVEC__
+
 
 #ifndef RAJA_policy_vector_register_altivec_double_HPP
 #define RAJA_policy_vector_register_altivec_double_HPP
 
 #include "RAJA/config.hpp"
+
+#ifdef RAJA_ALTIVEC
+
 #include "RAJA/util/macros.hpp"
+#include "RAJA/pattern/register.hpp"
+
 
 // Include SIMD intrinsics header file
 #include <altivec.h>
 #include <cmath>
+
 
 
 namespace RAJA
@@ -33,7 +39,9 @@ namespace RAJA
 
 
   template<>
-  class Register<vector_altivec_register, double, 2>{
+  class Register<vector_altivec_register, double, 2>:
+    public internal::RegisterBase<Register<vector_altivec_register, double, 2>>
+  {
     public:
       using self_type = Register<vector_altivec_register, double, 2>;
       using element_type = double;
@@ -49,7 +57,7 @@ namespace RAJA
 
     public:
 
-      using simd_type = decltype(m_value);
+      using register_type = decltype(m_value);
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -63,7 +71,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(simd_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -81,14 +89,6 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value{c, c} {}
 
-      /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_INLINE
-      void load(element_type const *ptr){
-        m_value = *((simd_type const *)ptr);
-      }
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -99,25 +99,15 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride){
+      void load(element_type const *ptr, size_t stride = 1){
         if(stride == 1){
-          load(ptr);
+          m_value = *((register_type const *)ptr);
         }
         else{
-          m_value = simd_type{ptr[0], ptr[stride]};
+          m_value = register_type{ptr[0], ptr[stride]};
         }
       }
 
-
-
-      /*!
-       * @brief Store operation, assuming scalars are in consecutive memory
-       * locations.
-       */
-      RAJA_INLINE
-      void store(element_type *ptr) const{
-        *((simd_type *)ptr) = m_value;
-      }
 
       /*!
        * @brief Strided store operation, where scalars are stored in memory
@@ -128,9 +118,9 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      void store(element_type *ptr, size_t stride) const{
+      void store(element_type *ptr, size_t stride = 1) const{
         if(stride == 1){
-          store(ptr);
+          *((register_type *)ptr) = m_value;
         }
         else{
           for(size_t i = 0;i < s_num_elem;++ i){
@@ -147,7 +137,7 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type operator[](IDX i) const
+      element_type get(IDX i) const
       {return m_value[i];}
 
 
@@ -161,122 +151,47 @@ namespace RAJA
       void set(IDX i, element_type value)
       {m_value[i] = value;}
 
-      /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(element_type value)
-      {
-        m_value = simd_type(value);
-        return *this;
-      }
-
-      /*!
-       * @brief Assign one register to antoher
-       * @param x Vector to copy
-       * @return Value of (*this)
-       */
-      RAJA_INLINE
-      self_type const &operator=(self_type const &x)
-      {
-        m_value = x.m_value;
-        return *this;
+      static
+      self_type broadcast(element_type const &a){
+        return self_type(a);
       }
 
 
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return self_type(m_value + x.m_value);
+      static
+      void copy(self_type &dst, self_type const &src){
+        dst.m_value = src.m_value;
       }
 
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator+=(self_type const &x)
-      {
-        m_value += x.m_value;
-        return *this;
+      static
+      self_type add(self_type const &a, self_type const &b){
+        return self_type(vec_add(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return self_type(m_value - x.m_value);
+      static
+      self_type subtract(self_type const &a, self_type const &b){
+        return self_type(vec_sub(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator-=(self_type const &x)
-      {
-        m_value -= x.m_value;
-        return *this;
+      static
+      self_type multiply(self_type const &a, self_type const &b){
+        return self_type(vec_mul(a.m_value, b.m_value));
       }
 
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator*(self_type const &x) const
-      {
-        return self_type(m_value * x.m_value);
-      }
-
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator*=(self_type const &x)
-      {
-        m_value *= x.m_value;
-        return *this;
-      }
-
-      /*!
-       * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type operator/(self_type const &x) const
-      {
-        self_type result(*this);
-        result /= x;
-        return result;
-      }
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_INLINE
-      self_type const &operator/=(self_type const &x)
-      {
-        m_value /= x.m_value;
-        return *this;
+      static
+      self_type divide(self_type const &a, self_type const &b){
+        return self_type(vec_div(a.m_value, b.m_value));
       }
 
       /*!
@@ -318,7 +233,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        return self_type(simd_type{RAJA::max(m_value[0], a[0]), RAJA::max(m_value[1], a[1])});
+        return self_type(vec_max(m_value, a.m_value));
       }
 
       /*!
@@ -339,7 +254,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        return self_type(simd_type{RAJA::min(m_value[0], a[0]), RAJA::min(m_value[1], a[1])});
+        return self_type(vec_min(m_value, a.m_value));
       }
   };
 
@@ -348,6 +263,6 @@ namespace RAJA
 }  // namespace RAJA
 
 
-#endif
+#endif // RAJA_ALTIVEC
 
-#endif
+#endif // guard
