@@ -37,15 +37,16 @@ namespace RAJA
     public:
       using self_type = Register<vector_avx2_register, double, 2>;
       using element_type = double;
+      using register_type = __m128d;
 
       static constexpr size_t s_num_elem = 2;
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-      using simd_type = __m128d;
+
 
     private:
-      simd_type m_value;
+      register_type m_value;
 
     public:
 
@@ -61,7 +62,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(simd_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -302,10 +303,10 @@ namespace RAJA
       element_type max() const
       {
         // swap the two lanes
-        simd_type a = _mm_permute_pd(m_value, 0x01);
+        register_type a = _mm_permute_pd(m_value, 0x01);
 
         // take the max of each lane (should be same result in each lane)
-        simd_type b = _mm_max_pd(m_value, a);
+        register_type b = _mm_max_pd(m_value, a);
 
         // return the lower lane
         return b[0];
@@ -329,10 +330,10 @@ namespace RAJA
       element_type min() const
       {
         // swap the two lanes
-        simd_type a = _mm_permute_pd(m_value, 0x01);
+        register_type a = _mm_permute_pd(m_value, 0x01);
 
         // take the max of each lane (should be same result in each lane)
-        simd_type b = _mm_min_pd(m_value, a);
+        register_type b = _mm_min_pd(m_value, a);
 
         // return the lower lane
         return b[0];

@@ -405,7 +405,7 @@ CUDA_TEST(RegisterTestCuda, CudaWarp32)
 
         element_t s = value.sum();
 
-        if((i0 & 31) == 0){
+        if(value.is_root()){
            result[i0>>5] = s;
         }
       });

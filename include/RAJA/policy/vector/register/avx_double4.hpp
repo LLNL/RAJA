@@ -37,15 +37,16 @@ namespace RAJA
     public:
       using self_type = Register<vector_avx_register, double, 4>;
       using element_type = double;
+      using register_type = __m256d;
 
       static constexpr size_t s_num_elem = 4;
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-      using simd_type = __m256d;
+
 
     private:
-      simd_type m_value;
+      register_type m_value;
 
     public:
 
@@ -61,7 +62,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(simd_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -308,13 +309,13 @@ namespace RAJA
       element_type max() const
       {
         // permute the first two and last two lanes of the register
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
+        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
         // this gives us b=XXYY where
         // X = min(a[0], a[1])
         // Y = min(a[2], a[3])
-        simd_type b = _mm256_max_pd(m_value, a);
+        register_type b = _mm256_max_pd(m_value, a);
 
         // now take the minimum of a lower and upper lane
         return std::max<double>(b[0], b[2]);
@@ -340,13 +341,13 @@ namespace RAJA
         // permute the first two and last two lanes of the register
         // m_value = ABCD
         // a = AACC
-        simd_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
+        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
 
         // take the minimum value of each lane
         // this gives us b=XXYY where
         // X = min(a[0], a[1])
         // Y = min(a[2], a[3])
-        simd_type b = _mm256_min_pd(m_value, a);
+        register_type b = _mm256_min_pd(m_value, a);
 
         // now take the minimum of a lower and upper lane
         return std::min<double>(b[0], b[2]);

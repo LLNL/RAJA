@@ -71,8 +71,6 @@ namespace policy
 
   using policy::vector::vector_register_type;
 
-//RAJA::FixedVectorExt<RAJA::Register<RAJA::vector_avx_register, double,4>, 4>,
-
   template<typename T, size_t UNROLL = 1>
   using StreamVector = StreamVectorExt<
       RAJA::Register<RAJA::vector_register_type, T, RAJA::RegisterTraits<RAJA::vector_register_type, T>::s_num_elem>,
