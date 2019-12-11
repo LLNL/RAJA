@@ -9,7 +9,6 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
-// #include <random>
 
 #include "memoryManager.hpp"
 
@@ -74,7 +73,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in + N, -1);
 
-  // std::shuffle(in, in + N, std::mt19937{std::random_device{}()});
   // _scan_array_init_end
 
   std::cout << "\n in values...\n";
