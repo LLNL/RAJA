@@ -172,7 +172,7 @@ struct ForallCUDA : ::testing::Test {
 ///
 /// Run traversal with simple range-based iteration
 ///
-CUDA_TEST_F(ForallCUDA, forall_range)
+GPU_TEST_F(ForallCUDA, forall_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -200,7 +200,7 @@ CUDA_TEST_F(ForallCUDA, forall_range)
 ///
 /// Run range Icount test in its simplest form for sanity check
 ///
-CUDA_TEST_F(ForallCUDA, forall_icount_range)
+GPU_TEST_F(ForallCUDA, forall_icount_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -232,7 +232,7 @@ CUDA_TEST_F(ForallCUDA, forall_icount_range)
 ///
 /// Run traversal test with IndexSet containing multiple segments.
 ///
-CUDA_TEST_F(ForallCUDA, forall_indexset)
+GPU_TEST_F(ForallCUDA, forall_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -262,7 +262,7 @@ CUDA_TEST_F(ForallCUDA, forall_indexset)
 ///
 /// Run Icount test with IndexSet containing multiple segments.
 ///
-CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
+GPU_TEST_F(ForallCUDA, forall_icount_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;

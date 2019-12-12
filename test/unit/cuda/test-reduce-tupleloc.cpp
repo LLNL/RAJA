@@ -241,7 +241,7 @@ struct CUDAReduceLocTest : public ::testing::Test
 
 TYPED_TEST_CASE_P(CUDAReduceLocTest);
 
-CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
+GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -302,7 +302,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
   ASSERT_EQ(cpuloc_reducer.getLoc(), RAJA::get<0>(minmaxloc_reducer2.getLoc()) + RAJA::get<1>(minmaxloc_reducer2.getLoc()) * ydim);
 }
 
-CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
+GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;

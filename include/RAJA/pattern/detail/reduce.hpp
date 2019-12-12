@@ -117,13 +117,13 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   IndexType loc = DefaultLoc<IndexType>().value();
 
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &) = default;
+  RAJA_HOST_DEVICE constexpr ValueLoc() {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
 
-#if defined(CUDART_VERSION) && CUDART_VERSION < 9020
+#if (defined(CUDART_VERSION) && CUDART_VERSION < 9020) || defined(__HIPCC__)
   RAJA_HOST_DEVICE
 #endif
-  ValueLoc& operator=(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)

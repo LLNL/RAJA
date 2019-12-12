@@ -100,6 +100,10 @@
 #define CUDA_BLOCK_SIZE 16
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#define HIP_BLOCK_SIZE 16
+#endif
+
 //
 // Functions for printing and checking results
 //
@@ -287,6 +291,52 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+  std::cout << "\n Running five-cell stencil (RAJA-Kernel - "
+               "hip)...\n";
+
+  int* d_input  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+  int* d_output = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+
+  hipErrchk(hipMemcpy( d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice ));
+
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_inputView (d_input, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_outputView(d_output, layout);
+
+  using NESTED_EXEC_POL3 =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_block_x_loop, //row
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop, //col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
+                                 [=] RAJA_DEVICE(int col, int row) {
+
+                                   d_outputView(row, col) =
+                                         d_inputView(row, col)
+                                       + d_inputView(row - 1, col)
+                                       + d_inputView(row + 1, col)
+                                       + d_inputView(row, col - 1)
+                                       + d_inputView(row, col + 1);
+                                 });
+
+  hipErrchk(hipMemcpy( output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost ));
+
+  //printLattice(output, totCellsInRow, totCellsInCol);
+  checkResult(output, output_ref, totCells);
+
+  memoryManager::deallocate_gpu(d_input);
+  memoryManager::deallocate_gpu(d_output);
 #endif
 
 //----------------------------------------------------------------------------//
