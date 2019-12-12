@@ -353,7 +353,7 @@ CUDA_TEST(RegisterTestCuda, CudaWarp32)
   using namespace RAJA::statement;
 
   using element_t = double;
-  size_t N = 2;
+  size_t N = 20;
 
   element_t *data = nullptr;
 
@@ -370,7 +370,7 @@ CUDA_TEST(RegisterTestCuda, CudaWarp32)
   cudaErrchk(cudaDeviceSynchronize());
 
   for(int i = 0;i < N*32;++ i){
-    data[i] = 1000*drand48();
+    data[i] = i; //1000*drand48();
   }
 
   for(int i = 0;i < N;++ i){
@@ -382,32 +382,33 @@ CUDA_TEST(RegisterTestCuda, CudaWarp32)
 
   using register_t = RAJA::Register<RAJA::vector_cuda_warp_register<5>, element_t, 32>;
 
+  using vector_t = RAJA::FixedVectorExt<register_t, 32>;
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
-      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+      RAJA::statement::For<0, RAJA::cuda_warp_vector_loop,
           RAJA::statement::Lambda<0>
             >
           >
         >
        >;
 
+  auto data_view = RAJA::make_view<int>(data);
+
   RAJA::kernel<Pol>(
 
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
+      RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::VectorIndex<int, vector_t> >(0, N*32)),
 
-      [=] __device__(int i0){
-        int i = (i0>>5)<<5;
-
-        register_t value;
-        value.load(data + i);
+      [=] __device__(RAJA::VectorIndex<int, vector_t> i){
+        auto value = data_view(i);
 
         element_t s = value.sum();
 
-        if(value.is_root()){
-           result[i0>>5] = s;
+        if(vector_t::is_root()){
+           result[(*i)>>5] = s;
         }
+
       });
 
 
@@ -481,7 +482,7 @@ CUDA_TEST(RegisterTestCuda, CudaWarp16)
         register_t value;
         value.load(data + i);
         element_t s = value.sum();
-        if(value.is_root()){
+        if(register_t::is_root()){
            result[i0>>4] = s;
         }
       });

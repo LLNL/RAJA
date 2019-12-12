@@ -128,6 +128,17 @@ struct cuda_warp_direct{};
 // Multiple warps have to be created by using cuda_thread_{yz}_*
 struct cuda_warp_loop{};
 
+// Policy that maps multiple warp lanes to RAJA vector abstraction
+// This is similar to cuda_warp_masked_X or cuda_warp_loop, except that it
+// will generate a VectorIndex argument, and each lane within a vector will
+// get the same starting index (instead of cuda_warp_loop where each lane gets
+// subsequent indices)
+struct cuda_warp_vector_direct{};
+
+// This is the same as cuda_warp_vector_direct, but with the looping construct
+// around it.
+struct cuda_warp_vector_loop{};
+
 
 
 // Policy to map work to threads within a warp using a bit mask
@@ -202,6 +213,8 @@ using policy::cuda::cuda_thread_masked_loop;
 using policy::cuda::cuda_synchronize;
 
 
+using policy::cuda::cuda_warp_vector_direct;
+using policy::cuda::cuda_warp_vector_loop;
 
 
 /*!

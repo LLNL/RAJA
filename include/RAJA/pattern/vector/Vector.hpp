@@ -121,6 +121,14 @@ namespace RAJA
       }
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_root() {
+        return full_register_type::is_root();
+      }
+
 
 
       /*!

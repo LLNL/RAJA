@@ -96,6 +96,14 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      static
+      constexpr
+      bool is_root() {
+        return vector_type::is_root();
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
       constexpr
       element_type *get_pointer() const
       {

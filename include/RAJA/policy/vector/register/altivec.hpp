@@ -21,7 +21,7 @@
 #include "RAJA/config.hpp"
 #ifdef RAJA_ALTIVEC
 
-
+#include<RAJA/policy/vector/register/scalar.hpp>
 
 #include<altivec.h>
 
@@ -45,6 +45,14 @@ namespace RAJA {
       static constexpr size_t s_num_elem = s_byte_width / sizeof(T);
 
   };
+
+
+  // Use the vector_scalar_register for a 1-wide vector
+  template<typename T>
+  class Register<vector_altivec_register, T, 1> :
+  public Register<vector_scalar_register, T, 1> {};
+
+
 }
 
 #include<RAJA/policy/vector/register/altivec_double.hpp>

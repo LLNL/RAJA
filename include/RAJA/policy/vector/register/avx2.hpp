@@ -20,6 +20,8 @@
 #ifndef RAJA_policy_vector_register_avx2_HPP
 #define RAJA_policy_vector_register_avx2_HPP
 
+#include<RAJA/policy/vector/register/scalar.hpp>
+
 namespace RAJA {
   struct vector_avx2_register {};
 
@@ -33,10 +35,15 @@ namespace RAJA {
       static constexpr size_t s_num_elem = s_byte_width / sizeof(T);
 
   };
+
+  // Use the vector_scalar_register for a 1-wide vector
+  template<typename T>
+  class Register<vector_avx2_register, T, 1> :
+  public Register<vector_scalar_register, T, 1> {};
+
 }
 
-
-#endif
+#endif // guard
 
 #include<RAJA/policy/vector/register/avx2_double2.hpp>
 #include<RAJA/policy/vector/register/avx2_double3.hpp>

@@ -111,8 +111,9 @@ namespace RAJA {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      static
       constexpr
-      bool is_root() const {
+      bool is_root() {
         return get_lane() == 0;
       }
 

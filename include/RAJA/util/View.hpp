@@ -273,6 +273,8 @@ struct View {
 
 
 
+
+
 namespace internal {
 
   /**
@@ -392,6 +394,19 @@ struct TypedViewBase {
 template <typename ValueType, typename LayoutType, typename... IndexTypes>
 using TypedView =
     TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
+
+
+
+
+
+template <typename IndexType, typename ValueType>
+RAJA_INLINE View<ValueType, Layout<1, IndexType, 0> > make_view(
+    ValueType *ptr)
+{
+  return View<ValueType, Layout<1, IndexType, 0> >(ptr, 1);
+}
+
+
 
 template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {

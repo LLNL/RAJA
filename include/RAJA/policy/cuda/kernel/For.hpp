@@ -703,6 +703,88 @@ struct CudaStatementExecutor<
 
 
 
+/*
+ * Executor for vector loops inside of a CudaKernel.
+ *
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, cuda_warp_vector_loop, EnclosedStmts...> > {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+
+    auto &begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+    auto end = camp::get<ArgumentId>(data.segment_tuple).end();
+    auto distance = segment_length<ArgumentId>(data);
+    using diff_t = decltype(distance);
+
+    using Iterator = decltype(end);
+    using vector_type = typename Iterator::vector_type;
+
+    diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
+    diff_t distance_remainder = distance - distance_simd;
+
+    // Streaming loop for complete vector widths
+    begin.set_vector_length(vector_type::s_num_elem);
+    for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
+      // Assign i to the argument
+      // Note: this is independent of warp lane... each lane gets SAME index!
+      data.template assign_offset<ArgumentId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+
+    // Postamble for remaining elements
+    if(distance_remainder > 0){
+      begin.set_vector_length(distance_remainder);
+
+      data.template assign_offset<ArgumentId>(distance_simd);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+
+  }
+
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+
+    // we always get EXACTLY one warp by allocating one warp in the X
+    // dimension
+    int len = RAJA::policy::cuda::WARP_SIZE;
+
+    // request one thread per element in the segment
+    set_cuda_dim<0>(dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_cuda_dim<0>(dims.min_threads, len);
+
+    return(dims);
+  }
+
+};
+
+
+
 }  // namespace internal
 }  // end namespace RAJA
 
