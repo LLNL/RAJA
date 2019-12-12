@@ -22,21 +22,27 @@ void testAtomicAccessors()
   // should also work with CUDA
   T theval = (T)0;
   T * memaddr = &theval;
+  T result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test store method with op()
   test1.store( (T)19 );
-  ASSERT_EQ( test1, 19 );
+  ASSERT_EQ( test1, (T)19 );
 
   // test assignment operator
   test1 = (T)23;
-  ASSERT_EQ( test1, 23 );
+  ASSERT_EQ( test1, (T)23 );
 
   // test load method
   test1 = (T)29;
-  ASSERT_EQ( test1.load(), 29 );
+  ASSERT_EQ( test1.load(), (T)29 );
+
+  // test ()
+  result = (test1 = (T)31);
+  ASSERT_EQ( test1, (T)31 );
+  ASSERT_EQ( result, (T)31 );
 }
 
 // Pure CUDA test.
@@ -67,6 +73,13 @@ void testAtomicAccessorsCUDA()
   forone<<<1,1>>>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)29 );
+  ASSERT_EQ( test1, (T)29 );
+
+  // test ()
+  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 = (T)31);} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)31 );
+  ASSERT_EQ( test1, (T)31 );
 
   cudaErrchk(cudaDeviceSynchronize());
 

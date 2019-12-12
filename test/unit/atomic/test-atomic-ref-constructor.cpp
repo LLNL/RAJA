@@ -12,6 +12,10 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA_unit_forone.hpp"
+#endif
+
 template <typename T>
 void testAtomicDefaultPolConstructors()
 {
@@ -52,6 +56,38 @@ void testAtomicBasicConstructors()
 
   ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
+
+// Pure CUDA test.
+#if defined(RAJA_ENABLE_CUDA)
+template <typename T, typename AtomicPolicy>
+void testAtomicBasicConstructorsCUDA()
+{
+  T * memaddr = nullptr;
+  T * proxy = nullptr;
+  cudaErrchk(cudaMallocManaged((void **)&proxy, sizeof(T)));
+  proxy = memaddr;
+  cudaErrchk(cudaDeviceSynchronize());
+
+  // explicit constructor with memory address
+  RAJA::AtomicRef<T, AtomicPolicy> test0( memaddr );
+  RAJA::AtomicRef<T, AtomicPolicy> test1( proxy );
+
+  forone<<<1,1>>>( [=] __device__ () {test1.getPointer();} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( test0.getPointer(), nullptr );
+  ASSERT_EQ( test1.getPointer(), nullptr );
+
+  // ref constructor
+  RAJA::AtomicRef<T, AtomicPolicy> const & reft1 = test1;
+  RAJA::AtomicRef<T, AtomicPolicy> reftest1( reft1 );
+  forone<<<1,1>>>( [=] __device__ () {reftest1.getPointer();} );
+  cudaErrchk(cudaDeviceSynchronize());
+
+  ASSERT_EQ( reftest1.getPointer(), nullptr );
+
+  cudaErrchk(cudaFree(proxy));
+}
+#endif
 
 TEST( AtomicRefUnitTest, BasicConstructorsTest )
 {
@@ -97,5 +133,20 @@ TEST( AtomicRefUnitTest, BasicConstructorsTest )
 
   testAtomicBasicConstructors<double, RAJA::auto_atomic>();
   testAtomicBasicConstructors<double, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructorsCUDA<int, RAJA::auto_atomic>();
+  testAtomicBasicConstructorsCUDA<int, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructorsCUDA<unsigned int, RAJA::auto_atomic>();
+  testAtomicBasicConstructorsCUDA<unsigned int, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructorsCUDA<unsigned long long int, RAJA::auto_atomic>();
+  testAtomicBasicConstructorsCUDA<unsigned long long int, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructorsCUDA<float, RAJA::auto_atomic>();
+  testAtomicBasicConstructorsCUDA<float, RAJA::cuda_atomic>();
+
+  testAtomicBasicConstructorsCUDA<double, RAJA::auto_atomic>();
+  testAtomicBasicConstructorsCUDA<double, RAJA::cuda_atomic>();
   #endif
 }
