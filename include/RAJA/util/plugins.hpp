@@ -23,7 +23,7 @@ namespace util {
 
 inline
 void
-callPreLaunchPlugins(PluginContext p)
+callPreLaunchPlugins(PluginContext p) noexcept
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
@@ -31,12 +31,11 @@ callPreLaunchPlugins(PluginContext p)
   {
     (*plugin).get()->preLaunch(p);
   }
-
 }
 
 inline
 void
-callPostLaunchPlugins(PluginContext p)
+callPostLaunchPlugins(PluginContext p) noexcept
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
