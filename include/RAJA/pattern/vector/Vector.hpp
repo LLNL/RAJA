@@ -112,10 +112,10 @@ namespace RAJA
       Vector(element_type const &c)
       {
         for(size_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = c;
+          m_full_registers[i].broadcast(c);
         }
         if(s_num_partial_registers){
-          m_partial_register[0] = c;
+          m_partial_register[0].broadcast(c);
         }
         m_length = s_num_elem;
       }

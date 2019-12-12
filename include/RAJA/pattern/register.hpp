@@ -39,10 +39,10 @@ namespace RAJA
   template<typename REGISTER_POLICY, typename T>
   struct RegisterTraits{
       using register_type = REGISTER_POLICY;
-      using element_type = T;
+      using element_type = camp::decay<T>;
 
       static constexpr size_t s_num_elem = 1;
-      static constexpr size_t s_byte_width = sizeof(T);
+      static constexpr size_t s_byte_width = sizeof(element_type);
       static constexpr size_t s_bit_width = s_byte_width*8;
   };
 
@@ -89,7 +89,7 @@ namespace RAJA
   class RegisterBase<Register<REGISTER_POLICY, T, NUM_ELEM>>{
     public:
       using self_type = Register<REGISTER_POLICY, T, NUM_ELEM>;
-      using element_type = T;
+      using element_type = camp::decay<T>;
 
     private:
       RAJA_INLINE
