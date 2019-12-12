@@ -238,8 +238,14 @@ struct floating_point_limits {
 
 template <>
 struct floating_point_limits<float> {
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min() { return -FLT_MAX; }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max() { return FLT_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min()
+  {
+    return -FLT_MAX;
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max()
+  {
+    return FLT_MAX;
+  }
 };
 
 template <>

@@ -5,8 +5,18 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(index)
-add_subdirectory(internal)
-add_subdirectory(util)
-add_subdirectory(atomic)
-add_subdirectory(view-layout)
+raja_add_test(
+  NAME test-standard-layout
+  SOURCES test-standard-layout.cpp)
+
+raja_add_test(
+  NAME test-typedlayout
+  SOURCES test-typedlayout.cpp)
+
+raja_add_test(
+  NAME test-typedview
+  SOURCES test-typedview.cpp)
+
+raja_add_test(
+  NAME test-makelayout
+  SOURCES test-makelayout.cpp)
