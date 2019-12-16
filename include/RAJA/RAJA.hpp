@@ -74,6 +74,10 @@
 #include "RAJA/policy/cuda.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
 

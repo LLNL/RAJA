@@ -283,6 +283,50 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   //printResult<int>(Atview, N_c, N_r);
 #endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running hip tiled matrix transpose ...\n";
+
+  int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
+
+  RAJA::View<int, RAJA::Layout<DIM>> d_Aview(d_A, N_r, N_c);
+  RAJA::View<int, RAJA::Layout<DIM>> d_Atview(d_At, N_c, N_r);
+
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+
+  using KERNEL_EXEC_POL_HIP =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+            RAJA::statement::For<1, RAJA::hip_thread_x_direct,
+              RAJA::statement::For<0, RAJA::hip_thread_y_direct,
+                                      RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel<KERNEL_EXEC_POL_HIP>(
+                           RAJA::make_tuple(col_Range, row_Range),
+                           [=] RAJA_DEVICE (int col, int row) {
+
+                             d_Atview(col, row) = d_Aview(row, col);
+
+  });
+
+  hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+  checkResult<int>(Atview, N_c, N_r);
+  //printResult<int>(Atview, N_c, N_r);
+#endif
+
   //----------------------------------------------------------------------------//
 
 

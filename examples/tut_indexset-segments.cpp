@@ -44,6 +44,10 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+#endif
+
 //----------------------------------------------------------------------------//
 // Define types for ListSegments and indices used in examples
 //----------------------------------------------------------------------------//
@@ -346,6 +350,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(a, aref, N);
 //printResult(a, N);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout <<
+    "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" <<
+    " (sequential iteration over segments, HIP parallel segment execution)...\n";
+
+  using OMP_ISET_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                             RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+
+  double* d_a = memoryManager::allocate_gpu<double>(N);
+  double* d_b = memoryManager::allocate_gpu<double>(N);
+
+  hipErrchk(hipMemcpy( d_a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b,  b, N * sizeof(double), hipMemcpyHostToDevice ));
+
+  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (IdxType i) {
+    d_a[i] += d_b[i] * c;
+  });
+
+  hipErrchk(hipMemcpy( a, d_a, N * sizeof(double), hipMemcpyDeviceToHost ));
+
+  checkResult(a, aref, N);
+//printResult(a, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
 #endif
 
 //----------------------------------------------------------------------------//

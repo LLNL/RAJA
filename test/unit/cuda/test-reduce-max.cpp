@@ -60,7 +60,7 @@ public:
 
 double* ReduceMaxCUDA::dvalue = nullptr;
 
-CUDA_TEST_F(ReduceMaxCUDA, generic)
+GPU_TEST_F(ReduceMaxCUDA, generic)
 {
 
   double* dvalue = ReduceMaxCUDA::dvalue;
@@ -132,7 +132,7 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
+GPU_TEST_F(ReduceMaxCUDA, indexset_align)
 {
 
   double* dvalue = ReduceMaxCUDA::dvalue;
@@ -180,7 +180,7 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
+GPU_TEST_F(ReduceMaxCUDA, indexset_noalign)
 {
 
   double* dvalue = ReduceMaxCUDA::dvalue;

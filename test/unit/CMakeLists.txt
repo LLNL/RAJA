@@ -87,6 +87,10 @@ if(ENABLE_CUDA)
   add_subdirectory(cuda)
 endif(ENABLE_CUDA)
 
+if(ENABLE_HIP)
+  add_subdirectory(hip)
+endif(ENABLE_HIP)
+
 if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
 endif(ENABLE_TARGET_OPENMP)
