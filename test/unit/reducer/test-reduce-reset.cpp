@@ -64,14 +64,13 @@ TYPED_TEST_P(ReducerResetTest, BasicReset)
 
   ASSERT_EQ((NumericType)reduce_minloctup.get(), (NumericType)(resetVal));
   ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(resetVal));
-  // TODO: Reset of tuple loc defaults to 0, need to understand why not -1.
+  // Reset of tuple loc defaults to 0
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())), (RAJA::Index_type)0);
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())), (RAJA::Index_type)0);
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())), (RAJA::Index_type)0);
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)0);
 
-  // reset locs
-  // TODO: Can only reset to default of -1.
+  // reset locs to default of -1.
   reduce_minloc.reset(resetVal, -1);
   reduce_maxloc.reset(resetVal, -1);
 
@@ -92,12 +91,12 @@ using reset_types =
                      std::tuple<RAJA::tbb_reduce, float>,
                      std::tuple<RAJA::tbb_reduce, double>
 #endif
-//#if defined(RAJA_ENABLE_CUDA)
-//                     ,
-//                     std::tuple<RAJA::cuda_reduce, int>,
-//                     std::tuple<RAJA::cuda_reduce, float>,
-//                     std::tuple<RAJA::cuda_reduce, double>
-//#endif
+#if defined(RAJA_ENABLE_CUDA)
+                     ,
+                     std::tuple<RAJA::cuda_reduce, int>,
+                     std::tuple<RAJA::cuda_reduce, float>,
+                     std::tuple<RAJA::cuda_reduce, double>
+#endif
 #if defined(RAJA_ENABLE_OPENMP)
                      ,
                      std::tuple<RAJA::omp_reduce, int>,
@@ -107,12 +106,12 @@ using reset_types =
                      std::tuple<RAJA::omp_reduce_ordered, float>,
                      std::tuple<RAJA::omp_reduce_ordered, double>
 #endif
-//#if defined(RAJA_ENABLE_TARGET_OPENMP)
-//                     ,
-//                     std::tuple<RAJA::omp_target_reduce, int>,
-//                     std::tuple<RAJA::omp_target_reduce, float>,
-//                     std::tuple<RAJA::omp_target_reduce, double>
-//#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+                     ,
+                     std::tuple<RAJA::omp_target_reduce, int>,
+                     std::tuple<RAJA::omp_target_reduce, float>,
+                     std::tuple<RAJA::omp_target_reduce, double>
+#endif
                      >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerResetUnitTests,
