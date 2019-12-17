@@ -12,13 +12,25 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#include "test-atomic-ref.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
 #endif
 
-template <typename T, typename AtomicPolicy>
-void testAtomicAccessors()
+// Basic Accessors
+
+template <typename T>
+class AtomicRefBasicAccessorUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicAccessorUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicAccessorUnitTest, BasicAccessors )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   // should also work with CUDA
   T theval = (T)0;
   T * memaddr = &theval;
@@ -45,11 +57,30 @@ void testAtomicAccessors()
   ASSERT_EQ( result, (T)31 );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicAccessorUnitTest,
+                            BasicAccessors
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicAccessUnitTest,
+                               AtomicRefBasicAccessorUnitTest,
+                               basic_types
+                             );
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicAccessorsCUDA()
+// CUDA Accessors
+
+template <typename T>
+class AtomicRefCUDAAccessorUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefCUDAAccessorUnitTest );
+
+CUDA_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T * memaddr = nullptr;
   T * result = nullptr;
   cudaErrchk(cudaMallocManaged((void **)&memaddr, sizeof(T)));
@@ -86,67 +117,15 @@ void testAtomicAccessorsCUDA()
   cudaErrchk(cudaFree(memaddr));
   cudaErrchk(cudaFree(result));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAAccessorUnitTest,
+                            CUDAAccessors
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDAAccessUnitTest,
+                               AtomicRefCUDAAccessorUnitTest,
+                               CUDA_types
+                             );
 #endif
 
-TEST( AtomicRefUnitTest, AccessorsTest )
-{
-  testAtomicAccessors<int, RAJA::builtin_atomic>();
-  testAtomicAccessors<int, RAJA::seq_atomic>();
-
-  testAtomicAccessors<unsigned int, RAJA::builtin_atomic>();
-  testAtomicAccessors<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicAccessors<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicAccessors<unsigned long long int, RAJA::seq_atomic>();
-
-  testAtomicAccessors<float, RAJA::builtin_atomic>();
-  testAtomicAccessors<float, RAJA::seq_atomic>();
-
-  testAtomicAccessors<double, RAJA::builtin_atomic>();
-  testAtomicAccessors<double, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicAccessors<int, RAJA::omp_atomic>();
-
-  testAtomicAccessors<unsigned int, RAJA::omp_atomic>();
-
-  testAtomicAccessors<unsigned long long int, RAJA::omp_atomic>();
-
-  testAtomicAccessors<float, RAJA::omp_atomic>();
-
-  testAtomicAccessors<double, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicAccessors<int, RAJA::auto_atomic>();
-  testAtomicAccessors<int, RAJA::cuda_atomic>();
-
-  testAtomicAccessors<unsigned int, RAJA::auto_atomic>();
-  testAtomicAccessors<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicAccessors<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicAccessors<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicAccessors<float, RAJA::auto_atomic>();
-  testAtomicAccessors<float, RAJA::cuda_atomic>();
-
-  testAtomicAccessors<double, RAJA::auto_atomic>();
-  testAtomicAccessors<double, RAJA::cuda_atomic>();
-
-  testAtomicAccessorsCUDA<int, RAJA::auto_atomic>();
-  testAtomicAccessorsCUDA<int, RAJA::cuda_atomic>();
-
-  testAtomicAccessorsCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicAccessorsCUDA<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicAccessorsCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicAccessorsCUDA<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicAccessorsCUDA<float, RAJA::auto_atomic>();
-  testAtomicAccessorsCUDA<float, RAJA::cuda_atomic>();
-
-  testAtomicAccessorsCUDA<double, RAJA::auto_atomic>();
-  testAtomicAccessorsCUDA<double, RAJA::cuda_atomic>();
-  #endif
-}
 

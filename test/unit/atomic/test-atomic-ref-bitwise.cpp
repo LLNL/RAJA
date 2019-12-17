@@ -16,9 +16,19 @@
 #include "RAJA_unit_forone.hpp"
 #endif
 
-template <typename T, typename AtomicPolicy>
-void testAtomicBitwise()
+// Basic Bitwise
+
+template <typename T>
+class AtomicRefBasicBitwiseUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicBitwiseUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicBitwiseUnitTest, BasicBitwises )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T theval = (T)1;
   T * memaddr = &theval;
   T result;
@@ -53,11 +63,56 @@ void testAtomicBitwise()
   ASSERT_EQ( result, (T)1 );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicBitwiseUnitTest,
+                            BasicBitwises
+                          );
+
+using basic_types = 
+    ::testing::Types<
+                      std::tuple<int, RAJA::builtin_atomic>,
+                      std::tuple<int, RAJA::seq_atomic>,
+                      std::tuple<unsigned int, RAJA::builtin_atomic>,
+                      std::tuple<unsigned int, RAJA::seq_atomic>,
+                      std::tuple<unsigned long long int, RAJA::builtin_atomic>,
+                      std::tuple<unsigned long long int, RAJA::seq_atomic>
+                      #if defined(RAJA_ENABLE_OPENMP)
+                      ,
+                      std::tuple<int, RAJA::omp_atomic>,
+                      std::tuple<unsigned int, RAJA::omp_atomic>,
+                      std::tuple<unsigned long long int, RAJA::omp_atomic>
+                      #endif
+                      #if defined(RAJA_ENABLE_CUDA)
+                      ,
+                      std::tuple<int, RAJA::auto_atomic>,
+                      std::tuple<int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned int, RAJA::auto_atomic>,
+                      std::tuple<unsigned int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                      std::tuple<unsigned long long int, RAJA::cuda_atomic>
+                      #endif
+                    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicBitwiseUnitTest,
+                               AtomicRefBasicBitwiseUnitTest,
+                               basic_types
+                             );
+
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicBitwiseCUDA()
+// CUDA Accessors
+
+template <typename T>
+class AtomicRefCUDABitwiseUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefCUDABitwiseUnitTest );
+
+CUDA_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T * memaddr = nullptr;
   T * result = nullptr;
   cudaErrchk(cudaMallocManaged((void **)&memaddr, sizeof(T)));
@@ -104,57 +159,24 @@ void testAtomicBitwiseCUDA()
   cudaErrchk(cudaFree(memaddr));
   cudaErrchk(cudaFree(result));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDABitwiseUnitTest,
+                            CUDABitwises
+                          );
+
+using CUDA_types = 
+    ::testing::Types<
+                      std::tuple<int, RAJA::auto_atomic>,
+                      std::tuple<int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned int, RAJA::auto_atomic>,
+                      std::tuple<unsigned int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                      std::tuple<unsigned long long int, RAJA::cuda_atomic>
+                    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDABitwiseUnitTest,
+                               AtomicRefCUDABitwiseUnitTest,
+                               CUDA_types
+                             );
 #endif
-
-TEST( AtomicRefUnitTest, BitwiseTest )
-{
-  // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
-  testAtomicBitwise<int, RAJA::builtin_atomic>();
-  testAtomicBitwise<int, RAJA::seq_atomic>();
-
-  testAtomicBitwise<unsigned int, RAJA::builtin_atomic>();
-  testAtomicBitwise<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicBitwise<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicBitwise<unsigned long long int, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicBitwise<int, RAJA::omp_atomic>();
-  testAtomicBitwise<unsigned int, RAJA::omp_atomic>();
-  testAtomicBitwise<unsigned long long int, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicBitwise<int, RAJA::auto_atomic>();
-  testAtomicBitwise<int, RAJA::cuda_atomic>();
-
-  testAtomicBitwise<unsigned int, RAJA::auto_atomic>();
-  testAtomicBitwise<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicBitwise<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicBitwise<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicBitwiseCUDA<int, RAJA::auto_atomic>();
-  testAtomicBitwiseCUDA<int, RAJA::cuda_atomic>();
-
-  testAtomicBitwiseCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicBitwiseCUDA<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicBitwiseCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicBitwiseCUDA<unsigned long long int, RAJA::cuda_atomic>();
-  #endif
-
-  // NOTE: These technically work due to CAS, but should not do this.
-  //testAtomicBitwise<float, RAJA::auto_atomic>();
-  //testAtomicBitwise<float, RAJA::cuda_atomic>();
-  //testAtomicBitwise<float, RAJA::omp_atomic>();
-  //testAtomicBitwise<float, RAJA::builtin_atomic>();
-  //testAtomicBitwise<float, RAJA::seq_atomic>();
-
-  //testAtomicBitwise<double, RAJA::auto_atomic>();
-  //testAtomicBitwise<double, RAJA::cuda_atomic>();
-  //testAtomicBitwise<double, RAJA::omp_atomic>();
-  //testAtomicBitwise<double, RAJA::builtin_atomic>();
-  //testAtomicBitwise<double, RAJA::seq_atomic>();
-}
 

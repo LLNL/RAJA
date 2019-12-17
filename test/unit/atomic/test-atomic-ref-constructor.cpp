@@ -12,12 +12,22 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#include "test-atomic-ref.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
 #endif
 
+// Default constructors with basic types
+
 template <typename T>
-void testAtomicDefaultPolConstructors()
+class AtomicRefDefaultConstructorUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P(AtomicRefDefaultConstructorUnitTest);
+
+template <typename T>
+void DefaultPolConstructors()
 {
   T * memaddr = nullptr;
 
@@ -33,44 +43,85 @@ void testAtomicDefaultPolConstructors()
   ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
 
-TEST( AtomicRefUnitTest, DefaultPolConstructorsTest )
+TYPED_TEST_P( AtomicRefDefaultConstructorUnitTest, DefaultPolConstructors )
 {
-  testAtomicDefaultPolConstructors<int>();
-  testAtomicDefaultPolConstructors<float>();
-  testAtomicDefaultPolConstructors<double>();
+  DefaultPolConstructors<TypeParam>();
 }
 
-template <typename T, typename AtomicPolicy>
-void testAtomicBasicConstructors()
+REGISTER_TYPED_TEST_CASE_P( AtomicRefDefaultConstructorUnitTest,
+                            DefaultPolConstructors
+                          );
+
+using default_types = ::testing::Types< int,
+                                      float,
+                                      double
+                                    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( DefaultConstrUnitTest,
+                               AtomicRefDefaultConstructorUnitTest,
+                               default_types
+                             );
+
+// Basic Constructors with policies
+
+template <typename T>
+class AtomicRefBasicConstructorUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicConstructorUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicConstructorUnitTest, BasicConstructors )
 {
-  T * memaddr = nullptr;
+  using NumericType = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
+  NumericType * memaddr = nullptr;
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test1( memaddr );
 
   ASSERT_EQ( test1.getPointer(), nullptr );
 
   // ref constructor
-  RAJA::AtomicRef<T, AtomicPolicy> const & reft1 = test1;
-  RAJA::AtomicRef<T, AtomicPolicy> reftest1( reft1 );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
 
   ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicConstructorUnitTest,
+                            BasicConstructors
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicConstrUnitTest,
+                               AtomicRefBasicConstructorUnitTest,
+                               basic_types
+                             );
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicBasicConstructorsCUDA()
+// CUDA Constructors with policies
+
+template <typename T>
+class AtomicRefCUDAConstructorUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P(AtomicRefCUDAConstructorUnitTest);
+
+CUDA_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
 {
-  T * memaddr = nullptr;
-  T * proxy = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&proxy, sizeof(T)));
+  using NumericType = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
+  NumericType * memaddr = nullptr;
+  NumericType * proxy = nullptr;
+  cudaErrchk(cudaMallocManaged((void **)&proxy, sizeof(NumericType)));
   proxy = memaddr;
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test0( memaddr );
-  RAJA::AtomicRef<T, AtomicPolicy> test1( proxy );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test0( memaddr );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test1( proxy );
 
   forone<<<1,1>>>( [=] __device__ () {test1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
@@ -78,8 +129,8 @@ void testAtomicBasicConstructorsCUDA()
   ASSERT_EQ( test1.getPointer(), nullptr );
 
   // ref constructor
-  RAJA::AtomicRef<T, AtomicPolicy> const & reft1 = test1;
-  RAJA::AtomicRef<T, AtomicPolicy> reftest1( reft1 );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
   forone<<<1,1>>>( [=] __device__ () {reftest1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -87,66 +138,14 @@ void testAtomicBasicConstructorsCUDA()
 
   cudaErrchk(cudaFree(proxy));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAConstructorUnitTest,
+                            CUDAConstructors
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDAConstrUnitTest,
+                               AtomicRefCUDAConstructorUnitTest,
+                               CUDA_types
+                             );
 #endif
 
-TEST( AtomicRefUnitTest, BasicConstructorsTest )
-{
-  testAtomicBasicConstructors<int, RAJA::builtin_atomic>();
-  testAtomicBasicConstructors<int, RAJA::seq_atomic>();
-
-  testAtomicBasicConstructors<unsigned int, RAJA::builtin_atomic>();
-  testAtomicBasicConstructors<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicBasicConstructors<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicBasicConstructors<unsigned long long int, RAJA::seq_atomic>();
-
-  testAtomicBasicConstructors<float, RAJA::builtin_atomic>();
-  testAtomicBasicConstructors<float, RAJA::seq_atomic>();
-
-  testAtomicBasicConstructors<double, RAJA::builtin_atomic>();
-  testAtomicBasicConstructors<double, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicBasicConstructors<int, RAJA::omp_atomic>();
-
-  testAtomicBasicConstructors<unsigned int, RAJA::omp_atomic>();
-
-  testAtomicBasicConstructors<unsigned long long int, RAJA::omp_atomic>();
-
-  testAtomicBasicConstructors<float, RAJA::omp_atomic>();
-
-  testAtomicBasicConstructors<double, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicBasicConstructors<int, RAJA::auto_atomic>();
-  testAtomicBasicConstructors<int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructors<unsigned int, RAJA::auto_atomic>();
-  testAtomicBasicConstructors<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructors<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicBasicConstructors<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructors<float, RAJA::auto_atomic>();
-  testAtomicBasicConstructors<float, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructors<double, RAJA::auto_atomic>();
-  testAtomicBasicConstructors<double, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructorsCUDA<int, RAJA::auto_atomic>();
-  testAtomicBasicConstructorsCUDA<int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructorsCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicBasicConstructorsCUDA<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructorsCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicBasicConstructorsCUDA<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructorsCUDA<float, RAJA::auto_atomic>();
-  testAtomicBasicConstructorsCUDA<float, RAJA::cuda_atomic>();
-
-  testAtomicBasicConstructorsCUDA<double, RAJA::auto_atomic>();
-  testAtomicBasicConstructorsCUDA<double, RAJA::cuda_atomic>();
-  #endif
-}

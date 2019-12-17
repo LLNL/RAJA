@@ -16,9 +16,19 @@
 #include "RAJA_unit_forone.hpp"
 #endif
 
-template <typename T, typename AtomicPolicy>
-void testAtomicExchanges()
+// Basic Exchange
+
+template <typename T>
+class AtomicRefBasicExchangeUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicExchangeUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicExchangeUnitTest, BasicExchanges )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T swapper = (T)91;
   T theval = (T)0;
   T * memaddr = &theval;
@@ -56,11 +66,64 @@ void testAtomicExchanges()
   ASSERT_EQ( testval, (T)0 );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicExchangeUnitTest,
+                            BasicExchanges
+                          );
+
+using basic_types = 
+    ::testing::Types<
+                      std::tuple<int, RAJA::builtin_atomic>,
+                      std::tuple<int, RAJA::seq_atomic>,
+                      std::tuple<unsigned int, RAJA::builtin_atomic>,
+                      std::tuple<unsigned int, RAJA::seq_atomic>,
+                      std::tuple<unsigned long long int, RAJA::builtin_atomic>,
+                      std::tuple<unsigned long long int, RAJA::seq_atomic>,
+                      std::tuple<float, RAJA::builtin_atomic>,
+                      std::tuple<float, RAJA::seq_atomic>,
+                      std::tuple<double, RAJA::builtin_atomic>,
+                      std::tuple<double, RAJA::seq_atomic>
+                      #if defined(RAJA_ENABLE_OPENMP)
+                      ,
+                      std::tuple<int, RAJA::omp_atomic>,
+                      std::tuple<unsigned int, RAJA::omp_atomic>,
+                      std::tuple<unsigned long long int, RAJA::omp_atomic>,
+                      std::tuple<float, RAJA::omp_atomic>,
+                      std::tuple<double, RAJA::omp_atomic>
+                      #endif
+                      #if defined(RAJA_ENABLE_CUDA)
+                      ,
+                      std::tuple<int, RAJA::auto_atomic>,
+                      std::tuple<int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned int, RAJA::auto_atomic>,
+                      std::tuple<unsigned int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                      std::tuple<unsigned long long int, RAJA::cuda_atomic>,
+                      std::tuple<float, RAJA::auto_atomic>,
+                      std::tuple<float, RAJA::cuda_atomic>
+                      #endif
+                    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicExchangeUnitTest,
+                               AtomicRefBasicExchangeUnitTest,
+                               basic_types
+                             );
+
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicExchangesCUDA()
+// CUDA Accessors
+
+template <typename T>
+class AtomicRefCUDAExchangeUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefCUDAExchangeUnitTest );
+
+CUDA_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T * swapper = nullptr;
   T * memaddr = nullptr;
   T * testval = nullptr;
@@ -112,58 +175,26 @@ void testAtomicExchangesCUDA()
   cudaErrchk(cudaFree(testval));
   cudaErrchk(cudaFree(result));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAExchangeUnitTest,
+                            CUDAExchanges
+                          );
+
+using CUDA_types = 
+    ::testing::Types<
+                      std::tuple<int, RAJA::auto_atomic>,
+                      std::tuple<int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned int, RAJA::auto_atomic>,
+                      std::tuple<unsigned int, RAJA::cuda_atomic>,
+                      std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                      std::tuple<unsigned long long int, RAJA::cuda_atomic>,
+                      std::tuple<float, RAJA::auto_atomic>,
+                      std::tuple<float, RAJA::auto_atomic>
+                    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDAExchangeUnitTest,
+                               AtomicRefCUDAExchangeUnitTest,
+                               CUDA_types
+                             );
 #endif
-
-TEST( AtomicRefUnitTest, ExchangesTest )
-{
-  // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
-  testAtomicExchanges<int, RAJA::builtin_atomic>();
-  testAtomicExchanges<int, RAJA::seq_atomic>();
-
-  testAtomicExchanges<unsigned int, RAJA::builtin_atomic>();
-  testAtomicExchanges<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicExchanges<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicExchanges<unsigned long long int, RAJA::seq_atomic>();
-
-  testAtomicExchanges<float, RAJA::builtin_atomic>();
-  testAtomicExchanges<float, RAJA::seq_atomic>();
-
-  testAtomicExchanges<double, RAJA::builtin_atomic>();
-  testAtomicExchanges<double, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicExchanges<int, RAJA::omp_atomic>();
-  testAtomicExchanges<unsigned int, RAJA::omp_atomic>();
-  testAtomicExchanges<unsigned long long int, RAJA::omp_atomic>();
-  testAtomicExchanges<float, RAJA::omp_atomic>();
-  testAtomicExchanges<double, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicExchanges<int, RAJA::auto_atomic>();
-  testAtomicExchanges<int, RAJA::cuda_atomic>();
-
-  testAtomicExchanges<unsigned int, RAJA::auto_atomic>();
-  testAtomicExchanges<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicExchanges<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicExchanges<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicExchanges<float, RAJA::auto_atomic>();
-  testAtomicExchanges<float, RAJA::cuda_atomic>();
-
-  testAtomicExchangesCUDA<int, RAJA::auto_atomic>();
-  testAtomicExchangesCUDA<int, RAJA::cuda_atomic>();
-
-  testAtomicExchangesCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicExchangesCUDA<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicExchangesCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicExchangesCUDA<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicExchangesCUDA<float, RAJA::auto_atomic>();
-  testAtomicExchangesCUDA<float, RAJA::cuda_atomic>();
-  #endif
-}
 

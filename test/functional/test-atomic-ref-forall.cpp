@@ -20,18 +20,20 @@
 #include "test-atomic-ref-forall.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-
-TEST(Atomic, basic_OpenMP_AtomicRef)
+TEST(Atomic, OpenMP_omp_AtomicRefForallFunctionalTest)
 {
   testAtomicRefPol<RAJA::omp_for_exec, RAJA::omp_atomic>();
-  testAtomicRefPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
 }
 
+TEST(Atomic, OpenMP_builtin_AtomicRefForallFunctionalTest)
+{
+  testAtomicRefPol<RAJA::omp_for_exec, RAJA::builtin_atomic>();
+}
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 
-CUDA_TEST(Atomic, basic_CUDA_AtomicRef)
+CUDA_TEST(Atomic, CUDA_cuda_AtomicRefForallFunctionalTest)
 {
   testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
@@ -39,9 +41,13 @@ CUDA_TEST(Atomic, basic_CUDA_AtomicRef)
 #endif
 
 #if defined(TEST_EXHAUSTIVE) || !defined(RAJA_ENABLE_OPENMP)
-TEST(Atomic, basic_seq_AtomicRef)
+TEST(Atomic, basic_seq_AtomicRefForallFunctionalTest)
 {
   testAtomicRefPol<RAJA::seq_exec, RAJA::seq_atomic>();
+}
+
+TEST(Atomic, basic_builtin_AtomicRefForallFunctionalTest)
+{
   testAtomicRefPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
 #endif

@@ -12,13 +12,25 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#include "test-atomic-ref.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
 #endif
 
-template <typename T, typename AtomicPolicy>
-void testAtomicMinMax()
+// Basic MinMax
+
+template <typename T>
+class AtomicRefBasicMinMaxUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicMinMaxUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicMinMaxUnitTest, BasicMinMaxs )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T theval = (T)91;
   T * memaddr = &theval;
   T result;
@@ -45,11 +57,30 @@ void testAtomicMinMax()
   ASSERT_EQ( test1, (T)91 );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicMinMaxUnitTest,
+                            BasicMinMaxs
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicMinMaxUnitTest,
+                               AtomicRefBasicMinMaxUnitTest,
+                               basic_types
+                             );
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicMinMaxCUDA()
+// CUDA Accessors
+
+template <typename T>
+class AtomicRefCUDAMinMaxUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefCUDAMinMaxUnitTest );
+
+CUDA_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T * result = nullptr;
   T * memaddr = nullptr;
   cudaErrchk(cudaMallocManaged(&result, sizeof(T)));
@@ -86,64 +117,14 @@ void testAtomicMinMaxCUDA()
   cudaErrchk(cudaFree(result));
   cudaErrchk(cudaFree(memaddr));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAMinMaxUnitTest,
+                            CUDAMinMaxs
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDAMinMaxUnitTest,
+                               AtomicRefCUDAMinMaxUnitTest,
+                               CUDA_types
+                             );
 #endif
-
-TEST( AtomicRefUnitTest, MinMaxTest )
-{
-  // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
-  testAtomicMinMax<int, RAJA::builtin_atomic>();
-  testAtomicMinMax<int, RAJA::seq_atomic>();
-
-  testAtomicMinMax<unsigned int, RAJA::builtin_atomic>();
-  testAtomicMinMax<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicMinMax<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicMinMax<unsigned long long int, RAJA::seq_atomic>();
-
-  testAtomicMinMax<float, RAJA::builtin_atomic>();
-  testAtomicMinMax<float, RAJA::seq_atomic>();
-
-  testAtomicMinMax<double, RAJA::builtin_atomic>();
-  testAtomicMinMax<double, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicMinMax<int, RAJA::omp_atomic>();
-  testAtomicMinMax<unsigned int, RAJA::omp_atomic>();
-  testAtomicMinMax<unsigned long long int, RAJA::omp_atomic>();
-  testAtomicMinMax<float, RAJA::omp_atomic>();
-  testAtomicMinMax<double, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicMinMax<int, RAJA::auto_atomic>();
-  testAtomicMinMax<int, RAJA::cuda_atomic>();
-
-  testAtomicMinMax<unsigned int, RAJA::auto_atomic>();
-  testAtomicMinMax<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicMinMax<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicMinMax<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicMinMax<float, RAJA::auto_atomic>();
-  testAtomicMinMax<float, RAJA::cuda_atomic>();
-
-  testAtomicMinMax<double, RAJA::auto_atomic>();
-  testAtomicMinMax<double, RAJA::cuda_atomic>();
-
-  testAtomicMinMaxCUDA<int, RAJA::auto_atomic>();
-  testAtomicMinMaxCUDA<int, RAJA::cuda_atomic>();
-
-  testAtomicMinMaxCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicMinMaxCUDA<unsigned int, RAJA::cuda_atomic>();
-
-  testAtomicMinMaxCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicMinMaxCUDA<unsigned long long int, RAJA::cuda_atomic>();
-
-  testAtomicMinMaxCUDA<float, RAJA::auto_atomic>();
-  testAtomicMinMaxCUDA<float, RAJA::cuda_atomic>();
-
-  testAtomicMinMaxCUDA<double, RAJA::auto_atomic>();
-  testAtomicMinMaxCUDA<double, RAJA::cuda_atomic>();
-  #endif
-}
 

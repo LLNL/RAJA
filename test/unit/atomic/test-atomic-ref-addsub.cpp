@@ -12,13 +12,25 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
+#include "test-atomic-ref.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
 #endif
 
-template <typename T, typename AtomicPolicy>
-void testAtomicAddSub()
+// Basic AddSub
+
+template <typename T>
+class AtomicRefBasicAddSubUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefBasicAddSubUnitTest );
+
+TYPED_TEST_P( AtomicRefBasicAddSubUnitTest, BasicAddSubs )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T theval = (T)0;
   T * memaddr = &theval;
 
@@ -56,11 +68,31 @@ void testAtomicAddSub()
   ASSERT_EQ( val9, (T)24 );
 }
 
+REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicAddSubUnitTest,
+                            BasicAddSubs
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( BasicAddSubUnitTest,
+                               AtomicRefBasicAddSubUnitTest,
+                               basic_types
+                             );
+
+
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
-template <typename T, typename AtomicPolicy>
-void testAtomicAddSubCUDA()
+// CUDA Accessors
+
+template <typename T>
+class AtomicRefCUDAAddSubUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_CASE_P( AtomicRefCUDAAddSubUnitTest );
+
+CUDA_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
 {
+  using T = typename std::tuple_element<0, TypeParam>::type;
+  using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
+
   T * memaddr = nullptr;
   T * result1 = nullptr;
   T * result2 = nullptr;
@@ -116,58 +148,14 @@ void testAtomicAddSubCUDA()
   cudaErrchk(cudaFree(result1));
   cudaErrchk(cudaFree(result2));
 }
+
+REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAAddSubUnitTest,
+                            CUDAAddSubs
+                          );
+
+INSTANTIATE_TYPED_TEST_CASE_P( CUDAAddSubUnitTest,
+                               AtomicRefCUDAAddSubUnitTest,
+                               CUDA_types
+                             );
 #endif
-
-TEST( AtomicRefUnitTest, AddSubTest )
-{
-  // NOTE: Need to revisit auto_atomic and cuda policies which use pointers
-  testAtomicAddSub<int, RAJA::builtin_atomic>();
-  testAtomicAddSub<int, RAJA::seq_atomic>();
-
-  testAtomicAddSub<unsigned int, RAJA::builtin_atomic>();
-  testAtomicAddSub<unsigned int, RAJA::seq_atomic>();
-
-  testAtomicAddSub<unsigned long long int, RAJA::builtin_atomic>();
-  testAtomicAddSub<unsigned long long int, RAJA::seq_atomic>();
-
-  testAtomicAddSub<float, RAJA::builtin_atomic>();
-  testAtomicAddSub<float, RAJA::seq_atomic>();
-
-  testAtomicAddSub<double, RAJA::builtin_atomic>();
-  testAtomicAddSub<double, RAJA::seq_atomic>();
-
-  #if defined(RAJA_ENABLE_OPENMP)
-  testAtomicAddSub<int, RAJA::omp_atomic>();
-  testAtomicAddSub<unsigned int, RAJA::omp_atomic>();
-  testAtomicAddSub<unsigned long long int, RAJA::omp_atomic>();
-  testAtomicAddSub<float, RAJA::omp_atomic>();
-  testAtomicAddSub<double, RAJA::omp_atomic>();
-  #endif
-
-  #if defined(RAJA_ENABLE_CUDA)
-  testAtomicAddSub<int, RAJA::auto_atomic>();
-  testAtomicAddSub<unsigned int, RAJA::auto_atomic>();
-  testAtomicAddSub<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicAddSub<float, RAJA::auto_atomic>();
-  testAtomicAddSub<double, RAJA::auto_atomic>();
-
-  testAtomicAddSub<int, RAJA::cuda_atomic>();
-  testAtomicAddSub<unsigned int, RAJA::cuda_atomic>();
-  testAtomicAddSub<unsigned long long int, RAJA::cuda_atomic>();
-  testAtomicAddSub<float, RAJA::cuda_atomic>();
-  testAtomicAddSub<double, RAJA::cuda_atomic>();
-
-  testAtomicAddSubCUDA<int, RAJA::auto_atomic>();
-  testAtomicAddSubCUDA<unsigned int, RAJA::auto_atomic>();
-  testAtomicAddSubCUDA<unsigned long long int, RAJA::auto_atomic>();
-  testAtomicAddSubCUDA<float, RAJA::auto_atomic>();
-  testAtomicAddSubCUDA<double, RAJA::auto_atomic>();
-
-  testAtomicAddSubCUDA<int, RAJA::cuda_atomic>();
-  testAtomicAddSubCUDA<unsigned int, RAJA::cuda_atomic>();
-  testAtomicAddSubCUDA<unsigned long long int, RAJA::cuda_atomic>();
-  testAtomicAddSubCUDA<float, RAJA::cuda_atomic>();
-  testAtomicAddSubCUDA<double, RAJA::cuda_atomic>();
-  #endif
-}
 
