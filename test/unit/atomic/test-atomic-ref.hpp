@@ -47,6 +47,7 @@ using basic_types =
                       #endif
                     >;
 
+#if defined(RAJA_ENABLE_CUDA)
 using CUDA_types = 
     ::testing::Types<
                       std::tuple<int, RAJA::auto_atomic>,
@@ -60,4 +61,5 @@ using CUDA_types =
                       std::tuple<double, RAJA::cuda_atomic>,
                       std::tuple<double, RAJA::cuda_atomic>
                     >;
+#endif
 
