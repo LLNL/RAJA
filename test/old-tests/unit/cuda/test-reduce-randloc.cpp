@@ -212,7 +212,7 @@ TYPED_TEST_CASE_P(CUDAReduceLocRandTest);
 
 // Tests CUDA reduce loc on array over one range.
 // Each iteration introduces a random value into the array.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -248,7 +248,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
 // Tests CUDA reduce loc on array with all same values, over segments.
 // CUDA finds location in the last segment, 
 // while CPU seq_reduce finds location in first segment.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -288,7 +288,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 }
 
 // Tests CUDA reduce loc on array with unique values, over segments.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -331,7 +331,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 // Tests CUDA reduce loc on two segment halves of array.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled CUDA reduce loc vs. un-scaled CUDA reduce loc.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
@@ -380,7 +380,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 // Segments being reduced are non-contiguous.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled CUDA reduce loc vs. un-scaled CUDA reduce loc.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
