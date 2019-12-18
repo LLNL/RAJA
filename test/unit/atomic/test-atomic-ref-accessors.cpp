@@ -106,7 +106,12 @@ CUDA_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
   ASSERT_EQ( result[0], (T)29 );
   ASSERT_EQ( test1, (T)29 );
 
-  // test ()
+  // test T()
+  forone<<<1,1>>>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
+  cudaErrchk(cudaDeviceSynchronize());
+  ASSERT_EQ( result[0], (T)47 );
+  ASSERT_EQ( test1, (T)47 );
+
   forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 = (T)31);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)31 );
