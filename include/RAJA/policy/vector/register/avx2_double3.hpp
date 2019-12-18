@@ -102,7 +102,7 @@ namespace RAJA
                       (__m256d{0.0, 0.0, 0.0, 0.0}),
                       ptr, // base address
                       _mm256_set_epi64x(0, stride*2, stride, 0), // offsets
-                      _mm256_set_epi64x(0, -1, -1, -1),// mask
+                      (__m256d)_mm256_set_epi64x(0, -1, -1, -1),// mask
                       sizeof(element_type));
         }
       }

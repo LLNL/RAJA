@@ -55,7 +55,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   RAJA_DEVICE
   void initMem(Data &data, bool thread_active)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
 
     __shared__ varType Array[NumElem];
@@ -72,7 +72,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
   RAJA_DEVICE
   void initMem(Data &data, bool thread_active)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
 
     __shared__ varType Array[NumElem];
@@ -144,7 +144,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   RAJA_DEVICE
   void initMem(Data &data, bool thread_active)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
 
     varType Array[NumElem];
@@ -161,7 +161,7 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem
   RAJA_DEVICE
   void initMem(Data &data, bool thread_active)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
     const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
 
     varType Array[NumElem];

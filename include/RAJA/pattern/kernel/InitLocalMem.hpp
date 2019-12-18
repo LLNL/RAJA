@@ -74,11 +74,11 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
   static void RAJA_INLINE initMem(Data && data)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
+    const camp::idx_t NumElem = camp::get<Pos>(data.param_tuple).size();
     
     varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
     initMem<others...>(data);
   }
   
@@ -89,7 +89,7 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
   static void RAJA_INLINE setPtrToNull(Data && data)
   {
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
     setPtrToNull<others...>(data);
   }
   

@@ -38,19 +38,24 @@ namespace detail
 {
 
 
-template <typename Range, typename Sizes, typename Strides>
+template <typename IndexType, typename Range, typename Sizes, typename Strides>
 struct StaticLayoutBase_impl;
 
 
-template <camp::idx_t... RangeInts,
-          RAJA::Index_type... Sizes,
-          RAJA::Index_type... Strides>
-struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
+template <typename IndexType,
+          camp::idx_t... RangeInts,
+          camp::idx_t... Sizes,
+          camp::idx_t... Strides>
+struct StaticLayoutBase_impl<IndexType,
+                             camp::idx_seq<RangeInts...>,
                              camp::idx_seq<Sizes...>,
                              camp::idx_seq<Strides...>> {
 
-  using sizes = camp::int_seq<int, Sizes...>;
-  using strides = camp::int_seq<int, Strides...>;
+  using IndexLinear = IndexType;
+  using sizes = camp::int_seq<IndexType, ((IndexType)Sizes)...>;
+  using strides = camp::int_seq<IndexType, ((IndexType)Strides)...>;
+
+  static constexpr size_t n_dims = sizeof...(Sizes);
 
   /*!
    * Default constructor.
@@ -74,19 +79,19 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
    * @return Linear space index.
    */
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr int operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear operator()(
       Indices... indices) const
   {
     // dot product of strides and indices
-    return VarOps::sum<int>((indices * Strides)...);
+    return VarOps::sum<IndexLinear>((indices * Strides)...);
   }
 
 
   template <typename... Indices>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr int s_oper(Indices... indices)
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return VarOps::sum<int>((indices * Strides)...);
+    return VarOps::sum<IndexLinear>((indices * Strides)...);
   }
 
 
@@ -96,17 +101,17 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
    *
    * @return Total size spanned by indices
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr static RAJA::Index_type size()
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear size() const
   {
-    // Multiply together all of the sizes,
-    // replacing 1 for any zero-sized dimensions
-    return VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
-                         (Sizes == 0 ? 1 : Sizes)...);
+
+    return s_size;
   }
 
 
-  static constexpr RAJA::Index_type s_size =
-      VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
+  // Multiply together all of the sizes,
+  // replacing 1 for any zero-sized dimensions
+  static constexpr IndexLinear s_size =
+      VarOps::foldl(RAJA::operators::multiplies<IndexLinear>(),
                     (Sizes == 0 ? 1 : Sizes)...);
 };
 
@@ -157,6 +162,11 @@ struct TypedStaticLayoutImpl;
 
 template <typename Layout, typename... DimTypes>
 struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
+
+  using IndexLinear = typename Layout::IndexType;
+
+  static constexpr IndexLinear n_dims = sizeof...(DimTypes);
+
   /*!
    * Computes a linear space index from specified indices.
    * This is formed by the dot product of the indices and the layout strides.
@@ -164,14 +174,14 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr RAJA::Index_type s_oper(
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear s_oper(
       DimTypes... indices)
   {
     return Layout::s_oper(stripIndexType(indices)...);
   }
 
 
-  static constexpr RAJA::Index_type s_size = Layout::s_size;
+  static constexpr IndexLinear s_size = Layout::s_size;
 
   RAJA_INLINE
   static void print() { Layout::print(); }
@@ -183,6 +193,7 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = detail::StaticLayoutBase_impl<
+    camp::idx_t,
     camp::make_idx_seq_t<sizeof...(Sizes)>,
     camp::idx_seq<Sizes...>,
     typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>,
