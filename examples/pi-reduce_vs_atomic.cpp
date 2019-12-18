@@ -182,8 +182,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) * dx;
-      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, 
-                                   4.0 * dx / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
 
@@ -198,19 +197,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA HIP pi approximation (reduction)...\n";
 
-  using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
-  using REDUCE_POL3 = RAJA::hip_reduce;
+  using EXEC_POL4   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
+  using REDUCE_POL4 = RAJA::hip_reduce;
 
-  RAJA::ReduceSum<REDUCE_POL3, double> hip_pi(0.0);
+  RAJA::ReduceSum<REDUCE_POL4, double> hip_pi(0.0);
 
-  RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      hip_pi += 4.0 / (1.0 + x * x);
+  RAJA::forall<EXEC_POL4>(bins, [=] RAJA_DEVICE (int i) {
+      double x = (double(i) + 0.5) * dx;
+      hip_pi += dx / (1.0 + x * x);
   });
+  double hip_pi_val = hip_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << hip_pi.get() / num_bins << std::endl;
-
+            << hip_pi_val << std::endl;
 
   std::cout << "\n Running RAJA HIP pi approximation (atomic)...\n";
 
@@ -218,16 +217,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double* d_atomic_pi = memoryManager::allocate_gpu<double>(1);
   hipErrchk(hipMemcpy( d_atomic_pi, atomic_pi, 1 * sizeof(double), hipMemcpyHostToDevice ));
 
-  using ATOMIC_POL3 = RAJA::hip_atomic;
+  using ATOMIC_POL4 = RAJA::hip_atomic;
 
-  RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
-      double x = (double(i) + 0.5) / num_bins;
-      RAJA::atomicAdd<ATOMIC_POL3>(d_atomic_pi, 4.0 / (1.0 + x * x));
+  RAJA::forall<EXEC_POL4>(bins, [=] RAJA_DEVICE (int i) {
+      double x = (double(i) + 0.5) * dx;
+      RAJA::atomicAdd<ATOMIC_POL4>(d_atomic_pi, dx / (1.0 + x * x));
   });
 
   hipErrchk(hipMemcpy( atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost ));
+  *atomic_pi *= 4.0; 
   std::cout << "\tpi = " << std::setprecision(prec)
-            << (*atomic_pi) / num_bins << std::endl;
+            << *atomic_pi << std::endl;
 
   memoryManager::deallocate_gpu(d_atomic_pi);
 #endif
