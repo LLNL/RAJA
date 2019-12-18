@@ -100,14 +100,12 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
-    return VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
-                         (Sizes == 0 ? 1 : Sizes)...);
+    return s_size;
   }
 
 
   static constexpr RAJA::Index_type s_size =
-      VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
-                    (Sizes == 0 ? 1 : Sizes)...);
+      VarOps::product<RAJA::Index_type>((Sizes == 0 ? 1 : Sizes)...);
 };
 
 template <camp::idx_t N, camp::idx_t Idx, camp::idx_t... Sizes>
@@ -136,8 +134,10 @@ struct StrideCalculatorIdx<N, N, Sizes...> {
 template <typename Range, typename Perm, typename Sizes>
 struct StrideCalculator;
 
-template <camp::idx_t ... Range, camp::idx_t... Perm, camp::idx_t... Sizes>
-struct StrideCalculator<camp::idx_seq<Range...>, camp::idx_seq<Perm...>, camp::idx_seq<Sizes...>> {
+template <camp::idx_t... Range, camp::idx_t... Perm, camp::idx_t... Sizes>
+struct StrideCalculator<camp::idx_seq<Range...>,
+                        camp::idx_seq<Perm...>,
+                        camp::idx_seq<Sizes...>> {
   static_assert(sizeof...(Sizes) == sizeof...(Perm), "");
 
   using sizes = camp::idx_seq<Sizes...>;
@@ -145,10 +145,13 @@ struct StrideCalculator<camp::idx_seq<Range...>, camp::idx_seq<Perm...>, camp::i
   using range = camp::idx_seq<Range...>;
   using perm = camp::idx_seq<Perm...>;
   using inv_perm = invert_permutation<perm>;
-  using strides_unperm =
-      camp::idx_seq<StrideCalculatorIdx<N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
-  
-  using strides = camp::idx_seq<camp::seq_at<camp::seq_at<Range, inv_perm>::value, strides_unperm>::value...>;
+  using strides_unperm = camp::idx_seq<
+      StrideCalculatorIdx<N, Range, camp::seq_at<Perm, sizes>::value...>::
+          stride...>;
+
+  using strides =
+      camp::idx_seq<camp::seq_at<camp::seq_at<Range, inv_perm>::value,
+                                 strides_unperm>::value...>;
 };
 
 
@@ -188,10 +191,6 @@ using StaticLayout = detail::StaticLayoutBase_impl<
     typename detail::StrideCalculator<camp::make_idx_seq_t<sizeof...(Sizes)>,
                                       Perm,
                                       camp::idx_seq<Sizes...>>::strides>;
-
-
-
-
 
 
 template <typename Perm, typename TypeList, camp::idx_t... Sizes>
