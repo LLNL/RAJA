@@ -51,6 +51,7 @@ option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
+option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
 option(ENABLE_EXAMPLES "Build simple examples" On)
@@ -128,6 +129,7 @@ set (raja_sources
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
+  src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp)
 
 set (raja_depends)
@@ -161,6 +163,29 @@ if (ENABLE_CUDA)
       message(WARNING "External CUB not found.")
       set(ENABLE_EXTERNAL_CUB Off)
     endif()
+  endif ()
+endif ()
+
+if (ENABLE_HIP)
+  set (raja_depends
+    ${raja_depends}
+    hip)
+endif ()
+
+if (ENABLE_HIP)
+  if(ENABLE_EXTERNAL_ROCPRIM)
+    find_package(ROCPRIM)
+    if (ROCPRIM_FOUND)
+      blt_register_library(
+        NAME rocPRIM
+        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
+      set(raja_depends
+          ${raja_depends}
+          rocPRIM)
+    else()
+      message(WARNING "External rocPRIM not found.")
+      set(ENABLE_EXTERNAL_ROCPRIM Off)
+     endif()
   endif ()
 endif ()
 
@@ -201,13 +226,15 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
   $<INSTALL_INTERFACE:include>)
 
-if(ENABLE_EXTERNAL_CUB)
-  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-else()
-  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+if(NOT ENABLE_EXTERNAL_CUB)
   install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+endif()
+if(NOT ENABLE_EXTERNAL_ROCPRIM)
+  install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
 
 install(FILES

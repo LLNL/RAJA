@@ -60,7 +60,7 @@ public:
 
 double* ReduceMinCUDA::dvalue = nullptr;
 
-CUDA_TEST_F(ReduceMinCUDA, generic)
+GPU_TEST_F(ReduceMinCUDA, generic)
 {
 
   double* dvalue = ReduceMinCUDA::dvalue;
@@ -131,7 +131,7 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TEST_F(ReduceMinCUDA, indexset_align)
+GPU_TEST_F(ReduceMinCUDA, indexset_align)
 {
 
   double* dvalue = ReduceMinCUDA::dvalue;
@@ -178,7 +178,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
+GPU_TEST_F(ReduceMinCUDA, indexset_noalign)
 {
 
   double* dvalue = ReduceMinCUDA::dvalue;
