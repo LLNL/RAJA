@@ -201,11 +201,21 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
-find_package(camp QUIET)
-if (NOT camp_FOUND)
-  message(STATUS "Using RAJA CAMP submodule.")
-  add_subdirectory(tpl/camp)
-endif(NOT camp_FOUND)
+set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "Build OpenMP support")
+if (EXTERNAL_CAMP_SOURCE_DIR)
+  message(STATUS "Using CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
+  add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
+else (EXTERNAL_CAMP_SOURCE_DIR)
+  find_package(camp QUIET)
+  if (NOT camp_FOUND)
+    message(STATUS "Using RAJA CAMP submodule.")
+    add_subdirectory(tpl/camp)
+  else (NOT camp_FOUND)
+    message(STATUS "Using CAMP from: " ${camp_DIR})
+    set(EXTERNAL_CAMP_SOURCE_DIR ${camp_DIR})
+  endif(NOT camp_FOUND)
+endif (EXTERNAL_CAMP_SOURCE_DIR)
 
 blt_add_library(
   NAME RAJA
