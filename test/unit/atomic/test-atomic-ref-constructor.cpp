@@ -108,7 +108,7 @@ class AtomicRefCUDAConstructorUnitTest : public ::testing::Test
 
 TYPED_TEST_CASE_P(AtomicRefCUDAConstructorUnitTest);
 
-CUDA_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
+GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
 {
   using NumericType = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
