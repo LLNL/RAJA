@@ -385,13 +385,19 @@ class ViewBase {
 
 
 
-    template <typename Arg>
+    /*
+     * Compatibility note (AJK):
+     * We are using variadic arguments even though operator[] takes exactly 1 argument
+     * This gets around a template instantiation bug in CUDA/nvcc 9.1, which seems to have
+     * been fixed in CUDA 9.2+
+     */
+    template <typename ... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    auto operator[](Arg arg) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Arg>::type
+    auto operator[](Args ... args) const ->
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
     {
-      return operator_internal(arg);
+      return operator_internal(args...);
     }
 
 
@@ -449,8 +455,6 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator()(Args... args) const ->
-    //decltype(Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...))
-//    typename TypedViewVectorHelper<Expected, Arg>::type
     typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Args>::type...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...);
@@ -461,7 +465,6 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator[](Arg arg) const ->
-    //decltype(Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg)))
     typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Arg>::type ...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg));
