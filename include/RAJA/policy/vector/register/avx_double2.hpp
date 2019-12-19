@@ -141,7 +141,6 @@ namespace RAJA
       void set(IDX i, element_type value)
       {m_value[i] = value;}
 
-
       RAJA_HOST_DEVICE
       RAJA_INLINE
       void broadcast(element_type const &value){

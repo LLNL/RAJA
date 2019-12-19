@@ -47,22 +47,12 @@ namespace RAJA {
   };
 
 
-  // Use the vector_scalar_register for a 1-wide vector
-  template<typename T>
-  class Register<vector_altivec_register, T, 1> :
-  public internal::ScalarRegister<vector_altivec_register, T> {
-
-
-      using Base = internal::ScalarRegister<vector_altivec_register, T>;
-      using Base::Base;
-
-
-  };
-
 
 }
 
-#include<RAJA/policy/vector/register/altivec_double.hpp>
+#include<RAJA/policy/vector/register/altivec_double1.hpp>
+#include<RAJA/policy/vector/register/altivec_double2.hpp>
+
 
 #endif // RAJA_ALTIVEC
 #endif // guard

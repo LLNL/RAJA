@@ -348,7 +348,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, RegisterTestTypes);
 #if defined(RAJA_ENABLE_CUDA)
 
 
-CUDA_TEST(RegisterTestCuda, CudaWarp32)
+GPU_TEST(RegisterTestCuda, CudaWarp32)
 {
   using namespace RAJA::statement;
 
@@ -428,7 +428,7 @@ CUDA_TEST(RegisterTestCuda, CudaWarp32)
 }
 
 
-CUDA_TEST(RegisterTestCuda, CudaWarp16)
+GPU_TEST(RegisterTestCuda, CudaWarp16)
 {
   using namespace RAJA::statement;
 

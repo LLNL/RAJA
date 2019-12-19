@@ -38,24 +38,12 @@ namespace RAJA {
 
   };
 
-
-  // Use the vector_scalar_register for a 1-wide vector
-  template<typename T>
-  class Register<vector_avx_register, T, 1> :
-    public internal::ScalarRegister<vector_avx_register, T> {
-
-
-      using Base = internal::ScalarRegister<vector_avx_register, T>;
-      using Base::Base;
-
-  };
-
-
 }
 
 
 #endif
 
+#include<RAJA/policy/vector/register/avx_double1.hpp>
 #include<RAJA/policy/vector/register/avx_double2.hpp>
 #include<RAJA/policy/vector/register/avx_double3.hpp>
 #include<RAJA/policy/vector/register/avx_double4.hpp>

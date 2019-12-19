@@ -367,8 +367,8 @@ class ViewBase {
     {
       using helper_t = internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>;
 
-      auto idx = stripIndexType(get_layout()(internal::stripVectorIndex(args)...));
-      return helper_t::createReturn(idx, camp::make_tuple(args...), get_data(), 1);
+      auto idx = stripIndexType(m_layout(internal::stripVectorIndex(args)...));
+      return helper_t::createReturn(idx, camp::make_tuple(args...), m_data, 1);
     }
 
   public:
@@ -376,18 +376,20 @@ class ViewBase {
     template <typename... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
+
     auto operator()(Args... args) const ->
-    decltype(operator_internal(args...))
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
     {
       return operator_internal(args...);
     }
+
 
 
     template <typename Arg>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator[](Arg arg) const ->
-    decltype(operator_internal(arg))
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Arg>::type
     {
       return operator_internal(arg);
     }
@@ -447,7 +449,9 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator()(Args... args) const ->
-    decltype(Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...))
+    //decltype(Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...))
+//    typename TypedViewVectorHelper<Expected, Arg>::type
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Args>::type...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...);
     }
@@ -457,7 +461,8 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator[](Arg arg) const ->
-    decltype(Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg)))
+    //decltype(Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg)))
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Arg>::type ...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg));
     }

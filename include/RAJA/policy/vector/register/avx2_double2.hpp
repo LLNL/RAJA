@@ -46,8 +46,6 @@ namespace RAJA
       static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
       static constexpr size_t s_bit_width = s_byte_width*8;
 
-
-
     private:
       register_type m_value;
 
@@ -180,7 +178,6 @@ namespace RAJA
       self_type divide(self_type const &b) const {
         return self_type(_mm_div_pd(m_value, b.m_value));
       }
-
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
