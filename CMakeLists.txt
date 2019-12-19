@@ -201,9 +201,10 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
-set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "Build OpenMP support")
+set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
+camp source repository")
 if (EXTERNAL_CAMP_SOURCE_DIR)
-  message(STATUS "Using CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
+  message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
   add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
 else (EXTERNAL_CAMP_SOURCE_DIR)
@@ -212,8 +213,7 @@ else (EXTERNAL_CAMP_SOURCE_DIR)
     message(STATUS "Using RAJA CAMP submodule.")
     add_subdirectory(tpl/camp)
   else (NOT camp_FOUND)
-    message(STATUS "Using CAMP from: " ${camp_DIR})
-    set(EXTERNAL_CAMP_SOURCE_DIR ${camp_DIR})
+    message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
   endif(NOT camp_FOUND)
 endif (EXTERNAL_CAMP_SOURCE_DIR)
 
