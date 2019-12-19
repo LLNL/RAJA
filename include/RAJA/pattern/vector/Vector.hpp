@@ -76,8 +76,15 @@ namespace RAJA
           REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
 
     private:
-      full_register_type m_full_registers[s_num_full_registers];
-      partial_register_type m_partial_register[s_num_partial_registers];
+      /*
+       * Note (AJK):
+       * We make sure that we don't have "zero length arrays" which seems to make only the MSVC
+       * compile croak... and all other compilers seem happy with.
+       * I would expect that if the number of full or partial register is zero, and we
+       * never touch them, that they should get optimized out anyways.
+       */
+      full_register_type m_full_registers[s_num_full_registers > 0 ? s_num_full_registers : 1];
+      partial_register_type m_partial_register[s_num_partial_registers > 0 ? s_num_partial_registers : 1];
 
       camp::idx_t m_length;
     public:
