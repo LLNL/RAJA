@@ -179,7 +179,20 @@ namespace RAJA
         return self_type(_mm_div_pd(m_value, b.m_value));
       }
 
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      {
+        return self_type(_mm_fmadd_pd(m_value, b.m_value, c.m_value));
+      }
 
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return self_type(_mm_fmsub_pd(m_value, b.m_value, c.m_value));
+      }
 
       /*!
        * @brief Sum the elements of this vector

@@ -320,7 +320,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-  using vector_t = RAJA::StreamVector<double>;
+  using vector_t = RAJA::StreamVector<double,2>;
   using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
@@ -656,7 +656,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >; // KernelPolicy 
 
 
-  using vector_t = RAJA::StreamVector<double,4>;
+  using vector_t = RAJA::StreamVector<double,2>;
   using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
 
   using index_t = RAJA::Index_type;

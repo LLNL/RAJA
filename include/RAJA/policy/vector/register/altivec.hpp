@@ -50,7 +50,14 @@ namespace RAJA {
   // Use the vector_scalar_register for a 1-wide vector
   template<typename T>
   class Register<vector_altivec_register, T, 1> :
-  public Register<vector_scalar_register, T, 1> {};
+  public internal::ScalarRegister<vector_altivec_register, T> {
+
+
+      using Base = internal::ScalarRegister<vector_altivec_register, T>;
+      using Base::Base;
+
+
+  };
 
 
 }

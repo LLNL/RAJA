@@ -239,6 +239,19 @@ namespace RAJA
       }
 
       /*!
+       * @brief Add a product of two vectors, resulting in an FMA
+       * @param x Vector to add to this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(VectorProductRef<vector_type> const &x)
+      {
+        store(load() + x);
+        return *this;
+      }
+
+      /*!
        * @brief Subtract two vector registers
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
@@ -263,6 +276,7 @@ namespace RAJA
         return *this;
       }
 
+
       /*!
        * @brief Multiply two vector registers, element wise
        * @param x Vector to subctract from this register
@@ -270,9 +284,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type operator*(vector_type const &x) const
+      VectorProductRef<vector_type> operator*(vector_type const &x) const
       {
-        return load() * x;
+        return VectorProductRef<vector_type>(load(), x);
       }
 
       /*!
@@ -383,27 +397,27 @@ namespace RAJA
 
 
 
-  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
   VECTOR_TYPE
-  operator+(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+  operator+(typename VECTOR_TYPE::element_type x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
     return VECTOR_TYPE(x) + y.load();
   }
 
-  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
   VECTOR_TYPE
-  operator-(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+  operator-(typename VECTOR_TYPE::element_type x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
     return VECTOR_TYPE(x) - y.load();
   }
 
-  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-  VECTOR_TYPE
-  operator*(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-    return VECTOR_TYPE(x) * y.load();
+  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  VectorProductRef<VECTOR_TYPE>
+  operator*(typename VECTOR_TYPE::element_type x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+    return VectorProductRef<VECTOR_TYPE>(VECTOR_TYPE(x), y.load());
   }
 
-  template<typename ST, typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
   VECTOR_TYPE
-  operator/(ST x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+  operator/(typename VECTOR_TYPE::element_type x, VectorRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
     return VECTOR_TYPE(x) / y.load();
   }
 

@@ -269,6 +269,38 @@ namespace RAJA
         return ((*getThis()) * x).sum();
       }
 
+      /*!
+       * @brief Fused multiply add: fma(b, c) = (*this)*b+c
+       *
+       * Derived types can override this to implement intrinsic FMA's
+       *
+       * @param b Second product operand
+       * @param c Sum operand
+       * @return Value of (*this)*b+c
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      {
+        return (self_type(*getThis()) * self_type(b)) + self_type(c);
+      }
+
+      /*!
+       * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
+       *
+       * Derived types can override this to implement intrinsic FMS's
+       *
+       * @param b Second product operand
+       * @param c Subtraction operand
+       * @return Value of (*this)*b-c
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return (self_type(*getThis()) * self_type(b)) - self_type(c);
+      }
+
   };
 
   }

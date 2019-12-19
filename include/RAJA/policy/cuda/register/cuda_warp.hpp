@@ -184,48 +184,61 @@ namespace RAJA {
 			}
 
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       static
       self_type broadcast(element_type const &a){
         return self_type(a);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       static
       void copy(self_type &dst, self_type const &src){
         dst.m_value = src.m_value;
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      static
-      self_type add(self_type const &a, self_type const &b){
-        return self_type(a.m_value + b.m_value);
+      constexpr
+      self_type add(self_type const &b) const {
+        return self_type(m_value + b.m_value);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      static
-      self_type subtract(self_type const &a, self_type const &b){
-        return self_type(a.m_value - b.m_value);
+      constexpr
+      self_type subtract(self_type const &b) const {
+        return self_type(m_value - b.m_value);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      static
-      self_type multiply(self_type const &a, self_type const &b){
-        return self_type(a.m_value * b.m_value);
+      constexpr
+      self_type multiply(self_type const &b) const {
+        return self_type(m_value * b.m_value);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      static
-      self_type divide(self_type const &a, self_type const &b){
-        return self_type(a.m_value / b.m_value);
+      constexpr
+      self_type divide(self_type const &b) const {
+        return self_type(m_value / b.m_value);
       }
 
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      {
+        return self_type(fma(m_value, b.m_value, c.m_value));
+      }
+
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return self_type(fma(m_value, b.m_value, -c.m_value));
+      }
 
 
       /*!

@@ -25,17 +25,19 @@ namespace RAJA
 
   struct vector_scalar_register {};
 
+namespace internal
+{
   /**
    * A specialization for a single element register.
    * We will implement this as a scalar value, and let the compiler use
    * whatever registers it deems appropriate.
    */
-  template<typename T>
-  class Register<vector_scalar_register, T, 1> :
-    public internal::RegisterBase<Register<vector_scalar_register, T, 1>>
+  template<typename POLICY, typename T>
+  class ScalarRegister :
+    public internal::RegisterBase<Register<POLICY, T, 1>>
   {
     public:
-      using self_type = Register<vector_scalar_register, T, 1>;
+      using self_type = Register<POLICY, T, 1>;
       using element_type = T;
       using register_type = T;
 
@@ -54,7 +56,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register() : m_value(0) {
+      ScalarRegister() : m_value(0) {
       }
 
       /*!
@@ -63,7 +65,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register(element_type const &c) : m_value(c) {}
+      ScalarRegister(element_type const &c) : m_value(c) {}
 
 
       /*!
@@ -72,7 +74,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      ScalarRegister(self_type const &c) : m_value(c.m_value) {}
 
 
       /*!
@@ -227,7 +229,51 @@ namespace RAJA
         return self_type(RAJA::min<element_type>(m_value, a.m_value));
       }
 
+      /*!
+       * @brief Fused multiply add: fma(b, c) = (*this)*b+c
+       *
+       * Derived types can override this to implement intrinsic FMA's
+       *
+       * @param b Second product operand
+       * @param c Sum operand
+       * @return Value of (*this)*b+c
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      {
+        return m_value * b.m_value + c.m_value;
+      }
+
+      /*!
+       * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
+       *
+       * Derived types can override this to implement intrinsic FMS's
+       *
+       * @param b Second product operand
+       * @param c Subtraction operand
+       * @return Value of (*this)*b-c
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return m_value * b.m_value - c.m_value;
+      }
+
   };
+
+} // namespace internal
+
+  template<typename T>
+  class Register<vector_scalar_register, T, 1> :
+    public internal::ScalarRegister<vector_scalar_register, T> {
+
+      // import base class's constructors
+      using Base = internal::ScalarRegister<vector_scalar_register, T>;
+      using Base::Base;
+  };
+
 
 }  // namespace RAJA
 

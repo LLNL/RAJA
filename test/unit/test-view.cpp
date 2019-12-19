@@ -28,6 +28,7 @@ TEST(ViewTest, Const)
    * Should be able to construct a non-const View from a non-const View
    */
   RAJA::View<double, layout> view2(view);
+  ASSERT_EQ(view.get_data(), view2.get_data());
 
   /*
    * Should be able to construct a const View from a non-const View
@@ -38,6 +39,7 @@ TEST(ViewTest, Const)
    * Should be able to construct a const View from a const View
    */
   RAJA::View<double const, layout> const_view2(const_view);
+  ASSERT_EQ(const_view.get_data(), const_view2.get_data());
 }
 
 TEST(ViewTest, Shift1D)
