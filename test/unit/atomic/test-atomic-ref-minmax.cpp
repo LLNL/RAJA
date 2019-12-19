@@ -76,7 +76,7 @@ class AtomicRefCUDAMinMaxUnitTest : public ::testing::Test
 
 TYPED_TEST_CASE_P( AtomicRefCUDAMinMaxUnitTest );
 
-CUDA_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
+GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
 {
   using T = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
