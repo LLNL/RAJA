@@ -22,29 +22,29 @@
 #include <tuple>
 
 template <typename T>
-class ReducerBasicConstructorTest : public ::testing::Test
+class ReducerBasicConstructorUnitTest : public ::testing::Test
 {
 };
 
 template <typename T>
-class ReducerInitConstructorTest : public ::testing::Test
+class ReducerInitConstructorUnitTest : public ::testing::Test
 {
 };
 
 #if defined(RAJA_ENABLE_CUDA)
 template <typename T>
-class ReducerCUDAConstructorTest : public ::testing::Test
+class ReducerCUDAConstructorUnitTest : public ::testing::Test
 {
 };
 #endif
 
-TYPED_TEST_CASE_P(ReducerBasicConstructorTest);
-TYPED_TEST_CASE_P(ReducerInitConstructorTest);
+TYPED_TEST_CASE_P(ReducerBasicConstructorUnitTest);
+TYPED_TEST_CASE_P(ReducerInitConstructorUnitTest);
 #if defined(RAJA_ENABLE_CUDA)
-TYPED_TEST_CASE_P(ReducerCUDAConstructorTest);
+TYPED_TEST_CASE_P(ReducerCUDAConstructorUnitTest);
 #endif
 
-TYPED_TEST_P(ReducerBasicConstructorTest, BasicReducerConstructor)
+TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
@@ -75,7 +75,7 @@ TYPED_TEST_P(ReducerBasicConstructorTest, BasicReducerConstructor)
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), RAJA::Index_type());
 }
 
-TYPED_TEST_P(ReducerInitConstructorTest, InitReducerConstructor)
+TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
@@ -110,7 +110,7 @@ TYPED_TEST_P(ReducerInitConstructorTest, InitReducerConstructor)
 }
 
 #if defined(RAJA_ENABLE_CUDA)
-GPU_TYPED_TEST_P(ReducerCUDAConstructorTest, CUDAReducerConstructor)
+GPU_TYPED_TEST_P(ReducerCUDAConstructorUnitTest, CUDAReducerConstructor)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
@@ -162,10 +162,10 @@ GPU_TYPED_TEST_P(ReducerCUDAConstructorTest, CUDAReducerConstructor)
 }
 #endif
 
-REGISTER_TYPED_TEST_CASE_P(ReducerBasicConstructorTest,
+REGISTER_TYPED_TEST_CASE_P(ReducerBasicConstructorUnitTest,
                            BasicReducerConstructor);
 
-REGISTER_TYPED_TEST_CASE_P(ReducerInitConstructorTest,
+REGISTER_TYPED_TEST_CASE_P(ReducerInitConstructorUnitTest,
                            InitReducerConstructor);
 
 using constructor_types =
@@ -196,16 +196,16 @@ using constructor_types =
                      >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerConstructorBasicUnitTests,
-                              ReducerBasicConstructorTest,
+                              ReducerBasicConstructorUnitTest,
                               constructor_types);
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerConstructorInitUnitTests,
-                              ReducerInitConstructorTest,
+                              ReducerInitConstructorUnitTest,
                               constructor_types);
 
 #if defined(RAJA_ENABLE_CUDA)
 // Note: CUDA reducers do not have a default constructor.
-REGISTER_TYPED_TEST_CASE_P(ReducerCUDAConstructorTest,
+REGISTER_TYPED_TEST_CASE_P(ReducerCUDAConstructorUnitTest,
                            CUDAReducerConstructor);
 
 using cuda_types =
@@ -215,7 +215,7 @@ using cuda_types =
                     >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerConstructorCUDAUnitTests,
-                              ReducerCUDAConstructorTest,
+                              ReducerCUDAConstructorUnitTest,
                               cuda_types);
 #endif
 

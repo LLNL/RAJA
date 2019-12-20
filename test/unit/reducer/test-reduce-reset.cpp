@@ -15,20 +15,16 @@
 #include "RAJA_gtest.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_unit_forone.hpp"
-#endif
-
 #include <tuple>
 
 template <typename T>
-class ReducerResetTest : public ::testing::Test
+class ReducerResetUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(ReducerResetTest);
+TYPED_TEST_CASE_P(ReducerResetUnitTest);
 
-TYPED_TEST_P(ReducerResetTest, BasicReset)
+TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
@@ -83,7 +79,7 @@ TYPED_TEST_P(ReducerResetTest, BasicReset)
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)(-1));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReducerResetTest,
+REGISTER_TYPED_TEST_CASE_P(ReducerResetUnitTest,
                            BasicReset);
 
 using reset_types =
@@ -120,6 +116,6 @@ using reset_types =
                      >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerResetUnitTests,
-                              ReducerResetTest,
+                              ReducerResetUnitTest,
                               reset_types);
 
