@@ -79,13 +79,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Construct a permuted layout for At so that the column index has stride 1
   //
-  std::array<RAJA::idx_t, 2> At_perm {{1, 0}};
-  RAJA::Layout<2> perm_layout = 
-    RAJA::make_permuted_layout({{N_c, N_r}}, At_perm);
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout( {{N_c, N_r}}, 
+                                                            perm );
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
-  // Define TILE size in each dimension
+  // Define size for each dimension of a square tile.
   //
   const int TILE_SZ = 16;
 
@@ -138,8 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants will use the RAJA::kernel method to carryout the
-  // transpose.
+  // The following RAJA variants will use the RAJA::kernel method to 
+  // perform the matrix transpose operation.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
   // Further partioning of the iteration space is carried out in the
@@ -149,19 +149,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 
-  //----------------------------------------------------------------------------//
-  std::cout << "\n RAJA Running sequential tiled matrix transpose ...\n";
+//----------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA sequential tiled matrix transpose ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   //
-  // The following policy carries out the transpose
+  // The following policy performs the matrix transpose operation
   // using sequential loops. The template parameter inside
   // tile_fixed corresponds to the dimension size of the tile.
   //
+
   using KERNEL_EXEC_POL_SEQ =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::seq_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
@@ -189,12 +192,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
+
   using KERNEL_EXEC_POL_OMP =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
           >
@@ -221,13 +227,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // This policy loops over tiles sequentially while collapsing inner loops
-  // into a single OpenMP parallel for loop enabling parallel loads/reads
+  // into a single OpenMP loop enabling parallel loads/reads
   // to/from the tile.
   //
+
   using KERNEL_EXEC_POL_OMP2 =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::seq_exec,
           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                     RAJA::ArgList<0, 1>,
             RAJA::statement::Lambda<0>
@@ -257,10 +266,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using KERNEL_EXEC_POL_CUDA =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                   RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<0>
               >
             >
