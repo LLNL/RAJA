@@ -76,7 +76,7 @@ class AtomicRefCUDAAccessorUnitTest : public ::testing::Test
 
 TYPED_TEST_CASE_P( AtomicRefCUDAAccessorUnitTest );
 
-CUDA_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
+GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
 {
   using T = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;

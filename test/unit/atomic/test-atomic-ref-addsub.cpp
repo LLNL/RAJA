@@ -88,7 +88,7 @@ class AtomicRefCUDAAddSubUnitTest : public ::testing::Test
 
 TYPED_TEST_CASE_P( AtomicRefCUDAAddSubUnitTest );
 
-CUDA_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
+GPU_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
 {
   using T = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
