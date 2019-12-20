@@ -56,10 +56,10 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, 
   void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::layout_type::s_size;
 
     __shared__ varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
 
     enclosed_stmts_t::exec(data, thread_active);
   }
@@ -73,10 +73,10 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, 
   void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::layout_type::s_size;
 
     __shared__ varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
     initMem<other0, others...>(data, thread_active);
   }
 
@@ -88,7 +88,7 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, 
   void setPtrToNull(Data &data)
   {
 
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
   }
 
 
@@ -100,7 +100,7 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, 
   void setPtrToNull(Data &data)
   {
 
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
     setPtrToNull<other0, others...>(data);
   }
 
@@ -145,10 +145,10 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, 
   void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::layout_type::s_size;
 
     varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
 
     enclosed_stmts_t::exec(data, thread_active);
   }
@@ -162,10 +162,10 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, 
   void initMem(Data &data, bool thread_active)
   {
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
+    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::layout_type::s_size;
 
     varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
     initMem<other0, others...>(data, thread_active);
   }
 
@@ -177,7 +177,7 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, 
   void setPtrToNull(Data &data)
   {
 
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
   }
 
 
@@ -189,7 +189,7 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, 
   void setPtrToNull(Data &data)
   {
 
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
     setPtrToNull<other0, others...>(data);
   }
 

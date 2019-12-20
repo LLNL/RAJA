@@ -48,6 +48,8 @@ namespace RAJA
 
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator+(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
@@ -55,6 +57,8 @@ namespace RAJA
   }
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator-(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
@@ -69,6 +73,8 @@ namespace RAJA
   }
 
   template<typename ST, typename REGISTER_POLICY, typename RT, size_t NUM_ELEM>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
   Register<REGISTER_POLICY, RT, NUM_ELEM>
   operator/(ST x, Register<REGISTER_POLICY, RT, NUM_ELEM> const &y){
     using register_t = Register<REGISTER_POLICY, RT, NUM_ELEM>;
@@ -149,7 +155,7 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       element_type operator[](IDX i) const
       {
         return getThis()->get(i);
