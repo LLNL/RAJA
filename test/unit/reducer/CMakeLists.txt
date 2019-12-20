@@ -5,10 +5,6 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-#add_subdirectory(cpu)
-#add_subdirectory(cuda)
-#add_subdirectory(omp-target)
-
 raja_add_test(
   NAME test-reduce-constructors
   SOURCES test-reduce-constructors.cpp)

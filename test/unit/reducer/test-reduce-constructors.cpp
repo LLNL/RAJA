@@ -110,7 +110,7 @@ TYPED_TEST_P(ReducerInitConstructorTest, InitReducerConstructor)
 }
 
 #if defined(RAJA_ENABLE_CUDA)
-CUDA_TYPED_TEST_P(ReducerCUDAConstructorTest, CUDAReducerConstructor)
+GPU_TYPED_TEST_P(ReducerCUDAConstructorTest, CUDAReducerConstructor)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;

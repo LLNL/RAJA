@@ -12,7 +12,12 @@
 #include "gtest/gtest.h"
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA_unit_forone.hpp"
+#endif
 
 #include <tuple>
 
@@ -92,7 +97,7 @@ using reset_types =
                      std::tuple<RAJA::tbb_reduce, double>
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                     ,
+                     ,  // Functional tests perform reset on the device.
                      std::tuple<RAJA::cuda_reduce, int>,
                      std::tuple<RAJA::cuda_reduce, float>,
                      std::tuple<RAJA::cuda_reduce, double>
@@ -117,5 +122,4 @@ using reset_types =
 INSTANTIATE_TYPED_TEST_CASE_P(ReducerResetUnitTests,
                               ReducerResetTest,
                               reset_types);
-
 
