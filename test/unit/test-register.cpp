@@ -11,6 +11,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
+#include <stdlib.h>
 
     using RegisterTestTypes = ::testing::Types<
 #ifdef __AVX__
@@ -71,7 +72,7 @@ TYPED_TEST_CASE_P(RegisterTest);
 
 
 /*
- * We are using drand48() for input values so the compiler cannot do fancy
+ * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
  */
 
@@ -86,7 +87,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   element_t A[num_elem];
   register_t x;
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
   }
 
@@ -107,7 +108,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 
   element_t A[num_elem*2];
   for(size_t i = 0;i < num_elem*2; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
   }
 
 
@@ -142,8 +143,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
-    B[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -180,8 +181,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   register_t y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
-    B[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -206,8 +207,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
-    B[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -238,8 +239,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
-    B[i] = (element_t)(drand48()*1000.0)+1.0;
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0)+1.0;
     x.set(i, A[i]);
     y.set(i, B[i]);
   }
@@ -271,8 +272,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
 
   element_t expected = 0.0;
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
-    B[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
     y.set(i, B[i]);
     expected += A[i]*B[i];
@@ -293,7 +294,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
   register_t x;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
   }
 
@@ -317,7 +318,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
   register_t x;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(drand48()*1000.0);
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
     x.set(i, A[i]);
   }
 
@@ -370,7 +371,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
   cudaErrchk(cudaDeviceSynchronize());
 
   for(int i = 0;i < N*32;++ i){
-    data[i] = i; //1000*drand48();
+    data[i] = i; //1000*((double)rand()/RAND_MAX);
   }
 
   for(int i = 0;i < N;++ i){
@@ -450,7 +451,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp16)
   cudaErrchk(cudaDeviceSynchronize());
 
   for(int i = 0;i < N*32;++ i){
-    data[i] = 1000*drand48();
+    data[i] = 1000*((double)rand()/RAND_MAX);
   }
 
   for(int i = 0;i < N*2;++ i){
