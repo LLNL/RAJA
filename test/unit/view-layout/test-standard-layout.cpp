@@ -36,7 +36,7 @@ TEST(OffsetLayoutUnitTest, Constructors)
   ASSERT_EQ(4, l(14));
 }
 
-TEST(LayoutTest, 2D_IJ)
+TEST(LayoutUnitTest, 2D_IJ)
 {
   using my_layout = RAJA::Layout<2>;
 
@@ -88,7 +88,7 @@ TEST(LayoutTest, 2D_IJ)
   }
 }
 
-TEST(LayoutTest, 2D_JI)
+TEST(LayoutUnitTest, 2D_JI)
 {
   using my_layout = RAJA::Layout<2>;
 
@@ -127,7 +127,7 @@ TEST(LayoutTest, 2D_JI)
   }
 }
 
-TEST(LayoutTest, 2D_IJ_ProjJ)
+TEST(LayoutUnitTest, 2D_IJ_ProjJ)
 {
   using my_layout = RAJA::Layout<2>;
 

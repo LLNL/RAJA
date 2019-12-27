@@ -114,7 +114,7 @@ struct funcapplier<ReduceMaxLoc<seq_reduce, NumType, Indexer>>
 
 // base test
 template <typename T>
-struct HIPReduceLocRandTest : public ::testing::Test
+struct HIPReduceLocRandUnitTest : public ::testing::Test
 {
   public:
   virtual void SetUp()
@@ -215,11 +215,11 @@ struct HIPReduceLocRandTest : public ::testing::Test
   int minloc;
 };
 
-TYPED_TEST_CASE_P(HIPReduceLocRandTest);
+TYPED_TEST_CASE_P(HIPReduceLocRandUnitTest);
 
 // Tests HIP reduce loc on array over one range.
 // Each iteration introduces a random value into the array.
-GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandom)
+GPU_TYPED_TEST_P(HIPReduceLocRandUnitTest, ReduceLocRandom)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -254,7 +254,7 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandom)
 // Tests HIP reduce loc on array with all same values, over segments.
 // HIP finds location in the last segment, 
 // while CPU seq_reduce finds location in first segment.
-GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocSameHalves)
+GPU_TYPED_TEST_P(HIPReduceLocRandUnitTest, ReduceLocSameHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -295,7 +295,7 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocSameHalves)
 }
 
 // Tests HIP reduce loc on array with unique values, over segments.
-GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocAscendingHalves)
+GPU_TYPED_TEST_P(HIPReduceLocRandUnitTest, ReduceLocAscendingHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -341,7 +341,7 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocAscendingHalves)
 // Tests HIP reduce loc on two segment halves of array.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled HIP reduce loc vs. un-scaled HIP reduce loc.
-GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomHalves)
+GPU_TYPED_TEST_P(HIPReduceLocRandUnitTest, ReduceLocRandomHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
@@ -392,7 +392,7 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomHalves)
 // Segments being reduced are non-contiguous.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled HIP reduce loc vs. un-scaled HIP reduce loc.
-GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomDisjoint)
+GPU_TYPED_TEST_P(HIPReduceLocRandUnitTest, ReduceLocRandomDisjoint)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
@@ -445,7 +445,7 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomDisjoint)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( HIPReduceLocRandTest,
+REGISTER_TYPED_TEST_CASE_P( HIPReduceLocRandUnitTest,
                             ReduceLocRandom,
                             ReduceLocSameHalves,
                             ReduceLocAscendingHalves,
@@ -457,11 +457,11 @@ using MinLocType = ::testing::Types<
                      list<ReduceMinLoc<RAJA::hip_reduce, int, int>,
                           ReduceMinLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin, HIPReduceLocRandTest, MinLocType);
+INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin, HIPReduceLocRandUnitTest, MinLocType);
 
 using MaxLocType = ::testing::Types<
                      list<ReduceMaxLoc<RAJA::hip_reduce, int, int>,
                           ReduceMaxLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax, HIPReduceLocRandTest, MaxLocType);
+INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax, HIPReduceLocRandUnitTest, MaxLocType);
 

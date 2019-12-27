@@ -145,7 +145,7 @@ struct reduce_applier<ReduceMaxLoc<T, U, Index>> {
 };
 
 template <typename Reducer>
-class ReduceHIP : public ::testing::Test
+class ReduceHIPUnitTest : public ::testing::Test
 {
   using applier = reduce_applier<Reducer>;
 
@@ -165,20 +165,20 @@ public:
 };
 
 template <typename Reducer>
-double* ReduceHIP<Reducer>::dvalue = nullptr;
+double* ReduceHIPUnitTest<Reducer>::dvalue = nullptr;
 
 template <typename Reducer>
-double* ReduceHIP<Reducer>::d_dvalue = nullptr;
+double* ReduceHIPUnitTest<Reducer>::d_dvalue = nullptr;
 
 
-TYPED_TEST_CASE_P(ReduceHIP);
+TYPED_TEST_CASE_P(ReduceHIPUnitTest);
 
-GPU_TYPED_TEST_P(ReduceHIP, generic)
+GPU_TYPED_TEST_P(ReduceHIPUnitTest, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
   using IndexType = typename applier::IndexType;
-  using reducer = ReduceHIP<TypeParam>;
+  using reducer = ReduceHIPUnitTest<TypeParam>;
   double* dvalue = reducer::dvalue;
   double* d_dvalue = reducer::d_dvalue;
 
@@ -226,13 +226,13 @@ GPU_TYPED_TEST_P(ReduceHIP, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-GPU_TYPED_TEST_P(ReduceHIP, indexset_align)
+GPU_TYPED_TEST_P(ReduceHIPUnitTest, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
   using IndexType = typename applier::IndexType;
-  double* dvalue = ReduceHIP<TypeParam>::dvalue;
-  double* d_dvalue = ReduceHIP<TypeParam>::d_dvalue;
+  double* dvalue = ReduceHIPUnitTest<TypeParam>::dvalue;
+  double* d_dvalue = ReduceHIPUnitTest<TypeParam>::d_dvalue;
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
   hipMemcpy(d_dvalue, dvalue, sizeof(double) * TEST_VEC_LEN, hipMemcpyHostToDevice);
@@ -278,13 +278,13 @@ GPU_TYPED_TEST_P(ReduceHIP, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-GPU_TYPED_TEST_P(ReduceHIP, indexset_noalign)
+GPU_TYPED_TEST_P(ReduceHIPUnitTest, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;
   using IndexType = typename applier::IndexType;
-  double* dvalue = ReduceHIP<TypeParam>::dvalue;
-  double* d_dvalue = ReduceHIP<TypeParam>::d_dvalue;
+  double* dvalue = ReduceHIPUnitTest<TypeParam>::dvalue;
+  double* d_dvalue = ReduceHIPUnitTest<TypeParam>::d_dvalue;
 
   RangeSegment seg0(1, 230);
   RangeSegment seg1(237, 385);
@@ -331,23 +331,23 @@ GPU_TYPED_TEST_P(ReduceHIP, indexset_noalign)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReduceHIP,
+REGISTER_TYPED_TEST_CASE_P(ReduceHIPUnitTest,
                            generic,
                            indexset_align,
                            indexset_noalign);
 
 // using MinLocTypes =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceHIP, MinLocTypes);
+// INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceHIPUnitTest, MinLocTypes);
 
 // using MaxLocTypes =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceHIP, MaxLocTypes);
+// INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceHIPUnitTest, MaxLocTypes);
 
 // using MinLocTypesGenericIndex =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceHIP, MinLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceHIPUnitTest, MinLocTypesGenericIndex);
 
 // using MaxLocTypesGenericIndex =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceHIP, MaxLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceHIPUnitTest, MaxLocTypesGenericIndex);

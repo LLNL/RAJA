@@ -30,7 +30,7 @@ using namespace RAJA;
 static const double dinit_val = 0.1;
 static const int iinit_val = 1;
 
-class ReduceSumHIP : public ::testing::Test
+class ReduceSumHIPUnitTest : public ::testing::Test
 {
 public:
   static void SetUpTestCase()
@@ -78,18 +78,18 @@ public:
   static int *d_ivalue;
 };
 
-double* ReduceSumHIP::dvalue = nullptr;
-double* ReduceSumHIP::rand_dvalue = nullptr;
-int* ReduceSumHIP::ivalue = nullptr;
-double* ReduceSumHIP::d_dvalue = nullptr;
-double* ReduceSumHIP::d_rand_dvalue = nullptr;
-int* ReduceSumHIP::d_ivalue = nullptr;
+double* ReduceSumHIPUnitTest::dvalue = nullptr;
+double* ReduceSumHIPUnitTest::rand_dvalue = nullptr;
+int* ReduceSumHIPUnitTest::ivalue = nullptr;
+double* ReduceSumHIPUnitTest::d_dvalue = nullptr;
+double* ReduceSumHIPUnitTest::d_rand_dvalue = nullptr;
+int* ReduceSumHIPUnitTest::d_ivalue = nullptr;
 
 const size_t block_size = 256;
 
-GPU_TEST_F(ReduceSumHIP, staggered_sum)
+GPU_TEST_F(ReduceSumHIPUnitTest, staggered_sum)
 {
-  double* dvalue = ReduceSumHIP::d_dvalue;
+  double* dvalue = ReduceSumHIPUnitTest::d_dvalue;
 
   double dtinit = 5.0;
 
@@ -130,9 +130,9 @@ GPU_TEST_F(ReduceSumHIP, staggered_sum)
   }
 }
 
-GPU_TEST_F(ReduceSumHIP, staggered_sum2)
+GPU_TEST_F(ReduceSumHIPUnitTest, staggered_sum2)
 {
-  double* dvalue = ReduceSumHIP::d_dvalue;
+  double* dvalue = ReduceSumHIPUnitTest::d_dvalue;
 
   double dtinit = 5.0;
 
@@ -189,10 +189,10 @@ GPU_TEST_F(ReduceSumHIP, staggered_sum2)
 //        not aligned with warp boundaries to check that reduction
 //        mechanics don't depend on any sort of special indexing.
 //
-GPU_TEST_F(ReduceSumHIP, indexset_noalign)
+GPU_TEST_F(ReduceSumHIPUnitTest, indexset_noalign)
 {
-  double* dvalue = ReduceSumHIP::d_dvalue;
-  int* ivalue = ReduceSumHIP::d_ivalue;
+  double* dvalue = ReduceSumHIPUnitTest::d_dvalue;
+  int* ivalue = ReduceSumHIPUnitTest::d_ivalue;
 
 
   RangeSegment seg0(1, 1230);
@@ -231,10 +231,10 @@ GPU_TEST_F(ReduceSumHIP, indexset_noalign)
   ASSERT_EQ(int(isum3), 4 * ibase_chk_val + (itinit * 4));
 }
 
-GPU_TEST_F(ReduceSumHIP, atomic_reduce)
+GPU_TEST_F(ReduceSumHIPUnitTest, atomic_reduce)
 {
-  double* rand_dvalue = ReduceSumHIP::rand_dvalue;
-  double* d_rand_dvalue = ReduceSumHIP::d_rand_dvalue;
+  double* rand_dvalue = ReduceSumHIPUnitTest::rand_dvalue;
+  double* d_rand_dvalue = ReduceSumHIPUnitTest::d_rand_dvalue;
 
   ReduceSum<hip_reduce_atomic, double> dsumN(0.0);
   ReduceSum<hip_reduce_atomic, double> dsumP(0.0);
@@ -272,9 +272,9 @@ GPU_TEST_F(ReduceSumHIP, atomic_reduce)
   }
 }
 
-GPU_TEST_F(ReduceSumHIP, increasing_size)
+GPU_TEST_F(ReduceSumHIPUnitTest, increasing_size)
 {
-  double* dvalue = ReduceSumHIP::d_dvalue;
+  double* dvalue = ReduceSumHIPUnitTest::d_dvalue;
 
   double dtinit = 5.0;
 
