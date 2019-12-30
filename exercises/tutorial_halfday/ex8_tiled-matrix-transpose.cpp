@@ -16,16 +16,15 @@
 /*
  *  EXERCISE #8: Tiled Matrix Transpose
  *
- *  In this exercise, your program will carry out the transpose of a matrix A
- *  using a tiling algorithm. An input matrix A of dimension N_r x N_c
- *  will be provided. As part of the exercise you will have to provide
- *  the transpose as a second matrix At.
+ *  In this exercise, you will use RAJA constructs to transpose a matrix 
+ *  using a loop tiling algorithm. An input matrix A of dimension N_r x N_c
+ *  is provided. You will fill in the entries of the transpose matrix At.
  *
- *  This file contains a C-style variant of the algorithm as well as the
- *  RAJA tiling policy for a RAJA variant. You will have to
- *  implement the matrix tranpose kernel using the RAJA kernel API.
- *  You may then try the OpenMP policy. If you have access
- *  to a GPU and a CUDA compiler, try using the CUDA policy.
+ *  This file contains a C-style variant of the sequential matrix transpose.
+ *  You will complete implementations of multiple RAJA variants by filling
+ *  in missing elements of RAJA kernel API execution policies as well as the 
+ *  RAJA kernel implementation for each. Variants you will complete include
+ *  sequential, OpenMP, and CUDA execution.
  *
  *  RAJA features you will use:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
@@ -115,14 +114,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   for (int by = 0; by < outer_Dimr; ++by) {
     for (int bx = 0; bx < outer_Dimc; ++bx) {
+
       //
       // (1) Loops to iterate over tile entries
       //
-      for (int ty = 0; ty < TILE_SZ; ++ty) {
-        for (int tx = 0; tx < TILE_SZ; ++tx) {
+      //     Note: loops are ordered so that output matrix data access
+      //           is stride-1.
+      //
+      for (int trow = 0; trow < TILE_SZ; ++trow) {
+        for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
 
-          int col = bx * TILE_SZ + tx;  // Matrix column index
-          int row = by * TILE_SZ + ty;  // Matrix row index
+          int col = bx * TILE_SZ + tcol;  // Matrix column index
+          int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -281,9 +284,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                  RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
                                    RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                 RAJA::statement::Lambda<0>
+            // Fill in inner loop execution statements.... 
+                RAJA::statement::Lambda<0>
               >
             >
           >
