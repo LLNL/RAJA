@@ -43,10 +43,22 @@ RAJA_INDEX_VALUE(IIDX, "IIDX");
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-    std::cout << "\n\nExercise #7: RAJA nested loop reorder example...\n";
+  std::cout << "\n\nExercise #7: RAJA nested loop reorder example...\n";
+
+  std::cout << "\n Running C-style loop nest with loop ordering: K-outer, J-middle, I-inner" 
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
+
+  for (int k = 2; k < 4; ++k) {
+    for (int j = 1; j < 3; ++j) {
+      for (int i = 0; i < 2; ++i) {
+        printf( " (%d, %d, %d) \n", i, j, k);
+      }
+    }
+  }
 
 //
-// Typed index ranges
+// The RAJA variants of the loop nest used following typed range segments
+// based on the typed indices defined above, outside of main().
 // 
   RAJA::TypedRangeSegment<KIDX> KRange(2, 4);
   RAJA::TypedRangeSegment<JIDX> JRange(1, 3);
@@ -54,7 +66,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
  
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running loop reorder example (K-outer, J-middle, I-inner)"
+  std::cout << "\n Running RAJA nested loop example (K-outer, J-middle, I-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   using KJI_EXECPOL = RAJA::KernelPolicy<
@@ -75,7 +87,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running loop reorder example (J-outer, I-middle, K-inner)"
+  std::cout << "\n Running RAJA nested loop example (J-outer, I-middle, K-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   ///
@@ -101,7 +113,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running loop reorder example (I-outer, K-middle, J-inner)"
+  std::cout << "\n Running RAJA nested loop example (I-outer, K-middle, J-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   ///
