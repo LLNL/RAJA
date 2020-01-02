@@ -317,12 +317,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
 
-      RAJA_Tile(trow, tcol) = Aview(row, col);
-
-    },
-
-    [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
-
       Atview(col, row) = RAJA_Tile(trow, tcol);
 
     }
