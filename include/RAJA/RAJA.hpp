@@ -66,6 +66,7 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
+#pragma diag_suppress 2928
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
