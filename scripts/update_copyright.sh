@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,7 @@
 #
 # If you need to modify this script, you may want to run each of these 
 # commands individual from the command line to make sure things are doing 
-# what you think they should be doing. This is why they are seperated into 
+# what you think they should be doing. This is why they are separated into 
 # steps here.
 # 
 #=============================================================================
