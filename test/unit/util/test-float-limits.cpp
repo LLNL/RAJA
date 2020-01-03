@@ -18,13 +18,13 @@
 #include <limits>
 
 template <typename T>
-class FloatLimitsTest : public ::testing::Test
+class FloatLimitsUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(FloatLimitsTest);
+TYPED_TEST_CASE_P(FloatLimitsUnitTest);
 
-TYPED_TEST_P(FloatLimitsTest, FloatLimits)
+TYPED_TEST_P(FloatLimitsUnitTest, FloatLimits)
 {
   ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(),
             -std::numeric_limits<TypeParam>::max());
@@ -32,12 +32,12 @@ TYPED_TEST_P(FloatLimitsTest, FloatLimits)
             std::numeric_limits<TypeParam>::max());
 }
 
-REGISTER_TYPED_TEST_CASE_P(FloatLimitsTest, FloatLimits);
+REGISTER_TYPED_TEST_CASE_P(FloatLimitsUnitTest, FloatLimits);
 
 using float_types = ::testing::Types<float,
                                      double,
                                      long double>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(FloatLimitsTests,
-                              FloatLimitsTest,
+INSTANTIATE_TYPED_TEST_CASE_P(FloatLimitsUnitTests,
+                              FloatLimitsUnitTest,
                               float_types);
