@@ -123,9 +123,8 @@ public:
   RAJA_HOST_DEVICE
   ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
-  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) = default;
-  RAJA_HOST_DEVICE
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &other) = default;
   ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
 
