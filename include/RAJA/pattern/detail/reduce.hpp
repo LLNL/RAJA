@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -123,9 +123,8 @@ public:
   RAJA_HOST_DEVICE
   ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
-  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) = default;
-  RAJA_HOST_DEVICE
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &other) = default;
   ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
 
