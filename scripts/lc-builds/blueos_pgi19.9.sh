@@ -17,7 +17,7 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/pgi_19_9.cmake \
-  -C ../host-configs/lc-builds/blueos/pgi_X.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/pgi_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

@@ -16,8 +16,8 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../.gitlab/conf/host-configs/lc-builds/blueos/nvcc_10_clang_coral_2019_08_15.cmake \
-  -C ../host-configs/lc-builds/blueos/nvcc_clang_upstream_2019_08_15.cmake \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_10_clang_coral_2019_08_15.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/nvcc_clang_upstream_2019_08_15.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=sm_70 \

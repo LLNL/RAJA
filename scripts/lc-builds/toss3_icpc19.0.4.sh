@@ -16,8 +16,8 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -C ../.gitlab/conf/host-configs/toss_3_x86_64_ib/intel_19_0_4.cmake \
-  -C ../host-configs/lc-builds/toss3/icpc_X_gcc8headers.cmake \
+  -C ../.gitlab/conf/host-configs/toss_3_x86_64_ib/intel_19_0_4_gcc8headers.cmake \
+  -C ../host-configs/toss_3_x86_64/icpc_X_gcc8headers.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
