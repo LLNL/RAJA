@@ -17,7 +17,7 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/clang_upstream_2019_08_15.cmake \
-  -C ../host-configs/lc-builds/blueos/clang_upstream_2019_08_15.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/clang_upstream_2019_08_15.cmake \
   -DENABLE_CUDA=Off \
   -DENABLE_OPENMP=On \
   -DENABLE_TARGET_OPENMP=On \

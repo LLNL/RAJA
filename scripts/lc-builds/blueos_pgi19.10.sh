@@ -16,9 +16,8 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/pgi/pgi-19.10/bin/pgc++ \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/pgi/pgi-19.10/bin/pgcc \
-  -C ../host-configs/lc-builds/blueos/pgi_X.cmake \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/pgi_19_10.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/pgi_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

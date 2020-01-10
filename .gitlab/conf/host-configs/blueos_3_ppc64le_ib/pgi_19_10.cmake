@@ -5,5 +5,5 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-19.1.0/bin/icpc" CACHE PATH "")
-set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-19.1.0/bin/icc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/pgi/pgi-19.10/bin/pgcc" CACHE PATH "" )
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/pgi/pgi-19.10/bin/pgc++" CACHE PATH "" )
