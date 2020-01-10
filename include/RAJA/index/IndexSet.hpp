@@ -754,12 +754,12 @@ namespace type_traits
 
 template <typename T>
 struct is_index_set
-    : SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
 };
 
 template <typename T>
 struct is_indexset_policy
-    : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
 }  // namespace type_traits
 
