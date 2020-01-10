@@ -545,3 +545,11 @@ TEST(Atomic, basic_seq_Logical)
   testAtomicLogicalPol<RAJA::seq_exec, RAJA::seq_atomic>();
   testAtomicLogicalPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
+
+TEST(Atomic, seq_non_literal)
+{
+  std::string a("Hello ");
+  std::string const b("world!");
+  EXPECT_EQ("Hello ", RAJA::atomicAdd<RAJA::seq_atomic>(&a, b));
+  EXPECT_EQ(a, "Hello world!");
+}

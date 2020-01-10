@@ -88,7 +88,7 @@ namespace RAJA
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(T * const acc, T const & value)
 {
   return RAJA::atomicAdd(Policy{}, acc, value);
 }
@@ -102,7 +102,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(T * const acc, T const & value)
 {
   return RAJA::atomicSub(Policy{}, acc, value);
 }
@@ -116,7 +116,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(T * const acc, T const & value)
 {
   return RAJA::atomicMin(Policy{}, acc, value);
 }
@@ -130,7 +130,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(T * const acc, T const & value)
 {
   return RAJA::atomicMax(Policy{}, acc, value);
 }
@@ -143,7 +143,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T * const acc)
 {
   return RAJA::atomicInc(Policy{}, acc);
 }
@@ -159,7 +159,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc, T compare)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T * const acc, T const & compare)
 {
   return RAJA::atomicInc(Policy{}, acc, compare);
 }
@@ -172,7 +172,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T volatile *acc, T compare)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T * const acc)
 {
   return RAJA::atomicDec(Policy{}, acc);
 }
@@ -188,7 +188,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc, T compare)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T * const acc, T const & compare)
 {
   return RAJA::atomicDec(Policy{}, acc, compare);
 }
@@ -203,7 +203,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T volatile *acc, T compare)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T * const acc, T const & value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicAnd can only be used on integral types");
@@ -220,7 +220,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T * const acc, T const & value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicOr can only be used on integral types");
@@ -237,7 +237,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T * const acc, T const & value)
 {
   static_assert(std::is_integral<T>::value,
                 "atomicXor can only be used on integral types");
@@ -253,7 +253,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T volatile *acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(T * const acc, T const & value)
 {
   return RAJA::atomicExchange(Policy{}, acc, value);
 }
@@ -269,7 +269,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(T volatile *acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T volatile *acc, T compare, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T * const acc, T const & compare, T const & value)
 {
   return RAJA::atomicCAS(Policy{}, acc, compare, value);
 }
@@ -498,7 +498,7 @@ public:
   }
 
 private:
-  value_type volatile *m_value_ptr;
+  value_type * const m_value_ptr;
 };
 
 
