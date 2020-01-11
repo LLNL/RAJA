@@ -19,8 +19,6 @@ cmake \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_9_2_clang_coral_2018_08_08.cmake \
   -C ../host-configs/blueos_3_ppc64le_ib/nvcc_clang_coral_2018_08_08.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=On \
-  -DCUDA_ARCH=sm_70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

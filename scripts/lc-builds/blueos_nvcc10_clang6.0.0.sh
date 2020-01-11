@@ -19,8 +19,6 @@ cmake \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_10_clang_6_0_0.cmake \
   -C ../host-configs/blueos_3_ppc64le_ib/nvcc_X_clang_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=On \
-  -DCUDA_ARCH=sm_70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
