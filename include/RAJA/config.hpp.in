@@ -148,9 +148,9 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-const int RAJA_VERSION_MAJOR = @RAJA_VERSION_MAJOR@;
-const int RAJA_VERSION_MINOR = @RAJA_VERSION_MINOR@;
-const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
+#define RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@
+#define RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@
+#define RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@
 
 
 /*!
