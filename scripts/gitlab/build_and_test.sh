@@ -21,6 +21,7 @@ echo "* ${CONFIGURATION}"
 # several configurations for this set, like <omptarget>.
 
 toolchain=${CONFIGURATION/__*/}
+tuning=${CONFIGURATION/${toolchain}/}
 
 # FIRST STEP :
 # Find raja host_configs matching the configuration
@@ -38,6 +39,11 @@ do
     pattern="${hc//X/.*}"
     pattern="${pattern/.cmake/}"
     echo "${pattern}"
+
+    if [[ -n "${tuning}" && ! "${pattern}" =~ .*${tuning}$ ]]
+    then
+        continue
+    fi
 
     if [[ "${CONFIGURATION}" =~ ^${pattern}$ ]]
     then
