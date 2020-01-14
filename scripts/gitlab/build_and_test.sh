@@ -10,32 +10,40 @@
 set -o errexit
 set -o nounset
 
-# TODO : ill-named environment variable
 echo "--- Configuration to match :"
-echo "* ${COMPILER}"
+echo "* ${CONFIGURATION}"
+
+# 'configuration' = toolchain__tuning
+# 'host_config' = filter__tuning
+#   where 'filter' can represent several toolchains
+#   like <nvcc_10_gcc_X> covers any gcc paired with nvcc10
+# 'toolchain' is a unique set of tools, and 'tuning' allows to have
+# several configurations for this set, like <omptarget>.
+
+toolchain=${CONFIGURATION/__*/}
 
 # FIRST STEP :
-# Find raja configuration matching the toolchain
-available_confs="$(ls host-configs/${SYS_TYPE}/ | grep "\.cmake$")"
-echo "--- Available configurations"
-echo "${available_confs}"
+# Find raja host_configs matching the configuration
+host_configs="$(ls host-configs/${SYS_TYPE}/ | grep "\.cmake$")"
+echo "--- Available host_configs"
+echo "${host_configs}"
 
 match_count=0
-configuration=""
+host_config=""
 
-# Translate file names into pattern to match the configuration
+# Translate file names into pattern to match the host_config
 echo "--- Patterns"
-for conf in ${available_confs}
+for hc in ${host_configs}
 do
-    pattern="${conf//X/.*}"
+    pattern="${hc//X/.*}"
     pattern="${pattern/.cmake/}"
     echo "${pattern}"
 
-    if [[ "${COMPILER}" =~ ^${pattern}$ ]]
+    if [[ "${CONFIGURATION}" =~ ^${pattern}$ ]]
     then
         (( ++match_count ))
-        configuration="${conf}"
-        echo "-> Found Project Conf : ${configuration}"
+        host_config="${hc}"
+        echo "-> Found Project Conf : ${host_config}"
     fi
 done
 
@@ -47,7 +55,7 @@ fi
 
 # SECOND STEP :
 # Build
-build_suffix="${SYS_TYPE}_${COMPILER}"
+build_suffix="${SYS_TYPE}_${CONFIGURATION}"
 build_dir="build_${build_suffix}"
 echo "--- Build (${build_dir})"
 
@@ -55,8 +63,8 @@ rm -rf ${build_dir} 2>/dev/null
 mkdir ${build_dir} && cd ${build_dir}
 
 install_dir="../install_${build_suffix}"
-compiler_conf="../.gitlab/conf/host-configs/${SYS_TYPE}/${COMPILER}.cmake"
-raja_conf="../host-configs/${SYS_TYPE}/${configuration}"
+compiler_conf="../.gitlab/conf/host-configs/${SYS_TYPE}/${toolchain}.cmake"
+raja_conf="../host-configs/${SYS_TYPE}/${host_config}"
 
 module load cmake/3.9.2
 
@@ -66,6 +74,6 @@ cmake \
   -C ${raja_conf} \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=${install_dir} \
-  .. 
+  ..
 make -j 8
 ctest -V -T test

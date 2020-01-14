@@ -17,11 +17,8 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/clang_upstream_2019_08_15.cmake \
-  -C ../host-configs/blueos_3_ppc64le_ib/clang_upstream_2019_08_15.cmake \
-  -DENABLE_CUDA=Off \
+  -C ../host-configs/blueos_3_ppc64le_ib/clang_upstream_2019_08_15__omptarget.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
