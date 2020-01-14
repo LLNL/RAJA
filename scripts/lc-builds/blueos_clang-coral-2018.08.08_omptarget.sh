@@ -19,12 +19,8 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/clang_coral_2018_08_08.cmake \
-  -C ../host-configs/blueos_3_ppc64le_ib/clang_coral_2018_08_08.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/clang_coral_2018_08_08__omptarget.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=Off \
-  -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda;-fopenmp-implicit-declare-target" \
-  -DENABLE_ALL_WARNINGS=Off \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
