@@ -21,16 +21,17 @@ echo "* ${CONFIGURATION}"
 # several configurations for this set, like <omptarget>.
 
 toolchain=${CONFIGURATION/__*/}
-tuning=${CONFIGURATION/${toolchain}/}
+local tuning=${CONFIGURATION/${toolchain}/}
 
 # FIRST STEP :
 # Find raja host_configs matching the configuration
-host_configs="$(ls host-configs/${SYS_TYPE}/ | grep "\.cmake$")"
+local host_configs="$(ls host-configs/${SYS_TYPE}/ | grep "\.cmake$")"
 echo "--- Available host_configs"
 echo "${host_configs}"
 
-match_count=0
 host_config=""
+local match_count=0
+local pattern=""
 
 # Translate file names into pattern to match the host_config
 echo "--- Patterns"
@@ -61,16 +62,18 @@ fi
 
 # SECOND STEP :
 # Build
-build_suffix="${SYS_TYPE}_${CONFIGURATION}"
-build_dir="build_${build_suffix}"
+local build_suffix="${SYS_TYPE}_${CONFIGURATION}"
+local build_dir="build_${build_suffix}"
+local root_dir="$(pwd)"
+
 echo "--- Build (${build_dir})"
 
 rm -rf ${build_dir} 2>/dev/null
 mkdir ${build_dir} && cd ${build_dir}
 
-install_dir="../install_${build_suffix}"
-compiler_conf="../.gitlab/conf/host-configs/${SYS_TYPE}/${toolchain}.cmake"
-raja_conf="../host-configs/${SYS_TYPE}/${host_config}"
+install_dir="${root_dir}/install_${build_suffix}"
+compiler_conf="${root_dir}/.gitlab/conf/host-configs/${SYS_TYPE}/${toolchain}.cmake"
+raja_conf="${root_dir}/host-configs/${SYS_TYPE}/${host_config}"
 
 module load cmake/3.9.2
 
