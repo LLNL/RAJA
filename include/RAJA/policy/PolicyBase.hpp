@@ -18,6 +18,7 @@
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
+#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 
 #include <cstddef>
@@ -47,8 +48,6 @@ enum class Pattern {
 };
 
 enum class Launch { undefined, sync, async };
-
-enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4, hip = 8 };
 
 struct PolicyBase {
 };
