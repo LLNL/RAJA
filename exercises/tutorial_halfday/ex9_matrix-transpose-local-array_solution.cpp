@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,17 +16,18 @@
 /*
  *  EXERCISE #9: Matrix Transpose with Local Array
  *
- *  In this exercise, your program will carry out the
- *  transpose of a matrix A using a tiling algorithm and RAJA local array.
- *  Unlike the previous exercise, each tile will be stored within
- *  a RAJA local array. As part of the exercise you will have to provide
- *  the transpose as a second matrix At.
+ *  In this exercise, you will use RAJA constructs to transpose a matrix
+ *  using a loop tiling algorithm similar to exercise 8. However, this 
+ *  exercise is different in that you will use a local array to write
+ *  to and read from as each matrix tile is transposed. An input matrix 
+ *  A of dimension N_r x N_c is provided. You will fill in the entries 
+ *  of the transpose matrix At.
  *
- *  This file contains a C-style variant of the algorithm as well as the
- *  RAJA kernel for a RAJA variant. You will have to
- *  implement the RAJA policy for the sequential, and OpenMP variants.
- *  If you have access to a GPU and a CUDA compiler, try using constructing
- *  the CUDA policy.
+ *  This file contains a C-style variant of the sequential matrix transpose.
+ *  You will complete implementations of multiple RAJA variants by filling
+ *  in missing elements of RAJA kernel API execution policies as well as the
+ *  RAJA kernel implementation for each. Variants you will complete include
+ *  sequential, OpenMP, and CUDA execution.
  *
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
@@ -59,7 +60,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #9: RAJA shared matrix transpose example...\n";
+  std::cout << "\n\nExercise #9: RAJA local array matrix transpose...\n";
 
   //
   // Define num rows/cols in matrix
@@ -82,13 +83,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
 
   //
-  //Construct a permuted layout such that the column index has stride 1
+  // Construct a permuted layout for At so that the column index has stride 1
   //
-  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, std::array<RAJA::idx_t, 2>{{1, 0}});
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout( {{N_c, N_r}},
+                                                            perm );
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
-  // Define TILE size (TILE_SZ x TILE_SZ)
+  // Define size for each dimension of a square tile.
   //
   const int TILE_SZ = 16;
 
@@ -107,7 +110,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Aview, N_r, N_c);
 
 //----------------------------------------------------------------------------//
-  std::cout << "\n Running C-version of shared matrix transpose...\n";
+  std::cout << "\n Running C-version of local array matrix transpose...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -121,7 +124,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       int Tile[TILE_SZ][TILE_SZ];
 
       //
-      // (1) Inner loops to read input matrix tile data into the array
+      // (1) Inner loops to read input matrix tile data into array
       //
       //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
@@ -166,11 +169,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants use the RAJA::Kernel
-  // method to carryout the transpose
+  // The following RAJA variants will use the RAJA::kernel method to
+  // perform the matrix transpose operation.
   //
+  // Here, we define RAJA range segments to establish the iteration spaces.
+  // Further partioning of the iteration space is carried out in the
+  // tile_fixed statements. Iterations inside a RAJA loop is given by their
+  // global iteration number.
+  //
+  RAJA::RangeSegment row_Range(0, N_r);
+  RAJA::RangeSegment col_Range(0, N_c);
 
-  // Here we define a RAJA local array type.
+  // Next,  we define a RAJA local array type.
   // The array type is templated on
   // 1) Data type
   // 2) Index permutation
@@ -180,31 +190,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using TILE_MEM =
     RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_SZ, TILE_SZ>>;
 
-  // **NOTE** Although the LocalArray is constructed
-  // the array memory has not been allocated.
+  // **NOTE** The LocalArray is created here, but it's memory is not yet
+  //          allocated. This is done when the 'InitLocalMem' statement
+  //          is reached in the kernel policy using the specified local
+  //          memory policy.
 
   TILE_MEM RAJA_Tile;
 
 //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
-
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                        RAJA::loop_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                        RAJA::loop_exec,
               RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                        RAJA::loop_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                          RAJA::loop_exec,
               RAJA::statement::Lambda<1>
             >
           >
@@ -214,8 +231,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                                     RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
@@ -243,20 +259,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using OPENMP_EXEC_POL =
   RAJA::KernelPolicy<
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::loop_exec,
+    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                             RAJA::omp_parallel_for_exec,
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::loop_exec,
 
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
+          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                        RAJA::loop_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                          RAJA::loop_exec,
+               RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<1>
+          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                        RAJA::loop_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                          RAJA::loop_exec,
+              RAJA::statement::Lambda<1>
             >
           >
         >
@@ -264,8 +286,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
    >;
 
-  RAJA::kernel_param<OPENMP_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<OPENMP_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
+
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
       [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
@@ -295,22 +317,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using CUDA_EXEC_POL =
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+                               RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+                                 RAJA::cuda_block_x_loop,
 
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
 
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_x_direct,
-                                          RAJA::statement::Lambda<0>
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                          RAJA::cuda_thread_y_direct,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                            RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<0>
               >
             >,
 
             RAJA::statement::CudaSyncThreads,
 
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
-                                            RAJA::statement::Lambda<1>
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+                                          RAJA::cuda_thread_y_direct,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+                                            RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<1>
               >
             >,
 
@@ -322,8 +350,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   >;
 
 
-  RAJA::kernel_param<CUDA_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<CUDA_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
+
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
       [=] RAJA_DEVICE (int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
