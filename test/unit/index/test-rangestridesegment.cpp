@@ -18,16 +18,16 @@ class RangeStrideSegmentUnitTest : public ::testing::Test {};
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char, 
                                  unsigned char,
-				 short,
-				 unsigned short,
-				 int, 
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 long long,
-				 unsigned long long>;
+                                 short,
+                                 unsigned short,
+                                 int, 
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 long long,
+                                 unsigned long long>;
 
 TYPED_TEST_CASE(RangeStrideSegmentUnitTest, MyTypes);
 
@@ -43,8 +43,8 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Constructors)
 TYPED_TEST(RangeStrideSegmentUnitTest, Assignments)
 {
     auto r = RAJA::make_strided_range<TypeParam>(static_cast<TypeParam>(0), 
-		                                 static_cast<TypeParam>(5), 
-						 static_cast<typename std::make_signed<TypeParam>::type>(3));
+                                                 static_cast<TypeParam>(5), 
+                                                 static_cast<typename std::make_signed<TypeParam>::type>(3));
     RAJA::TypedRangeStrideSegment<TypeParam> seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::TypedRangeStrideSegment<TypeParam> seg2 = std::move(r);

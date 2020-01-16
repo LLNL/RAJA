@@ -20,17 +20,17 @@ class StridedNumericIteratorUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char,
-				 unsigned char,
-				 short,
-				 unsigned short,
-				 int,
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 long long,
-				 unsigned long long>;
+                                 unsigned char,
+                                 short,
+                                 unsigned short,
+                                 int,
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 long long,
+                                 unsigned long long>;
 
 TYPED_TEST_CASE(NumericIteratorUnitTest, MyTypes);
 TYPED_TEST_CASE(StridedNumericIteratorUnitTest, MyTypes);

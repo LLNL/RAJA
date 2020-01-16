@@ -18,18 +18,18 @@ class ListSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  char,
-				 unsigned char,
-				 short,
-				 unsigned short,
-				 int,
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 unsigned long long,
-				 double,
-				 float>;
+                                 unsigned char,
+                                 short,
+                                 unsigned short,
+                                 int,
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 unsigned long long,
+                                 double,
+                                 float>;
 
 TYPED_TEST_CASE(ListSegmentUnitTest, MyTypes);
 

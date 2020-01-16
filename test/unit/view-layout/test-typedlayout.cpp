@@ -12,16 +12,16 @@ template<typename T>
 class TypedLayoutUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
-				 short,
-				 unsigned short,
-				 int,
-				 unsigned int,
-				 long,
-				 unsigned long,
-				 long int,
-				 unsigned long int,
-				 long long,
-				 unsigned long long>;
+                                 short,
+                                 unsigned short,
+                                 int,
+                                 unsigned int,
+                                 long,
+                                 unsigned long,
+                                 long int,
+                                 unsigned long int,
+                                 long long,
+                                 unsigned long long>;
 
 
 TYPED_TEST_CASE(TypedLayoutUnitTest, MyTypes);
