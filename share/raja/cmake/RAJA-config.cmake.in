@@ -39,3 +39,8 @@ if (NOT RAJA_CONFIG_LOADED)
   find_package(camp REQUIRED)
   include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
 endif()
+
+# Export version number
+set(RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@)
+set(RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@)
+set(RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@)

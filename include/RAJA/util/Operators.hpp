@@ -577,10 +577,10 @@ namespace detail
 {
 
 template <typename Fun, typename Ret, typename T, typename U>
-using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
+using is_binary_function = ::RAJA::concepts::requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T>
-using is_unary_function = requires_<UnaryFunction, Ret, T>;
+using is_unary_function = ::RAJA::concepts::requires_<UnaryFunction, Ret, T>;
 }  // namespace detail
 
 }  // namespace concepts
