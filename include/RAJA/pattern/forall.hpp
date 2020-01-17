@@ -80,6 +80,7 @@
 #include "RAJA/internal/get_platform.hpp"
 #include "RAJA/util/plugins.hpp"
 
+#include "RAJA/util/resource.hpp"
 
 namespace RAJA
 {
@@ -176,6 +177,21 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
               std::forward<Container>(c),
               body);
 }
+template <typename ExecutionPolicy, typename Container, typename LoopBody>
+//RAJA_INLINE concepts::enable_if<
+//    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+//    type_traits::is_range<Container>>
+RAJA_INLINE resource::Event forall(resource::Context *r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+{
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  return forall_impl(r,
+                     std::forward<ExecutionPolicy>(p),
+                     std::forward<Container>(c),
+                     body);
+}
 
 /*!
  ******************************************************************************
@@ -245,7 +261,6 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                         const TypedIndexSet<SegmentTypes...>& iset,
                         LoopBody loop_body)
 {
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -460,14 +475,25 @@ template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   RAJA_FORCEINLINE_RECURSIVE
   wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
   util::callPostLaunchPlugins(context);
 }
+template <typename ExecutionPolicy, typename... Args>
+RAJA_INLINE resource::Event forall(resource::Context *r, Args&&... args)
+{
+  util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  util::callPreLaunchPlugins(context);
 
+  RAJA_FORCEINLINE_RECURSIVE
+  auto e = wrap::forall(r, ExecutionPolicy(), std::forward<Args>(args)...);
+
+  util::callPostLaunchPlugins(context);
+  return e;
+}
 /*!
  * \brief Conversion from template-based policy to value-based policy for
  * forall_Icount

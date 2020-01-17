@@ -33,6 +33,8 @@
 
 #include "RAJA/pattern/detail/forall.hpp"
 
+#include "RAJA/util/resource.hpp"
+
 namespace RAJA
 {
 namespace policy
@@ -60,6 +62,19 @@ RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
+}
+template <typename Iterable, typename Func>
+RAJA_INLINE resource::Event forall_impl(resource::Context *res, const seq_exec &, Iterable &&iter, Func &&body)
+{
+  RAJA_EXTRACT_BED_IT(iter);
+
+  auto host_res = resource::raja_get<resource::Host>(res);
+
+  RAJA_NO_SIMD
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(*(begin_it + i));
+  }
+  return host_res.get_event();
 }
 
 }  // namespace sequential

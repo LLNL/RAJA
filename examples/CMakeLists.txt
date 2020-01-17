@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME streaming-forall
+  SOURCES stream-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 

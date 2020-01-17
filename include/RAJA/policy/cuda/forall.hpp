@@ -41,6 +41,8 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
+#include "RAJA/util/resource.hpp"
+
 namespace RAJA
 {
 
@@ -215,6 +217,70 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     RAJA_FT_END;
   }
+}
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+RAJA_INLINE resource::Event forall_impl(resource::Context *res,
+                                        cuda_exec<BlockSize, Async>,
+                                        Iterable&& iter,
+                                        LoopBody&& loop_body)
+{
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using LOOP_BODY = camp::decay<LoopBody>;
+  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+
+  auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
+
+  auto cuda_res = resource::raja_get<resource::Cuda>(res);
+
+  //
+  // Compute the requested iteration space size
+  //
+  Iterator begin = std::begin(iter);
+  Iterator end = std::end(iter);
+  IndexType len = std::distance(begin, end);
+
+  // Only launch kernel if we have something to iterate over
+  if (len > 0 && BlockSize > 0) {
+
+    //
+    // Compute the number of blocks
+    //
+    cuda_dim_t blockSize{BlockSize, 1, 1};
+    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
+
+    RAJA_FT_BEGIN;
+
+    //
+    // Setup shared memory buffers
+    //
+    size_t shmem = 0;
+    cudaStream_t stream = cuda_res.get_stream();
+
+
+    //  printf("gridsize = (%d,%d), blocksize = %d\n",
+    //         (int)gridSize.x,
+    //         (int)gridSize.y,
+    //         (int)blockSize.x);
+
+    {
+      //
+      // Privatize the loop_body, using make_launch_body to setup reductions
+      //
+      LOOP_BODY body = RAJA::cuda::make_launch_body(
+          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+
+      //
+      // Launch the kernels
+      //
+      void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+    }
+
+    if (!Async) { RAJA::cuda::synchronize(stream); }
+
+    RAJA_FT_END;
+  }
+  return cuda_res.get_event();
 }
 
 
