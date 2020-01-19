@@ -7,6 +7,52 @@
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
 
+Version vxx.yy.zz -- Release date 20yy-mm-dd
+============================================
+
+Version v0.11.0 -- Release date 2020-01-xx
+==========================================
+
+This release contains new features, several notable changes, and some bug fixes.
+
+Notable changes include:
+
+  * New features:
+      * HIP compiler back-end added to support AMD GPUs. Usage is essentially
+        the same as for CUDA. Note that this feature is considered a
+        work-in-progress and not yet production ready. It is undocumented,
+        but noted here, for friendly users who would like to it out. 
+      * Updated version of camp third-party library, which includes variety
+        of portability fixes. Most users should not need to concern 
+        themselves with the details of camp.
+      * Added new tutorial material and exercises.
+      * Documentation improvements.
+
+  * API Changes:
+      * RAJA no longer has an optional configuration dependency on CHAI. Users
+        who use CHAI and RAJA can no longer rely on the RAJA.hpp header file
+        to pull in CHAI headers. CHAI header files must be included directly
+        in application code. A new plugin capability was added to RAJA. It 
+        allows more easy CHAI integration and eventually other plugin 
+        capabilities in future (stay tuned...).
+ 
+  * Build changes/improvements:
+      * RAJA version number is now accessible as #define macro variable 
+        constants so that users who need to parameterize their code to support 
+        multiple RAJA versions can do this more easily. See the file 
+        RAJA/include/RAJA/config.hpp for details. RAJA version numbers 
+        are also experted as CMake variables.
+      * Added support to link to external camp library. By default, the camp
+        git submodule will be used. If you prefer to use a different version
+        of camp, set the RAJA CMake variable 'EXTERNAL_CAMP_SOURCE_DIR' to
+        the location of the desired camp directory.
+
+  * Bug fixes:
+      * Fixed various issues to make internal implementations more robust,
+        resolved issues with non fully-qualified types in some places, 
+        and sork arounds for some compiler issues.
+
+
 Version v0.10.0 -- Release date 2019-10-31
 ==========================================
 

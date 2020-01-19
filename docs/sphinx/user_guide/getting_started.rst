@@ -40,19 +40,15 @@ the command::
    $ git clone --recursive https://github.com/LLNL/RAJA.git
 
 The ``--recursive`` argument above is needed to pull in other projects
-that we use as Git *submodules*. Currently, these submodule dependencies are:
+RAJA depends on as Git *submodules*. Currently, RAJA submodule dependencies 
+are:
 
 - `BLT build system <https://github.com/LLNL/blt>`_
 - `Camp portable utility library <https://github.com/LLNL/camp>`_
 - `NVIDIA CUB <https://github.com/NVlabs/cub>`_
 
 You probably don't need to know much about these other projects to start
-using RAJA. But, if you want to know more, click on the links above.
-
-.. note:: The CMake variable ``CUB_DIR`` will be automatically set to the 
-          location of the cub submodule library when CUDA is enabled; to use 
-          a different version of the cub library, install it and set the 
-          ``CUB_DIR`` variable to the desired location when running CMake.
+using RAJA. But, if you want to know more about them, click on the links above.
 
 After running the clone command, a copy of the RAJA repository will reside in
 a ``RAJA`` subdirectory where you ran the clone command. You will be on the 
@@ -122,6 +118,11 @@ N cores.
           `Google Test framework <https://github.com/google/googletest>`_, 
           so you can also run tests via Google Test commands.
 
+.. note:: You may use externally-supplied versions of the camp and cub 
+          libraries with RAJA if you wish. To do so, pass the following 
+          options to CMake:
+            * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
+            * External cub: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<cub dir name> 
 
 ----------------
 Installing RAJA
