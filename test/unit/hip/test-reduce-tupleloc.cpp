@@ -37,7 +37,7 @@ struct funcapplier<ReduceMinLoc<hip_reduce, NumType, Indexer>>   // GPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMinLoc<hip_reduce, NumType, Indexer> const & r,
@@ -59,7 +59,7 @@ struct funcapplier<ReduceMinLoc<seq_reduce, NumType, Indexer>>    // CPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   static void apply(ReduceMinLoc<seq_reduce, NumType, Indexer> const & r,
@@ -75,7 +75,7 @@ struct funcapplier<ReduceMaxLoc<hip_reduce, NumType, Indexer>>   // GPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<hip_reduce, NumType, Indexer> const & r,
@@ -97,7 +97,7 @@ struct funcapplier<ReduceMaxLoc<seq_reduce, NumType, Indexer>>    // CPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   static void apply(ReduceMaxLoc<seq_reduce, NumType, Indexer> const & r,
