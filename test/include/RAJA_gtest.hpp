@@ -76,7 +76,7 @@
 
 
 #define GPU_TYPED_TEST_P(CaseName, TestName)                            \
-  namespace GTEST_CASE_NAMESPACE_(CaseName)                              \
+  namespace gtest_case_##CaseName##_                                     \
   {                                                                      \
     template <typename gtest_TypeParam_>                                 \
     class TestName : public CaseName<gtest_TypeParam_>                   \
@@ -89,12 +89,12 @@
       virtual void TestBody();                                           \
     };                                                                   \
     static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =    \
-        GTEST_TYPED_TEST_CASE_P_STATE_(CaseName).AddTestName(__FILE__,   \
+        GTEST_TYPED_TEST_SUITE_P_STATE_(CaseName).AddTestName(__FILE__,   \
                                                              __LINE__,   \
                                                              #CaseName,  \
                                                              #TestName); \
   }                                                                      \
   template <typename TypeParam>                                          \
-  void GTEST_CASE_NAMESPACE_(CaseName)::TestName<TypeParam>::TestBody()
+  void gtest_case_##CaseName##_::TestName<TypeParam>::TestBody()
 
 #endif  // closing endif for header file include guard

@@ -21,7 +21,7 @@ class ReductionConstructorTestTargetOMP : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP);
 
 TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
 {
@@ -71,7 +71,7 @@ using constructor_types =
                      std::tuple<RAJA::omp_target_reduce, double>>;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceBasicTestsTargetOMP,
                               ReductionConstructorTestTargetOMP,
                               constructor_types);
 
@@ -132,7 +132,7 @@ protected:
 
   RAJA::Index_type array_length;
 };
-TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionCorrectnessTestTargetOMP);
 
 TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceSum)
 {
@@ -288,7 +288,7 @@ using types =
                      std::tuple<RAJA::omp_target_parallel_for_exec<256>,
                                 RAJA::omp_target_reduce>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
 
 template <typename TUPLE>
 class NestedReductionCorrectnessTestTargetOMP : public ::testing::Test

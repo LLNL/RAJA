@@ -165,7 +165,7 @@ template <typename Reducer>
 double* ReduceCUDA<Reducer>::dvalue = nullptr;
 
 
-TYPED_TEST_CASE_P(ReduceCUDA);
+TYPED_TEST_SUITE_P(ReduceCUDA);
 
 GPU_TYPED_TEST_P(ReduceCUDA, generic)
 {
@@ -322,16 +322,16 @@ REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
 
 using MinLocTypes =
     ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(MinLoc, ReduceCUDA, MinLocTypes);
 
 using MaxLocTypes =
     ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
 
 using MinLocTypesGenericIndex =
     ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double, Index>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceCUDA, MinLocTypesGenericIndex);
+INSTANTIATE_TYPED_TEST_SUITE_P(MinLocGenericIndex, ReduceCUDA, MinLocTypesGenericIndex);
 
 using MaxLocTypesGenericIndex =
     ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double, Index>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceCUDA, MaxLocTypesGenericIndex);
+INSTANTIATE_TYPED_TEST_SUITE_P(MaxLocGenericIndex, ReduceCUDA, MaxLocTypesGenericIndex);

@@ -254,7 +254,7 @@ struct HIPReduceLocTest : public ::testing::Test
   RAJA::Real_type minlocy;
 };
 
-TYPED_TEST_CASE_P(HIPReduceLocTest);
+TYPED_TEST_SUITE_P(HIPReduceLocTest);
 
 GPU_TYPED_TEST_P(HIPReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 {
@@ -386,11 +386,11 @@ using MinLocTypeTuple = ::testing::Types<
                           list<ReduceMinLoc<RAJA::hip_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMinLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin2DTuple, HIPReduceLocTest, MinLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin2DTuple, HIPReduceLocTest, MinLocTypeTuple);
 
 using MaxLocTypeTuple = ::testing::Types<
                           list<ReduceMaxLoc<RAJA::hip_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMaxLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax2DTuple, HIPReduceLocTest, MaxLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax2DTuple, HIPReduceLocTest, MaxLocTypeTuple);
 

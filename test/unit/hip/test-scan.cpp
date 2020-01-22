@@ -72,7 +72,7 @@ typename Info<Tuple>::data_type* ScanHIP<Tuple>::data = nullptr;
 template <typename Tuple>
 typename Info<Tuple>::data_type* ScanHIP<Tuple>::d_data = nullptr;
 
-TYPED_TEST_CASE_P(ScanHIP);
+TYPED_TEST_SUITE_P(ScanHIP);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -270,4 +270,4 @@ REGISTER_TYPED_TEST_CASE_P(ScanHIP,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanHIPTests, ScanHIP, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanHIPTests, ScanHIP, CrossTypes);

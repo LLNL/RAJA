@@ -73,7 +73,7 @@ struct Scan : public ::testing::Test {
 template <typename Tuple>
 typename Info<Tuple>::data_type* Scan<Tuple>::data = nullptr;
 
-TYPED_TEST_CASE_P(Scan);
+TYPED_TEST_SUITE_P(Scan);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -207,7 +207,7 @@ TYPED_TEST_P(Scan, exclusive_inplace_offset)
   delete[] data;
 }
 
-REGISTER_TYPED_TEST_CASE_P(Scan,
+REGISTER_TYPED_TEST_SUITE_P(Scan,
                            inclusive,
                            inclusive_inplace,
                            exclusive,
@@ -215,4 +215,4 @@ REGISTER_TYPED_TEST_CASE_P(Scan,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanTests, Scan, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanTests, Scan, CrossTypes);

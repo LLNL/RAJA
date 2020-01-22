@@ -171,7 +171,7 @@ template <typename Reducer>
 double* ReduceHIP<Reducer>::d_dvalue = nullptr;
 
 
-TYPED_TEST_CASE_P(ReduceHIP);
+TYPED_TEST_SUITE_P(ReduceHIP);
 
 GPU_TYPED_TEST_P(ReduceHIP, generic)
 {
@@ -338,16 +338,16 @@ REGISTER_TYPED_TEST_CASE_P(ReduceHIP,
 
 // using MinLocTypes =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceHIP, MinLocTypes);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MinLoc, ReduceHIP, MinLocTypes);
 
 // using MaxLocTypes =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceHIP, MaxLocTypes);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MaxLoc, ReduceHIP, MaxLocTypes);
 
 // using MinLocTypesGenericIndex =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceHIP, MinLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MinLocGenericIndex, ReduceHIP, MinLocTypesGenericIndex);
 
 // using MaxLocTypesGenericIndex =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceHIP, MaxLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MaxLocGenericIndex, ReduceHIP, MaxLocTypesGenericIndex);

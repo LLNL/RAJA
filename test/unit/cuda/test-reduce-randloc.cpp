@@ -208,7 +208,7 @@ struct CUDAReduceLocRandTest : public ::testing::Test
   int minloc;
 };
 
-TYPED_TEST_CASE_P(CUDAReduceLocRandTest);
+TYPED_TEST_SUITE_P(CUDAReduceLocRandTest);
 
 // Tests CUDA reduce loc on array over one range.
 // Each iteration introduces a random value into the array.
@@ -444,11 +444,11 @@ using MinLocType = ::testing::Types<
                      list<ReduceMinLoc<RAJA::cuda_reduce, int, int>,
                           ReduceMinLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin, CUDAReduceLocRandTest, MinLocType);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin, CUDAReduceLocRandTest, MinLocType);
 
 using MaxLocType = ::testing::Types<
                      list<ReduceMaxLoc<RAJA::cuda_reduce, int, int>,
                           ReduceMaxLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax, CUDAReduceLocRandTest, MaxLocType);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax, CUDAReduceLocRandTest, MaxLocType);
 
