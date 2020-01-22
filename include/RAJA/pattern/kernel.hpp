@@ -133,6 +133,8 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
+  //using loop_types_t = internal::makeInitialLoopTypes(loop_data);
+//  using loop_types_t = int;
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE

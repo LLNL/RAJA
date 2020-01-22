@@ -15,12 +15,37 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_kernel_internal_HPP
-#define RAJA_pattern_kernel_internal_HPP
+#ifndef RAJA_pattern_kernel_internal_Statement_HPP
+#define RAJA_pattern_kernel_internal_Statement_HPP
 
-#include "RAJA/pattern/kernel/internal/LoopData.hpp"
-#include "RAJA/pattern/kernel/internal/Statement.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
+
+namespace RAJA
+{
+namespace internal
+{
+
+
+
+template <typename ExecPolicy, typename... EnclosedStmts>
+struct Statement {
+  Statement() = delete;
+
+  using enclosed_statements_t = StatementList<EnclosedStmts...>;
+  using execution_policy_t = ExecPolicy;
+};
+
+
+
+
+template <typename Policy>
+struct StatementExecutor {
+};
+
+
+
+}  // end namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_HPP */
