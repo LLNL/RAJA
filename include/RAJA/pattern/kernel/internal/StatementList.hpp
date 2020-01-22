@@ -31,7 +31,7 @@ namespace internal
 
 
 // forward decl
-template <typename Policy>
+template <typename Policy, typename Types>
 struct StatementExecutor;
 
 
@@ -41,13 +41,13 @@ template <typename... Stmts>
 using StatementList = camp::list<Stmts...>;
 
 
-template <camp::idx_t idx, camp::idx_t N, typename StmtList>
+template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename Types>
 struct StatementListExecutor;
 
 
 template <camp::idx_t statement_index,
           camp::idx_t num_statements,
-          typename StmtList>
+          typename StmtList, typename Types>
 struct StatementListExecutor {
 
   template <typename Data>
@@ -58,10 +58,10 @@ struct StatementListExecutor {
     using statement = camp::at_v<StmtList, statement_index>;
 
     // Execute this statement
-    StatementExecutor<statement>::exec(std::forward<Data>(data));
+    StatementExecutor<statement, Types>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index + 1, num_statements, StmtList>::exec(
+    StatementListExecutor<statement_index + 1, num_statements, StmtList, Types>::exec(
         std::forward<Data>(data));
   }
 };
@@ -71,8 +71,8 @@ struct StatementListExecutor {
  * termination case, a NOP.
  */
 
-template <camp::idx_t num_statements, typename StmtList>
-struct StatementListExecutor<num_statements, num_statements, StmtList> {
+template <camp::idx_t num_statements, typename StmtList, typename Types>
+struct StatementListExecutor<num_statements, num_statements, StmtList, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&)
@@ -81,10 +81,10 @@ struct StatementListExecutor<num_statements, num_statements, StmtList> {
 };
 
 
-template <typename StmtList, typename Data>
+template <typename StmtList, typename Types, typename Data>
 RAJA_INLINE void execute_statement_list(Data &&data)
 {
-  StatementListExecutor<0, camp::size<StmtList>::value, StmtList>::exec(
+  StatementListExecutor<0, camp::size<StmtList>::value, StmtList, Types>::exec(
       std::forward<Data>(data));
 }
 

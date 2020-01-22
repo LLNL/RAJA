@@ -228,7 +228,7 @@ RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
 
 
 
-template <typename Data, typename... EnclosedStmts>
+template <typename Data, typename Types, typename... EnclosedStmts>
 struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
@@ -238,7 +238,7 @@ struct GenericWrapper : GenericWrapperBase {
   constexpr explicit GenericWrapper(data_t &d) : data{d} {}
 
   RAJA_INLINE
-  void exec() { execute_statement_list<camp::list<EnclosedStmts...>>(data); }
+  void exec() { execute_statement_list<camp::list<EnclosedStmts...>, Types>(data); }
 };
 
 

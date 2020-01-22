@@ -38,9 +38,8 @@ struct Statement {
 
 
 
-template <typename Policy>
-struct StatementExecutor {
-};
+template <typename Policy, typename Types>
+struct StatementExecutor;
 
 
 

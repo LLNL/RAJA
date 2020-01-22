@@ -54,7 +54,7 @@ struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx>> {
  *  Helper structs to invoke a chain of lambdas
  *
  */
-template <camp::idx_t LoopIdx, class... States>
+template <camp::idx_t LoopIdx, typename Types, class... States>
 struct Invoke_all_Lambda {
 
   template <camp::idx_t... OffsetIdx,
@@ -71,8 +71,8 @@ struct Invoke_all_Lambda {
   }
 };
 
-template <camp::idx_t LoopIdx>
-struct Invoke_all_Lambda<LoopIdx> {
+template <camp::idx_t LoopIdx, typename Types>
+struct Invoke_all_Lambda<LoopIdx, Types> {
 
   static const bool value = true;
 
@@ -90,9 +90,9 @@ struct Invoke_all_Lambda<LoopIdx> {
   }
 };
 
-template <camp::idx_t LoopIdx, class State, class... States>
-struct Invoke_all_Lambda<LoopIdx, State, States...>
-    : Invoke_all_Lambda<LoopIdx, States...> {
+template <camp::idx_t LoopIdx, typename Types, class State, class... States>
+struct Invoke_all_Lambda<LoopIdx, Types, State, States...>
+    : Invoke_all_Lambda<LoopIdx, Types, States...> {
 
   // Lambda check
   static const bool value = TypeIsLambda<camp::decay<State>>::value;
@@ -115,7 +115,7 @@ struct Invoke_all_Lambda<LoopIdx, State, States...>
                           .begin()[camp::get<OffsetIdx>(offset_tuple)])...,
                      camp::get<ParamIdx>(data.param_tuple)...);
 
-    Invoke_all_Lambda<LoopIdx + 1, States...>::lambda_special(
+    Invoke_all_Lambda<LoopIdx + 1, Types, States...>::lambda_special(
         camp::idx_seq_from_t<decltype(offset_tuple)>{},
         camp::idx_seq_from_t<decltype(params)>{},
         data,
@@ -131,9 +131,9 @@ struct Invoke_all_Lambda<LoopIdx, State, States...>
  * only one lambda is used, no reductions are done within the lambda.
  * Assigns the loop index to offset ArgumentId
  */
-template <camp::idx_t ArgumentId, typename... EnclosedStmts>
+template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -152,7 +152,7 @@ struct StatementExecutor<
       auto params = data.param_tuple;
       get<ArgumentId>(offsets) = i;
 
-      Invoke_all_Lambda<0, EnclosedStmts...>::lambda_special(
+      Invoke_all_Lambda<0, Types, EnclosedStmts...>::lambda_special(
           camp::idx_seq_from_t<decltype(offsets)>{},
           camp::idx_seq_from_t<decltype(params)>{},
           data,

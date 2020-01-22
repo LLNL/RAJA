@@ -102,12 +102,13 @@ template <camp::idx_t HpArgumentId,
           typename HpExecPolicy,
           camp::idx_t... Args,
           typename ExecPolicy,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<statement::Hyperplane<HpArgumentId,
                                                HpExecPolicy,
                                                ArgList<Args...>,
                                                ExecPolicy,
-                                               EnclosedStmts...>> {
+                                               EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -127,7 +128,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
         HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
-    ForWrapper<HpArgumentId, Data, kernel_policy> outer_wrapper(data);
+    ForWrapper<HpArgumentId, Data, Types, kernel_policy> outer_wrapper(data);
 
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
@@ -150,9 +151,10 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
 template <camp::idx_t HpArgumentId,
           camp::idx_t... Args,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>> {
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -178,7 +180,7 @@ struct StatementExecutor<
       data.template assign_offset<HpArgumentId>(i);
 
       // execute enclosed statements
-      execute_statement_list<StatementList<EnclosedStmts...>>(data);
+      execute_statement_list<StatementList<EnclosedStmts...>, Types>(data);
 
       // reset h for next iteration
       data.template assign_offset<HpArgumentId>(h);

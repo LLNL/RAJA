@@ -60,8 +60,8 @@ struct Lambda : internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <camp::idx_t LambdaIndex>
-struct StatementExecutor<statement::Lambda<LambdaIndex>> {
+template <camp::idx_t LambdaIndex, typename Types>
+struct StatementExecutor<statement::Lambda<LambdaIndex>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -75,8 +75,8 @@ struct StatementExecutor<statement::Lambda<LambdaIndex>> {
  * A RAJA::kernel statement that invokes a lambda function
  * with user specified arguments.
  */
-template <camp::idx_t LambdaIndex,typename... Args>
-struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>> {
+template <camp::idx_t LambdaIndex,typename... Args, typename Types>
+struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)

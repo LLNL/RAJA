@@ -66,11 +66,11 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <camp::idx_t ArgumentId, typename ParamId, typename Data,
+template <camp::idx_t ArgumentId, typename ParamId, typename Data, typename Types,
           typename... EnclosedStmts>
-struct TileTCountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
-  using Base = GenericWrapper<Data, EnclosedStmts...>;
+  using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
   using privatizer = NestedPrivatizer<TileTCountWrapper>;
 
@@ -99,9 +99,10 @@ template <camp::idx_t ArgumentId,
           typename ParamId,
           typename TPol,
           typename EPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>> {
+    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -118,7 +119,7 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileTCountWrapper<ArgumentId, ParamId, Data,
+    TileTCountWrapper<ArgumentId, ParamId, Data, Types,
                       EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list

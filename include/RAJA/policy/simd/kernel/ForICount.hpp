@@ -43,10 +43,10 @@ namespace internal
  * Assigns the loop index to param ParamId
  */
 template <camp::idx_t ArgumentId, typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
     statement::ForICount<ArgumentId, ParamId, RAJA::simd_exec,
-                         EnclosedStmts...>> {
+                         EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -66,7 +66,7 @@ struct StatementExecutor<
 
       auto offsets = data.offset_tuple;
       auto params = data.param_tuple;
-      Invoke_all_Lambda<0, EnclosedStmts...>::lambda_special(
+      Invoke_all_Lambda<0, Types, EnclosedStmts...>::lambda_special(
           camp::idx_seq_from_t<decltype(offsets)>{},
           camp::idx_seq_from_t<decltype(params)>{},
           data,
