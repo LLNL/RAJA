@@ -4424,3 +4424,4 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
   hipErrchk(hipFree(x));
 }
 #endif
+
