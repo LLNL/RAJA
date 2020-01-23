@@ -46,11 +46,15 @@ Notable changes include:
         git submodule will be used. If you prefer to use a different version
         of camp, set the RAJA CMake variable 'EXTERNAL_CAMP_SOURCE_DIR' to
         the location of the desired camp directory.
+      * BLT submodule (CMake-based build system) has been updated to latest
+        BLT release (v0.3.0). The release contains a new version of GoogleTest,
+        which required us to modify our use of gtest macros and our own 
+        testing macros. This change should be invisible to users.
 
   * Bug fixes:
       * Fixed various issues to make internal implementations more robust,
         resolved issues with non fully-qualified types in some places, 
-        and sork arounds for some compiler issues.
+        and work arounds for some compiler issues.
 
 
 Version v0.10.0 -- Release date 2019-10-31
