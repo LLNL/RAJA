@@ -432,12 +432,12 @@ GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( CUDAReduceLocRandTest,
-                            ReduceLocRandom,
-                            ReduceLocSameHalves,
-                            ReduceLocAscendingHalves,
-                            ReduceLocRandomHalves,
-                            ReduceLocRandomDisjoint
+REGISTER_TYPED_TEST_SUITE_P( CUDAReduceLocRandTest,
+                             ReduceLocRandom,
+                             ReduceLocSameHalves,
+                             ReduceLocAscendingHalves,
+                             ReduceLocRandomHalves,
+                             ReduceLocRandomDisjoint
                           );
 
 using MinLocType = ::testing::Types<
@@ -451,4 +451,3 @@ using MaxLocType = ::testing::Types<
                           ReduceMaxLoc<RAJA::seq_reduce, int, int>>
                    >;
 INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax, CUDAReduceLocRandTest, MaxLocType);
-

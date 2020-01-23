@@ -315,10 +315,10 @@ GPU_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
-                           generic,
-                           indexset_align,
-                           indexset_noalign);
+REGISTER_TYPED_TEST_SUITE_P(ReduceCUDA,
+                            generic,
+                            indexset_align,
+                            indexset_noalign);
 
 using MinLocTypes =
     ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double>>;

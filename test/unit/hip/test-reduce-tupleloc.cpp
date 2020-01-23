@@ -377,9 +377,9 @@ GPU_TYPED_TEST_P(HIPReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( HIPReduceLocTest,
-                            ReduceLoc2DIndexTupleViewKernel,
-                            ReduceLoc2DIndexTupleViewKernelRandom
+REGISTER_TYPED_TEST_SUITE_P( HIPReduceLocTest,
+                             ReduceLoc2DIndexTupleViewKernel,
+                             ReduceLoc2DIndexTupleViewKernelRandom
                           );
 
 using MinLocTypeTuple = ::testing::Types<

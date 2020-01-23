@@ -56,8 +56,8 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
-                           ReductionConstructor);
+REGISTER_TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP,
+                            ReductionConstructor);
 
 using constructor_types =
     ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
@@ -272,14 +272,14 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLocGenericIndex)
   ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
-                           ReduceSum,
-                           ReduceMin,
-                           ReduceMax,
-                           ReduceMinLoc,
-                           ReduceMinLocGenericIndex,
-                           ReduceMaxLoc,
-                           ReduceMaxLocGenericIndex);
+REGISTER_TYPED_TEST_SUITE_P(ReductionCorrectnessTestTargetOMP,
+                            ReduceSum,
+                            ReduceMin,
+                            ReduceMax,
+                            ReduceMinLoc,
+                            ReduceMinLocGenericIndex,
+                            ReduceMaxLoc,
+                            ReduceMaxLocGenericIndex);
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
                                 RAJA::omp_target_reduce>,

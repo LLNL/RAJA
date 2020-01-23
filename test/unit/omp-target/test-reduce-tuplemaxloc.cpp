@@ -173,9 +173,9 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocTuple)
   ASSERT_EQ(this->maxlocy, RAJA::get<1>(raja_loc));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP,
-                           ReduceMaxLocIndex,
-                           ReduceMaxLocTuple );
+REGISTER_TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP,
+                            ReduceMaxLocIndex,
+                            ReduceMaxLocTuple );
 
 // TODO: Complete parameterization later when Clang runs properly.
 // For now, un-parameterized for clarity and debugging.

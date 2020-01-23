@@ -445,12 +445,12 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomDisjoint)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( HIPReduceLocRandTest,
-                            ReduceLocRandom,
-                            ReduceLocSameHalves,
-                            ReduceLocAscendingHalves,
-                            ReduceLocRandomHalves,
-                            ReduceLocRandomDisjoint
+REGISTER_TYPED_TEST_SUITE_P( HIPReduceLocRandTest,
+                             ReduceLocRandom,
+                             ReduceLocSameHalves,
+                             ReduceLocAscendingHalves,
+                             ReduceLocRandomHalves,
+                             ReduceLocRandomDisjoint
                           );
 
 using MinLocType = ::testing::Types<

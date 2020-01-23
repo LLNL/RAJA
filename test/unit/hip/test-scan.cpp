@@ -262,12 +262,12 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace_offset)
   hipFree(d_data);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ScanHIP,
-                           inclusive,
-                           inclusive_inplace,
-                           exclusive,
-                           exclusive_inplace,
-                           exclusive_offset,
-                           exclusive_inplace_offset);
+REGISTER_TYPED_TEST_SUITE_P(ScanHIP,
+                            inclusive,
+                            inclusive_inplace,
+                            exclusive,
+                            exclusive_inplace,
+                            exclusive_offset,
+                            exclusive_inplace_offset);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(ScanHIPTests, ScanHIP, CrossTypes);

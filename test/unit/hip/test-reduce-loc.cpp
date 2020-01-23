@@ -331,10 +331,10 @@ GPU_TYPED_TEST_P(ReduceHIP, indexset_noalign)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReduceHIP,
-                           generic,
-                           indexset_align,
-                           indexset_noalign);
+REGISTER_TYPED_TEST_SUITE_P(ReduceHIP,
+                            generic,
+                            indexset_align,
+                            indexset_noalign);
 
 // using MinLocTypes =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double>>;
