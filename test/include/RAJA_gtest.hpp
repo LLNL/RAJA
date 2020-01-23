@@ -74,27 +74,23 @@
   template <typename Invocable>                                              \
   static void gtest_gpu_##test_case_name##_##test_name(Invocable &&GetParam)
 
-
-#define GPU_TYPED_TEST_P(CaseName, TestName)                            \
-  namespace gtest_case_##CaseName##_                                     \
-  {                                                                      \
-    template <typename gtest_TypeParam_>                                 \
-    class TestName : public CaseName<gtest_TypeParam_>                   \
-    {                                                                    \
-    private:                                                             \
-      using TestFixture = CaseName<gtest_TypeParam_>;                    \
-      using TypeParam = gtest_TypeParam_;                                \
-                                                                         \
-    public:                                                              \
-      virtual void TestBody();                                           \
-    };                                                                   \
-    static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =    \
-        GTEST_TYPED_TEST_SUITE_P_STATE_(CaseName).AddTestName(__FILE__,   \
-                                                             __LINE__,   \
-                                                             #CaseName,  \
-                                                             #TestName); \
-  }                                                                      \
-  template <typename TypeParam>                                          \
-  void gtest_case_##CaseName##_::TestName<TypeParam>::TestBody()
+#define GPU_TYPED_TEST_P(SuiteName, TestName)                           \
+    namespace GTEST_SUITE_NAMESPACE_(SuiteName) {                       \
+      template <typename gtest_TypeParam_>                              \
+      class TestName : public SuiteName<gtest_TypeParam_> {             \
+       private:                                                         \
+        typedef SuiteName<gtest_TypeParam_> TestFixture;                \
+        typedef gtest_TypeParam_ TypeParam;                             \
+       public:                                                          \
+        void TestBody() override;                                       \
+      };                                                                \
+      static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ = \
+          GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName(       \
+              __FILE__, __LINE__, GTEST_STRINGIFY_(SuiteName),          \
+              GTEST_STRINGIFY_(TestName));                              \
+    }                                                                   \
+    template <typename gtest_TypeParam_>                                \
+    void GTEST_SUITE_NAMESPACE_(                                        \
+        SuiteName)::TestName<gtest_TypeParam_>::TestBody()
 
 #endif  // closing endif for header file include guard
