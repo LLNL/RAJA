@@ -30,10 +30,10 @@ matrix:
     - COMPILER=g++
     - IMG=gcc8
     - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
-  - compiler: clang6
+  - compiler: clang9
     env:
-    - COMPILER=clang++
-    - IMG=clang6
+    - COMPILER=clang++-9
+    - IMG=clang9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
   - compiler: clang5
     env:
@@ -45,10 +45,16 @@ matrix:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
     - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
-  - compiler: nvcc
+  - compiler: nvcc9
     env:
     - COMPILER=g++
     - IMG=nvcc9
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
+    - DO_TEST=no
+  - compiler: nvcc10.2
+    env:
+    - COMPILER=g++
+    - IMG=nvcc10.2
     - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
     - DO_TEST=no
   - compiler: gcc-4.9-debug
@@ -56,23 +62,23 @@ matrix:
     - COMPILER=g++
     - IMG=gcc49
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_COVERAGE=On -DENABLE_TBB=On"
-  - compiler: clang-6-debug
+  - compiler: clang-9-debug
     env:
-    - COMPILER=clang++
-    - IMG=clang6
+    - COMPILER=clang++-9
+    - IMG=clang9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address"
     - ASAN_OPTIONS=detect_leaks=0
     - "LSAN_OPTIONS=verbosity=1:log_threads=1"
   - compiler: nvcc-debug
     env:
     - COMPILER=g++
-    - IMG=nvcc9
+    - IMG=nvcc10.2
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_TBB=On"
     - DO_TEST=no
-  - compiler: clang-cuda
+  - compiler: clang9-cuda9.1
     env:
-    - COMPILER=clang++
-    - IMG=clang-cuda
+    - COMPILER=clang++-9
+    - IMG=clang9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60"
     - DO_TEST=no
   - compiler: hip
