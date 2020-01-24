@@ -50,7 +50,7 @@ class MatTranspose : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatTranspose);
+TYPED_TEST_SUITE_P(MatTranspose);
 
 GPU_TYPED_TEST_P(MatTranspose, Basic)
 {
@@ -136,7 +136,7 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatTranspose, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatTranspose, Basic);
 
 #if defined(RAJA_ENABLE_HIP)
 template <typename NestedPolicy>
@@ -146,7 +146,7 @@ class MatTranspose_gpu : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatTranspose_gpu);
+TYPED_TEST_SUITE_P(MatTranspose_gpu);
 
 GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
 {
@@ -234,7 +234,7 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   delete [] Bt;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatTranspose_gpu, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatTranspose_gpu, Basic);
 
 #endif
 
@@ -267,7 +267,7 @@ using SeqTypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatTranspose, SeqTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatTranspose, SeqTypes);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -351,7 +351,7 @@ using TestTypes =
    >;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatTranspose, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatTranspose, TestTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -387,7 +387,7 @@ using CUDATypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, MatTranspose, CUDATypes);
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -423,7 +423,7 @@ using HIPTypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(HIP, MatTranspose_gpu, HIPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIP, MatTranspose_gpu, HIPTypes);
 #endif
 
 
@@ -434,7 +434,7 @@ class MatMultiply : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiply);
+TYPED_TEST_SUITE_P(MatMultiply);
 
 GPU_TYPED_TEST_P(MatMultiply, shmem)
 {
@@ -583,7 +583,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
 
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiply, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiply, shmem);
 
 #if defined(RAJA_ENABLE_HIP)
 template <typename NestedPolicy>
@@ -593,7 +593,7 @@ class MatMultiply_gpu : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiply_gpu);
+TYPED_TEST_SUITE_P(MatMultiply_gpu);
 
 GPU_TYPED_TEST_P(MatMultiply_gpu, shmem)
 {
@@ -740,7 +740,7 @@ GPU_TYPED_TEST_P(MatMultiply_gpu, shmem)
   delete [] C_sol;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiply_gpu, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiply_gpu, shmem);
 #endif
 
 
@@ -792,7 +792,7 @@ using SeqTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiply, SeqTypes2);
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypes2 =
@@ -840,7 +840,7 @@ using OmpTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiply, OmpTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatMultiply, OmpTypes2);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -941,7 +941,7 @@ using CudaTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiply, CudaTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmem, MatMultiply, CudaTypes2);
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -995,7 +995,7 @@ using HipTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(HIPShmem, MatMultiply_gpu, HipTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmem, MatMultiply_gpu, HipTypes2);
 #endif
 
 //
@@ -1008,7 +1008,7 @@ class MatMult3 : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatMult3);
+TYPED_TEST_SUITE_P(MatMult3);
 
 GPU_TYPED_TEST_P(MatMult3, Basic)
 {
@@ -1085,7 +1085,7 @@ GPU_TYPED_TEST_P(MatMult3, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMult3, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatMult3, Basic);
 
 #if defined(RAJA_ENABLE_HIP)
 template <typename NestedPolicy>
@@ -1095,7 +1095,7 @@ class MatMult3_gpu : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatMult3_gpu);
+TYPED_TEST_SUITE_P(MatMult3_gpu);
 
 GPU_TYPED_TEST_P(MatMult3_gpu, Basic)
 {
@@ -1174,7 +1174,7 @@ GPU_TYPED_TEST_P(MatMult3_gpu, Basic)
   delete [] C;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMult3_gpu, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatMult3_gpu, Basic);
 #endif
 
 
@@ -1194,7 +1194,7 @@ using SeqTypesMult3 =
       >
     >
   >;//close types
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMult3, SeqTypesMult3);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMult3, SeqTypesMult3);
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypesMult3 =
@@ -1214,7 +1214,7 @@ using OmpTypesMult3 =
     >
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMult3, OmpTypesMult3);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatMult3, OmpTypesMult3);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -1241,7 +1241,7 @@ using CudaTypesMult3 =
     >//close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(Cuda, MatMult3, CudaTypesMult3);
+INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, MatMult3, CudaTypesMult3);
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -1268,5 +1268,5 @@ using HipTypesMult3 =
     >//close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(Hip, MatMult3_gpu, HipTypesMult3);
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip, MatMult3_gpu, HipTypesMult3);
 #endif

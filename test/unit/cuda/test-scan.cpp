@@ -67,7 +67,7 @@ struct ScanCUDA : public ::testing::Test {
 template <typename Tuple>
 typename Info<Tuple>::data_type* ScanCUDA<Tuple>::data = nullptr;
 
-TYPED_TEST_CASE_P(ScanCUDA);
+TYPED_TEST_SUITE_P(ScanCUDA);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -207,7 +207,7 @@ GPU_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
   cudaErrchk(cudaFree(data));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ScanCUDA,
+REGISTER_TYPED_TEST_SUITE_P(ScanCUDA,
                            inclusive,
                            inclusive_inplace,
                            exclusive,
@@ -215,4 +215,4 @@ REGISTER_TYPED_TEST_CASE_P(ScanCUDA,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanCUDATests, ScanCUDA, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanCUDATests, ScanCUDA, CrossTypes);

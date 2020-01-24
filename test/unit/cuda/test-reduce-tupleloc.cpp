@@ -239,7 +239,7 @@ struct CUDAReduceLocTest : public ::testing::Test
   RAJA::Real_type minlocy;
 };
 
-TYPED_TEST_CASE_P(CUDAReduceLocTest);
+TYPED_TEST_SUITE_P(CUDAReduceLocTest);
 
 GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 {
@@ -362,20 +362,20 @@ GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( CUDAReduceLocTest,
-                            ReduceLoc2DIndexTupleViewKernel,
-                            ReduceLoc2DIndexTupleViewKernelRandom
+REGISTER_TYPED_TEST_SUITE_P( CUDAReduceLocTest,
+                             ReduceLoc2DIndexTupleViewKernel,
+                             ReduceLoc2DIndexTupleViewKernelRandom
                           );
 
 using MinLocTypeTuple = ::testing::Types<
                           list<ReduceMinLoc<RAJA::cuda_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMinLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin2DTuple, CUDAReduceLocTest, MinLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin2DTuple, CUDAReduceLocTest, MinLocTypeTuple);
 
 using MaxLocTypeTuple = ::testing::Types<
                           list<ReduceMaxLoc<RAJA::cuda_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMaxLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax2DTuple, CUDAReduceLocTest, MaxLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax2DTuple, CUDAReduceLocTest, MaxLocTypeTuple);
 
