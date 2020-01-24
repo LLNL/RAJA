@@ -10,7 +10,7 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.11.0 -- Release date 2020-01-xx
+Version v0.11.0 -- Release date 2020-01-29
 ==========================================
 
 This release contains new features, several notable changes, and some bug fixes.
@@ -49,7 +49,10 @@ Notable changes include:
       * BLT submodule (CMake-based build system) has been updated to latest
         BLT release (v0.3.0). The release contains a new version of GoogleTest,
         which required us to modify our use of gtest macros and our own 
-        testing macros. This change should be invisible to users.
+        testing macros. For the most part, this change should be invisible to users.
+        However, the new GoogleTest does not work with CUDA versions 9.1.x or earlier.
+        Therefore, if you compile RAJA with CUDA enabled and also wish to enable
+        RAJA tests, you must use a CUDA version 9.2.x or newer.
 
   * Bug fixes:
       * Fixed various issues to make internal implementations more robust,

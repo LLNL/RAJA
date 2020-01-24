@@ -118,6 +118,12 @@ N cores.
           `Google Test framework <https://github.com/google/googletest>`_, 
           so you can also run tests via Google Test commands.
 
+          It is very important to note that the version of Googletest that
+          is used in RAJA version v0.11.0 or newer requires CUDA version 
+          9.2.x or newer when compiling with nvcc. Thus, if you build
+          RAJA with CUDA enabled and want to also enable RAJA tests, you
+          must use CUDA version 9.2.x or newer.
+
 .. note:: You may use externally-supplied versions of the camp and cub 
           libraries with RAJA if you wish. To do so, pass the following 
           options to CMake:
