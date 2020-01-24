@@ -111,7 +111,7 @@ protected:
   RAJA::Index_type xdim;
   RAJA::Index_type ydim;
 };
-TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP);
 
 TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocIndex)
 {
@@ -173,9 +173,9 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocTuple)
   ASSERT_EQ(this->minlocy, RAJA::get<1>(raja_loc));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP,
-                           ReduceMinLocIndex,
-                           ReduceMinLocTuple);
+REGISTER_TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP,
+                            ReduceMinLocIndex,
+                            ReduceMinLocTuple);
 
 // TODO: Complete parameterization later when Clang runs properly.
 // For now, un-parameterized for clarity and debugging.
@@ -188,6 +188,6 @@ using types =
                                 RAJA::ReduceMinLoc<RAJA::omp_target_reduce, double, RAJA::tuple<int, int>>>
                                >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
 
 

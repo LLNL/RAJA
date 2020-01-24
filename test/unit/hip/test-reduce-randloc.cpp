@@ -215,7 +215,7 @@ struct HIPReduceLocRandTest : public ::testing::Test
   int minloc;
 };
 
-TYPED_TEST_CASE_P(HIPReduceLocRandTest);
+TYPED_TEST_SUITE_P(HIPReduceLocRandTest);
 
 // Tests HIP reduce loc on array over one range.
 // Each iteration introduces a random value into the array.
@@ -445,23 +445,23 @@ GPU_TYPED_TEST_P(HIPReduceLocRandTest, ReduceLocRandomDisjoint)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( HIPReduceLocRandTest,
-                            ReduceLocRandom,
-                            ReduceLocSameHalves,
-                            ReduceLocAscendingHalves,
-                            ReduceLocRandomHalves,
-                            ReduceLocRandomDisjoint
+REGISTER_TYPED_TEST_SUITE_P( HIPReduceLocRandTest,
+                             ReduceLocRandom,
+                             ReduceLocSameHalves,
+                             ReduceLocAscendingHalves,
+                             ReduceLocRandomHalves,
+                             ReduceLocRandomDisjoint
                           );
 
 using MinLocType = ::testing::Types<
                      list<ReduceMinLoc<RAJA::hip_reduce, int, int>,
                           ReduceMinLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin, HIPReduceLocRandTest, MinLocType);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin, HIPReduceLocRandTest, MinLocType);
 
 using MaxLocType = ::testing::Types<
                      list<ReduceMaxLoc<RAJA::hip_reduce, int, int>,
                           ReduceMaxLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax, HIPReduceLocRandTest, MaxLocType);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax, HIPReduceLocRandTest, MaxLocType);
 
