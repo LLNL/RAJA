@@ -21,7 +21,7 @@ Notable changes include:
       * HIP compiler back-end added to support AMD GPUs. Usage is essentially
         the same as for CUDA. Note that this feature is considered a
         work-in-progress and not yet production ready. It is undocumented,
-        but noted here, for friendly users who would like to it out. 
+        but noted here, for friendly users who would like to try it out. 
       * Updated version of camp third-party library, which includes variety
         of portability fixes. Most users should not need to concern 
         themselves with the details of camp.
@@ -29,12 +29,7 @@ Notable changes include:
       * Documentation improvements.
 
   * API Changes:
-      * RAJA no longer has an optional configuration dependency on CHAI. Users
-        who use CHAI and RAJA can no longer rely on the RAJA.hpp header file
-        to pull in CHAI headers. CHAI header files must be included directly
-        in application code. A new plugin capability was added to RAJA. It 
-        allows more easy CHAI integration and eventually other plugin 
-        capabilities in future (stay tuned...).
+      * None.
  
   * Build changes/improvements:
       * RAJA version number is now accessible as #define macro variable 
@@ -49,10 +44,10 @@ Notable changes include:
       * BLT submodule (CMake-based build system) has been updated to latest
         BLT release (v0.3.0). The release contains a new version of GoogleTest,
         which required us to modify our use of gtest macros and our own 
-        testing macros. For the most part, this change should be invisible to users.
-        However, the new GoogleTest does not work with CUDA versions 9.1.x or earlier.
-        Therefore, if you compile RAJA with CUDA enabled and also wish to enable
-        RAJA tests, you must use a CUDA version 9.2.x or newer.
+        testing macros. For the most part, this change should be invisible to 
+        users. However, the new GoogleTest does not work with CUDA versions 
+        9.1.x or earlier. Therefore, if you compile RAJA with CUDA enabled and 
+        also wish to enable RAJA tests, you must use CUDA 9.2.x or newer.
 
   * Bug fixes:
       * Fixed various issues to make internal implementations more robust,
