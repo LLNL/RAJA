@@ -1733,4 +1733,5 @@ using HipTypes3 =
   >;//close types
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmemPriv, MatMultiply_gpu, HipTypes3);
+
 #endif
