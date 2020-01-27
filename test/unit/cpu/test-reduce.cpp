@@ -73,7 +73,7 @@ public:
   }
 };
 
-TYPED_TEST_CASE(IndexSetReduce, TestingTypes);
+TYPED_TEST_SUITE(IndexSetReduce, TestingTypes);
 
 TYPED_TEST(IndexSetReduce, ReduceMinTest)
 {

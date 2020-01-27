@@ -21,7 +21,7 @@ class ReductionConstructorTestTargetOMP : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP);
 
 TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
 {
@@ -56,22 +56,16 @@ TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP,
-                           ReductionConstructor);
+REGISTER_TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP,
+                            ReductionConstructor);
 
 using constructor_types =
     ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
                      std::tuple<RAJA::omp_target_reduce, float>,
-                     std::tuple<RAJA::omp_target_reduce, double>,
-                     std::tuple<RAJA::omp_target_reduce, int>,
-                     std::tuple<RAJA::omp_target_reduce, float>,
-                     std::tuple<RAJA::omp_target_reduce, double>,
-                     std::tuple<RAJA::omp_target_reduce, int>,
-                     std::tuple<RAJA::omp_target_reduce, float>,
                      std::tuple<RAJA::omp_target_reduce, double>>;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceBasicTestsTargetOMP,
                               ReductionConstructorTestTargetOMP,
                               constructor_types);
 
@@ -132,7 +126,7 @@ protected:
 
   RAJA::Index_type array_length;
 };
-TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionCorrectnessTestTargetOMP);
 
 TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceSum)
 {
@@ -272,14 +266,14 @@ TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLocGenericIndex)
   ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
-                           ReduceSum,
-                           ReduceMin,
-                           ReduceMax,
-                           ReduceMinLoc,
-                           ReduceMinLocGenericIndex,
-                           ReduceMaxLoc,
-                           ReduceMaxLocGenericIndex);
+REGISTER_TYPED_TEST_SUITE_P(ReductionCorrectnessTestTargetOMP,
+                            ReduceSum,
+                            ReduceMin,
+                            ReduceMax,
+                            ReduceMinLoc,
+                            ReduceMinLocGenericIndex,
+                            ReduceMaxLoc,
+                            ReduceMaxLocGenericIndex);
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
                                 RAJA::omp_target_reduce>,
@@ -288,7 +282,7 @@ using types =
                      std::tuple<RAJA::omp_target_parallel_for_exec<256>,
                                 RAJA::omp_target_reduce>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
 
 template <typename TUPLE>
 class NestedReductionCorrectnessTestTargetOMP : public ::testing::Test
