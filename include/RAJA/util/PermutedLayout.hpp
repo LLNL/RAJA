@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,7 +82,15 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
   }
 
 
-  return Layout<Rank, IdxLin>(sizes, strides);
+  // return Layout<Rank, IdxLin>(sizes, strides);
+  auto ret  = Layout<Rank, IdxLin>();
+  for (size_t i = 0; i < Rank; ++i) {
+    ret.sizes[i] = sizes[i];
+    ret.strides[i] = strides[i];
+    ret.inv_strides[i] = strides[i] ? strides[i] : 1;
+    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
+  }
+  return ret;
 }
 
 

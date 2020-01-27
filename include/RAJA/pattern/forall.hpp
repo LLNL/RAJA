@@ -43,7 +43,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -463,7 +463,7 @@ RAJA_INLINE void forall(Args&&... args)
   util::callPreLaunchPlugins(context); 
 
   RAJA_FORCEINLINE_RECURSIVE
-  forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 
   util::callPostLaunchPlugins(context);
 }

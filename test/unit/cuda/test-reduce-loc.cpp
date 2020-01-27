@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,9 +165,9 @@ template <typename Reducer>
 double* ReduceCUDA<Reducer>::dvalue = nullptr;
 
 
-TYPED_TEST_CASE_P(ReduceCUDA);
+TYPED_TEST_SUITE_P(ReduceCUDA);
 
-CUDA_TYPED_TEST_P(ReduceCUDA, generic)
+GPU_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
   using applier = reduce_applier<TypeParam>;
@@ -216,7 +216,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
+GPU_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
   using applier = reduce_applier<TypeParam>;
@@ -265,7 +265,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
+GPU_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
   using applier = reduce_applier<TypeParam>;
@@ -315,23 +315,23 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
-                           generic,
-                           indexset_align,
-                           indexset_noalign);
+REGISTER_TYPED_TEST_SUITE_P(ReduceCUDA,
+                            generic,
+                            indexset_align,
+                            indexset_noalign);
 
 using MinLocTypes =
     ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(MinLoc, ReduceCUDA, MinLocTypes);
 
 using MaxLocTypes =
     ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(MaxLoc, ReduceCUDA, MaxLocTypes);
 
 using MinLocTypesGenericIndex =
     ::testing::Types<ReduceMinLoc<RAJA::cuda_reduce, double, Index>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceCUDA, MinLocTypesGenericIndex);
+INSTANTIATE_TYPED_TEST_SUITE_P(MinLocGenericIndex, ReduceCUDA, MinLocTypesGenericIndex);
 
 using MaxLocTypesGenericIndex =
     ::testing::Types<ReduceMaxLoc<RAJA::cuda_reduce, double, Index>>;
-INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceCUDA, MaxLocTypesGenericIndex);
+INSTANTIATE_TYPED_TEST_SUITE_P(MaxLocGenericIndex, ReduceCUDA, MaxLocTypesGenericIndex);

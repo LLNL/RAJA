@@ -7,3 +7,6 @@
 [submodule "include/camp"]
 	path = tpl/camp
 	url = https://github.com/llnl/camp
+[submodule "tpl/rocPRIM"]
+	path = tpl/rocPRIM
+	url = https://github.com/ROCmSoftwarePlatform/rocPRIM.git

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,6 +36,12 @@
 #define cudaErrchk(...)
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip/raja_hiperrchk.hpp"
+#else
+#define hipErrchk(...)
+#endif
+
 namespace RAJA
 {
 
@@ -56,10 +62,10 @@ template <typename T>
 class TypedListSegment
 {
 
-#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
-  static constexpr bool Has_CUDA = true;
+#if ((defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)) || defined(RAJA_ENABLE_HIP)
+  static constexpr bool Has_GPU = true;
 #else
-  static constexpr bool Has_CUDA = false;
+  static constexpr bool Has_GPU = false;
 #endif
 
   //! tag for trivial per-element copy
@@ -75,14 +81,26 @@ class TypedListSegment
   using CPU_memory = std::integral_constant<bool, false>;
 
   //! specialization for deallocation of GPU_memory
-  void deallocate(GPU_memory) { cudaErrchk(cudaFree(m_data)); }
+  void deallocate(GPU_memory) {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaErrchk(cudaFree(m_data));
+#elif defined(RAJA_ENABLE_HIP)
+    hipErrchk(hipHostFree(m_data));
+#endif
+  }
 
   //! specialization for allocation of GPU_memory
   void allocate(GPU_memory)
   {
+#if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaMallocManaged((void**)&m_data,
                                  m_size * sizeof(value_type),
                                  cudaMemAttachGlobal));
+#elif defined(RAJA_ENABLE_HIP)
+    hipErrchk(hipHostMalloc((void**)&m_data,
+                            m_size * sizeof(value_type),
+                            hipHostMallocMapped));
+#endif
   }
 
   //! specialization for deallocation of CPU_memory
@@ -98,6 +116,13 @@ class TypedListSegment
   {
     cudaErrchk(cudaMemcpy(
         m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
+  }
+#elif defined(RAJA_ENABLE_HIP)
+  //! copy data from container using BlockCopy
+  template <typename Container>
+  void copy(Container&& src, BlockCopy)
+  {
+    memcpy(m_data, &(*src.begin()), m_size * sizeof(T));
   }
 #endif
 
@@ -120,11 +145,11 @@ class TypedListSegment
   void allocate_and_copy(Container&& src)
   {
     allocate(std::integral_constant<bool, GPU>());
-    static constexpr bool use_cuda =
+    static constexpr bool use_gpu =
         GPU && std::is_pointer<decltype(src.begin())>::value &&
         std::is_same<type_traits::IterableValue<Container>, value_type>::value;
     using TagType =
-        typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
+        typename std::conditional<use_gpu, BlockCopy, TrivialCopy>::type;
     copy(src, TagType());
   }
 
@@ -168,7 +193,7 @@ public:
       : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
   {
     if (m_size <= 0) return;
-    allocate_and_copy<Has_CUDA>(container);
+    allocate_and_copy<Has_GPU>(container);
     m_owned = Owned;
   }
 
@@ -197,7 +222,7 @@ public:
   ~TypedListSegment()
   {
     if (m_data == nullptr || m_owned != Owned) return;
-    deallocate(std::integral_constant<bool, Has_CUDA>());
+    deallocate(std::integral_constant<bool, Has_GPU>());
   }
 
 
@@ -271,7 +296,7 @@ private:
     m_size = len;
     m_owned = container_own;
     if (m_owned == Owned) {
-      allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
+      allocate_and_copy<Has_GPU>(RAJA::impl::make_span(container, len));
       return;
     }
     // Uh-oh. Using evil const_cast....

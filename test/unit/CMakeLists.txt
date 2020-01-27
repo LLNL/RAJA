@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -78,6 +78,10 @@ add_subdirectory(cpu)
 if(ENABLE_CUDA)
   add_subdirectory(cuda)
 endif(ENABLE_CUDA)
+
+if(ENABLE_HIP)
+  add_subdirectory(hip)
+endif(ENABLE_HIP)
 
 if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)

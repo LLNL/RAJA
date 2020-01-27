@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,10 @@
 
 #include <cstdlib>
 #include <stdexcept>
+
+#if defined(RAJA_ENABLE_HIP)
+#include <hip/hip_runtime.h>
+#endif
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
@@ -41,6 +45,11 @@
 #else
 #define RAJA_SUPPRESS_HD_WARN RAJA_PRAGMA(nv_exec_check_disable)
 #endif
+
+#elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#define RAJA_SUPPRESS_HD_WARN
 
 #else
 

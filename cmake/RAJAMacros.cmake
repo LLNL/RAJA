@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,6 +21,10 @@ macro(raja_add_executable)
 
   if (ENABLE_CUDA)
     list (APPEND arg_DEPENDS_ON cuda)
+  endif ()
+
+  if (ENABLE_HIP)
+    list (APPEND arg_DEPENDS_ON hip)
   endif ()
 
   if (ENABLE_TBB)

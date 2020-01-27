@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,7 @@ class IntegralLimitsTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(IntegralLimitsTest);
+TYPED_TEST_SUITE_P(IntegralLimitsTest);
 
 TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
 {
@@ -31,7 +31,7 @@ TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
             std::numeric_limits<TypeParam>::max());
 }
 
-REGISTER_TYPED_TEST_CASE_P(IntegralLimitsTest, IntegralLimits);
+REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsTest, IntegralLimits);
 
 using integer_types = ::testing::Types<char,
                                        unsigned char,
@@ -46,6 +46,6 @@ using integer_types = ::testing::Types<char,
                                        long long,
                                        unsigned long long>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsTests,
+INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsTests,
                               IntegralLimitsTest,
                               integer_types);

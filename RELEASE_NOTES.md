@@ -1,11 +1,59 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-20, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
 [comment]: # (for details.)
 [comment]: # 
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
+
+Version vxx.yy.zz -- Release date 20yy-mm-dd
+============================================
+
+Version v0.11.0 -- Release date 2020-01-29
+==========================================
+
+This release contains new features, several notable changes, and some bug fixes.
+
+Notable changes include:
+
+  * New features:
+      * HIP compiler back-end added to support AMD GPUs. Usage is essentially
+        the same as for CUDA. Note that this feature is considered a
+        work-in-progress and not yet production ready. It is undocumented,
+        but noted here, for friendly users who would like to try it out. 
+      * Updated version of camp third-party library, which includes variety
+        of portability fixes. Most users should not need to concern 
+        themselves with the details of camp.
+      * Added new tutorial material and exercises.
+      * Documentation improvements.
+
+  * API Changes:
+      * None.
+ 
+  * Build changes/improvements:
+      * RAJA version number is now accessible as #define macro variable 
+        constants so that users who need to parameterize their code to support 
+        multiple RAJA versions can do this more easily. See the file 
+        RAJA/include/RAJA/config.hpp for details. RAJA version numbers 
+        are also experted as CMake variables.
+      * Added support to link to external camp library. By default, the camp
+        git submodule will be used. If you prefer to use a different version
+        of camp, set the RAJA CMake variable 'EXTERNAL_CAMP_SOURCE_DIR' to
+        the location of the desired camp directory.
+      * BLT submodule (CMake-based build system) has been updated to latest
+        BLT release (v0.3.0). The release contains a new version of GoogleTest,
+        which required us to modify our use of gtest macros and our own 
+        testing macros. For the most part, this change should be invisible to 
+        users. However, the new GoogleTest does not work with CUDA versions 
+        9.1.x or earlier. Therefore, if you compile RAJA with CUDA enabled and 
+        also wish to enable RAJA tests, you must use CUDA 9.2.x or newer.
+
+  * Bug fixes:
+      * Fixed various issues to make internal implementations more robust,
+        resolved issues with non fully-qualified types in some places, 
+        and work arounds for some compiler issues.
+
 
 Version v0.10.0 -- Release date 2019-10-31
 ==========================================

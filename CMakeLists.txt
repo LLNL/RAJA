@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,7 +10,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 10)
+set(RAJA_VERSION_MINOR 11)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -51,6 +51,7 @@ option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
+option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
 option(ENABLE_EXAMPLES "Build simple examples" On)
@@ -84,7 +85,40 @@ if (ENABLE_CUDA)
     message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
     set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
   endif()
+  if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
+    endif ()
+  endif ()
 endif()
+
+# Detect C++ standard and add appropriate flag _before_ loading BLT
+set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
+
+include(CheckCXXCompilerFlag)
+if(RAJA_CXX_STANDARD_FLAG MATCHES default)
+  if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    #TODO set BLT_CXX_STANDARD
+    set(CMAKE_CXX_STANDARD 17)
+  elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    set(CMAKE_CXX_STANDARD 14)
+  elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
+    set(CMAKE_CXX_STANDARD 14)
+  else() #cmake has no idea what to do, do it ourselves...
+    foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
+      CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
+      if(COMPILER_SUPPORTS_${flag_var})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
+        break()
+      endif()
+    endforeach(flag_var)
+  endif()
+else(RAJA_CXX_STANDARD_FLAG MATCHES default)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RAJA_CXX_STANDARD_FLAG}")
+  message("Using C++ standard flag: ${RAJA_CXX_STANDARD_FLAG}")
+endif(RAJA_CXX_STANDARD_FLAG MATCHES default)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (NOT BLT_LOADED)
   if (DEFINED BLT_SOURCE_DIR)
@@ -104,7 +138,6 @@ if (NOT BLT_LOADED)
   endif ()
 
   include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
-
 endif()
 
 # Setup basic CMake options
@@ -123,6 +156,7 @@ set (raja_sources
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
+  src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp)
 
 set (raja_depends)
@@ -159,6 +193,29 @@ if (ENABLE_CUDA)
   endif ()
 endif ()
 
+if (ENABLE_HIP)
+  set (raja_depends
+    ${raja_depends}
+    hip)
+endif ()
+
+if (ENABLE_HIP)
+  if(ENABLE_EXTERNAL_ROCPRIM)
+    find_package(ROCPRIM)
+    if (ROCPRIM_FOUND)
+      blt_register_library(
+        NAME rocPRIM
+        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
+      set(raja_depends
+          ${raja_depends}
+          rocPRIM)
+    else()
+      message(WARNING "External rocPRIM not found.")
+      set(ENABLE_EXTERNAL_ROCPRIM Off)
+     endif()
+  endif ()
+endif ()
+
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
@@ -171,11 +228,21 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
-find_package(camp QUIET)
-if (NOT camp_FOUND)
-  message(STATUS "Using RAJA CAMP submodule.")
-  add_subdirectory(tpl/camp)
-endif(NOT camp_FOUND)
+set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
+camp source repository")
+if (EXTERNAL_CAMP_SOURCE_DIR)
+  message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
+  add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
+else (EXTERNAL_CAMP_SOURCE_DIR)
+  find_package(camp QUIET)
+  if (NOT camp_FOUND)
+    message(STATUS "Using RAJA CAMP submodule.")
+    add_subdirectory(tpl/camp)
+  else (NOT camp_FOUND)
+    message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+  endif(NOT camp_FOUND)
+endif (EXTERNAL_CAMP_SOURCE_DIR)
 
 blt_add_library(
   NAME RAJA
@@ -196,13 +263,15 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
   $<INSTALL_INTERFACE:include>)
 
-if(ENABLE_EXTERNAL_CUB)
-  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-else()
-  install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+if(NOT ENABLE_EXTERNAL_CUB)
   install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+endif()
+if(NOT ENABLE_EXTERNAL_ROCPRIM)
+  install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
 
 install(FILES

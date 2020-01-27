@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -67,7 +67,7 @@ struct ScanCUDA : public ::testing::Test {
 template <typename Tuple>
 typename Info<Tuple>::data_type* ScanCUDA<Tuple>::data = nullptr;
 
-TYPED_TEST_CASE_P(ScanCUDA);
+TYPED_TEST_SUITE_P(ScanCUDA);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -100,7 +100,7 @@ template <typename Function, typename T>
   return ::testing::AssertionSuccess();
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
+GPU_TYPED_TEST_P(ScanCUDA, inclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -118,7 +118,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
   cudaErrchk(cudaFree(out));
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
+GPU_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -136,7 +136,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
   cudaErrchk(cudaFree(data));
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -154,7 +154,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
   cudaErrchk(cudaFree(out));
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -172,7 +172,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
   cudaErrchk(cudaFree(data));
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -191,7 +191,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
   cudaErrchk(cudaFree(out));
 }
 
-CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
+GPU_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -207,7 +207,7 @@ CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
   cudaErrchk(cudaFree(data));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ScanCUDA,
+REGISTER_TYPED_TEST_SUITE_P(ScanCUDA,
                            inclusive,
                            inclusive_inplace,
                            exclusive,
@@ -215,4 +215,4 @@ REGISTER_TYPED_TEST_CASE_P(ScanCUDA,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanCUDATests, ScanCUDA, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanCUDATests, ScanCUDA, CrossTypes);

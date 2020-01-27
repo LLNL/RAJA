@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,7 +36,7 @@ protected:
   virtual void TearDown() { free_aligned(arr); }
 };
 
-TYPED_TEST_CASE_P(ForallViewTest);
+TYPED_TEST_SUITE_P(ForallViewTest);
 
 TYPED_TEST_P(ForallViewTest, ForallViewLayout)
 {
@@ -73,23 +73,23 @@ TYPED_TEST_P(ForallViewTest, ForallViewOffsetLayout)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ForallViewTest,
+REGISTER_TYPED_TEST_SUITE_P(ForallViewTest,
                            ForallViewLayout,
                            ForallViewOffsetLayout);
 
 using SequentialTypes = ::testing::Types<seq_exec, loop_exec, simd_exec>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallViewTest, SequentialTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallViewTest, SequentialTypes);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPTypes = ::testing::Types<omp_parallel_for_exec>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallViewTest, OpenMPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, ForallViewTest, OpenMPTypes);
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<tbb_for_exec, tbb_for_dynamic>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(TBB, ForallViewTest, TBBTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TBB, ForallViewTest, TBBTypes);
 #endif

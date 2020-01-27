@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -75,7 +75,7 @@ int* ReduceSumCUDA::ivalue = nullptr;
 
 const size_t block_size = 256;
 
-CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
+GPU_TEST_F(ReduceSumCUDA, staggered_sum)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
 
@@ -118,7 +118,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
   }
 }
 
-CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
+GPU_TEST_F(ReduceSumCUDA, staggered_sum2)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
 
@@ -177,7 +177,7 @@ CUDA_TEST_F(ReduceSumCUDA, staggered_sum2)
 //        not aligned with warp boundaries to check that reduction
 //        mechanics don't depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
+GPU_TEST_F(ReduceSumCUDA, indexset_noalign)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
   int* ivalue = ReduceSumCUDA::ivalue;
@@ -219,7 +219,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
   ASSERT_EQ(int(isum3), 4 * ibase_chk_val + (itinit * 4));
 }
 
-CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
+GPU_TEST_F(ReduceSumCUDA, atomic_reduce)
 {
   double* rand_dvalue = ReduceSumCUDA::rand_dvalue;
 
@@ -255,7 +255,7 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
   }
 }
 
-CUDA_TEST_F(ReduceSumCUDA, increasing_size)
+GPU_TEST_F(ReduceSumCUDA, increasing_size)
 {
   double* dvalue = ReduceSumCUDA::dvalue;
 

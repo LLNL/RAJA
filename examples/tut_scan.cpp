@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,6 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
-#include <random>
 
 #include "memoryManager.hpp"
 
@@ -36,6 +35,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 16;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -70,7 +73,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in + N, -1);
 
-  std::shuffle(in, in + N, std::mt19937{std::random_device{}()});
   // _scan_array_init_end
 
   std::cout << "\n in values...\n";
@@ -188,6 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -222,6 +225,51 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
   printArray(out, N);
   std::cout << "\n";
+
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+//----------------------------------------------------------------------------//
+// Perform a couple of HIP scans...
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running HIP inclusive_scan_inplace (plus)...\n";
+
+  std::copy_n(in, N, out);
+  int* d_in = memoryManager::allocate_gpu<int>(N);
+  int* d_out = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N,
+                                       RAJA::operators::plus<int>{});
+
+  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
+
+  checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
+  printArray(out, N);
+  std::cout << "\n";
+
+//----------------------------------------------------------------------------//
+
+  hipErrchk(hipMemcpy( d_in, in, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  std::cout << "\n Running HIP exclusive_scan (plus)...\n";
+  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_in, d_in + N, d_out,
+                                       RAJA::operators::plus<int>{});
+
+  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
+
+  checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
+  printArray(out, N);
+  std::cout << "\n";
+
+  memoryManager::deallocate_gpu(d_in);
+  memoryManager::deallocate_gpu(d_out);
 
 #endif
 

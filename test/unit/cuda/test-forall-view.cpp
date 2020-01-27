@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,7 +46,7 @@ struct ForallViewCUDA : ::testing::Test {
   }
 };
 
-CUDA_TEST_F(ForallViewCUDA, ForallViewLayout)
+GPU_TEST_F(ForallViewCUDA, ForallViewLayout)
 {
   const Index_type alen = ::alen;
   double* arr_h = ::arr_h;
@@ -68,7 +68,7 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewLayout)
   }
 }
 
-CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
+GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
 {
   const Index_type alen = ::alen;
   double* arr_h = ::arr_h;
@@ -91,7 +91,7 @@ CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
   }
 }
 
-CUDA_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
+GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
 {
 
   using RAJA::Index_type;

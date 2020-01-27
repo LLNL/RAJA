@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,13 +117,16 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   IndexType loc = DefaultLoc<IndexType>().value();
 
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &) = default;
-
-#if defined(CUDART_VERSION) && CUDART_VERSION < 9020
+#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020
+  RAJA_HOST_DEVICE constexpr ValueLoc() {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
   RAJA_HOST_DEVICE
+  ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
+#else
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &other) = default;
+  ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
-  ValueLoc& operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,6 +18,11 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip/raja_hiperrchk.hpp"
+#include <hip/hip_runtime.h>
 #endif
 
 /*
@@ -896,6 +901,346 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaFree( dL_data ) );
   cudaErrchk( cudaFree( dpsi_data ) );
   cudaErrchk( cudaFree( dphi_data ) );
+}
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+{
+  std::cout << "\n Running RAJA HIP version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  double* dL_data   = nullptr;
+  double* dpsi_data = nullptr;
+  double* dphi_data = nullptr;
+
+  hipErrchk( hipMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dL_data, L_data, L_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+  hipErrchk( hipMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+  hipErrchk( hipMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(dL_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(dpsi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(dphi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+      statement::HipKernelAsync<
+        statement::For<0, hip_block_x_loop,  // m
+          statement::For<2, hip_block_y_loop,  // g
+            statement::For<3, hip_thread_x_loop,  // z
+              statement::For<1, seq_exec,  // d
+                statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >;
+
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
+
+  RAJA::Timer timer;
+  hipErrchk( hipDeviceSynchronize() );
+  timer.start();
+
+  RAJA::kernel<EXECPOL>( segments,
+    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z) {
+       phi(m, g, z) += L(m, d) * psi(d, g, z);
+    }
+  );
+
+  hipErrchk( hipDeviceSynchronize() );
+  timer.stop();
+  std::cout << "  RAJA HIP version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+
+  hipErrchk( hipMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
+                          hipMemcpyDeviceToHost ) );
+
+  hipErrchk( hipFree( dL_data ) );
+  hipErrchk( hipFree( dpsi_data ) );
+  hipErrchk( hipFree( dphi_data ) );
+
+  // Reset data in Views to CPU data
+  L.set_data(L_data);
+  psi.set_data(psi_data);
+  phi.set_data(phi_data);
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+}
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+{
+  std::cout << "\n Running RAJA HIP + shmem version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  double* dL_data   = nullptr;
+  double* dpsi_data = nullptr;
+  double* dphi_data = nullptr;
+
+  hipErrchk( hipMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dL_data, L_data, L_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+  hipErrchk( hipMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+  hipErrchk( hipMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
+  hipErrchk( hipMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
+                          hipMemcpyHostToDevice ) );
+
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(dL_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(dpsi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(dphi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+
+  static const int tile_m = 25;
+  static const int tile_d = 90;
+  static const int tile_g = 0;
+  static const int tile_z = 40;
+
+
+
+
+  //
+  // Define statically dimensioned local arrays used in kernel
+  //
+
+  using shmem_L_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJ,
+                        RAJA::SizeList<tile_m, tile_d>,
+                        IM, ID>;
+  shmem_L_t shmem_L;
+
+
+  using shmem_psi_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_d, tile_g, tile_z>,
+                        ID, IG, IZ>;
+  shmem_psi_t shmem_psi;
+
+
+
+  //
+  // Define our execution policy
+  //
+
+  using RAJA::statement::Param;
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+      statement::HipKernelAsync<
+        statement::InitLocalMem<hip_shared_mem, ParamList<0,1>,
+          // Tile outer m,d loops
+          statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
+            statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
+
+              // Load L for m,d tile into shmem
+              statement::ForICount<1, Param<4>, hip_thread_x_loop,  // d
+                statement::ForICount<0, Param<3>, hip_thread_y_direct,   // m
+                  statement::Lambda<0>
+                >
+              >,
+              statement::HipSyncThreads,
+
+              // Distribute g, z across blocks and tile z
+              statement::For<2, hip_block_y_loop, // g
+                statement::Tile<3, statement::tile_fixed<tile_z>, hip_block_x_loop,  // z
+
+                  // Load phi into thread local storage
+                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
+                      statement::Lambda<2>
+                    >
+                  >,
+
+                  // Load slice of psi into shmem
+                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
+                    statement::ForICount<1, Param<4>, hip_thread_y_loop, // d (reusing y)
+                      statement::Lambda<1>
+                    >
+                  >,
+                  statement::HipSyncThreads,
+
+                  // Compute phi
+                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
+
+                      // Compute thread-local Phi value and store
+                      statement::ForICount<1, Param<4>, seq_exec,  // d
+                        statement::Lambda<3>
+                      > // d
+                    >  // m
+                  >,  // z
+
+                  // finish tile over directions
+                  statement::HipSyncThreads,
+
+                  // Write out phi from thread local storage
+                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
+                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
+                      statement::Lambda<4>
+                    >
+                  >,
+                  statement::HipSyncThreads
+
+                >  // Tile z
+              >  // g
+
+            >  // Tile d
+          >  // Tile m
+        > // init shmem
+      >  // HipKernelAsync
+
+    >;  // KernelPolicy
+
+
+
+
+
+  RAJA::Timer timer;
+  hipErrchk( hipDeviceSynchronize() );
+  timer.start();
+
+  RAJA::kernel_param<EXECPOL>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+      RAJA::TypedRangeSegment<ID>(0, num_d),
+      RAJA::TypedRangeSegment<IG>(0, num_g),
+      RAJA::TypedRangeSegment<IZ>(0, num_z)),
+
+    // For kernel_param, second arg is a tuple of data objects used in lambdas.
+    // They are the last args in all lambdas (after indices).
+    // Here, the last entry '0.0' yields a thread-private temporary for
+    // computing a phi value, for shared memory before writing to phi array.
+    RAJA::make_tuple( shmem_L,
+                      shmem_psi,
+                      0.0,
+                      IM(0),
+                      ID(0),
+                      IG(0),
+                      IZ(0)),
+
+    // Lambda<0> : Load L into shmem
+    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
+                     shmem_L_t& sh_L, shmem_psi_t&, double&,
+                     IM tm, ID td, IG, IZ) {
+      sh_L(tm, td) = L(m, d);
+    },
+
+    // Lambda<1> : Load slice of psi into shmem
+    [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z,
+                    shmem_L_t&, shmem_psi_t& sh_psi, double&,
+                     IM, ID td, IG tg, IZ tz) {
+
+      sh_psi(td, tg, tz) = psi(d, g, z);
+    },
+
+    // Lambda<2> : Load thread-local phi value
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
+                     shmem_L_t&, shmem_psi_t&, double& phi_local,
+                     IM, ID, IG, IZ) {
+
+      phi_local = phi(m, g, z);
+    },
+
+    // Lambda<3> Compute thread-local phi value
+    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
+                     shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local,
+                     IM tm, ID td, IG tg, IZ tz) {
+
+      phi_local += sh_L(tm, td) *  sh_psi(td, tg, tz);
+    },
+
+    // Lambda<4> : Store phi
+    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
+                     shmem_L_t&, shmem_psi_t&, double& phi_local,
+                     IM, ID, IG, IZ) {
+
+      phi(m, g, z) = phi_local;
+    }
+
+  );
+
+  hipDeviceSynchronize();
+  timer.stop();
+  std::cout << "  RAJA HIP + shmem version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+
+
+
+#if defined(DEBUG_LTIMES)
+
+  hipErrchk( hipMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
+                          hipMemcpyDeviceToHost ) );
+
+  // Reset data in Views to CPU data
+  L.set_data(L_data);
+  psi.set_data(psi_data);
+  phi.set_data(phi_data);
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+
+
+  hipErrchk( hipFree( dL_data ) );
+  hipErrchk( hipFree( dpsi_data ) );
+  hipErrchk( hipFree( dphi_data ) );
 }
 #endif
 

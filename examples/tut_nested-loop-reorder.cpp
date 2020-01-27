@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,7 +19,7 @@
  *
  *  RAJA features shown:
  *    - Index range segment
- *    - 'RAJA::nested' loop abstractions and execution policies
+ *    - 'RAJA::kernel' loop abstractions and execution policies
  *    - Nested loop reordering
  *    - Strongly-typed loop indices
  */
@@ -122,7 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if 0
 //----------------------------------------------------------------------------//
 // The following demonstrates that code will not compile if lambda argument
-// types/order do not match the types/order of the strongly-typed nested::For.
+// types/order do not match the types/order of the For statements.
 //----------------------------------------------------------------------------//
 
   // _nestedreorder_typemismatch_start

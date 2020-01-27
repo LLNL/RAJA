@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -80,8 +80,8 @@ The matrix index (index 0) has stride 9 (:math:`N_c \times N_r`).
 The views for layout 2 are constructed similarly:
 
 .. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
-   :start-after: _permutedlayout_defviews_start
-   :end-before: _permutedlayout_defviews_end
+   :start-after: _permutedlayout_permviews_start
+   :end-before: _permutedlayout_permviews_end
    :language: C++
 
 Here, the first argument to ``RAJA::make_permuted_layout`` is the same as in

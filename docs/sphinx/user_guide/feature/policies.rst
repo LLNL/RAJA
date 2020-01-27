@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -555,11 +555,11 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::CudaKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of CudaKernelExp.
 
-  * ``statement::CudaSyncThreads`` provides CUDA '__syncthreads' barrier.
+  * ``statement::CudaSyncThreads`` calls CUDA '__syncthreads()' barrier.
 
-  * ``statement::CudaSyncWarp`` provides CUDA '__syncwarp()' barrier.
+  * ``statement::CudaSyncWarp`` calls CUDA '__syncwarp()' barrier.
 
-  * ``statement::OmpSyncThreads`` provides the OpenMP '#pragma omp barrier' directive.
+  * ``statement::OmpSyncThreads`` applies the OpenMP '#pragma omp barrier' directive.
 
   * ``statement::InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The 'ParamList' entries indicate which local array objects in a tuple will be initialized. The 'EnclosedStatements' contain the code in which the local array will be accessed; e.g., initialization operations.
 

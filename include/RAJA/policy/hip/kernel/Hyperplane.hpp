@@ -1,0 +1,106 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for HIP hyperplane executors.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_policy_hip_kernel_Hyperplane_HPP
+#define RAJA_policy_hip_kernel_Hyperplane_HPP
+
+#include "RAJA/config.hpp"
+
+#include <iostream>
+#include <type_traits>
+
+#include "camp/camp.hpp"
+
+#include "RAJA/pattern/kernel/Hyperplane.hpp"
+
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+
+namespace RAJA
+{
+namespace internal
+{
+
+
+template <typename Data,
+          camp::idx_t HpArgumentId,
+          camp::idx_t... Args,
+          typename... EnclosedStmts>
+struct HipStatementExecutor<Data,
+                             statement::Hyperplane<HpArgumentId,
+                                                   seq_exec,
+                                                   ArgList<Args...>,
+                                                   EnclosedStmts...>> {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // compute Manhattan distance of iteration space to determine
+    // as:  hp_len = l0 + l1 + l2 + ...
+    int hp_len = segment_length<HpArgumentId>(data) +
+                 VarOps::foldl(RAJA::operators::plus<int>(),
+                               segment_length<Args>(data)...);
+
+    int h_args = VarOps::foldl(RAJA::operators::plus<idx_t>(),
+        camp::get<Args>(data.offset_tuple)...);
+
+    // get length of i dimension
+    auto i_len = segment_length<HpArgumentId>(data);
+
+
+    /*
+     * Execute the loop over hyperplanes
+     *
+     * We reject the iterations that lie outside of the specified rectangular
+     * region we are sweeping.
+     */
+    for (int h = 0; h < hp_len; ++h) {
+
+      // compute actual iterate for HpArgumentId
+      // as:  i0 = h - (i1 + i2 + i3 + ...)
+      idx_t i = h - h_args;
+
+      // execute enclosed statements, masking off threads that are out of
+      // bounds
+      data.template assign_offset<HpArgumentId>(i);
+      enclosed_stmts_t::exec(data, thread_active && (i >= 0 && i < i_len));
+    }
+  }
+
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    return enclosed_stmts_t::calculateDimensions(data);
+  }
+};
+
+
+
+
+}  // end namespace internal
+
+}  // end namespace RAJA
+
+#endif /* RAJA_pattern_kernel_HPP */

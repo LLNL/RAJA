@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,7 +37,7 @@ struct funcapplier<ReduceMinLoc<cuda_reduce, NumType, Indexer>>   // GPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)(1024);
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMinLoc<cuda_reduce, NumType, Indexer> const & r,
@@ -59,7 +59,7 @@ struct funcapplier<ReduceMinLoc<seq_reduce, NumType, Indexer>>    // CPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)(1024);
   }
 
   static void apply(ReduceMinLoc<seq_reduce, NumType, Indexer> const & r,
@@ -75,7 +75,7 @@ struct funcapplier<ReduceMaxLoc<cuda_reduce, NumType, Indexer>>   // GPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<cuda_reduce, NumType, Indexer> const & r,
@@ -97,7 +97,7 @@ struct funcapplier<ReduceMaxLoc<seq_reduce, NumType, Indexer>>    // CPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   static void apply(ReduceMaxLoc<seq_reduce, NumType, Indexer> const & r,
@@ -239,9 +239,9 @@ struct CUDAReduceLocTest : public ::testing::Test
   RAJA::Real_type minlocy;
 };
 
-TYPED_TEST_CASE_P(CUDAReduceLocTest);
+TYPED_TEST_SUITE_P(CUDAReduceLocTest);
 
-CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
+GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -260,12 +260,14 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
   RAJA::RangeSegment colrange(0, ydim);
   RAJA::RangeSegment rowrange(0, xdim);
 
+  RAJA::View<double, RAJA::Layout<2>> dataview2 = this->dataview;
+
   // FIRST TEST: original unequal values
   at_v<TypeParam, 0> minmaxloc_reducer(applygpu::extremeval(), RAJA::make_tuple(0, 0));
 
   RAJA::kernel<ExecutionPol>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_DEVICE (int c, int r) {
-                             applygpu::apply(minmaxloc_reducer, this->dataview(r, c), RAJA::make_tuple(c, r));
+                             applygpu::apply(minmaxloc_reducer, dataview2(r, c), RAJA::make_tuple(c, r));
                            });
 
   RAJA::tuple<int, int> raja_loc = minmaxloc_reducer.getLoc();
@@ -282,7 +284,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 
   RAJA::kernel<ExecutionPol>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_DEVICE (int c, int r) {
-                             applygpu::apply(minmaxloc_reducer2, this->dataview(r, c), RAJA::make_tuple(c, r));
+                             applygpu::apply(minmaxloc_reducer2, dataview2(r, c), RAJA::make_tuple(c, r));
                            });
 
   ASSERT_FLOAT_EQ(this->getminormax(applygpu::minormax()), (double)minmaxloc_reducer2.get());
@@ -302,7 +304,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
   ASSERT_EQ(cpuloc_reducer.getLoc(), RAJA::get<0>(minmaxloc_reducer2.getLoc()) + RAJA::get<1>(minmaxloc_reducer2.getLoc()) * ydim);
 }
 
-CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
+GPU_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -321,6 +323,8 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
   RAJA::RangeSegment colrange(0, ydim);
   RAJA::RangeSegment rowrange(0, xdim);
 
+  RAJA::View<double, RAJA::Layout<2>> dataview2 = this->dataview;
+
   this->equalize();
   constexpr int reps = 25;
 
@@ -335,7 +339,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
 
     RAJA::kernel<ExecutionPol>(RAJA::make_tuple(colrange, rowrange),
                              [=] RAJA_DEVICE (int c, int r) {
-                               applygpu::apply(minmaxloc_reducer, this->dataview(r, c), RAJA::make_tuple(c, r));
+                               applygpu::apply(minmaxloc_reducer, dataview2(r, c), RAJA::make_tuple(c, r));
                              });
 
     RAJA::tuple<int, int> raja_loc = minmaxloc_reducer.getLoc();
@@ -358,20 +362,20 @@ CUDA_TYPED_TEST_P(CUDAReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( CUDAReduceLocTest,
-                            ReduceLoc2DIndexTupleViewKernel,
-                            ReduceLoc2DIndexTupleViewKernelRandom
+REGISTER_TYPED_TEST_SUITE_P( CUDAReduceLocTest,
+                             ReduceLoc2DIndexTupleViewKernel,
+                             ReduceLoc2DIndexTupleViewKernelRandom
                           );
 
 using MinLocTypeTuple = ::testing::Types<
                           list<ReduceMinLoc<RAJA::cuda_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMinLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin2DTuple, CUDAReduceLocTest, MinLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin2DTuple, CUDAReduceLocTest, MinLocTypeTuple);
 
 using MaxLocTypeTuple = ::testing::Types<
                           list<ReduceMaxLoc<RAJA::cuda_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMaxLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax2DTuple, CUDAReduceLocTest, MaxLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax2DTuple, CUDAReduceLocTest, MaxLocTypeTuple);
 

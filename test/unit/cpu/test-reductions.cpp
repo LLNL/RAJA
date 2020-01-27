@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,8 +29,8 @@ class ReductionConstructorTest2 : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(ReductionConstructorTest);
-TYPED_TEST_CASE_P(ReductionConstructorTest2);
+TYPED_TEST_SUITE_P(ReductionConstructorTest);
+TYPED_TEST_SUITE_P(ReductionConstructorTest2);
 
 TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
 {
@@ -93,7 +93,7 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor2)
   ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), RAJA::Index_type());
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTest,
+REGISTER_TYPED_TEST_SUITE_P(ReductionConstructorTest,
                            ReductionConstructor,
                            ReductionConstructor2);
 
@@ -118,7 +118,7 @@ using constructor_types =
 #endif
                      >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests,
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceBasicTests,
                               ReductionConstructorTest,
                               constructor_types);
 
@@ -173,7 +173,7 @@ protected:
 
   RAJA::Index_type array_length;
 };
-TYPED_TEST_CASE_P(ReductionCorrectnessTest);
+TYPED_TEST_SUITE_P(ReductionCorrectnessTest);
 
 template <typename TUPLE>
 class ReductionGenericLocTest : public ::testing::Test
@@ -258,7 +258,7 @@ protected:
   RAJA::Index_type xdim;
   RAJA::Index_type ydim;
 };
-TYPED_TEST_CASE_P(ReductionGenericLocTest);
+TYPED_TEST_SUITE_P(ReductionGenericLocTest);
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
 {
@@ -857,7 +857,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex2)
   ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
+REGISTER_TYPED_TEST_SUITE_P(ReductionCorrectnessTest,
                            ReduceSum,
                            ReduceSum2,
                            ReduceMin,
@@ -873,7 +873,7 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
                            ReduceMaxLoc2,
                            ReduceMaxLocGenericIndex2);
 
-REGISTER_TYPED_TEST_CASE_P(ReductionGenericLocTest,
+REGISTER_TYPED_TEST_SUITE_P(ReductionGenericLocTest,
                            ReduceMinLoc2DIndex,
                            ReduceMinLoc2DIndexKernel,
                            ReduceMinLoc2DIndexViewKernel,
@@ -897,8 +897,8 @@ using types = ::testing::Types<
 #endif
     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionGenericLocTest, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionCorrectnessTest, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionGenericLocTest, types);
 
 
 

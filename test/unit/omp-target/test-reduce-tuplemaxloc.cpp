@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -111,7 +111,7 @@ protected:
   RAJA::Index_type xdim;
   RAJA::Index_type ydim;
 };
-TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP);
 
 TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocIndex)
 {
@@ -124,15 +124,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocIndex)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      maxloc_reducer.maxloc(indirect[r][c], Index2D(c, r));
-    });
+    for(int c : colrange) {
+      // TODO: indirect does not work here in clang
+      maxloc_reducer.maxloc(actualdata[r * 10 + c], Index2D(c, r));
+    }
   });
 
   double raja_max = (double)maxloc_reducer.get();
@@ -154,15 +150,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocTuple)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      maxloc_reducer.maxloc(indirect[r][c], RAJA::make_tuple(c, r));
-    });
+    for(int c : colrange) {
+      // TODO: indirect does not work here in clang
+      maxloc_reducer.maxloc(actualdata[r * 10 + c], RAJA::make_tuple(c, r));
+    }
   });
 
   double raja_max = (double)maxloc_reducer.get();
@@ -173,9 +165,9 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocTuple)
   ASSERT_EQ(this->maxlocy, RAJA::get<1>(raja_loc));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP,
-                           ReduceMaxLocIndex,
-                           ReduceMaxLocTuple );
+REGISTER_TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP,
+                            ReduceMaxLocIndex,
+                            ReduceMaxLocTuple );
 
 // TODO: Complete parameterization later when Clang runs properly.
 // For now, un-parameterized for clarity and debugging.
@@ -188,6 +180,6 @@ using types =
                                 RAJA::ReduceMinLoc<RAJA::omp_target_reduce, double, RAJA::tuple<int, int>>>
                                >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
 
 

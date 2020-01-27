@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,7 +41,7 @@ struct funcapplier<ReduceMinLoc<cuda_reduce, NumType, Indexer>>
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMinLoc<cuda_reduce, NumType, Indexer> const & r,
@@ -63,7 +63,7 @@ struct funcapplier<ReduceMinLoc<seq_reduce, NumType, Indexer>>
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   static void apply(ReduceMinLoc<seq_reduce, NumType, Indexer> const & r,
@@ -79,7 +79,7 @@ struct funcapplier<ReduceMaxLoc<cuda_reduce, NumType, Indexer>>
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<cuda_reduce, NumType, Indexer> const & r,
@@ -101,7 +101,7 @@ struct funcapplier<ReduceMaxLoc<seq_reduce, NumType, Indexer>>
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   static void apply(ReduceMaxLoc<seq_reduce, NumType, Indexer> const & r,
@@ -208,14 +208,16 @@ struct CUDAReduceLocRandTest : public ::testing::Test
   int minloc;
 };
 
-TYPED_TEST_CASE_P(CUDAReduceLocRandTest);
+TYPED_TEST_SUITE_P(CUDAReduceLocRandTest);
 
 // Tests CUDA reduce loc on array over one range.
 // Each iteration introduces a random value into the array.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
+
+  int * data2 = this->data;
 
   this->equalize();
   constexpr int reps = 25;
@@ -235,7 +237,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
 
     RAJA::forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, array_length),
                              [=] RAJA_DEVICE (int ii) {
-                               applygpu::apply(minmaxloc_reducer, this->data[ii], ii);
+                               applygpu::apply(minmaxloc_reducer, data2[ii], ii);
                              });
 
     int raja_loc = minmaxloc_reducer.getLoc();
@@ -248,7 +250,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandom)
 // Tests CUDA reduce loc on array with all same values, over segments.
 // CUDA finds location in the last segment, 
 // while CPU seq_reduce finds location in first segment.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -260,6 +262,8 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 
   cset.push_back( colrange0 );
   cset.push_back( colrange1 );
+
+  int * data2 = this->data;
 
   this->equalize();
 
@@ -274,7 +278,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 
   RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
     cset, [=] RAJA_DEVICE (int ii) {
-      applygpu::apply(minmaxloc_reducer, this->data[ii], ii);
+      applygpu::apply(minmaxloc_reducer, data2[ii], ii);
     });
 
   int raja_loc = minmaxloc_reducer.getLoc();
@@ -288,7 +292,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocSameHalves)
 }
 
 // Tests CUDA reduce loc on array with unique values, over segments.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
   using applycpu = funcapplier<at_v<TypeParam, 1>>;
@@ -300,6 +304,8 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 
   cset.push_back( colrange0 );
   cset.push_back( colrange1 );
+
+  int * data2 = this->data;
 
   // create ascending array
   for ( int zz = 0; zz < array_length; ++zz )
@@ -318,7 +324,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 
   RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
     cset, [=] RAJA_DEVICE (int ii) {
-      applygpu::apply(minmaxloc_reducer, this->data[ii], ii);
+      applygpu::apply(minmaxloc_reducer, data2[ii], ii);
     });
 
   int raja_loc = minmaxloc_reducer.getLoc();
@@ -331,7 +337,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocAscendingHalves)
 // Tests CUDA reduce loc on two segment halves of array.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled CUDA reduce loc vs. un-scaled CUDA reduce loc.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
@@ -342,6 +348,8 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 
   cset.push_back( colrange0 );
   cset.push_back( colrange1 );
+
+  int * data2 = this->data;
 
   this->equalize();
   constexpr int reps = 25;
@@ -356,7 +364,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
     at_v<TypeParam, 0> gpureducescaled(applygpu::extremeval(), 0);
     RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
       cset, [=] RAJA_DEVICE (int ii) {
-        applygpu::apply(gpureducescaled, 2*(this->data[ii]), ii);
+        applygpu::apply(gpureducescaled, 2*(data2[ii]), ii);
       });
 
     int scaled_loc = gpureducescaled.getLoc();
@@ -366,7 +374,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 
     RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
       cset, [=] RAJA_DEVICE (int ii) {
-        applygpu::apply(minmaxloc_reducer, this->data[ii], ii);
+        applygpu::apply(minmaxloc_reducer, data2[ii], ii);
       });
 
     int raja_loc = minmaxloc_reducer.getLoc();
@@ -380,7 +388,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomHalves)
 // Segments being reduced are non-contiguous.
 // Each test iteration introduces a random value within the segments.
 // Compare scaled CUDA reduce loc vs. un-scaled CUDA reduce loc.
-CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
+GPU_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
 {
   using applygpu = funcapplier<at_v<TypeParam, 0>>;
 
@@ -395,6 +403,8 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
   cset.push_back( colrange1 );
   cset.push_back( colrange2 );
   cset.push_back( colrange3 );
+
+  int * data2 = this->data;
 
   this->equalize();
   constexpr int reps = 25;
@@ -412,7 +422,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
     at_v<TypeParam, 0> gpureducescaled(applygpu::extremeval(), 0);
     RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
       cset, [=] RAJA_DEVICE (int ii) {
-        applygpu::apply(gpureducescaled, 2*(this->data[ii]), ii);
+        applygpu::apply(gpureducescaled, 2*(data2[ii]), ii);
       });
 
     int scaled_loc = gpureducescaled.getLoc();
@@ -422,7 +432,7 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
 
     RAJA::forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
       cset, [=] RAJA_DEVICE (int ii) {
-        applygpu::apply(minmaxloc_reducer, this->data[ii], ii);
+        applygpu::apply(minmaxloc_reducer, data2[ii], ii);
       });
 
     int raja_loc = minmaxloc_reducer.getLoc();
@@ -432,23 +442,22 @@ CUDA_TYPED_TEST_P(CUDAReduceLocRandTest, ReduceLocRandomDisjoint)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( CUDAReduceLocRandTest,
-                            ReduceLocRandom,
-                            ReduceLocSameHalves,
-                            ReduceLocAscendingHalves,
-                            ReduceLocRandomHalves,
-                            ReduceLocRandomDisjoint
+REGISTER_TYPED_TEST_SUITE_P( CUDAReduceLocRandTest,
+                             ReduceLocRandom,
+                             ReduceLocSameHalves,
+                             ReduceLocAscendingHalves,
+                             ReduceLocRandomHalves,
+                             ReduceLocRandomDisjoint
                           );
 
 using MinLocType = ::testing::Types<
                      list<ReduceMinLoc<RAJA::cuda_reduce, int, int>,
                           ReduceMinLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin, CUDAReduceLocRandTest, MinLocType);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin, CUDAReduceLocRandTest, MinLocType);
 
 using MaxLocType = ::testing::Types<
                      list<ReduceMaxLoc<RAJA::cuda_reduce, int, int>,
                           ReduceMaxLoc<RAJA::seq_reduce, int, int>>
                    >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax, CUDAReduceLocRandTest, MaxLocType);
-
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax, CUDAReduceLocRandTest, MaxLocType);
