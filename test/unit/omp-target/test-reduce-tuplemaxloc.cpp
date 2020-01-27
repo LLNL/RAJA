@@ -124,15 +124,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocIndex)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      maxloc_reducer.maxloc(indirect[r][c], Index2D(c, r));
-    });
+    for(int c : colrange) {
+      // TODO: indirect does not work here in clang
+      maxloc_reducer.maxloc(actualdata[r * 10 + c], Index2D(c, r));
+    }
   });
 
   double raja_max = (double)maxloc_reducer.get();
@@ -154,15 +150,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMaxLocTuple)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      maxloc_reducer.maxloc(indirect[r][c], RAJA::make_tuple(c, r));
-    });
+    for(int c : colrange) {
+      // TODO: indirect does not work here in clang
+      maxloc_reducer.maxloc(actualdata[r * 10 + c], RAJA::make_tuple(c, r));
+    }
   });
 
   double raja_max = (double)maxloc_reducer.get();
