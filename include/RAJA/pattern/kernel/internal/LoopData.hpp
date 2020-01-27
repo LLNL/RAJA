@@ -29,7 +29,6 @@
 #include "camp/camp.hpp"
 
 #include "RAJA/pattern/detail/privatizer.hpp"
-#include "RAJA/pattern/kernel/ArgHelper.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
 
 #include <iterator>
@@ -169,51 +168,7 @@ struct LoopData {
 };
 
 
-RAJA_SUPPRESS_HD_WARN
-template <camp::idx_t LoopIndex,
-          camp::idx_t... OffsetIdx,
-          camp::idx_t... ParamIdx,
-          typename Data>
-RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
-    camp::idx_seq<OffsetIdx...> const &,
-    camp::idx_seq<ParamIdx...> const &,
-    Data &&data)
-{
-  camp::get<LoopIndex>(data.bodies)
-    ((camp::get<OffsetIdx>(data.segment_tuple).begin()[camp::get<OffsetIdx>(data.offset_tuple)])...,
-     camp::get<ParamIdx>(data.param_tuple)...);
-}
 
-
-template <camp::idx_t LoopIndex, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data)
-{
-  using Data_t = camp::decay<Data>;
-  using offset_tuple_t = typename Data_t::offset_tuple_t;
-  using param_tuple_t = typename Data_t::param_tuple_t;
-
-  invoke_lambda_expanded<LoopIndex>(
-      camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
-      camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{},
-      std::forward<Data>(data));
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<camp::idx_t LoopIndex, typename Data, typename... targLists>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_custom_lambda(Data &&data,
-                                                       camp::list<targLists...> const &)
-{
-  camp::get<LoopIndex>(data.bodies)(extractor<targLists>::extract_arg(data)...);
-}
-
-//Helper to launch lambda with custom arguments
-template <camp::idx_t LoopIndex, typename targList, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data)
-{
-
-  invoke_custom_lambda<LoopIndex>(data,targList{});
-                                     
-}
 
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->

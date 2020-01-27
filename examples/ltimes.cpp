@@ -277,6 +277,73 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 {
+  std::cout << "\n Running RAJA sequential ARGS version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+       statement::For<0, loop_exec,  // m
+         statement::For<1, loop_exec,  // d
+           statement::For<2, loop_exec,  // g
+             statement::For<3, simd_exec,  // z
+               statement::Lambda<0, statement::Segs<0, 1, 2, 3>>
+             >
+           >
+         >
+       >
+     >;
+
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
+
+  RAJA::Timer timer;
+  timer.start();
+
+  RAJA::kernel<EXECPOL>( segments,
+    [=] (IM m, ID d, IG g, IZ z) {
+       phi(m, g, z) += L(m, d) * psi(d, g, z);
+    }
+  );
+
+  timer.stop();
+  std::cout << "  RAJA sequential ARGS version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+}
+
+//----------------------------------------------------------------------------//
+
+{
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -478,6 +545,208 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+
+//----------------------------------------------------------------------------//
+
+{
+  std::cout << "\n Running RAJA sequential shmem ARGS version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  constexpr size_t tile_m = 25;
+  constexpr size_t tile_d = 80;
+  constexpr size_t tile_z = 256;
+  constexpr size_t tile_g = 0;
+
+  using RAJA::statement::Param;
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+
+      // Create memory tiles
+      statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
+
+      // Tile outer m,d loops
+      statement::Tile<0, statement::tile_fixed<tile_m>, loop_exec,  // m
+        statement::Tile<1, statement::tile_fixed<tile_d>, loop_exec,  // d
+
+
+            // Load L(m,d) for m,d tile into shmem
+            statement::For<0, loop_exec,  // m
+              statement::For<1, loop_exec,  // d
+                statement::Lambda<0, statement::Segs<0, 1>,
+                                     statement::Params<0>,
+                                     statement::Offsets<0, 1>>
+              >
+            >,
+
+            // Run inner g, z loops with z loop tiled
+            statement::For<2, loop_exec,  // g
+              statement::Tile<3, statement::tile_fixed<tile_z>, loop_exec,  // z
+
+
+                  // Load psi into shmem
+                  statement::For<1, loop_exec,  // d
+                    statement::For<3, loop_exec,  // z
+                      statement::Lambda<1, statement::Segs<1, 2, 3>,
+                                           statement::Params<1>,
+                                           statement::Offsets<1, 2, 3>>
+                    >
+                  >,
+
+                  // Compute phi
+                  statement::For<0, loop_exec,  // m
+
+                    // Load phi into shmem
+                    statement::For<3, loop_exec,  // z
+                      statement::Lambda<2, statement::Segs<0, 2, 3>,
+                                           statement::Params<2>,
+                                           statement::Offsets<0, 2, 3>>
+                    >,
+
+                    // Compute phi in shmem
+                    statement::For<1, loop_exec,  // d
+                      statement::For<3, loop_exec,  // z
+                        statement::Lambda<3, statement::Params<0, 1, 2>,
+                                             statement::Offsets<0, 1, 2, 3>>
+                      >
+                    >,
+
+                    // Store phi
+                    statement:: For<3, loop_exec,  // z
+                      statement::Lambda<4, statement::Segs<0, 2, 3>,
+                                           statement::Params<2>,
+                                           statement::Offsets<0, 2, 3>>
+                    >
+                  >  // m
+
+
+              >  // Tile z
+            >  // g
+
+
+        >  // Tile d
+      >  // Tile m
+      > // LocalMemory
+    >; // KernelPolicy
+
+
+
+  //
+  // Define statically dimensioned local arrays used in kernel
+  //
+
+  using shmem_L_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_JI,
+                        RAJA::SizeList<tile_m, tile_d>,
+                        Index_type, Index_type>;
+  shmem_L_t shmem_L;
+
+
+  using shmem_psi_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_d, tile_g, tile_z>,
+                        Index_type, Index_type, Index_type>;
+  shmem_psi_t shmem_psi;
+
+
+  using shmem_phi_t = RAJA::TypedLocalArray<double,
+                        RAJA::PERM_IJK,
+                        RAJA::SizeList<tile_m, tile_g, tile_z>,
+                        Index_type, Index_type, Index_type>;
+  shmem_phi_t shmem_phi;
+
+
+  RAJA::Timer timer;
+  timer.start();
+
+  RAJA::kernel_param<EXECPOL>(
+
+    RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                     RAJA::TypedRangeSegment<ID>(0, num_d),
+                     RAJA::TypedRangeSegment<IG>(0, num_g),
+                     RAJA::TypedRangeSegment<IZ>(0, num_z)),
+    // For kernel_param, second arg is a tuple of data objects used in lambdas.
+    // They are the last args in all lambdas (after indices).
+    RAJA::make_tuple( shmem_L,
+                      shmem_psi,
+                      shmem_phi),
+
+
+    // Lambda<0> : Load L into shmem
+    [=] (IM m, ID d,
+         shmem_L_t& sh_L,
+         Index_type tm, Index_type td)
+    {
+      sh_L(tm, td) = L(m, d);
+    },
+
+    // Lambda<1> : Load psi into shmem
+    [=] (ID d, IG g, IZ z,
+         shmem_psi_t& sh_psi,
+         Index_type td, Index_type tg, Index_type tz)
+    {
+      sh_psi(td, tg, tz) = psi(d, g, z);
+    },
+
+    // Lambda<2> : Load phi into shmem
+    [=] (IM m, IG g, IZ z,
+         shmem_phi_t& sh_phi,
+         Index_type tm, Index_type tg, Index_type tz)
+    {
+      sh_phi(tm, tg, tz) = phi(m, g, z);
+    },
+
+    // Lambda<3> : Compute phi in shmem
+    [=] (shmem_L_t& sh_L, shmem_psi_t& sh_psi, shmem_phi_t& sh_phi,
+        Index_type tm, Index_type td, Index_type tg, Index_type tz)
+    {
+      sh_phi(tm, tg, tz) += sh_L(tm, td) * sh_psi(td, tg, tz);
+    },
+
+    // Lambda<4> : Store phi
+    [=] (IM m, IG g, IZ z,
+         shmem_phi_t& sh_phi,
+         Index_type tm, Index_type tg, Index_type tz)
+    {
+      phi(m, g, z) = sh_phi(tm, tg, tz);
+    }
+
+  );
+
+  timer.stop();
+  std::cout << "  RAJA sequential shmem ARGS version of LTimes run time (sec.): "
+            << timer.elapsed() << std::endl;
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+}
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)

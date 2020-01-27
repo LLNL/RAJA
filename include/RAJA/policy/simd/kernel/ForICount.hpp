@@ -64,14 +64,12 @@ struct StatementExecutor<
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
-      auto offsets = data.offset_tuple;
-      auto params = data.param_tuple;
-      Invoke_all_Lambda<0, Types, EnclosedStmts...>::lambda_special(
-          camp::idx_seq_from_t<decltype(offsets)>{},
-          camp::idx_seq_from_t<decltype(params)>{},
-          data,
-          offsets,
-          params);
+      // Privatize data for SIMD correctness reasons
+      using RAJA::internal::thread_privatize;
+      auto privatizer = thread_privatize(data);
+      auto& private_data = privatizer.get_priv();
+
+      Invoke_all_Lambda<Types, EnclosedStmts...>::lambda_special(private_data);
     }
   }
 };

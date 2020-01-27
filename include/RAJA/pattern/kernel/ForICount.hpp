@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
 
 namespace RAJA
 {
