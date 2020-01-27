@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <numeric>
-#include <random>
 #include <tuple>
 #include <type_traits>
 
@@ -64,7 +63,6 @@ struct Scan : public ::testing::Test {
   {
     data = new data_type[N];
     std::iota(data, data + N, 1);
-    std::shuffle(data, data + N, std::mt19937{std::random_device{}()});
   }
 
   static void TearDownTestCase() { delete[] data; }

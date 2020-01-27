@@ -60,9 +60,10 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
   }
 
 // thread_limit(tperteam) unused due to XL seg fault (when tperteam != distance)
+  auto i = distance_it;
 #pragma omp target teams distribute parallel for num_teams(numteams) \
-    schedule(static, 1) map(to : body)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    schedule(static, 1) firstprivate(body,begin_it)
+  for (i = 0; i < distance_it; ++i) {
     Body ib = body;
     ib(begin_it[i]);
   }
