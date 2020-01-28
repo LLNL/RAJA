@@ -342,7 +342,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 //----------------------------------------------------------------------------//
-
+#if 0
 {
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
@@ -545,7 +545,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
-
+#endif
 //----------------------------------------------------------------------------//
 
 {
@@ -663,21 +663,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using shmem_L_t = RAJA::TypedLocalArray<double,
                         RAJA::PERM_JI,
                         RAJA::SizeList<tile_m, tile_d>,
-                        Index_type, Index_type>;
+                        IM, ID>;
   shmem_L_t shmem_L;
 
 
   using shmem_psi_t = RAJA::TypedLocalArray<double,
                         RAJA::PERM_IJK,
                         RAJA::SizeList<tile_d, tile_g, tile_z>,
-                        Index_type, Index_type, Index_type>;
+                        ID, IG, IZ>;
   shmem_psi_t shmem_psi;
 
 
   using shmem_phi_t = RAJA::TypedLocalArray<double,
                         RAJA::PERM_IJK,
                         RAJA::SizeList<tile_m, tile_g, tile_z>,
-                        Index_type, Index_type, Index_type>;
+                        IM, IG, IZ>;
   shmem_phi_t shmem_phi;
 
 
@@ -700,7 +700,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Lambda<0> : Load L into shmem
     [=] (IM m, ID d,
          shmem_L_t& sh_L,
-         Index_type tm, Index_type td)
+         IM tm, ID td)
     {
       sh_L(tm, td) = L(m, d);
     },
@@ -708,7 +708,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Lambda<1> : Load psi into shmem
     [=] (ID d, IG g, IZ z,
          shmem_psi_t& sh_psi,
-         Index_type td, Index_type tg, Index_type tz)
+         ID td, IG tg, IZ tz)
     {
       sh_psi(td, tg, tz) = psi(d, g, z);
     },
@@ -716,14 +716,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Lambda<2> : Load phi into shmem
     [=] (IM m, IG g, IZ z,
          shmem_phi_t& sh_phi,
-         Index_type tm, Index_type tg, Index_type tz)
+         IM tm, IG tg, IZ tz)
     {
       sh_phi(tm, tg, tz) = phi(m, g, z);
     },
 
     // Lambda<3> : Compute phi in shmem
     [=] (shmem_L_t& sh_L, shmem_psi_t& sh_psi, shmem_phi_t& sh_phi,
-        Index_type tm, Index_type td, Index_type tg, Index_type tz)
+        IM tm, ID td, IG tg, IZ tz)
     {
       sh_phi(tm, tg, tz) += sh_L(tm, td) * sh_psi(td, tg, tz);
     },
@@ -731,7 +731,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Lambda<4> : Store phi
     [=] (IM m, IG g, IZ z,
          shmem_phi_t& sh_phi,
-         Index_type tm, Index_type tg, Index_type tz)
+         IM tm, IG tg, IZ tz)
     {
       phi(m, g, z) = sh_phi(tm, tg, tz);
     }

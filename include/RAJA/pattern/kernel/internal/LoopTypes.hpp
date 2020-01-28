@@ -29,25 +29,82 @@ namespace RAJA
 namespace internal
 {
 
+template <typename T, camp::idx_t>
+struct SeqToType
+{
+  using type = T;
+};
 
-template <typename ArgTypes,
+template <typename T, typename SEQ>
+struct ListOfNTypesHelper;
+
+template <typename T, camp::idx_t ... SEQ>
+struct ListOfNTypesHelper<T, camp::idx_seq<SEQ...> >
+{
+  using type = camp::list<typename SeqToType<T, SEQ>::type...>;
+};
+
+template <typename T, camp::idx_t N>
+using listOfNTypes = typename ListOfNTypesHelper<T, camp::make_idx_seq_t<N>>::type;
+
+
+template <typename SegmentTypes,
           typename OffsetTypes>
 struct LoopTypes;
 
-template <typename ... ArgTypes,
+template <typename ... SegmentTypes,
           typename ... OffsetTypes>
-struct LoopTypes<camp::list<ArgTypes...>, camp::list<OffsetTypes...>> {
+struct LoopTypes<camp::list<SegmentTypes...>, camp::list<OffsetTypes...>> {
 
-  using Self = LoopTypes<camp::list<ArgTypes...>, camp::list<OffsetTypes...>>;
+  using Self = LoopTypes<camp::list<SegmentTypes...>, camp::list<OffsetTypes...>>;
 
+  static constexpr size_t s_num_segments = sizeof...(SegmentTypes);
 
-  using arg_types_t = camp::list<ArgTypes...>;
+  // This ensures that you don't double-loop over a segment within the same
+  // loop nesting
+  static_assert(s_num_segments == sizeof...(OffsetTypes),
+      "Number of segments and offsets must match");
+
+  using segment_types_t = camp::list<SegmentTypes...>;
   using offset_types_t = camp::list<OffsetTypes...>;
 };
 
 
 template<typename Data>
-using makeInitialLoopTypes = LoopTypes<camp::list<>, camp::list<>>;
+using makeInitialLoopTypes =
+    LoopTypes<listOfNTypes<void, camp::tuple_size<typename Data::segment_tuple_t>::value>,
+              listOfNTypes<void, camp::tuple_size<typename Data::segment_tuple_t>::value>>;
+
+
+template<typename Types, camp::idx_t Segment, typename T, typename Seq>
+struct SetSegmentTypeHelper;
+
+template<typename Types,
+         camp::idx_t Segment,
+         typename T,
+         camp::idx_t ... SEQ>
+struct SetSegmentTypeHelper<Types, Segment, T, camp::idx_seq<SEQ...>>
+{
+    using segment_list = typename Types::segment_types_t;
+    using offset_list = typename Types::offset_types_t;
+
+    static_assert(std::is_same<camp::at_v<segment_list, Segment>, void>::value,
+        "Segment was already assigned: Probably looping over same segment in loop nest");
+
+    using type = LoopTypes<
+        camp::list<typename std::conditional<SEQ == Segment, T, camp::at_v<segment_list, SEQ>>::type...>,
+        camp::list<typename std::conditional<SEQ == Segment, T, camp::at_v<segment_list, SEQ>>::type...>>;
+
+};
+
+
+template<typename Types, camp::idx_t Segment, typename T>
+using setSegmentType =
+    typename SetSegmentTypeHelper<Types, Segment, T, camp::make_idx_seq_t<Types::s_num_segments>>::type;
+
+template<typename Types, camp::idx_t Segment, typename Data>
+using setSegmentTypeFromData =
+    setSegmentType<Types, Segment, camp::at_v<typename camp::decay<Data>::index_tuple_t::TList, Segment>>;
 
 
 }  // end namespace internal

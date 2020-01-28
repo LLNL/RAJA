@@ -55,9 +55,12 @@ struct StatementExecutor<statement::Collapse<loop_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, Arg0, Data>;
+
     // compute next-most inner loop Executor
     using next_loop_t = StatementExecutor<
-        statement::Collapse<loop_exec, ArgList<ArgRest...>, EnclosedStmts...>, Types>;
+        statement::Collapse<loop_exec, ArgList<ArgRest...>, EnclosedStmts...>, NewTypes>;
 
     auto len0 = segment_length<Arg0>(data);
 

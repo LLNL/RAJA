@@ -104,6 +104,9 @@ struct StatementExecutor<
   static RAJA_INLINE void exec(Data &&data)
   {
 
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
     auto iter = get<ArgumentId>(data.segment_tuple);
     auto begin = std::begin(iter);
     auto end = std::end(iter);
@@ -119,7 +122,7 @@ struct StatementExecutor<
       auto privatizer = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
 
-      Invoke_all_Lambda<Types, EnclosedStmts...>::lambda_special(private_data);
+      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
     }
   }
 };

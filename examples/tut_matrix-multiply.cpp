@@ -634,11 +634,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::loop_exec,
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>,  // dot = 0.0
+          RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,  // dot = 0.0
           RAJA::statement::For<2, RAJA::loop_exec,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
-          RAJA::statement::Lambda<2>   // set C(row, col) = dot
+          RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C(row, col) = dot
         >
       >
     >;
@@ -649,7 +649,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] (double& dot) {
        dot = 0.0;
     },
 
@@ -659,7 +659,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int /* k */, double& dot) {
+    [=] (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -738,11 +738,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
-        RAJA::statement::Lambda<0>,  // dot = 0.0
+        RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,  // dot = 0.0
         RAJA::statement::For<2, RAJA::loop_exec,
           RAJA::statement::Lambda<1> // inner loop: dot += ...
         >,
-        RAJA::statement::Lambda<2>   // set C(row, col) = dot
+        RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C(row, col) = dot
       >
     >;
   // _matmult_3lambdakernel_ompcollapse_end
@@ -753,7 +753,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] (double& dot) {
        dot = 0.0;
     },
 
@@ -763,7 +763,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int /* k */, double& dot) {
+    [=] (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -787,11 +787,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-            RAJA::statement::Lambda<0>,   // dot = 0.0
+            RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
                 RAJA::statement::Lambda<1> // dot += ...
             >,
-            RAJA::statement::Lambda<2>   // set C = ...
+            RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C = ...
           >
         >
       >
@@ -804,7 +804,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (double& dot) {
        dot = 0.0;
     },
 
@@ -814,7 +814,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 

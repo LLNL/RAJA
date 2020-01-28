@@ -92,8 +92,11 @@ struct StatementExecutor<
   static RAJA_INLINE void exec(Data &&data)
   {
 
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
     // Create a wrapper, just in case forall_impl needs to thread_privatize
-    ForWrapper<ArgumentId, Data, Types, EnclosedStmts...> for_wrapper(data);
+    ForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);

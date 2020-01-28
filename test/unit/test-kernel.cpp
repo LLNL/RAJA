@@ -235,25 +235,6 @@ GPU_TYPED_TEST_P(Kernel, Basic)
   ASSERT_FLOAT_EQ(total, tsum.get());
 
 
-  total = 0.0;
-  tsum.reset(0.0);
-  auto iterSpace3 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
-                                     idy_list,
-                                     RAJA::TypedRangeSegment<Idx1>(0, 10));
-  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j, Idx1 k) {
-    Index_type id = get_val(i) * x_len + get_val(j);
-    idx_test[id] = get_val(i) * x_len + get_val(j) + get_val(k) - get_val(k);
-    tsum += get_val(i) * 1.1 + get_val(j);
-  });
-
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(idx_test[i * x_len + j], i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-
-  ASSERT_FLOAT_EQ(total, tsum.get());
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaFree(arr));
@@ -990,13 +971,12 @@ TEST(Kernel, FissionFusion)
 {
   using namespace RAJA;
 
-
   // Loop Fusion
-  using Pol_Fusion = KernelPolicy<For<0, seq_exec, Lambda<0>, Lambda<1>>>;
+  using Pol_Fusion = KernelPolicy<For<0, seq_exec, Lambda<0, Segs<0>>, Lambda<1, Segs<0>>>>;
 
   // Loop Fission
   using Pol_Fission =
-      KernelPolicy<For<0, seq_exec, Lambda<0>>, For<0, seq_exec, Lambda<1>>>;
+      KernelPolicy<For<0, seq_exec, Lambda<0, Segs<0>>>, For<0, seq_exec, Lambda<1, Segs<0>>>>;
 
 
   constexpr int N = 16;
@@ -1011,18 +991,18 @@ TEST(Kernel, FissionFusion)
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](int i, int) { x[i] += 1; },
+      [=](int i) { x[i] += 1; },
 
-      [=](int i, int) { x[i] += 2; });
+      [=](int i) { x[i] += 2; });
 
 
   kernel<Pol_Fusion>(
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](int i, int) { y[i] += 1; },
+      [=](int i) { y[i] += 1; },
 
-      [=](int i, int) { y[i] += 2; });
+      [=](int i) { y[i] += 2; });
 
   for (int i = 0; i < N; ++i) {
     ASSERT_EQ(x[i], y[i]);
@@ -1041,10 +1021,10 @@ TEST(Kernel, FissionFusion_Conditional)
   // Loop Fission if param == 1
 
   using Pol = KernelPolicy<
-      If<Equals<Param<0>, Value<0>>, For<0, seq_exec, Lambda<0>, Lambda<1>>>,
+      If<Equals<Param<0>, Value<0>>, For<0, seq_exec, Lambda<0, Segs<0>>, Lambda<1, Segs<0>>>>,
       If<Equals<Param<0>, Value<1>>,
-         For<0, seq_exec, Lambda<0>>,
-         For<0, seq_exec, Lambda<1>>>>;
+         For<0, seq_exec, Lambda<0, Segs<0>>>,
+         For<0, seq_exec, Lambda<1, Segs<0>>>>>;
 
 
   constexpr int N = 16;
@@ -1063,9 +1043,9 @@ TEST(Kernel, FissionFusion_Conditional)
 
         RAJA::make_tuple(param),
 
-        [=](int i, int, int) { x[i] += 1; },
+        [=](int i) { x[i] += 1; },
 
-        [=](int i, int, int) { x[i] += 2; });
+        [=](int i) { x[i] += 2; });
 
     for (int i = 0; i < N; ++i) {
       ASSERT_EQ(x[i], 3 + 3 * param);
@@ -1205,9 +1185,9 @@ TEST(Kernel, Tile)
       statement::Tile<1,
                       statement::tile_fixed<4>,
                       seq_exec,
-                      For<0, seq_exec, For<1, seq_exec, Lambda<0>>>,
-                      For<0, seq_exec, For<1, seq_exec, Lambda<0>>>>,
-      For<1, seq_exec, Lambda<1>>>;
+                      For<0, seq_exec, For<1, seq_exec, Lambda<0, Segs<0>>>>,
+                      For<0, seq_exec, For<1, seq_exec, Lambda<0, Segs<0>>>>>,
+      For<1, seq_exec, Lambda<1, Segs<1>>>>;
 
 
   constexpr int N = 16;
@@ -1220,8 +1200,8 @@ TEST(Kernel, Tile)
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](RAJA::Index_type i, RAJA::Index_type) { x[i] += 1; },
-      [=](RAJA::Index_type, RAJA::Index_type j) { x[j] *= 10; });
+      [=](RAJA::Index_type i) { x[i] += 1; },
+      [=](RAJA::Index_type j) { x[j] *= 10; });
 
   for (int i = 0; i < N; ++i) {
     ASSERT_EQ(x[i], 320);

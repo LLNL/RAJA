@@ -120,6 +120,9 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     using idx_t =
         camp::tuple_element_t<HpArgumentId, typename data_t::offset_tuple_t>;
 
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, HpArgumentId, Data>;
+
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
     using kernel_policy = statement::Collapse<
@@ -128,7 +131,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
         HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
-    ForWrapper<HpArgumentId, Data, Types, kernel_policy> outer_wrapper(data);
+    ForWrapper<HpArgumentId, Data, NewTypes, kernel_policy> outer_wrapper(data);
 
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...

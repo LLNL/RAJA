@@ -669,6 +669,8 @@ INSTANTIATE_TYPED_TEST_SUITE_P(HIP, TypedLocalMem_gpu, HIPTypes);
 
 #endif
 
+
+
 template <typename NestedPolicy>
 class MatMultiply : public ::testing::Test
 {
@@ -681,151 +683,235 @@ TYPED_TEST_SUITE_P(MatMultiply);
 GPU_TYPED_TEST_P(MatMultiply, shmem)
 {
 
-  using Tile_size0 = at_v<TypeParam, 0>;
-  using Tile_size1 = at_v<TypeParam, 1>;
-  using Pol = at_v<TypeParam, 2>;
+  using Pol = typename TypeParam::exec_policy;
 
-  const int DIM = 2;
+  static constexpr size_t N = TypeParam::N;
+  static constexpr size_t M = TypeParam::M;
+  static constexpr size_t P = TypeParam::P;
 
   //Matrix A size: N x M
   //Matrix B size: M x P
   //Result C size: N x P
 
-  const int N = 150;
-  const int M = 25;
-  const int P = 95;
+  // Note: on CPU A==d_A, etc.
+  double *A, *d_A;
+  TypeParam::alloc_double(N*M, &A, &d_A);
 
-  const int inner_Dim0 = TILE_DIM;
-  const int inner_Dim1 = TILE_DIM;
+  double *B, *d_B;
+  TypeParam::alloc_double(M*P, &B, &d_B);
 
-  const int windowIter = (M-1)/TILE_DIM+1;
-  const int outer_Dim0 = (P-1)/TILE_DIM+1;
-  const int outer_Dim1 = (N-1)/TILE_DIM+1;
+  double *C, *d_C;
+  TypeParam::alloc_double(N*P, &C, &d_C);
 
-  double *A, *B, *C, *C_sol;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * N * M));
-  cudaErrchk(cudaMallocManaged(&B,  sizeof(double) * M * P));
-  cudaErrchk(cudaMallocManaged(&C,  sizeof(double) * N * P));
-  cudaErrchk(cudaMallocManaged(&C_sol,  sizeof(double) * N * P));
-#else
-  A  = new double[N * M];
-  B  = new double[M * P];
-  C  = new double[N * P];
-  C_sol  = new double[N * P];
-#endif
 
-  RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, M);
-  RAJA::View<double, RAJA::Layout<DIM>> Bview(B, M, P);
-  RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, P);
-  RAJA::View<double, RAJA::Layout<DIM>> C_solView(C_sol, N, P);
+  double *C_sol = new double[N*P];
 
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < M; ++col) {
-      Aview(row, col) = col;
-    }
-  }
+  RAJA::View<double, RAJA::Layout<2>> C_solView(C_sol, N, P);
 
-  for (int row = 0; row < M; ++row) {
-    for (int col = 0; col < P; ++col) {
-      Bview(row, col) = col;
-    }
-  }
-
-  for(int r=0; r<N; ++r){
-    for(int c=0; c<P; ++c){
-      int dot = 0.0;
-      for(int k=0; k<M; ++k){
-        dot += Aview(r,k)*Bview(k,c);
+  {
+    // Create solution using CPU bare loops
+    RAJA::View<double, RAJA::Layout<2>> Aview(A, N, M);
+    RAJA::View<double, RAJA::Layout<2>> Bview(B, M, P);
+    RAJA::View<double, RAJA::Layout<2>> Cview(C, N, P);
+    for (size_t row = 0; row < N; ++row) {
+      for (size_t col = 0; col < M; ++col) {
+        Aview(row, col) = ((double)col-row)/(N*M);
       }
-      C_solView(r,c) = dot;
+    }
+
+    for (size_t row = 0; row < M; ++row) {
+      for (size_t col = 0; col < P; ++col) {
+        Bview(row, col) = ((double)col+row)/(M*P);
+      }
+    }
+
+    for(size_t r=0; r<N; ++r){
+      for(size_t c=0; c<P; ++c){
+        double dot = 0.0;
+        for(size_t k=0; k<M; ++k){
+          dot += Aview(r,k)*Bview(k,c);
+        }
+        C_solView(r,c) = dot;
+        Cview(r,c) = 0;
+      }
     }
   }
 
+  // Copy A, B and C to the device (NOP on CPU)
+  TypeParam::copy_d2h(N*M, d_A, A);
+  TypeParam::copy_d2h(M*P, d_B, B);
+  TypeParam::copy_d2h(N*P, d_C, C);
 
-  using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, Tile_size0>;
-  using ThreadPriv = RAJA::LocalArray<double, RAJA::PERM_IJ, Tile_size1>;
+  // Create device views of data
+  RAJA::View<double, RAJA::Layout<2>> Aview(d_A, N, M);
+  RAJA::View<double, RAJA::Layout<2>> Bview(d_B, M, P);
+  RAJA::View<double, RAJA::Layout<2>> Cview(d_C, N, P);
+
+  using Shmem      = typename TypeParam::Shmem;
+  using ThreadPriv = typename TypeParam::ThreadPriv;
 
   Shmem aShared, bShared; //memory to be shared between threads
   ThreadPriv pVal; //iteration dependent data
 
-  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0,inner_Dim1),
-                                           RAJA::RangeSegment(0, windowIter),
-                                           RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
+  RAJA::kernel_param<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                                           RAJA::RangeSegment(0, M),
+                                           RAJA::RangeSegment(0, P)),
                           RAJA::make_tuple(aShared, bShared, pVal),
 
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &,  Shmem &, ThreadPriv &pVal) {
+  // Zero out thread local memory for storing dot products
+  [=] RAJA_HOST_DEVICE (int tn, int tp, ThreadPriv &pVal) {
 
-   pVal(ty,tx) = 0.0;
-
-  },
-
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int i, int bx, int by, Shmem &aShared,  Shmem &bShared, ThreadPriv &) {
-
-   int row = by * TILE_DIM + ty;  // Matrix row index
-   int col = bx * TILE_DIM + tx;  // Matrix column index
-
-
-   //Load a tile of A
-   if( row < N && ((i*TILE_DIM + tx) < M) ){
-     aShared(ty,tx) = Aview(row, (i*TILE_DIM+tx)); //A[row*M + i*TILE_DIM + tx];
-   }else{
-     aShared(ty,tx) = 0.0;
-   }
-
-   //Load a tile of B
-   if( col < P && ((i*TILE_DIM + ty) < M) ){
-     bShared(ty, tx) = Bview((i*TILE_DIM + ty), col);
-   }else{
-     bShared(ty, tx) = 0.0;
-   }
+    pVal(tn,tp) = 0.0;
 
   },
 
-  //read from shared mem
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int , Shmem &aShared,  Shmem &bShared, ThreadPriv & pVal) {
+  // Load tile of A
+  [=] RAJA_HOST_DEVICE (int n, int m, int tn, int tm, Shmem &aShared) {
 
-    //Matrix multiply
-    for(int j=0; j<TILE_DIM; j++){
-      pVal(ty,tx) += aShared(ty,j) * bShared(j, tx);
-    }
+     aShared(tn, tm) = Aview(n, m);
 
   },
 
- //If in range write out
- [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx, int by, Shmem &, Shmem &, ThreadPriv &pValue) {
+  // Load tile of B
+  [=] RAJA_HOST_DEVICE (int m, int p, int tm, int tp, Shmem &bShared) {
 
-   int row = by * TILE_DIM + ty;  // Matrix row index
-   int col = bx * TILE_DIM + tx;  // Matrix column index
+    bShared(tm, tp) = Bview(m, p);
 
-   if(row < N && col < P){
-     Cview(row,col) = pValue(ty,tx);
-    }
+  },
+
+  // Do partial update in shmem
+  [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, ThreadPriv & pVal) {
+
+    pVal(tn,tp) += aShared(tn,tm) * bShared(tm, tp);
+
+  },
+
+  // Write out complete result
+  [=] RAJA_HOST_DEVICE (int n, int p, int tn, int tp,  ThreadPriv &pVal) {
+
+    Cview(n,p) = pVal(tn,tp);
 
   });
 
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < P; ++col) {
-      ASSERT_FLOAT_EQ(Cview(row,col), C_solView(row,col));
+  // copy result back to host (NOP on CPU)
+  TypeParam::copy_d2h(N*P, C, d_C);
+
+  // Check result
+  RAJA::View<double, RAJA::Layout<2>> Cresult(C, N, P);
+  for (size_t row = 0; row < N; ++row) {
+    for (size_t col = 0; col < P; ++col) {
+      ASSERT_FLOAT_EQ(Cresult(row,col), C_solView(row,col));
     }
   }
 
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(A));
-  cudaErrchk(cudaFree(B));
-  cudaErrchk(cudaFree(C));
-  cudaErrchk(cudaFree(C_sol));
-#else
-  delete [] A;
-  delete [] B;
-  delete [] C;
+  TypeParam::free_double(A, d_A);
+  TypeParam::free_double(B, d_B);
+  TypeParam::free_double(C, d_C);
   delete [] C_sol;
-#endif
-
 }
 
 REGISTER_TYPED_TEST_SUITE_P(MatMultiply, shmem);
+
+void alloc_cpu(size_t N, double **host, double **device){
+  *host = new double[N];
+  *device = *host;
+}
+
+void copy_h2d_cpu(size_t , double *, double *){
+  // NOP
+}
+
+void copy_d2h_cpu(size_t , double *, double *){
+  // NOP
+}
+
+void free_cpu(double *host, double *){
+  delete[] host;
+}
+
+struct Policy_MatMultiply_cpu {
+
+    static constexpr size_t N = 150;
+    static constexpr size_t M = 25;
+    static constexpr size_t P = 95;
+    static constexpr size_t tile_size = 16;
+
+    constexpr static void(*alloc_double)(size_t, double**, double**) = alloc_cpu;
+    constexpr static void(*copy_h2d)(size_t, double*, double*) = copy_h2d_cpu;
+    constexpr static void(*copy_d2h)(size_t, double*, double*) = copy_d2h_cpu;
+    constexpr static void(*free_double)(double*, double*) = free_cpu;
+
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
+    using ThreadPriv = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
+
+    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
+    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::statement::Segs<0, 1>, RAJA::statement::Offsets<0, 1>, RAJA::statement::Params<0>>;
+    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::statement::Segs<1, 2>, RAJA::statement::Offsets<1, 2>, RAJA::statement::Params<1>>;
+    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::statement::Offsets<0, 1, 2>, RAJA::statement::Params<0, 1, 2>>;
+    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::statement::Segs<0, 2>, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
+
+    // Segments:
+    // 0: N
+    // 1: M
+    // 2: P
+
+    using exec_policy =
+        RAJA::KernelPolicy<
+          //Initalize thread private value
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
+
+            // Tile of N and P (the result matrix C)
+            RAJA::statement::Tile<0, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
+              RAJA::statement::Tile<2, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
+
+               // zero out shmem tile of C
+               RAJA::statement::For<2, RAJA::loop_exec,
+                  RAJA::statement::For<0, RAJA::loop_exec,
+                  shmem_Lambda0 > >,
+
+                // Slide window across matrix: Tile in M
+                RAJA::statement::Tile<1, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
+
+                   // Load tile of A into shmem
+                   RAJA::statement::For<1, RAJA::loop_exec,
+                     RAJA::statement::For<0, RAJA::loop_exec,
+                     shmem_Lambda1
+                    >
+                   >,
+
+                   // Load tile of B into shmem
+                   RAJA::statement::For<2, RAJA::loop_exec,
+                     RAJA::statement::For<1, RAJA::loop_exec,
+                     shmem_Lambda2
+                    >
+                   >,
+
+                   //Partial multiplication
+                   RAJA::statement::For<2, RAJA::loop_exec,
+                     RAJA::statement::For<1, RAJA::loop_exec,
+                       RAJA::statement::For<0, RAJA::loop_exec,
+                       shmem_Lambda3
+                       >
+                     >
+                   >
+                >, //sliding window
+
+                //Write memory out to global matrix
+                RAJA::statement::For<2, RAJA::loop_exec,
+                  RAJA::statement::For<0, RAJA::loop_exec,
+                  shmem_Lambda4 > >
+             >
+            >
+           > //Create shared memory
+          >;
+};
+
+using MatMultiplyTypes = ::testing::Types<Policy_MatMultiply_cpu>;
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiply, MatMultiplyTypes);
+
+
+#if 0
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -1079,7 +1165,7 @@ GPU_TYPED_TEST_P(MatMultiplyScalar, shmem)
                                            RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0,outer_Dim1)),
                           RAJA::make_tuple(aShared, bShared, 0.0),
 
-  [=] RAJA_HOST_DEVICE (int, int, int, int, int, Shmem &,  Shmem &, double & pVal) {
+  [=] RAJA_HOST_DEVICE (double & pVal) {
 
    pVal = 0.0;
 
@@ -1108,7 +1194,7 @@ GPU_TYPED_TEST_P(MatMultiplyScalar, shmem)
   },
 
   //read from shared mem
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int , int, Shmem &aShared,  Shmem &bShared, double & pVal) {
+  [=] RAJA_HOST_DEVICE (int tx, int ty, Shmem &aShared,  Shmem &bShared, double & pVal) {
 
     //Matrix multiply
     for(int j=0; j<TILE_DIM; j++){
@@ -1118,7 +1204,7 @@ GPU_TYPED_TEST_P(MatMultiplyScalar, shmem)
   },
 
   //write out solution
-  [=] RAJA_HOST_DEVICE (int tx, int ty, int , int bx , int by, Shmem &,  Shmem &, double & pVal) {
+  [=] RAJA_HOST_DEVICE (int tx, int ty, int bx , int by, double & pVal) {
 
     int row = by * TILE_DIM + ty;  // Matrix row index
     int col = bx * TILE_DIM + tx;  // Matrix column index
@@ -1314,6 +1400,10 @@ REGISTER_TYPED_TEST_SUITE_P(MatMultiplyScalar_gpu, shmem);
 
 #endif //defined(RAJA_ENABLE_HIP)
 
+using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<2>>;
+using shmem_Lambda1 = RAJA::statement::Lambda<1>;
+using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0,1,2>>;
+using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::statement::Segs<0, 1, 3, 4>, RAJA::statement::Params<2>>;
 using SeqTypes2 =
   ::testing::Types<
   RAJA::list<
@@ -1327,7 +1417,7 @@ using SeqTypes2 =
             //Initalize thread private value
            RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                                   RAJA::statement::Lambda<0> > >,
+              shmem_Lambda0 > >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::loop_exec,
@@ -1335,13 +1425,13 @@ using SeqTypes2 =
                //Load matrix into tile
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<1>
+                 shmem_Lambda1
                 >
                >,
                //Partial multiplication
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<2>
+                 shmem_Lambda2
                 >
                >
             >, //sliding window
@@ -1349,7 +1439,7 @@ using SeqTypes2 =
             //Write memory out to global matrix
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                                   RAJA::statement::Lambda<3> > >
+              shmem_Lambda3 > >
          > //Create shared memory
         >//For 3
        >//For 4
@@ -1369,15 +1459,15 @@ using SeqTypes2 =
                //Load matrix into tile
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                                      RAJA::statement::Lambda<1>
+                 shmem_Lambda1
                 >
                >,
                //Partial multiplication
                RAJA::statement::For<1, RAJA::loop_exec,
                  RAJA::statement::For<0, RAJA::loop_exec,
-                  RAJA::statement::Lambda<0>, //set pVal = 0
-                  RAJA::statement::Lambda<2>, //dot product
-                  RAJA::statement::Lambda<3> //write partial product out
+                 shmem_Lambda0, //set pVal = 0
+                 shmem_Lambda2, //dot product
+                 shmem_Lambda3 //write partial product out
                 >
                >
             > //sliding window
@@ -1390,9 +1480,15 @@ using SeqTypes2 =
   >;//close types
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiply, SeqTypes2);
-INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiplyScalar, SeqTypes2);
+//INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiplyScalar, SeqTypes2);
 
 #if defined(RAJA_ENABLE_OPENMP)
+
+using omp_shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::statement::Params<2>>;
+using omp_shmem_Lambda1 = RAJA::statement::Lambda<1>;
+using omp_shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0,1,2>>;
+using omp_shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::statement::Segs<0, 1, 3, 4>, RAJA::statement::Params<2>>;
+
 using OmpTypes2 =
   ::testing::Types<
   RAJA::list<
@@ -1405,7 +1501,7 @@ using OmpTypes2 =
             //Initalize thread private value
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                                   RAJA::statement::Lambda<0> > >,
+              omp_shmem_Lambda0 > >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::loop_exec,
@@ -1413,20 +1509,20 @@ using OmpTypes2 =
                //Load matrix into tile
                RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<1>
+                                     omp_shmem_Lambda1
                                      >,
 
              //perform matrix multiplcation
              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                       RAJA::ArgList<0, 1>,
-                                      RAJA::statement::Lambda<2>
+                                      omp_shmem_Lambda2
                                       >
             >, //sliding window
 
             //Write memory out to global matrix
             RAJA::statement::For<1, RAJA::loop_exec,
               RAJA::statement::For<0, RAJA::loop_exec,
-                                   RAJA::statement::Lambda<3> > >
+              omp_shmem_Lambda3 > >
          > //Create shared memory
         >//For 3
        >//For 4
@@ -1443,15 +1539,15 @@ using OmpTypes2 =
                //Load matrix into tile
                RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                      RAJA::ArgList<0, 1>,
-                                     RAJA::statement::Lambda<1>
+                                     omp_shmem_Lambda1
                                      >,
 
              //perform matrix multiplcation
              RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                       RAJA::ArgList<0, 1>,
-                                       RAJA::statement::Lambda<0>,
-                                       RAJA::statement::Lambda<2>,
-                                       RAJA::statement::Lambda<3>
+                                      omp_shmem_Lambda0,
+                                      omp_shmem_Lambda2,
+                                      omp_shmem_Lambda3
                                       >
             > //sliding window
 
@@ -1734,4 +1830,5 @@ using HipTypes3 =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmemPriv, MatMultiply_gpu, HipTypes3);
 
+#endif
 #endif
