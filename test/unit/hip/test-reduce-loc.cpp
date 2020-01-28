@@ -170,8 +170,7 @@ double* ReduceHIPUnitTest<Reducer>::dvalue = nullptr;
 template <typename Reducer>
 double* ReduceHIPUnitTest<Reducer>::d_dvalue = nullptr;
 
-
-TYPED_TEST_CASE_P(ReduceHIPUnitTest);
+TYPED_TEST_SUITE_P(ReduceHIPUnitTest);
 
 GPU_TYPED_TEST_P(ReduceHIPUnitTest, generic)
 {
@@ -331,7 +330,7 @@ GPU_TYPED_TEST_P(ReduceHIPUnitTest, indexset_noalign)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReduceHIPUnitTest,
+REGISTER_TYPED_TEST_SUITE_P(ReduceHIPUnitTest,
                            generic,
                            indexset_align,
                            indexset_noalign);

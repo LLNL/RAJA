@@ -46,6 +46,6 @@ using integer_types = ::testing::Types<char,
                                        long long,
                                        unsigned long long>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsUnitTests,
+INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsUnitTests,
                               IntegralLimitsUnitTest,
                               integer_types);

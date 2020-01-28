@@ -72,7 +72,7 @@ typename Info<Tuple>::data_type* ScanHIPUnitTest<Tuple>::data = nullptr;
 template <typename Tuple>
 typename Info<Tuple>::data_type* ScanHIPUnitTest<Tuple>::d_data = nullptr;
 
-TYPED_TEST_CASE_P(ScanHIPUnitTest);
+TYPED_TEST_SUITE_P(ScanHIPUnitTest);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -262,7 +262,7 @@ GPU_TYPED_TEST_P(ScanHIPUnitTest, exclusive_inplace_offset)
   hipFree(d_data);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ScanHIPUnitTest,
+REGISTER_TYPED_TEST_SUITE_P(ScanHIPUnitTest,
                            inclusive,
                            inclusive_inplace,
                            exclusive,
