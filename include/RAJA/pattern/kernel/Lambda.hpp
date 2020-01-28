@@ -37,17 +37,17 @@ namespace RAJA
 
 namespace internal
 {
-struct lambdaarg_seg_t
+struct lambda_arg_seg_t
 {};
 
-struct lambdaarg_param_t
+struct lambda_arg_param_t
 {};
 
-struct lambdaarg_offset_t
+struct lambda_arg_offset_t
 {};
 
 template<typename T>
-struct lambdaarg_value_t
+struct lambda_arg_value_t
 {
     using type = T;
 };
@@ -64,16 +64,16 @@ namespace statement
 
 
 template<camp::idx_t ... args>
-using Segs = camp::list<internal::LambdaArg<internal::lambdaarg_seg_t, args>...>;
+using Segs = camp::list<internal::LambdaArg<internal::lambda_arg_seg_t, args>...>;
 
 template<camp::idx_t ... args>
-using Offsets = camp::list<internal::LambdaArg<internal::lambdaarg_offset_t, args>...>;
+using Offsets = camp::list<internal::LambdaArg<internal::lambda_arg_offset_t, args>...>;
 
 template<camp::idx_t ... args>
-using Params = camp::list<internal::LambdaArg<internal::lambdaarg_param_t, args>...>;
+using Params = camp::list<internal::LambdaArg<internal::lambda_arg_param_t, args>...>;
 
 template<typename T, camp::idx_t ... values>
-using ValuesT = camp::list<internal::LambdaArg<internal::lambdaarg_value_t<T>, values>...>;
+using ValuesT = camp::list<internal::LambdaArg<internal::lambda_arg_value_t<T>, values>...>;
 
 /*!
  * A RAJA::kernel statement that invokes a lambda function.
@@ -155,7 +155,7 @@ template<typename Types, typename T>
 struct LambdaArgExtractor;
 
 template<typename Types, camp::idx_t id>
-struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_offset_t, id>>
+struct LambdaArgExtractor<Types, LambdaArg<lambda_arg_offset_t, id>>
 {
 
   // extract offset value type from LoopTypes
@@ -176,7 +176,7 @@ struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_offset_t, id>>
 };
 
 template<typename Types, camp::idx_t id>
-struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_seg_t, id>>
+struct LambdaArgExtractor<Types, LambdaArg<lambda_arg_seg_t, id>>
 {
 
   // extract segment value type from LoopTypes
@@ -197,7 +197,7 @@ struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_seg_t, id>>
 };
 
 template<typename Types, camp::idx_t id>
-struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_param_t, id>>
+struct LambdaArgExtractor<Types, LambdaArg<lambda_arg_param_t, id>>
 {
   template<typename Data>
   RAJA_HOST_DEVICE
@@ -212,7 +212,7 @@ struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_param_t, id>>
 
 
 template<typename Types, typename T, camp::idx_t value>
-struct LambdaArgExtractor<Types, LambdaArg<lambdaarg_value_t<T>, value>>
+struct LambdaArgExtractor<Types, LambdaArg<lambda_arg_value_t<T>, value>>
 {
   template<typename Data>
   RAJA_HOST_DEVICE
