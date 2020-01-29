@@ -1744,7 +1744,7 @@ TEST(Kernel, ReduceSeqSum)
       RAJA::statement::For<0, seq_exec,
         Lambda<0>,
         RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >
      >;
@@ -1760,7 +1760,7 @@ TEST(Kernel, ReduceSeqSum)
       [=](Index_type i, int &value) {
         value = data[i];
       },
-      [=](Index_type, int &value) {
+      [=](int &value) {
         (*sumPtr) += value;
       });
 
@@ -1783,7 +1783,7 @@ GPU_TEST(Kernel, ReduceCudaSum1)
       KernelPolicy<CudaKernel<
         For<0, cuda_thread_x_loop, Lambda<0>>,
         RAJA::statement::Reduce<cuda_block_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -1797,7 +1797,7 @@ GPU_TEST(Kernel, ReduceCudaSum1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         trip_count += value;
@@ -2078,7 +2078,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop1)
       KernelPolicy<CudaKernel<
         For<0, cuda_warp_loop, Lambda<0>>,
         RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -2093,7 +2093,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -2119,7 +2119,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop2)
           For<0, cuda_warp_loop, Lambda<0>>
         >,
         RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -2135,7 +2135,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop2)
       [=] __device__ (Index_type i, Index_type j, long &value) {
         value += i + j*N;
       },
-      [=] __device__ (Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -2165,7 +2165,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop3)
           >,
           RAJA::statement::CudaSyncWarp,
           RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-            Lambda<1>
+            Lambda<1, Params<0>>
           >
         >
       >>;
@@ -2182,7 +2182,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop3)
       [=] __device__ (Index_type i, Index_type j, Index_type k, long &value) {
         value = i + j*N + k*N*M;
       },
-      [=] __device__ (Index_type, Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         total_count += value;
@@ -2572,7 +2572,7 @@ GPU_TEST(Kernel, CudaComplexNested)
   using Pol = KernelPolicy<CudaKernel<
       For<0, cuda_block_x_loop,
           For<1, cuda_thread_x_loop, For<2, cuda_thread_y_loop, Lambda<0>>>,
-          For<2, cuda_thread_x_loop, Lambda<0>>>>>;
+          For<2, cuda_thread_x_loop, Lambda<0, Segs<0>, ValuesT<Index_type, 0>, Segs<2>>>>>>;
 
   int *ptr = nullptr;
   cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N));

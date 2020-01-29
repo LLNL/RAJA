@@ -195,13 +195,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //          is reached in the kernel policy using the specified local
   //          memory policy.
 
-  TILE_MEM RAJA_Tile;
+
 
 //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
 #if 0
+
+  TILE_MEM RAJA_Tile;
+
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
       // Fill in sequential outer loop tiling execution statements....

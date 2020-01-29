@@ -41,60 +41,6 @@ namespace RAJA
 {
 
 
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads.
- * This does no (additional) work-sharing between thread blocks.
- */
-
-struct cuda_thread_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                              RAJA::Policy::cuda,
-                              RAJA::Pattern::forall,
-                              RAJA::Launch::undefined,
-                              RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing iterations
- * exclusively over blocks.
- */
-
-struct cuda_block_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                             RAJA::Policy::cuda,
-                             RAJA::Pattern::forall,
-                             RAJA::Launch::undefined,
-                             RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing work over
- * physical blocks and executing sequentially within blocks.
- */
-
-template <size_t num_blocks>
-struct cuda_block_seq_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                                 RAJA::Policy::cuda,
-                                 RAJA::Pattern::forall,
-                                 RAJA::Launch::undefined,
-                                 RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads
- * and blocks, but limiting the number of threads to num_threads.
- */
-template <size_t num_threads>
-struct cuda_threadblock_exec
-    : public RAJA::make_policy_pattern_launch_platform_t<
-          RAJA::Policy::cuda,
-          RAJA::Pattern::forall,
-          RAJA::Launch::undefined,
-          RAJA::Platform::cuda> {
-};
-
-
 namespace internal
 {
 
@@ -363,18 +309,18 @@ struct CudaStatementListExecutorHelper<num_stmts, num_stmts, StmtList> {
 };
 
 
-template <typename Data, typename Policy>
+template <typename Data, typename Policy, typename Types>
 struct CudaStatementExecutor;
 
-template <typename Data, typename StmtList>
+template <typename Data, typename StmtList, typename Types>
 struct CudaStatementListExecutor;
 
 
-template <typename Data, typename... Stmts>
-struct CudaStatementListExecutor<Data, StatementList<Stmts...>> {
+template <typename Data, typename... Stmts, typename Types>
+struct CudaStatementListExecutor<Data, StatementList<Stmts...>, Types> {
 
   using enclosed_stmts_t =
-      camp::list<CudaStatementExecutor<Data, Stmts>...>;
+      camp::list<CudaStatementExecutor<Data, Stmts, Types>...>;
 
   static constexpr size_t num_stmts = sizeof...(Stmts);
 
@@ -400,10 +346,11 @@ struct CudaStatementListExecutor<Data, StatementList<Stmts...>> {
 };
 
 
-template <typename StmtList, typename Data>
+template <typename StmtList, typename Data, typename Types>
 using cuda_statement_list_executor_t = CudaStatementListExecutor<
     Data,
-    StmtList>;
+    StmtList,
+    Types>;
 
 
 

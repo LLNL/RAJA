@@ -141,7 +141,7 @@ template <camp::idx_t LambdaIndex, typename Types>
 struct StatementExecutor<statement::Lambda<LambdaIndex>, Types> {
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(Data &&data)
   {
     invoke_lambda<LambdaIndex, Types>(std::forward<Data>(data));
   }
@@ -245,7 +245,7 @@ template <camp::idx_t LambdaIndex,typename... Args, typename Types>
 struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types> {
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(Data &&data)
   {
 
     //Convert SegList, ParamList into Seg, Param types, and store in a list

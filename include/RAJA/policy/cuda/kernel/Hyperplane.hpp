@@ -39,15 +39,21 @@ namespace internal
 template <typename Data,
           camp::idx_t HpArgumentId,
           camp::idx_t... Args,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<Data,
                              statement::Hyperplane<HpArgumentId,
                                                    seq_exec,
                                                    ArgList<Args...>,
-                                                   EnclosedStmts...>> {
+                                                   EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, HpArgumentId, Data>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   static
   inline

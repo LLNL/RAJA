@@ -20,6 +20,8 @@
 
 #include "RAJA/config.hpp"
 
+#include <tuple>
+
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/internal/get_platform.hpp"
@@ -96,13 +98,13 @@ using policy::multi::MultiPolicy;
 
 namespace detail
 {
-template <camp::idx_t ... Indices, typename... Policies, typename Selector>
+template <camp::idx_t... Indices, typename... Policies, typename Selector>
 auto make_multi_policy(camp::idx_seq<Indices...>,
                        Selector s,
-                       camp::tuple<Policies...> policies)
+                       std::tuple<Policies...> policies)
     -> MultiPolicy<Selector, Policies...>
 {
-  return MultiPolicy<Selector, Policies...>(s, camp::get<Indices>(policies)...);
+  return MultiPolicy<Selector, Policies...>(s, std::get<Indices>(policies)...);
 }
 }  // namespace detail
 
@@ -130,7 +132,7 @@ auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 /// forall, must return an int in the set 0 to N-1 selecting the policy to use
 /// \return A MultiPolicy containing the given selector s
 template <typename... Policies, typename Selector>
-auto make_multi_policy(camp::tuple<Policies...> policies, Selector s)
+auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
   return detail::make_multi_policy(
