@@ -93,7 +93,7 @@ struct TypedRangeSegment {
    */
   using StripStorageT = strip_index_type_t<StorageT>;
   RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
-#if defined RAJA_ENABLE_CUDA
+#if defined RAJA_ENABLE_CUDA || defined(RAJA_ENABLE_HIP)
       : m_begin(iterator(begin)), 
         m_end(iterator(end))
 #else
