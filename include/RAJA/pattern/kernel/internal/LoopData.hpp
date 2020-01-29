@@ -22,7 +22,6 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 

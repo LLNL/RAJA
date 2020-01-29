@@ -22,9 +22,6 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-#include <cassert>
-#include <climits>
-
 #include "RAJA/pattern/detail/privatizer.hpp"
 
 #include "RAJA/pattern/kernel/Collapse.hpp"
@@ -35,7 +32,6 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 #if !defined(RAJA_COMPILER_MSVC)
 #define RAJA_COLLAPSE(X) collapse(X)

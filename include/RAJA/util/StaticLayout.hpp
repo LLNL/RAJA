@@ -26,7 +26,7 @@
 
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/internal/foldl.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
@@ -59,7 +59,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
 
   RAJA_INLINE static void print()
   {
-    VarOps::ignore_args(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
+    camp::sink(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
                                (int)RangeInts,
                                (int)Sizes,
                                (int)Strides)...);
@@ -78,7 +78,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
       Indices... indices) const
   {
     // dot product of strides and indices
-    return VarOps::sum<int>((indices * Strides)...);
+    return sum<int>((indices * Strides)...);
   }
 
 
@@ -86,7 +86,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr int s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return VarOps::sum<int>((indices * Strides)...);
+    return sum<int>((indices * Strides)...);
   }
 
 
@@ -100,13 +100,13 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
-    return VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
+    return foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
                          (Sizes == 0 ? 1 : Sizes)...);
   }
 
 
   static constexpr RAJA::Index_type s_size =
-      VarOps::foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
+      foldl(RAJA::operators::multiplies<RAJA::Index_type>(),
                     (Sizes == 0 ? 1 : Sizes)...);
 };
 

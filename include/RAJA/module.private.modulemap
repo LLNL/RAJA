@@ -2,7 +2,7 @@ explicit module RAJA.internal {
   header "internal/DepGraphNode.hpp"
   header "internal/fault_tolerance.hpp"
   header "internal/Iterators.hpp"
-  header "internal/LegacyCompatibility.hpp"
+  header "internal/foldl.hpp"
   header "internal/MemUtils_CPU.hpp"
   header "internal/RAJAVec.hpp"
   header "internal/Span.hpp"

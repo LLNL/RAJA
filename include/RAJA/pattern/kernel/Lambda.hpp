@@ -112,7 +112,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void invoke_lambda_expanded(
 
   // ensure that all segments have been set by a loop
   static_assert(
-      VarOps::foldl(RAJA::operators::bit_and<bool>(), (!std::is_same<camp::at_v<segment_types, OffsetIdx>, void>::value)...),
+      foldl(RAJA::operators::bit_and<bool>(), (!std::is_same<camp::at_v<segment_types, OffsetIdx>, void>::value)...),
       "Not all segments have been used in a loop:  Either add more loop statements, or use the Lambda<N, Args..> form");
 
 

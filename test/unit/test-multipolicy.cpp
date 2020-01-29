@@ -70,7 +70,7 @@ TEST(MultiPolicy, basic)
   RAJA::forall(mp, RAJA::RangeSegment(0, 5), mp_test_body{});
   RAJA::forall(mp, RAJA::RangeSegment(0, 101), mp_test_body{});
   // Nest a multipolicy to ensure value-based policies are preserved
-  auto mp2 = RAJA::make_multi_policy(std::make_tuple(mp_tag<3>{}, mp),
+  auto mp2 = RAJA::make_multi_policy(camp::make_tuple(mp_tag<3>{}, mp),
                                      [](const RAJA::RangeSegment &r) {
                                        if (r.size() > 10 && r.size() < 90) {
                                          return 0;

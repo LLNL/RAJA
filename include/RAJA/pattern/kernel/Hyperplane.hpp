@@ -136,7 +136,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
     idx_t hp_len = segment_length<HpArgumentId>(data) +
-                   VarOps::foldl(RAJA::operators::plus<idx_t>(),
+                   foldl(RAJA::operators::plus<idx_t>(),
                                  segment_length<Args>(data)...);
 
     /* Execute the outer loop over hyperplanes
@@ -170,7 +170,7 @@ struct StatementExecutor<
 
     // compute actual iterate for HpArgumentId
     // as:  i0 = h - (i1 + i2 + i3 + ...)
-    idx_t i = h - VarOps::foldl(RAJA::operators::plus<idx_t>(),
+    idx_t i = h - foldl(RAJA::operators::plus<idx_t>(),
                                 camp::get<Args>(data.offset_tuple)...);
 
     // get length of Hp indexed argument

@@ -57,10 +57,10 @@ struct HipStatementExecutor<Data,
     // compute Manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
     int hp_len = segment_length<HpArgumentId>(data) +
-                 VarOps::foldl(RAJA::operators::plus<int>(),
+                 foldl(RAJA::operators::plus<int>(),
                                segment_length<Args>(data)...);
 
-    int h_args = VarOps::foldl(RAJA::operators::plus<idx_t>(),
+    int h_args = foldl(RAJA::operators::plus<idx_t>(),
         camp::get<Args>(data.offset_tuple)...);
 
     // get length of i dimension

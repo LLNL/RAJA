@@ -38,8 +38,6 @@
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/policy/hip/kernel/internal.hpp"
 
 namespace RAJA

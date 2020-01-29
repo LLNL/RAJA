@@ -29,6 +29,10 @@ namespace RAJA
 namespace internal
 {
 
+namespace detail
+{
+// Helper class to convert a camp::idx_t into some type T
+// used in template expansion in ListOfNHelper
 template <typename T, camp::idx_t>
 struct SeqToType
 {
@@ -36,16 +40,17 @@ struct SeqToType
 };
 
 template <typename T, typename SEQ>
-struct ListOfNTypesHelper;
+struct ListOfNHelper;
 
 template <typename T, camp::idx_t ... SEQ>
-struct ListOfNTypesHelper<T, camp::idx_seq<SEQ...> >
+struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
 {
   using type = camp::list<typename SeqToType<T, SEQ>::type...>;
 };
+} // namespace detail
 
 template <typename T, camp::idx_t N>
-using listOfNTypes = typename ListOfNTypesHelper<T, camp::make_idx_seq_t<N>>::type;
+using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
 template <typename SegmentTypes,
@@ -72,8 +77,8 @@ struct LoopTypes<camp::list<SegmentTypes...>, camp::list<OffsetTypes...>> {
 
 template<typename Data>
 using makeInitialLoopTypes =
-    LoopTypes<listOfNTypes<void, camp::tuple_size<typename Data::segment_tuple_t>::value>,
-              listOfNTypes<void, camp::tuple_size<typename Data::segment_tuple_t>::value>>;
+    LoopTypes<list_of_n<void, camp::tuple_size<typename Data::segment_tuple_t>::value>,
+              list_of_n<void, camp::tuple_size<typename Data::segment_tuple_t>::value>>;
 
 
 template<typename Types, camp::idx_t Segment, typename T, typename Seq>
