@@ -49,6 +49,12 @@ struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
 };
 } // namespace detail
 
+/*
+ *  This creates a camp::list with N types, each one being T.
+ *
+ *  That is, list_of_n<T, 4>  ==  camp::list<T, T, T, T>
+ *
+ */
 template <typename T, camp::idx_t N>
 using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
