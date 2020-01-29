@@ -75,10 +75,10 @@ raja_conf="../host-configs/${SYS_TYPE}/${host_config}"
 module load cmake/3.9.2
 
 cmake \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} \
   -C ${compiler_conf} \
   -C ${raja_conf} \
-  -DENABLE_OPENMP=On \
+  -DENABLE_OPENMP=${ENABLE_OPENMP:-On} \
   -DCMAKE_INSTALL_PREFIX=${install_dir} \
   ..
 make -j 8
