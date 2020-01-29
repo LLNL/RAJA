@@ -39,7 +39,7 @@ class TypedLocalMem : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(TypedLocalMem);
+TYPED_TEST_SUITE_P(TypedLocalMem);
 
 GPU_TYPED_TEST_P(TypedLocalMem, Basic)
 {
@@ -124,7 +124,7 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(TypedLocalMem, Basic);
+REGISTER_TYPED_TEST_SUITE_P(TypedLocalMem, Basic);
 
 #if defined(RAJA_ENABLE_HIP)
 template <typename NestedPolicy>
@@ -134,7 +134,7 @@ class TypedLocalMem_gpu : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(TypedLocalMem_gpu);
+TYPED_TEST_SUITE_P(TypedLocalMem_gpu);
 
 GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 {
@@ -220,7 +220,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
   delete [] B;
 }
 
-REGISTER_TYPED_TEST_CASE_P(TypedLocalMem_gpu, Basic);
+REGISTER_TYPED_TEST_SUITE_P(TypedLocalMem_gpu, Basic);
 #endif //defined(RAJA_ENABLE_HIP)
 
 
@@ -234,7 +234,7 @@ class MatTranspose : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatTranspose);
+TYPED_TEST_SUITE_P(MatTranspose);
 
 GPU_TYPED_TEST_P(MatTranspose, Basic)
 {
@@ -336,7 +336,7 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatTranspose, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatTranspose, Basic);
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -347,7 +347,7 @@ class MatTranspose_gpu : public ::testing::Test
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
-TYPED_TEST_CASE_P(MatTranspose_gpu);
+TYPED_TEST_SUITE_P(MatTranspose_gpu);
 
 GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
 {
@@ -456,7 +456,7 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   delete [] Bt;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatTranspose_gpu, Basic);
+REGISTER_TYPED_TEST_SUITE_P(MatTranspose_gpu, Basic);
 
 #endif //defined(RAJA_ENABLE_HIP)
 
@@ -487,8 +487,8 @@ using SeqTypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatTranspose, SeqTypes);
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, TypedLocalMem, SeqTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatTranspose, SeqTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, TypedLocalMem, SeqTypes);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -595,8 +595,8 @@ using TestTypes =
    >;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatTranspose, TestTypes);
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, TypedLocalMem, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatTranspose, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, TypedLocalMem, TestTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -629,8 +629,8 @@ using CUDATypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(CUDA, MatTranspose, CUDATypes);
-INSTANTIATE_TYPED_TEST_CASE_P(CUDA, TypedLocalMem, CUDATypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, MatTranspose, CUDATypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, TypedLocalMem, CUDATypes);
 
 #endif
 
@@ -664,8 +664,8 @@ using HIPTypes =
       > //kernel policy
     > //list
   >; //types
-INSTANTIATE_TYPED_TEST_CASE_P(HIP, MatTranspose_gpu, HIPTypes);
-INSTANTIATE_TYPED_TEST_CASE_P(HIP, TypedLocalMem_gpu, HIPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIP, MatTranspose_gpu, HIPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIP, TypedLocalMem_gpu, HIPTypes);
 
 #endif
 
@@ -676,7 +676,7 @@ class MatMultiply : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiply);
+TYPED_TEST_SUITE_P(MatMultiply);
 
 GPU_TYPED_TEST_P(MatMultiply, shmem)
 {
@@ -825,7 +825,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
 
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiply, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiply, shmem);
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -836,7 +836,7 @@ class MatMultiply_gpu : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiply_gpu);
+TYPED_TEST_SUITE_P(MatMultiply_gpu);
 
 GPU_TYPED_TEST_P(MatMultiply_gpu, shmem)
 {
@@ -988,7 +988,7 @@ GPU_TYPED_TEST_P(MatMultiply_gpu, shmem)
   delete [] C_sol;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiply_gpu, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiply_gpu, shmem);
 
 #endif //defined(RAJA_ENABLE_HIP)
 
@@ -1004,7 +1004,7 @@ class MatMultiplyScalar : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiplyScalar);
+TYPED_TEST_SUITE_P(MatMultiplyScalar);
 
 GPU_TYPED_TEST_P(MatMultiplyScalar, shmem)
 {
@@ -1149,7 +1149,7 @@ GPU_TYPED_TEST_P(MatMultiplyScalar, shmem)
 
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiplyScalar, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiplyScalar, shmem);
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -1160,7 +1160,7 @@ class MatMultiplyScalar_gpu : public ::testing::Test
   virtual void TearDown(){}
 };
 
-TYPED_TEST_CASE_P(MatMultiplyScalar_gpu);
+TYPED_TEST_SUITE_P(MatMultiplyScalar_gpu);
 
 GPU_TYPED_TEST_P(MatMultiplyScalar_gpu, shmem)
 {
@@ -1310,7 +1310,7 @@ GPU_TYPED_TEST_P(MatMultiplyScalar_gpu, shmem)
   delete [] C_sol;
 }
 
-REGISTER_TYPED_TEST_CASE_P(MatMultiplyScalar_gpu, shmem);
+REGISTER_TYPED_TEST_SUITE_P(MatMultiplyScalar_gpu, shmem);
 
 #endif //defined(RAJA_ENABLE_HIP)
 
@@ -1389,8 +1389,8 @@ using SeqTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiply, SeqTypes2);
-INSTANTIATE_TYPED_TEST_CASE_P(Seq, MatMultiplyScalar, SeqTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiply, SeqTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(Seq, MatMultiplyScalar, SeqTypes2);
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpTypes2 =
@@ -1462,8 +1462,8 @@ using OmpTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiply, OmpTypes2);
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, MatMultiplyScalar, OmpTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatMultiply, OmpTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, MatMultiplyScalar, OmpTypes2);
 #endif
 
 
@@ -1547,8 +1547,8 @@ using CudaTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiply, CudaTypes2);
-INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmem, MatMultiplyScalar, CudaTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmem, MatMultiply, CudaTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmem, MatMultiplyScalar, CudaTypes2);
 
 using CudaTypes3 =
   ::testing::Types<
@@ -1597,7 +1597,7 @@ using CudaTypes3 =
   > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(CUDAShmemPriv, MatMultiply, CudaTypes3);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmemPriv, MatMultiply, CudaTypes3);
 
 
 #endif
@@ -1683,8 +1683,8 @@ using HipTypes2 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(HIPShmem, MatMultiply_gpu, HipTypes2);
-INSTANTIATE_TYPED_TEST_CASE_P(HIPShmem, MatMultiplyScalar_gpu, HipTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmem, MatMultiply_gpu, HipTypes2);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmem, MatMultiplyScalar_gpu, HipTypes2);
 
 using HipTypes3 =
   ::testing::Types<
@@ -1732,5 +1732,6 @@ using HipTypes3 =
     > //close list
   >;//close types
 
-INSTANTIATE_TYPED_TEST_CASE_P(HIPShmemPriv, MatMultiply_gpu, HipTypes3);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmemPriv, MatMultiply_gpu, HipTypes3);
+
 #endif

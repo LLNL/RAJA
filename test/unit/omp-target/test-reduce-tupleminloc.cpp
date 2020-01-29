@@ -53,8 +53,11 @@ protected:
     }
 
     array[ydim-1][xdim-1] = -1.0;
-#pragma omp target enter data map(to : data[:array_length])
-#pragma omp target enter data map(to : array[:ydim])
+
+    RAJA::Real_ptr d = data;
+    RAJA::Real_ptr *a = array;
+#pragma omp target enter data map(to : d[:array_length])
+#pragma omp target enter data map(to : a[:ydim])
 
     sum = 0.0;
     min = array_length * 2;
@@ -87,13 +90,15 @@ protected:
 
   virtual void TearDown()
   {
+    RAJA::Real_ptr *a = array;
+    RAJA::Real_ptr d = data;
     // NOTE: clang prefers cast to void * and fails compilation otherwise.
     // gcc prefers RAJA::Real_ptr * (with no compilation warnings).
-#pragma omp target exit data map(release : array[:ydim])
-    RAJA::free_aligned((void *)array);
+#pragma omp target exit data map(release : a[:ydim])
+    RAJA::free_aligned((void *)a);
 
-#pragma omp target exit data map(release : data[:array_length])
-    RAJA::free_aligned(data);
+#pragma omp target exit data map(release : d[:array_length])
+    RAJA::free_aligned(d);
   }
 
   RAJA::Real_ptr * array;
@@ -111,7 +116,7 @@ protected:
   RAJA::Index_type xdim;
   RAJA::Index_type ydim;
 };
-TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP);
+TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP);
 
 TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocIndex)
 {
@@ -124,15 +129,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocIndex)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      minloc_reducer.minloc(indirect[r][c], Index2D(c, r));
-    });
+    for(int c : colrange) {
+      // TODO: indirect does not work here in clang
+      minloc_reducer.minloc(actualdata[r * 10 + c], Index2D(c, r));
+    }
   });
 
   double raja_min = (double)minloc_reducer.get();
@@ -154,15 +155,11 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocTuple)
 
   auto actualdata = this->data;
   auto indirect = this->array;
-  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
-  // broken for lambda capture
-#pragma omp target data use_device_ptr(actualdata)
-#pragma omp target data use_device_ptr(indirect)
   RAJA::forall<ExecPolicy>(rowrange, [=] (int r) {
-    RAJA::forall<ExecPolicy>(colrange, [=] (int c) {
-      // TODO: Clang compiles but seg faults.
-      minloc_reducer.minloc(indirect[r][c], RAJA::make_tuple(c, r));
-    });
+    for (int c : colrange) {
+      // TODO: indirect does not work here in clang
+      minloc_reducer.minloc(actualdata[r * 10 + c], RAJA::make_tuple(c, r));
+    }
   });
 
   double raja_min = (double)minloc_reducer.get();
@@ -173,9 +170,9 @@ TYPED_TEST_P(ReductionTupleLocTestTargetOMP, ReduceMinLocTuple)
   ASSERT_EQ(this->minlocy, RAJA::get<1>(raja_loc));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionTupleLocTestTargetOMP,
-                           ReduceMinLocIndex,
-                           ReduceMinLocTuple);
+REGISTER_TYPED_TEST_SUITE_P(ReductionTupleLocTestTargetOMP,
+                            ReduceMinLocIndex,
+                            ReduceMinLocTuple);
 
 // TODO: Complete parameterization later when Clang runs properly.
 // For now, un-parameterized for clarity and debugging.
@@ -188,6 +185,6 @@ using types =
                                 RAJA::ReduceMinLoc<RAJA::omp_target_reduce, double, RAJA::tuple<int, int>>>
                                >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
+INSTANTIATE_TYPED_TEST_SUITE_P(Reduce, ReductionTupleLocTestTargetOMP, types);
 
 

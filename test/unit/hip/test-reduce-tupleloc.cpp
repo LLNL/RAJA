@@ -37,7 +37,7 @@ struct funcapplier<ReduceMinLoc<hip_reduce, NumType, Indexer>>   // GPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMinLoc<hip_reduce, NumType, Indexer> const & r,
@@ -59,7 +59,7 @@ struct funcapplier<ReduceMinLoc<seq_reduce, NumType, Indexer>>    // CPU minloc
 {
   static NumType extremeval()
   {
-    return 1024.0;
+    return (NumType)1024;
   }
 
   static void apply(ReduceMinLoc<seq_reduce, NumType, Indexer> const & r,
@@ -75,7 +75,7 @@ struct funcapplier<ReduceMaxLoc<hip_reduce, NumType, Indexer>>   // GPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<hip_reduce, NumType, Indexer> const & r,
@@ -97,7 +97,7 @@ struct funcapplier<ReduceMaxLoc<seq_reduce, NumType, Indexer>>    // CPU maxloc
 {
   static NumType extremeval()
   {
-    return -1024.0;
+    return (NumType)(-1024);
   }
 
   static void apply(ReduceMaxLoc<seq_reduce, NumType, Indexer> const & r,
@@ -254,7 +254,7 @@ struct HIPReduceLocTest : public ::testing::Test
   RAJA::Real_type minlocy;
 };
 
-TYPED_TEST_CASE_P(HIPReduceLocTest);
+TYPED_TEST_SUITE_P(HIPReduceLocTest);
 
 GPU_TYPED_TEST_P(HIPReduceLocTest, ReduceLoc2DIndexTupleViewKernel)
 {
@@ -377,20 +377,20 @@ GPU_TYPED_TEST_P(HIPReduceLocTest, ReduceLoc2DIndexTupleViewKernelRandom)
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P( HIPReduceLocTest,
-                            ReduceLoc2DIndexTupleViewKernel,
-                            ReduceLoc2DIndexTupleViewKernelRandom
+REGISTER_TYPED_TEST_SUITE_P( HIPReduceLocTest,
+                             ReduceLoc2DIndexTupleViewKernel,
+                             ReduceLoc2DIndexTupleViewKernelRandom
                           );
 
 using MinLocTypeTuple = ::testing::Types<
                           list<ReduceMinLoc<RAJA::hip_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMinLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMin2DTuple, HIPReduceLocTest, MinLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMin2DTuple, HIPReduceLocTest, MinLocTypeTuple);
 
 using MaxLocTypeTuple = ::testing::Types<
                           list<ReduceMaxLoc<RAJA::hip_reduce, double, RAJA::tuple<int, int>>,
                                ReduceMaxLoc<RAJA::seq_reduce, double, int>>
                         >;
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceMax2DTuple, HIPReduceLocTest, MaxLocTypeTuple);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReduceMax2DTuple, HIPReduceLocTest, MaxLocTypeTuple);
 

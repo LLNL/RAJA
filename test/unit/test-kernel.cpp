@@ -60,7 +60,7 @@ protected:
 #endif
   }
 };
-TYPED_TEST_CASE_P(Kernel);
+TYPED_TEST_SUITE_P(Kernel);
 
 #if defined(RAJA_ENABLE_HIP)
 template <typename NestedPolicy>
@@ -87,7 +87,7 @@ protected:
     delete[] data;
   }
 };
-TYPED_TEST_CASE_P(Kernel_gpu);
+TYPED_TEST_SUITE_P(Kernel_gpu);
 #endif
 
 RAJA_HOST_DEVICE constexpr Index_type get_val(Index_type v) noexcept
@@ -264,7 +264,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
 #endif
 }
 
-REGISTER_TYPED_TEST_CASE_P(Kernel, Basic);
+REGISTER_TYPED_TEST_SUITE_P(Kernel, Basic);
 
 #ifdef RAJA_ENABLE_HIP
 GPU_TYPED_TEST_P(Kernel_gpu, Basic)
@@ -422,7 +422,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   delete[] arr;
   delete[] idx_test;
 }
-REGISTER_TYPED_TEST_CASE_P(Kernel_gpu, Basic);
+REGISTER_TYPED_TEST_SUITE_P(Kernel_gpu, Basic);
 #endif
 
 using RAJA::list;
@@ -446,7 +446,7 @@ using TestTypes = ::testing::Types<
          RAJA::seq_reduce>>;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Kernel, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, Kernel, TestTypes);
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OMPTypes = ::testing::Types<
@@ -461,14 +461,14 @@ using OMPTypes = ::testing::Types<
                              For<1, RAJA::loop_exec, For<0, s, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::omp_reduce>>;
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Kernel, OMPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, Kernel, OMPTypes);
 #endif
 #if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<
     list<KernelPolicy<For<1, RAJA::tbb_for_exec, For<0, s, Lambda<0>>>>,
          list<TypedIndex, Index_type>,
          RAJA::tbb_reduce>>;
-INSTANTIATE_TYPED_TEST_CASE_P(TBB, Kernel, TBBTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TBB, Kernel, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
@@ -478,7 +478,7 @@ using CUDATypes = ::testing::Types<
              CudaKernel<For<0, RAJA::cuda_thread_x_loop, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce>>;
-INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Kernel, CUDATypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, Kernel, CUDATypes);
 #endif
 #if defined(RAJA_ENABLE_HIP)
 using HIPTypes = ::testing::Types<
@@ -488,7 +488,7 @@ using HIPTypes = ::testing::Types<
              HipKernel<For<0, RAJA::hip_thread_x_loop, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
          RAJA::hip_reduce>>;
-INSTANTIATE_TYPED_TEST_CASE_P(HIP, Kernel_gpu, HIPTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(HIP, Kernel_gpu, HIPTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -4424,3 +4424,4 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
   hipErrchk(hipFree(x));
 }
 #endif
+
