@@ -270,4 +270,4 @@ REGISTER_TYPED_TEST_SUITE_P(ScanHIPUnitTest,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanHIPUnitTests, ScanHIPUnitTest, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanHIPUnitTests, ScanHIPUnitTest, CrossTypes);

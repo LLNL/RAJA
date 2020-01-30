@@ -43,8 +43,8 @@ class OperatorsIntegralUnitTest : public ::testing::Test {};
 using MyTypes = ::testing::Types<INTEGRAL_TYPES, FLOATING_TYPES>;
 using MyIntegralTypes = ::testing::Types<INTEGRAL_TYPES>;
 
-TYPED_TEST_CASE(OperatorsUnitTest, MyTypes);
-TYPED_TEST_CASE(OperatorsIntegralUnitTest, MyIntegralTypes);
+TYPED_TEST_SUITE(OperatorsUnitTest, MyTypes);
+TYPED_TEST_SUITE(OperatorsIntegralUnitTest, MyIntegralTypes);
 
 template<typename T>
 void plus_test()

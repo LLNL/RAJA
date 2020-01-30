@@ -22,7 +22,7 @@ template <typename T>
 class AtomicRefBasicBitwiseUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicBitwiseUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicBitwiseUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicBitwiseUnitTest, BasicBitwises )
 {
@@ -63,9 +63,9 @@ TYPED_TEST_P( AtomicRefBasicBitwiseUnitTest, BasicBitwises )
   ASSERT_EQ( result, (T)1 );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicBitwiseUnitTest,
-                            BasicBitwises
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicBitwiseUnitTest,
+                             BasicBitwises
+                           );
 
 using basic_types = 
     ::testing::Types<
@@ -92,10 +92,10 @@ using basic_types =
                       #endif
                     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicBitwiseUnitTest,
-                               AtomicRefBasicBitwiseUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicBitwiseUnitTest,
+                                AtomicRefBasicBitwiseUnitTest,
+                                basic_types
+                              );
 
 
 // Pure CUDA test.
@@ -106,7 +106,7 @@ template <typename T>
 class AtomicRefCUDABitwiseUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefCUDABitwiseUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefCUDABitwiseUnitTest );
 
 GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
 {
@@ -160,9 +160,9 @@ GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
   cudaErrchk(cudaFree(result));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDABitwiseUnitTest,
-                            CUDABitwises
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDABitwiseUnitTest,
+                             CUDABitwises
+                           );
 
 using CUDA_types = 
     ::testing::Types<
@@ -174,9 +174,9 @@ using CUDA_types =
                       std::tuple<unsigned long long int, RAJA::cuda_atomic>
                     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDABitwiseUnitTest,
-                               AtomicRefCUDABitwiseUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDABitwiseUnitTest,
+                                AtomicRefCUDABitwiseUnitTest,
+                                CUDA_types
+                              );
 #endif
 

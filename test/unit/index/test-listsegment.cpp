@@ -31,7 +31,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  double,
                                  float>;
 
-TYPED_TEST_CASE(ListSegmentUnitTest, MyTypes);
+TYPED_TEST_SUITE(ListSegmentUnitTest, MyTypes);
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)

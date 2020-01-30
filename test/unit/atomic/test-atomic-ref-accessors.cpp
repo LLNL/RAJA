@@ -24,7 +24,7 @@ template <typename T>
 class AtomicRefBasicAccessorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicAccessorUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicAccessorUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicAccessorUnitTest, BasicAccessors )
 {
@@ -57,14 +57,14 @@ TYPED_TEST_P( AtomicRefBasicAccessorUnitTest, BasicAccessors )
   ASSERT_EQ( result, (T)31 );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicAccessorUnitTest,
-                            BasicAccessors
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicAccessorUnitTest,
+                             BasicAccessors
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicAccessUnitTest,
-                               AtomicRefBasicAccessorUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicAccessUnitTest,
+                                AtomicRefBasicAccessorUnitTest,
+                                basic_types
+                              );
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -74,7 +74,7 @@ template <typename T>
 class AtomicRefCUDAAccessorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefCUDAAccessorUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefCUDAAccessorUnitTest );
 
 GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
 {
@@ -123,14 +123,14 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
   cudaErrchk(cudaFree(result));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAAccessorUnitTest,
-                            CUDAAccessors
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAAccessorUnitTest,
+                             CUDAAccessors
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDAAccessUnitTest,
-                               AtomicRefCUDAAccessorUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAAccessUnitTest,
+                                AtomicRefCUDAAccessorUnitTest,
+                                CUDA_types
+                              );
 #endif
 
 

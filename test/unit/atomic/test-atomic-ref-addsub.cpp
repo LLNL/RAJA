@@ -24,7 +24,7 @@ template <typename T>
 class AtomicRefBasicAddSubUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicAddSubUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicAddSubUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicAddSubUnitTest, BasicAddSubs )
 {
@@ -68,14 +68,14 @@ TYPED_TEST_P( AtomicRefBasicAddSubUnitTest, BasicAddSubs )
   ASSERT_EQ( val9, (T)24 );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicAddSubUnitTest,
-                            BasicAddSubs
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicAddSubUnitTest,
+                             BasicAddSubs
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicAddSubUnitTest,
-                               AtomicRefBasicAddSubUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicAddSubUnitTest,
+                                AtomicRefBasicAddSubUnitTest,
+                                basic_types
+                              );
 
 
 // Pure CUDA test.
@@ -86,7 +86,7 @@ template <typename T>
 class AtomicRefCUDAAddSubUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefCUDAAddSubUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefCUDAAddSubUnitTest );
 
 GPU_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
 {
@@ -149,13 +149,13 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
   cudaErrchk(cudaFree(result2));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAAddSubUnitTest,
-                            CUDAAddSubs
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAAddSubUnitTest,
+                             CUDAAddSubs
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDAAddSubUnitTest,
-                               AtomicRefCUDAAddSubUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAAddSubUnitTest,
+                                AtomicRefCUDAAddSubUnitTest,
+                                CUDA_types
+                              );
 #endif
 

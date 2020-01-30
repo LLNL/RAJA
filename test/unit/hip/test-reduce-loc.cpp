@@ -337,16 +337,16 @@ REGISTER_TYPED_TEST_SUITE_P(ReduceHIPUnitTest,
 
 // using MinLocTypes =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceHIPUnitTest, MinLocTypes);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MinLoc, ReduceHIPUnitTest, MinLocTypes);
 
 // using MaxLocTypes =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceHIPUnitTest, MaxLocTypes);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MaxLoc, ReduceHIPUnitTest, MaxLocTypes);
 
 // using MinLocTypesGenericIndex =
 //     ::testing::Types<ReduceMinLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MinLocGenericIndex, ReduceHIPUnitTest, MinLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MinLocGenericIndex, ReduceHIPUnitTest, MinLocTypesGenericIndex);
 
 // using MaxLocTypesGenericIndex =
 //     ::testing::Types<ReduceMaxLoc<RAJA::hip_reduce, double, Index>>;
-// INSTANTIATE_TYPED_TEST_CASE_P(MaxLocGenericIndex, ReduceHIPUnitTest, MaxLocTypesGenericIndex);
+// INSTANTIATE_TYPED_TEST_SUITE_P(MaxLocGenericIndex, ReduceHIPUnitTest, MaxLocTypesGenericIndex);

@@ -24,7 +24,7 @@ template <typename T>
 class AtomicRefDefaultConstructorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P(AtomicRefDefaultConstructorUnitTest);
+TYPED_TEST_SUITE_P(AtomicRefDefaultConstructorUnitTest);
 
 template <typename T>
 void DefaultPolConstructors()
@@ -48,19 +48,19 @@ TYPED_TEST_P( AtomicRefDefaultConstructorUnitTest, DefaultPolConstructors )
   DefaultPolConstructors<TypeParam>();
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefDefaultConstructorUnitTest,
-                            DefaultPolConstructors
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefDefaultConstructorUnitTest,
+                             DefaultPolConstructors
+                           );
 
 using default_types = ::testing::Types< int,
                                       float,
                                       double
                                     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( DefaultConstrUnitTest,
-                               AtomicRefDefaultConstructorUnitTest,
-                               default_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( DefaultConstrUnitTest,
+                                AtomicRefDefaultConstructorUnitTest,
+                                default_types
+                              );
 
 // Basic Constructors with policies
 
@@ -68,7 +68,7 @@ template <typename T>
 class AtomicRefBasicConstructorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicConstructorUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicConstructorUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicConstructorUnitTest, BasicConstructors )
 {
@@ -89,14 +89,14 @@ TYPED_TEST_P( AtomicRefBasicConstructorUnitTest, BasicConstructors )
   ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicConstructorUnitTest,
-                            BasicConstructors
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicConstructorUnitTest,
+                             BasicConstructors
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicConstrUnitTest,
-                               AtomicRefBasicConstructorUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicConstrUnitTest,
+                                AtomicRefBasicConstructorUnitTest,
+                                basic_types
+                              );
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -106,7 +106,7 @@ template <typename T>
 class AtomicRefCUDAConstructorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P(AtomicRefCUDAConstructorUnitTest);
+TYPED_TEST_SUITE_P(AtomicRefCUDAConstructorUnitTest);
 
 GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
 {
@@ -139,13 +139,13 @@ GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
   cudaErrchk(cudaFree(proxy));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAConstructorUnitTest,
-                            CUDAConstructors
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAConstructorUnitTest,
+                             CUDAConstructors
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDAConstrUnitTest,
-                               AtomicRefCUDAConstructorUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAConstrUnitTest,
+                                AtomicRefCUDAConstructorUnitTest,
+                                CUDA_types
+                              );
 #endif
 

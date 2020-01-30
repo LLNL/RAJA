@@ -22,7 +22,7 @@ class FloatLimitsUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(FloatLimitsUnitTest);
+TYPED_TEST_SUITE_P(FloatLimitsUnitTest);
 
 TYPED_TEST_P(FloatLimitsUnitTest, FloatLimits)
 {
@@ -32,12 +32,12 @@ TYPED_TEST_P(FloatLimitsUnitTest, FloatLimits)
             std::numeric_limits<TypeParam>::max());
 }
 
-REGISTER_TYPED_TEST_CASE_P(FloatLimitsUnitTest, FloatLimits);
+REGISTER_TYPED_TEST_SUITE_P(FloatLimitsUnitTest, FloatLimits);
 
 using float_types = ::testing::Types<float,
                                      double,
                                      long double>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(FloatLimitsUnitTests,
-                              FloatLimitsUnitTest,
-                              float_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(FloatLimitsUnitTests,
+                               FloatLimitsUnitTest,
+                               float_types);

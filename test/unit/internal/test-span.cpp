@@ -30,7 +30,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  long long,
                                  unsigned long long>;
 
-TYPED_TEST_CASE(SpanUnitTest, MyTypes);
+TYPED_TEST_SUITE(SpanUnitTest, MyTypes);
 
 constexpr int DATA_SIZE = 4;
 TYPED_TEST(SpanUnitTest, simple)

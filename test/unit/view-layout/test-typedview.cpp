@@ -50,9 +50,9 @@ using IntegralTypes = ::testing::Types<RAJA::Index_type,
                                   long long,
                                   unsigned long long>;
 
-TYPED_TEST_CASE(TypedViewUnitTest, allTypes);
-TYPED_TEST_CASE(OffsetLayoutViewUnitTest, allTypes);
-TYPED_TEST_CASE(TypedIntegralViewUnitTest, allTypes);
+TYPED_TEST_SUITE(TypedViewUnitTest, allTypes);
+TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, allTypes);
+TYPED_TEST_SUITE(TypedIntegralViewUnitTest, allTypes);
 
 TYPED_TEST(TypedViewUnitTest, Constructors)
 {

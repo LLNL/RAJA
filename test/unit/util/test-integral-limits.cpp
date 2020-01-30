@@ -21,7 +21,7 @@ class IntegralLimitsUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(IntegralLimitsUnitTest);
+TYPED_TEST_SUITE_P(IntegralLimitsUnitTest);
 
 TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
 {
@@ -31,7 +31,7 @@ TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
             std::numeric_limits<TypeParam>::max());
 }
 
-REGISTER_TYPED_TEST_CASE_P(IntegralLimitsUnitTest, IntegralLimits);
+REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsUnitTest, IntegralLimits);
 
 using integer_types = ::testing::Types<char,
                                        unsigned char,

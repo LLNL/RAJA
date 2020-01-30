@@ -26,7 +26,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  long long,
                                  unsigned long long>;
 
-TYPED_TEST_CASE(IndexValueUnitTest, MyTypes);
+TYPED_TEST_SUITE(IndexValueUnitTest, MyTypes);
 
 RAJA_INDEX_VALUE(StrongTypeIndex, "Strong Type")
 

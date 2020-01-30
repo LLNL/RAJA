@@ -29,7 +29,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  long long,
                                  unsigned long long>;
 
-TYPED_TEST_CASE(RangeStrideSegmentUnitTest, MyTypes);
+TYPED_TEST_SUITE(RangeStrideSegmentUnitTest, MyTypes);
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Constructors)
 {

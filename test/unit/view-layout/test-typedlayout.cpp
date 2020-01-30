@@ -24,7 +24,7 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  unsigned long long>;
 
 
-TYPED_TEST_CASE(TypedLayoutUnitTest, MyTypes);
+TYPED_TEST_SUITE(TypedLayoutUnitTest, MyTypes);
 
 TYPED_TEST(TypedLayoutUnitTest, TypedLayoutConstructors)
 {

@@ -24,7 +24,7 @@ template <typename T>
 class AtomicRefBasicMinMaxUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicMinMaxUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicMinMaxUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicMinMaxUnitTest, BasicMinMaxs )
 {
@@ -57,14 +57,14 @@ TYPED_TEST_P( AtomicRefBasicMinMaxUnitTest, BasicMinMaxs )
   ASSERT_EQ( test1, (T)91 );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicMinMaxUnitTest,
-                            BasicMinMaxs
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicMinMaxUnitTest,
+                             BasicMinMaxs
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicMinMaxUnitTest,
-                               AtomicRefBasicMinMaxUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicMinMaxUnitTest,
+                                AtomicRefBasicMinMaxUnitTest,
+                                basic_types
+                              );
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -74,7 +74,7 @@ template <typename T>
 class AtomicRefCUDAMinMaxUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefCUDAMinMaxUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest );
 
 GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
 {
@@ -118,13 +118,13 @@ GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
   cudaErrchk(cudaFree(memaddr));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAMinMaxUnitTest,
-                            CUDAMinMaxs
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest,
+                             CUDAMinMaxs
+                           );
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDAMinMaxUnitTest,
-                               AtomicRefCUDAMinMaxUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAMinMaxUnitTest,
+                                AtomicRefCUDAMinMaxUnitTest,
+                                CUDA_types
+                              );
 #endif
 

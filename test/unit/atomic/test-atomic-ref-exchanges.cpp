@@ -22,7 +22,7 @@ template <typename T>
 class AtomicRefBasicExchangeUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefBasicExchangeUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefBasicExchangeUnitTest );
 
 TYPED_TEST_P( AtomicRefBasicExchangeUnitTest, BasicExchanges )
 {
@@ -66,9 +66,9 @@ TYPED_TEST_P( AtomicRefBasicExchangeUnitTest, BasicExchanges )
   ASSERT_EQ( testval, (T)0 );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefBasicExchangeUnitTest,
-                            BasicExchanges
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicExchangeUnitTest,
+                             BasicExchanges
+                           );
 
 using basic_types = 
     ::testing::Types<
@@ -103,10 +103,10 @@ using basic_types =
                       #endif
                     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( BasicExchangeUnitTest,
-                               AtomicRefBasicExchangeUnitTest,
-                               basic_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicExchangeUnitTest,
+                                AtomicRefBasicExchangeUnitTest,
+                                basic_types
+                              );
 
 
 // Pure CUDA test.
@@ -117,7 +117,7 @@ template <typename T>
 class AtomicRefCUDAExchangeUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_CASE_P( AtomicRefCUDAExchangeUnitTest );
+TYPED_TEST_SUITE_P( AtomicRefCUDAExchangeUnitTest );
 
 GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
 {
@@ -176,9 +176,9 @@ GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
   cudaErrchk(cudaFree(result));
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicRefCUDAExchangeUnitTest,
-                            CUDAExchanges
-                          );
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAExchangeUnitTest,
+                             CUDAExchanges
+                           );
 
 using CUDA_types = 
     ::testing::Types<
@@ -192,9 +192,9 @@ using CUDA_types =
                       std::tuple<float, RAJA::auto_atomic>
                     >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( CUDAExchangeUnitTest,
-                               AtomicRefCUDAExchangeUnitTest,
-                               CUDA_types
-                             );
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAExchangeUnitTest,
+                                AtomicRefCUDAExchangeUnitTest,
+                                CUDA_types
+                              );
 #endif
 

@@ -32,8 +32,8 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
                                  long long,
                                  unsigned long long>;
 
-TYPED_TEST_CASE(NumericIteratorUnitTest, MyTypes);
-TYPED_TEST_CASE(StridedNumericIteratorUnitTest, MyTypes);
+TYPED_TEST_SUITE(NumericIteratorUnitTest, MyTypes);
+TYPED_TEST_SUITE(StridedNumericIteratorUnitTest, MyTypes);
 
 TYPED_TEST(NumericIteratorUnitTest, simple)
 {
