@@ -28,6 +28,21 @@ namespace RAJA
 struct seq_atomic {
 };
 
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void atomicStore(seq_atomic, T * const acc, T const & value)
+{
+  *acc = value;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE T atomicLoad(seq_atomic, T const * const acc)
+{
+  return *acc;
+}
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
@@ -38,7 +53,6 @@ RAJA_INLINE T atomicAdd(seq_atomic, T * const acc, T const & value)
   *acc += value;
   return ret;
 }
-
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>

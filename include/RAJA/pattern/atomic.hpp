@@ -79,6 +79,31 @@ namespace RAJA
  *
  */
 
+/*!
+ * @brief Atomic store
+ * @param acc Pointer to location of result value
+ * @param value Value to store in *acc
+ * @return Returns value that was just stored at acc.
+ */
+RAJA_SUPPRESS_HD_WARN
+template <typename Policy, typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T * const acc, T const & value)
+{
+  RAJA::atomicStore(Policy{}, acc, value);
+}
+
+/*!
+ * @brief Atomic load
+ * @param acc Pointer to location of result value
+ * @return Returns value that was stored at acc.
+ */
+RAJA_SUPPRESS_HD_WARN
+template <typename Policy, typename T>
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T * const acc)
+{
+  return RAJA::atomicLoad(Policy{}, acc);
+}
+
 
 /*!
  * @brief Atomic add
@@ -309,14 +334,14 @@ public:
   RAJA_HOST_DEVICE
   void store(value_type rhs) const
   {
-    *m_value_ptr = rhs;
+    RAJA::atomicStore<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator=(value_type rhs) const
   {
-    *m_value_ptr = rhs;
+    RAJA::atomicStore<Policy>(m_value_ptr, rhs);
     return rhs;
   }
 
@@ -324,14 +349,14 @@ public:
   RAJA_HOST_DEVICE
   value_type load() const
   {
-    return *m_value_ptr;
+    return RAJA::atomicLoad<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   operator value_type() const
   {
-    return *m_value_ptr;
+    return RAJA::atomicLoad<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE

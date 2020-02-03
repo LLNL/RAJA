@@ -561,6 +561,22 @@ struct cuda_atomic {
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(cuda_atomic,
+                                              T volatile *acc,
+                                              T value)
+{
+  *acc = value;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(cuda_atomic, T volatile *acc)
+{
+  return *acc;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(cuda_atomic, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__

@@ -58,6 +58,22 @@ namespace RAJA
 struct auto_atomic {
 };
 
+template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic,
+                                              T * const acc,
+                                              T const & value)
+{
+  return atomicStore(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+
+template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic,
+                                          T * const acc)
+{
+  return atomicLoad(RAJA_AUTO_ATOMIC, acc);
+}
+
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(auto_atomic,

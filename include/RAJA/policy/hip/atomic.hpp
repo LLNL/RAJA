@@ -537,6 +537,22 @@ struct hip_atomic {
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(hip_atomic,
+                                              T volatile *acc,
+                                              T value)
+{
+  *acc = value;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(hip_atomic, T volatile *acc)
+{
+  return *acc;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(hip_atomic, T volatile *acc, T value)
 {
   return detail::hip_atomicAdd(acc, value);

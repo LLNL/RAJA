@@ -44,6 +44,24 @@ using omp_atomic = builtin_atomic;
 struct omp_atomic {
 };
 
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void atomicStore(omp_atomic,
+                             T volatile *acc,
+                             T value)
+{
+  *acc = value;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE T atomicLoad(omp_atomic,
+                         T volatile *acc)
+{
+  return *acc;
+}
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
