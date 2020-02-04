@@ -115,12 +115,13 @@ struct StatementExecutor<
     RAJA_SIMD
     for (decltype(distance) i = 0; i < distance; ++i) {
 
-      data.template assign_offset<ArgumentId>(i);
-
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
       auto privatizer = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
+
+      // Assign offset on privatized data
+      private_data.template assign_offset<ArgumentId>(i);
 
       Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
     }
