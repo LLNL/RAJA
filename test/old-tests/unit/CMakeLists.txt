@@ -6,20 +6,8 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-atomic
-  SOURCES test-atomic.cpp)
-
-raja_add_test(
-  NAME test-region
-  SOURCES test-region.cpp)
-
-raja_add_test(
-  NAME test-layout
-  SOURCES test-layout.cpp)
-
-raja_add_test(
-  NAME test-view
-  SOURCES test-view.cpp)
+  NAME test-kernel-lambda-args
+  SOURCES test-kernel-lambda-args.cpp)
 
 raja_add_test(
   NAME test-kernel
@@ -30,12 +18,16 @@ raja_add_test(
   SOURCES test-multipolicy.cpp)
 
 raja_add_test(
-  NAME test-simd
-  SOURCES test-simd.cpp)
+  NAME test-region
+  SOURCES test-region.cpp)
 
 raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
+
+raja_add_test(
+  NAME test-simd
+  SOURCES test-simd.cpp)
 
 add_subdirectory(cpu)
 
