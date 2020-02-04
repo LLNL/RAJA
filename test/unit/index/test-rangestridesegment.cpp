@@ -123,6 +123,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   ASSERT_EQ(segment15.size(), 0);
 
   // NEGATIVE INDICES
+#if !defined(__CUDA_ARCH__)
   if (std::is_signed<TypeParam>::value) {
     RAJA::TypedRangeStrideSegment<TypeParam> segment16(-10, -2, 2);
     ASSERT_EQ(segment16.size(), 4);
@@ -133,6 +134,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
     RAJA::TypedRangeStrideSegment<TypeParam> segment18(0, -5, 1);
     ASSERT_EQ(segment18.size(), 0);
   }
+#endif
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Slices)

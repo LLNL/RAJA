@@ -43,17 +43,19 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
   ASSERT_EQ(moved, copied);
 
   // Test exception when begin > end
-#ifndef RAJA_ENABLE_CUDA
+#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
   ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> neg(20, 19));
 #endif
 
   if(std::is_signed<TypeParam>::value){
+#if !defined(__CUDA_ARCH__)
     RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
     RAJA::TypedRangeSegment<TypeParam> r3(-13, -1);
     ASSERT_EQ(17, r1.size());
     ASSERT_EQ(12, r3.size());
+#endif
 
-#ifndef RAJA_ENABLE_CUDA
+#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
     ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(0, -50));
 #endif
   }
@@ -88,10 +90,12 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
   ASSERT_EQ(100, r1.size());
 
+#if !defined(__CUDA_ARCH__)
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
     ASSERT_EQ(-2, *r3.begin());
   }
+#endif
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Slices)
