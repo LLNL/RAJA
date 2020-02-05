@@ -42,10 +42,10 @@ namespace sort
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
-sort(const ExecPolicy &,
-     Iter begin,
-     Iter end,
-     Compare comp)
+unstable(const ExecPolicy &,
+         Iter begin,
+         Iter end,
+         Compare comp)
 {
   std::sort(begin, end, comp);
 }
@@ -55,7 +55,7 @@ sort(const ExecPolicy &,
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
-stable_sort(const ExecPolicy &,
+stable(const ExecPolicy &,
             Iter begin,
             Iter end,
             Compare comp)
