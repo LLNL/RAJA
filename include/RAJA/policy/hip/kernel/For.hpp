@@ -597,7 +597,7 @@ struct HipStatementExecutor<
     set_hip_dim<BlockDim>(dims.blocks, len);
 
     // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<ThreadDim>(dims.min_blocks, len);
+    set_hip_dim<BlockDim>(dims.min_blocks, len);
 
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
