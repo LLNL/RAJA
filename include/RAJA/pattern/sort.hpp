@@ -59,7 +59,7 @@ sort(const ExecPolicy &p,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
-  impl::sort::sort(p, begin, end, comp);
+  impl::sort::unstable(p, begin, end, comp);
 }
 
 /*!
@@ -90,7 +90,7 @@ stable_sort(const ExecPolicy &p,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
-  impl::sort::stable_sort(p, begin, end, comp);
+  impl::sort::stable(p, begin, end, comp);
 }
 
 
@@ -122,7 +122,7 @@ sort(const ExecPolicy &p,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  impl::sort::sort(p, std::begin(c), std::end(c), comp);
+  impl::sort::unstable(p, std::begin(c), std::end(c), comp);
 }
 
 /*!
@@ -151,7 +151,7 @@ stable_sort(const ExecPolicy &p,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  impl::sort::stable_sort(p, std::begin(c), std::end(c), comp);
+  impl::sort::stable(p, std::begin(c), std::end(c), comp);
 }
 
 
