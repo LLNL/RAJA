@@ -478,6 +478,48 @@ struct HipStatementExecutor<
 
 
 
+/*
+ * Executor for block work sharing inside HipKernel.
+ * Provides a direct mapping of each block in xyz.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          int BlockDim,
+          typename... EnclosedStmts>
+struct HipStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>>
+    : public HipStatementExecutor<
+        Data,
+        statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+
+  using Base = HipStatementExecutor<
+      Data,
+      statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>>;
+
+  using typename Base::enclosed_stmts_t;
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    auto len = segment_length<ArgumentId>(data);
+    auto i = get_hip_dim<BlockDim>(blockIdx);
+
+    if (i < len) {
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+  }
+};
 
 /*
  * Executor for block work sharing inside HipKernel.
