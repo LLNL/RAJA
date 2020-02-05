@@ -23,26 +23,13 @@
 #include <iterator>
 #include <type_traits>
 
-#include "camp/concepts.hpp"
-#include "camp/helpers.hpp"
-
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/util/concepts.hpp"
 #include "RAJA/util/Operators.hpp"
+#include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
 {
-
-namespace detail
-{
-
-template <typename Iter>
-using IterVal = camp::decay<decltype(*camp::val<Iter>())>;
-
-template <typename Container>
-using ContainerVal =
-    camp::decay<decltype(*camp::val<camp::iterator_from<Container>>())>;
-
-}  // end namespace detail
 
 /*!
 ******************************************************************************
