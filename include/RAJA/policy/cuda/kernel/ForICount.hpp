@@ -478,6 +478,48 @@ struct CudaStatementExecutor<
 
 
 
+/*
+ * Executor for block work sharing inside CudaKernel.
+ * Provides a direct mapping for each block in xyz.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          int BlockDim,
+          typename... EnclosedStmts>
+struct CudaStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>
+    : public CudaStatementExecutor<
+        Data,
+        statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>;
+
+  using typename Base::enclosed_stmts_t;
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    auto len = segment_length<ArgumentId>(data);
+    auto i = get_cuda_dim<BlockDim>(blockIdx);
+
+    if (i < len) {
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+  }
+};
 
 /*
  * Executor for block work sharing inside CudaKernel.
