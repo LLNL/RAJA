@@ -42,7 +42,7 @@ namespace sort
 {
 
 /*!
-        \brief stable_sort given range in ascending order
+        \brief static assert unimplemented stable sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
 concepts::enable_if<concepts::negate<concepts::all_of<
@@ -51,7 +51,7 @@ concepts::enable_if<concepts::negate<concepts::all_of<
                       concepts::any_of<
                         camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
                         camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>>>
-stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
+stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
      Iter,
      Iter,
      Compare)
@@ -66,12 +66,12 @@ stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 }
 
 /*!
-        \brief stable_sort given range in ascending order
+        \brief stable sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
-stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
+stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
      Iter begin,
      Iter end,
      operators::less<detail::IterVal<Iter>>)
@@ -130,12 +130,12 @@ stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 }
 
 /*!
-        \brief stable_sort given range in descending order
+        \brief stable sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
-stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
+stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
      Iter begin,
      Iter end,
      operators::greater<detail::IterVal<Iter>>)
@@ -195,7 +195,7 @@ stable_sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
 
 /*!
-        \brief sort given range in ascending order
+        \brief static assert unimplemented sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
 concepts::enable_if<concepts::negate<concepts::all_of<
@@ -204,10 +204,10 @@ concepts::enable_if<concepts::negate<concepts::all_of<
                       concepts::any_of<
                         camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
                         camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>>>
-sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-     Iter,
-     Iter,
-     Compare)
+unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
+         Iter,
+         Iter,
+         Compare)
 {
   static_assert(concepts::all_of<
                   type_traits::is_arithmetic<detail::IterVal<Iter>>,
@@ -224,12 +224,12 @@ sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
-sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
+unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
      Iter begin,
      Iter end,
      operators::less<detail::IterVal<Iter>> comp)
 {
-  stable_sort(p, begin, end, comp);
+  stable(p, begin, end, comp);
 }
 
 /*!
@@ -238,12 +238,12 @@ sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
-sort(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
+unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
      Iter begin,
      Iter end,
      operators::greater<detail::IterVal<Iter>> comp)
 {
-  stable_sort(p, begin, end, comp);
+  stable(p, begin, end, comp);
 }
 
 }  // namespace sort
