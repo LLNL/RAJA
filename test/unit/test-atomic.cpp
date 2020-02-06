@@ -24,12 +24,12 @@ void testAtomicFunctionBasic()
 // initialize an array
 #if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * 8));
+  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * 10));
 
   cudaErrchk(cudaDeviceSynchronize());
 
 #else
-  T *dest = new T[8];
+  T *dest = new T[10];
 #endif
 
 
