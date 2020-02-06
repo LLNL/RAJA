@@ -365,19 +365,49 @@ using CUDATypes =
                >,
               RAJA::statement::CudaSyncThreads,
 
-                //Read data from shared memory
-                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
-                  >
-                 >,
-                RAJA::statement::CudaSyncThreads
-              > //close shared memory scope
-            >//for 2
-          >//for 3
-        > //CudaKernel
-      > //kernel policy
-    > //list
+              //Read data from shared memory
+              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
+                >
+               >,
+              RAJA::statement::CudaSyncThreads
+            > //close shared memory scope
+          >//for 2
+        >//for 3
+      > //CudaKernel
+    > //kernel policy
+  > //list
+  ,
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_direct,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_direct,
+
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
+                 >
+               >,
+              RAJA::statement::CudaSyncThreads,
+
+              //Read data from shared memory
+              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
+                >
+               >,
+              RAJA::statement::CudaSyncThreads
+            > //close shared memory scope
+          >//for 2
+        >//for 3
+      > //CudaKernel
+    > //kernel policy
+  > //list
   >; //types
 INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, MatTranspose, CUDATypes);
 #endif
@@ -388,8 +418,8 @@ using HIPTypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_direct,
 
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
 
@@ -397,23 +427,53 @@ using HIPTypes =
               RAJA::statement::For<1, RAJA::hip_thread_y_direct,
                 RAJA::statement::For<0, RAJA::hip_thread_x_direct,
                   RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
-                 >
-               >,
+                >
+              >,
               RAJA::statement::HipSyncThreads,
 
-                //Read data from shared memory
-                RAJA::statement::For<0, RAJA::hip_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::hip_thread_x_direct,
+              //Read data from shared memory
+              RAJA::statement::For<0, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<1, RAJA::hip_thread_x_direct,
                   RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
-                  >
-                 >,
-                RAJA::statement::HipSyncThreads
-              > //close shared memory scope
-            >//for 2
-          >//for 3
-        > //HipKernel
-      > //kernel policy
-    > //list
+                >
+              >,
+              RAJA::statement::HipSyncThreads
+            > //close shared memory scope
+          >//for 2
+        >//for 3
+      > //HipKernel
+    > //kernel policy
+  > //list
+  ,
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+
+            RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
+
+              //Load data into shared memory
+              RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                  RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
+                >
+              >,
+              RAJA::statement::HipSyncThreads,
+
+              //Read data from shared memory
+              RAJA::statement::For<0, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<1, RAJA::hip_thread_x_direct,
+                  RAJA::statement::Lambda<1, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0,1> >
+                >
+              >,
+              RAJA::statement::HipSyncThreads
+            > //close shared memory scope
+          >//for 2
+        >//for 3
+      > //HipKernel
+    > //kernel policy
+  > //list
   >; //types
 INSTANTIATE_TYPED_TEST_SUITE_P(HIP, MatTranspose_gpu, HIPTypes);
 #endif
@@ -851,10 +911,10 @@ using CudaTypes2 =
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
-             >,
+            >,
 
             //Slide window across matrix
-             RAJA::statement::For<2, RAJA::seq_exec,
+            RAJA::statement::For<2, RAJA::seq_exec,
 
               //Load matrix into tile
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
@@ -877,13 +937,13 @@ using CudaTypes2 =
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
-             >
-         > //Create shared memory
+            >
+          > //Create shared memory
         >//For 3
-       >//For 4
-        > //CudaKernel
-      > //close kernel policy
-    > //close list
+      >//For 4
+      > //CudaKernel
+    > //close kernel policy
+  > //close list
   ,
   RAJA::list<
     RAJA::SizeList<TILE_DIM, TILE_DIM>,
@@ -898,22 +958,22 @@ using CudaTypes2 =
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
-             >,
+            >,
 
             //Slide window across matrix
-             RAJA::statement::For<2, RAJA::seq_exec,
+            RAJA::statement::For<2, RAJA::seq_exec,
 
               //Load matrix into tile
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
+                  RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
                 >
               >,
-              //perform matrix multiplcation
+              //perform matrix multiplication
               RAJA::statement::CudaSyncThreads,
-                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
                 >
               >,
               RAJA::statement::CudaSyncThreads
@@ -924,13 +984,13 @@ using CudaTypes2 =
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
-             >
-         > //Create shared memory
+            >
+          > //Create shared memory
         >//For 3
-       >//For 4
-        > //CudaKernel
-      > //close kernel policy
-    > //close list
+      >//For 4
+      > //CudaKernel
+    > //close kernel policy
+  > //close list
   >;//close types
 
 INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmem, MatMultiply, CudaTypes2);
@@ -939,6 +999,54 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CUDAShmem, MatMultiply, CudaTypes2);
 #if defined(RAJA_ENABLE_HIP)
 using HipTypes2 =
   ::testing::Types<
+
+  RAJA::list<
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::SizeList<TILE_DIM, TILE_DIM>,
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+      RAJA::statement::For<4, RAJA::hip_block_y_direct,
+        RAJA::statement::For<3, RAJA::hip_block_x_direct,
+          RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2,1,0>,
+            //Initalize thread private value
+            RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+              RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
+              >
+            >,
+
+            //Slide window across matrix
+             RAJA::statement::For<2, RAJA::seq_exec,
+
+              //Load matrix into tile
+              RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                  RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
+                >
+              >,
+              //perform matrix multiplcation
+              RAJA::statement::HipSyncThreads,
+              RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
+                >
+              >,
+              RAJA::statement::HipSyncThreads
+            >, //sliding window
+
+            //Write memory out to global matrix
+            RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+              RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
+              >
+            >
+          > //Create shared memory
+        >//For 3
+      >//For 4
+      > //HipKernel
+    > //close kernel policy
+  > //close list
+  ,
   RAJA::list<
     RAJA::SizeList<TILE_DIM, TILE_DIM>,
     RAJA::SizeList<TILE_DIM, TILE_DIM>,
@@ -952,7 +1060,7 @@ using HipTypes2 =
               RAJA::statement::For<0, RAJA::hip_thread_x_direct,
                 RAJA::statement::Lambda<0, Segs<0,1>, Params<2> >
               >
-             >,
+            >,
 
             //Slide window across matrix
              RAJA::statement::For<2, RAJA::seq_exec,
@@ -960,14 +1068,14 @@ using HipTypes2 =
               //Load matrix into tile
               RAJA::statement::For<1, RAJA::hip_thread_y_direct,
                 RAJA::statement::For<0, RAJA::hip_thread_x_direct,
-                   RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
+                  RAJA::statement::Lambda<1, Segs<0,1,2,3,4>, Params<0,1> >
                 >
               >,
               //perform matrix multiplcation
               RAJA::statement::HipSyncThreads,
-                RAJA::statement::For<1, RAJA::hip_thread_y_direct,
-                  RAJA::statement::For<0, RAJA::hip_thread_x_direct,
-                   RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
+              RAJA::statement::For<1, RAJA::hip_thread_y_direct,
+                RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0,1,2> >
                 >
               >,
               RAJA::statement::HipSyncThreads
@@ -978,13 +1086,13 @@ using HipTypes2 =
               RAJA::statement::For<0, RAJA::hip_thread_x_direct,
                 RAJA::statement::Lambda<3, Segs<0,1, 3, 4>, Params<2> >
               >
-             >
-         > //Create shared memory
+            >
+          > //Create shared memory
         >//For 3
-       >//For 4
-        > //HipKernel
-      > //close kernel policy
-    > //close list
+      >//For 4
+      > //HipKernel
+    > //close kernel policy
+  > //close list
   >;//close types
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HIPShmem, MatMultiply_gpu, HipTypes2);
@@ -1230,22 +1338,15 @@ using CudaTypesMult3 =
         >
       >
     >
-    >//close list
-  >;//close types
-
-INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, MatMult3, CudaTypesMult3);
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipTypesMult3 =
-  ::testing::Types<
+  >//close list
+  ,
   RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::hip_block_x_loop,
-            RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
-              RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_direct,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
                 RAJA::statement::For<2, RAJA::seq_exec,
                   RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
@@ -1257,7 +1358,54 @@ using HipTypesMult3 =
         >
       >
     >
-    >//close list
+  >//close list
+  >;//close types
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, MatMult3, CudaTypesMult3);
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipTypesMult3 =
+  ::testing::Types<
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::hip_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::hip_block_x_direct,
+            RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
+                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
+                >,
+                RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
+              >
+            >
+          >
+        >
+      >
+    >
+  >//close list
+  ,
+  RAJA::list<
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::hip_block_x_loop,
+            RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
+              RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
+                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
+                >,
+                RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
+              >
+            >
+          >
+        >
+      >
+    >
+  >//close list
   >;//close types
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip, MatMult3_gpu, HipTypesMult3);

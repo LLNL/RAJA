@@ -233,6 +233,19 @@ using hip_thread_z_loop = hip_thread_xyz_loop<2, 1>;
 
 
 /*!
+ * Maps segment indices to CUDA blocks.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical blocks to fit all of the direct map requests.
+ */
+template<int dim>
+struct hip_block_xyz_direct{};
+
+using hip_block_x_direct = hip_block_xyz_direct<0>;
+using hip_block_y_direct = hip_block_xyz_direct<1>;
+using hip_block_z_direct = hip_block_xyz_direct<2>;
+
+
+/*!
  * Maps segment indices to HIP blocks.
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
