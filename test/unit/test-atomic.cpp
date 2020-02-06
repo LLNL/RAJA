@@ -42,6 +42,8 @@ void testAtomicFunctionBasic()
   dest[5] = (T)0;
   dest[6] = (T)N + 1;
   dest[7] = (T)0;
+  dest[8] = (T)N;
+  dest[9] = (T)0;
 
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
@@ -54,6 +56,8 @@ void testAtomicFunctionBasic()
     RAJA::atomicInc<AtomicPolicy>(dest + 5, (T)16);
     RAJA::atomicDec<AtomicPolicy>(dest + 6);
     RAJA::atomicDec<AtomicPolicy>(dest + 7, (T)16);
+    RAJA::atomicExchange<AtomicPolicy>(dest + 8, (T)i);
+    RAJA::atomicCAS<AtomicPolicy>(dest + 9, (T)i, (T)(i+1));
   });
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -68,6 +72,10 @@ void testAtomicFunctionBasic()
   EXPECT_EQ((T)4, dest[5]);
   EXPECT_EQ((T)1, dest[6]);
   EXPECT_EQ((T)13, dest[7]);
+  EXPECT_LE((T)0, dest[8]);
+  EXPECT_GT((T)N, dest[8]);
+  EXPECT_LT((T)0, dest[9]);
+  EXPECT_GE((T)N, dest[9]);
 
 
 #if defined(RAJA_ENABLE_CUDA)
