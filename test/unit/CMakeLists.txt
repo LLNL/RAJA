@@ -73,6 +73,10 @@ raja_add_test(
   NAME test-kernel-lambda-args
   SOURCES test-kernel-lambda-args.cpp)
 
+raja_add_test(
+  NAME test-sort
+  SOURCES test-sort.cpp)
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)
