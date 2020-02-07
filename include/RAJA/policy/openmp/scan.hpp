@@ -50,6 +50,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     Iter end,
     BinFn f)
 {
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p0 = std::min(n, omp_get_max_threads());
@@ -58,8 +59,8 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = detail::firstIndex(n, p, pid);
-    const int i1 = detail::firstIndex(n, p, pid + 1);
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
     inclusive_inplace(::RAJA::loop_exec{}, begin + i0, begin + i1, f);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
@@ -84,6 +85,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     BinFn f,
     ValueT v)
 {
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p0 = std::min(n, omp_get_max_threads());
@@ -92,8 +94,8 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = detail::firstIndex(n, p, pid);
-    const int i1 = detail::firstIndex(n, p, pid + 1);
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
     const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
 #pragma omp barrier
     exclusive_inplace(loop_exec{}, begin + i0, begin + i1, f, init);
