@@ -80,7 +80,7 @@ struct TypedRangeSegment {
    */
   using value_type = StorageT;
 
-  using IndexType = StorageT;
+  using IndexType = DiffT;
 
   //! construct a TypedRangeSegment from a begin and end value
   /*!
@@ -252,7 +252,7 @@ struct TypedRangeStrideSegment {
    */
   using value_type = StorageT;
 
-  using IndexType = StorageT;
+  using IndexType = DiffT;
   //! construct a TypedRangeStrideSegment from a begin and end value
   /*!
    * \param[in] begin the starting value (inclusive) for the range
