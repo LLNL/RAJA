@@ -50,7 +50,6 @@ void testAtomicFunctionBasic()
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(dest + 0, (T)1);
     RAJA::atomicSub<AtomicPolicy>(dest + 1, (T)1);
-
     RAJA::atomicMin<AtomicPolicy>(dest + 2, (T)i);
     RAJA::atomicMax<AtomicPolicy>(dest + 3, (T)i);
     RAJA::atomicInc<AtomicPolicy>(dest + 4);
@@ -283,7 +282,6 @@ void testAtomicFunctionBasic_gpu()
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
     RAJA::atomicSub<AtomicPolicy>(d_dest + 1, (T)1);
-
     RAJA::atomicMin<AtomicPolicy>(d_dest + 2, (T)i);
     RAJA::atomicMax<AtomicPolicy>(d_dest + 3, (T)i);
     RAJA::atomicInc<AtomicPolicy>(d_dest + 4);
