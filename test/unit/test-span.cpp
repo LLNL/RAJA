@@ -9,13 +9,13 @@
 /// Source file containing tests for Span
 ///
 
-#include "RAJA/internal/Span.hpp"
+#include "RAJA/util/Span.hpp"
 #include "RAJA_gtest.hpp"
 
 TEST(Span, basic)
 {
   int data[4] = {0, 1, 2, 3};
-  auto span = RAJA::impl::make_span(data, 4);
+  auto span = RAJA::make_span(data, 4);
   ASSERT_EQ(0, *span.begin());
   ASSERT_EQ(0, *span.data());
   ASSERT_EQ(3, *(span.data() + 3));
@@ -32,9 +32,8 @@ TEST(Span, basic)
 
   ASSERT_FALSE(cspan.empty());
   ASSERT_EQ(4, cspan.size());
-  ASSERT_EQ(4, cspan.max_size());
 
-  auto const empty = RAJA::impl::make_span((int*)nullptr, 0);
+  auto const empty = RAJA::make_span((int*)nullptr, 0);
   ASSERT_TRUE(empty.empty());
   ASSERT_EQ(0, empty.size());
 }
