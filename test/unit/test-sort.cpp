@@ -30,6 +30,14 @@ TEST(Atomic, basic_OpenMP_Sort)
 
 #endif
 
+#if defined(RAJA_ENABLE_TBB)
+
+TEST(Atomic, basic_TBB_Sort)
+{
+  testSortPol<RAJA::tbb_for_exec>();
+}
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 
 GPU_TEST(Atomic, basic_CUDA_Sort)
