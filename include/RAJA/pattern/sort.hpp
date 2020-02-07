@@ -46,7 +46,7 @@ namespace RAJA
 */
 template <typename ExecPolicy,
           typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+          typename Compare = operators::less<RAJA::detail::IterVal<Iter>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_iterator<Iter>>
 sort(const ExecPolicy &p,
@@ -54,7 +54,7 @@ sort(const ExecPolicy &p,
      Iter end,
      Compare comp = Compare{})
 {
-  using R = detail::IterVal<Iter>;
+  using R = RAJA::detail::IterVal<Iter>;
   static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
@@ -77,7 +77,7 @@ sort(const ExecPolicy &p,
 */
 template <typename ExecPolicy,
           typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+          typename Compare = operators::less<RAJA::detail::IterVal<Iter>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_iterator<Iter>>
 stable_sort(const ExecPolicy &p,
@@ -85,7 +85,7 @@ stable_sort(const ExecPolicy &p,
             Iter end,
             Compare comp = Compare{})
 {
-  using R = detail::IterVal<Iter>;
+  using R = RAJA::detail::IterVal<Iter>;
   static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
@@ -110,14 +110,14 @@ stable_sort(const ExecPolicy &p,
 */
 template <typename ExecPolicy,
           typename Container,
-          typename Compare = operators::less<detail::ContainerVal<Container>>>
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>>
 sort(const ExecPolicy &p,
      Container &c,
      Compare comp = Compare{})
 {
-  using T = detail::ContainerVal<Container>;
+  using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
@@ -139,14 +139,14 @@ sort(const ExecPolicy &p,
 */
 template <typename ExecPolicy,
           typename Container,
-          typename Compare = operators::less<detail::ContainerVal<Container>>>
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>>
 stable_sort(const ExecPolicy &p,
             Container &c,
             Compare comp = Compare{})
 {
-  using T = detail::ContainerVal<Container>;
+  using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,

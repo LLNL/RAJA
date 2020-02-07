@@ -64,22 +64,22 @@ namespace detail
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
 concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<detail::IterVal<Iter>>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>,
                       concepts::any_of<
-                        camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>>>
+                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
      Iter,
      Iter,
      Compare)
 {
   static_assert(concepts::all_of<
-                  type_traits::is_arithmetic<detail::IterVal<Iter>>,
+                  type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                   std::is_pointer<Iter>,
                   concepts::any_of<
-                    camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
-                    camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>::value,
+                    camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                    camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA stable_sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
 }
 
@@ -87,16 +87,16 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
         \brief stable sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
+concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
      Iter begin,
      Iter end,
-     operators::less<detail::IterVal<Iter>>)
+     operators::less<RAJA::detail::IterVal<Iter>>)
 {
   hipStream_t stream = 0;
 
-  using R = detail::IterVal<Iter>;
+  using R = RAJA::detail::IterVal<Iter>;
 
   int len = std::distance(begin, end);
   int begin_bit=0;
@@ -171,16 +171,16 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
         \brief stable sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
+concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
      Iter begin,
      Iter end,
-     operators::greater<detail::IterVal<Iter>>)
+     operators::greater<RAJA::detail::IterVal<Iter>>)
 {
   hipStream_t stream = 0;
 
-  using R = detail::IterVal<Iter>;
+  using R = RAJA::detail::IterVal<Iter>;
 
   int len = std::distance(begin, end);
   int begin_bit=0;
@@ -257,22 +257,22 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
 concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<detail::IterVal<Iter>>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>,
                       concepts::any_of<
-                        camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>>>
+                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
          Iter,
          Iter,
          Compare)
 {
   static_assert(concepts::all_of<
-                  type_traits::is_arithmetic<detail::IterVal<Iter>>,
+                  type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                   std::is_pointer<Iter>,
                   concepts::any_of<
-                    camp::is_same<Compare, operators::less<detail::IterVal<Iter>>>,
-                    camp::is_same<Compare, operators::greater<detail::IterVal<Iter>>>>>::value,
+                    camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                    camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
 }
 
@@ -280,12 +280,12 @@ unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
         \brief sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
+concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
      Iter begin,
      Iter end,
-     operators::less<detail::IterVal<Iter>> comp)
+     operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
   stable(p, begin, end, comp);
 }
@@ -294,12 +294,12 @@ unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
         \brief sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<detail::IterVal<Iter>>,
+concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
      Iter begin,
      Iter end,
-     operators::greater<detail::IterVal<Iter>> comp)
+     operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
   stable(p, begin, end, comp);
 }
