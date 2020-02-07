@@ -30,6 +30,7 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
 {
@@ -37,12 +38,6 @@ namespace impl
 {
 namespace scan
 {
-
-RAJA_INLINE
-int firstIndex(int n, int p, int pid)
-{
-  return (static_cast<size_t>(n) * pid) / p;
-}
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and
@@ -63,8 +58,8 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = firstIndex(n, p, pid);
-    const int i1 = firstIndex(n, p, pid + 1);
+    const int i0 = detail::firstIndex(n, p, pid);
+    const int i1 = detail::firstIndex(n, p, pid + 1);
     inclusive_inplace(::RAJA::loop_exec{}, begin + i0, begin + i1, f);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
@@ -97,8 +92,8 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = firstIndex(n, p, pid);
-    const int i1 = firstIndex(n, p, pid + 1);
+    const int i0 = detail::firstIndex(n, p, pid);
+    const int i1 = detail::firstIndex(n, p, pid + 1);
     const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
 #pragma omp barrier
     exclusive_inplace(loop_exec{}, begin + i0, begin + i1, f, init);

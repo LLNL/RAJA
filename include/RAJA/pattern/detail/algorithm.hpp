@@ -28,12 +28,19 @@ namespace RAJA
 namespace detail
 {
 
+
 template <typename Iter>
 using IterVal = camp::decay<decltype(*camp::val<Iter>())>;
 
 template <typename Container>
 using ContainerVal =
     camp::decay<decltype(*camp::val<camp::iterator_from<Container>>())>;
+
+RAJA_INLINE
+int firstIndex(int n, int p, int pid)
+{
+  return (static_cast<size_t>(n) * pid) / p;
+}
 
 }  // end namespace detail
 
