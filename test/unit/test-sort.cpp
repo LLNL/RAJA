@@ -16,12 +16,16 @@ TEST(Atomic, basic_seq_Sort)
   testSortPol<RAJA::seq_exec>();
 }
 
-// TODO implement omp sort
-#if defined(RAJA_ENABLE_OPENMP) && 0
+TEST(Atomic, basic_loop_Sort)
+{
+  testSortPol<RAJA::loop_exec>();
+}
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 TEST(Atomic, basic_OpenMP_Sort)
 {
-  testSortPol<RAJA::omp_for_exec>();
+  testSortPol<RAJA::omp_parallel_for_exec>();
 }
 
 #endif
