@@ -262,7 +262,7 @@ void testAtomicFunctionBasic_gpu()
   // initialize an array
   T *dest = new T[8];
   T *d_dest = nullptr;
-  hipMalloc((void **)&d_dest, sizeof(T) * 8);
+  hipMalloc((void **)&d_dest, sizeof(T) * 10);
 
   // use atomic add to reduce the array
   dest[0] = (T)0;
@@ -273,8 +273,10 @@ void testAtomicFunctionBasic_gpu()
   dest[5] = (T)0;
   dest[6] = (T)N + 1;
   dest[7] = (T)0;
+  dest[8] = (T)N;
+  dest[9] = (T)0;
 
-  hipMemcpy(d_dest, dest, 8*sizeof(T), hipMemcpyHostToDevice);
+  hipMemcpy(d_dest, dest, 10*sizeof(T), hipMemcpyHostToDevice);
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
@@ -286,11 +288,13 @@ void testAtomicFunctionBasic_gpu()
     RAJA::atomicInc<AtomicPolicy>(d_dest + 5, (T)16);
     RAJA::atomicDec<AtomicPolicy>(d_dest + 6);
     RAJA::atomicDec<AtomicPolicy>(d_dest + 7, (T)16);
+    RAJA::atomicExchange<AtomicPolicy>(d_dest + 8, (T)i);
+    RAJA::atomicCAS<AtomicPolicy>(d_dest + 9, (T)i, (T)(i+1));
   });
 
   hipDeviceSynchronize();
 
-  hipMemcpy(dest, d_dest, 8*sizeof(T), hipMemcpyDeviceToHost);
+  hipMemcpy(dest, d_dest, 10*sizeof(T), hipMemcpyDeviceToHost);
 
   EXPECT_EQ((T)N, dest[0]);
   EXPECT_EQ((T)0, dest[1]);
@@ -300,6 +304,10 @@ void testAtomicFunctionBasic_gpu()
   EXPECT_EQ((T)4, dest[5]);
   EXPECT_EQ((T)1, dest[6]);
   EXPECT_EQ((T)13, dest[7]);
+  EXPECT_LE((T)0, dest[8]);
+  EXPECT_GT((T)N, dest[8]);
+  EXPECT_LT((T)0, dest[9]);
+  EXPECT_GE((T)N, dest[9]);
 
 
   delete[] dest;
