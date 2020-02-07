@@ -22,14 +22,15 @@ void testAtomicFunctionBasic()
   RAJA::RangeSegment seg(0, N);
 
 // initialize an array
+  const int len = 10;
 #if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * 10));
+  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * len));
 
   cudaErrchk(cudaDeviceSynchronize());
 
 #else
-  T *dest = new T[10];
+  T *dest = new T[len];
 #endif
 
 
@@ -260,9 +261,10 @@ void testAtomicFunctionBasic_gpu()
   RAJA::RangeSegment seg(0, N);
 
   // initialize an array
-  T *dest = new T[10];
+  const int len = 10;
+  T *dest = new T[len];
   T *d_dest = nullptr;
-  hipErrchk(hipMalloc((void **)&d_dest, sizeof(T) * 10));
+  hipErrchk(hipMalloc((void **)&d_dest, sizeof(T) * len));
 
   // use atomic add to reduce the array
   dest[0] = (T)0;
@@ -276,7 +278,7 @@ void testAtomicFunctionBasic_gpu()
   dest[8] = (T)N;
   dest[9] = (T)0;
 
-  hipErrchk(hipMemcpy(d_dest, dest, 10*sizeof(T), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_dest, dest, len*sizeof(T), hipMemcpyHostToDevice));
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
@@ -294,7 +296,7 @@ void testAtomicFunctionBasic_gpu()
 
   hipErrchk(hipDeviceSynchronize());
 
-  hipErrchk(hipMemcpy(dest, d_dest, 10*sizeof(T), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(dest, d_dest, len*sizeof(T), hipMemcpyDeviceToHost));
 
   EXPECT_EQ((T)N, dest[0]);
   EXPECT_EQ((T)0, dest[1]);
