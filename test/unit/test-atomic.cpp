@@ -22,14 +22,15 @@ void testAtomicFunctionBasic()
   RAJA::RangeSegment seg(0, N);
 
 // initialize an array
+  const int len = 10;
 #if defined(RAJA_ENABLE_CUDA)
   T *dest = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * 8));
+  cudaErrchk(cudaMallocManaged((void **)&dest, sizeof(T) * len));
 
   cudaErrchk(cudaDeviceSynchronize());
 
 #else
-  T *dest = new T[8];
+  T *dest = new T[len];
 #endif
 
 
@@ -42,18 +43,21 @@ void testAtomicFunctionBasic()
   dest[5] = (T)0;
   dest[6] = (T)N + 1;
   dest[7] = (T)0;
+  dest[8] = (T)N;
+  dest[9] = (T)0;
 
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(dest + 0, (T)1);
     RAJA::atomicSub<AtomicPolicy>(dest + 1, (T)1);
-
     RAJA::atomicMin<AtomicPolicy>(dest + 2, (T)i);
     RAJA::atomicMax<AtomicPolicy>(dest + 3, (T)i);
     RAJA::atomicInc<AtomicPolicy>(dest + 4);
     RAJA::atomicInc<AtomicPolicy>(dest + 5, (T)16);
     RAJA::atomicDec<AtomicPolicy>(dest + 6);
     RAJA::atomicDec<AtomicPolicy>(dest + 7, (T)16);
+    RAJA::atomicExchange<AtomicPolicy>(dest + 8, (T)i);
+    RAJA::atomicCAS<AtomicPolicy>(dest + 9, (T)i, (T)(i+1));
   });
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -68,6 +72,10 @@ void testAtomicFunctionBasic()
   EXPECT_EQ((T)4, dest[5]);
   EXPECT_EQ((T)1, dest[6]);
   EXPECT_EQ((T)13, dest[7]);
+  EXPECT_LE((T)0, dest[8]);
+  EXPECT_GT((T)N, dest[8]);
+  EXPECT_LT((T)0, dest[9]);
+  EXPECT_GE((T)N, dest[9]);
 
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -252,9 +260,10 @@ void testAtomicFunctionBasic_gpu()
   RAJA::RangeSegment seg(0, N);
 
   // initialize an array
-  T *dest = new T[8];
+  const int len = 10;
+  T *dest = new T[len];
   T *d_dest = nullptr;
-  hipMalloc((void **)&d_dest, sizeof(T) * 8);
+  hipErrchk(hipMalloc((void **)&d_dest, sizeof(T) * len));
 
   // use atomic add to reduce the array
   dest[0] = (T)0;
@@ -265,24 +274,27 @@ void testAtomicFunctionBasic_gpu()
   dest[5] = (T)0;
   dest[6] = (T)N + 1;
   dest[7] = (T)0;
+  dest[8] = (T)N;
+  dest[9] = (T)0;
 
-  hipMemcpy(d_dest, dest, 8*sizeof(T), hipMemcpyHostToDevice);
+  hipErrchk(hipMemcpy(d_dest, dest, len*sizeof(T), hipMemcpyHostToDevice));
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::atomicAdd<AtomicPolicy>(d_dest + 0, (T)1);
     RAJA::atomicSub<AtomicPolicy>(d_dest + 1, (T)1);
-
     RAJA::atomicMin<AtomicPolicy>(d_dest + 2, (T)i);
     RAJA::atomicMax<AtomicPolicy>(d_dest + 3, (T)i);
     RAJA::atomicInc<AtomicPolicy>(d_dest + 4);
     RAJA::atomicInc<AtomicPolicy>(d_dest + 5, (T)16);
     RAJA::atomicDec<AtomicPolicy>(d_dest + 6);
     RAJA::atomicDec<AtomicPolicy>(d_dest + 7, (T)16);
+    RAJA::atomicExchange<AtomicPolicy>(d_dest + 8, (T)i);
+    RAJA::atomicCAS<AtomicPolicy>(d_dest + 9, (T)i, (T)(i+1));
   });
 
-  hipDeviceSynchronize();
+  hipErrchk(hipDeviceSynchronize());
 
-  hipMemcpy(dest, d_dest, 8*sizeof(T), hipMemcpyDeviceToHost);
+  hipErrchk(hipMemcpy(dest, d_dest, len*sizeof(T), hipMemcpyDeviceToHost));
 
   EXPECT_EQ((T)N, dest[0]);
   EXPECT_EQ((T)0, dest[1]);
@@ -292,10 +304,14 @@ void testAtomicFunctionBasic_gpu()
   EXPECT_EQ((T)4, dest[5]);
   EXPECT_EQ((T)1, dest[6]);
   EXPECT_EQ((T)13, dest[7]);
+  EXPECT_LE((T)0, dest[8]);
+  EXPECT_GT((T)N, dest[8]);
+  EXPECT_LT((T)0, dest[9]);
+  EXPECT_GE((T)N, dest[9]);
 
 
   delete[] dest;
-  hipFree(d_dest);
+  hipErrchk(hipFree(d_dest));
 }
 
 template <typename ExecPolicy, typename AtomicPolicy>
@@ -326,13 +342,13 @@ void testAtomicViewBasic_gpu()
   T *dest = new T[N / 2];
   T *d_source = nullptr;
   T *d_dest = nullptr;
-  hipMalloc((void **)&d_source, sizeof(T) * N);
-  hipMalloc((void **)&d_dest, sizeof(T) * N / 2);
+  hipErrchk(hipMalloc((void **)&d_source, sizeof(T) * N));
+  hipErrchk(hipMalloc((void **)&d_dest, sizeof(T) * N / 2));
 
   RAJA::forall<RAJA::seq_exec>(seg,
                                [=](RAJA::Index_type i) { source[i] = (T)1; });
 
-  hipMemcpy(d_source, source, N*sizeof(T), hipMemcpyHostToDevice);
+  hipErrchk(hipMemcpy(d_source, source, N*sizeof(T), hipMemcpyHostToDevice));
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(d_source, N);
@@ -350,16 +366,16 @@ void testAtomicViewBasic_gpu()
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
-  hipDeviceSynchronize();
+  hipErrchk(hipDeviceSynchronize());
 
-  hipMemcpy(dest, d_dest, (N / 2)*sizeof(T), hipMemcpyDeviceToHost);
+  hipErrchk(hipMemcpy(dest, d_dest, (N / 2)*sizeof(T), hipMemcpyDeviceToHost));
 
   for (RAJA::Index_type i = 0; i < N / 2; ++i) {
     EXPECT_EQ((T)2, dest[i]);
   }
 
-  hipFree(d_source);
-  hipFree(d_dest);
+  hipErrchk(hipFree(d_source));
+  hipErrchk(hipFree(d_dest));
   delete[] source;
   delete[] dest;
 }
@@ -394,9 +410,9 @@ void testAtomicLogical_gpu()
   T *d_dest_and = nullptr;
   T *d_dest_or = nullptr;
   T *d_dest_xor = nullptr;
-  hipMalloc((void **)&d_dest_and, sizeof(T) * N);
-  hipMalloc((void **)&d_dest_or, sizeof(T) * N);
-  hipMalloc((void **)&d_dest_xor, sizeof(T) * N);
+  hipErrchk(hipMalloc((void **)&d_dest_and, sizeof(T) * N));
+  hipErrchk(hipMalloc((void **)&d_dest_or, sizeof(T) * N));
+  hipErrchk(hipMalloc((void **)&d_dest_xor, sizeof(T) * N));
 
   RAJA::forall<RAJA::seq_exec>(seg_bytes, [=](RAJA::Index_type i) {
     dest_and[i] = (T)0;
@@ -404,9 +420,9 @@ void testAtomicLogical_gpu()
     dest_xor[i] = (T)0;
   });
 
-  hipMemcpy(d_dest_and, dest_and, N*sizeof(T), hipMemcpyHostToDevice);
-  hipMemcpy(d_dest_or,  dest_or,  N*sizeof(T), hipMemcpyHostToDevice);
-  hipMemcpy(d_dest_xor, dest_xor, N*sizeof(T), hipMemcpyHostToDevice);
+  hipErrchk(hipMemcpy(d_dest_and, dest_and, N*sizeof(T), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_dest_or,  dest_or,  N*sizeof(T), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_dest_xor, dest_xor, N*sizeof(T), hipMemcpyHostToDevice));
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     RAJA::Index_type offset = i / 8;
@@ -417,11 +433,11 @@ void testAtomicLogical_gpu()
     RAJA::atomicXor<AtomicPolicy>(d_dest_xor + offset, (T)(1 << bit));
   });
 
-  hipDeviceSynchronize();
+  hipErrchk(hipDeviceSynchronize());
 
-  hipMemcpy(dest_and, d_dest_and, N*sizeof(T), hipMemcpyDeviceToHost);
-  hipMemcpy(dest_or,  d_dest_or,  N*sizeof(T), hipMemcpyDeviceToHost);
-  hipMemcpy(dest_xor, d_dest_xor, N*sizeof(T), hipMemcpyDeviceToHost);
+  hipErrchk(hipMemcpy(dest_and, d_dest_and, N*sizeof(T), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(dest_or,  d_dest_or,  N*sizeof(T), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(dest_xor, d_dest_xor, N*sizeof(T), hipMemcpyDeviceToHost));
 
   for (RAJA::Index_type i = 0; i < N; ++i) {
     EXPECT_EQ((T)0x00, dest_and[i]);
@@ -429,9 +445,9 @@ void testAtomicLogical_gpu()
     EXPECT_EQ((T)0xFF, dest_xor[i]);
   }
 
-  hipFree(d_dest_and);
-  hipFree(d_dest_or);
-  hipFree(d_dest_xor);
+  hipErrchk(hipFree(d_dest_and));
+  hipErrchk(hipFree(d_dest_or));
+  hipErrchk(hipFree(d_dest_xor));
   delete[] dest_and;
   delete[] dest_or;
   delete[] dest_xor;

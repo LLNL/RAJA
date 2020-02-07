@@ -486,9 +486,45 @@ RAJA_INLINE __device__ unsigned long long hip_atomicXor<unsigned long long>(
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T value)
 {
-  // attempt to use the HIP builtin atomic, if it exists for T
-  return ::atomicExch((T *)acc, value);
+  return hip_atomic_CAS_oper(acc, [=] __device__(T) {
+    return value;
+  });
 }
+
+#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
+template <>
+RAJA_INLINE __device__ int hip_atomicExchange<int>(
+    int volatile *acc, int value)
+{
+  return ::atomicExch((int *)acc, value);
+}
+
+template <>
+RAJA_INLINE __device__ unsigned hip_atomicExchange<unsigned>(
+    unsigned volatile *acc, unsigned value)
+{
+  return ::atomicExch((unsigned *)acc, value);
+}
+#endif
+
+#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
+template <>
+RAJA_INLINE __device__ unsigned long long hip_atomicExchange<unsigned long long>(
+    unsigned long long volatile *acc,
+    unsigned long long value)
+{
+  return ::atomicExch((unsigned long long *)acc, value);
+}
+#endif
+
+#if __HIP_ARCH_HAS_GLOBAL_FLOAT_ATOMIC_EXCH__
+template <>
+RAJA_INLINE __device__ float hip_atomicExchange<float>(
+    float volatile *acc, float value)
+{
+  return ::atomicExch((float *)acc, value);
+}
+#endif
 
 
 template <typename T>
