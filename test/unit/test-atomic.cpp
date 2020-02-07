@@ -260,7 +260,7 @@ void testAtomicFunctionBasic_gpu()
   RAJA::RangeSegment seg(0, N);
 
   // initialize an array
-  T *dest = new T[8];
+  T *dest = new T[10];
   T *d_dest = nullptr;
   hipErrchk(hipMalloc((void **)&d_dest, sizeof(T) * 10));
 
