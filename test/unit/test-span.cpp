@@ -9,31 +9,45 @@
 /// Source file containing tests for Span
 ///
 
-#include "RAJA/util/Span.hpp"
-#include "RAJA_gtest.hpp"
+#include "test-span.hpp"
 
-TEST(Span, basic)
+#define RAJA_SPAN_RUN_TEST(test) \
+  test<int, int>(); \
+  test<int, size_t>(); \
+  test<double, int>(); \
+  test<double, size_t>(); \
+
+TEST(Span, basic_construct_Span)
 {
-  int data[4] = {0, 1, 2, 3};
-  auto span = RAJA::make_span(data, 4);
-  ASSERT_EQ(0, *span.begin());
-  ASSERT_EQ(0, *span.data());
-  ASSERT_EQ(3, *(span.data() + 3));
-  ASSERT_EQ(3, *(span.end() - 1));
+  RAJA_SPAN_RUN_TEST(testSpanConstructTypes)
+}
 
-  ASSERT_EQ(0, *span.cbegin());
-  ASSERT_EQ(0, *span.data());
-  ASSERT_EQ(3, *(span.data() + 3));
-  ASSERT_EQ(3, *(span.cend() - 1));
+TEST(Span, basic_assign_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanAssignTypes)
+}
 
-  auto const cspan = span;
-  ASSERT_EQ(0, *cspan.begin());
-  ASSERT_EQ(3, *(cspan.end() - 1));
+TEST(Span, basic_iterator_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanIteratorTypes)
+}
 
-  ASSERT_FALSE(cspan.empty());
-  ASSERT_EQ(4, cspan.size());
+TEST(Span, basic_element_access_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanElementAccessTypes)
+}
 
-  auto const empty = RAJA::make_span((int*)nullptr, 0);
-  ASSERT_TRUE(empty.empty());
-  ASSERT_EQ(0, empty.size());
+TEST(Span, basic_observe_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanObserveTypes)
+}
+
+TEST(Span, basic_subview_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanSubViewTypes)
+}
+
+TEST(Span, basic_make_span_Span)
+{
+  RAJA_SPAN_RUN_TEST(testSpanMakeSpanTypes)
 }
