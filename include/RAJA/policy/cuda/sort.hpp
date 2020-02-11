@@ -52,17 +52,19 @@ concepts::enable_if<concepts::negate<concepts::all_of<
                         camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                         camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-     Iter,
-     Iter,
-     Compare)
+       Iter,
+       Iter,
+       Compare)
 {
-  static_assert(concepts::all_of<
-                  type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                  std::is_pointer<Iter>,
-                  concepts::any_of<
-                    camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                    camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
-                "RAJA stable_sort<cuda_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
+  static_assert (std::is_pointer<Iter>::value,
+      "stable_sort<cuda_exec> is only implemented for pointers");
+  using iterval = RAJA::detail::IterVal<Iter>;
+  static_assert (type_traits::is_arithmetic<iterval>::value,
+      "stable_sort<cuda_exec> is only implemented for arithmetic types");
+  static_assert (concepts::any_of<
+      camp::is_same<Compare, operators::less<iterval>>,
+      camp::is_same<Compare, operators::greater<iterval>>>::value,
+      "stable_sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 }
 
 /*!
@@ -72,9 +74,9 @@ template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-     Iter begin,
-     Iter end,
-     operators::less<RAJA::detail::IterVal<Iter>>)
+       Iter begin,
+       Iter end,
+       operators::less<RAJA::detail::IterVal<Iter>>)
 {
   cudaStream_t stream = 0;
 
@@ -136,9 +138,9 @@ template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-     Iter begin,
-     Iter end,
-     operators::greater<RAJA::detail::IterVal<Iter>>)
+       Iter begin,
+       Iter end,
+       operators::greater<RAJA::detail::IterVal<Iter>>)
 {
   cudaStream_t stream = 0;
 
@@ -209,13 +211,15 @@ unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
          Iter,
          Compare)
 {
-  static_assert(concepts::all_of<
-                  type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                  std::is_pointer<Iter>,
-                  concepts::any_of<
-                    camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                    camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
-                "RAJA sort<cuda_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
+  static_assert (std::is_pointer<Iter>::value,
+      "sort<cuda_exec> is only implemented for pointers");
+  using iterval = RAJA::detail::IterVal<Iter>;
+  static_assert (type_traits::is_arithmetic<iterval>::value,
+      "sort<cuda_exec> is only implemented for arithmetic types");
+  static_assert (concepts::any_of<
+      camp::is_same<Compare, operators::less<iterval>>,
+      camp::is_same<Compare, operators::greater<iterval>>>::value,
+      "sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 }
 
 /*!
@@ -225,9 +229,9 @@ template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-     Iter begin,
-     Iter end,
-     operators::less<RAJA::detail::IterVal<Iter>> comp)
+         Iter begin,
+         Iter end,
+         operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
   stable(p, begin, end, comp);
 }
@@ -239,9 +243,9 @@ template <size_t BLOCK_SIZE, bool Async, typename Iter>
 concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                     std::is_pointer<Iter>>
 unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-     Iter begin,
-     Iter end,
-     operators::greater<RAJA::detail::IterVal<Iter>> comp)
+         Iter begin,
+         Iter end,
+         operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
   stable(p, begin, end, comp);
 }
