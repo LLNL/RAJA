@@ -15,12 +15,12 @@
 template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicViewPol()
 {
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, int, 100000>();
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, unsigned, 100000>();
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, long long, 100000>();
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, unsigned long long, 100000>();
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, float, 100000>();
-  testAtomicViewBasic<ExecPolicy, AtomicPolicy, double, 100000>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, int, hundredk>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, unsigned, hundredk>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, long long, hundredk>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, unsigned long long, hundredk>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, float, hundredk>();
+  testAtomicViewBasic<ExecPolicy, AtomicPolicy, double, hundredk>();
 }
 
 // test instantiations

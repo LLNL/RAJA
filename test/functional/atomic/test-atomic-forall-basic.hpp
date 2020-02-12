@@ -11,6 +11,7 @@
 
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
+#include "RAJA_value_params.hpp"
 
 
 template <typename ExecPolicy,

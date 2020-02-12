@@ -21,6 +21,7 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 #include <type_traits>
+#include "RAJA_value_params.hpp"
 
 template < typename T >
 RAJA_INLINE

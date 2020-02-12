@@ -23,15 +23,15 @@
 template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicRefPol()
 {
-  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, int, 10000>();
+  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, int, tenk>();
   #if defined(TEST_EXHAUSTIVE)
-  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned, 10000>();
-  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, long long, 10000>();
-  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned long long, 10000>();
+  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned, tenk>();
+  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, long long, tenk>();
+  testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned long long, tenk>();
 
-  testAtomicRefFloating<ExecPolicy, AtomicPolicy, float, 10000>();
+  testAtomicRefFloating<ExecPolicy, AtomicPolicy, float, tenk>();
   #endif
-  testAtomicRefFloating<ExecPolicy, AtomicPolicy, double, 10000>();
+  testAtomicRefFloating<ExecPolicy, AtomicPolicy, double, tenk>();
 }
 
 // test instantiations

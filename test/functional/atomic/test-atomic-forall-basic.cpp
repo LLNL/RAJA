@@ -11,28 +11,29 @@
 
 #include "test-atomic-forall-basic.hpp"
 
+
 // top layer of function templates for tests
 template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicFunctionPol()
 {
-  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, int, 10000>();
-  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, unsigned, 10000>();
-  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, long long, 10000>();
+  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, int, tenk>();
+  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, unsigned, tenk>();
+  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, long long, tenk>();
   testAtomicFunctionBasic<ExecPolicy,
                           AtomicPolicy,
                           unsigned long long,
-                          10000>();
-  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, float, 10000>();
-  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, double, 10000>();
+                          tenk>();
+  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, float, tenk>();
+  testAtomicFunctionBasic<ExecPolicy, AtomicPolicy, double, tenk>();
 }
 
 template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicLogicalPol()
 {
-  testAtomicLogical<ExecPolicy, AtomicPolicy, int, 100000>();
-  testAtomicLogical<ExecPolicy, AtomicPolicy, unsigned, 100000>();
-  testAtomicLogical<ExecPolicy, AtomicPolicy, long long, 100000>();
-  testAtomicLogical<ExecPolicy, AtomicPolicy, unsigned long long, 100000>();
+  testAtomicLogical<ExecPolicy, AtomicPolicy, int, hundredk>();
+  testAtomicLogical<ExecPolicy, AtomicPolicy, unsigned, hundredk>();
+  testAtomicLogical<ExecPolicy, AtomicPolicy, long long, hundredk>();
+  testAtomicLogical<ExecPolicy, AtomicPolicy, unsigned long long, hundredk>();
 }
 
 // test instantiations
