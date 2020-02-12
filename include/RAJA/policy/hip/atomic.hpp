@@ -526,33 +526,6 @@ RAJA_INLINE __device__ float hip_atomicExchange<float>(
 }
 #endif
 
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicExchange<unsigned>(
-    unsigned volatile *acc, unsigned value)
-{
-  return ::atomicExch((unsigned *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicExchange<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicExch((unsigned long long *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_FLOAT_ATOMIC_EXCH__
-template <>
-RAJA_INLINE __device__ float hip_atomicExchange<float>(
-    float volatile *acc, float value)
-{
-  return ::atomicExch((float *)acc, value);
-}
-#endif
-
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicCAS(T volatile *acc, T compare, T value)
 {
