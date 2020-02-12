@@ -47,7 +47,7 @@ struct Info {
 };
 
 template <typename Tuple>
-struct ScanHIP : public ::testing::Test {
+struct ScanHIPUnitTest : public ::testing::Test {
 
   using data_type = typename Info<Tuple>::data_type;
   static data_type* data;
@@ -68,11 +68,11 @@ struct ScanHIP : public ::testing::Test {
 };
 
 template <typename Tuple>
-typename Info<Tuple>::data_type* ScanHIP<Tuple>::data = nullptr;
+typename Info<Tuple>::data_type* ScanHIPUnitTest<Tuple>::data = nullptr;
 template <typename Tuple>
-typename Info<Tuple>::data_type* ScanHIP<Tuple>::d_data = nullptr;
+typename Info<Tuple>::data_type* ScanHIPUnitTest<Tuple>::d_data = nullptr;
 
-TYPED_TEST_SUITE_P(ScanHIP);
+TYPED_TEST_SUITE_P(ScanHIPUnitTest);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -105,7 +105,7 @@ template <typename Function, typename T>
   return ::testing::AssertionSuccess();
 }
 
-GPU_TYPED_TEST_P(ScanHIP, inclusive)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, inclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -116,8 +116,8 @@ GPU_TYPED_TEST_P(ScanHIP, inclusive)
   hipMalloc((void**)&d_out, sizeof(T) * N);
 
   RAJA::inclusive_scan(typename Info<TypeParam>::exec(),
-                       ScanHIP<TypeParam>::d_data,
-                       ScanHIP<TypeParam>::d_data + N,
+                       ScanHIPUnitTest<TypeParam>::d_data,
+                       ScanHIPUnitTest<TypeParam>::d_data + N,
                        d_out,
                        Function{});
 
@@ -125,12 +125,12 @@ GPU_TYPED_TEST_P(ScanHIP, inclusive)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_inclusive<Function>(out, ScanHIP<TypeParam>::data));
+  ASSERT_TRUE(check_inclusive<Function>(out, ScanHIPUnitTest<TypeParam>::data));
   free(out);
   hipFree(d_out);
 }
 
-GPU_TYPED_TEST_P(ScanHIP, inclusive_inplace)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, inclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -139,7 +139,7 @@ GPU_TYPED_TEST_P(ScanHIP, inclusive_inplace)
   T* d_data;
   data = (T*) malloc(sizeof(T) * N);
   hipMalloc((void**)&d_data, sizeof(T) * N);
-  std::copy_n(ScanHIP<TypeParam>::data, N, data);
+  std::copy_n(ScanHIPUnitTest<TypeParam>::data, N, data);
   hipMemcpy(d_data, data,
             sizeof(T) * N,
             hipMemcpyHostToDevice);
@@ -153,11 +153,11 @@ GPU_TYPED_TEST_P(ScanHIP, inclusive_inplace)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_inclusive<Function>(data, ScanHIP<TypeParam>::data));
+  ASSERT_TRUE(check_inclusive<Function>(data, ScanHIPUnitTest<TypeParam>::data));
   hipFree(data);
 }
 
-GPU_TYPED_TEST_P(ScanHIP, exclusive)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, exclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -168,8 +168,8 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive)
   hipMalloc((void**)&d_out, sizeof(T) * N);
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
-                       ScanHIP<TypeParam>::d_data,
-                       ScanHIP<TypeParam>::d_data + N,
+                       ScanHIPUnitTest<TypeParam>::d_data,
+                       ScanHIPUnitTest<TypeParam>::d_data + N,
                        d_out,
                        Function{});
 
@@ -177,12 +177,12 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_exclusive<Function>(out, ScanHIP<TypeParam>::data));
+  ASSERT_TRUE(check_exclusive<Function>(out, ScanHIPUnitTest<TypeParam>::data));
   free(out);
   hipFree(d_out);
 }
 
-GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, exclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -191,7 +191,7 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace)
   T* d_data;
   data = (T*) malloc(sizeof(T) * N);
   hipMalloc((void**)&d_data, sizeof(T) * N);
-  std::copy_n(ScanHIP<TypeParam>::data, N, data);
+  std::copy_n(ScanHIPUnitTest<TypeParam>::data, N, data);
   hipMemcpy(d_data, data,
             sizeof(T) * N,
             hipMemcpyHostToDevice);
@@ -205,12 +205,12 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_exclusive<Function>(data, ScanHIP<TypeParam>::data));
+  ASSERT_TRUE(check_exclusive<Function>(data, ScanHIPUnitTest<TypeParam>::data));
   free(data);
   hipFree(d_data);
 }
 
-GPU_TYPED_TEST_P(ScanHIP, exclusive_offset)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, exclusive_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -221,8 +221,8 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_offset)
   hipMalloc((void**)&d_out, sizeof(T) * N);
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
-                       ScanHIP<TypeParam>::d_data,
-                       ScanHIP<TypeParam>::d_data + N,
+                       ScanHIPUnitTest<TypeParam>::d_data,
+                       ScanHIPUnitTest<TypeParam>::d_data + N,
                        d_out,
                        Function{},
                        T(2));
@@ -231,12 +231,12 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_offset)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_exclusive<Function>(out, ScanHIP<TypeParam>::data, T(2)));
+  ASSERT_TRUE(check_exclusive<Function>(out, ScanHIPUnitTest<TypeParam>::data, T(2)));
   free(out);
   hipFree(d_out);
 }
 
-GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace_offset)
+GPU_TYPED_TEST_P(ScanHIPUnitTest, exclusive_inplace_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -245,7 +245,7 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace_offset)
   T* d_data;
   data = (T*) malloc(sizeof(T) * N);
   hipMalloc((void**)&d_data, sizeof(T) * N);
-  std::copy_n(ScanHIP<TypeParam>::data, N, data);
+  std::copy_n(ScanHIPUnitTest<TypeParam>::data, N, data);
   hipMemcpy(d_data, data,
             sizeof(T) * N,
             hipMemcpyHostToDevice);
@@ -257,17 +257,17 @@ GPU_TYPED_TEST_P(ScanHIP, exclusive_inplace_offset)
             sizeof(T) * N,
             hipMemcpyDeviceToHost);
 
-  ASSERT_TRUE(check_exclusive<Function>(data, ScanHIP<TypeParam>::data, T(2)));
+  ASSERT_TRUE(check_exclusive<Function>(data, ScanHIPUnitTest<TypeParam>::data, T(2)));
   free(data);
   hipFree(d_data);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ScanHIP,
-                            inclusive,
-                            inclusive_inplace,
-                            exclusive,
-                            exclusive_inplace,
-                            exclusive_offset,
-                            exclusive_inplace_offset);
+REGISTER_TYPED_TEST_SUITE_P(ScanHIPUnitTest,
+                           inclusive,
+                           inclusive_inplace,
+                           exclusive,
+                           exclusive_inplace,
+                           exclusive_offset,
+                           exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(ScanHIPTests, ScanHIP, CrossTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ScanHIPUnitTests, ScanHIPUnitTest, CrossTypes);
