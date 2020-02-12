@@ -22,7 +22,7 @@ static double* arr_d;
 static Index_type alen;
 static double test_val;
 
-struct ForallViewHIP : ::testing::Test {
+struct ForallViewHIPUnitTest : ::testing::Test {
   virtual void SetUp()
   {
     alen = 100000;
@@ -47,7 +47,7 @@ struct ForallViewHIP : ::testing::Test {
   }
 };
 
-GPU_TEST_F(ForallViewHIP, ForallViewLayout)
+GPU_TEST_F(ForallViewHIPUnitTest, ForallViewLayout)
 {
   const Index_type alen = ::alen;
   double* arr_h = ::arr_h;
@@ -70,7 +70,7 @@ GPU_TEST_F(ForallViewHIP, ForallViewLayout)
   }
 }
 
-GPU_TEST_F(ForallViewHIP, ForallViewOffsetLayout)
+GPU_TEST_F(ForallViewHIPUnitTest, ForallViewOffsetLayout)
 {
   const Index_type alen = ::alen;
   double* arr_h = ::arr_h;
@@ -94,7 +94,7 @@ GPU_TEST_F(ForallViewHIP, ForallViewOffsetLayout)
   }
 }
 
-GPU_TEST_F(ForallViewHIP, ForallViewOffsetLayout2D)
+GPU_TEST_F(ForallViewHIPUnitTest, ForallViewOffsetLayout2D)
 {
 
   using RAJA::Index_type;

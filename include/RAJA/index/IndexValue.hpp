@@ -356,6 +356,19 @@ struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValue
 template<typename FROM>
 using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
+/*!
+ * \brief Converts a type into a signed type. Also handles floating point
+ * types as std::make_signed only supports integral types.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using make_signed_t = typename std::conditional < 
+                                  std::is_floating_point<FROM>::value,
+                                    std::common_type<FROM>,
+                                    std::make_signed<FROM>
+                               >::type::type;
+
 }  // namespace RAJA
 
 /*!
@@ -381,18 +394,17 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 /*!
  * \brief Helper Macro to create new Index types.
  * \param TYPE the name of the type
+ * \param IDXT the index types value type
  * \param NAME a string literal to identify this index type
  */
 #define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
   class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
   {                                                                  \
-    using parent = ::RAJA::IndexValue<TYPE, IDXT>;                   \
-                                                                     \
   public:                                                            \
-    using IndexValueType = TYPE;                                     \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v) \
-        : parent::IndexValue(v)                                      \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                              \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue() {}               \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)               \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue(v)                 \
     {                                                                \
     }                                                                \
     static inline std::string getName() { return NAME; }             \
