@@ -9,6 +9,7 @@
 /// Source file containing basic functional tests for atomic operations with forall.
 ///
 
+#include "RAJA_gtest.hpp"
 #include "test-atomic-forall-basic.hpp"
 
 
@@ -118,3 +119,35 @@ TEST(Atomic, basic_builtin_AtomicLogicalFunctionalTest)
 {
   testAtomicLogicalPol<RAJA::seq_exec, RAJA::builtin_atomic>();
 }
+
+// Type parameterized test for experimentation/discussion.
+TYPED_TEST_P(AtomicFuncBasicFunctionalTest, auto_basic_AtomicFuncFunctionalTest)
+{
+  testAtomicFunctionBasicV2<RAJA::seq_exec, RAJA::auto_atomic, TypeParam>( tenk );
+}
+TYPED_TEST_P(AtomicFuncBasicFunctionalTest, seq_basic_AtomicFuncFunctionalTest)
+{
+  testAtomicFunctionBasicV2<RAJA::seq_exec, RAJA::seq_atomic, TypeParam>( tenk );
+}
+TYPED_TEST_P(AtomicFuncBasicFunctionalTest, builtin_basic_AtomicFuncFunctionalTest)
+{
+  testAtomicFunctionBasicV2<RAJA::seq_exec, RAJA::builtin_atomic, TypeParam>( tenk );
+}
+
+REGISTER_TYPED_TEST_CASE_P( AtomicFuncBasicFunctionalTest,
+                            auto_basic_AtomicFuncFunctionalTest,
+                            seq_basic_AtomicFuncFunctionalTest,
+                            builtin_basic_AtomicFuncFunctionalTest
+                          );
+
+using seqtypes = ::testing::Types<
+                          int,
+                          unsigned,
+                          long long,
+                          unsigned long long,
+                          float,
+                          double
+                 >;
+
+INSTANTIATE_TYPED_TEST_CASE_P( AtomicBasicFunctionalTest, AtomicFuncBasicFunctionalTest, seqtypes );
+// END Type parameterized test for experimentation/discussion.
