@@ -63,6 +63,36 @@ stable(const ExecPolicy &,
   std::stable_sort(begin, end, comp);
 }
 
+/*!
+        \brief sort given range of pairs using comparison function on keys
+*/
+template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
+unstable_pairs(const ExecPolicy& p,
+               KeyIter keys_begin,
+               KeyIter keys_end,
+               ValIter vals_begin,
+               Compare comp)
+{
+  static_assert(!type_traits::is_loop_policy<ExecPolicy>::value,
+      "Unimplemented");
+}
+
+/*!
+        \brief stable sort given range of pairs using comparison function on keys
+*/
+template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
+stable_pairs(const ExecPolicy& p,
+             KeyIter keys_begin,
+             KeyIter keys_end,
+             ValIter vals_begin,
+             Compare comp)
+{
+  static_assert(!type_traits::is_loop_policy<ExecPolicy>::value,
+      "Unimplemented");
+}
+
 }  // namespace sort
 
 }  // namespace impl
