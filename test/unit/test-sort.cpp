@@ -14,11 +14,13 @@
 TEST(Atomic, basic_seq_Sort)
 {
   testSortPol<RAJA::seq_exec>();
+  // testSortPiarsPol<RAJA::seq_exec>();
 }
 
 TEST(Atomic, basic_loop_Sort)
 {
   testSortPol<RAJA::loop_exec>();
+  // testSortPairsPol<RAJA::loop_exec>();
 }
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -26,6 +28,7 @@ TEST(Atomic, basic_loop_Sort)
 TEST(Atomic, basic_OpenMP_Sort)
 {
   testSortPol<RAJA::omp_parallel_for_exec>();
+  // testSortPairsPol<RAJA::omp_parallel_for_exec>();
 }
 
 #endif
@@ -35,6 +38,7 @@ TEST(Atomic, basic_OpenMP_Sort)
 TEST(Atomic, basic_TBB_Sort)
 {
   testSortPol<RAJA::tbb_for_exec>();
+  // testSortPairsPol<RAJA::tbb_for_exec>();
 }
 #endif
 
@@ -43,6 +47,7 @@ TEST(Atomic, basic_TBB_Sort)
 GPU_TEST(Atomic, basic_CUDA_Sort)
 {
   testSortPol<RAJA::cuda_exec<256>>();
+  testSortPairsPol<RAJA::cuda_exec<256>>();
 }
 
 #endif
@@ -52,6 +57,7 @@ GPU_TEST(Atomic, basic_CUDA_Sort)
 GPU_TEST(Atomic, basic_HIP_Sort)
 {
   testSortPol<RAJA::hip_exec<256>>();
+  testSortPairsPol<RAJA::hip_exec<256>>();
 }
 
 #endif
