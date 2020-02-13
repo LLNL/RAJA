@@ -59,7 +59,6 @@
 #include <type_traits>
 
 #include "RAJA/internal/Iterators.hpp"
-#include "RAJA/internal/Span.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -70,6 +69,7 @@
 #include "RAJA/internal/fault_tolerance.hpp"
 
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/Span.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/sequential/forall.hpp"
@@ -273,7 +273,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "a TypedIndexSet policy by mistake?");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
@@ -300,7 +300,7 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
                 "a TypedIndexSet policy by mistake?");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
@@ -333,7 +333,7 @@ forall_Icount(ExecutionPolicy&& p,
                 "Container does not model RandomAccessIterator");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
@@ -362,7 +362,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
                 "Container does not model RandomAccessIterator");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
@@ -399,7 +399,7 @@ forall(ExecutionPolicy&& p,
        LoopBody&& loop_body)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   wrap::forall(std::forward<ExecutionPolicy>(p),
                TypedListSegment<ArrayIdxType>(idx, len, Unowned),
@@ -437,7 +437,7 @@ forall_Icount(ExecutionPolicy&& p,
               LoopBody&& loop_body)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   // turn into an iterator
   forall_Icount(std::forward<ExecutionPolicy>(p),
@@ -458,7 +458,7 @@ template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   RAJA_FORCEINLINE_RECURSIVE
   wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
@@ -476,7 +476,7 @@ template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall_Icount(Args&&... args)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
 
