@@ -269,9 +269,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using "
-                "an "
-                "TypedIndexSet policy by mistake?");
+                "Expected a TypedIndexSet but did not get one. Are you using "
+                "a TypedIndexSet policy by mistake?");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
@@ -297,9 +296,8 @@ RAJA_INLINE concepts::enable_if<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected an TypedIndexSet but did not get one. Are you using "
-                "an "
-                "TypedIndexSet policy by mistake?");
+                "Expected a TypedIndexSet but did not get one. Are you using "
+                "a TypedIndexSet policy by mistake?");
 
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);

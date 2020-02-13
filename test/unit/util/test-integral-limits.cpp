@@ -17,13 +17,13 @@
 #include <limits>
 
 template <typename T>
-class IntegralLimitsTest : public ::testing::Test
+class IntegralLimitsUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(IntegralLimitsTest);
+TYPED_TEST_SUITE_P(IntegralLimitsUnitTest);
 
-TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
+TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
 {
   ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(),
             std::numeric_limits<TypeParam>::min());
@@ -31,7 +31,7 @@ TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
             std::numeric_limits<TypeParam>::max());
 }
 
-REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsTest, IntegralLimits);
+REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsUnitTest, IntegralLimits);
 
 using integer_types = ::testing::Types<char,
                                        unsigned char,
@@ -46,6 +46,6 @@ using integer_types = ::testing::Types<char,
                                        long long,
                                        unsigned long long>;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsTests,
-                              IntegralLimitsTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsUnitTests,
+                              IntegralLimitsUnitTest,
                               integer_types);
