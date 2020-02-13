@@ -8,6 +8,10 @@
 cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0048 NEW)
 
+if (APPLE)
+ cmake_policy(SET CMP0025 NEW)
+endif()
+
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 11)
