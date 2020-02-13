@@ -526,7 +526,6 @@ RAJA_INLINE __device__ float hip_atomicExchange<float>(
 }
 #endif
 
-
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicCAS(T volatile *acc, T compare, T value)
 {

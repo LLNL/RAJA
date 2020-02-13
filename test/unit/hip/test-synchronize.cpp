@@ -11,7 +11,7 @@
 
 #include "RAJA_gtest.hpp"
 
-GPU_TEST(SynchronizeTest, HIP)
+GPU_TEST(SynchronizeUnitTest, HIP)
 {
 
   double* managed_data = (double*) malloc(sizeof(double)*50);

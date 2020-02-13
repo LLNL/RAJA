@@ -5,65 +5,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for basic layout operations
-///
-
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
-RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");
-
-RAJA_INDEX_VALUE(TIX, "TIX");
-RAJA_INDEX_VALUE(TIY, "TIY");
-RAJA_INDEX_VALUE(TIL, "TIL");
-
-TEST(OffsetLayoutTest, 1D)
-{
-  using layout = RAJA::OffsetLayout<1>;
-
-  /*
-   * Construct a 1D view with  with the following indices:
-   *
-   * 10, 11, 12, 13, 14
-   */
-  const layout l({{10}}, {{14}});
-
-  /*
-   * First element, 10, should have index 0.
-   */
-  ASSERT_EQ(0, l(10));
-
-  ASSERT_EQ(2, l(12));
-
-  /*
-   * Last element, 14, should have index 5.
-   */
-  ASSERT_EQ(4, l(14));
-}
-
-TEST(TypedLayoutTest, 1D)
-{
-  /*
-   * Construct a 2D view, 10x5
-   */
-  const RAJA::TypedLayout<TIL, RAJA::tuple<TIX, TIY>> l(10, 5);
-
-  ASSERT_EQ(TIL{0}, l(TIX{0}, TIY{0}));
-
-  ASSERT_EQ(TIL{2}, l(TIX{0}, TIY{2}));
-
-  ASSERT_EQ(TIL{10}, l(TIX{2}, TIY{0}));
-
-  TIX x{5};
-  TIY y{0};
-  l.toIndices(TIL{10}, x, y);
-  ASSERT_EQ(x, TIX{2});
-  ASSERT_EQ(y, TIY{0});
-}
-
-
-TEST(LayoutTest, OffsetVsRegular)
+TEST(LayoutUnitTest, OffsetVsRegular)
 {
   const auto layout =
       RAJA::make_permuted_layout({{6, 6}},
@@ -84,7 +29,7 @@ TEST(LayoutTest, OffsetVsRegular)
   }
 }
 
-TEST(OffsetLayoutTest, 2D_IJ)
+TEST(OffsetLayoutUnitTest, 2D_IJ)
 {
   /*
    * Construct a 2D layout:
@@ -111,7 +56,8 @@ TEST(OffsetLayoutTest, 2D_IJ)
   ASSERT_EQ(8, layout(1, 0));
 }
 
-TEST(OffsetLayoutTest, 2D_JI)
+
+TEST(OffsetLayoutUnitTest, 2D_JI)
 {
   using my_layout = RAJA::OffsetLayout<2>;
 
@@ -141,173 +87,7 @@ TEST(OffsetLayoutTest, 2D_JI)
   ASSERT_EQ(8, layout(1, 0));
 }
 
-TEST(OffsetLayoutTest, View)
-{
-  int* data = new int[10];
-
-  using layout = RAJA::OffsetLayout<>;
-
-  /*
-   * View is constructed by passing in the layout.
-   */
-  std::array<RAJA::Index_type, 1> lower{{1}};
-  std::array<RAJA::Index_type, 1> upper{{10}};
-  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
-
-  for (int i = 0; i < 10; i++) {
-    data[i] = i;
-  }
-
-  ASSERT_EQ(data[0], view(1));
-  ASSERT_EQ(data[9], view(10));
-
-  delete[] data;
-}
-
-
-TEST(LayoutTest, 2D_IJ)
-{
-  using my_layout = RAJA::Layout<2>;
-
-  /*
-   * Construct a 2D layout:
-   *
-   * I is stride 5
-   * J is stride 1
-   *
-   * Linear indices range from [0, 15)
-   *
-   */
-
-  // Construct using variadic "sizes" ctor
-  const my_layout layout_a(3, 5);
-
-  // Construct using copy ctor
-  const my_layout layout_b(layout_a);
-
-  // Test default ctor and assignment operator
-  my_layout layout;
-  layout = layout_b;
-
-
-  ASSERT_EQ(0, layout(0, 0));
-
-  ASSERT_EQ(5, layout(1, 0));
-  ASSERT_EQ(15, layout(3, 0));
-
-  ASSERT_EQ(1, layout(0, 1));
-  ASSERT_EQ(5, layout(0, 5));
-
-  // Check that we get the identity (mod 15)
-  for (int k = 0; k < 20; ++k) {
-
-    // inverse map
-    int i, j;
-    layout.toIndices(k, i, j);
-
-    // forward map
-    int k2 = layout(i, j);
-
-    // check ident
-    ASSERT_EQ(k % 15, k2);
-
-    // check with a and b
-    ASSERT_EQ(k2, layout_a(i, j));
-    ASSERT_EQ(k2, layout_b(i, j));
-  }
-}
-
-TEST(LayoutTest, 2D_JI)
-{
-  using my_layout = RAJA::Layout<2>;
-
-  /*
-   * Construct a 2D layout:
-   *
-   * I is stride 1
-   * J is stride 3
-   *
-   * Linear indices range from [0, 15)
-   *
-   */
-  const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}},
-                                 RAJA::as_array<RAJA::PERM_JI>::get());
-
-  ASSERT_EQ(0, layout(0, 0));
-
-  ASSERT_EQ(1, layout(1, 0));
-  ASSERT_EQ(3, layout(3, 0));
-
-  ASSERT_EQ(3, layout(0, 1));
-  ASSERT_EQ(15, layout(0, 5));
-
-  // Check that we get the identity (mod 15)
-  for (int k = 0; k < 20; ++k) {
-
-    // inverse map
-    int i, j;
-    layout.toIndices(k, i, j);
-
-    // forward map
-    int k2 = layout(i, j);
-
-    ASSERT_EQ(k % 15, k2);
-  }
-}
-
-
-TEST(LayoutTest, 2D_IJ_ProjJ)
-{
-  using my_layout = RAJA::Layout<2>;
-
-  /*
-   * Construct a 2D projective layout:
-   *
-   * I is stride 1
-   * J is stride 0  -  projected out
-   *
-   * Linear indices range from [0, 7)
-   *
-   * values of J should have no effect on linear index
-   *
-   * All linear indices should produce J=0
-   *
-   */
-
-  // Construct using variadic "sizes" ctor
-  // Zero for J size should correctly produce projective layout
-  const my_layout layout(7, 0);
-
-  ASSERT_EQ(0, layout(0, 0));
-
-  ASSERT_EQ(1, layout(1, 0));
-  ASSERT_EQ(3, layout(3, 0));
-
-  // J should be projected out
-  ASSERT_EQ(0, layout(0, 1));
-  ASSERT_EQ(0, layout(0, 5));
-
-  // Check that we get the identity (mod 7)
-  for (int k = 0; k < 20; ++k) {
-
-    // inverse map
-    int i, j;
-    layout.toIndices(k, i, j);
-
-    // forward map
-    int k2 = layout(i, j);
-
-    // check ident
-    ASSERT_EQ(k % 7, k2);
-
-    // check projection of j
-    ASSERT_EQ(j, 0);
-  }
-}
-
-
-TEST(LayoutTest, 3D_KJI_ProjJ)
+TEST(LayoutUnitTest, 3D_KJI_ProjJ)
 {
   using my_layout = RAJA::Layout<3>;
 
@@ -362,8 +142,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   }
 }
 
-
-TEST(LayoutTest, 2D_StrideOne)
+TEST(LayoutUnitTest, 2D_StrideOne)
 {
   using my_layout = RAJA::Layout<2>;
   using my_layout_s1 = RAJA::Layout<2, ptrdiff_t, 0>; // first index is stride-1
@@ -397,7 +176,7 @@ TEST(LayoutTest, 2D_StrideOne)
   }
 }
 
-TEST(LayoutTest, 2D_StaticLayout)
+TEST(StaticLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2> dynamic_layout(7, 5);
   using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ,7,5>;
@@ -411,7 +190,7 @@ TEST(LayoutTest, 2D_StaticLayout)
   }
 }
 
-TEST(LayoutTest, 2D_PermutedStaticLayout)
+TEST(StaticLayoutUnitTest, 2D_PermutedStaticLayout)
 {
   auto dynamic_layout = 
     RAJA::make_permuted_layout({{7, 5}},
@@ -426,7 +205,7 @@ TEST(LayoutTest, 2D_PermutedStaticLayout)
   }
 }
 
-TEST(LayoutTest, 3D_PermutedStaticLayout)
+TEST(StaticLayoutUnitTest, 3D_PermutedStaticLayout)
 {
   auto dynamic_layout = 
     RAJA::make_permuted_layout({{7, 13, 5}},
@@ -444,7 +223,7 @@ TEST(LayoutTest, 3D_PermutedStaticLayout)
 }
 
 
-TEST(LayoutTest, 4D_PermutedStaticLayout)
+TEST(StaticLayoutUnitTest, 4D_PermutedStaticLayout)
 {
   auto dynamic_layout = 
     RAJA::make_permuted_layout({{7, 13, 5, 17}},
@@ -462,4 +241,5 @@ TEST(LayoutTest, 4D_PermutedStaticLayout)
     }
   }
 }
+
 
