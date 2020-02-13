@@ -21,7 +21,7 @@
 #include "RAJA_gtest.hpp"
 #include "type_helper.hpp"
 
-#include <vector>
+#include <list>
 #include <unordered_map>
 #include <unordered_set>
 #include <type_traits>
@@ -142,7 +142,7 @@ template <typename T,
   cudaErrchk(cudaDeviceSynchronize());
 #endif
   // make map of keys to keys
-  using val_map = std::vector<T>;
+  using val_map = std::list<T>;
   std::unordered_map<T, val_map> keys;
   for (RAJA::Index_type i = 0; i < N; i++) {
     auto key_iter = keys.find(orig[i]);
@@ -169,13 +169,13 @@ template <typename T,
              << " unknown or duplicate key "
              << sorted[i]
              << " (at index " << i << ")";
-    if (key_iter->second.back() != sorted[i])
+    if (key_iter->second.front() != sorted[i])
       return ::testing::AssertionFailure()
              << test_name << " (with N " << N << " with seed " << seed << ")"
              << " out of stable order or unknown val "
              << sorted[i]
              << " (at index " << i << ")";
-    key_iter->second.pop_back();
+    key_iter->second.pop_front();
     if (key_iter->second.size() == 0) {
       keys.erase(key_iter);
     }
@@ -269,7 +269,7 @@ template <typename K,
   cudaErrchk(cudaDeviceSynchronize());
 #endif
   // make map of keys to vals
-  using val_map = std::vector<V>;
+  using val_map = std::list<V>;
   std::unordered_map<K, val_map> keys_to_vals;
   for (RAJA::Index_type i = 0; i < N; i++) {
     auto key_iter = keys_to_vals.find(orig_keys[i]);
@@ -298,14 +298,14 @@ template <typename K,
              << " key " << sorted_keys[i]
              << " val " << sorted_vals[i]
              << " (at index " << i << ")";
-    if (key_iter->second.back() != sorted_vals[i])
+    if (key_iter->second.front() != sorted_vals[i])
       return ::testing::AssertionFailure()
              << test_name << " (with N " << N << " with seed " << seed << ")"
              << " out of stable order or unknown val "
              << " key " << sorted_keys[i]
              << " val " << sorted_vals[i]
              << " (at index " << i << ")";
-    key_iter->second.pop_back();
+    key_iter->second.pop_front();
     if (key_iter->second.size() == 0) {
       keys_to_vals.erase(key_iter);
     }
