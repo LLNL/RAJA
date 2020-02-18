@@ -31,7 +31,7 @@ namespace RAJA
 *************************************************************************
 */
 
-void buildIndexSetAligned(
+void buildTypedIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& hiset,
     const Index_type* const indices_in,
     Index_type length)
