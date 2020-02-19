@@ -117,7 +117,7 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   IndexType loc = DefaultLoc<IndexType>().value();
 
-#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020
+#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020 || defined(__HIPCC__)
   RAJA_HOST_DEVICE constexpr ValueLoc() {}
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
   RAJA_HOST_DEVICE

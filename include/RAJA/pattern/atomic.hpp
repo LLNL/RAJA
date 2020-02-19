@@ -303,7 +303,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  value_type *getPointer() const { return m_value_ptr; }
+  value_type volatile * getPointer() const { return m_value_ptr; }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE

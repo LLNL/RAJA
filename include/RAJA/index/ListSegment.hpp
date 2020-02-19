@@ -24,10 +24,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "RAJA/internal/Span.hpp"
-
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/macros.hpp"
+#include "RAJA/util/Span.hpp"
 #include "RAJA/util/types.hpp"
 
 #if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
@@ -296,7 +295,7 @@ private:
     m_size = len;
     m_owned = container_own;
     if (m_owned == Owned) {
-      allocate_and_copy<Has_GPU>(RAJA::impl::make_span(container, len));
+      allocate_and_copy<Has_GPU>(RAJA::make_span(container, len));
       return;
     }
     // Uh-oh. Using evil const_cast....
