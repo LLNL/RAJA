@@ -129,6 +129,11 @@
 #include "RAJA/util/BitMask.hpp"
 
 //
+// sort algorithms
+//
+#include "RAJA/util/sort.hpp"
+
+//
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
