@@ -30,16 +30,283 @@
 #include <random>
 
 
+struct unstable_sort_tag { };
+struct stable_sort_tag { };
+
+struct sort_interface_tag { };
+struct sort_pairs_interface_tag { };
+
+struct sort_default_interface_tag { };
+struct sort_comp_interface_tag { };
+
+template < typename policy >
+struct PolicySort
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::sort<policy>";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::sort<policy>(std::forward<Args>(args)...);
+  }
+};
+
+template < typename policy >
+struct PolicyStableSort
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::stable_sort<policy>";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::stable_sort<policy>(std::forward<Args>(args)...);
+  }
+};
+
+template < typename policy >
+struct PolicySortPairs
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::sort<policy>";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::sort_pairs<policy>(std::forward<Args>(args)...);
+  }
+};
+
+template < typename policy >
+struct PolicyStableSortPairs
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::stable_sort<policy>";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::stable_sort_pairs<policy>(std::forward<Args>(args)...);
+  }
+};
+
+struct InsertionSort
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::insertion_sort";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::insertion_sort(std::forward<Args>(args)...);
+  }
+};
+
+struct HeapSort
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::heap_sort";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::heap_sort(std::forward<Args>(args)...);
+  }
+};
+
+struct IntroSort
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::intro_sort";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::intro_sort(std::forward<Args>(args)...);
+  }
+};
+
+struct MergeSort
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::merge_sort";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::merge_sort(std::forward<Args>(args)...);
+  }
+};
+
+
+template <typename pairs_category,
+          typename K,
+          typename V = K>
+struct SortData;
+
+template <typename K>
+struct SortData<sort_interface_tag, K, K>
+{
+  K* orig_keys = nullptr;
+  K* sorted_keys = nullptr;
+
+  template < typename RandomGenerator >
+  SortData(size_t N, RandomGenerator gen_random)
+  {
+    if (N > 0) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaMallocManaged((void **)&orig_keys, sizeof(K) * N));
+      cudaErrchk(cudaMallocManaged((void **)&sorted_keys, sizeof(K) * N));
+#else
+      orig_keys   = new K[N];
+      sorted_keys = new K[N];
+#endif
+    }
+    cudaErrchk(cudaDeviceSynchronize());
+
+    for (RAJA::Index_type i = 0; i < N; i++) {
+      orig_keys[i] = gen_random();
+    }
+  }
+
+  SortData(SortData const&) = delete;
+  SortData& operator=(SortData const&) = delete;
+
+  ~SortData()
+  {
+    if (orig_keys != nullptr) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaFree(orig_keys));
+      cudaErrchk(cudaFree(sorted_keys));
+#else
+      delete[] orig_keys;
+      delete[] sorted_keys;
+#endif
+    }
+  }
+};
+
+
+template <typename K, typename V>
+struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K>
+{
+  using base = SortData<sort_interface_tag, K>;
+
+  V* orig_vals = nullptr;
+  V* sorted_vals = nullptr;
+
+  template < typename RandomGenerator >
+  SortData(size_t N, RandomGenerator gen_random)
+    : base(N, gen_random)
+  {
+    if (N > 0) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaMallocManaged((void **)&orig_vals, sizeof(V) * N));
+      cudaErrchk(cudaMallocManaged((void **)&sorted_vals, sizeof(V) * N));
+#else
+      orig_vals   = new K[N];
+      sorted_vals = new K[N];
+#endif
+    }
+    cudaErrchk(cudaDeviceSynchronize());
+
+    for (RAJA::Index_type i = 0; i < N; i++) {
+      orig_vals[i] = gen_random();
+    }
+  }
+
+  SortData(SortData const&) = delete;
+  SortData& operator=(SortData const&) = delete;
+
+  ~SortData()
+  {
+    if (orig_vals != nullptr) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaFree(orig_vals));
+      cudaErrchk(cudaFree(sorted_vals));
+#else
+      delete[] orig_vals;
+      delete[] sorted_vals;
+#endif
+    }
+  }
+};
+
+
 template <typename T,
+          typename Compare,
           typename Sorter>
-void doSort(const T* orig, T* sorted, RAJA::Index_type N, Sorter sorter)
+void doSort(SortData<sort_interface_tag, T> const& data,
+            RAJA::Index_type N,
+            Compare,
+            Sorter sorter, sort_interface_tag, sort_default_interface_tag)
 {
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(sorted, orig, N*sizeof(T), cudaMemcpyDefault));
+  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(T), cudaMemcpyDefault));
 #else
-  memcpy(sorted, orig, N*sizeof(T));
+  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
 #endif
-  sorter(sorted, sorted+N);
+  sorter(data.sorted_keys, data.sorted_keys+N);
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaDeviceSynchronize());
+#endif
+}
+
+template <typename T,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<sort_interface_tag, T> const& data,
+            RAJA::Index_type N,
+            Compare comp,
+            Sorter sorter, sort_interface_tag, sort_comp_interface_tag)
+{
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(T), cudaMemcpyDefault));
+#else
+  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
+#endif
+  sorter(data.sorted_keys, data.sorted_keys+N, comp);
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -47,19 +314,43 @@ void doSort(const T* orig, T* sorted, RAJA::Index_type N, Sorter sorter)
 
 template <typename K,
           typename V,
+          typename Compare,
           typename Sorter>
-void doSortPairs(const K* orig_keys, K* sorted_keys,
-                 const V* orig_vals, V* sorted_vals,
-                 RAJA::Index_type N, Sorter sorter)
+void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
+            RAJA::Index_type N,
+            Compare,
+            Sorter sorter, sort_pairs_interface_tag, sort_default_interface_tag)
 {
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(sorted_keys, orig_keys, N*sizeof(K), cudaMemcpyDefault));
-  cudaErrchk(cudaMemcpy(sorted_vals, orig_vals, N*sizeof(V), cudaMemcpyDefault));
+  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(K), cudaMemcpyDefault));
+  cudaErrchk(cudaMemcpy(data.sorted_vals, data.orig_vals, N*sizeof(V), cudaMemcpyDefault));
 #else
-  memcpy(sorted_keys, orig_keys, N*sizeof(K));
-  memcpy(sorted_vals, orig_vals, N*sizeof(V));
+  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(K));
+  memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
 #endif
-  sorter(sorted_keys, sorted_keys+N, sorted_vals);
+  sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals);
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaDeviceSynchronize());
+#endif
+}
+
+template <typename K,
+          typename V,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
+            RAJA::Index_type N,
+            Compare comp,
+            Sorter sorter, sort_pairs_interface_tag, sort_comp_interface_tag)
+{
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(K), cudaMemcpyDefault));
+  cudaErrchk(cudaMemcpy(data.sorted_vals, data.orig_vals, N*sizeof(V), cudaMemcpyDefault));
+#else
+  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(K));
+  memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
+#endif
+  sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals, comp);
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -68,54 +359,56 @@ void doSortPairs(const K* orig_keys, K* sorted_keys,
 
 template <typename T,
           typename Compare,
-          typename TestSorter>
+          typename TestSorter,
+          typename CompareInterface>
 ::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
+    SortData<sort_interface_tag, T> const& data,
     RAJA::Index_type N,
     Compare comp,
-    const T* orig,
-    T* sorted,
-    TestSorter test_sorter)
+    TestSorter test_sorter, unstable_sort_tag, sort_interface_tag si, CompareInterface ci)
 {
-  doSort(orig, sorted, N, test_sorter);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  doSort(data, N, comp, test_sorter, si, ci);
+
   // make map of keys to keys
   using val_map = std::unordered_multiset<T>;
   std::unordered_map<T, val_map> keys;
   for (RAJA::Index_type i = 0; i < N; i++) {
-    auto key_iter = keys.find(orig[i]);
+    auto key_iter = keys.find(data.orig_keys[i]);
     if (key_iter == keys.end()) {
-      auto ret = keys.emplace(orig[i], val_map{});
+      auto ret = keys.emplace(data.orig_keys[i], val_map{});
       assert(ret.second);
       key_iter = ret.first;
     }
-    key_iter->second.emplace(orig[i]);
+    key_iter->second.emplace(data.orig_keys[i]);
   }
+
   for (RAJA::Index_type i = 0; i < N; i++) {
     // test ordering
-    if (i > 0 && comp(sorted[i], sorted[i-1]))
+    if (i > 0 && comp(data.sorted_keys[i], data.sorted_keys[i-1]))
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (unstable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " out of order "
-             << sorted[i-1] << ", " << sorted[i]
+             << data.sorted_keys[i-1] << ", " << data.sorted_keys[i]
              << " (at index " << i-1 << ")";
     // test there is an item with this
-    auto key_iter = keys.find(sorted[i]);
+    auto key_iter = keys.find(data.sorted_keys[i]);
     if (key_iter == keys.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (unstable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate key "
-             << sorted[i]
+             << data.sorted_keys[i]
              << " (at index " << i << ")";
-    auto val_iter = key_iter->second.find(sorted[i]);
+    auto val_iter = key_iter->second.find(data.sorted_keys[i]);
     if (val_iter == key_iter->second.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (unstable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate val "
-             << sorted[i]
+             << data.sorted_keys[i]
              << " (at index " << i << ")";
     key_iter->second.erase(val_iter);
     if (key_iter->second.size() == 0) {
@@ -127,53 +420,55 @@ template <typename T,
 
 template <typename T,
           typename Compare,
-          typename TestSorter>
-::testing::AssertionResult testStableSort(
+          typename TestSorter,
+          typename CompareInterface>
+::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
+    SortData<sort_interface_tag, T> const& data,
     RAJA::Index_type N,
     Compare comp,
-    const T* orig,
-    T* sorted,
-    TestSorter test_sorter)
+    TestSorter test_sorter, stable_sort_tag, sort_interface_tag si, CompareInterface ci)
 {
-  doSort(orig, sorted, N, test_sorter);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  doSort(data, N, comp, test_sorter, si, ci);
+
   // make map of keys to keys
   using val_map = std::list<T>;
   std::unordered_map<T, val_map> keys;
   for (RAJA::Index_type i = 0; i < N; i++) {
-    auto key_iter = keys.find(orig[i]);
+    auto key_iter = keys.find(data.orig_keys[i]);
     if (key_iter == keys.end()) {
-      auto ret = keys.emplace(orig[i], val_map{});
+      auto ret = keys.emplace(data.orig_keys[i], val_map{});
       assert(ret.second);
       key_iter = ret.first;
     }
-    key_iter->second.emplace_back(orig[i]);
+    key_iter->second.emplace_back(data.orig_keys[i]);
   }
+
   for (RAJA::Index_type i = 0; i < N; i++) {
     // test ordering
-    if (i > 0 && comp(sorted[i], sorted[i-1]))
+    if (i > 0 && comp(data.sorted_keys[i], data.sorted_keys[i-1]))
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " out of order "
-             << sorted[i-1] << ", " << sorted[i]
+             << data.sorted_keys[i-1] << ", " << data.sorted_keys[i]
              << " (at index " << i-1 << ")";
     // test there is an item with this
-    auto key_iter = keys.find(sorted[i]);
+    auto key_iter = keys.find(data.sorted_keys[i]);
     if (key_iter == keys.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate key "
-             << sorted[i]
+             << data.sorted_keys[i]
              << " (at index " << i << ")";
-    if (key_iter->second.front() != sorted[i])
+    if (key_iter->second.front() != data.sorted_keys[i])
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " out of stable order or unknown val "
-             << sorted[i]
+             << data.sorted_keys[i]
              << " (at index " << i << ")";
     key_iter->second.pop_front();
     if (key_iter->second.size() == 0) {
@@ -187,57 +482,58 @@ template <typename T,
 template <typename K,
           typename V,
           typename Compare,
-          typename TestSorter>
-::testing::AssertionResult testSortPairs(
+          typename TestSorter,
+          typename CompareInterface>
+::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
+    SortData<sort_pairs_interface_tag, K, V> const& data,
     RAJA::Index_type N,
     Compare comp,
-    const K* orig_keys,
-    K* sorted_keys,
-    const V* orig_vals,
-    V* sorted_vals,
-    TestSorter test_sorter)
+    TestSorter test_sorter, unstable_sort_tag, sort_pairs_interface_tag si, CompareInterface ci)
 {
-  doSortPairs(orig_keys,   sorted_keys,
-              orig_vals,   sorted_vals,
-              N, test_sorter);
+  doSort(data, N, comp, test_sorter, si, ci);
+
   // make map of keys to vals
   using val_map = std::unordered_multiset<V>;
   std::unordered_map<K, val_map> keys_to_vals;
   for (RAJA::Index_type i = 0; i < N; i++) {
-    auto key_iter = keys_to_vals.find(orig_keys[i]);
+    auto key_iter = keys_to_vals.find(data.orig_keys[i]);
     if (key_iter == keys_to_vals.end()) {
-      auto ret = keys_to_vals.emplace(orig_keys[i], val_map{});
+      auto ret = keys_to_vals.emplace(data.orig_keys[i], val_map{});
       assert(ret.second);
       key_iter = ret.first;
     }
-    key_iter->second.emplace(orig_vals[i]);
+    key_iter->second.emplace(data.orig_vals[i]);
   }
+
   for (RAJA::Index_type i = 0; i < N; i++) {
     // test ordering
-    if (i > 0 && comp(sorted_keys[i], sorted_keys[i-1]))
+    if (i > 0 && comp(data.sorted_keys[i], data.sorted_keys[i-1]))
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
-             << " keys " << sorted_keys[i-1] << ", " << sorted_keys[i] << " out of order"
-             << " vals " << sorted_vals[i-1] << ", " << sorted_vals[i]
+             << test_sorter.name() << " (unstable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
+             << " keys " << data.sorted_keys[i-1] << ", " << data.sorted_keys[i] << " out of order"
+             << " vals " << data.sorted_vals[i-1] << ", " << data.sorted_vals[i]
              << " (at index " << i-1 << ")";
     // test there is a pair with this key and val
-    auto key_iter = keys_to_vals.find(sorted_keys[i]);
+    auto key_iter = keys_to_vals.find(data.sorted_keys[i]);
     if (key_iter == keys_to_vals.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (unstable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate key "
-             << " key " << sorted_keys[i]
-             << " val " << sorted_vals[i]
+             << " key " << data.sorted_keys[i]
+             << " val " << data.sorted_vals[i]
              << " (at index " << i << ")";
-    auto val_iter = key_iter->second.find(sorted_vals[i]);
+    auto val_iter = key_iter->second.find(data.sorted_vals[i]);
     if (val_iter == key_iter->second.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (unstable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate val "
-             << " key " << sorted_keys[i]
-             << " val " << sorted_vals[i]
+             << " key " << data.sorted_keys[i]
+             << " val " << data.sorted_vals[i]
              << " (at index " << i << ")";
     key_iter->second.erase(val_iter);
     if (key_iter->second.size() == 0) {
@@ -250,60 +546,58 @@ template <typename K,
 template <typename K,
           typename V,
           typename Compare,
-          typename TestSorter>
-::testing::AssertionResult testStableSortPairs(
+          typename TestSorter,
+          typename CompareInterface>
+::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
+    SortData<sort_pairs_interface_tag, K, V> const& data,
     RAJA::Index_type N,
     Compare comp,
-    const K* orig_keys,
-    K* sorted_keys,
-    const V* orig_vals,
-    V* sorted_vals,
-    TestSorter test_sorter)
+    TestSorter test_sorter, stable_sort_tag, sort_pairs_interface_tag si, CompareInterface ci)
 {
-  doSortPairs(orig_keys,   sorted_keys,
-              orig_vals,   sorted_vals,
-              N, test_sorter);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  doSort(data, N, comp, test_sorter, si, ci);
+
   // make map of keys to vals
   using val_map = std::list<V>;
   std::unordered_map<K, val_map> keys_to_vals;
   for (RAJA::Index_type i = 0; i < N; i++) {
-    auto key_iter = keys_to_vals.find(orig_keys[i]);
+    auto key_iter = keys_to_vals.find(data.orig_keys[i]);
     if (key_iter == keys_to_vals.end()) {
-      auto ret = keys_to_vals.emplace(orig_keys[i], val_map{});
+      auto ret = keys_to_vals.emplace(data.orig_keys[i], val_map{});
       assert(ret.second);
       key_iter = ret.first;
     }
-    key_iter->second.emplace_back(orig_vals[i]);
+    key_iter->second.emplace_back(data.orig_vals[i]);
   }
+
   for (RAJA::Index_type i = 0; i < N; i++) {
     // test ordering
-    if (i > 0 && comp(sorted_keys[i], sorted_keys[i-1]))
+    if (i > 0 && comp(data.sorted_keys[i], data.sorted_keys[i-1]))
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " out of order "
-             << " keys " << sorted_keys[i-1] << ", " << sorted_keys[i]
-             << " vals " << sorted_vals[i-1] << ", " << sorted_vals[i]
+             << " keys " << data.sorted_keys[i-1] << ", " << data.sorted_keys[i]
+             << " vals " << data.sorted_vals[i-1] << ", " << data.sorted_vals[i]
              << " (at index " << i-1 << ")";
     // test there is a pair with this key and val
-    auto key_iter = keys_to_vals.find(sorted_keys[i]);
+    auto key_iter = keys_to_vals.find(data.sorted_keys[i]);
     if (key_iter == keys_to_vals.end())
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " unknown or duplicate key "
-             << " key " << sorted_keys[i]
-             << " val " << sorted_vals[i]
+             << " key " << data.sorted_keys[i]
+             << " val " << data.sorted_vals[i]
              << " (at index " << i << ")";
-    if (key_iter->second.front() != sorted_vals[i])
+    if (key_iter->second.front() != data.sorted_vals[i])
       return ::testing::AssertionFailure()
-             << test_name << " (with N " << N << " with seed " << seed << ")"
+             << test_sorter.name() << " (stable sort pairs) " << test_name
+             << " (with N " << N << " with seed " << seed << ")"
              << " out of stable order or unknown val "
-             << " key " << sorted_keys[i]
-             << " val " << sorted_vals[i]
+             << " key " << data.sorted_keys[i]
+             << " val " << data.sorted_vals[i]
              << " (at index " << i << ")";
     key_iter->second.pop_front();
     if (key_iter->second.size() == 0) {
@@ -313,237 +607,50 @@ template <typename K,
   return ::testing::AssertionSuccess();
 }
 
-template <typename ExecPolicy,
-          typename K>
-void testSorts(unsigned seed, RAJA::Index_type MaxN)
+template <typename K,
+          typename Sorter>
+void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
 {
+  using stability_category = typename Sorter::sort_category ;
+  using pairs_category     = typename Sorter::sort_interface ;
+  using no_comparator      = sort_default_interface_tag;
+  using use_comparator     = sort_comp_interface_tag;
+
   std::mt19937 rng(seed);
   RAJA::Index_type N = std::uniform_int_distribution<RAJA::Index_type>((MaxN+1)/2, MaxN)(rng);
+  std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
 
-  K *orig = nullptr;
-  K *sorted = nullptr;
+  SortData<pairs_category, K> data(N, [&](){ return dist(rng); });
 
-  if (N > 0) {
-    // initialize an array
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void **)&orig, sizeof(K) * N));
-    cudaErrchk(cudaMallocManaged((void **)&sorted, sizeof(K) * N));
-    cudaErrchk(cudaDeviceSynchronize());
-#else
-    orig     = new K[N];
-    sorted   = new K[N];
-#endif
-
-    // initialize orig to random values
-    std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
-
-    for (RAJA::Index_type i = 0; i < N; i++) {
-      orig[i] = dist(rng);
-    }
-  }
-
-
-  ASSERT_TRUE(testSort("sort default", seed, N, std::less<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::sort<ExecPolicy>(sorted, sorted_end);
-  }));
-
-  // test ascending
-  ASSERT_TRUE(testSort("sort ascending", seed, N, std::less<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::sort<ExecPolicy>(sorted, sorted_end, RAJA::operators::less<K>{});
-  }));
-
-  // test descending
-  ASSERT_TRUE(testSort("sort descending", seed, N, std::greater<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::sort<ExecPolicy>(sorted, sorted_end, RAJA::operators::greater<K>{});
-  }));
-
-
-  // test default behavior
-  ASSERT_TRUE(testStableSort("stable_sort default", seed, N, std::less<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::stable_sort<ExecPolicy>(sorted, sorted_end);
-  }));
-
-  // test ascending
-  ASSERT_TRUE(testStableSort("stable_sort ascending", seed, N, std::less<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::stable_sort<ExecPolicy>(sorted, sorted_end, RAJA::operators::less<K>{});
-  }));
-
-  // test descending
-  ASSERT_TRUE(testStableSort("stable_sort descending", seed, N, std::greater<K>{},
-      orig, sorted,
-      [](K* sorted, K* sorted_end) {
-    RAJA::stable_sort<ExecPolicy>(sorted, sorted_end, RAJA::operators::greater<K>{});
-  }));
-
-
-  if (N > 0) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(orig));
-    cudaErrchk(cudaFree(sorted));
-#else
-    delete[] orig;
-    delete[] sorted;
-#endif
-  }
+  ASSERT_TRUE(testSort("default", seed, data, N, RAJA::operators::less<K>{},
+      sorter, stability_category{}, pairs_category{}, no_comparator{}));
+  ASSERT_TRUE(testSort("ascending", seed, data, N, RAJA::operators::less<K>{},
+      sorter, stability_category{}, pairs_category{}, use_comparator{}));
+  ASSERT_TRUE(testSort("descending", seed, data, N, RAJA::operators::greater<K>{},
+      sorter, stability_category{}, pairs_category{}, use_comparator{}));
 }
 
-template <typename ExecPolicy,
-          typename K,
-          typename V>
-void testSortsPairs(unsigned seed, RAJA::Index_type MaxN)
+template <typename Sorter>
+void testSorterSizes(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
 {
-  std::mt19937 rng(seed);
-  RAJA::Index_type N = std::uniform_int_distribution<RAJA::Index_type>((MaxN+1)/2, MaxN)(rng);
-
-  K *orig_keys = nullptr;
-  K *sorted_keys = nullptr;
-  V *orig_vals = nullptr;
-  V *sorted_vals = nullptr;
-
-  if (N > 0) {
-    // initialize an array
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void **)&orig_keys, sizeof(K) * N));
-    cudaErrchk(cudaMallocManaged((void **)&sorted_keys, sizeof(K) * N));
-    cudaErrchk(cudaMallocManaged((void **)&orig_vals, sizeof(V) * N));
-    cudaErrchk(cudaMallocManaged((void **)&sorted_vals, sizeof(V) * N));
-    cudaErrchk(cudaDeviceSynchronize());
-#else
-    orig_keys     = new K[N];
-    sorted_keys   = new K[N];
-    orig_vals     = new V[N];
-    sorted_vals   = new V[N];
-#endif
-
-    // initialize orig to random values
-    std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
-
-    for (RAJA::Index_type i = 0; i < N; i++) {
-      orig_keys[i] = dist(rng);
-    }
-    for (RAJA::Index_type i = 0; i < N; i++) {
-      orig_vals[i] = dist(rng);
-    }
-  }
-
-
-  ASSERT_TRUE(testSortPairs("sort_pairs default", seed, N, std::less<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals);
-  }));
-
-  // test ascending
-  ASSERT_TRUE(testSortPairs("sort_pairs ascending", seed, N, std::less<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals, RAJA::operators::less<K>{});
-  }));
-
-  // test descending
-  ASSERT_TRUE(testSortPairs("sort_pairs descending", seed, N, std::greater<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals, RAJA::operators::greater<K>{});
-  }));
-
-
-  // test default behavior
-  ASSERT_TRUE(testStableSortPairs("stable_sort_pairs default", seed, N, std::less<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::stable_sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals);
-  }));
-
-  // test ascending
-  ASSERT_TRUE(testStableSortPairs("stable_sort_pairs ascending", seed, N, std::less<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::stable_sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals, RAJA::operators::less<K>{});
-  }));
-
-  // test descending
-  ASSERT_TRUE(testStableSortPairs("stable_sort_pairs descending", seed, N, std::greater<K>{},
-      orig_keys, sorted_keys, orig_vals, sorted_vals,
-      [](K* sorted_keys, K* sorted_keys_end, V* sorted_vals) {
-    RAJA::stable_sort_pairs<ExecPolicy>(sorted_keys, sorted_keys_end, sorted_vals, RAJA::operators::greater<K>{});
-  }));
-
-
-  if (N > 0) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(orig_keys));
-    cudaErrchk(cudaFree(sorted_keys));
-    cudaErrchk(cudaFree(orig_vals));
-    cudaErrchk(cudaFree(sorted_vals));
-#else
-    delete[] orig_keys;
-    delete[] sorted_keys;
-    delete[] orig_vals;
-    delete[] sorted_vals;
-#endif
-  }
-}
-
-
-
-template <typename ExecPolicy>
-void testSortSizesPol(unsigned seed, RAJA::Index_type MaxN)
-{
-  testSorts<ExecPolicy, int>(seed, MaxN);
+  testSorterInterfaces<int>(seed, MaxN, sorter);
 #if defined(TEST_EXHAUSTIVE)
-  testSorts<ExecPolicy, unsigned>(seed, MaxN);
-  testSorts<ExecPolicy, long long>(seed, MaxN);
-  testSorts<ExecPolicy, unsigned long long>(seed, MaxN);
+  testSorterInterfaces<unsigned>(seed, MaxN), sorter;
+  testSorterInterfaces<long long>(seed, MaxN, sorter);
+  testSorterInterfaces<unsigned long long>(seed, MaxN, sorter);
 
-  testSorts<ExecPolicy, float>(seed, MaxN);
+  testSorterInterfaces<float>(seed, MaxN, sorter);
 #endif
-  testSorts<ExecPolicy, double>(seed, MaxN);
+  testSorterInterfaces<double>(seed, MaxN, sorter);
 }
 
-template <typename ExecPolicy>
-void testSortPairsSizesPol(unsigned seed, RAJA::Index_type MaxN)
-{
-  testSortsPairs<ExecPolicy, int,                int>(seed, MaxN);
-#if defined(TEST_EXHAUSTIVE)
-  testSortsPairs<ExecPolicy, unsigned,           int>(seed, MaxN);
-  testSortsPairs<ExecPolicy, long long,          int>(seed, MaxN);
-  testSortsPairs<ExecPolicy, unsigned long long, int>(seed, MaxN);
-
-  testSortsPairs<ExecPolicy, float,              int>(seed, MaxN);
-#endif
-  testSortsPairs<ExecPolicy, double,             int>(seed, MaxN);
-}
-
-
-template <typename ExecPolicy>
-void testSortPol()
+template <typename Sorter>
+void testSorter(Sorter sorter)
 {
   unsigned seed = std::random_device{}();
 
-  testSortSizesPol<ExecPolicy>(seed, 0);
-  testSortSizesPol<ExecPolicy>(seed, 1);
-  testSortSizesPol<ExecPolicy>(seed, 10);
-  testSortSizesPol<ExecPolicy>(seed, 10000);
-}
-
-template <typename ExecPolicy>
-void testSortPairsPol()
-{
-  unsigned seed = std::random_device{}();
-
-  testSortPairsSizesPol<ExecPolicy>(seed, 0);
-  testSortPairsSizesPol<ExecPolicy>(seed, 1);
-  testSortPairsSizesPol<ExecPolicy>(seed, 10);
-  testSortPairsSizesPol<ExecPolicy>(seed, 10000);
+  testSorterSizes(seed, 0, sorter);
+  testSorterSizes(seed, 1, sorter);
+  testSorterSizes(seed, 10, sorter);
+  testSorterSizes(seed, 10000, sorter);
 }
