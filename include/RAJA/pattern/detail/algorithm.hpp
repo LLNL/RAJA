@@ -22,6 +22,8 @@
 
 #include "camp/helpers.hpp"
 
+#include <iterator>
+
 namespace RAJA
 {
 
@@ -30,7 +32,13 @@ namespace detail
 
 
 template <typename Iter>
-using IterVal = camp::decay<decltype(*camp::val<Iter>())>;
+using IterVal = typename ::std::iterator_traits<Iter>::value_type;
+
+template <typename Iter>
+using IterRef = typename ::std::iterator_traits<Iter>::reference;
+
+template <typename Iter>
+using IterDiff = typename ::std::iterator_traits<Iter>::difference_type;
 
 template <typename Container>
 using ContainerVal =
