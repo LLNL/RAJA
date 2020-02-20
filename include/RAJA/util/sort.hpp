@@ -22,6 +22,8 @@
 
 #include <iterator>
 
+#include "RAJA/pattern/detail/algorithm.hpp"
+
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/util/concepts.hpp"
