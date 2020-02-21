@@ -65,14 +65,14 @@ partition(Iter begin,
   using ::RAJA::iter_swap;
 
   if (begin == end) {
-    return;
+    return begin;
   }
 
   // advance to first false
   Iter first_false = begin;
   for (; first_false != end; ++first_false) {
 
-    if (!pred(*first_false)) {
+    if (!pred(first_false)) {
       break;
     }
   }
@@ -86,7 +86,7 @@ partition(Iter begin,
   for (Iter next_true = RAJA::next(first_false); next_true != end; ++next_true) {
 
     // find the end of a range of falses [first_false, next_true)
-    if (pred(*next_true)) {
+    if (pred(next_true)) {
 
       // shift the known range of falses forward
       // by swapping the true to the beginning of the range
@@ -250,12 +250,12 @@ intro_sort(Iter begin,
   } else if (N < insertion_sort_cutoff) {
 
     // use insertion sort for small inputs
-    insertion_sort(begin, end, comp);
+    detail::insertion_sort(begin, end, comp);
 
   } else if (depth == 0) {
 
     // use heap sort if recurse too deep
-    heap_sort(begin, end, comp);
+    detail::heap_sort(begin, end, comp);
 
   } else {
 
@@ -281,8 +281,8 @@ intro_sort(Iter begin,
 
     // recurse to sort first and second parts, ignoring already sorted pivot
     // by construction pivot is always in the range [begin, end)
-    intro_sort(begin, pivot, comp, depth-1);
-    intro_sort(RAJA::next(pivot), end, comp, depth-1);
+    detail::intro_sort(begin, pivot, comp, depth-1);
+    detail::intro_sort(RAJA::next(pivot), end, comp, depth-1);
   }
 
 }
