@@ -424,6 +424,35 @@ auto zip(Args&&... args)
   return {std::forward<Args>(args)...};
 }
 
+// struct to simplify
+template < typename T, typename Compare >
+struct CompareFirst;
+
+template < typename T, typename Compare >
+struct CompareFirst
+{
+  RAJA_HOST_DEVICE inline CompareFirst(Compare comp_)
+    : comp(comp_)
+  { }
+
+  RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs)
+  {
+    using camp::get;
+    return comp(get<0>(lhs), get<0>(rhs));
+  }
+
+private:
+  Compare comp;
+};
+
+template < typename T, typename Compare >
+RAJA_HOST_DEVICE
+auto compare_first(Compare comp)
+  -> CompareFirst<T, Compare>
+{
+  return {comp};
+}
+
 }  // end namespace RAJA
 
 #endif
