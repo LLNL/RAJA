@@ -29,6 +29,7 @@
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/loop/sort.hpp"
 
 namespace RAJA
 {
@@ -47,7 +48,7 @@ unstable(const ExecPolicy &,
          Iter end,
          Compare comp)
 {
-  std::sort(begin, end, comp);
+  unstable(::RAJA::loop_exec{}, begin, end, comp);
 }
 
 /*!
@@ -60,7 +61,7 @@ stable(const ExecPolicy &,
             Iter end,
             Compare comp)
 {
-  std::stable_sort(begin, end, comp);
+  stable(::RAJA::loop_exec{}, begin, end, comp);
 }
 
 /*!
@@ -74,8 +75,7 @@ unstable_pairs(const ExecPolicy& p,
                ValIter vals_begin,
                Compare comp)
 {
-  static_assert(!type_traits::is_sequential_policy<ExecPolicy>::value,
-      "Unimplemented");
+  unstable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
 }
 
 /*!
@@ -89,8 +89,7 @@ stable_pairs(const ExecPolicy& p,
              ValIter vals_begin,
              Compare comp)
 {
-  static_assert(!type_traits::is_sequential_policy<ExecPolicy>::value,
-      "Unimplemented");
+  stable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
 }
 
 }  // namespace sort
