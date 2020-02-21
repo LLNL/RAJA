@@ -24,6 +24,7 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/pattern/detail/algorithm.hpp"
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 
