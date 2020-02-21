@@ -139,6 +139,54 @@ insertion_sort(Iter begin,
 }
 
 /*!
+    \brief insert the given element into the heaps below it
+    using comparison function
+    and using O(lg(N)) comparisons and O(1) memory
+*/
+template <typename Iter, typename Compare>
+RAJA_HOST_DEVICE RAJA_INLINE
+void
+heapify(Iter begin,
+        Iter root,
+        Iter end,
+        Compare comp)
+{
+  using RAJA::iter_swap;
+
+  auto N = end - begin;
+
+  // heapify the root node into place
+  // until this is a max heap again
+  for (auto i = root - begin; 2*i+1 < N; i = root - begin) {
+
+    // find the max item amongst the root, left child, and right child
+    Iter maxit = root;
+
+    // left child
+    Iter child = begin + 2*i+1;
+    if (comp(*maxit, *child)) {
+      maxit = child;
+    }
+
+    // right child
+    ++child;
+    if (child != end && comp(*maxit, *child)) {
+      maxit = child;
+    }
+
+    if (maxit == root) {
+      // root is the max, done
+      break;
+    }
+
+    // swap max child with root
+    iter_swap(root, maxit);
+    // continue to heapify with the former max child
+    root = maxit;
+  }
+}
+
+/*!
     \brief unstable heap sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(1) memory
 */
@@ -149,7 +197,33 @@ heap_sort(Iter begin,
           Iter end,
           Compare comp)
 {
-  static_assert(!type_traits::is_iterator<Iter>::value, "unimplemented");
+  using RAJA::iter_swap;
+
+  auto N = end - begin;
+
+  if (N < 2) {
+    // already sorted
+    return;
+  }
+
+  // make range into a max heap by
+  // going through parent nodes one-by-one in reverse order
+  for (Iter root = begin + (N-1)/2; root != begin; --root) {
+    // heapify a sub-heap
+    heapify(begin, root, end, comp);
+  }
+  // finish heapifying
+  heapify(begin, begin, end, comp);
+
+  // remove one element from max heap repeatedly until sorted
+  for (--end; begin == end; --end) {
+
+    // swap max element into sorted position at end of heap
+    iter_swap(begin, end);
+
+    // fix top item of heap
+    heapify(begin, begin, end, comp);
+  }
 }
 
 /*!
@@ -229,21 +303,6 @@ merge_sort(Iter begin,
 
 }  // namespace detail
 
-
-/*!
-    \brief unstable partition given range inplace using predicate function
-    and using O(N) predicate evaluations and O(1) memory
-*/
-template <typename Iter,
-          typename Predicate>
-RAJA_HOST_DEVICE RAJA_INLINE
-Iter
-partition(Iter begin,
-          Iter end,
-          Predicate pred)
-{
-  return detail::partition(begin, end, pred);
-}
 
 /*!
     \brief unstable insertion sort given range inplace using comparison function
