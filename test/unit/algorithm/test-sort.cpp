@@ -15,10 +15,10 @@ TEST(Sort, basic_algorithm_Sort)
 {
   testSorter(InsertionSort{});
   testSorter(InsertionSortPairs{});
-  // testSorter(HeapSort{});
-  // testSorter(HeapSortPairs{});
-  // testSorter(IntroSort{});
-  // testSorter(IntroSortPairs{});
+  testSorter(HeapSort{});
+  testSorter(HeapSortPairs{});
+  testSorter(IntroSort{});
+  testSorter(IntroSortPairs{});
   // testSorter(MergeSort{});
   // testSorter(MergeSortPairs{});
 }
@@ -27,7 +27,7 @@ TEST(Sort, basic_loop_Sort)
 {
   testSorter(PolicySort<RAJA::loop_exec>{});
   testSorter(PolicyStableSort<RAJA::loop_exec>{});
-  // testSorter(PolicySortPairs<RAJA::loop_exec>{});
+  testSorter(PolicySortPairs<RAJA::loop_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::loop_exec>{});
 }
 
@@ -35,7 +35,7 @@ TEST(Sort, basic_seq_Sort)
 {
   testSorter(PolicySort<RAJA::seq_exec>{});
   testSorter(PolicyStableSort<RAJA::seq_exec>{});
-  // testSorter(PolicySortPairs<RAJA::seq_exec>{});
+  testSorter(PolicySortPairs<RAJA::seq_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::seq_exec>{});
 }
 
