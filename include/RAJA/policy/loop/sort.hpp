@@ -28,6 +28,10 @@
 
 #include "RAJA/util/concepts.hpp"
 
+#include "RAJA/util/zip.hpp"
+
+#include "RAJA/util/sort.hpp"
+
 #include "RAJA/policy/loop/policy.hpp"
 
 namespace RAJA
@@ -74,8 +78,13 @@ unstable_pairs(const ExecPolicy& p,
                ValIter vals_begin,
                Compare comp)
 {
-  static_assert(!type_traits::is_loop_policy<ExecPolicy>::value,
-      "Unimplemented");
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = detail::IterRef<camp::decay<decltype(begin)>>;
+  RAJA::intro_sort(begin, end,
+      [&](zip_ref const& lhs, zip_ref const& rhs){
+        return comp(lhs.get<0>(), rhs.get<0>());
+      });
 }
 
 /*!
@@ -89,8 +98,13 @@ stable_pairs(const ExecPolicy& p,
              ValIter vals_begin,
              Compare comp)
 {
-  static_assert(!type_traits::is_loop_policy<ExecPolicy>::value,
-      "Unimplemented");
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = detail::IterRef<camp::decay<decltype(begin)>>;
+  RAJA::merge_sort(begin, end,
+      [&](zip_ref const& lhs, zip_ref const& rhs){
+        return comp(lhs.get<0>(), rhs.get<0>());
+      });
 }
 
 }  // namespace sort
