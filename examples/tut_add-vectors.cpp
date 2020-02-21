@@ -184,7 +184,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running RAJA HIP vector addition...\n";
 
-  Resource hipRc{Cuda()};
+  Resource hipRc{Hip()};
   int *d_a = hipRc.allocate<int>(N);
   int *d_b = hipRc.allocate<int>(N);
   int *d_c = hipRc.allocate<int>(N);
