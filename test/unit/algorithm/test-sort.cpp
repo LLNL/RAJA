@@ -14,9 +14,13 @@
 TEST(Sort, basic_algorithm_Sort)
 {
   testSorter(InsertionSort{});
+  testSorter(InsertionSortPairs{});
   // testSorter(HeapSort{});
+  // testSorter(HeapSortPairs{});
   // testSorter(IntroSort{});
+  // testSorter(IntroSortPairs{});
   // testSorter(MergeSort{});
+  // testSorter(MergeSortPairs{});
 }
 
 TEST(Sort, basic_loop_Sort)
