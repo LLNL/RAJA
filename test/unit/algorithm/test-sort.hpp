@@ -193,7 +193,7 @@ struct HeapSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::heap_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.get<0>() < rhs.get<0>(); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
   }
 
   template < typename KeyIter, typename ValIter, typename Compare >
@@ -203,7 +203,7 @@ struct HeapSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::heap_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.get<0>(), rhs.get<0>()); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
   }
 };
 
@@ -241,7 +241,7 @@ struct IntroSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::intro_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.get<0>() < rhs.get<0>(); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
   }
 
   template < typename KeyIter, typename ValIter, typename Compare >
@@ -251,7 +251,7 @@ struct IntroSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::intro_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.get<0>(), rhs.get<0>()); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
   }
 };
 
@@ -289,7 +289,7 @@ struct MergeSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::merge_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.get<0>() < rhs.get<0>(); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
   }
 
   template < typename KeyIterBegin, typename KeyIterEnd, typename ValIter, typename Compare >
@@ -299,7 +299,7 @@ struct MergeSortPairs
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
     using zip_creference = typename camp::decay<decltype(begin)>::creference;
     RAJA::merge_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.get<0>(), rhs.get<0>()); });
+        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
   }
 };
 
