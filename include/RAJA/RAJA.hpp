@@ -114,6 +114,11 @@
 #include "RAJA/util/Span.hpp"
 
 //
+// zip iterator to iterator over sequences simultaneously
+//
+#include "RAJA/util/zip.hpp"
+
+//
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
