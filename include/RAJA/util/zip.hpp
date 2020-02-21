@@ -163,25 +163,76 @@ namespace detail
     using base::base;
 
     template < typename... Os, camp::idx_t... Is >
-    zip_ref(zip_ref<Os...> const& o, camp::idx_seq<Is...>)
-      : base(camp::get<Is>(o)...)
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...>& o, camp::idx_seq<Is...>)
+      : base(o.template get<Is>()...)
     { }
 
     template < typename... Os >
-    zip_ref(zip_ref<Os...> const& o)
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...>& o)
+      : zip_ref(o, camp::make_idx_seq_t<camp::tuple_size<typename zip_ref<Os...>::base>::value>{})
+    { }
+
+    template < typename... Os, camp::idx_t... Is >
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...>&& o, camp::idx_seq<Is...>)
+      : base(std::move(o).template get<Is>()...)
+    { }
+
+    template < typename... Os >
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...>&& o)
+      : zip_ref(std::move(o), camp::make_idx_seq_t<camp::tuple_size<typename zip_ref<Os...>::base>::value>{})
+    { }
+
+    template < typename... Os, camp::idx_t... Is >
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...> const& o, camp::idx_seq<Is...>)
+      : base(o.template get<Is>()...)
+    { }
+
+    template < typename... Os >
+    RAJA_HOST_DEVICE inline zip_ref(zip_ref<Os...> const& o)
       : zip_ref(o, camp::make_idx_seq_t<camp::tuple_size<typename zip_ref<Os...>::base>::value>{})
     { }
 
     template < size_t I >
-    RAJA_HOST_DEVICE inline typename camp::tuple_element<I, base>::type& get()
+    RAJA_HOST_DEVICE inline auto get() &
+      -> decltype(camp::get<I>((base&)*this))
     {
       return camp::get<I>((base&)*this);
     }
 
     template < size_t I >
-    RAJA_HOST_DEVICE inline typename camp::tuple_element<I, base>::type const& get() const
+    RAJA_HOST_DEVICE inline auto get() &&
+      -> decltype(camp::get<I>((base&&)std::move(*this)))
+    {
+      return camp::get<I>((base&&)std::move(*this));
+    }
+
+    template < size_t I >
+    RAJA_HOST_DEVICE inline auto get() const
+      -> decltype(camp::get<I>((base const&)*this))
     {
       return camp::get<I>((base const&)*this);
+    }
+
+    // would prefer to use zip_ref::get, but zip_ref is incomplete here
+    template < size_t I >
+    RAJA_HOST_DEVICE friend inline auto get(zip_ref &o)
+      -> decltype(camp::get<I>((base&)o))
+    {
+      return camp::get<I>((base&)o);
+    }
+
+    template < size_t I >
+    RAJA_HOST_DEVICE friend inline auto get(zip_ref &&o)
+      -> decltype(camp::get<I>((base&&)std::move(o)))
+    {
+      return camp::get<I>((base&&)std::move(o));
+    }
+
+    template < size_t I >
+    RAJA_HOST_DEVICE friend inline auto get(zip_ref const&o)
+      -> decltype(camp::get<I>((base const&)o))
+    {
+      return camp::get<I>((base const&)o);
     }
 
     RAJA_HOST_DEVICE inline void swap(zip_ref& rhs)
