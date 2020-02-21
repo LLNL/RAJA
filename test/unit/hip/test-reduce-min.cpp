@@ -44,7 +44,7 @@ static void reset(double* ptr, long length)
   }
 }
 
-class ReduceMinHIP : public ::testing::Test
+class ReduceMinHIPUnitTest : public ::testing::Test
 {
 public:
   static double* dvalue;
@@ -60,14 +60,14 @@ public:
   static void TearDownTestCase() { free(dvalue); hipFree(d_dvalue); }
 };
 
-double* ReduceMinHIP::dvalue = nullptr;
-double* ReduceMinHIP::d_dvalue = nullptr;
+double* ReduceMinHIPUnitTest::dvalue = nullptr;
+double* ReduceMinHIPUnitTest::d_dvalue = nullptr;
 
-GPU_TEST_F(ReduceMinHIP, generic)
+GPU_TEST_F(ReduceMinHIPUnitTest, generic)
 {
 
-  double* dvalue = ReduceMinHIP::dvalue;
-  double* d_dvalue = ReduceMinHIP::d_dvalue;
+  double* dvalue = ReduceMinHIPUnitTest::dvalue;
+  double* d_dvalue = ReduceMinHIPUnitTest::d_dvalue;
   reset(dvalue, TEST_VEC_LEN);
   hipMemcpy(d_dvalue, dvalue, sizeof(double) * TEST_VEC_LEN, hipMemcpyHostToDevice);
 
@@ -138,11 +138,11 @@ GPU_TEST_F(ReduceMinHIP, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-GPU_TEST_F(ReduceMinHIP, indexset_align)
+GPU_TEST_F(ReduceMinHIPUnitTest, indexset_align)
 {
 
-  double* dvalue = ReduceMinHIP::dvalue;
-  double* d_dvalue = ReduceMinHIP::d_dvalue;
+  double* dvalue = ReduceMinHIPUnitTest::dvalue;
+  double* d_dvalue = ReduceMinHIPUnitTest::d_dvalue;
 
   reset(dvalue, TEST_VEC_LEN);
   hipMemcpy(d_dvalue, dvalue, sizeof(double) * TEST_VEC_LEN, hipMemcpyHostToDevice);
@@ -188,11 +188,11 @@ GPU_TEST_F(ReduceMinHIP, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-GPU_TEST_F(ReduceMinHIP, indexset_noalign)
+GPU_TEST_F(ReduceMinHIPUnitTest, indexset_noalign)
 {
 
-  double* dvalue = ReduceMinHIP::dvalue;
-  double* d_dvalue = ReduceMinHIP::d_dvalue;
+  double* dvalue = ReduceMinHIPUnitTest::dvalue;
+  double* d_dvalue = ReduceMinHIPUnitTest::d_dvalue;
 
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
