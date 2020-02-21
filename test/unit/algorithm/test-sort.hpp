@@ -143,9 +143,9 @@ struct InsertionSortPairs
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::insertion_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::insertion_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 
   template < typename KeyIter, typename ValIter, typename Compare >
@@ -153,9 +153,8 @@ struct InsertionSortPairs
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::insertion_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::insertion_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 };
 
@@ -186,14 +185,14 @@ struct HeapSortPairs
     return "RAJA::heap_sort[pairs]";
   }
 
-  template < typename KeyIter, typename ValIter, typename Compare >
+  template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::heap_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::heap_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 
   template < typename KeyIter, typename ValIter, typename Compare >
@@ -201,9 +200,8 @@ struct HeapSortPairs
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::heap_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::heap_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 };
 
@@ -234,14 +232,14 @@ struct IntroSortPairs
     return "RAJA::intro_sort[pairs]";
   }
 
-  template < typename KeyIter, typename ValIter, typename Compare >
+  template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::intro_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::intro_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 
   template < typename KeyIter, typename ValIter, typename Compare >
@@ -249,9 +247,8 @@ struct IntroSortPairs
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::intro_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::intro_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 };
 
@@ -282,24 +279,23 @@ struct MergeSortPairs
     return "RAJA::merge_sort[pairs]";
   }
 
-  template < typename KeyIterBegin, typename KeyIterEnd, typename ValIter, typename Compare >
-  void operator()(KeyIterBegin keys_begin, KeyIterEnd keys_end, ValIter vals_begin)
+  template < typename KeyIter, typename ValIter >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::merge_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return lhs.template get<0>() < rhs.template get<0>(); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::merge_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 
-  template < typename KeyIterBegin, typename KeyIterEnd, typename ValIter, typename Compare >
-  void operator()(KeyIterBegin keys_begin, KeyIterEnd keys_end, ValIter vals_begin, Compare comp)
+  template < typename KeyIter, typename ValIter, typename Compare >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
     auto begin = RAJA::zip(keys_begin, vals_begin);
     auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-    using zip_creference = typename camp::decay<decltype(begin)>::creference;
-    RAJA::merge_sort(begin, end,
-        [&](zip_creference const& lhs, zip_creference const& rhs){ return comp(lhs.template get<0>(), rhs.template get<0>()); });
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::merge_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 };
 
