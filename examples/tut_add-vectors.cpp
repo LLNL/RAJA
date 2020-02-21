@@ -12,6 +12,9 @@
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
+#include "camp/resource.hpp"
+
+using namespace camp::resources;
 
 /*
  *  Vector Addition Example
@@ -59,9 +62,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
-  int *c = memoryManager::allocate<int>(N);
+  Resource hostRc{Host()};
+  int *a = hostRc.allocate<int>(N);
+  int *b = hostRc.allocate<int>(N);
+  int *c = hostRc.allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
     a[i] = -i;
@@ -150,12 +154,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
+  Resource cudaRc{Cuda()};
+  int *d_a = cudaRc.allocate<int>(N);
+  int *d_b = cudaRc.allocate<int>(N);
+  int *d_c = cudaRc.allocate<int>(N);
+
+  cudaRc.memcpy(d_a,a,N*sizeof(int));
+  cudaRc.memcpy(d_b,b,N*sizeof(int));
+  cudaRc.memcpy(d_c,c,N*sizeof(int));
+
   // _rajacuda_vector_add_start
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    c[i] = a[i] + b[i]; 
+    d_c[i] = d_a[i] + d_b[i];
   });    
   // _rajacuda_vector_add_end
+
+  cudaRc.memcpy(c,d_c,N*sizeof(int));
+  cudaRc.deallocate(d_a);
+  cudaRc.deallocate(d_b);
+  cudaRc.deallocate(d_c);
 
   checkResult(c, N);
 //printResult(c, N);
@@ -166,26 +184,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running RAJA HIP vector addition...\n";
 
-  int *d_a = memoryManager::allocate_gpu<int>(N);
-  int *d_b = memoryManager::allocate_gpu<int>(N);
-  int *d_c = memoryManager::allocate_gpu<int>(N);
+  Resource hipRc{Cuda()};
+  int *d_a = hipRc.allocate<int>(N);
+  int *d_b = hipRc.allocate<int>(N);
+  int *d_c = hipRc.allocate<int>(N);
 
-  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipRc.memcpy(d_a,a,N*sizeof(int));
+  hipRc.memcpy(d_b,b,N*sizeof(int));
+  hipRc.memcpy(d_c,c,N*sizeof(int));
 
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
 
-  hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
+  hipRc.memcpy(c,d_c,N*sizeof(int));
+  hipRc.deallocate(d_a);
+  hipRc.deallocate(d_b);
+  hipRc.deallocate(d_c);
 
   checkResult(c, N);
 //printResult(c, N);
-
-  memoryManager::deallocate_gpu(d_a);
-  memoryManager::deallocate_gpu(d_b);
-  memoryManager::deallocate_gpu(d_c);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -193,9 +212,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Clean up.
 //
-  memoryManager::deallocate(a);
-  memoryManager::deallocate(b);
-  memoryManager::deallocate(c);
+
+  hostRc.deallocate(a);
+  hostRc.deallocate(b);
+  hostRc.deallocate(c);
 
   std::cout << "\n DONE!...\n";
 
