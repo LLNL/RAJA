@@ -207,7 +207,7 @@ heap_sort(Iter begin,
   }
 
   // make range into a max heap by
-  // going through parent nodes one-by-one in reverse order
+  // going through nodes with children one-by-one in reverse order
   for (Iter root = begin + (N-1)/2; root != begin; --root) {
     // heapify a sub-heap
     heapify(begin, root, end, comp);
@@ -216,7 +216,7 @@ heap_sort(Iter begin,
   heapify(begin, begin, end, comp);
 
   // remove one element from max heap repeatedly until sorted
-  for (--end; begin == end; --end) {
+  for (--end; begin != end; --end) {
 
     // swap max element into sorted position at end of heap
     iter_swap(begin, end);
