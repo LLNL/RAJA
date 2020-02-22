@@ -238,6 +238,8 @@ intro_sort(Iter begin,
            Compare comp,
            unsigned depth)
 {
+  using RAJA::iter_swap;
+
   auto N = end - begin;
 
   // cutoff to use insertion sort
@@ -260,7 +262,7 @@ intro_sort(Iter begin,
   } else {
 
     // use quick sort
-    // choose pivot with median of 3
+    // choose pivot with median of 3 (N >= insertion_sort_cutoff)
     Iter mid = begin + N/2;
     Iter last = end-1;
     Iter pivot = comp(*begin, *mid)
@@ -275,12 +277,23 @@ intro_sort(Iter begin,
                                   : last )
                            : mid );
 
-    IterVal<Iter> pivot_val = *pivot;
+    // swap pivot to last
+    if (pivot != last) {
+      iter_swap(pivot, last);
+      pivot = last;
+    }
+
     // partition
-    pivot = partition(begin, end, [&](Iter it){ return comp(*it, pivot_val); });
+    mid = partition(begin, last, [&](Iter it){ return comp(*it, *pivot); });
+
+    // swap pivot to sorted position
+    if (mid != pivot) {
+      iter_swap(mid, pivot);
+      pivot = mid;
+    }
 
     // recurse to sort first and second parts, ignoring already sorted pivot
-    // by construction pivot is always in the range [begin, end)
+    // by construction pivot is always in the range [begin, last]
     detail::intro_sort(begin, pivot, comp, depth-1);
     detail::intro_sort(RAJA::next(pivot), end, comp, depth-1);
   }
