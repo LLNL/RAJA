@@ -207,7 +207,7 @@ namespace detail
     }
 
     template < size_t I >
-    RAJA_HOST_DEVICE inline auto get() const
+    RAJA_HOST_DEVICE inline auto get() const&
       -> decltype(camp::get<I>((base const&)*this))
     {
       return camp::get<I>((base const&)*this);
