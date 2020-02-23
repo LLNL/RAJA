@@ -302,11 +302,11 @@ struct MergeSortPairs
 
 template <typename pairs_category,
           typename K,
-          typename V = K>
+          typename V = RAJA::Index_type>
 struct SortData;
 
-template <typename K>
-struct SortData<sort_interface_tag, K, K>
+template <typename K, typename V>
+struct SortData<sort_interface_tag, K, V>
 {
   K* orig_keys = nullptr;
   K* sorted_keys = nullptr;
@@ -349,9 +349,9 @@ struct SortData<sort_interface_tag, K, K>
 
 
 template <typename K, typename V>
-struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K>
+struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K, V>
 {
-  using base = SortData<sort_interface_tag, K>;
+  using base = SortData<sort_interface_tag, K, V>;
 
   V* orig_vals = nullptr;
   V* sorted_vals = nullptr;
@@ -365,8 +365,8 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
       cudaErrchk(cudaMallocManaged((void **)&orig_vals, sizeof(V) * N));
       cudaErrchk(cudaMallocManaged((void **)&sorted_vals, sizeof(V) * N));
 #else
-      orig_vals   = new K[N];
-      sorted_vals = new K[N];
+      orig_vals   = new V[N];
+      sorted_vals = new V[N];
 #endif
     }
     cudaErrchk(cudaDeviceSynchronize());
