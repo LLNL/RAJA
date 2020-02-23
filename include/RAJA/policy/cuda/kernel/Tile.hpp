@@ -328,13 +328,14 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
+    int len = segment.end() - segment.begin();
     auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
 
     // Assign our new tiled segment
     segment = orig_segment.slice(i0, chunk_size);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active);
+    enclosed_stmts_t::exec(data, thread_active && (i0<len));
 
     // Set range back to original values
     segment = orig_segment;
@@ -355,7 +356,7 @@ struct CudaStatementExecutor<
 
     LaunchDims dims;
     set_cuda_dim<ThreadDim>(dims.threads, num_threads);
-
+    set_cuda_dim<ThreadDim>(dims.min_threads, num_threads);
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
@@ -418,13 +419,22 @@ struct CudaStatementExecutor<
 
     // Iterate through grid stride of chunks
     int len = segment_length<ArgumentId>(data);
-    for (int i = i0; i < len; i += i_stride) {
+    int i = i0;
+    for (; i < len; i += i_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, thread_active);
+    }
+    // do we need one more masked iteration?
+    if(i - i0 < len)
+    {
+      // execute enclosed statements one more time, but masking them off
+      // this is because there's at least one thread that isn't masked off
+      // that is still executing the above loop
+      enclosed_stmts_t::exec(data, false);
     }
 
     // Set range back to original values
