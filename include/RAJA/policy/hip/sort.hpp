@@ -58,6 +58,16 @@ namespace detail
   using double_buffer = ::cub::DoubleBuffer<R>;
 #endif
 
+  template < typename R >
+  R* get_current(double_buffer<R>& d_buf)
+  {
+#if defined(__HIPCC__)
+    reutrn d_bufs.current();
+#elif defined(__CUDACC__)
+    reutrn d_bufs.Current();
+#endif
+  }
+
 }
 
 /*!
@@ -156,7 +166,7 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  if (d_keys.Current() == d_out) {
+  if (detail::get_current(d_keys) == d_out) {
 
     // copy
     hipErrchk(hipMemcpyAsync(begin, d_out, len*sizeof(R), hipMemcpyDefault, stream));
@@ -240,7 +250,7 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  if (d_keys.Current() == d_out) {
+  if (detail::get_current(d_keys) == d_out) {
 
     // copy
     hipErrchk(hipMemcpyAsync(begin, d_out, len*sizeof(R), hipMemcpyDefault, stream));
@@ -419,12 +429,12 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  if (d_keys.Current() == d_keys_out) {
+  if (detail::get_current(d_keys) == d_keys_out) {
 
     // copy keys
     hipErrchk(hipMemcpyAsync(keys_begin, d_keys_out, len*sizeof(K), hipMemcpyDefault, stream));
   }
-  if (d_vals.Current() == d_vals_out) {
+  if (detail::get_current(d_vals) == d_vals_out) {
 
     // copy vals
     hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), hipMemcpyDefault, stream));
@@ -519,12 +529,12 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  if (d_keys.Current() == d_keys_out) {
+  if (detail::get_current(d_keys) == d_keys_out) {
 
     // copy keys
     hipErrchk(hipMemcpyAsync(keys_begin, d_keys_out, len*sizeof(K), hipMemcpyDefault, stream));
   }
-  if (d_vals.Current() == d_vals_out) {
+  if (detail::get_current(d_vals) == d_vals_out) {
 
     // copy vals
     hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), hipMemcpyDefault, stream));
