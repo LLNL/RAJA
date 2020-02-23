@@ -325,7 +325,7 @@ struct SortData<sort_interface_tag, K, K>
     }
     cudaErrchk(cudaDeviceSynchronize());
 
-    for (RAJA::Index_type i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {
       orig_keys[i] = gen_random();
     }
   }
@@ -371,7 +371,7 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
     }
     cudaErrchk(cudaDeviceSynchronize());
 
-    for (RAJA::Index_type i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {
       orig_vals[i] = gen_random();
     }
   }
