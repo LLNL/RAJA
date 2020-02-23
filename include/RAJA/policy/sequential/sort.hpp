@@ -43,7 +43,7 @@ namespace sort
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-unstable(const ExecPolicy &,
+unstable(const ExecPolicy&,
          Iter begin,
          Iter end,
          Compare comp)
@@ -56,7 +56,7 @@ unstable(const ExecPolicy &,
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-stable(const ExecPolicy &,
+stable(const ExecPolicy&,
             Iter begin,
             Iter end,
             Compare comp)
@@ -69,7 +69,7 @@ stable(const ExecPolicy &,
 */
 template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-unstable_pairs(const ExecPolicy& p,
+unstable_pairs(const ExecPolicy&,
                KeyIter keys_begin,
                KeyIter keys_end,
                ValIter vals_begin,
@@ -83,7 +83,7 @@ unstable_pairs(const ExecPolicy& p,
 */
 template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-stable_pairs(const ExecPolicy& p,
+stable_pairs(const ExecPolicy&,
              KeyIter keys_begin,
              KeyIter keys_end,
              ValIter vals_begin,
