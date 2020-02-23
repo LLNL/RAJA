@@ -93,8 +93,8 @@ namespace detail
     template< typename T0, typename T1 >
     RAJA_HOST_DEVICE inline int operator()(T0&& t0, T1&& t1) const
     {
-      using RAJA::swap;
-      swap(std::forward<T0>(t0), std::forward<T1>(t1));
+      using camp::safe_swap;
+      safe_swap(std::forward<T0>(t0), std::forward<T1>(t1));
       return 1;
     }
   };
@@ -104,8 +104,8 @@ namespace detail
     template< typename T0, typename T1 >
     RAJA_HOST_DEVICE inline int operator()(T0&& t0, T1&& t1) const
     {
-      using RAJA::iter_swap;
-      iter_swap(std::forward<T0>(t0), std::forward<T1>(t1));
+      using RAJA::safe_iter_swap;
+      safe_iter_swap(std::forward<T0>(t0), std::forward<T1>(t1));
       return 1;
     }
   };
@@ -235,14 +235,14 @@ namespace detail
       return camp::get<I>((base const&)o);
     }
 
-    RAJA_HOST_DEVICE inline void swap(zip_ref& rhs)
+    RAJA_HOST_DEVICE inline void safe_swap(zip_ref& rhs)
     {
       zip_for_each((base&)(*this), (base&)rhs, detail::Swap{});
     }
 
-    RAJA_HOST_DEVICE friend inline void swap(zip_ref& lhs, zip_ref& rhs)
+    RAJA_HOST_DEVICE friend inline void safe_swap(zip_ref& lhs, zip_ref& rhs)
     {
-      lhs.swap(rhs);
+      lhs.safe_swap(rhs);
     }
   };
 
@@ -401,14 +401,14 @@ struct ZipIterator
   }
 
 
-  RAJA_HOST_DEVICE inline void iter_swap(ZipIterator& rhs)
+  RAJA_HOST_DEVICE inline void safe_iter_swap(ZipIterator& rhs)
   {
     zip_for_each(m_iterators, rhs.m_iterators, detail::IterSwap{});
   }
 
-  RAJA_HOST_DEVICE friend inline void iter_swap(ZipIterator& lhs, ZipIterator& rhs)
+  RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator& lhs, ZipIterator& rhs)
   {
-    lhs.iter_swap(rhs);
+    lhs.safe_iter_swap(rhs);
   }
 
 private:

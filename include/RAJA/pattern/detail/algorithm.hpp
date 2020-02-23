@@ -20,6 +20,8 @@
 #ifndef RAJA_pattern_detail_algorithm_HPP
 #define RAJA_pattern_detail_algorithm_HPP
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/macros.hpp"
 #include "camp/helpers.hpp"
 
 #include <iterator>
@@ -53,28 +55,20 @@ int firstIndex(int n, int p, int pid)
 
 
 /*!
-    \brief swap values lhs and rhs
-*/
-template <typename T>
-RAJA_HOST_DEVICE RAJA_INLINE
-void
-swap(T& lhs, T& rhs)
-{
-  T tmp = std::move(lhs);
-  lhs = std::move(rhs);
-  rhs = std::move(tmp);
-}
-
-/*!
     \brief swap values at iterators lhs and rhs
 */
 template <typename Iter>
 RAJA_HOST_DEVICE RAJA_INLINE
 void
-iter_swap(Iter lhs, Iter rhs)
+safe_iter_swap(Iter lhs, Iter rhs)
 {
-  using RAJA::swap;
-  swap(*lhs, *rhs);
+#ifdef RAJA_DEVICE_CODE
+  using camp::safe_swap;
+  safe_swap(*lhs, *rhs);
+#else
+  using std::iter_swap;
+  iter_swap(lhs, rhs);
+#endif
 }
 
 /*!

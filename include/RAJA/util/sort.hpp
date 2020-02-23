@@ -62,7 +62,7 @@ partition(Iter begin,
           Iter end,
           Predicate pred)
 {
-  using ::RAJA::iter_swap;
+  using ::RAJA::safe_iter_swap;
 
   if (begin == end) {
     return begin;
@@ -90,7 +90,7 @@ partition(Iter begin,
 
       // shift the known range of falses forward
       // by swapping the true to the beginning of the range
-      iter_swap(first_false, next_true);
+      safe_iter_swap(first_false, next_true);
       ++first_false;
     }
   }
@@ -109,7 +109,7 @@ insertion_sort(Iter begin,
                Iter end,
                Compare comp)
 {
-  using ::RAJA::iter_swap;
+  using ::RAJA::safe_iter_swap;
 
   if (begin == end) {
     return;
@@ -127,7 +127,7 @@ insertion_sort(Iter begin,
       if (comp(*to_insert, *next_sorted)) {
 
         // swap down if should be before
-        iter_swap(next_sorted, to_insert);
+        safe_iter_swap(next_sorted, to_insert);
 
       } else {
 
@@ -151,7 +151,7 @@ heapify(Iter begin,
         Iter end,
         Compare comp)
 {
-  using RAJA::iter_swap;
+  using RAJA::safe_iter_swap;
 
   auto N = end - begin;
 
@@ -180,7 +180,7 @@ heapify(Iter begin,
     }
 
     // swap max child with root
-    iter_swap(root, maxit);
+    safe_iter_swap(root, maxit);
     // continue to heapify with the former max child
     root = maxit;
   }
@@ -197,7 +197,7 @@ heap_sort(Iter begin,
           Iter end,
           Compare comp)
 {
-  using RAJA::iter_swap;
+  using RAJA::safe_iter_swap;
 
   auto N = end - begin;
 
@@ -219,7 +219,7 @@ heap_sort(Iter begin,
   for (--end; begin != end; --end) {
 
     // swap max element into sorted position at end of heap
-    iter_swap(begin, end);
+    safe_iter_swap(begin, end);
 
     // fix top item of heap
     heapify(begin, begin, end, comp);
@@ -238,7 +238,7 @@ intro_sort(Iter begin,
            Compare comp,
            unsigned depth)
 {
-  using RAJA::iter_swap;
+  using RAJA::safe_iter_swap;
 
   auto N = end - begin;
 
@@ -279,7 +279,7 @@ intro_sort(Iter begin,
 
     // swap pivot to last
     if (pivot != last) {
-      iter_swap(pivot, last);
+      safe_iter_swap(pivot, last);
       pivot = last;
     }
 
@@ -288,7 +288,7 @@ intro_sort(Iter begin,
 
     // swap pivot to sorted position
     if (mid != pivot) {
-      iter_swap(mid, pivot);
+      safe_iter_swap(mid, pivot);
       pivot = mid;
     }
 
