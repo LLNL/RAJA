@@ -28,6 +28,7 @@
 
 #if defined(__HIPCC__)
 #define ROCPRIM_HIP_API 1
+#include "rocprim/device/device_transform.hpp"
 #include "rocprim/device/device_radix_sort.hpp"
 #elif defined(__CUDACC__)
 #include "cub/device/device_radix_sort.cuh"
