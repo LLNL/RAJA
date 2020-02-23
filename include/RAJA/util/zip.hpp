@@ -377,7 +377,7 @@ struct ZipIterator
     tmp -= rhs;
     return tmp;
   }
-  RAJA_HOST_DEVICE friend constexpr ZipIterator operator+(
+  RAJA_HOST_DEVICE friend ZipIterator operator+(
       difference_type lhs,
       const ZipIterator& rhs)
   {
@@ -395,7 +395,7 @@ struct ZipIterator
   {
     return *(*this);
   }
-  RAJA_HOST_DEVICE constexpr reference operator[](difference_type rhs) const
+  RAJA_HOST_DEVICE reference operator[](difference_type rhs) const
   {
     return *((*this) + rhs);
   }
