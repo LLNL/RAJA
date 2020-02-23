@@ -62,9 +62,9 @@ namespace detail
   R* get_current(double_buffer<R>& d_buf)
   {
 #if defined(__HIPCC__)
-    reutrn d_bufs.current();
+    return d_bufs.current();
 #elif defined(__CUDACC__)
-    reutrn d_bufs.Current();
+    return d_bufs.Current();
 #endif
   }
 
