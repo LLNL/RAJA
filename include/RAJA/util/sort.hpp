@@ -191,7 +191,7 @@ heapify(Iter begin,
     and using O(N*lg(N)) comparisons and O(1) memory
 */
 template <typename Iter, typename Compare>
-RAJA_HOST_DEVICE RAJA_INLINE
+RAJA_HOST_DEVICE inline
 void
 heap_sort(Iter begin,
           Iter end,
@@ -231,7 +231,7 @@ heap_sort(Iter begin,
     and using O(N*lg(N)) comparisons and O(lg(N)) memory
 */
 template <typename Iter, typename Compare>
-RAJA_HOST_DEVICE RAJA_INLINE
+RAJA_HOST_DEVICE inline
 void
 intro_sort(Iter begin,
            Iter end,
@@ -305,7 +305,7 @@ intro_sort(Iter begin,
     and using O(N*lg(N)) comparisons and O(N) memory
 */
 template <typename Iter, typename Compare>
-RAJA_HOST_DEVICE RAJA_INLINE
+RAJA_HOST_DEVICE inline
 void
 merge_sort(Iter begin,
            Iter end,
