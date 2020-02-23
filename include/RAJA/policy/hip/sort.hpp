@@ -59,7 +59,7 @@ namespace detail
 #endif
 
   template < typename R >
-  R* get_current(double_buffer<R>& d_buf)
+  R* get_current(double_buffer<R>& d_bufs)
   {
 #if defined(__HIPCC__)
     return d_bufs.current();
