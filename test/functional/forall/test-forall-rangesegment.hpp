@@ -17,7 +17,7 @@ template<typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
-  RAJA::Index_type N = r1.end() - r1.begin();
+  INDEX_TYPE N = r1.end() - r1.begin();
 
   camp::resources::Resource working_res{WORKING_RES()};
   camp::resources::Resource check_res{Host()};
@@ -26,7 +26,7 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE * check_array   = check_res.allocate<INDEX_TYPE>(N);
   INDEX_TYPE * test_array    = check_res.allocate<INDEX_TYPE>(N);
 
-  for(INDEX_TYPE i=0; i < r1.size(); i++)
+  for(INDEX_TYPE i=0; i < N; i++)
   {
     test_array[i]= *r1.begin() + i;
   }
@@ -38,7 +38,7 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N );
 
-  for(INDEX_TYPE i=0; i < r1.size(); i++)
+  for(INDEX_TYPE i=0; i < N; i++)
   {
     ASSERT_EQ(test_array[i], check_array[i]);
   }

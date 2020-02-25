@@ -32,8 +32,6 @@ class ForallFunctionalTest: public ::testing::Test {};
 
 // Define Index Types
 using IdxTypes = list<RAJA::Index_type,
-                      char, 
-                      unsigned char,
                       short,
                       unsigned short,
                       int, 
