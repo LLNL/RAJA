@@ -20,6 +20,7 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 #include "type_helper.hpp"
+#include "RAJA_unit_forone.hpp"
 
 #include <list>
 #include <unordered_map>
@@ -298,6 +299,133 @@ struct MergeSortPairs
     RAJA::merge_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
   }
 };
+
+
+#ifdef RAJA_TEST_ENABLE_GPU
+
+struct InsertionSortGPU
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::insertion_sort";
+  }
+
+  template < typename Iter >
+  void operator()(Iter begin, Iter end)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::insertion_sort(begin, end);
+    });
+  }
+
+  template < typename Iter, typename Compare >
+  void operator()(Iter begin, Iter end, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::insertion_sort(begin, end, comp);
+    });
+  }
+};
+
+struct InsertionSortPairsGPU
+{
+  using sort_category = stable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::insertion_sort[pairs]";
+  }
+
+  template < typename KeyIter, typename ValIter >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::insertion_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+
+  template < typename KeyIter, typename ValIter, typename Compare >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::insertion_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+};
+
+struct HeapSortGPU
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::heap_sort";
+  }
+
+  template < typename Iter >
+  void operator()(Iter begin, Iter end)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::heap_sort(begin, end);
+    });
+  }
+
+  template < typename Iter, typename Compare >
+  void operator()(Iter begin, Iter end, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::heap_sort(begin, end, comp);
+    });
+  }
+};
+
+struct HeapSortPairsGPU
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::heap_sort[pairs]";
+  }
+
+  template < typename KeyIter, typename ValIter >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+      RAJA::heap_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+
+  template < typename KeyIter, typename ValIter, typename Compare >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::heap_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+};
+
+#endif
 
 
 template <typename pairs_category,
@@ -765,12 +893,12 @@ void testSorterSizes(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
 }
 
 template <typename Sorter>
-void testSorter(Sorter sorter)
+void testSorter(Sorter sorter, RAJA::Index_type MaxN = 10000)
 {
   unsigned seed = std::random_device{}();
 
   testSorterSizes(seed, 0, sorter);
-  testSorterSizes(seed, 1, sorter);
-  testSorterSizes(seed, 10, sorter);
-  testSorterSizes(seed, 10000, sorter);
+  for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
+    testSorterSizes(seed, n, sorter);
+  }
 }

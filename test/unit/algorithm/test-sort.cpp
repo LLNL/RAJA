@@ -86,3 +86,23 @@ GPU_TEST(Sort, basic_HIP_Sort)
 
 #endif
 
+#if defined(RAJA_TEST_ENABLE_GPU)
+
+GPU_TEST(Sort, basic_algorithm_device_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  testSorter(InsertionSortGPU{}, MaxN);
+  testSorter(InsertionSortPairsGPU{}, MaxN);
+  testSorter(HeapSortGPU{}, MaxN);
+  testSorter(HeapSortPairsGPU{}, MaxN);
+
+  // intro_sort and merge_sort will probably not be supported in device code
+  // due to memory requirements
+  // testSorter(IntroSort{}, MaxN);
+  // testSorter(IntroSortPairs{}, MaxN);
+  // testSorter(MergeSort{}, MaxN);
+  // testSorter(MergeSortPairs{}, MaxN);
+}
+
+#endif
+
