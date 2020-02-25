@@ -13,32 +13,32 @@
 
 using camp::resources::Host;
 
-template<typename T, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegmentFunctionalTest(T first, T last)
+template<typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
+void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
-  RAJA::TypedRangeSegment<T> r1(first, last);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   RAJA::Index_type N = r1.end() - r1.begin();
 
   camp::resources::Resource working_res{WORKING_RES()};
   camp::resources::Resource check_res{Host()};
 
-  T * working_array = working_res.allocate<T>(N);
-  T * check_array   = check_res.allocate<T>(N);
-  T * test_array    = check_res.allocate<T>(N);
+  INDEX_TYPE * working_array = working_res.allocate<INDEX_TYPE>(N);
+  INDEX_TYPE * check_array   = check_res.allocate<INDEX_TYPE>(N);
+  INDEX_TYPE * test_array    = check_res.allocate<INDEX_TYPE>(N);
 
-  for(T i=0; i < r1.size(); i++)
+  for(INDEX_TYPE i=0; i < r1.size(); i++)
   {
     test_array[i]= *r1.begin() + i;
   }
 
   RAJA::forall<EXEC_POLICY>(r1,
-    [=] RAJA_HOST_DEVICE (T idx){
+    [=] RAJA_HOST_DEVICE (INDEX_TYPE idx){
     working_array[idx - *r1.begin()] = idx;
   });
 
-  working_res.memcpy(check_array, working_array, sizeof(T) * N );
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N );
 
-  for(T i=0; i < r1.size(); i++)
+  for(INDEX_TYPE i=0; i < r1.size(); i++)
   {
     ASSERT_EQ(test_array[i], check_array[i]);
   }
