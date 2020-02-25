@@ -14,25 +14,34 @@
 
 using namespace camp::resources;
 using namespace RAJA;
+using namespace camp;
 
-TYPED_TEST(ForallFunctionalTest, RangeSegmentHost)
+TYPED_TEST_SUITE_P(ForallFunctionalTest);
+
+
+TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
 {
-  ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(0,5);
-  ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(1,5);
-  if(std::is_signed<TypeParam>::value){
+  using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
+  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
+  using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
+
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(0,5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,255);
+
+  if(std::is_signed<INDEX_TYPE>::value){
 #if !defined(__CUDA_ARCH__)
-    ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(-5,0);
-    ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(-5,5);
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,0);
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,5);
 #endif
   }
 }
 
 
-#if defined(RAJA_ENABLE_CUDA)
-TYPED_TEST(ForallFunctionalTest, RangeSegmentCuda)
-{
-  ForallRangeSegmentFunctionalTest<TypeParam, Cuda, cuda_exec<128>>(0,5);
-  ForallRangeSegmentFunctionalTest<TypeParam, Cuda, cuda_exec<128>>(1,255);
-}
-#endif
+REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
 
+INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallFunctionalTest, SequentialForallTypes);
+
+#if defined(RAJA_ENABLE_CUDA)
+INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, ForallFunctionalTest, CudaForallTypes);
+#endif
