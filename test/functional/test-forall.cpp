@@ -12,14 +12,17 @@
 
 #include "forall/test-forall-rangesegment.hpp"
 
+using namespace camp::resources;
+using namespace RAJA;
+
 TYPED_TEST(ForallFunctionalTest, RangeSegmentHost)
 {
-  ForallRangeSegmentFunctionalTest_host<TypeParam>(0,5);
-  ForallRangeSegmentFunctionalTest_host<TypeParam>(1,5);
+  ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(0,5);
+  ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(1,5);
   if(std::is_signed<TypeParam>::value){
 #if !defined(__CUDA_ARCH__)
-    ForallRangeSegmentFunctionalTest_host<TypeParam>(-5,0);
-    ForallRangeSegmentFunctionalTest_host<TypeParam>(-5,5);
+    ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(-5,0);
+    ForallRangeSegmentFunctionalTest<TypeParam, Host, seq_exec>(-5,5);
 #endif
   }
 }
@@ -28,8 +31,8 @@ TYPED_TEST(ForallFunctionalTest, RangeSegmentHost)
 #if defined(RAJA_ENABLE_CUDA)
 TYPED_TEST(ForallFunctionalTest, RangeSegmentCuda)
 {
-  ForallRangeSegmentFunctionalTest_cuda(0,5);
-  ForallRangeSegmentFunctionalTest_cuda(1,1000);
+  ForallRangeSegmentFunctionalTest<TypeParam, Cuda, cuda_exec<128>>(0,5);
+  ForallRangeSegmentFunctionalTest<TypeParam, Cuda, cuda_exec<128>>(1,255);
 }
 #endif
 
