@@ -284,11 +284,11 @@ struct CudaStatementExecutor<
     auto i0 = t0 * chunk_size;
 
     // Assign our new tiled segment
-    segment = orig_segment.slice(i0, chunk_size);
+    segment = orig_segment.slice(i0, (i0 < len) ? chunk_size : 0);
     data.template assign_param<ParamId>(t0);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active && (i0<len));
+    enclosed_stmts_t::exec(data, thread_active && (i0 < len));
 
     // Set range back to original values
     segment = orig_segment;
@@ -352,8 +352,10 @@ struct CudaStatementExecutor<
 
     // Iterate through grid stride of chunks
     int len = segment_length<ArgumentId>(data);
-    int i = i0;
-    for (int t = t0; i < len; i += i_stride, t += t_stride) {
+
+    int i = i0, t = t0;
+    for(; i-i0+i_stride < len; i += i_stride, t += t_stride) {
+      // execute enclosed statements if all thread will
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -368,7 +370,13 @@ struct CudaStatementExecutor<
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, (i < len) ? chunk_size : 0);
+      data.template assign_param<ParamId>(t);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && i < len);
     }
 
     // Set range back to original values
