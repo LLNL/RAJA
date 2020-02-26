@@ -156,26 +156,32 @@ struct CudaStatementExecutor<
   {
     // block stride loop
     int len = segment_length<ArgumentId>(data);
-    //auto i0 = threadIdx.x;
-    //auto i_stride = RAJA::policy::cuda::WARP_SIZE;
-    //auto i = i0;
-    auto &i = camp::get<ArgumentId>(data.offset_tuple);
-    i = threadIdx.x;
-    for( ; i < len; i += RAJA::policy::cuda::WARP_SIZE){
+    auto i0 = threadIdx.x;
+    auto i_stride = RAJA::policy::cuda::WARP_SIZE;
+    auto i = i0;
+    for(; i-i0+i_stride < len; i += i_stride) {
+      // execute enclosed statements if all thread will
 
       // Assign the x thread to the argument
-      //  data.template assign_offset<ArgumentId>(i);
+      data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, thread_active);
     }
     // do we need one more masked iteration?
-    if(i - threadIdx.x < len){
+    if(i - i0 < len)
+    {
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && (i < len));
     }
   }
 };
@@ -279,10 +285,13 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     int len = segment_length<ArgumentId>(data);
-    auto i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    auto i0 = mask_t::maskValue(threadIdx.x);
+    auto i_stride = (int) mask_t::max_masked_size;
+    auto i = i0;
+    for(; i-i0+i_stride < len; i += i_stride) {
+      // execute enclosed statements if all thread will
 
-      // Assign the x thread to the argument and param
+      // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
@@ -290,11 +299,18 @@ struct CudaStatementExecutor<
       enclosed_stmts_t::exec(data, thread_active);
     }
     // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
+    if(i - i0 < len)
+    {
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && (i < len));
     }
   }
 
@@ -397,8 +413,11 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     int len = segment_length<ArgumentId>(data);
-    int i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    auto i0 = mask_t::maskValue(threadIdx.x);
+    auto i_stride = (int) mask_t::max_masked_size;
+    auto i = i0;
+    for(; i-i0+i_stride < len; i += i_stride) {
+      // execute enclosed statements if all thread will
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -408,11 +427,18 @@ struct CudaStatementExecutor<
       enclosed_stmts_t::exec(data, thread_active);
     }
     // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
+    if(i - i0 < len)
+    {
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && (i < len));
     }
   }
 
@@ -456,7 +482,8 @@ struct CudaStatementExecutor<
     auto i0 = get_cuda_dim<ThreadDim>(threadIdx);
     auto i_stride = get_cuda_dim<ThreadDim>(blockDim);
     auto i = i0;
-    for(;i < len;i += i_stride){
+    for(; i-i0+i_stride < len; i += i_stride) {
+      // execute enclosed statements if all thread will
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -471,7 +498,13 @@ struct CudaStatementExecutor<
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && (i < len));
     }
   }
 };
