@@ -219,7 +219,7 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
   }
 }
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE resource::Event forall_impl(resource::Context *res,
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
                                         cuda_exec<BlockSize, Async>,
                                         Iterable&& iter,
                                         LoopBody&& loop_body)
@@ -230,7 +230,7 @@ RAJA_INLINE resource::Event forall_impl(resource::Context *res,
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  auto cuda_res = resource::raja_get<resource::Cuda>(res);
+  auto cuda_res = RAJA::resources::raja_get<RAJA::resources::Cuda>(res);
 
   //
   // Compute the requested iteration space size

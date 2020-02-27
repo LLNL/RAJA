@@ -98,7 +98,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
-  RAJA::resource::Context host{RAJA::resource::Host()};
+  RAJA::resources::Resource host{RAJA::resources::Host()};
 
   // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(&host, RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -114,8 +114,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
-  RAJA::resource::Context res_cuda1{RAJA::resource::Cuda()};
-  RAJA::resource::Context res_cuda2{RAJA::resource::Cuda()};
+  RAJA::resources::Resource res_cuda1{RAJA::resources::Cuda()};
+  RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
 
   // _rajacuda_vector_add_start
   auto e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(&res_cuda1, RAJA::RangeSegment(0, N), 

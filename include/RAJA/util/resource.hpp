@@ -25,14 +25,14 @@
 namespace RAJA
 {
 
-namespace resource
+namespace resources
 {
 using namespace camp::resources;
 
 template<typename T>
-T raja_get(Context *res)
+T raja_get(Resource *res)
 {
-  if (!res->test_get<T>()) RAJA_ABORT_OR_THROW("Execution Policy incompatible with resource.");
+  if (!res->try_get<T>()) RAJA_ABORT_OR_THROW("Execution architecture incompatible with resource.");
 
   return res->get<T>();
 }
