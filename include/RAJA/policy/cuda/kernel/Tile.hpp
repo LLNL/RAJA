@@ -145,8 +145,8 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    auto len = segment.end() - segment.begin();
-    auto i = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    int len = segment.end() - segment.begin();
+    int i = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
 
     // check have chunk
     if (i < len) {
@@ -238,9 +238,9 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    auto len = segment.end() - segment.begin();
-    auto i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
-    auto i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
+    int len = segment.end() - segment.begin();
+    int i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    int i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
 
     // Iterate through grid stride of chunks
     for (int i = i0; i < len; i += i_stride) {
@@ -329,13 +329,18 @@ struct CudaStatementExecutor<
 
     // compute trip count
     int len = segment.end() - segment.begin();
-    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    int i = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+
+    // execute enclosed statements if any thread will
+    // but mask off threads without work
+    bool have_work = i < len;
 
     // Assign our new tiled segment
-    segment = orig_segment.slice(i0, (i0 < len) ? chunk_size : 0);
+    int slice_size = have_work ? chunk_size : 0;
+    segment = orig_segment.slice(i, slice_size);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active && (i0 < len));
+    enclosed_stmts_t::exec(data, thread_active && have_work);
 
     // Set range back to original values
     segment = orig_segment;

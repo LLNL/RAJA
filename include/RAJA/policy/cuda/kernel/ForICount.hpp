@@ -61,8 +61,8 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_cuda_dim<ThreadDim>(threadIdx);
+    int len = segment_length<ArgumentId>(data);
+    int i = get_cuda_dim<ThreadDim>(threadIdx);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -109,8 +109,8 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_cuda_dim<0>(threadIdx);
+    int len = segment_length<ArgumentId>(data);
+    int i = get_cuda_dim<0>(threadIdx);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -220,9 +220,9 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    int len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue(threadIdx.x);
+    int i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -342,9 +342,9 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    int len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue(threadIdx.x);
+    int i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -511,8 +511,8 @@ struct CudaStatementExecutor<
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_cuda_dim<BlockDim>(blockIdx);
+    int len = segment_length<ArgumentId>(data);
+    int i = get_cuda_dim<BlockDim>(blockIdx);
 
     if (i < len) {
 
@@ -555,10 +555,14 @@ struct CudaStatementExecutor<
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = get_cuda_dim<BlockDim>(blockIdx);
-    auto i_stride = get_cuda_dim<BlockDim>(gridDim);
-    for(auto i = i0;i < len;i += i_stride){
+    int len = segment_length<ArgumentId>(data);
+    int i0 = get_cuda_dim<BlockDim>(blockIdx);
+
+    // Get our stride from the dimension
+    int i_stride = get_cuda_dim<BlockDim>(gridDim);
+
+    // Iterate through grid stride of chunks
+    for (int i = i0; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -604,7 +608,7 @@ struct CudaStatementExecutor<
 
     idx_type len = segment_length<ArgumentId>(data);
 
-    for(idx_type i = 0;i < len;++ i){
+    for (idx_type i = 0; i < len; ++i) {
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
