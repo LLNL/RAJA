@@ -412,36 +412,26 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    int len = segment_length<ArgumentId>(data);
+    int i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
 
     // Get our stride from the dimension
-    auto i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
+    int i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    int len = segment_length<ArgumentId>(data);
+    for (int ii = 0; ii < len; ii += i_stride) {
+      int i = ii + i0;
 
-    int i = i0;
-    for(; i-i0+i_stride < len; i += i_stride) {
-      // execute enclosed statements if all thread will
-
-      // Assign our new tiled segment
-      segment = orig_segment.slice(i, chunk_size);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign our new tiled segment
-      segment = orig_segment.slice(i, (i < len) ? chunk_size : 0);
+      int slice_size = have_work ? chunk_size : 0;
+      segment = orig_segment.slice(i, slice_size);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active && (i < len));
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
 
     // Set range back to original values
