@@ -8,9 +8,13 @@
 cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0048 NEW)
 
+if (APPLE)
+ cmake_policy(SET CMP0025 NEW)
+endif()
+
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 10)
+set(RAJA_VERSION_MINOR 11)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -92,6 +96,34 @@ if (ENABLE_CUDA)
   endif ()
 endif()
 
+# Detect C++ standard and add appropriate flag _before_ loading BLT
+set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
+
+include(CheckCXXCompilerFlag)
+if(RAJA_CXX_STANDARD_FLAG MATCHES default)
+  if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    #TODO set BLT_CXX_STANDARD
+    set(CMAKE_CXX_STANDARD 17)
+  elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    set(CMAKE_CXX_STANDARD 14)
+  elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
+    set(CMAKE_CXX_STANDARD 14)
+  else() #cmake has no idea what to do, do it ourselves...
+    foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
+      CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
+      if(COMPILER_SUPPORTS_${flag_var})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
+        break()
+      endif()
+    endforeach(flag_var)
+  endif()
+else(RAJA_CXX_STANDARD_FLAG MATCHES default)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RAJA_CXX_STANDARD_FLAG}")
+  message("Using C++ standard flag: ${RAJA_CXX_STANDARD_FLAG}")
+endif(RAJA_CXX_STANDARD_FLAG MATCHES default)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if (NOT BLT_LOADED)
   if (DEFINED BLT_SOURCE_DIR)
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
@@ -110,7 +142,6 @@ if (NOT BLT_LOADED)
   endif ()
 
   include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
-
 endif()
 
 # Setup basic CMake options
