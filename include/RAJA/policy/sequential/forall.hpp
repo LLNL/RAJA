@@ -68,13 +68,14 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res, c
 {
   RAJA_EXTRACT_BED_IT(iter);
 
-  auto host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA::resources::Host host_res;
+  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
-  return host_res.get_event();
+  return &res ? host_res.get_event() : RAJA::resources::Event();
 }
 
 }  // namespace sequential
