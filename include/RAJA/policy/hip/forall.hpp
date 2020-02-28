@@ -220,7 +220,7 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
 }
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                hip_exec<BlockSize, Async>,
                                                Iterable&& iter,
                                                LoopBody&& loop_body)
