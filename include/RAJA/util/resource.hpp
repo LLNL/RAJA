@@ -30,11 +30,11 @@ namespace resources
 using namespace camp::resources;
 
 template<typename T>
-T raja_get(Resource *res)
+T raja_get(Resource &res)
 {
-  if (!res->try_get<T>()) RAJA_ABORT_OR_THROW("Execution architecture incompatible with resource.");
+  if (!res.try_get<T>()) RAJA_ABORT_OR_THROW("Execution architecture incompatible with resource.");
 
-  return res->get<T>();
+  return res.get<T>();
 }
 
 }

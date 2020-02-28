@@ -233,7 +233,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
 
   RAJA::resources::Hip hip_res;
   hipStream_t stream;
-  if (res){
+  if (&res){
     hip_res = RAJA::resources::raja_get<RAJA::resources::Hip>(res);
     stream = hip_res.get_stream();
   }else{
@@ -291,7 +291,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
     RAJA_FT_END;
   }
 
-  return res ? hip_res.get_event() : RAJA::resources::Event();
+  return &res ? hip_res.get_event() : RAJA::resources::Event();
 }
 
 //

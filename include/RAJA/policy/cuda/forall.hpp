@@ -219,7 +219,7 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
   }
 }
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                cuda_exec<BlockSize, Async>,
                                                Iterable&& iter,
                                                LoopBody&& loop_body)
@@ -232,7 +232,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
 
   RAJA::resources::Cuda cuda_res;
   cudaStream_t stream;
-  if (res){
+  if (&res){
     cuda_res = RAJA::resources::raja_get<RAJA::resources::Cuda>(res);
     stream = cuda_res.get_stream();
   }else{
@@ -286,7 +286,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
     RAJA_FT_END;
   }
 
-  return res ? cuda_res.get_event() : RAJA::resources::Event();
+  return &res ? cuda_res.get_event() : RAJA::resources::Event();
 }
 
 

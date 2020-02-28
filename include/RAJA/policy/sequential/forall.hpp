@@ -64,7 +64,7 @@ RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
   }
 }
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res, const seq_exec &, Iterable &&iter, Func &&body)
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res, const seq_exec &, Iterable &&iter, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 

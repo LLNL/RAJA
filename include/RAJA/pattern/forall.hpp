@@ -182,7 +182,7 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::resources::Event,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
-forall(RAJA::resources::Resource *r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+forall(RAJA::resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 
   using RAJA::internal::trigger_updates_before;
@@ -482,7 +482,7 @@ RAJA_INLINE void forall(Args&&... args)
   util::callPostLaunchPlugins(context);
 }
 template <typename ExecutionPolicy, typename... Args>
-RAJA_INLINE RAJA::resources::Event forall(RAJA::resources::Resource *r, Args&&... args)
+RAJA_INLINE RAJA::resources::Event forall(RAJA::resources::Resource &r, Args&&... args)
 {
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);

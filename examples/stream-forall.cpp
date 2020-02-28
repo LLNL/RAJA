@@ -101,7 +101,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::resources::Resource host{RAJA::resources::Host()};
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::seq_exec>(&host, RAJA::RangeSegment(0, N), [=] (int i) { 
+  RAJA::forall<RAJA::seq_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
   // _rajaseq_vector_add_end
@@ -118,12 +118,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
 
   // _rajacuda_vector_add_start
-  auto e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(&res_cuda1, RAJA::RangeSegment(0, N), 
+  auto e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });    
 
-  auto e_ = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(&res_cuda2, RAJA::RangeSegment(0, N), 
+  auto e_ = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     c_[i] = a_[i] + b_[i]; 
   }); 
