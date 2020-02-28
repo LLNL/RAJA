@@ -220,9 +220,9 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 }
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
-                                        cuda_exec<BlockSize, Async>,
-                                        Iterable&& iter,
-                                        LoopBody&& loop_body)
+                                               cuda_exec<BlockSize, Async>,
+                                               Iterable&& iter,
+                                               LoopBody&& loop_body)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
@@ -230,7 +230,14 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  auto cuda_res = RAJA::resources::raja_get<RAJA::resources::Cuda>(res);
+  RAJA::resources::Cuda cuda_res;
+  cudaStream_t stream;
+  if (res){
+    cuda_res = RAJA::resources::raja_get<RAJA::resources::Cuda>(res);
+    stream = cuda_res.get_stream();
+  }else{
+    stream = 0;
+  }
 
   //
   // Compute the requested iteration space size
@@ -254,8 +261,6 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
     // Setup shared memory buffers
     //
     size_t shmem = 0;
-    cudaStream_t stream = cuda_res.get_stream();
-
 
     //  printf("gridsize = (%d,%d), blocksize = %d\n",
     //         (int)gridSize.x,
@@ -280,7 +285,8 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
 
     RAJA_FT_END;
   }
-  return cuda_res.get_event();
+
+  return res ? cuda_res.get_event() : RAJA::resources::Event();
 }
 
 

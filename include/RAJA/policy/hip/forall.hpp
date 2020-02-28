@@ -219,6 +219,80 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
   }
 }
 
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource *res,
+                                               hip_exec<BlockSize, Async>,
+                                               Iterable&& iter,
+                                               LoopBody&& loop_body)
+{
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using LOOP_BODY = camp::decay<LoopBody>;
+  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+
+  auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
+
+  RAJA::resources::Hip hip_res;
+  hipStream_t stream;
+  if (res){
+    hip_res = RAJA::resources::raja_get<RAJA::resources::Hip>(res);
+    stream = hip_res.get_stream();
+  }else{
+    stream = 0;
+  }
+
+  //
+  // Compute the requested iteration space size
+  //
+  Iterator begin = std::begin(iter);
+  Iterator end = std::end(iter);
+  IndexType len = std::distance(begin, end);
+
+  // Only launch kernel if we have something to iterate over
+  if (len > 0 && BlockSize > 0) {
+    //
+    // Compute the number of blocks
+    //
+    hip_dim_t blockSize{BlockSize, 1, 1};
+    hip_dim_t gridSize = impl::getGridDim(static_cast<hip_dim_member_t>(len), blockSize);
+
+    RAJA_FT_BEGIN;
+
+    //
+    // Setup shared memory buffers
+    //
+    size_t shmem = 0;
+
+    //  printf("gridsize = (%d,%d), blocksize = %d\n",
+    //         (int)gridSize.x,
+    //         (int)gridSize.y,
+    //         (int)blockSize.x);
+
+    {
+      //
+      // Privatize the loop_body, using make_launch_body to setup reductions
+      //
+      LOOP_BODY body = RAJA::hip::make_launch_body(
+          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+
+
+      //
+      // Launch the kernels
+      //
+      hipLaunchKernelGGL(func,
+                         dim3(gridSize), dim3(BlockSize), shmem, stream,
+                         body,
+                         std::move(begin),
+                         len);
+      RAJA::hip::launch(stream);
+    }
+
+    if (!Async) { RAJA::hip::synchronize(stream); }
+
+    RAJA_FT_END;
+  }
+
+  return res ? hip_res.get_event() : RAJA::resources::Event();
+}
 
 //
 //////////////////////////////////////////////////////////////////////
