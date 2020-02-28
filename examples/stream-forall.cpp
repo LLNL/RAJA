@@ -109,6 +109,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(c, N);
 //printResult(c, N);
 
+//----------------------------------------------------------------------------//
+// RAJA::loop_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA loop vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::loop_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
 
 //----------------------------------------------------------------------------//
 
