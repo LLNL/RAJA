@@ -125,6 +125,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(c, N);
 
 //----------------------------------------------------------------------------//
+// RAJA::sind_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA simd_exec vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::simd_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+#if defined(RAJA_ENABLE_OPENMP)
+//----------------------------------------------------------------------------//
 // RAJA::omp_for_parallel_exec policy enforces strictly sequential execution.... 
 //----------------------------------------------------------------------------//
 
@@ -168,21 +184,40 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(c, N);
 //printResult(c, N);
+#endif
 
+#if defined(RAJA_ENABLE_TBB)
 //----------------------------------------------------------------------------//
-// RAJA::sind_exec policy enforces strictly sequential execution.... 
+// RAJA::tbb_for_dynamic policy enforces strictly sequential execution.... 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA simd_exec vector addition...\n";
+  std::cout << "\n Running RAJA tbb_for_dynamic vector addition...\n";
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::simd_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+  RAJA::forall<RAJA::tbb_for_dynamic>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
   // _rajaseq_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
+
+//----------------------------------------------------------------------------//
+// RAJA::tbb_for_static policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA tbb_for_static<8> vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::tbb_for_static<8>>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+#endif
+
 
 //----------------------------------------------------------------------------//
 

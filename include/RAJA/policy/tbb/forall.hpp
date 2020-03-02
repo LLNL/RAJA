@@ -88,7 +88,29 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
                           body(i);
                       });
 }
+template <typename Iterable, typename Func>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const tbb_for_dynamic& p,
+                                               Iterable&& iter,
+                                               Func&& loop_body)
+{
+  RAJA::resources::Host host_res;
+  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
+  using std::begin;
+  using std::end;
+  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
+  ::tbb::parallel_for(brange(begin(iter), end(iter), p.grain_size),
+                      [=](const brange& r) {
+                        using RAJA::internal::thread_privatize;
+                        auto privatizer = thread_privatize(loop_body);
+                        auto body = privatizer.get_priv();
+                        for (const auto& i : r)
+                          body(i);
+                      });
+
+  return &res ? host_res.get_event() : RAJA::resources::Event();
+}
 ///
 /// TBB parallel for static policy implementation
 ///
@@ -126,6 +148,30 @@ RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
                           body(i);
                       },
                       tbb_static_partitioner{});
+}
+template <typename Iterable, typename Func, size_t ChunkSize>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const tbb_for_static<ChunkSize>&,
+                                               Iterable&& iter,
+                                               Func&& loop_body)
+{
+  RAJA::resources::Host host_res;
+  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+
+  using std::begin;
+  using std::end;
+  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
+  ::tbb::parallel_for(brange(begin(iter), end(iter), ChunkSize),
+                      [=](const brange& r) {
+                        using RAJA::internal::thread_privatize;
+                        auto privatizer = thread_privatize(loop_body);
+                        auto body = privatizer.get_priv();
+                        for (const auto& i : r)
+                          body(i);
+                      },
+                      tbb_static_partitioner{});
+
+  return &res ? host_res.get_event() : RAJA::resources::Event();
 }
 
 }  // namespace tbb
