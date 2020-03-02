@@ -69,6 +69,49 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
   }
 
 }
+template <size_t ThreadsPerTeam, typename Iterable, typename Func>
+// RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+                                               Iterable&& iter,
+                                               Func&& loop_body)
+{
+  RAJA::resources::Omp omp_res;
+  if (&res) omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
+
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+
+  RAJA_EXTRACT_BED_IT(iter);
+
+  // Reset if exceed CUDA threads per block limit.
+  int tperteam = ThreadsPerTeam;
+  if ( tperteam > omp::MAXNUMTHREADS )
+  {
+    tperteam = omp::MAXNUMTHREADS;
+  }
+
+  // calculate number of teams based on user defined threads per team
+  // datasize is distance between begin() and end() of iterable
+  auto numteams = RAJA_DIVIDE_CEILING_INT( distance_it, tperteam );
+  if ( numteams > tperteam )
+  {
+    // Omp target reducers will write team # results, into Threads-sized array.
+    // Need to insure NumTeams <= Threads to prevent array out of bounds access.
+    numteams = tperteam;
+  }
+
+// thread_limit(tperteam) unused due to XL seg fault (when tperteam != distance)
+  auto i = distance_it;
+#pragma omp target teams distribute parallel for num_teams(numteams) \
+    schedule(static, 1) firstprivate(body,begin_it)
+  for (i = 0; i < distance_it; ++i) {
+    Body ib = body;
+    ib(begin_it[i]);
+  }
+
+  return &res ? omp_res.get_event() : RAJA::resources::Event();
+}
 
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
@@ -87,7 +130,29 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
     ib(begin_it[i]);
   }
 }
+template <typename Iterable, typename Func>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const omp_target_parallel_for_exec_nt&,
+                                               Iterable&& iter,
+                                               Func&& loop_body)
+{
+  RAJA::resources::Omp omp_res;
+  if (&res) omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
 
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+
+  RAJA_EXTRACT_BED_IT(iter);
+
+#pragma omp target teams distribute parallel for schedule(static, 1) \
+    map(to : body)
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    Body ib = body;
+    ib(begin_it[i]);
+  }
+
+  return &res ? omp_res.get_event() : RAJA::resources::Event();
+}
 
 }  // namespace omp
 
