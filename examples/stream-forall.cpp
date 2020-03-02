@@ -125,6 +125,66 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(c, N);
 
 //----------------------------------------------------------------------------//
+// RAJA::omp_for_parallel_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA omp_parallel<seq_exec> vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::omp_parallel_exec<RAJA::seq_exec>>(host, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+//----------------------------------------------------------------------------//
+// RAJA::omp_for_nowait_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA omp_for_nowait vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::omp_for_nowait_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+//----------------------------------------------------------------------------//
+// RAJA::omp_for_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA omp_for_exec vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::omp_for_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+//----------------------------------------------------------------------------//
+// RAJA::omp_for_static policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA omp_for_static vector addition...\n";
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::omp_for_static<8>>(host, RAJA::RangeSegment(0, N), [=] RAJA_HOST (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
