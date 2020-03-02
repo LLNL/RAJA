@@ -59,6 +59,26 @@ RAJA_INLINE void forall_impl(const simd_exec &,
   }
 }
 
+template <typename Iterable, typename Func>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const simd_exec &,
+                                               Iterable &&iter,
+                                               Func &&loop_body)
+{
+  RAJA::resources::Host host_res;
+  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  RAJA_SIMD
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(*(begin + i));
+  }
+
+  return &res ? host_res.get_event() : RAJA::resources::Event();
+}
+
 }  // namespace simd
 
 }  // namespace policy

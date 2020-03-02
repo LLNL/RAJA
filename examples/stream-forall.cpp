@@ -170,13 +170,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_static policy enforces strictly sequential execution.... 
+// RAJA::sind_exec policy enforces strictly sequential execution.... 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA omp_for_static vector addition...\n";
+  std::cout << "\n Running RAJA simd_exec vector addition...\n";
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::omp_for_static<8>>(host, RAJA::RangeSegment(0, N), [=] RAJA_HOST (int i) { 
+  RAJA::forall<RAJA::simd_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
   // _rajaseq_vector_add_end
