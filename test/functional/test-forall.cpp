@@ -42,6 +42,14 @@ REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallFunctionalTest, SequentialForallTypes);
 
+#if defined(RAJA_ENABLE_OPENMP)
+INSTANTIATE_TYPED_TEST_SUITE_P(Omp, ForallFunctionalTest, OMPForallTypes);
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, ForallFunctionalTest, CudaForallTypes);
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip, ForallFunctionalTest, HipForallTypes);
 #endif
