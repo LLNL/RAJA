@@ -65,7 +65,7 @@ using OMPForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTypes >>::
 
 // Generate OMP Target Type List
 #if defined(RAJA_ENABLE_TBB)
-using TBBTypes = list< RAJA::tbb_for_static<>,
+using TBBTypes = list< RAJA::tbb_for_exec,
                        RAJA::tbb_for_static<8>,
                        RAJA::tbb_for_dynamic
                      >;
