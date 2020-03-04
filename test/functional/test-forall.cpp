@@ -46,6 +46,10 @@ INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallFunctionalTest, SequentialForal
 INSTANTIATE_TYPED_TEST_SUITE_P(Omp, ForallFunctionalTest, OMPForallTypes);
 #endif
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+INSTANTIATE_TYPED_TEST_SUITE_P(TargetOmp, ForallFunctionalTest, OMPTargetForallTypes);
+#endif
+
 #if defined(RAJA_ENABLE_TBB)
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB, ForallFunctionalTest, TBBForallTypes);
 #endif
