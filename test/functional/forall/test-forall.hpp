@@ -63,6 +63,16 @@ using OMPTypes = list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
 using OMPForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTypes >>::Types;
 #endif
 
+// Generate OMP Target Type List
+#if defined(RAJA_ENABLE_TBB)
+using TBBTypes = list< RAJA::tbb_for_static<>,
+                       RAJA::tbb_for_static<8>,
+                       RAJA::tbb_for_dynamic
+                     >;
+
+using TBBForallTypes = Test<cartesian_product< IdxTypes, ListHost, TBBTypes>>::Types;
+#endif
+
 // Generate Cuda Type List
 #if defined(RAJA_ENABLE_CUDA)
 using CudaTypes = list< RAJA::cuda_exec<128>

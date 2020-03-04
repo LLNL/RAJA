@@ -30,7 +30,7 @@ TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
   ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,255);
 
   if(std::is_signed<INDEX_TYPE>::value){
-#if !defined(__CUDA_ARCH__)
+#if !defined(__CUDA_ARCH__) && !defined(RAJA_ENABLE_TBB)
     ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,0);
     ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,5);
 #endif
@@ -44,6 +44,10 @@ INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallFunctionalTest, SequentialForal
 
 #if defined(RAJA_ENABLE_OPENMP)
 INSTANTIATE_TYPED_TEST_SUITE_P(Omp, ForallFunctionalTest, OMPForallTypes);
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+INSTANTIATE_TYPED_TEST_SUITE_P(TBB, ForallFunctionalTest, TBBForallTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
