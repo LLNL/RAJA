@@ -85,7 +85,7 @@ void testSpanIteratorTypes()
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
-  for ( int ii = 0; ii < len; ++ii )
+  for ( int ii = 0; ii < static_cast<int>(len); ++ii )
   {
     ptr[ii] = ii;
   }
@@ -129,7 +129,7 @@ void testSpanElementAccessTypes()
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
-  for ( int ii = 0; ii < len; ++ii )
+  for ( int ii = 0; ii < static_cast<int>(len); ++ii )
   {
     ptr[ii] = ii;
   }
@@ -157,7 +157,7 @@ void testSpanObserveTypes()
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
-  for ( int ii = 0; ii < len; ++ii )
+  for ( int ii = 0; ii < static_cast<int>(len); ++ii )
   {
     ptr[ii] = ii;
   }
@@ -187,7 +187,7 @@ void testSpanSubViewTypes()
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
-  for ( int ii = 0; ii < len; ++ii )
+  for ( int ii = 0; ii < static_cast<int>(len); ++ii )
   {
     ptr[ii] = ii;
   }
