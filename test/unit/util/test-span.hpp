@@ -81,7 +81,14 @@ void testSpanIteratorTypes()
   using iterator = typename span_type::iterator;
   using const_iterator = typename span_type::const_iterator;
   IndexType len = 4;
-  ValueType* ptr = new ValueType[len]{0,1,2,3};
+  ValueType* ptr = new ValueType[len];
+
+  // XL cannot handle initialization list with new
+  // e.g. new ValueType[len]{0,1,2,3} produces error
+  for ( int ii = 0; ii < len; ++ii )
+  {
+    ptr[ii] = ii;
+  }
 
   {
     const span_type span(ptr, len);
@@ -118,7 +125,14 @@ template <typename ValueType, typename IndexType>
 void testSpanElementAccessTypes()
 {
   IndexType len = 4;
-  ValueType* ptr = new ValueType[len]{0,1,2,3};
+  ValueType* ptr = new ValueType[len];
+
+  // XL cannot handle initialization list with new
+  // e.g. new ValueType[len]{0,1,2,3} produces error
+  for ( int ii = 0; ii < len; ++ii )
+  {
+    ptr[ii] = ii;
+  }
 
   {
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
@@ -139,7 +153,14 @@ template <typename ValueType, typename IndexType>
 void testSpanObserveTypes()
 {
   IndexType len = 4;
-  ValueType* ptr = new ValueType[len]{0,1,2,3};
+  ValueType* ptr = new ValueType[len];
+
+  // XL cannot handle initialization list with new
+  // e.g. new ValueType[len]{0,1,2,3} produces error
+  for ( int ii = 0; ii < len; ++ii )
+  {
+    ptr[ii] = ii;
+  }
 
   {
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
@@ -162,7 +183,14 @@ template <typename ValueType, typename IndexType>
 void testSpanSubViewTypes()
 {
   IndexType len = 4;
-  ValueType* ptr = new ValueType[len]{0,1,2,3};
+  ValueType* ptr = new ValueType[len];
+
+  // XL cannot handle initialization list with new
+  // e.g. new ValueType[len]{0,1,2,3} produces error
+  for ( int ii = 0; ii < len; ++ii )
+  {
+    ptr[ii] = ii;
+  }
 
   {
     IndexType count = 3;
