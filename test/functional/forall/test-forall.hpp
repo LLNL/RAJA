@@ -43,61 +43,8 @@ using IdxTypes = list<RAJA::Index_type,
                       long long,
                       unsigned long long>;
 
-
-// Generate Sequential Type List
-using SequentialTypes = list< RAJA::seq_exec, 
-                              RAJA::loop_exec,
-                              RAJA::simd_exec
-                            >;
-
 using ListHost = list< camp::resources::Host >;
-using SequentialForallTypes = Test<cartesian_product< IdxTypes, ListHost, SequentialTypes >>::Types;
 
-// Generate OMP Type List
-#if defined(RAJA_ENABLE_OPENMP)
-using OMPTypes = list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
-                       RAJA::omp_for_nowait_exec,
-                       RAJA::omp_for_exec
-                     >;
-
-using OMPForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTypes >>::Types;
-#endif
-
-// Generate OMP Target Type List
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OMPTargetTypes = list< RAJA::omp_target_parallel_for_exec<8>,
-                             RAJA::omp_target_parallel_for_exec_nt
-                           >;
-
-using OMPTargetForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTargetTypes >>::Types;
-#endif
-
-// Generate TBB Type List
-#if defined(RAJA_ENABLE_TBB)
-using TBBTypes = list< RAJA::tbb_for_exec,
-                       RAJA::tbb_for_static<8>,
-                       RAJA::tbb_for_dynamic
-                     >;
-
-using TBBForallTypes = Test<cartesian_product< IdxTypes, ListHost, TBBTypes>>::Types;
-#endif
-
-// Generate Cuda Type List
-#if defined(RAJA_ENABLE_CUDA)
-using CudaTypes = list< RAJA::cuda_exec<128>
-                      >;
-
-using ListCuda = list < camp::resources::Cuda >;
-using CudaForallTypes = Test<cartesian_product< IdxTypes, ListCuda, CudaTypes >>::Types;
-#endif
-
-// Generate Hip Type List
-#if defined(RAJA_ENABLE_HIP)
-using HipTypes = list< RAJA::hip_exec<128>
-                      >;
-
-using ListHip = list < camp::resources::Hip >;
-using HipForallTypes = Test<cartesian_product< IdxTypes, ListHip, HipTypes >>::Types;
-#endif
+TYPED_TEST_SUITE_P(ForallFunctionalTest);
 
 #endif //__TEST_FORALL_TYPES_HPP__

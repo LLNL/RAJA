@@ -11,7 +11,11 @@
 #include "RAJA/RAJA.hpp"
 #include "camp/resource.hpp"
 
-using camp::resources::Host;
+#include "test-forall.hpp"
+
+using namespace camp::resources;
+using namespace RAJA;
+using namespace camp;
 
 template<typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
@@ -47,4 +51,26 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   check_res.deallocate(check_array);
   check_res.deallocate(test_array);
 }
+
+
+TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
+{
+  using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
+  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
+  using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
+
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(0,5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,255);
+
+  if(std::is_signed<INDEX_TYPE>::value){
+#if !defined(__CUDA_ARCH__) && !defined(RAJA_ENABLE_TBB)
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,0);
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,5);
+#endif
+  }
+}
+
+REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
+
 #endif // __TEST_FORALL_RANGESEGMENT_HPP__

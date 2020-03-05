@@ -7,7 +7,4 @@
 
 add_subdirectory(atomic)
 
-raja_add_test(
-  NAME test-forall-functional
-  SOURCES test-forall.cpp)
-
+add_subdirectory(forall)
