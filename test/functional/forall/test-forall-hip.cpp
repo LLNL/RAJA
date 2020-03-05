@@ -18,5 +18,5 @@ using HipTypes = list< RAJA::hip_exec<128>
 using ListHip = list < camp::resources::Hip >;
 using HipForallTypes = Test<cartesian_product< IdxTypes, ListHip, HipTypes >>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, ForallFunctionalTest, CudaForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip, ForallFunctionalTest, HipForallTypes);
 #endif
