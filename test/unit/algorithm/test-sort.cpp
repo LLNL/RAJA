@@ -19,7 +19,7 @@ TEST(Sort, basic_algorithm_Sort)
   testSorter(HeapSortPairs{});
   testSorter(IntroSort{});
   testSorter(IntroSortPairs{});
-  // testSorter(MergeSort{});
+  testSorter(MergeSort{});
   // testSorter(MergeSortPairs{});
 }
 

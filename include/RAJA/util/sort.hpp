@@ -301,21 +301,150 @@ intro_sort(Iter begin,
 }
 
 /*!
+    \brief merge given two ranges using comparison function
+    while copies are outside, somewhat follows STL API
+*/
+template <typename Iter1, typename Iter2, typename OutIter, typename Compare>
+//constexpr OutIter // <-- std:: return value
+void
+RAJA_INLINE RAJA_HOST_DEVICE
+merge_like_std( Iter1 first1,
+                Iter1 last1,
+                Iter2 first2,
+                Iter2 last2,
+                OutIter d_first,  // using this as direct access to result
+                Compare comp)
+{
+  using ::RAJA::safe_iter_swap;
+
+  if ( first1 == last2 )  // should never need to do this
+  {
+    return;
+  }
+
+  if ( (last2 - first1) == 1 ) // only 2 elements, simple swap
+  {
+    if ( !comp(*d_first, *(d_first+1)) )
+    {
+      safe_iter_swap( d_first, d_first+1 );
+    }
+    return;
+  }
+
+  while ( first1 <= last1 || first2 <= last2 )
+  {
+    if ( first1 > last1 ) // first half done
+    {
+      *d_first = *first2;
+      ++first2;
+    }
+    else if ( first2 > last2 )  // second half done
+    {
+      *d_first = *first1;
+      ++first1;
+    }
+    else  // neither half done
+    {
+      if ( comp( *first1, *first2 ) )
+      {
+        *d_first = *first1;
+        ++first1;
+      }
+      else
+      {
+        *d_first = *first2;
+        ++first2;
+      }
+    }
+
+    ++d_first;  // advance output
+  }
+
+  return;
+}
+
+/*!
     \brief stable merge sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(N) memory
 */
 template <typename Iter, typename Compare>
-RAJA_HOST_DEVICE inline
+RAJA_INLINE RAJA_HOST_DEVICE
 void
 merge_sort(Iter begin,
            Iter end,
            Compare comp)
 {
-  static_assert(!type_traits::is_iterator<Iter>::value, "unimplemented");
+  // iterative mergesort (bottom up) for future parallelism
+
+  // min helper
+  auto minlam = [] (int a, int b) {return (a < b) ? a : b;};
+
+  // insertion sort for sizes <= 16
+  auto len = end - begin;
+  static constexpr camp::decay<decltype(len)> insertion_sort_cutoff = 16;
+  if ( len <= insertion_sort_cutoff && len > 0 )
+  {
+    detail::insertion_sort( begin, end, comp );
+  }
+  else
+  {
+    // TBD advanced version: insertion sort on 16-element chunks, then merge. finish this later
+    // split into chunks of up to 16
+    //auto chunksize = minlam( len/2, 16 );
+    //auto numchunks = len / chunksize;
+    //if ( (len % chunksize) > 0 )
+    //{
+    //  numchunks += 1;
+    //}
+    // insertion sort on chunks
+    //for ( int ii = 0; ii < numchunks; ++ii )
+    //{
+    //  detail::insertion_sort( begin + ii*chunksize, ii*chunksize + chunksize, comp );
+    //}
+    // merge
+
+    // copy input
+    using itertype = camp::decay<decltype(*begin)>;
+    itertype * copyarr = RAJA::allocate_aligned_type<itertype>( RAJA::DATA_ALIGN, len * sizeof(itertype) );
+    for ( int cc = 0; cc < len; ++cc )
+    {
+      copyarr[cc] = *(begin + cc);
+    }
+
+    for ( int midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    {
+      for ( int start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
+      {
+        int finish = minlam( start + midpoint * 2 - 1, len - 1 );
+        RAJA_ASSERT( finish >= (midpoint + start) );  // sanity check
+
+        if ( start + midpoint > len - 1 )
+        {
+          break;  // skip merge if no second half exists
+        }
+
+        detail::merge_like_std( copyarr + start, copyarr + start + midpoint - 1, copyarr + start + midpoint, copyarr + finish, begin + start, comp );
+      }
+
+      // update copy
+      for ( int cc = 0; cc < len; ++cc )
+      {
+        copyarr[cc] = *(begin + cc);
+      }
+    }
+
+    RAJA::free_aligned( copyarr );
+  }
+  //else
+  //{
+      // Possible TBD: in-place mergesort
+      // Would shift (like insertion sort) when performing merge.
+      // PRO - Can use on GPU, O(1) storage required.
+      // CON - Shifting would cause slowdown O(n^2 log n).
+  //}
 }
 
 }  // namespace detail
-
 
 /*!
     \brief unstable insertion sort given range inplace using comparison function
