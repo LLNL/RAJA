@@ -134,7 +134,7 @@ TYPED_TEST_P(AtomicFuncBasicFunctionalTest, builtin_basic_AtomicFuncFunctionalTe
   testAtomicFunctionBasicV2<RAJA::seq_exec, RAJA::builtin_atomic, TypeParam>( tenk );
 }
 
-REGISTER_TYPED_TEST_CASE_P( AtomicFuncBasicFunctionalTest,
+REGISTER_TYPED_TEST_SUITE_P( AtomicFuncBasicFunctionalTest,
                             auto_basic_AtomicFuncFunctionalTest,
                             seq_basic_AtomicFuncFunctionalTest,
                             builtin_basic_AtomicFuncFunctionalTest
@@ -149,5 +149,5 @@ using seqtypes = ::testing::Types<
                           double
                  >;
 
-INSTANTIATE_TYPED_TEST_CASE_P( AtomicBasicFunctionalTest, AtomicFuncBasicFunctionalTest, seqtypes );
+INSTANTIATE_TYPED_TEST_SUITE_P( AtomicBasicFunctionalTest, AtomicFuncBasicFunctionalTest, seqtypes );
 // END Type parameterized test for experimentation/discussion.
