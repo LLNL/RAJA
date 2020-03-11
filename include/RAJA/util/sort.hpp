@@ -388,19 +388,13 @@ merge_sort(Iter begin,
   }
   else
   {
-    // TBD advanced version: insertion sort on 16-element chunks, then merge. finish this later
-    // split into chunks of up to 16
-    //auto chunksize = minlam( len/2, 16 );
-    //auto numchunks = len / chunksize;
-    //if ( (len % chunksize) > 0 )
-    //{
-    //  numchunks += 1;
-    //}
-    // insertion sort on chunks
-    //for ( int ii = 0; ii < numchunks; ++ii )
-    //{
-    //  detail::insertion_sort( begin + ii*chunksize, ii*chunksize + chunksize, comp );
-    //}
+    // insertion sort on 16-element chunks, then merge
+    for ( int start = 0; start < len; start += insertion_sort_cutoff )
+    {
+      int lastchunk = minlam( insertion_sort_cutoff, len - start );
+      detail::insertion_sort( begin + start, begin + start + lastchunk, comp );
+    }
+
     // merge
 
     // copy input
@@ -411,7 +405,8 @@ merge_sort(Iter begin,
       copyarr[cc] = *(begin + cc);
     }
 
-    for ( int midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    //for ( int midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    for ( int midpoint = 16; midpoint < len; midpoint *= 2 )  // O(log n) loop
     {
       for ( int start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
       {
