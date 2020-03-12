@@ -26,17 +26,14 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE * check_array   = check_res.allocate<INDEX_TYPE>(N);
   INDEX_TYPE * test_array    = check_res.allocate<INDEX_TYPE>(N);
 
-  for(INDEX_TYPE i=0; i < N; i++)
-  {
-    test_array[i]= *r1.begin() + i;
-  }
+  std::iota(test_array, test_array + N, *r1.begin());
 
   RAJA::forall<EXEC_POLICY>(r1,
     [=] RAJA_HOST_DEVICE (INDEX_TYPE idx){
     working_array[idx - *r1.begin()] = idx;
   });
 
-  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N );
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
   for(INDEX_TYPE i=0; i < N; i++)
   {
