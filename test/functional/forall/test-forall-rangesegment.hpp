@@ -11,7 +11,6 @@
 #include "test-forall.hpp"
 
 using namespace camp::resources;
-using namespace RAJA;
 using namespace camp;
 
 template<typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
@@ -20,8 +19,8 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
 
-  camp::resources::Resource working_res{WORKING_RES()};
-  camp::resources::Resource check_res{Host()};
+  Resource working_res{WORKING_RES()};
+  Resource check_res{Host()};
 
   INDEX_TYPE * working_array = working_res.allocate<INDEX_TYPE>(N);
   INDEX_TYPE * check_array   = check_res.allocate<INDEX_TYPE>(N);
