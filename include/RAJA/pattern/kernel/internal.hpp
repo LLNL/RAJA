@@ -67,7 +67,7 @@ struct CollapseBase {
 };
 template <camp::idx_t ArgumentId, typename Policy>
 struct ForTraitBase : public ForBase {
-  constexpr static camp::idx_t index_val = ArgumentId;
+  static constexpr camp::idx_t index_val = ArgumentId;
   using index = camp::num<ArgumentId>;
   using index_type = camp::nil;  // default to invalid type
   using policy_type = Policy;

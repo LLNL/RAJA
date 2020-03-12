@@ -96,7 +96,7 @@ struct StaticLayoutBase_impl<camp::idx_seq<RangeInts...>,
    *
    * @return Total size spanned by indices
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr static RAJA::Index_type size()
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr RAJA::Index_type size()
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
