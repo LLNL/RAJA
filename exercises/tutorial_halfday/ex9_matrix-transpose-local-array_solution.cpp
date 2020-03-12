@@ -117,8 +117,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by) {
-    for (int bx = 0; bx < outer_Dimc; ++bx) {
+  for (int brow = 0; brow < outer_Dimr; ++brow) {
+    for (int bcol = 0; bcol < outer_Dimc; ++bcol) {
 
       // Stack-allocated local array for data on a tile
       int Tile[TILE_SZ][TILE_SZ];
@@ -132,8 +132,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int trow = 0; trow < TILE_SZ; ++trow) {
         for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
 
-          int col = bx * TILE_SZ + tcol;  // Matrix column index
-          int row = by * TILE_SZ + trow;  // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -151,8 +151,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
         for (int trow = 0; trow < TILE_SZ; ++trow) {
 
-          int col = bx * TILE_SZ + tcol;  // Matrix column index
-          int row = by * TILE_SZ + trow;  // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c) {
@@ -210,17 +210,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+          RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                         RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                         RAJA::loop_exec,
               RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                         RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                           RAJA::loop_exec,
               RAJA::statement::Lambda<1>
             >
@@ -235,13 +235,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-    [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+    [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
 
       RAJA_Tile(trow, tcol) = Aview(row, col);
 
     },
 
-    [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+    [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
 
       Atview(col, row) = RAJA_Tile(trow, tcol);
 
@@ -266,17 +266,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+          RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                         RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                           RAJA::loop_exec,
                RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                         RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                           RAJA::loop_exec,
               RAJA::statement::Lambda<1>
             >
@@ -290,13 +290,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+      [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
 
         RAJA_Tile(trow, tcol) = Aview(row, col);
 
       },
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+      [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
 
         Atview(col, row) = RAJA_Tile(trow, tcol);
 
@@ -324,9 +324,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
 
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                           RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+              RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                             RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<0>
               >
@@ -334,9 +334,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             RAJA::statement::CudaSyncThreads,
 
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
+            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
                                           RAJA::cuda_thread_y_direct,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, 
+              RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
                                             RAJA::cuda_thread_x_direct,
                 RAJA::statement::Lambda<1>
               >
@@ -354,13 +354,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=] RAJA_DEVICE (int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+      [=] RAJA_DEVICE (int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
 
         RAJA_Tile(trow, tcol) = Aview(row, col);
 
       },
 
-      [=] RAJA_DEVICE(int col, int row, int tcol, int trow, TILE_MEM &RAJA_Tile) {
+      [=] RAJA_DEVICE(int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
 
         Atview(col, row) = RAJA_Tile(trow, tcol);
 
