@@ -8,9 +8,6 @@
 #ifndef __TEST_FORALL_RANGESEGMENT_HPP__
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
-#include "RAJA/RAJA.hpp"
-#include "camp/resource.hpp"
-
 #include "test-forall.hpp"
 
 using namespace camp::resources;

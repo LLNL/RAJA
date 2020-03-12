@@ -5,9 +5,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
-
 #include "test-forall-rangesegment.hpp"
 
 // Generate OMP Target Type List

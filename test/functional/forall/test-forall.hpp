@@ -9,6 +9,8 @@
 #define __TEST_FOARLL_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "gtest/gtest.h"
+
 #include "camp/resource.hpp"
 
 using camp::list;
