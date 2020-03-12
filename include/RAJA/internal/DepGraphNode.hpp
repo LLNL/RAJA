@@ -95,7 +95,7 @@ public:
     while (m_semaphore_value > 0) {
       // TODO: an efficient wait would be better here, but the standard
       // promise/future is not good enough
-      //std::this_thread::yield();
+      std::this_thread::yield();
     }
   }
 
