@@ -9,22 +9,32 @@ raja_add_test(
   NAME test-forall-seq
   SOURCES test-forall-seq.cpp)
 
-raja_add_test(
-  NAME test-forall-openmp
-  SOURCES test-forall-openmp.cpp)
+if(RAJA_ENABLE_OPENMP)
+  raja_add_test(
+    NAME test-forall-openmp
+    SOURCES test-forall-openmp.cpp)
+endif()
 
-raja_add_test(
-  NAME test-forall-target-openmp
-  SOURCES test-forall-target-openmp.cpp)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  raja_add_test(
+    NAME test-forall-target-openmp
+    SOURCES test-forall-target-openmp.cpp)
+endif()
 
-raja_add_test(
-  NAME test-forall-tbb
-  SOURCES test-forall-tbb.cpp)
+if(RAJA_ENABLE_TBB)
+  raja_add_test(
+    NAME test-forall-tbb
+    SOURCES test-forall-tbb.cpp)
+endif()
 
-raja_add_test(
-  NAME test-forall-cuda
-  SOURCES test-forall-cuda.cpp)
+if(RAJA_ENABLE_CUDA)
+  raja_add_test(
+    NAME test-forall-cuda
+    SOURCES test-forall-cuda.cpp)
+endif()
 
-raja_add_test(
-  NAME test-forall-hip
-  SOURCES test-forall-hip.cpp)
+if(RAJA_ENABLE_HIP)
+  raja_add_test(
+    NAME test-forall-hip
+    SOURCES test-forall-hip.cpp)
+endif()
