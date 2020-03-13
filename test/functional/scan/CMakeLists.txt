@@ -17,16 +17,30 @@ if(RAJA_ENABLE_OPENMP)
 raja_add_test(
   NAME test-scan-inclusive-openmp
   SOURCES test-scan-inclusive-openmp.cpp)
+
 raja_add_test(
   NAME test-scan-exclusive-openmp
   SOURCES test-scan-exclusive-openmp.cpp)
 endif()
 
 if(RAJA_ENABLE_TBB)
+
 raja_add_test(
   NAME test-scan-inclusive-tbb
   SOURCES test-scan-inclusive-tbb.cpp)
 raja_add_test(
   NAME test-scan-exclusive-tbb
   SOURCES test-scan-exclusive-tbb.cpp)
+
+endif()
+
+if(RAJA_ENABLE_CUDA)
+
+raja_add_test(
+  NAME test-scan-inclusive-cuda
+  SOURCES test-scan-inclusive-cuda.cpp)
+raja_add_test(
+  NAME test-scan-exclusive-cuda
+  SOURCES test-scan-exclusive-cuda.cpp)
+
 endif()
