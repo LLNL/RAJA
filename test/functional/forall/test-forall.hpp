@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef __TEST_FORALL_HPP__
-#define __TEST_FOARLL_HPP__
+#define __TEST_FORALL_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
@@ -49,4 +49,4 @@ using ListHost = list< camp::resources::Host >;
 
 TYPED_TEST_SUITE_P(ForallFunctionalTest);
 
-#endif //__TEST_FORALL_TYPES_HPP__
+#endif //__TEST_FORALL_HPP__
