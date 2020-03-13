@@ -382,7 +382,7 @@ private:
   {
     Index_type locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
-    camp::sink((indices = Indices{locals[RangeInts]})...);
+		camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
   }
 };
 
