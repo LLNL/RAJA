@@ -29,9 +29,5 @@ raja_add_test(
   SOURCES test-reductions.cpp)
 
 raja_add_test(
-  NAME test-scan
-  SOURCES test-scan.cpp)
-
-raja_add_test(
   NAME test-synchronize
   SOURCES test-synchronize.cpp)
