@@ -9,12 +9,14 @@
 
 // Generate OMP Type List
 #if defined(RAJA_ENABLE_OPENMP)
-using OMPTypes = list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
-                       RAJA::omp_for_nowait_exec,
-                       RAJA::omp_for_exec
-                     >;
+using OMPTypes = list<RAJA::omp_parallel_exec<RAJA::seq_exec>,
+                      RAJA::omp_for_nowait_exec,
+                      RAJA::omp_for_exec>;
 
-using OMPForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTypes >>::Types;
+using OMPForallTypes =
+    Test<cartesian_product<IdxTypes, ListHost, OMPTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Omp, ForallFunctionalTest, OMPForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Omp,
+                               ForallFunctionalTest,
+                               OMPForallTypes);
 #endif

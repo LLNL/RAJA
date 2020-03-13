@@ -9,11 +9,13 @@
 
 // Generate Hip Type List
 #if defined(RAJA_ENABLE_HIP)
-using HipTypes = list< RAJA::hip_exec<128>
-                      >;
+using HipTypes = list<RAJA::hip_exec<128>>;
 
-using ListHip = list < camp::resources::Hip >;
-using HipForallTypes = Test<cartesian_product< IdxTypes, ListHip, HipTypes >>::Types;
+using ListHip = list<camp::resources::Hip>;
+using HipForallTypes =
+    Test<cartesian_product<IdxTypes, ListHip, HipTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Hip, ForallFunctionalTest, HipForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
+                               ForallFunctionalTest,
+                               HipForallTypes);
 #endif

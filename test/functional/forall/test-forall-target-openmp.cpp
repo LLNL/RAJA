@@ -9,11 +9,13 @@
 
 // Generate OMP Target Type List
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OMPTargetTypes = list< RAJA::omp_target_parallel_for_exec<8>,
-                             RAJA::omp_target_parallel_for_exec_nt
-                           >;
+using OMPTargetTypes = list<RAJA::omp_target_parallel_for_exec<8>,
+                            RAJA::omp_target_parallel_for_exec_nt>;
 
-using OMPTargetForallTypes = Test<cartesian_product< IdxTypes, ListHost, OMPTargetTypes >>::Types;
+using OMPTargetForallTypes =
+    Test<cartesian_product<IdxTypes, ListHost, OMPTargetTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TargetOmp, ForallFunctionalTest, OMPTargetForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TargetOmp,
+                               ForallFunctionalTest,
+                               OMPTargetForallTypes);
 #endif

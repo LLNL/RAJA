@@ -9,11 +9,13 @@
 
 // Generate Cuda Type List
 #if defined(RAJA_ENABLE_CUDA)
-using CudaTypes = list< RAJA::cuda_exec<128>
-                      >;
+using CudaTypes = list<RAJA::cuda_exec<128>>;
 
-using ListCuda = list < camp::resources::Cuda >;
-using CudaForallTypes = Test<cartesian_product< IdxTypes, ListCuda, CudaTypes >>::Types;
+using ListCuda = list<camp::resources::Cuda>;
+using CudaForallTypes =
+    Test<cartesian_product<IdxTypes, ListCuda, CudaTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Cuda, ForallFunctionalTest, CudaForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
+                               ForallFunctionalTest,
+                               CudaForallTypes);
 #endif

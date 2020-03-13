@@ -8,11 +8,13 @@
 #include "test-forall-rangesegment.hpp"
 
 // Generate Sequential Type List
-using SequentialTypes = list< RAJA::seq_exec, 
-                              RAJA::loop_exec,
-                              RAJA::simd_exec
-                            >;
+using SequentialTypes = list<RAJA::seq_exec,
+                             RAJA::loop_exec,
+                             RAJA::simd_exec>;
 
-using SequentialForallTypes = Test<cartesian_product< IdxTypes, ListHost, SequentialTypes >>::Types;
+using SequentialForallTypes =
+    Test<cartesian_product<IdxTypes, ListHost, SequentialTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, ForallFunctionalTest, SequentialForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
+                               ForallFunctionalTest,
+                               SequentialForallTypes);

@@ -9,34 +9,35 @@
 #define __TEST_FORALL_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "camp/resource.hpp"
 #include "gtest/gtest.h"
 
-#include "camp/resource.hpp"
-
-using camp::list;
 using camp::cartesian_product;
+using camp::list;
 
 
 // Unroll types for gtest testing::Types
-template<class T>
+template <class T>
 struct Test;
 
-template<class ...T>
-struct Test<list<T...>>{
+template <class... T>
+struct Test<list<T...>> {
   using Types = ::testing::Types<T...>;
 };
 
 
 // Forall Functional Test Class
-template<typename T>
-class ForallFunctionalTest: public ::testing::Test {};
+template <typename T>
+class ForallFunctionalTest : public ::testing::Test
+{
+};
 
 
 // Define Index Types
 using IdxTypes = list<RAJA::Index_type,
                       short,
                       unsigned short,
-                      int, 
+                      int,
                       unsigned int,
                       long,
                       unsigned long,
@@ -45,8 +46,8 @@ using IdxTypes = list<RAJA::Index_type,
                       long long,
                       unsigned long long>;
 
-using ListHost = list< camp::resources::Host >;
+using ListHost = list<camp::resources::Host>;
 
 TYPED_TEST_SUITE_P(ForallFunctionalTest);
 
-#endif //__TEST_FORALL_HPP__
+#endif  // __TEST_FORALL_HPP__

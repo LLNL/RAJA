@@ -13,7 +13,7 @@
 using namespace camp::resources;
 using namespace camp;
 
-template<typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
+template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
@@ -22,21 +22,19 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   Resource working_res{WORKING_RES()};
   Resource check_res{Host()};
 
-  INDEX_TYPE * working_array = working_res.allocate<INDEX_TYPE>(N);
-  INDEX_TYPE * check_array   = check_res.allocate<INDEX_TYPE>(N);
-  INDEX_TYPE * test_array    = check_res.allocate<INDEX_TYPE>(N);
+  INDEX_TYPE* working_array = working_res.allocate<INDEX_TYPE>(N);
+  INDEX_TYPE* check_array = check_res.allocate<INDEX_TYPE>(N);
+  INDEX_TYPE* test_array = check_res.allocate<INDEX_TYPE>(N);
 
   std::iota(test_array, test_array + N, *r1.begin());
 
-  RAJA::forall<EXEC_POLICY>(r1,
-    [=] RAJA_HOST_DEVICE (INDEX_TYPE idx){
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[idx - *r1.begin()] = idx;
   });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
-  for(INDEX_TYPE i=0; i < N; i++)
-  {
+  for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
@@ -52,18 +50,18 @@ TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
   using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
   using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
 
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(0,5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1,255);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(0, 5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1, 5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1, 255);
 
-  if(std::is_signed<INDEX_TYPE>::value){
+  if (std::is_signed<INDEX_TYPE>::value) {
 #if !defined(__CUDA_ARCH__) && !defined(RAJA_ENABLE_TBB)
-    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,0);
-    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5,5);
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5, 0);
+    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5, 5);
 #endif
   }
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
 
-#endif // __TEST_FORALL_RANGESEGMENT_HPP__
+#endif  // __TEST_FORALL_RANGESEGMENT_HPP__

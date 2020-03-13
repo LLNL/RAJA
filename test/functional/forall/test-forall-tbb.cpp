@@ -9,12 +9,14 @@
 
 // Generate TBB Type List
 #if defined(RAJA_ENABLE_TBB)
-using TBBTypes = list< RAJA::tbb_for_exec,
-                       RAJA::tbb_for_static<8>,
-                       RAJA::tbb_for_dynamic
-                     >;
+using TBBTypes = list<RAJA::tbb_for_exec,
+                      RAJA::tbb_for_static<8>,
+                      RAJA::tbb_for_dynamic>;
 
-using TBBForallTypes = Test<cartesian_product< IdxTypes, ListHost, TBBTypes>>::Types;
+using TBBForallTypes =
+    Test<cartesian_product<IdxTypes, ListHost, TBBTypes>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TBB, ForallFunctionalTest, TBBForallTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
+                               ForallFunctionalTest,
+                               TBBForallTypes);
 #endif
