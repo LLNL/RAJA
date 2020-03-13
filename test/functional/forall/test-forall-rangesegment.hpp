@@ -9,6 +9,7 @@
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
 #include "test-forall.hpp"
+#include <numeric>
 
 using namespace camp::resources;
 using namespace camp;
