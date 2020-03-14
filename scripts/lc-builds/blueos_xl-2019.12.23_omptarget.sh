@@ -16,11 +16,9 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.12.23/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/xl_2019_X.cmake \
+  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/xl_2019_12_23.cmake \
+  -C ../host-configs/blueos_3_ppc64le_ib/xl_2019_X__omptarget.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qnoeh;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

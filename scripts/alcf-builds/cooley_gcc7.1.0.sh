@@ -27,12 +27,7 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-<<<<<<< HEAD:scripts/alcf-builds/cooley_gcc7.1.0.sh
   -C ../host-configs/alcf-builds/cooley_gcc7_1_0.cmake \
-=======
-  -C ../.gitlab/conf/host-configs/blueos_3_ppc64le_ib/nvcc_9_2_xl_2019_02_07.cmake \
-  -C ../host-configs/blueos_3_ppc64le_ib/nvcc_X_xl_2019_X.cmake \
->>>>>>> Consistency with renaming of host-configs directory:scripts/lc-builds/blueos_nvcc9_xl-2019.02.07.sh
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

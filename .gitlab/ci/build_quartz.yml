@@ -108,8 +108,8 @@ build_quartz_icpc_18_0_2_gcc7headers:
     CONFIGURATION: "icpc_18_0_2_gcc7headers"
   extends: .build_quartz
 
-build_quartz_icpc_19_0_4_gcc8headers:
+build_quartz_icpc_19_1_0_gcc8headers:
   variables:
-    CONFIGURATION: "icpc_19_0_4_gcc8headers"
+    CONFIGURATION: "icpc_19_1_0_gcc8headers"
   extends: .build_quartz
 
