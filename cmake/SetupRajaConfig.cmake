@@ -26,6 +26,7 @@ endif()
 ## Fault tolerance options
 option(ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
+option(ENABLE_ITERATOR_OVERFLOW_DEBUG "Enable Overflow checking during Iterator operations" OFF)
 
 ## Timer options
 set(RAJA_TIMER "chrono" CACHE STRING

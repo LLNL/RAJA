@@ -58,8 +58,8 @@ template <typename... Ts>
 struct IterableWrapperTuple<camp::tuple<Ts...>> {
 
   using type =
-      camp::tuple<RAJA::impl::Span<typename camp::decay<Ts>::iterator,
-                                   typename camp::decay<Ts>::IndexType>...>;
+      camp::tuple<RAJA::Span<typename camp::decay<Ts>::iterator,
+                             typename camp::decay<Ts>::IndexType>...>;
 };
 
 
@@ -68,14 +68,14 @@ namespace internal
 template <class Tuple, camp::idx_t... I>
 RAJA_INLINE constexpr auto make_wrapped_tuple_impl(Tuple &&t,
                                                    camp::idx_seq<I...>)
-    -> camp::tuple<RAJA::impl::Span<
+    -> camp::tuple<RAJA::Span<
         typename camp::decay<
             camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
         typename camp::decay<
             camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType>...>
 {
   return camp::make_tuple(
-      RAJA::impl::Span<
+      RAJA::Span<
           typename camp::decay<
               camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
           typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple>>>::
@@ -105,7 +105,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               Bodies &&... bodies)
 {
   util::PluginContext context{util::make_context<PolicyType>()};
-  util::callPreLaunchPlugins(context); 
+  util::callPreLaunchPlugins(context);
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -133,10 +133,11 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
+  using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
-  internal::execute_statement_list<PolicyType>(loop_data);
+  internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
 
   util::callPostLaunchPlugins(context);
 }
@@ -160,6 +161,7 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"

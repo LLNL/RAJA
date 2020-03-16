@@ -25,8 +25,6 @@
 
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"

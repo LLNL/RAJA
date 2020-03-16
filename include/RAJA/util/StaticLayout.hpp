@@ -26,7 +26,7 @@
 
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/internal/foldl.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
@@ -64,7 +64,7 @@ struct StaticLayoutBase_impl<IndexType,
 
   RAJA_INLINE static void print()
   {
-    VarOps::ignore_args(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
+    camp::sink(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
                                (int)RangeInts,
                                (int)Sizes,
                                (int)Strides)...);
@@ -108,10 +108,8 @@ struct StaticLayoutBase_impl<IndexType,
   }
 
 
-  // Multiply together all of the sizes,
-  // replacing 1 for any zero-sized dimensions
   static constexpr IndexLinear s_size =
-      VarOps::foldl(RAJA::operators::multiplies<IndexLinear>(),
+      foldl(RAJA::operators::multiplies<IndexLinear>(),
                     (Sizes == 0 ? 1 : Sizes)...);
 };
 

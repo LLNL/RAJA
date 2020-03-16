@@ -38,8 +38,6 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
@@ -243,7 +241,7 @@ struct CudaKernelLauncherGetter<0, Data, executor_t>
  * Helper class that handles CUDA kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<typename LaunchPolicy, typename StmtList, typename Data>
+template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
 struct CudaLaunchHelper;
 
 
@@ -252,14 +250,14 @@ struct CudaLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the CUDA occupancy calculator.
  */
-template<bool async0, size_t num_blocks, size_t num_threads, typename StmtList, typename Data>
-struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Data>
+template<bool async0, size_t num_blocks, size_t num_threads, typename StmtList, typename Data, typename Types>
+struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
 {
   using Self = CudaLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
+  using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data, Types>;
 
   using kernelGetter_t = CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
 
@@ -451,9 +449,9 @@ cuda_dim_t fitCudaDims(size_t limit, cuda_dim_t result, cuda_dim_t minimum = cud
 /*!
  * Specialization that launches CUDA kernels for RAJA::kernel from host code
  */
-template <typename LaunchConfig, typename... EnclosedStmts>
+template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
+    statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>, Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
@@ -464,8 +462,8 @@ struct StatementExecutor<
   {
 
     using data_t = camp::decay<Data>;
-    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
-    using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t>;
+    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t, Types>;
+    using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
     //

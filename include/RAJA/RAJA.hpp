@@ -115,6 +115,11 @@
 
 
 //
+// View for sequences of objects
+//
+#include "RAJA/util/Span.hpp"
+
+//
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"

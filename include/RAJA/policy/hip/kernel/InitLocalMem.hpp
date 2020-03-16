@@ -40,12 +40,12 @@ namespace internal
 {
 
 //Intialize thread shared array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
-struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
+struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   //Launch loops
@@ -129,12 +129,12 @@ struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, 
 };
 
 //Intialize thread private array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
-struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
+struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   //Launch loops

@@ -238,8 +238,14 @@ struct floating_point_limits {
 
 template <>
 struct floating_point_limits<float> {
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min() { return -FLT_MAX; }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max() { return FLT_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min()
+  {
+    return -FLT_MAX;
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max()
+  {
+    return FLT_MAX;
+  }
 };
 
 template <>
@@ -248,7 +254,10 @@ struct floating_point_limits<double> {
   {
     return -DBL_MAX;
   }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() { return DBL_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() 
+  { 
+     return DBL_MAX; 
+  }
 };
 
 template <>
@@ -469,7 +478,7 @@ struct greater : public detail::comparison_function<Arg1, Arg2> {
   RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
                                              const Arg2& rhs) const
   {
-    return lhs >= rhs;
+    return lhs > rhs;
   }
 };
 
@@ -478,7 +487,7 @@ struct less : public detail::comparison_function<Arg1, Arg2> {
   RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
                                              const Arg2& rhs) const
   {
-    return lhs <= rhs;
+    return lhs < rhs;
   }
 };
 
@@ -568,10 +577,10 @@ namespace detail
 {
 
 template <typename Fun, typename Ret, typename T, typename U>
-using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
+using is_binary_function = ::RAJA::concepts::requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T>
-using is_unary_function = requires_<UnaryFunction, Ret, T>;
+using is_unary_function = ::RAJA::concepts::requires_<UnaryFunction, Ret, T>;
 }  // namespace detail
 
 }  // namespace concepts

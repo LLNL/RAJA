@@ -32,7 +32,7 @@ static RAJA::RAJAVec<RAJA::Index_type> is_indices;
 static RAJA::Real_ptr parent, ref_array, test_array;
 static RAJA::Real_ptr d_parent, d_ref_array, d_test_array;
 
-struct ForallHip : ::testing::Test {
+struct ForallHipUnitTest : ::testing::Test {
   virtual void SetUp()
   {
     using namespace RAJA;
@@ -172,7 +172,7 @@ struct ForallHip : ::testing::Test {
 ///
 /// Run traversal with simple range-based iteration
 ///
-GPU_TEST_F(ForallHip, forall_range)
+GPU_TEST_F(ForallHipUnitTest, forall_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -202,7 +202,7 @@ GPU_TEST_F(ForallHip, forall_range)
 ///
 /// Run range Icount test in its simplest form for sanity check
 ///
-GPU_TEST_F(ForallHip, forall_icount_range)
+GPU_TEST_F(ForallHipUnitTest, forall_icount_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -236,7 +236,7 @@ GPU_TEST_F(ForallHip, forall_icount_range)
 ///
 /// Run traversal test with IndexSet containing multiple segments.
 ///
-GPU_TEST_F(ForallHip, forall_indexset)
+GPU_TEST_F(ForallHipUnitTest, forall_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -270,7 +270,7 @@ GPU_TEST_F(ForallHip, forall_indexset)
 ///
 /// Run Icount test with IndexSet containing multiple segments.
 ///
-GPU_TEST_F(ForallHip, forall_icount_indexset)
+GPU_TEST_F(ForallHipUnitTest, forall_icount_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;

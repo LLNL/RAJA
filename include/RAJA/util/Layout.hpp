@@ -26,7 +26,7 @@
 
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/internal/foldl.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
@@ -209,9 +209,9 @@ public:
     // dot product of strides and indices
 #ifdef RAJA_COMPILER_INTEL
     // Intel compiler has issues with Condition
-    return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
+    return sum<IdxLin>((indices * strides[RangeInts])...);
 #else
-    return VarOps::sum<IdxLin>
+    return sum<IdxLin>
       (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides[RangeInts]) )...);
 #endif
   }
@@ -241,7 +241,7 @@ public:
      }
 #endif
 
-    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts]) %
+    camp::sink((indices = (linear_index / inv_strides[RangeInts]) %
                                    inv_mods[RangeInts])...);
   }
 
@@ -255,7 +255,7 @@ public:
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
-    return VarOps::foldl(RAJA::operators::multiplies<IdxLin>(),
+    return foldl(RAJA::operators::multiplies<IdxLin>(),
                          (sizes[RangeInts] == 0 ? 1 : sizes[RangeInts])...);
   }
 };
@@ -382,7 +382,7 @@ private:
   {
     Index_type locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
-    VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
+		camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
   }
 };
 

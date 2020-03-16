@@ -39,7 +39,7 @@
  ******************************************************************************
  */
 #cmakedefine ENABLE_FT
-
+#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *
@@ -135,8 +135,8 @@
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP)
-#if not defined(_OPENMP)
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler 
+#if !defined(_OPENMP)
+#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
@@ -148,9 +148,9 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-const int RAJA_VERSION_MAJOR = @RAJA_VERSION_MAJOR@;
-const int RAJA_VERSION_MINOR = @RAJA_VERSION_MINOR@;
-const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
+#define RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@
+#define RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@
+#define RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@
 
 
 /*!
@@ -299,11 +299,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    RAJA_PRAGMA(GCC ivdep)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #else
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
@@ -362,7 +362,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Apple Clang compiler supports older options
 #if ( ( (__clang_major__ >= 4 ) ||  (__clang_major__ >= 3 && __clang_minor__ > 7) ) && !defined(__APPLE__) )
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(assume_safety))
-#else 
+#else
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(enable))
 #endif
 
@@ -411,7 +411,7 @@ T * align_hint(T * x)
   return static_cast<T *>(RAJA_ALIGN_DATA(x));
 #endif
 }
-    
+
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard
