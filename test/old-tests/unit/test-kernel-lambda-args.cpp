@@ -1116,7 +1116,7 @@ GPU_TYPED_TEST_P(MatMult3, Basic)
   using Pol = at_v<TypeParam, 0>;
 
   const int DIM = 2;
-  const int N = 1000;
+  const int N = 50;
 
   double *A, *B, *C;
 #if defined(RAJA_ENABLE_CUDA)
