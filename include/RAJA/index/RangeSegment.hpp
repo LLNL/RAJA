@@ -464,7 +464,7 @@ RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
 template <typename BeginT,
           typename EndT,
           typename StrideT,
-          typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
+          typename Common = detail::common_type_t<BeginT, EndT>>
 RAJA_HOST_DEVICE TypedRangeStrideSegment<Common> make_strided_range(
     BeginT&& begin,
     EndT&& end,

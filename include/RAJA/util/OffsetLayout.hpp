@@ -44,6 +44,7 @@ template <camp::idx_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
   using IndexRange = camp::idx_seq<RangeInts...>;
+  using IndexLinear = IdxLin;
   using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
@@ -147,6 +148,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
    using Base = OffsetLayout<sizeof...(DimTypes), Index_type>;
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+   using IndexLinear = IdxLin;
 
    // Pull in base coonstructors
    using Base::Base;

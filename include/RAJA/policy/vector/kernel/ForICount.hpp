@@ -43,18 +43,16 @@ namespace internal
  */
 
 template <camp::idx_t ArgumentId, typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::ForICount<ArgumentId, ParamId, RAJA::vector_exec,
-                         EnclosedStmts...>> {
+                         EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-
-    // Create a wrapper, just in case forall_impl needs to thread_privatize
-    ForICountWrapper<ArgumentId, Data, EnclosedStmts...> for_wrapper(data);
-
 
     auto &begin = camp::get<ArgumentId>(data.segment_tuple).begin();
     auto end = camp::get<ArgumentId>(data.segment_tuple).end();
@@ -63,9 +61,16 @@ struct StatementExecutor<
 
     using Iterator = decltype(end);
     using vector_type = typename Iterator::vector_type;
+    using vector_index_type = typename Iterator::vector_index_type;
 
     diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
     diff_t distance_remainder = distance - distance_simd;
+
+    // Create new Types with vector type for ArgumentId
+    using NewTypes = setSegmentType<Types, ArgumentId, vector_index_type>;
+
+    // Create a wrapper, just in case forall_impl needs to thread_privatize
+    ForICountWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     // Streaming loop for complete vector widths
     begin.set_vector_length(vector_type::s_num_elem);

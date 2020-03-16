@@ -160,13 +160,15 @@ namespace internal
       // Compute a Vector type
       using vector_type = typename ExtractType::vector_type;
 
+      using IndexLinear = strip_index_type_t<IdxLin>;
+
       using type = VectorRef<vector_type, IdxLin, PointerType, s_is_stride_one>;
 
       template<typename Args>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      type createReturn(IdxLin lin_index, Args args, PointerType pointer, IdxLin stride){
+      type createReturn(IndexLinear lin_index, Args args, PointerType pointer, IndexLinear stride){
         auto arg = camp::get<ExtractType::s_vector_arg_idx>(args);
         return type(lin_index, arg.size(), pointer, stride);
       }
@@ -180,13 +182,15 @@ namespace internal
       static constexpr bool s_is_stride_one = false;
 
 
+      using IndexLinear = strip_index_type_t<IdxLin>;
+
       using type = ValueType&;
 
       template<typename Args>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      type createReturn(IdxLin lin_index, Args , PointerType pointer, IdxLin ){
+      type createReturn(IndexLinear lin_index, Args , PointerType pointer, IndexLinear ){
         return pointer[lin_index];
       }
   };

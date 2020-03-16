@@ -38,20 +38,21 @@ namespace detail
 {
 
 
-template <typename IndexType, typename Range, typename Sizes, typename Strides>
+template <typename IdxLin, typename Range, typename Sizes, typename Strides>
 struct StaticLayoutBase_impl;
 
 
-template <typename IndexType,
+template <typename IdxLin,
           camp::idx_t... RangeInts,
           camp::idx_t... Sizes,
           camp::idx_t... Strides>
-struct StaticLayoutBase_impl<IndexType,
+struct StaticLayoutBase_impl<IdxLin,
                              camp::idx_seq<RangeInts...>,
                              camp::idx_seq<Sizes...>,
                              camp::idx_seq<Strides...>> {
 
-  using IndexLinear = IndexType;
+  using IndexLinear = IdxLin;
+  using IndexType = IdxLin;
   using sizes = camp::int_seq<IndexType, ((IndexType)Sizes)...>;
   using strides = camp::int_seq<IndexType, ((IndexType)Strides)...>;
 
@@ -83,7 +84,7 @@ struct StaticLayoutBase_impl<IndexType,
       Indices... indices) const
   {
     // dot product of strides and indices
-    return VarOps::sum<IndexLinear>((indices * Strides)...);
+    return sum<IndexLinear>((indices * Strides)...);
   }
 
 
@@ -91,7 +92,7 @@ struct StaticLayoutBase_impl<IndexType,
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return VarOps::sum<IndexLinear>((indices * Strides)...);
+    return sum<IndexLinear>((indices * Strides)...);
   }
 
 
