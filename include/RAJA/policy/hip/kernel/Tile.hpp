@@ -226,7 +226,8 @@ struct HipStatementExecutor<
     statement::Tile<ArgumentId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     hip_block_xyz_loop<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+    Types>
   {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -311,17 +312,19 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
                   RAJA::statement::tile_fixed<chunk_size>,
                   hip_thread_xyz_direct<ThreadDim>,
-                  EnclosedStmts ...> >{
+                  EnclosedStmts ...>,
+  Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -394,17 +397,19 @@ template <typename Data,
           camp::idx_t chunk_size,
           int ThreadDim,
           int MinThreads,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
                   RAJA::statement::tile_fixed<chunk_size>,
                   hip_thread_xyz_loop<ThreadDim, MinThreads>,
-                  EnclosedStmts ...> >{
+                  EnclosedStmts ...>,
+  Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline

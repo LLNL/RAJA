@@ -257,26 +257,30 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
                         RAJA::statement::tile_fixed<chunk_size>,
                         hip_thread_xyz_direct<ThreadDim>,
-                        EnclosedStmts ...> >
+                        EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     hip_thread_xyz_direct<ThreadDim>,
-                    EnclosedStmts ...> > {
+                    EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
                           RAJA::statement::tile_fixed<chunk_size>,
                           hip_thread_xyz_direct<ThreadDim>,
-                          EnclosedStmts ...> >;
+                          EnclosedStmts ...>,
+          Types>;
 
   using typename Base::enclosed_stmts_t;
 
