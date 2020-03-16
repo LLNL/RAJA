@@ -514,17 +514,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>;
+      statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
 

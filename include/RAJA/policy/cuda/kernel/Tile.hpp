@@ -1,4 +1,4 @@
-/*!
+ /*!
  ******************************************************************************
  *
  * \file
@@ -129,12 +129,13 @@ struct CudaStatementExecutor<
     statement::Tile<ArgumentId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     cuda_block_xyz_direct<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+                    Types>
   {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -214,7 +215,8 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,

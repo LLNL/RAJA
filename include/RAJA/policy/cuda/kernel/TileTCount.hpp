@@ -114,20 +114,23 @@ struct CudaStatementExecutor<
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     cuda_block_xyz_direct<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+                    Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::statement::tile_fixed<chunk_size>,
                         cuda_block_xyz_direct<BlockDim>,
-                        EnclosedStmts...>> {
+                        EnclosedStmts...>,
+                        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::statement::tile_fixed<chunk_size>,
                       cuda_block_xyz_direct<BlockDim>,
-                      EnclosedStmts...>>;
+                      EnclosedStmts...>,
+                      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -175,7 +178,8 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
