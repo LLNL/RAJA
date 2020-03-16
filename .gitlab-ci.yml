@@ -5,9 +5,33 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ############################################################################
 
+###############################################################################
+# General GitLab pipelines configurations for supercomputers and Linux clusters
+# at Lawrence Livermore National Laboratory (LLNL).
+#
+# This entire pipeline is LLNL-specific
+# #############################################################################
+
+# We define the following GitLab pipeline variables:
+#
+# GIT_SUBMODULE_STRATEGY:
+# Tells Gitlab to recursively update the submodules when cloning umpire
+#
+# RAJA_ALLOC_NAME:
+# On LLNL's quartz, this pipeline creates only one allocation shared among jobs
+# in order to save time and resources. This allocation has to be uniquely named
+# so that we are sure to retrieve it.
+#
+# BUILD_ROOT:
+# The path to the shared resources between all jobs. The BUILD_ROOT is unique to
+# the pipeline, preventing any form of concurrency with other pipelines. This
+# also means that the BUILD_ROOT directory will never be cleaned.
+# TODO: add a clean-up mechanism
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  BUILD_QUARTZ_ALLOC_NAME: raja_ci_$CI_COMMIT_SHORT_SHA
+  RAJA_ALLOC_NAME: raja_ci_$CI_COMMIT_SHORT_SHA
+  BUILD_ROOT: ${CI_BUILDS_DIR}/umpire/${CI_COMMIT_REF_SLUG}_${CI_PIPELINE_ID}
 
 before_script:
   - date

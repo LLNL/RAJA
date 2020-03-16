@@ -13,7 +13,7 @@ allocate_resources_build_quartz:
     - quartz
   stage: allocate_resources
   script:
-    - salloc -N 1 -c 36 -p pdebug -t 20 --no-shell --job-name=${BUILD_QUARTZ_ALLOC_NAME}
+    - salloc -N 1 -c 36 -p pdebug -t 20 --no-shell --job-name=${RAJA_ALLOC_NAME}
   except:
     refs:
       - /_qnone/
@@ -29,7 +29,7 @@ release_resources_build_quartz:
     - quartz
   stage: release_resources
   script:
-    - scancel $(squeue -h --name=${BUILD_QUARTZ_ALLOC_NAME} --format=%A)
+    - scancel $(squeue -h --name=${RAJA_ALLOC_NAME} --format=%A)
   when: always
   except:
     - /_qnone/
