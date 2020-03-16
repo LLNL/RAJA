@@ -21,11 +21,15 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE N = r1.end() - r1.begin();
 
   Resource working_res{WORKING_RES()};
-  Resource check_res{Host()};
+  INDEX_TYPE* working_array;
+  INDEX_TYPE* check_array;
+  INDEX_TYPE* test_array;
 
-  INDEX_TYPE* working_array = working_res.allocate<INDEX_TYPE>(N);
-  INDEX_TYPE* check_array = check_res.allocate<INDEX_TYPE>(N);
-  INDEX_TYPE* test_array = check_res.allocate<INDEX_TYPE>(N);
+  allocateForallTestData<INDEX_TYPE>(N,
+                                     working_res,
+                                     &working_array,
+                                     &check_array,
+                                     &test_array);
 
   std::iota(test_array, test_array + N, *r1.begin());
 
@@ -39,9 +43,10 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  working_res.deallocate(working_array);
-  check_res.deallocate(check_array);
-  check_res.deallocate(test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res,
+                                       working_array,
+                                       check_array,
+                                       test_array);
 }
 
 
