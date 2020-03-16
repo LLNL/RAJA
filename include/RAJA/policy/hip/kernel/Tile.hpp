@@ -50,14 +50,16 @@ namespace internal
 template <typename Data,
           camp::idx_t ArgumentId,
           typename TPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -123,18 +125,20 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::statement::tile_fixed<chunk_size>,
                     hip_block_xyz_direct<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+    Types>
   {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -215,7 +219,8 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
@@ -226,7 +231,7 @@ struct HipStatementExecutor<
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline

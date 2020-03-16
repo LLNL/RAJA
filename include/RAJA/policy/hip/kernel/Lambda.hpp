@@ -40,8 +40,8 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Data, camp::idx_t LambdaIndex>
-struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex>> {
+template <typename Data, camp::idx_t LambdaIndex, typename Types>
+struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex>, Types> {
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
@@ -63,8 +63,8 @@ struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex>> {
 
 //
 
-template <typename Data, camp::idx_t LambdaIndex, typename... Args>
-struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>> {
+template <typename Data, camp::idx_t LambdaIndex, typename... Args, typename Types>
+struct HipStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>, Types> {
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
