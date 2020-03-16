@@ -68,7 +68,7 @@ protected:
   {
   }
 };
-TYPED_TEST_CASE_P(RegisterTest);
+TYPED_TEST_SUITE_P(RegisterTest);
 
 
 /*
@@ -331,9 +331,9 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
 
 }
 
-//REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSubtract);
+//REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSubtract);
 
-REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSetGet,
+REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSetGet,
                                        VectorRegisterLoad,
                                        VectorRegisterAdd,
                                        VectorRegisterSubtract,
@@ -343,7 +343,7 @@ REGISTER_TYPED_TEST_CASE_P(RegisterTest, VectorRegisterSetGet,
                                        VectorRegisterMax,
                                        VectorRegisterMin);
 
-INSTANTIATE_TYPED_TEST_CASE_P(SIMD, RegisterTest, RegisterTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 
 
 #if defined(RAJA_ENABLE_CUDA)

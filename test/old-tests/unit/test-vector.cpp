@@ -60,7 +60,7 @@ protected:
   {
   }
 };
-TYPED_TEST_CASE_P(VectorTest);
+TYPED_TEST_SUITE_P(VectorTest);
 
 
 
@@ -218,6 +218,6 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(VectorTest, ForallVectorRef1d, ForallVectorRef2d);
+REGISTER_TYPED_TEST_SUITE_P(VectorTest, ForallVectorRef1d, ForallVectorRef2d);
 
-INSTANTIATE_TYPED_TEST_CASE_P(SIMD, VectorTest, VectorTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, VectorTest, VectorTestTypes);

@@ -29,6 +29,16 @@ raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
 
+
+raja_add_test(
+  NAME test-register
+  SOURCES test-register.cpp)
+  
+raja_add_test(
+  NAME test-vector
+  SOURCES test-vector.cpp)
+  
+
 add_subdirectory(cpu)
 
 if(ENABLE_CUDA)

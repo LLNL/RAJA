@@ -11,6 +11,3 @@ add_subdirectory(util)
 add_subdirectory(atomic)
 add_subdirectory(view-layout)
 
-raja_add_test(
-  NAME test-vector
-  SOURCES test-vector.cpp)
