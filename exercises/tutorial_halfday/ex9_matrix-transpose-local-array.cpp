@@ -179,7 +179,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
-#if 0
+
   // Next,  we define a RAJA local array type.
   // The array type is templated on
   // 1) Data type
@@ -195,16 +195,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //          is reached in the kernel policy using the specified local
   //          memory policy.
 
-
+  TILE_MEM RAJA_Tile;
 
 //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-
-
-  TILE_MEM RAJA_Tile;
-
+#if 0
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
       // Fill in sequential outer loop tiling execution statements....
