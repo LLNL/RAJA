@@ -1,5 +1,5 @@
 ############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,206 +7,214 @@
 
 ####
 # Shared configuration of jobs for lassen
-.build_lassen:
+.on_lassen:
   variables:
   tags:
     - shell
     - lassen
-  stage: build
-  extends: .build_blueos_3_ppc64le_ib_p9_script
-  except:
-    refs:
-      - /_lnone/
-    variables:
-      - $RAJA_CI_LASSEN == "OFF"
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /_lnone/ || $RAJA_CI_LASSEN == "OFF"' #run except if ...
+      when: never
+    - when: on_success
+
+.build_on_lassen:
+  stage: l_build
+  extends: [.build_blueos_3_ppc64le_ib_p9_script, .on_lassen]
+  needs: ["start"]
+
+# Note: .build_on_lassen_advanced inherits from
+# .build_on_lassen and .advanced_pileline.
+# In particular, the rules section will be merged. Careful when changing rules.
+.build_on_lassen_advanced:
+  extends: [.build_on_lassen, .advanced_pipeline]
 
 # Lassen build jobs
-build_lassen_clang_6_0_0:
+clang_6_0_0 (build on lassen):
   variables:
     CONFIGURATION: "clang_6_0_0"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_clang_7_1_0:
+clang_7_1_0 (build on lassen):
   variables:
     CONFIGURATION: "clang_7_1_0"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_clang_8_0_1:
+clang_8_0_1 (build on lassen):
   variables:
     CONFIGURATION: "clang_8_0_1"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_clang_9_0_0:
+clang_9_0_0 (build on lassen):
   variables:
     CONFIGURATION: "clang_9_0_0"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_clang_coral_2018_08_08:
+clang_coral_2018_08_08 (build on lassen):
   variables:
     CONFIGURATION: "clang_coral_2018_08_08"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_clang_coral_2018_08_08__omptarget:
+clang_coral_2018_08_08__omptarget (build on lassen):
   variables:
     CONFIGURATION: "clang_coral_2018_08_08__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_clang_upstream_2019_08_15:
+clang_upstream_2019_08_15 (build on lassen):
   variables:
     CONFIGURATION: "clang_upstream_2019_08_15"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_clang_upstream_2019_08_15__omptarget:
+clang_upstream_2019_08_15__omptarget (build on lassen):
   variables:
     CONFIGURATION: "clang_upstream_2019_08_15__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_clangcuda_upstream_2018_12_03_nvcc_9_2:
+clangcuda_upstream_2018_12_03_nvcc_9_2 (build on lassen):
   variables:
     CONFIGURATION: "clangcuda_upstream_2018_12_03_nvcc_9_2"
-  extends: .build_lassen
+  extends: .build_on_lassen
   allow_failure: true
 
-build_lassen_gcc_4_9_3:
+gcc_4_9_3 (build on lassen):
   variables:
     CONFIGURATION: "gcc_4_9_3"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_gcc_7_3_1:
+gcc_7_3_1 (build on lassen):
   variables:
     CONFIGURATION: "gcc_7_3_1"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_gcc_8_3_1:
+gcc_8_3_1 (build on lassen):
   variables:
     CONFIGURATION: "gcc_8_3_1"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_nvcc_10_clang_6_0_0:
+nvcc_10_clang_6_0_0 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_clang_6_0_0"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_clang_7_1_0:
+nvcc_10_clang_7_1_0 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_clang_7_1_0"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_clang_8_0_1:
+nvcc_10_clang_8_0_1 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_clang_8_0_1"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_clang_9_0_0:
+nvcc_10_clang_9_0_0 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_clang_9_0_0"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_nvcc_10_clang_upstream_2019_08_15:
+nvcc_10_clang_upstream_2019_08_15 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_clang_upstream_2019_08_15"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_nvcc_10_gcc_7_3_1:
+nvcc_10_gcc_7_3_1 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_gcc_7_3_1"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_gcc_8_3_1:
+nvcc_10_gcc_8_3_1 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_gcc_8_3_1"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_nvcc_10_xl_2019_04_19:
+nvcc_10_xl_2019_04_19 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_04_19"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_xl_2019_06_12:
+nvcc_10_xl_2019_06_12 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_06_12"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_xl_2019_08_20:
+nvcc_10_xl_2019_08_20 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_08_20"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_10_xl_2019_12_23:
+nvcc_10_xl_2019_12_23 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_12_23"
-  extends: .build_lassen
+  extends: .build_on_lassen
 
-build_lassen_nvcc_9_2_clang_coral_2018_08_08:
+nvcc_9_2_clang_coral_2018_08_08 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_9_2_clang_coral_2018_08_08"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_9_2_gcc_7_3_1:
+nvcc_9_2_gcc_7_3_1 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_9_2_gcc_7_3_1"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_9_2_xl_2019_04_19:
+nvcc_9_2_xl_2019_04_19 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_9_2_xl_2019_04_19"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_nvcc_9_2_xl_2019_06_12:
+nvcc_9_2_xl_2019_06_12 (build on lassen):
   variables:
     CONFIGURATION: "nvcc_9_2_xl_2019_06_12"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
 
-build_lassen_pgi_19_10:
+pgi_19_10 (build on lassen):
   variables:
     CONFIGURATION: "pgi_19_10"
-  extends: .build_lassen
+  extends: .build_on_lassen
   allow_failure: true
 
-build_lassen_xl_2019_04_19:
+xl_2019_04_19 (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_04_19"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_06_12:
+xl_2019_06_12 (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_06_12"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_08_20:
+xl_2019_08_20 (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_08_20"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_12_23:
+xl_2019_12_23 (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_12_23"
-  extends: .build_lassen
+  extends: .build_on_lassen
   allow_failure: true
 
-build_lassen_xl_2019_04_19__omptarget:
+xl_2019_04_19__omptarget (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_04_19__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_06_12__omptarget:
+xl_2019_06_12__omptarget (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_06_12__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_08_20__omptarget:
+xl_2019_08_20__omptarget (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_08_20__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen_advanced
   allow_failure: true
 
-build_lassen_xl_2019_12_23__omptarget:
+xl_2019_12_23__omptarget (build on lassen):
   variables:
     CONFIGURATION: "xl_2019_12_23__omptarget"
-  extends: .build_lassen
+  extends: .build_on_lassen
   allow_failure: true

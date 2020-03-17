@@ -1,5 +1,5 @@
 ############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,7 +45,8 @@ stages:
   - q_allocate_resources
   - q_build
   - q_release_resources
-  - build
+  - l_build
+  - b_build
 
 # The start job is actually a dumb one, which serves as a reference to start
 # q_allocate_resources, l_build_and_test and b_build_and_test simultaneously.

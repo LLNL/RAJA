@@ -1,148 +1,157 @@
 ############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ############################################################################
 
 ####
-# This is the share configuration of jobs for butte
-
-.build_butte:
+# Shared configuration of jobs for butte
+.on_butte:
   variables:
   tags:
     - shell
     - butte
-  stage: build
-  extends: .build_blueos_3_ppc64le_ib_script
-  only:
-    variables:
-      - $RAJA_CI_BUTTE == "ON"
+  rules:
+    - if: '$RAJA_CI_BUTTE != "ON"' #run except if ...
+      when: never
+    - when: on_success
   allow_failure: true
 
+.build_on_butte:
+  stage: b_build
+  extends: [.build_blueos_3_ppc64le_ib_script, .on_butte]
+  needs: ["start"]
+
+# Note: .build_on_butte_advanced inherits from
+# .build_on_butte and .advanced_pileline.
+# In particular, the rules section will be merged. Careful when changing rules.
+.build_on_butte_advanced:
+  extends: [.build_on_butte, .advanced_pipeline]
+  allow_failure: true
 
 ####
-# Here are all butte build jobs
+# All butte build jobs
 
-build_butte_clang_6_0_0:
+clang_6_0_0 (build on butte):
   variables:
     CONFIGURATION: "clang_6_0_0"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_clang_coral_2018_08_08:
+clang_coral_2018_08_08 (build on butte):
   variables:
     CONFIGURATION: "clang_coral_2018_08_08"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_clang_upstream_2018_12_03:
+clang_upstream_2018_12_03 (build on butte):
   variables:
     CONFIGURATION: "clang_upstream_2018_12_03"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_clangcuda_upstream_2018_12_03_nvcc_9_2:
+clangcuda_upstream_2018_12_03_nvcc_9_2 (build on butte):
   variables:
     CONFIGURATION: "clangcuda_upstream_2018_12_03_nvcc_9_2"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_gcc_4_9_3:
+gcc_4_9_3 (build on butte):
   variables:
     CONFIGURATION: "gcc_4_9_3"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_gcc_7_3_1:
+gcc_7_3_1 (build on butte):
   variables:
     CONFIGURATION: "gcc_7_3_1"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_10_clang_6_0_0:
+nvcc_10_clang_6_0_0 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_clang_6_0_0"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_nvcc_10_gcc_7_3_1:
+nvcc_10_gcc_7_3_1 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_gcc_7_3_1"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_10_xl_2019_02_07:
+nvcc_10_xl_2019_02_07 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_02_07"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_nvcc_10_xl_2019_04_19:
+nvcc_10_xl_2019_04_19 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_04_19"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_nvcc_10_xl_2019_06_12:
+nvcc_10_xl_2019_06_12 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_xl_2019_06_12"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_8_0_gcc_4_9_3:
+nvcc_8_0_gcc_4_9_3 (build on butte):
   variables:
     CONFIGURATION: "nvcc_8_0_gcc_4_9_3"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_1_clang_coral_2018_08_08:
+nvcc_9_1_clang_coral_2018_08_08 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_1_clang_coral_2018_08_08"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_2_clang_6_0_0:
+nvcc_9_2_clang_6_0_0 (build on butte):
   variables:
     CONFIGURATION: "nvcc_10_clang_6_0_0"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_2_clang_coral_2018_08_08:
+nvcc_9_2_clang_coral_2018_08_08 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_clang_coral_2018_08_08"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_2_clang_upstream_2018_12_03:
+nvcc_9_2_clang_upstream_2018_12_03 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_clang_upstream_2018_12_03"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_nvcc_9_2_gcc_7_3_1:
+nvcc_9_2_gcc_7_3_1 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_gcc_7_3_1"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_2_xl_2019_02_07:
+nvcc_9_2_xl_2019_02_07 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_xl_2019_02_07"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_nvcc_9_2_xl_2019_04_19:
+nvcc_9_2_xl_2019_04_19 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_xl_2018_04_19"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_nvcc_9_2_xl_2019_06_12:
+nvcc_9_2_xl_2019_06_12 (build on butte):
   variables:
     CONFIGURATION: "nvcc_9_2_xl_2019_06_12"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_pgi_19_7:
+pgi_19_7 (build on butte):
   variables:
     CONFIGURATION: "pgi_19_7"
-  extends: .build_butte
+  extends: .build_on_butte
 
-build_butte_xl_2019_02_07:
+xl_2019_02_07 (build on butte):
   variables:
     CONFIGURATION: "xl_2019_02_07"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_xl_2019_04_19:
+xl_2019_04_19 (build on butte):
   variables:
     CONFIGURATION: "xl_2018_04_19"
-  extends: .build_butte
+  extends: .build_on_butte_advanced
 
-build_butte_xl_2019_06_12:
+xl_2019_06_12 (build on butte):
   variables:
     CONFIGURATION: "xl_2019_06_12"
-  extends: .build_butte
+  extends: .build_on_butte
 
 
 
