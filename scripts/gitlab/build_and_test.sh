@@ -35,15 +35,15 @@ then
     exit 1
 fi
 
-echo "--- Configuration to match :"
-echo "* ${conf}"
-
 # 'conf' = toolchain__tuning
 # 'host_config' = filter__tuning
 #   where 'filter' can represent several toolchains
 #   like <nvcc_10_gcc_X> covers any gcc paired with nvcc10
 # 'toolchain' is a unique set of tools, and 'tuning' allows to have
 # several configurations for this set, like <omptarget>.
+
+echo "--- Configuration to match :"
+echo "* ${conf}"
 
 toolchain=${conf/__*/}
 tuning=${conf/${toolchain}/}
