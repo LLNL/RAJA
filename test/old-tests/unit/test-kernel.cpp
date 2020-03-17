@@ -475,12 +475,10 @@ using HIPTypes = ::testing::Types<
         >,
         KernelPolicy<
            For<1, s,
-             HipKernel<
-               For<2, RAJA::hip_block_x_loop,
+             HipKernel<               
                  For<0, RAJA::hip_thread_x_loop, 
-                   Lambda<0>
-                 >
-               >
+                   Lambda<0, Segs<0, 1>, ValuesT<int, 0>>
+                 >               
              >
            >
          >,
