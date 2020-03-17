@@ -75,14 +75,14 @@ struct StatementExecutor<
     ForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     // Streaming loop for complete vector widths
-    data.vector_sizes[ArgumentId] = vector_type::s_num_elem;
+    camp::get<ArgumentId>(data.vector_sizes) = vector_type::s_num_elem;
     for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
       for_wrapper(i);
     }
 
     // Postamble for reamining elements
     if(distance_remainder > 0){
-      data.vector_sizes[ArgumentId] = distance_remainder;
+      camp::get<ArgumentId>(data.vector_sizes) = distance_remainder;
       for_wrapper(distance_simd);
     }
 

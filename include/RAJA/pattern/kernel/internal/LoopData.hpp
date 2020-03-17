@@ -29,6 +29,7 @@
 
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
+#include "RAJA/pattern/kernel/internal/Template.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -122,16 +123,13 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
-  int vector_sizes[camp::tuple_size<SegmentTuple>::value];
+  using vector_sizes_t = tuple_of_n<int, camp::tuple_size<SegmentTuple>::value>;
+  vector_sizes_t vector_sizes;
 
   RAJA_INLINE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
-    //assign_begin_all();
-    for(size_t i = 0;i < camp::tuple_size<SegmentTuple>::value;++ i){
-      vector_sizes[i] = 1;
-    }
   }
 
   template <typename PolicyType0,
@@ -143,11 +141,9 @@ struct LoopData {
       : segment_tuple(c.segment_tuple),
         param_tuple(c.param_tuple),
         bodies(c.bodies),
-        offset_tuple(c.offset_tuple)
+        offset_tuple(c.offset_tuple),
+        vector_sizes(c.vector_sizes)
   {
-    for(size_t i = 0;i < camp::tuple_size<SegmentTuple>::value;++ i){
-      vector_sizes[i] = c.vector_sizes[i];
-    }
   }
 
   template <camp::idx_t Idx, typename IndexT>

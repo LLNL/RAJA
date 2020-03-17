@@ -106,7 +106,7 @@ namespace RAJA
       {
         return VectorIndex<IDX, VECTOR_TYPE>(
             camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
-            data.vector_sizes[id]);
+            camp::get<id>(data.vector_sizes));
       }
 
     };
