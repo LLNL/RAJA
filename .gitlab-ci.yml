@@ -41,21 +41,44 @@ after_script:
 
 # There are no tests for now.
 stages:
-  - allocate_resources
+  - start
+  - q_allocate_resources
+  - q_build
+  - q_release_resources
   - build
-  - test
-  - release_resources
 
-# This is not a job, but contains project specific build commands.
-# If an allocation exist with the name defined in this pipeline, the job will use it.
+# The start job is actually a dumb one, which serves as a reference to start
+# q_allocate_resources, l_build_and_test and b_build_and_test simultaneously.
+# TODO: GitLab 12.8 will allow for empty "needs" to trigger the job asap,
+# this start job will no be necessary anymore.
+# Note: "GIT_STRATEGY: none" tells GitLab not to clone umpire for this job.
+start:
+  variables:
+    GIT_STRATEGY: none
+  stage: start
+  tags:
+    - shell
+  script:
+    - echo "Creating a reference job for dag execution (needs keyword)"
+
+# This is the rules that drives the activation of "advanced" jobs. All advanced
+# jobs will share this through a template mechanism.
+.advanced_pipeline:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" || $RAJA_ALL_TARGETS == "ON"' #run only if ...
+
+# These are also templates (.name) that define project specific build commands.
+# If an allocation exist with the name defined in this pipeline, the job will
+# use it (slurm specific).
 .build_toss_3_x86_64_ib_script:
   script:
-    - echo ${BUILD_QUARTZ_ALLOC_NAME}
-    - export JOBID=$(squeue -h --name=${BUILD_QUARTZ_ALLOC_NAME} --format=%A)
+    - echo ${RAJA_ALLOC_NAME}
+    - export JOBID=$(squeue -h --name=${RAJA_ALLOC_NAME} --format=%A)
     - echo ${JOBID}
     - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 10 -N 1 -n 1 -c 4 scripts/gitlab/build_and_test.sh
 
-# Butte uses a very different job allocation system.
+# Lassen and Butte use a different job scheduler (spectrum lsf) that does not
+# allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
     - lalloc 1 scripts/gitlab/build_and_test.sh
