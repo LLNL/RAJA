@@ -250,18 +250,19 @@ REGISTER_TYPED_TEST_SUITE_P(Kernel, Basic);
 #ifdef RAJA_ENABLE_HIP
 GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 {
-  using Pol = at_v<TypeParam, 0>;
-  using IndexTypes = at_v<TypeParam, 1>;
+  using Pol2d = at_v<TypeParam, 0>;
+  using Pol3d = at_v<TypeParam, 1>;
+  using IndexTypes = at_v<TypeParam, 2>;
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
-  RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
-  RAJA::ReduceMin<at_v<TypeParam, 2>, RAJA::Real_type> tMin(0.0);
-  RAJA::ReduceMax<at_v<TypeParam, 2>, RAJA::Real_type> tMax(0.0);
+  RAJA::ReduceSum<at_v<TypeParam, 3>, RAJA::Real_type> tsum(0.0);
+  RAJA::ReduceMin<at_v<TypeParam, 3>, RAJA::Real_type> tMin(0.0);
+  RAJA::ReduceMax<at_v<TypeParam, 3>, RAJA::Real_type> tMax(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
   auto v = this->d_view;
-  RAJA::kernel<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
     v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
@@ -301,12 +302,12 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   auto ranges2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, stride1),
                                   RAJA::TypedRangeSegment<Idx1>(0, stride1));
 
-  RAJA::kernel<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       tsum += get_val(i) * 1.1 + get_val(j);
   });
 
-  RAJA::kernel<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(d_arr[id]);
@@ -316,7 +317,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   tMin.reset(0.0);
   tMax.reset(0.0);
 
-  RAJA::kernel<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(d_arr[id]);
@@ -341,7 +342,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 
   auto rangeList = RAJA::make_tuple(idx_list, idy_list);
 
-  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       v(get_val(i), j) = get_val(i) * x_len + j;
       tsum += get_val(i) * 1.1 + j;
@@ -363,7 +364,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   hipErrchk(hipMalloc(&d_idx_test, sizeof(double) * x_len * y_len));
 
   auto iterSpace2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list);
-  RAJA::kernel<Pol>(iterSpace2, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(iterSpace2, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j) {
       Index_type id = get_val(i)*x_len + get_val(j);
       d_idx_test[id] = get_val(i) * x_len + get_val(j);
       tsum += get_val(i) * 1.1 + get_val(j);
@@ -382,7 +383,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   total=0.0;
   tsum.reset(0.0);
   auto iterSpace3 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list,RAJA::TypedRangeSegment<Idx1>(0,10));
-  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j, Idx1 k) {
+  RAJA::kernel<Pol3d>(iterSpace3, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j, Idx1 k) {
       Index_type id = get_val(i)*x_len + get_val(j);
       d_idx_test[id] = get_val(i) * x_len + get_val(j) + get_val(k) - get_val(k);
     tsum += get_val(i) * 1.1 + get_val(j);
@@ -463,10 +464,24 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, Kernel, CUDATypes);
 #endif
 #if defined(RAJA_ENABLE_HIP)
 using HIPTypes = ::testing::Types<
-    list<KernelPolicy<For<
-             1,
-             s,
-             HipKernel<For<0, RAJA::hip_thread_x_loop, Lambda<0>>>>>,
+    list<KernelPolicy<
+           For<1, s,
+             HipKernel<
+              For<0, RAJA::hip_thread_x_loop, 
+                Lambda<0>
+              >
+            >
+          >
+        >,
+        KernelPolicy<
+           For<1, s,
+             HipKernel<               
+                 For<0, RAJA::hip_thread_x_loop, 
+                   Lambda<0, Segs<0, 1>, ValuesT<int, 0>>
+                 >               
+             >
+           >
+         >,
          list<TypedIndex, Index_type>,
          RAJA::hip_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(HIP, Kernel_gpu, HIPTypes);
@@ -3128,7 +3143,7 @@ GPU_TEST(Kernel_gpu, ReduceHipSum1)
       KernelPolicy<HipKernel<
         For<0, hip_thread_x_loop, Lambda<0>>,
         RAJA::statement::Reduce<hip_block_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -3142,7 +3157,7 @@ GPU_TEST(Kernel_gpu, ReduceHipSum1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which receieved the
         // reduced value
         trip_count += value;
@@ -3419,7 +3434,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop1)
       KernelPolicy<HipKernel<
         For<0, hip_warp_loop, Lambda<0>>,
         RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -3434,7 +3449,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -3459,7 +3474,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop2)
           For<0, hip_warp_loop, Lambda<0>>
         >,
         RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0> >
         >
       >>;
 
@@ -3475,7 +3490,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop2)
       [=] __device__ (Index_type i, Index_type j, long &value) {
         value += i + j*N;
       },
-      [=] __device__ (Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -3504,7 +3519,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop3)
           >,
           RAJA::statement::HipSyncThreads,
           RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-            Lambda<1>
+            Lambda<1, Params<0>>
           >
         >
       >>;
@@ -3521,7 +3536,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop3)
       [=] __device__ (Index_type i, Index_type j, Index_type k, long &value) {
         value = i + j*N + k*N*M;
       },
-      [=] __device__ (Index_type, Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         total_count += value;
@@ -3900,7 +3915,7 @@ GPU_TEST(Kernel_gpu, HipComplexNested)
   using Pol = KernelPolicy<HipKernel<
       For<0, hip_block_x_loop,
           For<1, hip_thread_x_loop, For<2, hip_thread_y_loop, Lambda<0>>>,
-          For<2, hip_thread_x_loop, Lambda<0>>>>>;
+          For<2, hip_thread_x_loop, Lambda<0, Segs<0>, ValuesT<RAJA::Index_type, 0>, Segs<2>>>>>>;
 
   int *ptr = (int*) malloc(sizeof(int) * N);
   int *d_ptr = nullptr;

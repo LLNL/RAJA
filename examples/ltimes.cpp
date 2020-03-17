@@ -25,6 +25,7 @@
 #include <hip/hip_runtime.h>
 #endif
 
+
 /*
  *  LTimes Example
  *
@@ -1221,19 +1222,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   using RAJA::statement::Param;
+  using RAJA::statement::Segs;
+  using RAJA::statement::Params;
+  using RAJA::statement::Offsets;
 
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::HipKernelAsync<
         statement::InitLocalMem<hip_shared_mem, ParamList<0,1>,
-          // Tile outer m,d loops
+          // Tile outer m,d loops 
           statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
             statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
 
-              // Load L for m,d tile into shmem
-              statement::ForICount<1, Param<4>, hip_thread_x_loop,  // d
-                statement::ForICount<0, Param<3>, hip_thread_y_direct,   // m
-                  statement::Lambda<0>
+              // Load L for m,d tile into shmem 
+              statement::For<1, hip_thread_x_loop,  // d
+                statement::For<0, hip_thread_y_direct,   // m
+                  statement::Lambda<0, Segs<0,1>, Params<0>, Offsets<0,1>>
                 >
               >,
               statement::HipSyncThreads,
@@ -1243,42 +1247,42 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 statement::Tile<3, statement::tile_fixed<tile_z>, hip_block_x_loop,  // z
 
                   // Load phi into thread local storage
-                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
-                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
-                      statement::Lambda<2>
+                  statement::For<3, hip_thread_x_direct,  // z
+                    statement::For<0, hip_thread_y_direct, // m
+                      statement::Lambda<2, Segs<0,2,3>, Params<2>>
                     >
                   >,
 
                   // Load slice of psi into shmem
-                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
-                    statement::ForICount<1, Param<4>, hip_thread_y_loop, // d (reusing y)
-                      statement::Lambda<1>
+                  statement::For<3, hip_thread_x_direct,  // z
+                    statement::For<1, hip_thread_y_loop, // d (reusing y)
+                      statement::Lambda<1, Segs<1,2,3>, Params<1>, Offsets<1,2,3>>
                     >
                   >,
                   statement::HipSyncThreads,
 
                   // Compute phi
-                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
-                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
+                  statement::For<3, hip_thread_x_direct,  // z
+                    statement::For<0, hip_thread_y_direct, // m
 
                       // Compute thread-local Phi value and store
-                      statement::ForICount<1, Param<4>, seq_exec,  // d
-                        statement::Lambda<3>
+                      statement::For<1,  seq_exec,  // d
+                        statement::Lambda<3, Segs<0,1,2,3>, Params<0,1,2>, Offsets<0,1,2,3>>
                       > // d
                     >  // m
                   >,  // z
-
+                  
                   // finish tile over directions
                   statement::HipSyncThreads,
 
                   // Write out phi from thread local storage
-                  statement::ForICount<3, Param<6>, hip_thread_x_direct,  // z
-                    statement::ForICount<0, Param<3>, hip_thread_y_direct, // m
-                      statement::Lambda<4>
+                  statement::For<3, hip_thread_x_direct,  // z
+                    statement::For<0, hip_thread_y_direct, // m
+                      statement::Lambda<4, Segs<0,2,3>, Params<2>>
                     >
                   >,
                   statement::HipSyncThreads
-
+                
                 >  // Tile z
               >  // g
 
@@ -1292,13 +1296,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-
   RAJA::Timer timer;
   hipErrchk( hipDeviceSynchronize() );
   timer.start();
 
   RAJA::kernel_param<EXECPOL>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+      RAJA::make_tuple(
+      RAJA::TypedRangeSegment<IM>(0, num_m),
       RAJA::TypedRangeSegment<ID>(0, num_d),
       RAJA::TypedRangeSegment<IG>(0, num_g),
       RAJA::TypedRangeSegment<IZ>(0, num_z)),
@@ -1309,31 +1313,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // computing a phi value, for shared memory before writing to phi array.
     RAJA::make_tuple( shmem_L,
                       shmem_psi,
-                      0.0,
-                      IM(0),
-                      ID(0),
-                      IG(0),
-                      IZ(0)),
+                      0.0),
 
     // Lambda<0> : Load L into shmem
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
-                     shmem_L_t& sh_L, shmem_psi_t&, double&,
-                     IM tm, ID td, IG, IZ) {
+    [=] RAJA_DEVICE (IM m, ID d,
+                     shmem_L_t& sh_L,
+                     IM tm, ID td) {
       sh_L(tm, td) = L(m, d);
     },
 
     // Lambda<1> : Load slice of psi into shmem
-    [=] RAJA_DEVICE (IM /*m*/, ID d, IG g, IZ z,
-                    shmem_L_t&, shmem_psi_t& sh_psi, double&,
-                     IM, ID td, IG tg, IZ tz) {
+    [=] RAJA_DEVICE (ID d, IG g, IZ z,
+                     shmem_psi_t& sh_psi,
+                     ID td, IG tg, IZ tz) {
 
       sh_psi(td, tg, tz) = psi(d, g, z);
     },
 
     // Lambda<2> : Load thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
-                     shmem_L_t&, shmem_psi_t&, double& phi_local,
-                     IM, ID, IG, IZ) {
+    [=] RAJA_DEVICE (IM m, IG g, IZ z,
+                     double& phi_local) {
 
       phi_local = phi(m, g, z);
     },
@@ -1347,9 +1346,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Lambda<4> : Store phi
-    [=] RAJA_DEVICE (IM m, ID /*d*/, IG g, IZ z,
-                     shmem_L_t&, shmem_psi_t&, double& phi_local,
-                     IM, ID, IG, IZ) {
+    [=] RAJA_DEVICE (IM m, IG g, IZ z,
+                     double& phi_local) {
 
       phi(m, g, z) = phi_local;
     }

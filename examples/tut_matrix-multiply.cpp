@@ -967,11 +967,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-            RAJA::statement::Lambda<0>,   // dot = 0.0
+            RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
                 RAJA::statement::Lambda<1> // dot += ...
             >,
-            RAJA::statement::Lambda<2>   // set C = ...
+            RAJA::statement::Lambda<2, 
+              RAJA::statement::Segs<0,1>, 
+              RAJA::statement::Params<0>>   // set C = ...
           >
         >
       >
@@ -983,7 +985,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (double& dot) {
        dot = 0.0;
     },
 
@@ -993,7 +995,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
        d_Cview(row, col) = dot;
     }
 
@@ -1003,61 +1005,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running HIP mat-mult with multiple lambdas (RAJA-POL9a)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  using EXEC_POL9a =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
-            RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
-              RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-                RAJA::statement::Lambda<0>,   // dot = 0.0
-                RAJA::statement::For<2, RAJA::seq_exec,
-                    RAJA::statement::Lambda<1> // dot += ...
-                >,
-                RAJA::statement::Lambda<2>   // set C = ...
-              >
-            >
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL9a>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += d_Aview(row, k) * d_Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
-       d_Cview(row, col) = dot;
-    }
-
-  );
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
 
   //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9b)...\n";
+  std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
   hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));

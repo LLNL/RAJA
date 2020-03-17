@@ -556,9 +556,10 @@ struct StatementExecutor<
       //
       // make sure that we fit
       //
+      /* Doesn't make sense to check this anymore - AJK
       if(launch_dims.num_blocks() > max_blocks){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num blocks");
-      }
+      }*/
       if(launch_dims.num_threads() > max_threads){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
