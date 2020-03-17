@@ -775,13 +775,13 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
     RAJA::View<double, RAJA::Layout<2>> Cview(C, N, P);
     for (size_t row = 0; row < N; ++row) {
       for (size_t col = 0; col < M; ++col) {
-        Aview(row, col) = ((double)col-row)/(N*M);
+        Aview(row, col) = ((double)col-row)/(N*M)+1;
       }
     }
 
     for (size_t row = 0; row < M; ++row) {
       for (size_t col = 0; col < P; ++col) {
-        Bview(row, col) = ((double)col+row)/(M*P);
+        Bview(row, col) = ((double)col+row)/(M*P)+1;
       }
     }
 
