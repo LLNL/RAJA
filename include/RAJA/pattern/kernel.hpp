@@ -118,8 +118,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
 
   using param_tuple_t = camp::decay<ParamTuple>;
 
-  using loop_data_t = internal::LoopData<PolicyType,
-                                         segment_tuple_t,
+  using loop_data_t = internal::LoopData<segment_tuple_t,
                                          param_tuple_t,
                                          camp::decay<Bodies>...>;
 

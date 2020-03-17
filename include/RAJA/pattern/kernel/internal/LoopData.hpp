@@ -96,20 +96,17 @@ using index_tuple_from_segments =
 
 
 
-template <typename PolicyType,
-          typename SegmentTuple,
+template <typename SegmentTuple,
           typename ParamTuple,
           typename... Bodies>
 struct LoopData {
 
-  using Self = LoopData<PolicyType, SegmentTuple, ParamTuple, Bodies...>;
+  using Self = LoopData<SegmentTuple, ParamTuple, Bodies...>;
 
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
 
   using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
-
-  using policy_t = PolicyType;
 
 
   using segment_tuple_t = SegmentTuple;
@@ -129,12 +126,11 @@ struct LoopData {
     //assign_begin_all();
   }
 
-  template <typename PolicyType0,
-            typename SegmentTuple0,
+  template <typename SegmentTuple0,
             typename ParamTuple0,
             typename... Bodies0>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
-      LoopData<PolicyType0, SegmentTuple0, ParamTuple0, Bodies0...> &c)
+      LoopData<SegmentTuple0, ParamTuple0, Bodies0...> &c)
       : segment_tuple(c.segment_tuple),
         param_tuple(c.param_tuple),
         bodies(c.bodies),
