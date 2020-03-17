@@ -315,6 +315,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -374,6 +375,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
