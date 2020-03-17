@@ -86,179 +86,34 @@ namespace RAJA
   };
 
 
-  namespace Iterators
+
+  namespace internal
   {
 
-  /*
-   * Specialization of the numeric_iterator for VectorIndex type.
-   *
-   *
-   *
-   */
+    /*
+     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
+     * includes the vector length with them
+     */
+    template<typename IDX, typename VECTOR_TYPE, camp::idx_t id>
+    struct LambdaSegExtractor<VectorIndex<IDX, VECTOR_TYPE>, id>
+    {
 
-  template <typename Type,
-            typename VectorType,
-            typename DifferenceType,
-            typename PointerType>
-  class numeric_iterator<RAJA::VectorIndex<Type, VectorType>, DifferenceType, PointerType>
-  {
-  public:
-    using value_type = Type;
-    using vector_type = VectorType;
-    using vector_index_type = RAJA::VectorIndex<Type, VectorType>;
-    using difference_type = DifferenceType;
-    using pointer = PointerType;
-    using reference = value_type&;
-    using iterator_category = std::random_access_iterator_tag;
+      template<typename Data>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      static VectorIndex<IDX, VECTOR_TYPE> extract(Data &&data)
+      {
+        return VectorIndex<IDX, VECTOR_TYPE>(
+            camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
+            data.vector_sizes[id]);
+      }
 
-    RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0), length(vector_type::s_num_elem) {}
-    RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs)
-        : val(rhs), length(vector_type::s_num_elem)
-    {
-    }
-    RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs, const difference_type& len)
-        : val(rhs), length(len)
-    {
-    }
-    RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
-        : val(rhs.val), length(rhs.length)
-    {
-    }
+    };
 
-    RAJA_HOST_DEVICE constexpr inline DifferenceType get_stride() const
-    {
-      return vector_type::s_num_elem;
-    }
+  } // namespace internal
 
-    RAJA_HOST_DEVICE inline void set_vector_length(DifferenceType len)
-    {
-      length = len;
-    }
 
-    RAJA_HOST_DEVICE inline bool operator==(const numeric_iterator& rhs) const
-    {
-      return val == rhs.val;
-    }
-    RAJA_HOST_DEVICE inline bool operator!=(const numeric_iterator& rhs) const
-    {
-      return val != rhs.val;
-    }
-    RAJA_HOST_DEVICE inline bool operator>(const numeric_iterator& rhs) const
-    {
-      return val > rhs.val;
-    }
-    RAJA_HOST_DEVICE inline bool operator<(const numeric_iterator& rhs) const
-    {
-      return val < rhs.val;
-    }
-    RAJA_HOST_DEVICE inline bool operator>=(const numeric_iterator& rhs) const
-    {
-      return val >= rhs.val;
-    }
-    RAJA_HOST_DEVICE inline bool operator<=(const numeric_iterator& rhs) const
-    {
-      return val <= rhs.val;
-    }
-
-    RAJA_HOST_DEVICE inline numeric_iterator& operator++()
-    {
-      ++val;
-      return *this;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator& operator--()
-    {
-      --val;
-      return *this;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator operator++(int)
-    {
-      numeric_iterator tmp(*this);
-      ++val;
-      return tmp;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator operator--(int)
-    {
-      numeric_iterator tmp(*this);
-      --val;
-      return tmp;
-    }
-
-    RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
-        const difference_type& rhs)
-    {
-      val += rhs;
-      return *this;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
-        const difference_type& rhs)
-    {
-      val -= rhs;
-      return *this;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
-        const numeric_iterator& rhs)
-    {
-      val += rhs.val;
-      return *this;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
-        const numeric_iterator& rhs)
-    {
-      val -= rhs.val;
-      return *this;
-    }
-
-    RAJA_HOST_DEVICE inline difference_type operator+(
-        const numeric_iterator& rhs) const
-    {
-      return val + rhs.val;
-    }
-    RAJA_HOST_DEVICE inline difference_type operator-(
-        const numeric_iterator& rhs) const
-    {
-      return val - rhs.val;
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator operator+(
-        const difference_type& rhs) const
-    {
-      return numeric_iterator(val + rhs, length);
-    }
-    RAJA_HOST_DEVICE inline numeric_iterator operator-(
-        const difference_type& rhs) const
-    {
-      return numeric_iterator(val - rhs, length);
-    }
-    RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(
-        difference_type lhs,
-        const numeric_iterator& rhs)
-    {
-      return numeric_iterator(lhs + rhs.val, rhs.length);
-    }
-    RAJA_HOST_DEVICE friend constexpr numeric_iterator operator-(
-        difference_type lhs,
-        const numeric_iterator& rhs)
-    {
-      return numeric_iterator(lhs - rhs.val, rhs.length);
-    }
-
-    RAJA_HOST_DEVICE inline vector_index_type operator*() const
-    {
-      return vector_index_type(val, length);
-    }
-    RAJA_HOST_DEVICE inline vector_index_type operator->() const
-    {
-      return vector_index_type(val, length);
-    }
-    RAJA_HOST_DEVICE constexpr vector_index_type operator[](difference_type rhs) const
-    {
-      return vector_index_type(val + rhs, length);
-    }
-
-  private:
-    difference_type val;
-    difference_type length;
-  };
-  } //namespace Iterators
 
 }  // namespace RAJA
 

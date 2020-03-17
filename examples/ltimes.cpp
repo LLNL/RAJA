@@ -84,11 +84,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
-
-  const Index_type num_m = 25;
-  const Index_type num_g = 48;
-  const Index_type num_d = 80;
-  const Index_type num_z = 64*1024;
+  // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
+  // optimize out these values as compile time constants
+  const Index_type num_m = 25 + (rand()/RAND_MAX);
+  const Index_type num_g = 48 + (rand()/RAND_MAX);
+  const Index_type num_d = 80 + (rand()/RAND_MAX);
+  const Index_type num_z = 4*1024 + (rand()/RAND_MAX);
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g << 
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
@@ -372,12 +373,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
+  using vector_t = RAJA::StreamVector<double,2>;
+  using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
+
   using EXECPOL =
     RAJA::KernelPolicy<
        statement::For<0, loop_exec,  // m
          statement::For<1, loop_exec,  // d
            statement::For<2, loop_exec,  // g
-             statement::For<3, vector_exec,  // z
+             statement::For<3, vector_exec<vector_t>,  // z
                statement::Lambda<0>
              >
            >
@@ -387,13 +391,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-  using vector_t = RAJA::StreamVector<double,2>;
-  using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
+
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IG>(0, num_g),
-                                   RAJA::TypedRangeSegment<VecIZ>(0, num_z));
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
   timer.start();

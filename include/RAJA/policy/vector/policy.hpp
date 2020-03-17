@@ -38,11 +38,12 @@ namespace policy
 namespace vector
 {
 
-
+template<typename VEC_TYPE>
 struct vector_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::forall,
                                                          Launch::undefined,
                                                          Platform::host> {
+  using vector_type = VEC_TYPE;
 };
 
 

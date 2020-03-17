@@ -45,8 +45,8 @@ namespace vector
 {
 
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const vector_exec&,
+template <typename VectorType, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const vector_exec<VectorType>&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
@@ -55,21 +55,21 @@ RAJA_INLINE void forall_impl(const vector_exec&,
   auto distance = std::distance(begin, end);
   using diff_t = decltype(distance);
 
-  using vector_index_type = typename Iterable::value_type;
-  using vector_type = typename vector_index_type::vector_type;
+  using value_type = typename Iterable::value_type;
+  using vector_type = VectorType;
+  using vector_index_type = VectorIndex<value_type, vector_type>;
 
   diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
   diff_t distance_remainder = distance - distance_simd;
 
   // Streaming loop for complete vector widths
   for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
-    loop_body(*(begin + i));
+    loop_body(vector_index_type(*(begin + i)));
   }
 
   // Postamble for reamining elements
   if(distance_remainder > 0){
-    begin.set_vector_length(distance_remainder);
-    loop_body(*(begin + distance_simd));
+    loop_body(vector_index_type(*(begin + distance_simd), distance_remainder));
   }
 
 }

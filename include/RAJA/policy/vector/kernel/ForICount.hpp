@@ -43,10 +43,11 @@ namespace internal
  */
 
 template <camp::idx_t ArgumentId, typename ParamId,
+          typename VectorType,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::ForICount<ArgumentId, ParamId, RAJA::vector_exec,
+    statement::ForICount<ArgumentId, ParamId, RAJA::vector_exec<VectorType>,
                          EnclosedStmts...>,
     Types> {
 
@@ -60,8 +61,9 @@ struct StatementExecutor<
     using diff_t = decltype(distance);
 
     using Iterator = decltype(end);
-    using vector_type = typename Iterator::vector_type;
-    using vector_index_type = typename Iterator::vector_index_type;
+    using vector_type = VectorType;
+    using value_type = typename Iterator::value_type;
+    using vector_index_type = VectorIndex<value_type, vector_type>;
 
     diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
     diff_t distance_remainder = distance - distance_simd;
@@ -73,14 +75,14 @@ struct StatementExecutor<
     ForICountWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     // Streaming loop for complete vector widths
-    begin.set_vector_length(vector_type::s_num_elem);
+    data.vector_sizes[ArgumentId] = vector_type::s_num_elem;
     for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
       for_wrapper(i);
     }
 
     // Postamble for reamining elements
     if(distance_remainder > 0){
-      begin.set_vector_length(distance_remainder);
+      data.vector_sizes[ArgumentId] = distance_remainder;
       for_wrapper(distance_simd);
     }
 

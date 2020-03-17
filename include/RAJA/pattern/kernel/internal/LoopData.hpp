@@ -122,11 +122,16 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
+  int vector_sizes[camp::tuple_size<SegmentTuple>::value];
+
   RAJA_INLINE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
     //assign_begin_all();
+    for(size_t i = 0;i < camp::tuple_size<SegmentTuple>::value;++ i){
+      vector_sizes[i] = 1;
+    }
   }
 
   template <typename PolicyType0,
@@ -140,6 +145,9 @@ struct LoopData {
         bodies(c.bodies),
         offset_tuple(c.offset_tuple)
   {
+    for(size_t i = 0;i < camp::tuple_size<SegmentTuple>::value;++ i){
+      vector_sizes[i] = c.vector_sizes[i];
+    }
   }
 
   template <camp::idx_t Idx, typename IndexT>

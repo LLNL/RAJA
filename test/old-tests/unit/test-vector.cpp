@@ -92,8 +92,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   RAJA::View<double, RAJA::Layout<1>> Z(C, N);
 
 
-  RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<size_t, vector_t>>(0, N),
-      [=](RAJA::VectorIndex<size_t, vector_t> i)
+  RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0, N),
+      [=](RAJA::VectorIndex<int, vector_t> i)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;
   });
@@ -151,7 +151,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   using policy_t =
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::vector_exec,
+          RAJA::statement::For<1, RAJA::vector_exec<vector_t>,
             RAJA::statement::Lambda<0>
           >
         >
@@ -160,7 +160,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 
   RAJA::kernel<policy_t>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
-                      RAJA::TypedRangeSegment<RAJA::VectorIndex<index_t, vector_t>>(0, M)),
+                      RAJA::TypedRangeSegment<index_t>(0, M)),
 
       [=](index_t i, RAJA::VectorIndex<index_t, vector_t> j)
   {
@@ -179,7 +179,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
       [=](index_t i){
 
-    RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<index_t, vector_t>>(0, M),
+    RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<index_t>(0, M),
         [=](RAJA::VectorIndex<index_t, vector_t> j){
 
       Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
@@ -196,7 +196,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   //
   // Test outer loop SIMD
   //
-  RAJA::forall<RAJA::vector_exec>(RAJA::TypedRangeSegment<RAJA::VectorIndex<index_t, vector_t>>(0, N),
+  RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<index_t>(0, N),
       [=](RAJA::VectorIndex<index_t, vector_t> i){
 
     RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
