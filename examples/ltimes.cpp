@@ -25,6 +25,7 @@
 #include <hip/hip_runtime.h>
 #endif
 
+
 /*
  *  LTimes Example
  *
