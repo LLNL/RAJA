@@ -44,3 +44,14 @@ raja_add_test(
   SOURCES test-scan-exclusive-cuda.cpp)
 
 endif()
+
+if(RAJA_ENABLE_HIP)
+
+raja_add_test(
+  NAME test-scan-inclusive-hip
+  SOURCES test-scan-inclusive-hip.cpp)
+raja_add_test(
+  NAME test-scan-exclusive-hip
+  SOURCES test-scan-exclusive-hip.cpp)
+
+endif()
