@@ -96,10 +96,13 @@ GPU_TEST(Sort, basic_algorithm_device_Sort)
   testSorter(HeapSortGPU{}, MaxN);
   testSorter(HeapSortPairsGPU{}, MaxN);
 
-  // intro_sort and merge_sort will probably not be supported in device code
-  // due to memory requirements
-  // testSorter(IntroSort{}, MaxN);
-  // testSorter(IntroSortPairs{}, MaxN);
+  // intro_sort is implemented via recursion, so the device may
+  // run out of stack space or perform poorly due to local memory usage
+  testSorter(IntroSort{}, MaxN);
+  testSorter(IntroSortPairs{}, MaxN);
+
+  // merge_sort is not currently supported in device code due
+  // to memory requirements
   // testSorter(MergeSort{}, MaxN);
   // testSorter(MergeSortPairs{}, MaxN);
 }
