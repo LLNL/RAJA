@@ -34,7 +34,8 @@ class ScanFunctionalTest: public ::testing::Test {};
 
 // Define scan operation types
 using OpTypes = list< RAJA::operators::plus<int>,
-#if 0
+#if 0  // Parallel tests with plus operator and float data do not work
+       // likely due to precision being to low
                       RAJA::operators::plus<float>,
 #endif
                       RAJA::operators::plus<double>,
