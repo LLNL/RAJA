@@ -41,6 +41,55 @@ namespace impl
 namespace sort
 {
 
+namespace detail
+{
+namespace openmp
+{
+
+// this number is arbitrary
+constexpr int min_iterates_per_task() { return 128; }
+
+#ifdef RAJA_ENABLE_OPENMP_TASK
+/*!
+        \brief sort given range using comparison function
+*/
+template <typename Iter, typename Compare>
+inline void unstable_tasker(Iter begin,
+                            RAJA::detail::IterDiff<Iter> i_begin,
+                            RAJA::detail::IterDiff<Iter> i_end,
+                            RAJA::detail::IterDiff<Iter> iterates_per_task,
+                            Compare comp)
+{
+  using diff_type = RAJA::detail::IterDiff<Iter>;
+  const diff_type n = i_end - i_begin;
+
+  if (n <= iterates_per_task) {
+
+    unstable(::RAJA::loop_exec{}, begin+i_begin, begin+i_end, comp);
+
+  } else {
+
+    const diff_type i_middle = i_begin + n/2;
+
+    {
+#pragma omp task
+      unstable_tasker(begin, i_begin, i_middle, iterates_per_task, comp);
+
+#pragma omp task
+      unstable_tasker(begin, i_middle, i_end, iterates_per_task, comp);
+    }
+
+#pragma omp taskwait
+
+    std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
+  }
+}
+#endif
+
+} // namespace openmp
+
+} // namespace detail
+
 /*!
         \brief sort given range using comparison function
 */
@@ -51,8 +100,24 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
+  using diff_type = RAJA::detail::IterDiff<Iter>;
+  const diff_type n = end - begin;
+  constexpr diff_type min_iterates_per_task = detail::openmp::min_iterates_per_task();
+#ifdef RAJA_ENABLE_OPENMP_TASK
+  if (n <= min_iterates_per_task) {
+    unstable(::RAJA::loop_exec{}, begin, end, comp);
+  } else {
+    const diff_type max_threads = omp_get_max_threads();
+    const diff_type iterates_per_task = std::max(n/(2*max_threads), min_iterates_per_task);
+    const diff_type num_threads = std::min((n+iterates_per_task-1)/iterates_per_task, max_threads);
+#pragma omp parallel num_threads(static_cast<int>(num_threads))
+#pragma omp master
+    {
+      detail::openmp::unstable_tasker(begin, 0, n, iterates_per_task, comp);
+    }
+  }
+#else
   using RAJA::detail::firstIndex;
-  const int n = end - begin;
   const int p0 = std::min(n, omp_get_max_threads());
 #pragma omp parallel num_threads(p0)
   {
@@ -73,6 +138,7 @@ unstable(const ExecPolicy&,
       }
     }
   }
+#endif
 }
 
 /*!
