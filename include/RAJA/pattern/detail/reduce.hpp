@@ -347,6 +347,7 @@ public:
   }
 
   /// \brief reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMinLoc &minloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
@@ -431,6 +432,7 @@ public:
   }
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMaxLoc &maxloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
