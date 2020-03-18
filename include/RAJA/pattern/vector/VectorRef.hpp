@@ -163,7 +163,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(vector_type value)
+      self_type &operator=(vector_type value) const
       {
         store(value);
         return *this;

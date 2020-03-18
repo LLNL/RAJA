@@ -142,10 +142,11 @@ struct LoopData {
             typename... Bodies0>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
       LoopData<SegmentTuple0, ParamTuple0, Bodies0...> &c)
-      : segment_tuple(c.segment_tuple),
+
+      : offset_tuple(c.offset_tuple),
+        segment_tuple(c.segment_tuple),
         param_tuple(c.param_tuple),
         bodies(c.bodies),
-        offset_tuple(c.offset_tuple),
         vector_sizes(c.vector_sizes)
   {
   }
