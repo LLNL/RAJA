@@ -93,7 +93,7 @@ struct AtomicFuncBasicFunctionalTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(AtomicFuncBasicFunctionalTest);
+TYPED_TEST_SUITE_P(AtomicFuncBasicFunctionalTest);
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
