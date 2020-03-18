@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-forall-rangesegment.hpp"
+#include "tests/test-forall-rangesegment.hpp"
 
 // Generate TBB Type List
 #if defined(RAJA_ENABLE_TBB)

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-forall-rangesegment.hpp"
+#include "tests/test-forall-rangesegment.hpp"
 
 // Generate Sequential Type List
 using SequentialTypes = list<RAJA::seq_exec,
