@@ -30,7 +30,7 @@
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  RAJA_ALLOC_NAME: raja_ci_$CI_COMMIT_SHORT_SHA
+  RAJA_ALLOC_NAME: raja_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_BUILDS_DIR}/umpire/${CI_COMMIT_REF_SLUG}_${CI_PIPELINE_ID}
 
 before_script:
@@ -82,7 +82,7 @@ start:
 # allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
-    - lalloc 1 scripts/gitlab/build_and_test.sh
+    - lalloc 1 -W 10 scripts/gitlab/build_and_test.sh
 
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
