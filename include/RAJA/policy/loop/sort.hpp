@@ -51,7 +51,7 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
-  std::sort(begin, end, comp);
+  RAJA::intro_sort(begin, end, comp);
 }
 
 /*!
@@ -64,7 +64,7 @@ stable(const ExecPolicy&,
             Iter end,
             Compare comp)
 {
-  std::stable_sort(begin, end, comp);
+  RAJA::merge_sort(begin, end, comp);
 }
 
 /*!
