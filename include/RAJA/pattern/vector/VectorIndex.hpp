@@ -53,18 +53,18 @@ namespace RAJA
       constexpr
       VectorIndex() : m_index(index_type(0)), m_length(vector_type::s_num_elem) {}
 
-      template<typename T>
+
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit VectorIndex(T value) : m_index(index_type(value)), m_length(vector_type::s_num_elem) {}
+      explicit VectorIndex(index_type value) : m_index(value), m_length(vector_type::s_num_elem) {}
 
 
-      template<typename T>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      VectorIndex(T value, size_t length) : m_index(index_type(value)), m_length(length) {}
+      VectorIndex(index_type value, size_t length) : m_index(value), m_length(length) {}
+
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
