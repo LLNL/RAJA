@@ -509,17 +509,20 @@ namespace RAJA
 
           element_type result = (element_type)m_full_registers[0].max();
           for(camp::idx_t i = 1;i < s_num_full_registers;++ i){
-            result = RAJA::max<double>(result, m_full_registers[i].max());
+            auto new_val = m_full_registers[i].max();
+            result = result > new_val ? result : new_val;
           }
           if(s_num_partial_registers){
-            result = RAJA::max<double>(result, m_partial_register[0].max());
+            auto new_val = m_partial_register[0].max();
+            result = result > new_val ? result : new_val;
           }
           return result;
         }
         else{
           element_type result = (*this)[0];
-          for(camp::idx_t i = 0;i < m_length;++ i){
-            result = RAJA::max(result, (*this)[i]);
+          for(camp::idx_t i = 1;i < m_length;++ i){
+            auto new_val = (*this)[i];
+            result = result > new_val ? result : new_val;
           }
           return result;
         }
@@ -540,17 +543,20 @@ namespace RAJA
 
           element_type result = (element_type)m_full_registers[0].min();
           for(camp::idx_t i = 1;i < s_num_full_registers;++ i){
-            result = RAJA::min<double>(result, m_full_registers[i].min());
+            auto new_val = m_full_registers[i].min();
+            result = result < new_val ? result : new_val;
           }
           if(s_num_partial_registers){
-            result = RAJA::min<double>(result, m_partial_register[0].min());
+            auto new_val = m_partial_register[0].min();
+            result = result < new_val ? result : new_val;
           }
           return result;
         }
         else{
           element_type result = (*this)[0];
-          for(camp::idx_t i = 0;i < m_length;++ i){
-            result = RAJA::min(result, (*this)[i]);
+          for(camp::idx_t i = 1;i < m_length;++ i){
+            auto new_val = (*this)[i];
+            result = result < new_val ? result : new_val;
           }
           return result;
         }
