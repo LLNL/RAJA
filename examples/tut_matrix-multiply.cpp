@@ -472,8 +472,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                 RAJA::statement::Lambda<0>
@@ -575,8 +575,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
             RAJA::statement::For<1, RAJA::hip_thread_y_loop,
               RAJA::statement::For<0, RAJA::hip_thread_x_loop,
                 RAJA::statement::Lambda<0>
@@ -833,8 +833,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9a =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
@@ -884,8 +884,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9b =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
@@ -1016,8 +1016,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9b =
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
             RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0

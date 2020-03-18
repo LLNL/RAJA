@@ -130,7 +130,7 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     hip_block_xyz_direct<BlockDim>,
                     EnclosedStmts...>,
     Types>
@@ -224,7 +224,7 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     hip_block_xyz_loop<BlockDim>,
                     EnclosedStmts...>,
     Types>
@@ -317,7 +317,7 @@ template <typename Data,
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
-                  RAJA::statement::tile_fixed<chunk_size>,
+                  RAJA::tile_fixed<chunk_size>,
                   hip_thread_xyz_direct<ThreadDim>,
                   EnclosedStmts ...>,
   Types>{
@@ -402,7 +402,7 @@ template <typename Data,
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
-                  RAJA::statement::tile_fixed<chunk_size>,
+                  RAJA::tile_fixed<chunk_size>,
                   hip_thread_xyz_loop<ThreadDim, MinThreads>,
                   EnclosedStmts ...>,
   Types>{
