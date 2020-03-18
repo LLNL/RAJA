@@ -248,9 +248,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   //Alias for convenience
-  using RAJA::statement::Segs;
-  using RAJA::statement::Offsets;
-  using RAJA::statement::Params;
+  using RAJA::Segs;
+  using RAJA::Offsets;
+  using RAJA::Params;
 
   // _mattranspose_localarray_raja_lambdaargs_start
   using SEQ_EXEC_POL_II =

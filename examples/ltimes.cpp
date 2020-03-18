@@ -312,7 +312,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          statement::For<1, loop_exec,  // d
            statement::For<2, loop_exec,  // g
              statement::For<3, simd_exec,  // z
-               statement::Lambda<0, statement::Segs<0, 1, 2, 3>>
+               statement::Lambda<0, Segs<0, 1, 2, 3>>
              >
            >
          >
@@ -394,9 +394,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             // Load L(m,d) for m,d tile into shmem
             statement::For<0, loop_exec,  // m
               statement::For<1, loop_exec,  // d
-                statement::Lambda<0, statement::Segs<0, 1>,
-                                     statement::Params<0>,
-                                     statement::Offsets<0, 1>>
+                statement::Lambda<0, Segs<0, 1>,
+                                     Params<0>,
+                                     Offsets<0, 1>>
               >
             >,
 
@@ -408,9 +408,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                   // Load psi into shmem
                   statement::For<1, loop_exec,  // d
                     statement::For<3, loop_exec,  // z
-                      statement::Lambda<1, statement::Segs<1, 2, 3>,
-                                           statement::Params<1>,
-                                           statement::Offsets<1, 2, 3>>
+                      statement::Lambda<1, Segs<1, 2, 3>,
+                                           Params<1>,
+                                           Offsets<1, 2, 3>>
                     >
                   >,
 
@@ -419,24 +419,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                     // Load phi into shmem
                     statement::For<3, loop_exec,  // z
-                      statement::Lambda<2, statement::Segs<0, 2, 3>,
-                                           statement::Params<2>,
-                                           statement::Offsets<0, 2, 3>>
+                      statement::Lambda<2, Segs<0, 2, 3>,
+                                           Params<2>,
+                                           Offsets<0, 2, 3>>
                     >,
 
                     // Compute phi in shmem
                     statement::For<1, loop_exec,  // d
                       statement::For<3, loop_exec,  // z
-                        statement::Lambda<3, statement::Params<0, 1, 2>,
-                                             statement::Offsets<0, 1, 2, 3>>
+                        statement::Lambda<3, Params<0, 1, 2>,
+                                             Offsets<0, 1, 2, 3>>
                       >
                     >,
 
                     // Store phi
                     statement:: For<3, loop_exec,  // z
-                      statement::Lambda<4, statement::Segs<0, 2, 3>,
-                                           statement::Params<2>,
-                                           statement::Offsets<0, 2, 3>>
+                      statement::Lambda<4, Segs<0, 2, 3>,
+                                           Params<2>,
+                                           Offsets<0, 2, 3>>
                     >
                   >  // m
 
@@ -807,9 +807,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define our execution policy
   //
 
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
-  using RAJA::statement::Offsets;
+  using RAJA::Segs;
+  using RAJA::Params;
+  using RAJA::Offsets;
 
   using EXECPOL =
     RAJA::KernelPolicy<
@@ -1145,9 +1145,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   using RAJA::statement::Param;
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
-  using RAJA::statement::Offsets;
+  using RAJA::Segs;
+  using RAJA::Params;
+  using RAJA::Offsets;
 
   using EXECPOL =
     RAJA::KernelPolicy<

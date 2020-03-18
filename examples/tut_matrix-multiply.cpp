@@ -634,11 +634,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::loop_exec,
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,  // dot = 0.0
+          RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
           RAJA::statement::For<2, RAJA::loop_exec,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
-          RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C(row, col) = dot
+          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
         >
       >
     >;
@@ -683,8 +683,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_args_seq_start
   // Alias for convenience
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
+  using RAJA::Segs;
+  using RAJA::Params;
 
   using EXEC_POL6b =
     RAJA::KernelPolicy<
@@ -738,11 +738,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
-        RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,  // dot = 0.0
+        RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
         RAJA::statement::For<2, RAJA::loop_exec,
           RAJA::statement::Lambda<1> // inner loop: dot += ...
         >,
-        RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C(row, col) = dot
+        RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
       >
     >;
   // _matmult_3lambdakernel_ompcollapse_end
@@ -787,11 +787,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-            RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
+            RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
                 RAJA::statement::Lambda<1> // dot += ...
             >,
-            RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C = ...
+            RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
           >
         >
       >
@@ -837,11 +837,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-                RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
+                RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
                 RAJA::statement::For<2, RAJA::seq_exec,
                     RAJA::statement::Lambda<1> // dot += ...
                 >,
-                RAJA::statement::Lambda<2, RAJA::statement::Segs<0, 1>, RAJA::statement::Params<0>>   // set C = ...
+                RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
               >
             >
           >
@@ -967,13 +967,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-            RAJA::statement::Lambda<0, RAJA::statement::Params<0>>,   // dot = 0.0
+            RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
                 RAJA::statement::Lambda<1> // dot += ...
             >,
             RAJA::statement::Lambda<2, 
-              RAJA::statement::Segs<0,1>, 
-              RAJA::statement::Params<0>>   // set C = ...
+              RAJA::Segs<0,1>,
+              RAJA::Params<0>>   // set C = ...
           >
         >
       >

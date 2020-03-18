@@ -904,11 +904,11 @@ struct Policy_MatMultiply_cpu {
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
     using ThreadPriv = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
 
-    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
-    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::statement::Segs<0, 1>, RAJA::statement::Offsets<0, 1>, RAJA::statement::Params<0>>;
-    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::statement::Segs<1, 2>, RAJA::statement::Offsets<1, 2>, RAJA::statement::Params<1>>;
-    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::statement::Offsets<0, 1, 2>, RAJA::statement::Params<0, 1, 2>>;
-    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::statement::Segs<0, 2>, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
+    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
+    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
+    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
+    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
 
     // Segments:
     // 0: N
