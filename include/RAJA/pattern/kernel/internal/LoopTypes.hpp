@@ -86,7 +86,7 @@ using setSegmentType =
 
 template<typename Types, camp::idx_t Segment, typename Data>
 using setSegmentTypeFromData =
-    setSegmentType<Types, Segment, camp::at_v<typename camp::decay<Data>::index_tuple_t::TList, Segment>>;
+    setSegmentType<Types, Segment, camp::at_v<typename camp::decay<Data>::index_types_t, Segment>>;
 
 
 }  // end namespace internal

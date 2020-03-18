@@ -90,8 +90,8 @@ using value_type_list_from_segments =
 
 
 template <typename Segments>
-using index_tuple_from_segments =
-    typename camp::apply_l<camp::lambda<camp::tuple>,
+using index_types_from_segments =
+    typename camp::apply_l<camp::lambda<camp::list>,
                            value_type_list_from_segments<Segments>>::type;
 
 
@@ -104,22 +104,30 @@ struct LoopData {
 
   using Self = LoopData<SegmentTuple, ParamTuple, Bodies...>;
 
+  // Offset tuple holds offset from begin() for each of the segments
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
+  offset_tuple_t offset_tuple;
 
-  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
+  // Used by LoopTypes and various execution policies to determine the
+  // index value type of each segment
+//  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
+  using index_types_t = index_types_from_segments<typename SegmentTuple::TList>;
 
-
+  // Tuple of segments that can be iterated over
   using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
+  // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
+  // Lambdas that were passed into the kernel
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
-  offset_tuple_t offset_tuple;
 
+  // Vector sizes of each segment.  This is only used by the vector_exec
+  // policies
   using vector_sizes_t = tuple_of_n<int, camp::tuple_size<SegmentTuple>::value>;
   vector_sizes_t vector_sizes;
 

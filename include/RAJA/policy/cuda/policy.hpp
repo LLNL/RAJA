@@ -133,10 +133,12 @@ struct cuda_warp_loop{};
 // will generate a VectorIndex argument, and each lane within a vector will
 // get the same starting index (instead of cuda_warp_loop where each lane gets
 // subsequent indices)
+template<typename VectorType>
 struct cuda_warp_vector_direct{};
 
 // This is the same as cuda_warp_vector_direct, but with the looping construct
 // around it.
+template<typename VectorType>
 struct cuda_warp_vector_loop{};
 
 
