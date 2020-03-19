@@ -49,23 +49,32 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
                                        test_array);
 }
 
+template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
+  typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
+void runNegativeTests()
+{
+}
+
+template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
+  typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
+void runNegativeTests()
+{
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
+}
+
 
 TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
 {
-  using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
+  using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
+  using WORKING_RES = typename at<TypeParam, num<1>>::type;
+  using EXEC_POLICY = typename at<TypeParam, num<2>>::type;
 
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(0, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(1, 255);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
+  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
 
-  if (std::is_signed<INDEX_TYPE>::value) {
-#if !defined(__CUDA_ARCH__) && !defined(RAJA_ENABLE_TBB)
-    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5, 0);
-    ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(-5, 5);
-#endif
-  }
+  runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
