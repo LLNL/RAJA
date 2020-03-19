@@ -45,10 +45,11 @@ template <typename Container>
 using ContainerVal =
     camp::decay<decltype(*camp::val<camp::iterator_from<Container>>())>;
 
+template <typename diff_type>
 RAJA_INLINE
-int firstIndex(int n, int p, int pid)
+diff_type firstIndex(diff_type n, diff_type num_threads, diff_type thread_id)
 {
-  return (static_cast<size_t>(n) * pid) / p;
+  return (static_cast<size_t>(n) * thread_id) / num_threads;
 }
 
 }  // end namespace detail
