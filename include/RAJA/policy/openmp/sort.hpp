@@ -67,7 +67,7 @@ inline void sort_task(Sorter sorter,
 
   if (n <= iterates_per_task) {
 
-    sorter(::RAJA::loop_exec{}, begin+i_begin, begin+i_end, comp);
+    sorter(begin+i_begin, begin+i_end, comp);
 
   } else {
 
@@ -109,7 +109,7 @@ inline void sort_parallel_region(Sorter sorter,
     const diff_type i_end = firstIndex(n, num_threads, thread_id + 1);
 
     // this thread sorts range [i_begin, i_end)
-    sorter(::RAJA::loop_exec{}, begin + i_begin, begin + i_end, comp);
+    sorter(begin + i_begin, begin + i_end, comp);
   }
 
   // hierarchically merge ranges
@@ -151,7 +151,7 @@ void sort(Sorter sorter,
 
   if (n <= min_iterates_per_task) {
 
-    sorter(::RAJA::loop_exec{}, begin, end, comp);
+    sorter(begin, end, comp);
 
   } else {
 
@@ -196,7 +196,7 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
-  detail::openmp::sort(UnstableSorter{}, begin, end, comp);
+  detail::openmp::sort(detail::UnstableSorter{}, begin, end, comp);
 }
 
 /*!
@@ -209,7 +209,7 @@ stable(const ExecPolicy&,
             Iter end,
             Compare comp)
 {
-  detail::openmp::sort(StableSorter{}, begin, end, comp);
+  detail::openmp::sort(detail::StableSorter{}, begin, end, comp);
 }
 
 /*!

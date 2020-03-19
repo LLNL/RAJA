@@ -41,6 +41,39 @@ namespace impl
 namespace sort
 {
 
+namespace detail
+{
+
+/*!
+    \brief Functional that performs an unstable sort with the
+           given arguments, uses RAJA::intro_sort
+*/
+struct UnstableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
+  {
+    RAJA::intro_sort(std::forward<Args>(args)...);
+  }
+};
+
+/*!
+    \brief Functional that performs a stable sort with the
+           given arguments, calls RAJA::merge_sort
+*/
+struct StableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
+  {
+    RAJA::merge_sort(std::forward<Args>(args)...);
+  }
+};
+
+} // namespace detail
+
 /*!
         \brief sort given range using comparison function
 */
@@ -51,7 +84,7 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
-  RAJA::intro_sort(begin, end, comp);
+  detail::UnstableSorter{}(begin, end, comp);
 }
 
 /*!
@@ -64,7 +97,7 @@ stable(const ExecPolicy&,
             Iter end,
             Compare comp)
 {
-  RAJA::merge_sort(begin, end, comp);
+  detail::StableSorter{}(begin, end, comp);
 }
 
 /*!
@@ -80,8 +113,8 @@ unstable_pairs(const ExecPolicy&,
 {
   auto begin = RAJA::zip(keys_begin, vals_begin);
   auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-  using zip_ref = detail::IterRef<camp::decay<decltype(begin)>>;
-  RAJA::intro_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::UnstableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 /*!
@@ -97,38 +130,9 @@ stable_pairs(const ExecPolicy&,
 {
   auto begin = RAJA::zip(keys_begin, vals_begin);
   auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
-  using zip_ref = detail::IterRef<camp::decay<decltype(begin)>>;
-  RAJA::merge_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::StableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 }
-
-
-/*!
-    \brief Functional that calls RAJA::impl::sort::unstable with the
-           given arguments
-*/
-struct UnstableSorter
-{
-  template < typename... Args >
-  RAJA_INLINE
-  void operator()(Args&&... args)
-  {
-    RAJA::impl::sort::unstable(std::forward<Args>(args)...);
-  }
-};
-
-/*!
-    \brief Functional that calls RAJA::impl::sort::stable with the
-           given arguments
-*/
-struct StableSorter
-{
-  template < typename... Args >
-  RAJA_INLINE
-  void operator()(Args&&... args)
-  {
-    RAJA::impl::sort::stable(std::forward<Args>(args)...);
-  }
-};
 
 }  // namespace sort
 

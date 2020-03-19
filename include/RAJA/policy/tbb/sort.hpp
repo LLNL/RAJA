@@ -76,7 +76,7 @@ struct TbbSortTask : tbb::task
     if (len <= cutoff) {
 
       // leaves sort their range
-      sorter(::RAJA::loop_exec{}, begin, end, comp);
+      sorter(begin, end, comp);
 
     } else {
 
@@ -111,19 +111,18 @@ void tbb_sort(Sorter sorter,
               Compare comp)
 {
   using diff_type = RAJA::detail::IterDiff<Iter>;
-  using Sorter = StableSorter;
   using SortTask = TbbSortTask<Sorter, Iter, Compare>;
 
   diff_type n = end - begin;
 
   if (n <= SortTask::cutoff) {
 
-    sorter(::RAJA::loop_exec{}, begin, end, comp);
+    sorter(begin, end, comp);
 
   } else {
 
     SortTask& sort_task =
-        *new(tbb::task::allocate_root()) SortTask(Sorter{}, begin, end, comp);
+        *new(tbb::task::allocate_root()) SortTask(sorter, begin, end, comp);
     tbb::task::spawn_root_and_wait(sort_task);
 
   }
@@ -154,7 +153,7 @@ stable(const ExecPolicy&,
        Iter end,
        Compare comp)
 {
-  detail::tbb_sort(StableSorter{}, begin, end, comp);
+  detail::tbb_sort(detail::StableSorter{}, begin, end, comp);
 }
 
 /*!
