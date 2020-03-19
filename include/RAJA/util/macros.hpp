@@ -129,7 +129,7 @@ inline int RAJA_ABORT_OR_THROW(const char *str)
   char *value;
   size_t len;
   bool no_except false;
-  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && buf != nullptr){
+  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
     no_except = true;
     free(value);
   }
