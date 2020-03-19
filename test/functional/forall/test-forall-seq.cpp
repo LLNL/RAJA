@@ -6,6 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "tests/test-forall-rangesegment.hpp"
+#include "tests/test-forall-listsegment.hpp"
 
 // Generate Sequential Type List
 using SequentialTypes = list<RAJA::seq_exec,
