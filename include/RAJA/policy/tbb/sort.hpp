@@ -44,59 +44,92 @@ namespace sort
 namespace detail
 {
 
-  template < typename Sorter, typename Iter, typename Compare >
-  struct TbbSortTask : tbb::task
+/*!
+        \brief sort given range using sorter and comparison function
+               by spawning tasks
+*/
+template < typename Sorter, typename Iter, typename Compare >
+struct TbbSortTask : tbb::task
+{
+  using diff_type =
+      camp::decay<decltype(camp::val<Iter>() - camp::val<Iter>())>;
+
+  // TODO: make this less arbitrary
+  static const diff_type cutoff = 256;
+
+  Sorter sorter;
+  const Iter begin;
+  const Iter end;
+  Compare comp;
+
+  TbbSortTask(Sorter sorter_, Iter begin_, Iter end_, Compare comp_)
+    : sorter(sorter_)
+    , begin(begin_)
+    , end(end_)
+    , comp(comp_)
+  { }
+
+  tbb::task* execute()
   {
-    using difference_type =
-        camp::decay<decltype(camp::val<Iter>() - camp::val<Iter>())>;
+    diff_type len = end - begin;
 
-    // TODO: make this less arbitrary
-    static const difference_type cutoff = 256;
+    if (len <= cutoff) {
 
-    Sorter sorter;
-    const Iter begin;
-    const Iter end;
-    Compare comp;
+      // leaves sort their range
+      sorter(::RAJA::loop_exec{}, begin, end, comp);
 
-    TbbSortTask(Sorter sorter_, Iter begin_, Iter end_, Compare comp_)
-      : sorter(sorter_)
-      , begin(begin_)
-      , end(end_)
-      , comp(comp_)
-    { }
+    } else {
 
-    tbb::task* execute()
-    {
-      difference_type len = end - begin;
+      Iter middle = begin + (len/2);
 
-      if (len <= cutoff) {
+      // branching nodes break the sorting up recursively
+      TbbSortTask& sort_tank_front =
+          *new( allocate_child() ) TbbSortTask(sorter, begin, middle, comp);
+      TbbSortTask& sort_tank_back =
+          *new( allocate_child() ) TbbSortTask(sorter, middle, end, comp);
 
-        // leaves sort their range
-        sorter(::RAJA::loop_exec{}, begin, end, comp);
+      set_ref_count(3);
+      spawn(sort_tank_back);
+      spawn_and_wait_for_all(sort_tank_front);
 
-      } else {
-
-        Iter middle = begin + (len/2);
-
-        // branching nodes break the sorting up recursively
-        TbbSortTask& sort_tank_front =
-            *new( allocate_child() ) TbbSortTask(sorter, begin, middle, comp);
-        TbbSortTask& sort_tank_back =
-            *new( allocate_child() ) TbbSortTask(sorter, middle, end, comp);
-
-        set_ref_count(3);
-        spawn(sort_tank_back);
-        spawn_and_wait_for_all(sort_tank_front);
-
-        // and merge the results
-        std::inplace_merge(begin, middle, end, comp);
-      }
-
-      return nullptr;
+      // and merge the results
+      std::inplace_merge(begin, middle, end, comp);
     }
-  };
 
+    return nullptr;
+  }
+};
+
+/*!
+        \brief sort given range using sorter and comparison function
+*/
+template <typename Sorter, typename Iter, typename Compare>
+inline
+void tbb_sort(Sorter sorter,
+              Iter begin,
+              Iter end,
+              Compare comp)
+{
+  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using Sorter = StableSorter;
+  using SortTask = TbbSortTask<Sorter, Iter, Compare>;
+
+  diff_type n = end - begin;
+
+  if (n <= SortTask::cutoff) {
+
+    sorter(::RAJA::loop_exec{}, begin, end, comp);
+
+  } else {
+
+    SortTask& sort_task =
+        *new(tbb::task::allocate_root()) SortTask(Sorter{}, begin, end, comp);
+    tbb::task::spawn_root_and_wait(sort_task);
+
+  }
 }
+
+} // namespace detail
 
 /*!
         \brief sort given range using comparison function
@@ -121,11 +154,7 @@ stable(const ExecPolicy&,
        Iter end,
        Compare comp)
 {
-  using Sorter = StableSorter;
-  using SortTask = detail::TbbSortTask<Sorter, Iter, Compare>;
-  SortTask& sort_task =
-      *new(tbb::task::allocate_root()) SortTask(Sorter{}, begin, end, comp);
-  tbb::task::spawn_root_and_wait(sort_task);
+  detail::tbb_sort(StableSorter{}, begin, end, comp);
 }
 
 /*!
