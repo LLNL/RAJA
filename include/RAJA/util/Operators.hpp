@@ -206,10 +206,18 @@ struct larger_of {
 
 }  // namespace types
 
-namespace detail
-{
+
+
+template <typename T, typename Enable = void>
+struct limits;
+
+
+// limits for signed integer types
 template <typename T>
-struct signed_limits {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  !std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
     return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
@@ -220,8 +228,12 @@ struct signed_limits {
   }
 };
 
+// limits for unsigned integer types
 template <typename T>
-struct unsigned_limits {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
     return static_cast<T>(0);
@@ -232,12 +244,9 @@ struct unsigned_limits {
   }
 };
 
-template <typename T>
-struct floating_point_limits {
-};
 
 template <>
-struct floating_point_limits<float> {
+struct limits<float> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min()
   {
     return -FLT_MAX;
@@ -249,7 +258,7 @@ struct floating_point_limits<float> {
 };
 
 template <>
-struct floating_point_limits<double> {
+struct limits<double> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr double min()
   {
     return -DBL_MAX;
@@ -261,7 +270,7 @@ struct floating_point_limits<double> {
 };
 
 template <>
-struct floating_point_limits<long double> {
+struct limits<long double> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr long double min()
   {
     return -LDBL_MAX;
@@ -271,16 +280,7 @@ struct floating_point_limits<long double> {
     return LDBL_MAX;
   }
 };
-}  // end namespace detail
 
-template <typename T>
-struct limits : public std::conditional<
-                    std::is_integral<T>::value,
-                    typename std::conditional<std::is_unsigned<T>::value,
-                                              detail::unsigned_limits<T>,
-                                              detail::signed_limits<T>>::type,
-                    detail::floating_point_limits<T>>::type {
-};
 
 #if defined(RAJA_CHECK_LIMITS)
 template <typename T>
