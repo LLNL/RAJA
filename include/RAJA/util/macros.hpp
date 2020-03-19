@@ -143,7 +143,6 @@ inline int RAJA_ABORT_OR_THROW(const char *str)
   } else {
     throw std::runtime_error(str);
   }
-  return 0;
 }
 
 //! Macros for marking deprecated features in RAJA
