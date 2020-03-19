@@ -252,7 +252,13 @@ struct limits<T,
   }
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
     return static_cast<T>(0xFFFFFFFFFFFFFFFF);
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
 };
 
@@ -294,7 +300,7 @@ struct limits<long double> {
 };
 
 
-#if 1 //defined(RAJA_CHECK_LIMITS)
+#if defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {
