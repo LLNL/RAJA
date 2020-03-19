@@ -49,24 +49,6 @@ namespace openmp
 // this number is arbitrary
 constexpr int get_min_iterates_per_task() { return 128; }
 
-struct UnstableSorter
-{
-  template < typename... Args >
-  void operator()(Args&&... args)
-  {
-    RAJA::impl::sort::unstable(std::forward<Args>(args)...);
-  }
-};
-
-struct StableSorter
-{
-  template < typename... Args >
-  void operator()(Args&&... args)
-  {
-    RAJA::impl::sort::stable(std::forward<Args>(args)...);
-  }
-};
-
 #ifdef RAJA_ENABLE_OPENMP_TASK
 /*!
         \brief sort given range using sorter and comparison function
@@ -214,7 +196,7 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
-  detail::openmp::sort(detail::openmp::UnstableSorter{}, begin, end, comp);
+  detail::openmp::sort(UnstableSorter{}, begin, end, comp);
 }
 
 /*!
@@ -227,7 +209,7 @@ stable(const ExecPolicy&,
             Iter end,
             Compare comp)
 {
-  detail::openmp::sort(detail::openmp::StableSorter{}, begin, end, comp);
+  detail::openmp::sort(StableSorter{}, begin, end, comp);
 }
 
 /*!

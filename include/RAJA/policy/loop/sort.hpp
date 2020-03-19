@@ -101,6 +101,35 @@ stable_pairs(const ExecPolicy&,
   RAJA::merge_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
+
+/*!
+    \brief Functional that calls RAJA::impl::sort::unstable with the
+           given arguments
+*/
+struct UnstableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args)
+  {
+    RAJA::impl::sort::unstable(std::forward<Args>(args)...);
+  }
+};
+
+/*!
+    \brief Functional that calls RAJA::impl::sort::stable with the
+           given arguments
+*/
+struct StableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args)
+  {
+    RAJA::impl::sort::stable(std::forward<Args>(args)...);
+  }
+};
+
 }  // namespace sort
 
 }  // namespace impl
