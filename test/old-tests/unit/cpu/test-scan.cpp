@@ -62,7 +62,7 @@ struct Scan : public ::testing::Test {
   static void SetUpTestCase()
   {
     data = new data_type[N];
-    std::iota(data, data + N, 1);
+    std::iota(data, data + N, data_type(1));
   }
 
   static void TearDownTestCase() { delete[] data; }

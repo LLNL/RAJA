@@ -49,10 +49,19 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
 
   if(std::is_signed<TypeParam>::value){
 #if !defined(__CUDA_ARCH__)
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
     RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
     RAJA::TypedRangeSegment<TypeParam> r3(-13, -1);
     ASSERT_EQ(17, r1.size());
     ASSERT_EQ(12, r3.size());
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
+
 #endif
 
 #if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
@@ -91,10 +100,19 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   ASSERT_EQ(100, r1.size());
 
 #if !defined(__CUDA_ARCH__)
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
     ASSERT_EQ(-2, *r3.begin());
   }
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
+
 #endif
 }
 

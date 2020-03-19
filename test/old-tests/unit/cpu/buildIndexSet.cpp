@@ -56,7 +56,7 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
   const int seg_chunk_size = 5;
   UnitIndexSet iset_master;
 
-  for (int i = 0; i < seg_chunk_size; ++i) {
+  for (int ci = 0; ci < seg_chunk_size; ++ci) {
     Index_type rbeg;
     Index_type rend;
     Index_type lseg_len = lindices.size();
@@ -130,9 +130,9 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case AddSegmentsNoCopy: {
-      UnitIndexSet& iset_master = hindex[0];
+      UnitIndexSet& iset_master0 = hindex[0];
       for (size_t i = 0; i < iset_master.getNumSegments(); ++i) {
-        iset_master.segment_push_into(i,
+        iset_master0.segment_push_into(i,
                                       hindex[build_method],
                                       PUSH_BACK,
                                       PUSH_NOCOPY);
@@ -142,9 +142,9 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case AddSegmentsNoCopyReverse: {
-      UnitIndexSet& iset_master = hindex[0];
-      for (int i = iset_master.getNumSegments() - 1; i >= 0; --i) {
-        iset_master.segment_push_into(i,
+      UnitIndexSet& iset_master0 = hindex[0];
+      for (int i = iset_master0.getNumSegments() - 1; i >= 0; --i) {
+        iset_master0.segment_push_into(i,
                                       hindex[build_method],
                                       PUSH_FRONT,
                                       PUSH_NOCOPY);
@@ -154,9 +154,9 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case MakeSliceRange: {
-      UnitIndexSet& iset_master = hindex[0];
-      size_t num_segs = iset_master.getNumSegments();
-      UnitIndexSet iset_slice = iset_master.createSlice(0, num_segs);
+      UnitIndexSet& iset_master0 = hindex[0];
+      size_t num_segs = iset_master0.getNumSegments();
+      UnitIndexSet iset_slice = iset_master0.createSlice(0, num_segs);
 
       for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
         iset_slice.segment_push_into(i,
@@ -169,15 +169,15 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case MakeSliceArray: {
-      UnitIndexSet& iset_master = hindex[0];
-      size_t num_segs = iset_master.getNumSegments();
+      UnitIndexSet& iset_master0 = hindex[0];
+      size_t num_segs = iset_master0.getNumSegments();
       int* segIds = new int[num_segs];
 
       for (size_t i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
-      UnitIndexSet iset_slice = iset_master.createSlice(segIds, num_segs);
+      UnitIndexSet iset_slice = iset_master0.createSlice(segIds, num_segs);
 
       for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
         iset_slice.segment_push_into(i,
@@ -193,14 +193,14 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
 
 #if defined(RAJA_USE_STL)
     case MakeSliceVector: {
-      UnitIndexSet& iset_master = hindex[0];
-      size_t num_segs = iset_master.getNumSegments();
+      UnitIndexSet& iset_master0 = hindex[0];
+      size_t num_segs = iset_master0.getNumSegments();
       std::vector<int> segIds(num_segs);
       for (int i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
-      UnitIndexSet iset_slice = iset_master.createSlice(segIds);
+      UnitIndexSet iset_slice = iset_master0.createSlice(segIds);
 
       for (size_t i = 0; i < iset_slice.getNumSegments(); ++i) {
         iset_slice.segment_push_into(i,

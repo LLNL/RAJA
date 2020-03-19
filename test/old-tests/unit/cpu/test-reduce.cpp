@@ -282,8 +282,8 @@ TYPED_TEST(IndexSetReduce, ReduceSumTest)
       tsum1 += 1.0;
     });
 
-    ASSERT_FLOAT_EQ(Real_type(tsum0), Real_type(k * ref_sum));
-    ASSERT_FLOAT_EQ(tsum1.get(), Real_type(k * this->iset.getLength() + 5.0));
+    ASSERT_FLOAT_EQ(double(tsum0), double(k * ref_sum));
+    ASSERT_FLOAT_EQ(double(tsum1.get()), double(k * this->iset.getLength() + 5.0));
   }
 }
 

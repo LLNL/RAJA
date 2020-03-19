@@ -52,7 +52,6 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   const int DIM = 2;
   const int N_rows = 144;
   const int N_cols = 255;
-  const int TILE_DIM = 16;
 
 
   double *A, *At, *B, *Bt;
@@ -109,8 +108,8 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   //Check result
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
-      ASSERT_FLOAT_EQ(Atview(col,row), col);
-      ASSERT_FLOAT_EQ(Btview(col,row), col);
+      ASSERT_FLOAT_EQ(Atview(col,row), (double)col);
+      ASSERT_FLOAT_EQ(Btview(col,row), (double)col);
     }
   }
 
@@ -148,7 +147,6 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   const int DIM = 2;
   const int N_rows = 144;
   const int N_cols = 255;
-  const int TILE_DIM = 16;
 
 
   double *A  = new double[N_rows * N_cols];
@@ -544,7 +542,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
 
   for(int r=0; r<N; ++r){
     for(int c=0; c<P; ++c){
-      int dot = 0.0;
+      double dot = 0.0;
       for(int k=0; k<M; ++k){
         dot += Aview(r,k)*Bview(k,c);
       }
@@ -1169,7 +1167,7 @@ GPU_TYPED_TEST_P(MatMult3, Basic)
   //Check result
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      ASSERT_FLOAT_EQ(Cview(row,col),(row*col*N));
+      ASSERT_FLOAT_EQ(Cview(row,col),(double)(row*col*N));
     }
   }
 

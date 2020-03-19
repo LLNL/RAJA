@@ -111,7 +111,7 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   //Check result
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
-      ASSERT_FLOAT_EQ(B[col + row*N_cols], A[col + row*N_cols]);
+      ASSERT_FLOAT_EQ((double)B[col + row*N_cols], (double)A[col + row*N_cols]);
     }
   }
 
@@ -244,7 +244,6 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   const int DIM = 2;
   const int N_rows = 144;
   const int N_cols = 255;
-  const int TILE_DIM = 16;
 
   const int inner_Dim0 = TILE_DIM;
   const int inner_Dim1 = TILE_DIM;
@@ -317,8 +316,8 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   //Check result
   for (int row = 0; row < N_rows; ++row) {
     for (int col = 0; col < N_cols; ++col) {
-      ASSERT_FLOAT_EQ(Atview(col,row), col);
-      ASSERT_FLOAT_EQ(Btview(col,row), col);
+      ASSERT_FLOAT_EQ((double)Atview(col,row), (double)col);
+      ASSERT_FLOAT_EQ((double)Btview(col,row), (double)col);
     }
   }
 
@@ -357,7 +356,6 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   const int DIM = 2;
   const int N_rows = 144;
   const int N_cols = 255;
-  const int TILE_DIM = 16;
 
   const int inner_Dim0 = TILE_DIM;
   const int inner_Dim1 = TILE_DIM;
@@ -860,7 +858,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
   RAJA::View<double, RAJA::Layout<2>> Cresult(C, N, P);
   for (size_t row = 0; row < N; ++row) {
     for (size_t col = 0; col < P; ++col) {
-      ASSERT_FLOAT_EQ(Cresult(row,col), C_solView(row,col));
+      ASSERT_FLOAT_EQ((double)Cresult(row,col), (double)C_solView(row,col));
     }
   }
 

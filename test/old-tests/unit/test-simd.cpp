@@ -41,7 +41,7 @@ TEST(SIMD, Align)
                                 [=](int i) { y[i] += x[i] * c; });
 
   for (int i = 0; i < N; ++i) {
-    ASSERT_FLOAT_EQ(y[i], 1.0);
+    ASSERT_FLOAT_EQ((double)y[i], (double)1.0);
   }
 
   RAJA::free_aligned(a);
@@ -80,7 +80,7 @@ TEST(SIMD, OMPAndSimd)
                     });
 
   for (int i = 0; i < N * M; ++i) {
-    ASSERT_FLOAT_EQ(c[i], 2.0);
+    ASSERT_FLOAT_EQ((double)c[i], (double)2.0);
   }
 
   RAJA::free_aligned(a);
@@ -135,8 +135,8 @@ TEST(SIMD, OMPAndSimd_MultiLambda)
                     });
 
   for (int i = 0; i < N * M; ++i) {
-    ASSERT_FLOAT_EQ(c[i], 2.0);
-    ASSERT_FLOAT_EQ(c2[i], 2.0);
+    ASSERT_FLOAT_EQ((double)c[i], (double)2.0);
+    ASSERT_FLOAT_EQ((double)c2[i], (double)2.0);
   }
 
   RAJA::free_aligned(a);
