@@ -220,15 +220,27 @@ struct limits<T,
 {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
-    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
+    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu) );
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
     return static_cast<T>(~(1llu << ((8llu * sizeof(T)) - 1llu)));
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
 };
 
-// limits for unsigned integer types
+// limits for signed integer types
 template <typename T>
 struct limits<T,
   typename std::enable_if<std::is_integral<T>::value &&
@@ -282,7 +294,7 @@ struct limits<long double> {
 };
 
 
-#if defined(RAJA_CHECK_LIMITS)
+#if 1 //defined(RAJA_CHECK_LIMITS)
 template <typename T>
 constexpr bool check()
 {
