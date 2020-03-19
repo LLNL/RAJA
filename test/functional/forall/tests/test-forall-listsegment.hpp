@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_RANGESEGMENT_HPP__
-#define __TEST_FORALL_RANGESEGMENT_HPP__
+#ifndef __TEST_FORALL_LISTSEGMENT_HPP__
+#define __TEST_FORALL_LISTSEGMENT_HPP__
 
 #include "test-forall.hpp"
 #include <numeric>
@@ -15,7 +15,7 @@ using namespace camp::resources;
 using namespace camp;
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
+void ForallListSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
@@ -51,30 +51,30 @@ void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
-void runNegativeTests()
+void runNegativeListSegmentTests()
 {
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
-void runNegativeTests()
+void runNegativeListSegmentTests()
 {
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
 }
 
 
-TYPED_TEST_P(ForallFunctionalSegmentTest, RangeSegmentForall)
+TYPED_TEST_P(ForallFunctionalSegmentTest, ListSegmentForall)
 {
   using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
   using WORKING_RES = typename at<TypeParam, num<1>>::type;
   using EXEC_POLICY = typename at<TypeParam, num<2>>::type;
 
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
 
-  runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
+  runNegativeListSegmentTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_RANGESEGMENT_HPP__
+#endif  // __TEST_FORALL_LISTSEGMENT_HPP__

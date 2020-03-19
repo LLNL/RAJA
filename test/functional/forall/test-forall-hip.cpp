@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-rangesegment.hpp"
+#include "tests/test-forall.hpp"
 
 // Generate Hip Type List
 #if defined(RAJA_ENABLE_HIP)
@@ -16,6 +16,6 @@ using HipForallTypes =
     Test<cartesian_product<IdxTypes, ListHip, HipTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
-                               ForallFunctionalTest,
+                               ForallFunctionalSegmentTest,
                                HipForallTypes);
 #endif

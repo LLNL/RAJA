@@ -9,74 +9,28 @@
 #define __TEST_FORALL_HPP__
 
 #include "RAJA/RAJA.hpp"
-#include "camp/resource.hpp"
-#include "gtest/gtest.h"
 
-using namespace camp::resources;
-using namespace camp;
+#include "test-forall-utils.hpp"
 
-
-// Unroll types for gtest testing::Types
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
-
-
-// Forall Functional Test Class
+TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest);
 template <typename T>
-class ForallFunctionalTest : public ::testing::Test
+class ForallFunctionalSegmentTest : public ::testing::Test
 {
 };
+#include "test-forall-rangesegment.hpp"
+#include "test-forall-listsegment.hpp"
+REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest,
+                            RangeSegmentForall,
+                            ListSegmentForall);
 
 
-// Define Index Types
-using IdxTypes = list<RAJA::Index_type,
-                      short,
-                      unsigned short,
-                      int,
-                      unsigned int,
-                      long,
-                      unsigned long,
-                      long int,
-                      unsigned long int,
-                      long long,
-                      unsigned long long>;
-
-using ListHost = list<camp::resources::Host>;
-
-template<typename T>
-void allocateForallTestData(T N,
-                            Resource& work_res,
-                            T** work_array,
-                            T** check_array,
-                            T** test_array)
+TYPED_TEST_SUITE_P(ForallFunctionalReductionTest);
+template <typename T>
+class ForallFunctionalReductionTest : public ::testing::Test
 {
-  Resource host_res{Host()};
-
-  *work_array = work_res.allocate<T>(N);
-
-  *check_array = host_res.allocate<T>(N);
-  *test_array = host_res.allocate<T>(N);
-}
-
-template<typename T>
-void deallocateForallTestData(Resource& work_res,
-                              T* work_array,
-                              T* check_array,
-                              T* test_array)
-{
-  Resource host_res{Host()};
-
-  work_res.deallocate(work_array);
-
-  host_res.deallocate(check_array);
-  host_res.deallocate(test_array);
-}
-
-TYPED_TEST_SUITE_P(ForallFunctionalTest);
+};
+#include "test-forall-reduction.hpp"
+REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalReductionTest,
+                            ReductionForall);
 
 #endif  // __TEST_FORALL_HPP__

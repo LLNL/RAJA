@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-rangesegment.hpp"
+#include "tests/test-forall.hpp"
 
 // Generate TBB Type List
 #if defined(RAJA_ENABLE_TBB)
@@ -17,6 +17,6 @@ using TBBForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, TBBTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
-                               ForallFunctionalTest,
+                               ForallFunctionalSegmentTest,
                                TBBForallTypes);
 #endif
