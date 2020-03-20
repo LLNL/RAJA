@@ -245,7 +245,7 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
   ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
   ASSERT_EQ(tmax1.getLoc(), -1);
   ASSERT_DOUBLE_EQ(Real_type(tmax0), Real_type(1 * ref_max_val));
-  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  ASSERT_DOUBLE_EQ(tmax1.get(), Real_type(200.0));
 
   forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
     tmax0.maxloc(2 * this->test_array[idx], idx);
@@ -253,7 +253,7 @@ TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
   });
 
   ASSERT_DOUBLE_EQ(Real_type(tmax0), Real_type(2 * ref_max_val));
-  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  ASSERT_DOUBLE_EQ(tmax1.get(), Real_type(200.0));
   ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
   ASSERT_EQ(tmax1.getLoc(), -1);
 }

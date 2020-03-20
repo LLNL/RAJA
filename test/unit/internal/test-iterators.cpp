@@ -45,7 +45,7 @@ TYPED_TEST(NumericIteratorUnitTest, simple)
   ASSERT_EQ(TypeParam(0), *i);
   ASSERT_EQ(TypeParam(0), *i++);
   ASSERT_EQ(TypeParam(1), *i);
-  ASSERT_EQ(1, *i--);
+  ASSERT_EQ(TypeParam(1), *i--);
   ASSERT_EQ(TypeParam(0), *i);
   i += 2;
   ASSERT_EQ(TypeParam(2), *i);

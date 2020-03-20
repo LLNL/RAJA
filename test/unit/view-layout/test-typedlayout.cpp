@@ -177,7 +177,7 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i) {
     for (TypeParam j = 0; j < 5; ++j) {
-      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+      ASSERT_EQ(TypeParam(dynamic_layout(i, j)), static_layout::s_oper(i,j));
     }
   }
 }
@@ -196,7 +196,7 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
   for (TypeParam i = 0; i < 7; ++i) {
     for (TypeParam j = 0; j < 9; ++j) {
       for (TypeParam k = 0; k < 5; ++k) {
-        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
+        ASSERT_EQ(TypeParam(dynamic_layout(i, j, k)), static_layout::s_oper(i,j,k));
       }
     }
   }

@@ -232,9 +232,9 @@ void bit_and_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(a(i,j), 0000);
-  ASSERT_EQ(a(i,k), 0010);
-  ASSERT_EQ(a(j,k), 0001);
+  ASSERT_EQ(a(i,j), T(0000));
+  ASSERT_EQ(a(i,k), T(0010));
+  ASSERT_EQ(a(j,k), T(0001));
 }
 
 template<typename T>
@@ -246,9 +246,9 @@ void bit_xor_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(x(i,j), 0011);
-  ASSERT_EQ(x(i,k), 0101);
-  ASSERT_EQ(x(j,k), 0110);
+  ASSERT_EQ(x(i,j), T(0011));
+  ASSERT_EQ(x(i,k), T(0101));
+  ASSERT_EQ(x(j,k), T(0110));
 }
 
 template<typename T>
