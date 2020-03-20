@@ -51,17 +51,17 @@ void plus_test()
 {
   using Plus = RAJA::operators::plus<T>;
   auto ident = Plus::identity();
-  ASSERT_EQ(ident, 0);
+  ASSERT_EQ(ident, T(0));
 
   Plus p;
   T i = static_cast<T>(1);
   T j = static_cast<T>(2);
-  ASSERT_EQ(p(i,j), 3);
+  ASSERT_EQ(p(i,j), T(3));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(p(i,j), -7);
+    ASSERT_EQ(p(i,j), T(-7));
   }
 }
 
@@ -73,12 +73,12 @@ void minus_test()
   Minus m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 3);
+  ASSERT_EQ(m(i,j), T(3));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), -3);
+    ASSERT_EQ(m(i,j), T(-3));
   }
 }
 
@@ -87,17 +87,17 @@ void multiplies_test()
 {
   using Mult = RAJA::operators::multiplies<T>;
   auto ident = Mult::identity();
-  ASSERT_EQ(ident, 1);
+  ASSERT_EQ(ident, T(1));
 
   Mult m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 10);
+  ASSERT_EQ(m(i,j), T(10));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), 10);
+    ASSERT_EQ(m(i,j), T(10));
   }
 }
 
@@ -110,17 +110,17 @@ void divides_test()
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
   if(std::is_floating_point<T>::value) 
-    ASSERT_EQ(d(i,j), 2.5);
+    ASSERT_EQ(d(i,j), T(2.5));
   else
-    ASSERT_EQ(d(i,j), 2);
+    ASSERT_EQ(d(i,j), T(2));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
     if(std::is_floating_point<T>::value) 
-      ASSERT_EQ(d(i,j), 2.5);
+      ASSERT_EQ(d(i,j), T(2.5));
     else
-      ASSERT_EQ(d(i,j), 2);
+      ASSERT_EQ(d(i,j), T(2));
   }
 }
 
@@ -132,12 +132,12 @@ void modulus_test()
   Mod m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 1);
+  ASSERT_EQ(m(i,j), T(1));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), -1);
+    ASSERT_EQ(m(i,j), T(-1));
   }
 }
 

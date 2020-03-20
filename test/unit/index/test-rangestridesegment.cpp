@@ -70,7 +70,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Iterators)
     using difftype_t = decltype(std::distance(r1.begin(), r1.end()));
     ASSERT_EQ(difftype_t(25), r1.end() - r1.begin());
     ASSERT_EQ(difftype_t(25), std::distance(r1.begin(), r1.end()));
-    ASSERT_EQ(TypeParam(25), r1.size());
+    ASSERT_EQ(difftype_t(25), r1.size());
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
