@@ -58,7 +58,7 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
   isrl.push_back(lseg);
   isrl.push_back(RangeSegType(6, 8));
   ASSERT_EQ(2, isrl.size()); 
-  ASSERT_EQ(6, isrl.getLength()); 
+  ASSERT_EQ(size_t(6), isrl.getLength());
   const ListSegType ls0 = isrl.getSegment<const ListSegType>(0);
   const RangeSegType rs11 = isrl.getSegment<const RangeSegType>(1);
   ASSERT_EQ(4, ls0.size());
