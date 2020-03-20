@@ -96,7 +96,8 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   ASSERT_EQ(TypeParam(0), *r1.begin());
   ASSERT_EQ(TypeParam(99), *(--r1.end()));
   ASSERT_EQ(TypeParam(100), r1.end() - r1.begin());
-  ASSERT_EQ(TypeParam(100), std::distance(r1.begin(), r1.end()));
+  using difftype_t = decltype(std::distance(r1.begin(), r1.end()));
+  ASSERT_EQ(difftype_t(100), std::distance(r1.begin(), r1.end()));
   ASSERT_EQ(TypeParam(100), r1.size());
 
 #if !defined(__CUDA_ARCH__)

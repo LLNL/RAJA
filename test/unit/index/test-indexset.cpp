@@ -52,7 +52,7 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
   using ListSegType = RAJA::TypedListSegment<int>; 
   using RLIndexSetType = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
   RLIndexSetType isrl;
-  ASSERT_EQ(2, isrl.getNumTypes());
+  ASSERT_EQ(size_t(2), isrl.getNumTypes());
   int idx[ ] = {0, 2, 4, 5};
   ListSegType lseg(idx, 4); 
   isrl.push_back(lseg);

@@ -59,8 +59,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  double *a = memoryManager::allocate<int>(N);
-  double *b = memoryManager::allocate<int>(N);
+  double *a = memoryManager::allocate<double>(N);
+  double *b = memoryManager::allocate<double>(N);
 
   for (int i = 0; i < N; ++i) {
     a[i] = 1.0;
