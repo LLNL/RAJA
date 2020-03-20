@@ -218,9 +218,9 @@ void bit_or_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(o(i,j), 0011);
-  ASSERT_EQ(o(i,k), 0111);
-  ASSERT_EQ(o(j,k), 0111);
+  ASSERT_EQ(o(i,j), T(0011));
+  ASSERT_EQ(o(i,k), T(0111));
+  ASSERT_EQ(o(j,k), T(0111));
 }
 
 template<typename T>

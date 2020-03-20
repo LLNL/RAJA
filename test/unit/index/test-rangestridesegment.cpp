@@ -76,52 +76,53 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Iterators)
 TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 {
   RAJA::TypedRangeStrideSegment<TypeParam> segment1(0, 20, 1);
-  ASSERT_EQ(segment1.size(), TypeParam(20));
+  using difftype_t = decltype(std::distance(segment1.begin(), segment1.end()));
+  ASSERT_EQ(segment1.size(), difftype_t(20));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment2(0, 20, 2);
-  ASSERT_EQ(segment2.size(), TypeParam(10));
+  ASSERT_EQ(segment2.size(), difftype_t(10));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment3(0, 20, 4);
-  ASSERT_EQ(segment3.size(), TypeParam(5));
+  ASSERT_EQ(segment3.size(), difftype_t(5));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment4(0, 20, 5);
-  ASSERT_EQ(segment4.size(), TypeParam(4));
+  ASSERT_EQ(segment4.size(), difftype_t(4));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment5(0, 20, 10);
-  ASSERT_EQ(segment5.size(), TypeParam(2));
+  ASSERT_EQ(segment5.size(), difftype_t(2));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment6(0, 20, 20);
-  ASSERT_EQ(segment6.size(), TypeParam(1));
+  ASSERT_EQ(segment6.size(), difftype_t(1));
 
   // ROUNDOFFS
   RAJA::TypedRangeStrideSegment<TypeParam> segment7(0, 21, 2);
-  ASSERT_EQ(segment7.size(), TypeParam(11));
+  ASSERT_EQ(segment7.size(), difftype_t(11));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment8(0, 21, 4);
-  ASSERT_EQ(segment8.size(), TypeParam(6));
+  ASSERT_EQ(segment8.size(), difftype_t(6));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment9(0, 21, 5);
-  ASSERT_EQ(segment9.size(), TypeParam(5));
+  ASSERT_EQ(segment9.size(), difftype_t(5));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment10(0, 21, 10);
-  ASSERT_EQ(segment10.size(), TypeParam(3));
+  ASSERT_EQ(segment10.size(), difftype_t(3));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment11(0, 21, 20);
-  ASSERT_EQ(segment11.size(), TypeParam(2));
+  ASSERT_EQ(segment11.size(), difftype_t(2));
 
   // PRIMES
   RAJA::TypedRangeStrideSegment<TypeParam> segment12(0, 7, 3);  // should produce 0,3,6
-  ASSERT_EQ(segment12.size(), TypeParam(3));
+  ASSERT_EQ(segment12.size(), difftype_t(3));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment13(0, 13, 3);  // should produce 0,3,6,9,12
-  ASSERT_EQ(segment13.size(), TypeParam(5));
+  ASSERT_EQ(segment13.size(), difftype_t(5));
 
   RAJA::TypedRangeStrideSegment<TypeParam> segment14(0, 17, 5);  // should produce 0,5,10,15
-  ASSERT_EQ(segment14.size(), TypeParam(4));
+  ASSERT_EQ(segment14.size(), difftype_t(4));
 
   // NEGATIVE STRIDE
   RAJA::TypedRangeStrideSegment<TypeParam> segment15(0, 20, -2);
-  ASSERT_EQ(segment15.size(), TypeParam(0));
+  ASSERT_EQ(segment15.size(), difftype_t(0));
 
   // NEGATIVE INDICES
 #if !defined(__CUDA_ARCH__)
@@ -132,13 +133,13 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 
   if (std::is_signed<TypeParam>::value) {
     RAJA::TypedRangeStrideSegment<TypeParam> segment16(-10, -2, 2);
-    ASSERT_EQ(segment16.size(), 4);
+    ASSERT_EQ(segment16.size(), difftype_t(4));
 
     RAJA::TypedRangeStrideSegment<TypeParam> segment17(-5, 5, 2);
-    ASSERT_EQ(segment17.size(), 5);
+    ASSERT_EQ(segment17.size(), difftype_t(5));
 
     RAJA::TypedRangeStrideSegment<TypeParam> segment18(0, -5, 1);
-    ASSERT_EQ(segment18.size(), 0);
+    ASSERT_EQ(segment18.size(), difftype_t(0));
 
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( default  : 4245 )
