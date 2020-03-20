@@ -442,7 +442,7 @@ merge_sort(Iter begin,
 }  // namespace detail
 
 /*!
-    \brief unstable insertion sort given range inplace using comparison function
+    \brief stable insertion sort given range inplace using comparison function
     and using O(N^2) comparisons and O(1) memory
 */
 template <typename Iter,
