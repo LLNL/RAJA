@@ -44,16 +44,24 @@ TEST(Sort, basic_merge_Sort)
 TEST(Sort, basic_loop_Sort)
 {
   testSorter(PolicySort<RAJA::loop_exec>{});
-  testSorter(PolicyStableSort<RAJA::loop_exec>{});
   testSorter(PolicySortPairs<RAJA::loop_exec>{});
+}
+
+TEST(Sort, basic_loop_StableSort)
+{
+  testSorter(PolicyStableSort<RAJA::loop_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::loop_exec>{});
 }
 
 TEST(Sort, basic_seq_Sort)
 {
   testSorter(PolicySort<RAJA::seq_exec>{});
-  testSorter(PolicyStableSort<RAJA::seq_exec>{});
   testSorter(PolicySortPairs<RAJA::seq_exec>{});
+}
+
+TEST(Sort, basic_seq_StableSort)
+{
+  testSorter(PolicyStableSort<RAJA::seq_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::seq_exec>{});
 }
 
@@ -62,8 +70,12 @@ TEST(Sort, basic_seq_Sort)
 TEST(Sort, basic_OpenMP_Sort)
 {
   testSorter(PolicySort<RAJA::omp_parallel_for_exec>{});
-  testSorter(PolicyStableSort<RAJA::omp_parallel_for_exec>{});
   // testSorter(PolicySortPairs<RAJA::omp_parallel_for_exec>{});
+}
+
+TEST(Sort, basic_OpenMP_StableSort)
+{
+  testSorter(PolicyStableSort<RAJA::omp_parallel_for_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::omp_parallel_for_exec>{});
 }
 
@@ -74,10 +86,15 @@ TEST(Sort, basic_OpenMP_Sort)
 TEST(Sort, basic_TBB_Sort)
 {
   testSorter(PolicySort<RAJA::tbb_for_exec>{});
-  testSorter(PolicyStableSort<RAJA::tbb_for_exec>{});
   // testSorter(PolicySortPairs<RAJA::tbb_for_exec>{});
+}
+
+TEST(Sort, basic_TBB_StableSort)
+{
+  testSorter(PolicyStableSort<RAJA::tbb_for_exec>{});
   // testSorter(PolicyStableSortPairs<RAJA::tbb_for_exec>{});
 }
+
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -85,8 +102,12 @@ TEST(Sort, basic_TBB_Sort)
 GPU_TEST(Sort, basic_CUDA_Sort)
 {
   testSorter(PolicySort<RAJA::cuda_exec<256>>{});
-  testSorter(PolicyStableSort<RAJA::cuda_exec<256>>{});
   testSorter(PolicySortPairs<RAJA::cuda_exec<256>>{});
+}
+
+GPU_TEST(Sort, basic_CUDA_StableSort)
+{
+  testSorter(PolicyStableSort<RAJA::cuda_exec<256>>{});
   testSorter(PolicyStableSortPairs<RAJA::cuda_exec<256>>{});
 }
 
@@ -97,8 +118,12 @@ GPU_TEST(Sort, basic_CUDA_Sort)
 GPU_TEST(Sort, basic_HIP_Sort)
 {
   testSorter(PolicySort<RAJA::hip_exec<256>>{});
-  testSorter(PolicyStableSort<RAJA::hip_exec<256>>{});
   testSorter(PolicySortPairs<RAJA::hip_exec<256>>{});
+}
+
+GPU_TEST(Sort, basic_HIP_Sort)
+{
+  testSorter(PolicyStableSort<RAJA::hip_exec<256>>{});
   testSorter(PolicyStableSortPairs<RAJA::hip_exec<256>>{});
 }
 
