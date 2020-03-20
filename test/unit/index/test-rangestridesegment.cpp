@@ -152,7 +152,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
   auto r = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
   auto s = r.slice(0, 5);
 
-  ASSERT_EQ(size_t(5), s.size());
+  ASSERT_EQ(size_t(5), size_t(s.size()));
   ASSERT_EQ(TypeParam(0), *s.begin());
   ASSERT_EQ(TypeParam(10), *s.end());
 }

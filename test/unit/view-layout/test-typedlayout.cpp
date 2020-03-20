@@ -218,7 +218,7 @@ TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
     for (TypeParam j = 0; j < 8; ++j) {
       for (TypeParam k = 0; k < 5; ++k) {
         for (TypeParam l = 0; l < 5; ++l) {
-          ASSERT_EQ(dynamic_layout(i, j, k, l), static_layout::s_oper(i,j,k,l));
+          ASSERT_EQ(TypeParam(dynamic_layout(i, j, k, l)), static_layout::s_oper(i,j,k,l));
         }
       }
     }

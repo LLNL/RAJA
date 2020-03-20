@@ -576,7 +576,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMaxLoc2DIndex)
     Index2D(RAJA::Index_type idarray) : idarray(idarray)
     {
       idx = idarray % 10;
-      idy = floor( idarray / 10 );
+      idy = idarray / 10;
     }
   };
 

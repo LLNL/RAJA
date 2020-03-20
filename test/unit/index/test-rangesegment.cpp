@@ -93,11 +93,11 @@ TYPED_TEST(RangeSegmentUnitTest, Swaps)
 TYPED_TEST(RangeSegmentUnitTest, Iterators)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
-  ASSERT_EQ(0, *r1.begin());
-  ASSERT_EQ(99, *(--r1.end()));
-  ASSERT_EQ(100, r1.end() - r1.begin());
-  ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
-  ASSERT_EQ(100, r1.size());
+  ASSERT_EQ(TypeParam(0), *r1.begin());
+  ASSERT_EQ(TypeParam(99), *(--r1.end()));
+  ASSERT_EQ(TypeParam(100), r1.end() - r1.begin());
+  ASSERT_EQ(TypeParam(100), std::distance(r1.begin(), r1.end()));
+  ASSERT_EQ(TypeParam(100), r1.size());
 
 #if !defined(__CUDA_ARCH__)
 
@@ -106,7 +106,7 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
 #endif
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
-    ASSERT_EQ(-2, *r3.begin());
+    ASSERT_EQ(TypeParam(-2), *r3.begin());
   }
 
 #ifdef RAJA_COMPILER_MSVC

@@ -413,12 +413,12 @@ void identity_test()
   Ident id;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(id(i), 0);
-  ASSERT_EQ(id(j), 1);
+  ASSERT_EQ(id(i), T(0));
+  ASSERT_EQ(id(j), T(1));
 
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(id(j), -1);
+    ASSERT_EQ(id(j), T(-1));
   }
 }
 

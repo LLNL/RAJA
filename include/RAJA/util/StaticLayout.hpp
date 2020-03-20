@@ -98,7 +98,7 @@ struct StaticLayoutBase_impl<IdxLin,
       Indices... indices) const
   {
     // dot product of strides and indices
-    return sum<IdxLin>((IdxLin(indices) * Strides)...);
+    return sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
@@ -106,7 +106,7 @@ struct StaticLayoutBase_impl<IdxLin,
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return sum<IdxLin>((IdxLin(indices) * Strides)...);
+    return sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
