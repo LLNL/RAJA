@@ -157,18 +157,18 @@ GPU_TEST(Sort, basic_device_intro_Sort)
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   // intro_sort is implemented via recursion, so the device may
   // run out of stack space or perform poorly due to local memory usage
-  testSorter(IntroSort{}, MaxN);
-  testSorter(IntroSortPairs{}, MaxN);
+  testSorter(IntroSortGPU{}, MaxN);
+  testSorter(IntroSortPairsGPU{}, MaxN);
 }
 
-// GPU_TEST(Sort, basic_device_merge_Sort)
-// {
-//   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
-//   // merge_sort is not currently supported in device code due
-//   // to memory requirements
-//   testSorter(MergeSort{}, MaxN);
-//   testSorter(MergeSortPairs{}, MaxN);
-// }
+GPU_TEST(Sort, basic_device_merge_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  // merge_sort is not currently supported in device code due
+  // to memory requirements
+  // testSorter(MergeSortGPU{}, MaxN);
+  // testSorter(MergeSortPairsGPU{}, MaxN);
+}
 
 #endif
 
