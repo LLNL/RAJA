@@ -241,7 +241,7 @@ public:
      }
 #endif
 
-    camp::sink((indices = Indices((linear_index / inv_strides[RangeInts]) %
+    camp::sink((indices = (camp::decay<Indices>)((linear_index / inv_strides[RangeInts]) %
                                    inv_mods[RangeInts]))...);
   }
 
