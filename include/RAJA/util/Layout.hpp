@@ -103,7 +103,7 @@ public:
   using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
+  static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride1_dim = StrideOneDim;
 
   // const char *index_types[sizeof...(RangeInts)];
@@ -212,7 +212,7 @@ public:
     return sum<IdxLin>((indices * strides[RangeInts])...);
 #else
     return sum<IdxLin>
-      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides[RangeInts]) )...);
+      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(IdxLin(indices), strides[RangeInts]) )...);
 #endif
   }
 
@@ -264,7 +264,7 @@ template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
 constexpr size_t
     LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::n_dims;
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-constexpr size_t
+constexpr IdxLin
     LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
 }  // namespace detail
 
