@@ -11,16 +11,32 @@
 
 #include "test-sort.hpp"
 
-TEST(Sort, basic_algorithm_Sort)
+TEST(Sort, basic_insertion_Sort)
 {
   testSorter(InsertionSort{});
   testSorter(InsertionSortPairs{});
+}
+
+TEST(Sort, basic_shell_Sort)
+{
   testSorter(ShellSort{});
   testSorter(ShellSortPairs{});
+}
+
+TEST(Sort, basic_heap_Sort)
+{
   testSorter(HeapSort{});
   testSorter(HeapSortPairs{});
+}
+
+TEST(Sort, basic_intro_Sort)
+{
   testSorter(IntroSort{});
   testSorter(IntroSortPairs{});
+}
+
+TEST(Sort, basic_merge_Sort)
+{
   testSorter(MergeSort{});
   // testSorter(MergeSortPairs{});
 }
@@ -90,26 +106,44 @@ GPU_TEST(Sort, basic_HIP_Sort)
 
 #if defined(RAJA_TEST_ENABLE_GPU)
 
-GPU_TEST(Sort, basic_algorithm_device_Sort)
+GPU_TEST(Sort, basic_device_insertion_Sort)
 {
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   testSorter(InsertionSortGPU{}, MaxN);
   testSorter(InsertionSortPairsGPU{}, MaxN);
+}
+
+GPU_TEST(Sort, basic_device_shell_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   testSorter(ShellSortGPU{}, MaxN);
   testSorter(ShellSortPairsGPU{}, MaxN);
+}
+
+GPU_TEST(Sort, basic_device_heap_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   testSorter(HeapSortGPU{}, MaxN);
   testSorter(HeapSortPairsGPU{}, MaxN);
+}
 
+GPU_TEST(Sort, basic_device_intro_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   // intro_sort is implemented via recursion, so the device may
   // run out of stack space or perform poorly due to local memory usage
   testSorter(IntroSort{}, MaxN);
   testSorter(IntroSortPairs{}, MaxN);
-
-  // merge_sort is not currently supported in device code due
-  // to memory requirements
-  // testSorter(MergeSort{}, MaxN);
-  // testSorter(MergeSortPairs{}, MaxN);
 }
+
+// GPU_TEST(Sort, basic_device_merge_Sort)
+// {
+//   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+//   // merge_sort is not currently supported in device code due
+//   // to memory requirements
+//   testSorter(MergeSort{}, MaxN);
+//   testSorter(MergeSortPairs{}, MaxN);
+// }
 
 #endif
 
