@@ -313,7 +313,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          statement::For<1, loop_exec,  // d
            statement::For<2, loop_exec,  // g
              statement::For<3, simd_exec,  // z
-               statement::Lambda<0, statement::Segs<0, 1, 2, 3>>
+               statement::Lambda<0, Segs<0, 1, 2, 3>>
              >
            >
          >
@@ -464,30 +464,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
 
       // Tile outer m,d loops
-      statement::Tile<0, statement::tile_fixed<tile_m>, loop_exec,  // m
-        statement::Tile<1, statement::tile_fixed<tile_d>, loop_exec,  // d
+      statement::Tile<0, tile_fixed<tile_m>, loop_exec,  // m
+        statement::Tile<1, tile_fixed<tile_d>, loop_exec,  // d
 
 
             // Load L(m,d) for m,d tile into shmem
             statement::For<0, loop_exec,  // m
               statement::For<1, loop_exec,  // d
-                statement::Lambda<0, statement::Segs<0, 1>,
-                                     statement::Params<0>,
-                                     statement::Offsets<0, 1>>
+                statement::Lambda<0, Segs<0, 1>,
+                                     Params<0>,
+                                     Offsets<0, 1>>
               >
             >,
 
             // Run inner g, z loops with z loop tiled
             statement::For<2, loop_exec,  // g
-              statement::Tile<3, statement::tile_fixed<tile_z>, loop_exec,  // z
+              statement::Tile<3, tile_fixed<tile_z>, loop_exec,  // z
 
 
                   // Load psi into shmem
                   statement::For<1, loop_exec,  // d
                     statement::For<3, loop_exec,  // z
-                      statement::Lambda<1, statement::Segs<1, 2, 3>,
-                                           statement::Params<1>,
-                                           statement::Offsets<1, 2, 3>>
+                      statement::Lambda<1, Segs<1, 2, 3>,
+                                           Params<1>,
+                                           Offsets<1, 2, 3>>
                     >
                   >,
 
@@ -496,24 +496,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                     // Load phi into shmem
                     statement::For<3, loop_exec,  // z
-                      statement::Lambda<2, statement::Segs<0, 2, 3>,
-                                           statement::Params<2>,
-                                           statement::Offsets<0, 2, 3>>
+                      statement::Lambda<2, Segs<0, 2, 3>,
+                                           Params<2>,
+                                           Offsets<0, 2, 3>>
                     >,
 
                     // Compute phi in shmem
                     statement::For<1, loop_exec,  // d
                       statement::For<3, loop_exec,  // z
-                        statement::Lambda<3, statement::Params<0, 1, 2>,
-                                             statement::Offsets<0, 1, 2, 3>>
+                        statement::Lambda<3, Params<0, 1, 2>,
+                                             Offsets<0, 1, 2, 3>>
                       >
                     >,
 
                     // Store phi
                     statement:: For<3, loop_exec,  // z
-                      statement::Lambda<4, statement::Segs<0, 2, 3>,
-                                           statement::Params<2>,
-                                           statement::Offsets<0, 2, 3>>
+                      statement::Lambda<4, Segs<0, 2, 3>,
+                                           Params<2>,
+                                           Offsets<0, 2, 3>>
                     >
                   >  // m
 
@@ -884,17 +884,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define our execution policy
   //
 
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
-  using RAJA::statement::Offsets;
+  using RAJA::Segs;
+  using RAJA::Params;
+  using RAJA::Offsets;
 
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
         statement::InitLocalMem<cuda_shared_mem, ParamList<0,1>,
           // Tile outer m,d loops 
-          statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
-            statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
+          statement::Tile<0, tile_fixed<tile_m>, seq_exec,  // m
+            statement::Tile<1, tile_fixed<tile_d>, seq_exec,  // d
 
               // Load L for m,d tile into shmem 
               statement::For<1, cuda_thread_x_loop,  // d
@@ -906,7 +906,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Distribute g, z across blocks and tile z
               statement::For<2, cuda_block_y_loop, // g
-                statement::Tile<3, statement::tile_fixed<tile_z>, cuda_block_x_loop,  // z
+                statement::Tile<3, tile_fixed<tile_z>, cuda_block_x_loop,  // z
 
                   // Load phi into thread local storage
                   statement::For<3, cuda_thread_x_direct,  // z
@@ -1222,17 +1222,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   using RAJA::statement::Param;
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
-  using RAJA::statement::Offsets;
+  using RAJA::Segs;
+  using RAJA::Params;
+  using RAJA::Offsets;
 
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::HipKernelAsync<
         statement::InitLocalMem<hip_shared_mem, ParamList<0,1>,
           // Tile outer m,d loops 
-          statement::Tile<0, statement::tile_fixed<tile_m>, seq_exec,  // m
-            statement::Tile<1, statement::tile_fixed<tile_d>, seq_exec,  // d
+          statement::Tile<0, tile_fixed<tile_m>, seq_exec,  // m
+            statement::Tile<1, tile_fixed<tile_d>, seq_exec,  // d
 
               // Load L for m,d tile into shmem 
               statement::For<1, hip_thread_x_loop,  // d
@@ -1244,7 +1244,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Distribute g, z across blocks and tile z
               statement::For<2, hip_block_y_loop, // g
-                statement::Tile<3, statement::tile_fixed<tile_z>, hip_block_x_loop,  // z
+                statement::Tile<3, tile_fixed<tile_z>, hip_block_x_loop,  // z
 
                   // Load phi into thread local storage
                   statement::For<3, hip_thread_x_direct,  // z

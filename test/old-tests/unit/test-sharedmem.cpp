@@ -904,11 +904,11 @@ struct Policy_MatMultiply_cpu {
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
     using ThreadPriv = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;
 
-    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
-    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::statement::Segs<0, 1>, RAJA::statement::Offsets<0, 1>, RAJA::statement::Params<0>>;
-    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::statement::Segs<1, 2>, RAJA::statement::Offsets<1, 2>, RAJA::statement::Params<1>>;
-    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::statement::Offsets<0, 1, 2>, RAJA::statement::Params<0, 1, 2>>;
-    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::statement::Segs<0, 2>, RAJA::statement::Offsets<0, 2>, RAJA::statement::Params<2>>;
+    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
+    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
+    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
+    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
 
     // Segments:
     // 0: N
@@ -921,8 +921,8 @@ struct Policy_MatMultiply_cpu {
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
 
             // Tile of N and P (the result matrix C)
-            RAJA::statement::Tile<0, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
-              RAJA::statement::Tile<2, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
+            RAJA::statement::Tile<0, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
+              RAJA::statement::Tile<2, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
 
                // zero out shmem tile of C
                RAJA::statement::For<2, RAJA::loop_exec,
@@ -930,7 +930,7 @@ struct Policy_MatMultiply_cpu {
                   shmem_Lambda0 > >,
 
                 // Slide window across matrix: Tile in M
-                RAJA::statement::Tile<1, RAJA::statement::tile_fixed<tile_size>, RAJA::loop_exec,
+                RAJA::statement::Tile<1, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
 
                    // Load tile of A into shmem
                    RAJA::statement::For<1, RAJA::loop_exec,

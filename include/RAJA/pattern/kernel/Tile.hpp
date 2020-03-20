@@ -50,13 +50,15 @@ struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using exec_policy_t = ExecPolicy;
 };
 
+}  // end namespace statement
+
 ///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
 struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 };
 
-}  // end namespace statement
+
 
 namespace internal
 {

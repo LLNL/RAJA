@@ -60,22 +60,55 @@ struct LambdaArg
 
 }
 
-namespace statement
-{
 
 
+/*!
+ * Used in RAJA::statement::Lambda to specify that one or more segment values
+ * should be passed into the lambda as an argument
+ */
 template<camp::idx_t ... args>
 using Segs = camp::list<internal::LambdaArg<internal::lambda_arg_seg_t, args>...>;
 
+/*!
+ * Used in RAJA::statement::Lambda to specify that one or more segment offsets
+ * should be passed into the lambda as an argument
+ *
+ * The offset is the distance from the segment begin() that is currently being
+ * iterated on.
+ *
+ * In the case of tiling (with Tile) the offset is w.r.t. the beginning of the
+ * current tile.
+ */
 template<camp::idx_t ... args>
 using Offsets = camp::list<internal::LambdaArg<internal::lambda_arg_offset_t, args>...>;
 
+
+/*!
+ * Used in RAJA::statement::Lambda to specify that one or more parameters that
+ * should be passed into the lambda as an argument.
+ */
 template<camp::idx_t ... args>
 using Params = camp::list<internal::LambdaArg<internal::lambda_arg_param_t, args>...>;
 
+/*!
+ * Used in RAJA::statement::Lambda to specify that one or more constant values
+ * should be passed into the lambda as an argument.
+ *
+ * Values specified in the template parameters
+ *
+ * Example:
+ * writing:   Lambda<0, ValuesT<int, 3>>
+ * invokes:   lambda0( (int)3 )
+ *
+ * writing:   Lambda<0, ValuesT<double, 3, 4>>
+ * invokes:   lambda0( (double)3, (double) 4 )
+ */
 template<typename T, camp::idx_t ... values>
 using ValuesT = camp::list<internal::LambdaArg<internal::lambda_arg_value_t<T>, values>...>;
 
+
+namespace statement
+{
 /*!
  * A RAJA::kernel statement that invokes a lambda function.
  *

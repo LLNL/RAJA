@@ -234,8 +234,8 @@ using SeqTypes =
   ::testing::Types<
   RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
@@ -267,8 +267,8 @@ using TestTypes =
   ::testing::Types<
   RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+       RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
@@ -290,8 +290,8 @@ using TestTypes =
     >, //close list
   RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
@@ -316,8 +316,8 @@ using TestTypes =
     > //close list
   ,RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
@@ -352,8 +352,8 @@ using CUDATypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
 
             RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
 
@@ -382,8 +382,8 @@ using CUDATypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_direct,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_direct,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_direct,
 
             RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<0,1>,
 
@@ -418,8 +418,8 @@ using HIPTypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_direct,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_direct,
 
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
 
@@ -448,8 +448,8 @@ using HIPTypes =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
 
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<0,1>,
 
@@ -1323,8 +1323,8 @@ using CudaTypesMult3 =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
@@ -1343,8 +1343,8 @@ using CudaTypesMult3 =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_direct,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::cuda_block_x_direct,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
@@ -1370,8 +1370,8 @@ using HipTypesMult3 =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::hip_block_y_direct,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::hip_block_x_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::hip_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::hip_block_x_direct,
             RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
@@ -1390,8 +1390,8 @@ using HipTypesMult3 =
   RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::hip_block_x_loop,
             RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0

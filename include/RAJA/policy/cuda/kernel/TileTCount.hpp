@@ -112,14 +112,14 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_block_xyz_direct<BlockDim>,
                     EnclosedStmts...>,
                     Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_block_xyz_direct<BlockDim>,
                         EnclosedStmts...>,
                         Types> {
@@ -127,7 +127,7 @@ struct CudaStatementExecutor<
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
-                      RAJA::statement::tile_fixed<chunk_size>,
+                      RAJA::tile_fixed<chunk_size>,
                       cuda_block_xyz_direct<BlockDim>,
                       EnclosedStmts...>,
                       Types>;
@@ -183,14 +183,14 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_block_xyz_loop<BlockDim>,
                     EnclosedStmts...>,
                     Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_block_xyz_loop<BlockDim>,
                         EnclosedStmts...>,
                         Types> {
@@ -198,7 +198,7 @@ struct CudaStatementExecutor<
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
-                      RAJA::statement::tile_fixed<chunk_size>,
+                      RAJA::tile_fixed<chunk_size>,
                       cuda_block_xyz_loop<BlockDim>,
                       EnclosedStmts...>,
                       Types>;
@@ -257,14 +257,14 @@ template <typename Data,
 struct CudaStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_thread_xyz_direct<ThreadDim>,
                         EnclosedStmts ...>,
                         Types>
   : public CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_thread_xyz_direct<ThreadDim>,
                     EnclosedStmts ...>,
                     Types> {
@@ -272,7 +272,7 @@ struct CudaStatementExecutor<
   using Base = CudaStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
-                          RAJA::statement::tile_fixed<chunk_size>,
+                          RAJA::tile_fixed<chunk_size>,
                           cuda_thread_xyz_direct<ThreadDim>,
                           EnclosedStmts ...>,
                           Types>;
