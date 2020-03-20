@@ -124,6 +124,11 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 
   // NEGATIVE INDICES
 #if !defined(__CUDA_ARCH__)
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
+
   if (std::is_signed<TypeParam>::value) {
     RAJA::TypedRangeStrideSegment<TypeParam> segment16(-10, -2, 2);
     ASSERT_EQ(segment16.size(), 4);
@@ -133,6 +138,11 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 
     RAJA::TypedRangeStrideSegment<TypeParam> segment18(0, -5, 1);
     ASSERT_EQ(segment18.size(), 0);
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default  : 4245 )
+#endif
+
   }
 #endif
 }
@@ -142,9 +152,9 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
   auto r = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
   auto s = r.slice(0, 5);
 
-  ASSERT_EQ(5, s.size());
-  ASSERT_EQ(0, *s.begin());
-  ASSERT_EQ(10, *s.end());
+  ASSERT_EQ(size_t(5), size_t(s.size()));
+  ASSERT_EQ(TypeParam(0), *s.begin());
+  ASSERT_EQ(TypeParam(10), *s.end());
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Equality)

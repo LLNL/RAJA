@@ -128,8 +128,8 @@ inline int RAJA_ABORT_OR_THROW(const char *str)
 #ifdef RAJA_COMPILER_MSVC
   char *value;
   size_t len;
-  bool no_except false;
-  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && buf != nullptr){
+  bool no_except = false;
+  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
     no_except = true;
     free(value);
   }
@@ -143,7 +143,6 @@ inline int RAJA_ABORT_OR_THROW(const char *str)
   } else {
     throw std::runtime_error(str);
   }
-  return 0;
 }
 
 //! Macros for marking deprecated features in RAJA

@@ -103,7 +103,7 @@ public:
   using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
+  static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride1_dim = StrideOneDim;
 
   // const char *index_types[sizeof...(RangeInts)];
@@ -129,10 +129,10 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(Types... ns)
       : sizes{static_cast<IdxLin>(stripIndexType(ns))...},
         strides{(detail::stride_calculator<RangeInts + 1, n_dims, IdxLin>{}(
-            sizes[RangeInts] ? 1 : 0,
+            sizes[RangeInts] ? IdxLin(1) : IdxLin(0),
             sizes))...},
-        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
-        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : IdxLin(1))...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : IdxLin(1))...}
   {
     static_assert(n_dims == sizeof...(Types),
                   "number of dimensions must match");
@@ -162,8 +162,8 @@ public:
       const std::array<IdxLin, n_dims> &strides_in)
       : sizes{sizes_in[RangeInts]...},
         strides{strides_in[RangeInts]...},
-        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
-        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : IdxLin(1))...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : IdxLin(1))...}
   {
   }
 
@@ -212,7 +212,7 @@ public:
     return sum<IdxLin>((indices * strides[RangeInts])...);
 #else
     return sum<IdxLin>
-      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides[RangeInts]) )...);
+      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(IdxLin(indices), strides[RangeInts]) )...);
 #endif
   }
 
@@ -241,8 +241,8 @@ public:
      }
 #endif
 
-    camp::sink((indices = (linear_index / inv_strides[RangeInts]) %
-                                   inv_mods[RangeInts])...);
+    camp::sink((indices = Indices((linear_index / inv_strides[RangeInts]) %
+                                   inv_mods[RangeInts]))...);
   }
 
   /*!
@@ -256,7 +256,7 @@ public:
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
     return foldl(RAJA::operators::multiplies<IdxLin>(),
-                         (sizes[RangeInts] == 0 ? 1 : sizes[RangeInts])...);
+                         (sizes[RangeInts] == IdxLin(0) ? IdxLin(1) : sizes[RangeInts])...);
   }
 };
 
@@ -264,7 +264,7 @@ template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
 constexpr size_t
     LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::n_dims;
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-constexpr size_t
+constexpr IdxLin
     LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
 }  // namespace detail
 
@@ -326,10 +326,12 @@ struct TypedLayout;
 
 template <typename IdxLin, typename... DimTypes, ptrdiff_t StrideOne>
 struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
-    : public Layout<sizeof...(DimTypes), Index_type, StrideOne> {
+    : public Layout<sizeof...(DimTypes), strip_index_type_t<IdxLin>, StrideOne> {
+
+  using StrippedIdxLin = strip_index_type_t<IdxLin>;
   using Self = TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>;
-  using Base = Layout<sizeof...(DimTypes), Index_type, StrideOne>;
-  using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+  using Base = Layout<sizeof...(DimTypes), StrippedIdxLin, StrideOne>;
+  using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
 
   // Pull in base constructors
   using Base::Base;

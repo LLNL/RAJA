@@ -290,8 +290,8 @@ template <camp::idx_t LambdaIndex, typename Types, typename Data, camp::idx_t ..
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data &&data, camp::idx_seq<SEGS...> const &, camp::idx_seq<PARAMS...> const &)
 {
 
-  using AllSegs = statement::Segs<SEGS...>;
-  using AllParams = statement::Params<PARAMS...>;
+  using AllSegs = Segs<SEGS...>;
+  using AllParams = Params<PARAMS...>;
 
   // invoke the expanded Lambda executor, passing in all segments and params
   StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>, Types>::exec(std::forward<Data>(data));

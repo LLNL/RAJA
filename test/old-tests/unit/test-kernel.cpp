@@ -123,7 +123,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
 
   // Check reduction
@@ -173,9 +173,9 @@ GPU_TYPED_TEST_P(Kernel, Basic)
     tMax.max(arr[id]);
   });
 
-  ASSERT_FLOAT_EQ(total, tsum.get());
-  ASSERT_FLOAT_EQ(-1, tMin.get());
-  ASSERT_FLOAT_EQ(50, tMax.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)-1, (double)tMin.get());
+  ASSERT_FLOAT_EQ((double)50, (double)tMax.get());
 
   std::vector<Idx0> idx_x;
   std::vector<Idx1> idx_y;
@@ -204,7 +204,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
   total = 0.0;
   tsum.reset(0.0);
@@ -232,7 +232,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
 
 

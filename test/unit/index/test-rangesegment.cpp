@@ -49,14 +49,23 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
 
   if(std::is_signed<TypeParam>::value){
 #if !defined(__CUDA_ARCH__)
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
     RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
     RAJA::TypedRangeSegment<TypeParam> r3(-13, -1);
     ASSERT_EQ(17, r1.size());
     ASSERT_EQ(12, r3.size());
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
+
 #endif
 
 #if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-    ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(0, -50));
+    ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(TypeParam(0), TypeParam(-50)));
 #endif
   }
 }
@@ -84,17 +93,26 @@ TYPED_TEST(RangeSegmentUnitTest, Swaps)
 TYPED_TEST(RangeSegmentUnitTest, Iterators)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
-  ASSERT_EQ(0, *r1.begin());
-  ASSERT_EQ(99, *(--r1.end()));
-  ASSERT_EQ(100, r1.end() - r1.begin());
-  ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
-  ASSERT_EQ(100, r1.size());
+  ASSERT_EQ(TypeParam(0), *r1.begin());
+  ASSERT_EQ(TypeParam(99), *(--r1.end()));
+  ASSERT_EQ(TypeParam(100), r1.end() - r1.begin());
+  ASSERT_EQ(TypeParam(100), std::distance(r1.begin(), r1.end()));
+  ASSERT_EQ(TypeParam(100), r1.size());
 
 #if !defined(__CUDA_ARCH__)
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
   if(std::is_signed<TypeParam>::value){
     RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
-    ASSERT_EQ(-2, *r3.begin());
+    ASSERT_EQ(TypeParam(-2), *r3.begin());
   }
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
+
 #endif
 }
 
@@ -104,8 +122,8 @@ TYPED_TEST(RangeSegmentUnitTest, Slices)
   
   auto s = r.slice(10,100);
 
-  ASSERT_EQ(10, *s.begin());
-  ASSERT_EQ(110, *(s.end()));
+  ASSERT_EQ(TypeParam(10), *s.begin());
+  ASSERT_EQ(TypeParam(110), *(s.end()));
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Equality)

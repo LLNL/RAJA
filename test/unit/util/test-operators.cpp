@@ -413,12 +413,12 @@ void identity_test()
   Ident id;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(id(i), 0);
-  ASSERT_EQ(id(j), 1);
+  ASSERT_EQ(id(i), T(0));
+  ASSERT_EQ(id(j), T(1));
 
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(id(j), -1);
+    ASSERT_EQ(id(j), T(-1));
   }
 }
 
@@ -430,13 +430,13 @@ void project1st_test()
   Proj1 p;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(p(i,j), 0);
-  ASSERT_EQ(p(j,i), 1);
+  ASSERT_EQ(p(i,j), T(0));
+  ASSERT_EQ(p(j,i), T(1));
 
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(p(i,j), 0);
-    ASSERT_EQ(p(j,i), -1);
+    ASSERT_EQ(p(i,j), T(0));
+    ASSERT_EQ(p(j,i), T(-1));
   }
 }
 
@@ -448,14 +448,20 @@ void project2nd_test()
   Proj2 p;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(p(i,j), 1);
-  ASSERT_EQ(p(j,i), 0);
+  ASSERT_EQ(p(i,j), T(1));
+  ASSERT_EQ(p(j,i), T(0));
 
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(p(i,j), -1);
-    ASSERT_EQ(p(j,i), 0);
+    ASSERT_EQ(p(i,j), T(-1));
+    ASSERT_EQ(p(j,i), T(0));
   }
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
 }
 
 TYPED_TEST(OperatorsUnitTest, plus) { plus_test<TypeParam>(); }

@@ -38,24 +38,24 @@ TYPED_TEST_SUITE(StridedNumericIteratorUnitTest, MyTypes);
 TYPED_TEST(NumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::numeric_iterator<TypeParam> i;
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   ++i;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   --i;
-  ASSERT_EQ(0, *i);
-  ASSERT_EQ(0, *i++);
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(0), *i);
+  ASSERT_EQ(TypeParam(0), *i++);
+  ASSERT_EQ(TypeParam(1), *i);
   ASSERT_EQ(1, *i--);
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   i += 2;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   i -= 1;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   RAJA::Iterators::numeric_iterator<TypeParam> five(5);
   i += five;
-  ASSERT_EQ(6, *i);
+  ASSERT_EQ(TypeParam(6), *i);
   i -= five;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   RAJA::Iterators::numeric_iterator<TypeParam> three(3);
   ASSERT_LE(three, three);
   ASSERT_LE(three, five);
@@ -72,15 +72,15 @@ TYPED_TEST(NumericIteratorUnitTest, simple)
 TYPED_TEST(StridedNumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::strided_numeric_iterator<TypeParam> i(0, 2);
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   ++i;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   --i;
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   i += 2;
-  ASSERT_EQ(4, *i);
+  ASSERT_EQ(TypeParam(4), *i);
   i -= 1;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> three(3, 2);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> five(5, 2);
   ASSERT_LE(three, three);
