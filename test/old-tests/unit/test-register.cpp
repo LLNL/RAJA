@@ -387,7 +387,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
       RAJA::statement::For<0, RAJA::cuda_warp_vector_loop<vector_t>,
           RAJA::statement::Lambda<0>
             >
@@ -466,7 +466,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp16)
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<32>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
       RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
           RAJA::statement::Lambda<0>
             >
