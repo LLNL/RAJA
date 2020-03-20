@@ -59,12 +59,8 @@ namespace internal {
   struct StaticLayoutHelper;
 
   template<camp::idx_t ... Perm, camp::idx_t ...Sizes>
-  struct StaticLayoutHelper<camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...>>{
+  struct StaticLayoutHelper<camp::idx_seq<Perm...>, camp::idx_seq<Sizes...>>{
       using type =  StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
-
-      // this can be used to define a set of IndexTypes that are all RAJA::Index_type
-      using index_types = camp::list<typename IndexToType<Perm, RAJA::Index_type>::type...>;
-
   };
 
   template<typename Perm, typename Sizes>

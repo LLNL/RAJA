@@ -66,6 +66,7 @@ TYPED_TEST(TypedViewUnitTest, Constructors)
    * Should be able to construct a non-const View from a non-const View
    */
   RAJA::View<TypeParam, layout> view2(view);
+  ASSERT_EQ(view.get_data(), view2.get_data());
 
   /*
    * Should be able to construct a const View from a non-const View
@@ -76,6 +77,7 @@ TYPED_TEST(TypedViewUnitTest, Constructors)
    * Should be able to construct a const View from a const View
    */
   RAJA::View<TypeParam const, layout> const_view2(const_view);
+  ASSERT_EQ(const_view.get_data(), const_view2.get_data());
 }
 
 TYPED_TEST(TypedViewUnitTest, Accessor)
