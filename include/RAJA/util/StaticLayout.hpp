@@ -223,7 +223,7 @@ using StaticLayoutT = detail::StaticLayoutBase_impl<
     typename detail::StrideCalculator<IdxLin,
                                       camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
                                       Perm,
-                                      camp::idx_seq<Sizes...>>::strides>;
+                                      camp::int_seq<IdxLin, Sizes...>>::strides>;
 
 
 template <typename Perm, camp::idx_t... Sizes>
