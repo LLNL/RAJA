@@ -88,7 +88,7 @@ TEST(IndexSetUnitTest, Swap)
   RIndexSetType iset2;
 
   ASSERT_EQ(4, iset1.size());
-  ASSERT_EQ(40, iset1.getLength());
+  ASSERT_EQ(size_t(40), iset1.getLength());
   ASSERT_EQ(0, iset2.size());
   ASSERT_EQ(0, iset2.getLength());
 
