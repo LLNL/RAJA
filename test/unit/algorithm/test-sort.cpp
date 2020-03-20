@@ -15,6 +15,8 @@ TEST(Sort, basic_algorithm_Sort)
 {
   testSorter(InsertionSort{});
   testSorter(InsertionSortPairs{});
+  testSorter(ShellSort{});
+  testSorter(ShellSortPairs{});
   testSorter(HeapSort{});
   testSorter(HeapSortPairs{});
   testSorter(IntroSort{});
@@ -93,6 +95,8 @@ GPU_TEST(Sort, basic_algorithm_device_Sort)
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   testSorter(InsertionSortGPU{}, MaxN);
   testSorter(InsertionSortPairsGPU{}, MaxN);
+  testSorter(ShellSortGPU{}, MaxN);
+  testSorter(ShellSortPairsGPU{}, MaxN);
   testSorter(HeapSortGPU{}, MaxN);
   testSorter(HeapSortPairsGPU{}, MaxN);
 

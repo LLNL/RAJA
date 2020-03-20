@@ -139,6 +139,83 @@ insertion_sort(Iter begin,
 }
 
 /*!
+    \brief unstable shell sort given range inplace using comparison function
+    and using O(N^?) comparisons and O(1) memory
+*/
+template <typename Iter, typename Compare>
+RAJA_HOST_DEVICE RAJA_INLINE
+void
+shell_sort(Iter begin,
+           Iter end,
+           Compare comp)
+{
+  using ::RAJA::safe_iter_swap;
+  using diff_type = ::RAJA::detail::IterDiff<Iter>;
+
+  diff_type n = end - begin;
+
+  constexpr long long unsigned strides[] = {
+      // strides from M. Ciura 2001
+      1llu, 4llu, 10llu, 23llu, 57llu, 132llu, 301llu, 701llu, 1750llu,
+      // extended up to 2^47 with strides[n] = floor(2.25*strides[n-1])
+      3937llu, 8858llu, 19930llu, 44842llu, 100894llu, 227011llu, 510774llu,
+      1149241llu, 2585792llu, 5818032llu, 13090572llu, 29453787llu, 66271020llu,
+      149109795llu, 335497038llu, 754868335llu, 1698453753llu, 3821520944llu,
+      8598422124llu, 19346449779llu, 43529512002llu, 97941402004llu,
+      220368154509llu, 495828347645llu, 1115613782201llu, 2510131009952llu,
+      5647794772392llu, 12707538237882llu, 28591961035234llu, 64331912329276llu
+    };
+
+  if (n <= static_cast<diff_type>(1)) {
+    return;
+  } else if (strides[1] < static_cast<unsigned long long>(n)) {
+
+    int i_stride = 2;
+    // find first stride larger than n
+    constexpr int num_strides = sizeof(strides)/sizeof(strides[0]);
+    for (; i_stride < num_strides; ++i_stride) {
+      if (strides[i_stride] >= static_cast<unsigned long long>(n)) {
+        break;
+      }
+    }
+    // back up to first stride smaller than n
+    i_stride -= 1;
+
+    // for each stride size smaller than n, largest to smallest, not including 1
+    // sort strided ranges with stride stride
+    for (; i_stride > 0; --i_stride) {
+      diff_type stride = static_cast<diff_type>(strides[i_stride]);
+
+      // for each unsorted item in the right side of each strided range
+      for (diff_type i_next_unsorted = stride; i_next_unsorted != n; ++i_next_unsorted) {
+
+        // insert unsorted item into the sorted left side of the strided range
+        for (diff_type i_to_insert = i_next_unsorted; i_to_insert >= stride; i_to_insert -= stride) {
+
+          Iter to_insert = begin + i_to_insert;
+          Iter next_sorted = to_insert - stride;
+
+          // compare with next item to left
+          if (comp(*to_insert, *next_sorted)) {
+
+            // swap down if should be before
+            safe_iter_swap(next_sorted, to_insert);
+
+          } else {
+
+            // stop if in correct position
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // finish with stride size of 1, which is just normal insertion_sort
+  RAJA::detail::insertion_sort(begin, end, comp);
+}
+
+/*!
     \brief insert the given element into the heaps below it
     using comparison function
     and using O(lg(N)) comparisons and O(1) memory
@@ -458,6 +535,26 @@ insertion_sort(Iter begin,
   if (N > 1) {
 
     detail::insertion_sort(begin, end, comp);
+  }
+}
+
+/*!
+    \brief unstable shell sort given range inplace using comparison function
+    and using O(N^?) comparisons and O(1) memory
+*/
+template <typename Iter,
+          typename Compare = operators::less<detail::IterVal<Iter>>>
+RAJA_HOST_DEVICE RAJA_INLINE
+concepts::enable_if<type_traits::is_iterator<Iter>>
+shell_sort(Iter begin,
+               Iter end,
+               Compare comp = Compare{})
+{
+  auto N = end - begin;
+
+  if (N > 1) {
+
+    detail::shell_sort(begin, end, comp);
   }
 }
 

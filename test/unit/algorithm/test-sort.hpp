@@ -159,6 +159,53 @@ struct InsertionSortPairs
   }
 };
 
+struct ShellSort
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::shell_sort";
+  }
+
+  template < typename... Args >
+  void operator()(Args&&... args)
+  {
+    RAJA::shell_sort(std::forward<Args>(args)...);
+  }
+};
+
+struct ShellSortPairs
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::shell_sort[pairs]";
+  }
+
+  template < typename KeyIter, typename ValIter >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
+  {
+    auto begin = RAJA::zip(keys_begin, vals_begin);
+    auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::shell_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+  }
+
+  template < typename KeyIter, typename ValIter, typename Compare >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
+  {
+    auto begin = RAJA::zip(keys_begin, vals_begin);
+    auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+    using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+    RAJA::shell_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+  }
+};
+
 struct HeapSort
 {
   using sort_category = unstable_sort_tag;
@@ -360,6 +407,67 @@ struct InsertionSortPairsGPU
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
       RAJA::insertion_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+};
+
+struct ShellSortGPU
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::shell_sort";
+  }
+
+  template < typename Iter >
+  void operator()(Iter begin, Iter end)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::shell_sort(begin, end);
+    });
+  }
+
+  template < typename Iter, typename Compare >
+  void operator()(Iter begin, Iter end, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      RAJA::shell_sort(begin, end, comp);
+    });
+  }
+};
+
+struct ShellSortPairsGPU
+{
+  using sort_category = unstable_sort_tag;
+  using sort_interface = sort_pairs_interface_tag;
+
+  const char* name()
+  {
+    return "RAJA::shell_sort[pairs]";
+  }
+
+  template < typename KeyIter, typename ValIter >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::operators::less<RAJA::detail::IterRef<KeyIter>> comp{};
+    RAJA::shell_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
+    });
+  }
+
+  template < typename KeyIter, typename ValIter, typename Compare >
+  void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
+  {
+    forone_gpu( RAJA_TEST_DEVICE_LAMBDA() {
+      auto begin = RAJA::zip(keys_begin, vals_begin);
+      auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+      using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+      RAJA::shell_sort(begin, end, RAJA::compare_first<zip_ref>(comp));
     });
   }
 };
