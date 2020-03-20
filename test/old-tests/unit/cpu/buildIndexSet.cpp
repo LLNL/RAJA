@@ -118,9 +118,9 @@ Index_type buildIndexSet(UnitIndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case AddSegmentsReverse: {
-      UnitIndexSet& iset_master = hindex[0];
-      for (int i = iset_master.getNumSegments() - 1; i >= 0; --i) {
-        iset_master.segment_push_into(i,
+      UnitIndexSet& iset_master0 = hindex[0];
+      for (int i = iset_master0.getNumSegments() - 1; i >= 0; --i) {
+        iset_master0.segment_push_into(i,
                                       hindex[build_method],
                                       PUSH_FRONT,
                                       PUSH_COPY);

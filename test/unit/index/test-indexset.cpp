@@ -30,7 +30,7 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
   using RangeSegType = RAJA::TypedRangeSegment<int>;
   using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
   RIndexSetType isr;
-  ASSERT_EQ(1, isr.getNumTypes());
+  ASSERT_EQ((size_t)1, isr.getNumTypes());
   isr.push_back(RangeSegType(1, 3));
   isr.push_front(RangeSegType(0, 1));
   ASSERT_EQ(2, isr.size()); 

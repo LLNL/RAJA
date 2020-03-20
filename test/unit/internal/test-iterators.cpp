@@ -72,15 +72,15 @@ TYPED_TEST(NumericIteratorUnitTest, simple)
 TYPED_TEST(StridedNumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::strided_numeric_iterator<TypeParam> i(0, 2);
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   ++i;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   --i;
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   i += 2;
-  ASSERT_EQ(4, *i);
+  ASSERT_EQ(TypeParam(4), *i);
   i -= 1;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> three(3, 2);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> five(5, 2);
   ASSERT_LE(three, three);

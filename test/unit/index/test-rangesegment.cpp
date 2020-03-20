@@ -65,7 +65,7 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
 #endif
 
 #if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-    ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(0, -50));
+    ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(TypeParam(0), TypeParam(-50)));
 #endif
   }
 }
@@ -122,8 +122,8 @@ TYPED_TEST(RangeSegmentUnitTest, Slices)
   
   auto s = r.slice(10,100);
 
-  ASSERT_EQ(10, *s.begin());
-  ASSERT_EQ(110, *(s.end()));
+  ASSERT_EQ(TypeParam(10), *s.begin());
+  ASSERT_EQ(TypeParam(110), *(s.end()));
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Equality)

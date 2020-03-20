@@ -273,7 +273,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
 
   double raja_sum = (double)sum_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->sum, (double)raja_sum);
+  ASSERT_DOUBLE_EQ((double)this->sum, (double)raja_sum);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum2)
@@ -292,7 +292,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum2)
 
   double raja_sum = (double)sum_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->sum, (double)raja_sum);
+  ASSERT_DOUBLE_EQ((double)this->sum, (double)raja_sum);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
@@ -308,7 +308,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
 
   double raja_min = (double)min_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
 }
 
 
@@ -326,7 +326,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin2)
 
   double raja_min = (double)min_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
@@ -342,7 +342,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
 
   double raja_max = (double)max_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax2)
@@ -361,7 +361,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax2)
 
   double raja_max = (double)max_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
 }
 
 TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
@@ -380,7 +380,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
   RAJA::Index_type raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
@@ -406,7 +406,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex)
   Index raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minloc, raja_loc.idx);
 }
 
@@ -428,7 +428,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndex)
     Index2D(RAJA::Index_type idarray) : idarray(idarray)
     {
       idx = idarray % 10;
-      idy = floor( idarray / 10 );
+      idy = (RAJA::Index_type) floor( idarray / 10 );
     }
   };
 
@@ -442,7 +442,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndex)
   Index2D raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minlocx, raja_loc.idx);
   ASSERT_EQ(this->minlocy, raja_loc.idy);
 }
@@ -479,7 +479,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndexKernel)
   Index2D raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minlocx, raja_loc.idx);
   ASSERT_EQ(this->minlocy, raja_loc.idy);
 }
@@ -518,7 +518,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndexViewKernel)
   Index2D raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minlocx, raja_loc.idx);
   ASSERT_EQ(this->minlocy, raja_loc.idy);
 }
@@ -553,7 +553,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMinLoc2DIndexTupleViewKernel)
   RAJA::tuple<int, int> raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minlocx, RAJA::get<0>(raja_loc));
   ASSERT_EQ(this->minlocy, RAJA::get<1>(raja_loc));
 }
@@ -590,7 +590,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMaxLoc2DIndex)
   Index2D raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxlocx, raja_loc.idx);
   ASSERT_EQ(this->maxlocy, raja_loc.idy);
 }
@@ -627,7 +627,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMaxLoc2DIndexKernel)
   Index2D raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxlocx, raja_loc.idx);
   ASSERT_EQ(this->maxlocy, raja_loc.idy);
 }
@@ -666,7 +666,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMaxLoc2DIndexViewKernel)
   Index2D raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxlocx, raja_loc.idx);
   ASSERT_EQ(this->maxlocy, raja_loc.idy);
 }
@@ -701,7 +701,7 @@ TYPED_TEST_P(ReductionGenericLocTest, ReduceMaxLoc2DIndexTupleViewKernel)
   RAJA::tuple<int, int> raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxlocx, RAJA::get<0>(raja_loc));
   ASSERT_EQ(this->maxlocy, RAJA::get<1>(raja_loc));
 }
@@ -727,7 +727,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc2)
   RAJA::Index_type raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
@@ -757,7 +757,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex2)
   Index raja_loc = minloc_reducer.getLoc();
   double raja_min = (double)minloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->min, (double)raja_min);
+  ASSERT_DOUBLE_EQ((double)this->min, (double)raja_min);
   ASSERT_EQ(this->minloc, raja_loc.idx);
 }
 
@@ -777,7 +777,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
   RAJA::Index_type raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxloc, raja_loc);
 }
 
@@ -803,7 +803,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex)
   Index raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
@@ -825,7 +825,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc2)
   RAJA::Index_type raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxloc, raja_loc);
 }
 
@@ -853,7 +853,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex2)
   Index raja_loc = maxloc_reducer.getLoc();
   double raja_max = (double)maxloc_reducer.get();
 
-  ASSERT_FLOAT_EQ((double)this->max, (double)raja_max);
+  ASSERT_DOUBLE_EQ((double)this->max, (double)raja_max);
   ASSERT_EQ(this->maxloc, raja_loc.idx);
 }
 
