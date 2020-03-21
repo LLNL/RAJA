@@ -13,8 +13,9 @@
 
 TEST(Sort, basic_insertion_Sort)
 {
-  testSorter(InsertionSort{});
-  testSorter(InsertionSortPairs{});
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  testSorter(InsertionSort{}, MaxN);
+  testSorter(InsertionSortPairs{}, MaxN);
 }
 
 TEST(Sort, basic_shell_Sort)
