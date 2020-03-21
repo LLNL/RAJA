@@ -141,14 +141,14 @@ GPU_TEST(Sort, basic_device_insertion_Sort)
 
 GPU_TEST(Sort, basic_device_shell_Sort)
 {
-  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
   testSorter(ShellSortGPU{}, MaxN);
   testSorter(ShellSortPairsGPU{}, MaxN);
 }
 
 GPU_TEST(Sort, basic_device_heap_Sort)
 {
-  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
   testSorter(HeapSortGPU{}, MaxN);
   testSorter(HeapSortPairsGPU{}, MaxN);
 }
@@ -164,7 +164,7 @@ GPU_TEST(Sort, basic_device_intro_Sort)
 
 GPU_TEST(Sort, basic_device_merge_Sort)
 {
-  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
   // merge_sort is not currently supported in device code due
   // to memory requirements
   // testSorter(MergeSortGPU{}, MaxN);
