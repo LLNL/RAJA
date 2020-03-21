@@ -168,9 +168,9 @@ namespace internal
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
+      constexpr
       type createReturn(IndexLinear lin_index, Args args, PointerType pointer, IndexLinear stride){
-        auto arg = camp::get<ExtractType::s_vector_arg_idx>(args);
-        return type(lin_index, arg.size(), pointer, stride);
+        return type(lin_index, camp::get<ExtractType::s_vector_arg_idx>(args).size(), pointer, stride);
       }
   };
 
@@ -190,6 +190,7 @@ namespace internal
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
+      constexpr
       type createReturn(IndexLinear lin_index, Args , PointerType pointer, IndexLinear ){
         return pointer[lin_index];
       }
@@ -366,13 +367,13 @@ class ViewBase {
     // this is easier to maintain
     template <typename... Args>
     RAJA_HOST_DEVICE RAJA_INLINE
+    constexpr
     auto operator_internal(Args... args) const ->
     typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
     {
       using helper_t = internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>;
 
-      auto idx = stripIndexType(m_layout(internal::stripVectorIndex(args)...));
-      return helper_t::createReturn(idx, camp::make_tuple(args...), m_data, 1);
+      return helper_t::createReturn(stripIndexType(m_layout(internal::stripVectorIndex(args)...)), camp::make_tuple(args...), m_data, 1);
     }
 
   public:
@@ -458,8 +459,9 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     template <typename... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
+    constexpr
     auto operator()(Args... args) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Args>::type...>::type
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, camp::decay<Args>>::type...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...);
     }
@@ -469,7 +471,7 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator[](Arg arg) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, Arg>::type ...>::type
+    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, camp::decay<Arg>>::type ...>::type
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg));
     }
