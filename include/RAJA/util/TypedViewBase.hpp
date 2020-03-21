@@ -222,6 +222,7 @@ namespace internal
     using type = strip_index_type_t<Arg>;
 
     static RAJA_HOST_DEVICE RAJA_INLINE
+    constexpr
     type extract(Arg arg){
       return stripIndexType(arg);
     }
