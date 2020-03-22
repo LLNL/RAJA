@@ -73,10 +73,10 @@ RAJA_INDEX_VALUE_T(IZ, int, "IZ");
 //
 template <typename PHIVIEW_T, typename LVIEW_T, typename PSIVIEW_T>
 void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
-                 const Index_type num_m, 
-                 const Index_type num_d,
-                 const Index_type num_g,
-                 const Index_type num_z);
+                 const int num_m, 
+                 const int num_d,
+                 const int num_g,
+                 const int num_z);
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -87,17 +87,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const Index_type num_m = 25 + (rand()/RAND_MAX);
-  const Index_type num_g = 48 + (rand()/RAND_MAX);
-  const Index_type num_d = 80 + (rand()/RAND_MAX);
-  const Index_type num_z = 64*1024 + (rand()/RAND_MAX);
+  const int num_m = 25 + (rand()/RAND_MAX);
+  const int num_g = 48 + (rand()/RAND_MAX);
+  const int num_d = 80 + (rand()/RAND_MAX);
+  const int num_z = 64*1024 + (rand()/RAND_MAX);
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g << 
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
 
-  const Index_type L_size   = num_m * num_d;
-  const Index_type psi_size = num_d * num_g * num_z;
-  const Index_type phi_size = num_m * num_g * num_z;
+  const int L_size   = num_m * num_d;
+  const int psi_size = num_d * num_g * num_z;
+  const int phi_size = num_m * num_g * num_z;
 
   std::vector<double> L_vec(num_m * num_d);
   std::vector<double> psi_vec(num_d * num_g * num_z);
@@ -107,11 +107,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* psi_data = &psi_vec[0];
   double* phi_data = &phi_vec[0];
 
-  for (Index_type i = 0; i < L_size; ++i) {
+  for (int i = 0; i < L_size; ++i) {
     L_data[i] = i+1;
   }
 
-  for (Index_type i = 0; i < psi_size; ++i) {
+  for (int i = 0; i < psi_size; ++i) {
     psi_data[i] = 2*i+1;
   }
 
@@ -166,13 +166,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension 
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension 
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -220,13 +220,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension 
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension 
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -287,13 +287,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -354,13 +354,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -430,13 +430,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -632,13 +632,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension 
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension 
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
@@ -732,13 +732,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension 
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension 
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(dL_data,
@@ -832,13 +832,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   // 
   // L(m, d) : 1 -> d is stride-1 dimension 
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(dL_data,
@@ -1069,13 +1069,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(dL_data,
@@ -1169,13 +1169,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, Index_type, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, Index_type, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, Index_type, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(dL_data,
@@ -1392,10 +1392,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 template <typename PHIVIEW_T, typename LVIEW_T, typename PSIVIEW_T>
 void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
-                 const Index_type num_m, 
-                 const Index_type num_d,
-                 const Index_type num_g,
-                 const Index_type num_z)
+                 const int num_m, 
+                 const int num_d,
+                 const int num_g,
+                 const int num_z)
 {
   size_t nerrors = 0;
   double total_error = 0.0;
