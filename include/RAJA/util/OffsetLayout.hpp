@@ -48,6 +48,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
+  static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
+
   static constexpr size_t n_dims = sizeof...(RangeInts);
   IdxLin offsets[n_dims]={0}; //If not specified set to zero
 
@@ -116,6 +118,14 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
       : base_{rhs}
   {
   }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return base_.get_dim_stride();
+  }
 };
 
 }  // namespace internal
@@ -150,7 +160,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
    using IndexLinear = IdxLin;
 
-   // Pull in base coonstructors
+   // Pull in base constructors
    using Base::Base;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
@@ -182,6 +192,7 @@ auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
   return internal::OffsetLayout_impl<camp::make_idx_seq_t<Rank>, IdxLin>::
       from_layout_and_offsets(lower, make_permuted_layout(sizes, permutation));
 }
+
 
 }  // namespace RAJA
 

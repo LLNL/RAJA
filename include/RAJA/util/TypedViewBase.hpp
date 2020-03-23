@@ -127,7 +127,7 @@ namespace internal
 
   namespace detail {
 
-  template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx>
+  template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper
   {
       static_assert(NumVectors < 2, "Not supported: too many vector indices");
@@ -137,8 +137,8 @@ namespace internal
   /*
    * Specialization for Scalar return types
    */
-  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx>
-  struct ViewReturnHelper<0, camp::list<Args...>, ElementType, PointerType, LinIdx>
+  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
+  struct ViewReturnHelper<0, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
       using return_type = ElementType &;
 
@@ -155,11 +155,11 @@ namespace internal
   /*
    * Specialization for Vector return types
    */
-  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx>
-  struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx>
+  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
+  struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
       using vector_type = typename camp::at_v<camp::list<Args...>, get_vector_arg_idx<Args...>()>::vector_type;
-      using return_type = VectorRef<vector_type, LinIdx, PointerType, false>;
+      using return_type = VectorRef<vector_type, LinIdx, PointerType, StrideOneDim == get_vector_arg_idx<Args...>()>;
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -167,7 +167,7 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, layout_get_dim_stride<get_vector_arg_idx<Args...>()>(layout));
+        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, layout.template get_dim_stride<get_vector_arg_idx<Args...>()>());
       }
   };
 
@@ -183,14 +183,15 @@ namespace internal
    *
    * Otherwise it produces the usual scalar reference return type
    */
-  template<typename ElementType, typename PointerType, typename LinIdx, typename ... Args>
+  template<typename ElementType, typename PointerType, typename LinIdx, typename LayoutType, typename ... Args>
   using view_return_type_t =
       typename detail::ViewReturnHelper<
         count_num_vector_args<Args...>(),
         camp::list<Args...>,
         ElementType,
         PointerType,
-        LinIdx>::return_type;
+        LinIdx,
+        LayoutType::stride_one_dim>::return_type;
 
   /*
    * Creates the return value for a View
@@ -200,18 +201,19 @@ namespace internal
    *
    * Otherwise it produces the usual scalar reference return value
    */
-  template<typename ElementType, typename LinIdx, typename Layout, typename PointerType, typename ... Args>
+  template<typename ElementType, typename LinIdx, typename LayoutType, typename PointerType, typename ... Args>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  view_return_type_t<ElementType, PointerType, LinIdx, Args...>
-  view_make_return_value(Layout const &layout, PointerType const &data, Args const &... args){
+  view_return_type_t<ElementType, PointerType, LinIdx, LayoutType, Args...>
+  view_make_return_value(LayoutType const &layout, PointerType const &data, Args const &... args){
     return detail::ViewReturnHelper<
         count_num_vector_args<Args...>(),
         camp::list<Args...>,
         ElementType,
         PointerType,
-        LinIdx>::make_return(layout, data, args...);
+        LinIdx,
+        LayoutType::stride_one_dim>::make_return(layout, data, args...);
   }
 
 
@@ -382,7 +384,7 @@ class ViewBase {
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    view_return_type_t<value_type, pointer_type, linear_index_type, layout_type, Args...>
     operator()(Args... args) const
     {
       return view_make_return_value<value_type, linear_index_type>(m_layout, m_data, args...);
@@ -400,7 +402,7 @@ class ViewBase {
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    view_return_type_t<value_type, pointer_type, linear_index_type, layout_type, Args...>
     operator[](Args ... args) const
     {
       return view_make_return_value<value_type, linear_index_type>(m_layout, m_data, args...);
@@ -461,7 +463,7 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    view_return_type_t<value_type, pointer_type, linear_index_type, layout_type, Args...>
     operator()(Args... args) const
     {
       return view_make_return_value<value_type, linear_index_type>(Base::m_layout, Base::m_data, match_typed_view_arg<IndexTypes>(args)...);
@@ -479,7 +481,7 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    view_return_type_t<value_type, pointer_type, linear_index_type, layout_type, Args...>
     operator[](Args ... args) const
     {
       return view_make_return_value<value_type, linear_index_type>(Base::m_layout, Base::m_data, match_typed_view_arg<IndexTypes>(args)...);

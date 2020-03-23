@@ -76,7 +76,7 @@ public:
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
-  static constexpr ptrdiff_t stride1_dim = StrideOneDim;
+  static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
   // const char *index_types[sizeof...(RangeInts)];
 
@@ -180,7 +180,7 @@ public:
 #endif
     // dot product of strides and indices
     return foldl_sum<IdxLin>(
-      (RangeInts==stride1_dim ?   // Is this dimension stride-one?
+      (RangeInts==stride_one_dim ?   // Is this dimension stride-one?
          indices :  // it's stride one, so dont bother with multiple
          strides[RangeInts]*indices // it's not stride one
 			)...
@@ -228,6 +228,14 @@ public:
     // replacing 1 for any zero-sized dimensions
     return foldl(RAJA::operators::multiplies<IdxLin>(),
                          (sizes[RangeInts] == IdxLin(0) ? IdxLin(1) : sizes[RangeInts])...);
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return strides[DIM];
   }
 };
 
@@ -389,55 +397,6 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
 }
 
 
-namespace detail {
-  template<typename LayoutType>
-  struct LayoutTraits;
-
-
-  template <typename RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-  struct LayoutTraits<LayoutBase_impl<RangeInts, IdxLin, StrideOneDim>>{
-      using LayoutType = LayoutBase_impl<RangeInts, IdxLin, StrideOneDim>;
-      using IndexLinear = IdxLin;
-
-      template<camp::idx_t DIM>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      IdxLin get_dim_stride(LayoutType const &layout){
-        return layout.strides[DIM];
-      }
-  };
-
-
-  template <typename IdxLin, typename DimTypes, ptrdiff_t StrideOne>
-  struct LayoutTraits<TypedLayout<IdxLin, DimTypes, StrideOne> >{
-      using LayoutType = TypedLayout<IdxLin, DimTypes, StrideOne>;
-      using IndexLinear = IdxLin;
-
-      template<camp::idx_t DIM>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      IdxLin get_dim_stride(LayoutType const &layout){
-        return layout.strides[DIM];
-      }
-  };
-
-} // namespace detail
-
-/*!
- * Returns the stride of a layout dimension
- */
-template<camp::idx_t DIM, typename LayoutType>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-constexpr
-typename detail::LayoutTraits<LayoutType>::IndexLinear
-layout_get_dim_stride(LayoutType const &layout){
-  return detail::LayoutTraits<LayoutType>::template get_dim_stride<DIM>(layout);
-}
 
 
 }  // namespace RAJA

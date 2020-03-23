@@ -72,6 +72,10 @@ struct StaticLayoutBase_impl<IdxLin,
   using sizes = camp::int_seq<IdxLin, Sizes...>;
   using strides = camp::int_seq<IdxLin, Strides...>;
 
+  static constexpr camp::idx_t stride_one_dim =
+      foldl_max<camp::idx_t>(
+          (camp::seq_at<RangeInts, strides>::value == 1 ? RangeInts : -1)...);
+
   static constexpr size_t n_dims = sizeof...(Sizes);
 
   /*!
@@ -129,6 +133,14 @@ struct StaticLayoutBase_impl<IdxLin,
   }
 
 
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return camp::seq_at<DIM, strides>::value;
+  }
+
 
 };
 
@@ -185,7 +197,11 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
   using IndexLinear = typename Layout::IndexLinear;
 
-static constexpr IndexLinear n_dims = sizeof...(DimTypes);
+  static
+  constexpr
+  camp::idx_t stride_one_dim = Layout::stride_one_dim;
+
+  static constexpr IndexLinear n_dims = sizeof...(DimTypes);
   /*!
    * Computes a linear space index from specified indices.
    * This is formed by the dot product of the indices and the layout strides.
@@ -207,48 +223,20 @@ static constexpr IndexLinear n_dims = sizeof...(DimTypes);
     return s_size;
   }
 
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return Layout{}.get_dim_stride();
+  }
+
   RAJA_INLINE
   static void print() { Layout::print(); }
 };
 
 
-template <typename IdxLin,
-         typename RangeInts,
-         typename Sizes,
-         typename Strides>
-struct LayoutTraits<StaticLayoutBase_impl<IdxLin, RangeInts, Sizes, Strides> >
-{
-    using LayoutType = StaticLayoutBase_impl<IdxLin, RangeInts, Sizes, Strides>;
-    using IndexLinear = IdxLin;
 
-    template<camp::idx_t DIM>
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    static
-    constexpr
-    IdxLin get_dim_stride(LayoutType const &){
-      return camp::seq_at<DIM, Strides>::value;
-    }
-};
-
-
-template <typename Layout, typename DimTypeList>
-struct LayoutTraits<TypedStaticLayoutImpl<Layout, DimTypeList> >
-{
-    using TypedLayoutType = TypedStaticLayoutImpl<Layout, DimTypeList>;
-    using LayoutType = Layout;
-    using IndexLinear = typename Layout::IndexLinear;
-    using Strides = typename Layout::strides;
-
-    template<camp::idx_t DIM>
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    static
-    constexpr
-    IndexLinear get_dim_stride(LayoutType const &){
-      return camp::seq_at<DIM, Strides>::value;
-    }
-};
 
 }  // namespace detail
 
