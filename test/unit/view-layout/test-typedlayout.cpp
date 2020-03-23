@@ -168,7 +168,7 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
 {
   auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 5}},
+    RAJA::make_permuted_layout<2, TypeParam>({{7, 5}},
                                RAJA::as_array<RAJA::PERM_JI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JI,
                                                 TypeParam,
@@ -185,7 +185,7 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
 TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 {
   auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 13, 5}},
+    RAJA::make_permuted_layout<3, TypeParam>({{7, 13, 5}},
                                RAJA::as_array<RAJA::PERM_JKI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JKI,
                                                 TypeParam,
@@ -206,7 +206,7 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
 {
   auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 13, 5, 17}},
+    RAJA::make_permuted_layout<4, TypeParam>({{7, 13, 5, 17}},
                                RAJA::as_array<RAJA::PERM_LJKI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_LJKI,
                                                 TypeParam,

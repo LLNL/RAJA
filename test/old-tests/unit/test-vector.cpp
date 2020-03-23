@@ -75,7 +75,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
-    N += (100*((double)rand()/RAND_MAX));
+    N += (size_t)(100*((double)rand()/RAND_MAX));
   }
 
   element_t *A = new element_t[N];
@@ -121,8 +121,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
-    N += (10*((double)rand()/RAND_MAX));
-    M += (10*((double)rand()/RAND_MAX));
+    N += (size_t)(10*((double)rand()/RAND_MAX));
+    M += (size_t)(10*((double)rand()/RAND_MAX));
   }
 
   element_t *A = new element_t[N*M];
