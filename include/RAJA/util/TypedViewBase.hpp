@@ -167,7 +167,7 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, false);
+        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, layout_get_dim_stride<get_vector_arg_idx<Args...>()>(layout));
       }
   };
 

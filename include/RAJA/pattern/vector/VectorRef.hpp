@@ -144,6 +144,14 @@ namespace RAJA
         return value;
       }
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      index_type size() const
+      {
+        return m_length;
+      }
+
       /*!
        * @brief Automatic conversion to the underlying vector_type.
        *

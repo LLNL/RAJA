@@ -389,6 +389,57 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
 }
 
 
+namespace detail {
+  template<typename LayoutType>
+  struct LayoutTraits;
+
+
+  template <typename RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
+  struct LayoutTraits<LayoutBase_impl<RangeInts, IdxLin, StrideOneDim>>{
+      using LayoutType = LayoutBase_impl<RangeInts, IdxLin, StrideOneDim>;
+      using IndexLinear = IdxLin;
+
+      template<camp::idx_t DIM>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      IdxLin get_dim_stride(LayoutType const &layout){
+        return layout.strides[DIM];
+      }
+  };
+
+
+  template <typename IdxLin, typename DimTypes, ptrdiff_t StrideOne>
+  struct LayoutTraits<TypedLayout<IdxLin, DimTypes, StrideOne> >{
+      using LayoutType = TypedLayout<IdxLin, DimTypes, StrideOne>;
+      using IndexLinear = IdxLin;
+
+      template<camp::idx_t DIM>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      IdxLin get_dim_stride(LayoutType const &layout){
+        return layout.strides[DIM];
+      }
+  };
+
+} // namespace detail
+
+/*!
+ * Returns the stride of a layout dimension
+ */
+template<camp::idx_t DIM, typename LayoutType>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+typename detail::LayoutTraits<LayoutType>::IndexLinear
+layout_get_dim_stride(LayoutType const &layout){
+  return detail::LayoutTraits<LayoutType>::template get_dim_stride<DIM>(layout);
+}
+
+
 }  // namespace RAJA
 
 #endif

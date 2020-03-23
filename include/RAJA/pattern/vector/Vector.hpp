@@ -205,6 +205,13 @@ namespace RAJA
         }
       }
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      camp::idx_t size() const
+      {
+        return m_length;
+      }
 
       /*!
        * @brief Get scalar value from vector

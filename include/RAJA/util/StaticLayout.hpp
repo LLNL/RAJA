@@ -212,6 +212,44 @@ static constexpr IndexLinear n_dims = sizeof...(DimTypes);
 };
 
 
+template <typename IdxLin,
+         typename RangeInts,
+         typename Sizes,
+         typename Strides>
+struct LayoutTraits<StaticLayoutBase_impl<IdxLin, RangeInts, Sizes, Strides> >
+{
+    using LayoutType = StaticLayoutBase_impl<IdxLin, RangeInts, Sizes, Strides>;
+    using IndexLinear = IdxLin;
+
+    template<camp::idx_t DIM>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    static
+    constexpr
+    IdxLin get_dim_stride(LayoutType const &){
+      return camp::seq_at<DIM, Strides>::value;
+    }
+};
+
+
+template <typename Layout, typename DimTypeList>
+struct LayoutTraits<TypedStaticLayoutImpl<Layout, DimTypeList> >
+{
+    using TypedLayoutType = TypedStaticLayoutImpl<Layout, DimTypeList>;
+    using LayoutType = Layout;
+    using IndexLinear = typename Layout::IndexLinear;
+    using Strides = typename Layout::strides;
+
+    template<camp::idx_t DIM>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    static
+    constexpr
+    IndexLinear get_dim_stride(LayoutType const &){
+      return camp::seq_at<DIM, Strides>::value;
+    }
+};
+
 }  // namespace detail
 
 

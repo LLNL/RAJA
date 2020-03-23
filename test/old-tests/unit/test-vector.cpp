@@ -71,7 +71,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 100*vector_t::s_num_elem;
+  size_t N = 10*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
@@ -97,7 +97,6 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;
   });
-
 
   for(size_t i = 0;i < N;i ++){
     ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
