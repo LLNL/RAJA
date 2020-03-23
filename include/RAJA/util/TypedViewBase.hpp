@@ -462,7 +462,7 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_INLINE
     constexpr
     auto operator()(Args... args) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, camp::decay<Args>>::type...>::type
+    decltype( Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...) )
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...);
     }
@@ -472,7 +472,7 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     auto operator[](Arg arg) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, typename TypedViewVectorHelper<IndexTypes, camp::decay<Arg>>::type ...>::type
+    decltype( Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg)) )
     {
       return Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg));
     }
