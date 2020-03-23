@@ -26,22 +26,10 @@
 namespace RAJA
 {
 
-  namespace internal{
 
-    struct VectorIndexBase {};
-
-
-    template<typename FROM>
-    struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<VectorIndexBase, FROM>::value>::type>
-    {
-        using type = typename FROM::value_type;
-    };
-
-
-  }
 
   template<typename IDX, typename VECTOR_TYPE>
-  class VectorIndex : public internal::VectorIndexBase {
+  class VectorIndex {
     public:
       using value_type = strip_index_type_t<IDX>;
       using index_type = IDX;
@@ -86,9 +74,119 @@ namespace RAJA
   };
 
 
+  namespace internal{
 
-  namespace internal
-  {
+
+    /* Partial specialization for the strip_index_type_t helper in
+       IndexValue.hpp
+    */
+    template<typename IDX, typename VECTOR_TYPE>
+    struct StripIndexTypeT<VectorIndex<IDX, VECTOR_TYPE>>
+    {
+        using type = typename VectorIndex<IDX, VECTOR_TYPE>::value_type;
+    };
+
+
+    // Helper that strips the Vector type from an argument
+    template<typename ARG>
+    struct VectorIndexTraits {
+        using arg_type = ARG;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        bool isVectorIndex(){
+          return false;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        arg_type const &stripVector(arg_type const &arg){
+          return arg;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t size(arg_type const &){
+          return 1;
+        }
+    };
+
+    template<typename IDX, typename VECTOR_TYPE>
+    struct VectorIndexTraits<VectorIndex<IDX, VECTOR_TYPE>> {
+        using arg_type = IDX;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        bool isVectorIndex(){
+          return true;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        arg_type const &stripVector(VectorIndex<IDX, VECTOR_TYPE> const &arg){
+          return *arg;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t size(VectorIndex<IDX, VECTOR_TYPE> const &arg){
+          return arg.size();
+        }
+    };
+
+    /*
+     * Returns vector size of argument.
+     *
+     * For scalars, always returns 1.
+     *
+     * For VectorIndex types, returns the number of vector lanes.
+     */
+    template<typename ARG>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    bool isVectorIndex()
+    {
+      return VectorIndexTraits<ARG>::isVectorIndex();
+    }
+
+    template<typename ARG>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    auto stripVectorIndex(ARG const &arg) ->
+    typename VectorIndexTraits<ARG>::arg_type const &
+    {
+      return VectorIndexTraits<ARG>::stripVector(arg);
+    }
+
+    /*
+     * Returns vector size of argument.
+     *
+     * For scalars, always returns 1.
+     *
+     * For VectorIndex types, returns the number of vector lanes.
+     */
+    template<typename ARG>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    camp::idx_t getVectorSize(ARG const &arg)
+    {
+      return VectorIndexTraits<ARG>::size(arg);
+    }
 
     /*
      * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly

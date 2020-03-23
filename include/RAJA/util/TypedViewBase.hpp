@@ -68,141 +68,156 @@ namespace internal
     using type = RAJA::TypedOffsetLayout<IdxLin,camp::tuple<DimTypes...>>;
   };
 
-  // Helper that strips the Vector type from an argument
-  template<typename ARG>
-  struct StripVectorIndex {
-      using arg_type = ARG;
-      using vector_type = RAJA::vector_scalar_register;
-      static constexpr bool s_is_vector = false;
 
 
+
+  namespace detail
+  {
+    /*
+     * Returns the argument number which contains a VectorIndex
+     *
+     * returns -1 if none of the arguments are VectorIndexs
+     */
+    template<typename ... ARGS, camp::idx_t ... IDX>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    static constexpr camp::idx_t get_vector_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
+      return RAJA::foldl_max<camp::idx_t>(
+          (isVectorIndex<ARGS>() ? IDX : -1) ...);
+    }
+
+
+
+  } // namespace detail
+
+
+
+  /*
+   * Returns the number of arguments which are VectorIndexs
+   */
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static constexpr camp::idx_t count_num_vector_args(){
+    return RAJA::foldl_sum<camp::idx_t>(
+        (isVectorIndex<ARGS>() ? 1 : 0) ...);
+  }
+
+  /*
+   * Returns which argument has a vector index
+   */
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static constexpr camp::idx_t get_vector_arg_idx(){
+    return detail::get_vector_arg_idx_expanded(
+        camp::list<ARGS...>{},
+        camp::make_idx_seq_t<sizeof...(ARGS)>{});
+  }
+
+  /*
+   * Returns the number of elements in the vector argument
+   */
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static constexpr camp::idx_t get_vector_args_size(ARGS ... args){
+    return RAJA::foldl_max<camp::idx_t>(getVectorSize<ARGS>(args) ...);
+  }
+
+  namespace detail {
+
+  template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx>
+  struct ViewReturnHelper
+  {
+      static_assert(NumVectors < 2, "Not supported: too many vector indices");
+  };
+
+
+  /*
+   * Specialization for Scalar return types
+   */
+  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx>
+  struct ViewReturnHelper<0, camp::list<Args...>, ElementType, PointerType, LinIdx>
+  {
+      using return_type = ElementType &;
+
+      template<typename LayoutType>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       constexpr
-      arg_type const &get(arg_type const &arg){
-        return arg;
+      return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
+        return data[stripIndexType(layout(args...))];
       }
   };
 
-  template<typename IDX, typename VECTOR_TYPE>
-  struct StripVectorIndex<VectorIndex<IDX, VECTOR_TYPE>> {
-      using arg_type = IDX;
-      using vector_type = VECTOR_TYPE;
-      static constexpr bool s_is_vector = true;
+  /*
+   * Specialization for Vector return types
+   */
+  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx>
+  struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx>
+  {
+      using vector_type = typename camp::at_v<camp::list<Args...>, get_vector_arg_idx<Args...>()>::vector_type;
+      using return_type = VectorRef<vector_type, LinIdx, PointerType, false>;
 
+      template<typename LayoutType>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       constexpr
-      arg_type const &get(VectorIndex<IDX, VECTOR_TYPE> const &arg){
-        return *arg;
+      return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
+        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, false);
       }
   };
 
-  template<typename ARG>
+
+  } // namespace detail
+
+
+  /*
+   * Computes the return type of a view.
+   *
+   * If any of the arguments are a VectorIndex, it creates a VectorRef
+   * return type.
+   *
+   * Otherwise it produces the usual scalar reference return type
+   */
+  template<typename ElementType, typename PointerType, typename LinIdx, typename ... Args>
+  using view_return_type_t =
+      typename detail::ViewReturnHelper<
+        count_num_vector_args<Args...>(),
+        camp::list<Args...>,
+        ElementType,
+        PointerType,
+        LinIdx>::return_type;
+
+  /*
+   * Creates the return value for a View
+   *
+   * If any of the arguments are a VectorIndex, it creates a VectorRef
+   * return value.
+   *
+   * Otherwise it produces the usual scalar reference return value
+   */
+  template<typename ElementType, typename LinIdx, typename Layout, typename PointerType, typename ... Args>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
-  auto stripVectorIndex(ARG const &arg) ->
-  typename StripVectorIndex<ARG>::arg_type const &
-  {
-    return StripVectorIndex<ARG>::get(arg);
+  view_return_type_t<ElementType, PointerType, LinIdx, Args...>
+  view_make_return_value(Layout const &layout, PointerType const &data, Args const &... args){
+    return detail::ViewReturnHelper<
+        count_num_vector_args<Args...>(),
+        camp::list<Args...>,
+        ElementType,
+        PointerType,
+        LinIdx>::make_return(layout, data, args...);
   }
 
-  template<camp::idx_t I, typename ... ARGS>
-  struct ExtractVectorArg;
-
-  template<camp::idx_t I, typename ARG0, typename ... ARG_REST>
-  struct ExtractVectorArg<I, ARG0, ARG_REST...>{
-      using strip_index_t = StripVectorIndex<ARG0>;
-      using next_t = ExtractVectorArg<I+1, ARG_REST...>;
-
-      static constexpr camp::idx_t s_num_vector_args =
-          (strip_index_t::s_is_vector ? 1 : 0) + next_t::s_num_vector_args;
-
-      static constexpr camp::idx_t s_vector_arg_idx =
-          (strip_index_t::s_is_vector ? I : next_t::s_vector_arg_idx);
-
-      using vector_type =
-          typename std::conditional<strip_index_t::s_is_vector,
-          typename strip_index_t::vector_type,
-          typename next_t::vector_type>::type;
-  };
-
-  // Termination case
-  template<camp::idx_t I>
-  struct ExtractVectorArg<I>{
-      static constexpr camp::idx_t s_num_vector_args = 0;
-      static constexpr camp::idx_t s_vector_arg_idx = -1;
-      using vector_type = RAJA::vector_scalar_register;
-  };
-
-  // Helper to unpack VectorIndex
-  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType, bool IsVector>
-  struct ViewVectorArgsHelper;
-
-  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType>
-  struct ViewVectorArgsHelper<IdxLin, ValueType, PointerType, ExtractType, true> {
-
-      // Count how many VectorIndex arguments there are
-      static constexpr size_t s_num_vector_args = ExtractType::s_num_vector_args;
-
-      // Make sure we don't have conflicting arguments
-      static_assert(s_num_vector_args < 2, "View only supports a single VectorIndex at a time");
 
 
-      // We cannot compute this yet.
-      // TODO: figure out how this might be computed...
-      static constexpr bool s_is_stride_one = false;
-
-
-      // Compute a Vector type
-      using vector_type = typename ExtractType::vector_type;
-
-      using IndexLinear = strip_index_type_t<IdxLin>;
-
-      using type = VectorRef<vector_type, IdxLin, PointerType, s_is_stride_one>;
-
-      template<typename Args>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      type createReturn(IndexLinear lin_index, Args args, PointerType pointer, IndexLinear stride){
-        return type(lin_index, camp::get<ExtractType::s_vector_arg_idx>(args).size(), pointer, stride);
-      }
-  };
-
-  template<typename IdxLin, typename ValueType, typename PointerType, typename ExtractType>
-  struct ViewVectorArgsHelper<IdxLin, ValueType, PointerType, ExtractType, false> {
-
-      // We cannot compute this yet.
-      // TODO: figure out how this might be computed...
-      static constexpr bool s_is_stride_one = false;
-
-
-      using IndexLinear = strip_index_type_t<IdxLin>;
-
-      using type = ValueType&;
-
-      template<typename Args>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      type createReturn(IndexLinear lin_index, Args , PointerType pointer, IndexLinear ){
-        return pointer[lin_index];
-      }
-  };
-
-
-
-  template<typename IdxLin, typename ValueType, typename PointerType, typename ... ARGS>
-  using ViewVectorHelper = ViewVectorArgsHelper<IdxLin, ValueType, PointerType,
-      ExtractVectorArg<0, ARGS...>, ExtractVectorArg<0, ARGS...>::s_num_vector_args >= 1>;
-
-
+  namespace detail
+  {
 
   /**
    * This class will help strip strongly typed
@@ -215,7 +230,7 @@ namespace internal
    * typed indices.
    */
   template<typename Expected, typename Arg>
-  struct TypedViewVectorHelper{
+  struct MatchTypedViewArgHelper{
     static_assert(std::is_convertible<Arg, Expected>::value,
         "Argument isn't compatible");
 
@@ -236,7 +251,7 @@ namespace internal
    * typed indices.
    */
   template<typename Expected, typename Arg, typename VectorType>
-  struct TypedViewVectorHelper<Expected, RAJA::VectorIndex<Arg, VectorType> >{
+  struct MatchTypedViewArgHelper<Expected, RAJA::VectorIndex<Arg, VectorType> >{
 
     static_assert(std::is_convertible<Arg, Expected>::value,
         "Argument isn't compatible");
@@ -251,16 +266,17 @@ namespace internal
     }
   };
 
+  } //namespace detail
 
 
   template<typename Expected, typename Arg>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  auto vectorArgExtractor(Arg const &arg) ->
-  typename TypedViewVectorHelper<Expected, Arg>::type
+  typename detail::MatchTypedViewArgHelper<Expected, Arg>::type
+  match_typed_view_arg(Arg const &arg)
   {
-    return TypedViewVectorHelper<Expected, Arg>::extract(arg);
+    return detail::MatchTypedViewArgHelper<Expected, Arg>::extract(arg);
   }
 
 
@@ -287,7 +303,7 @@ class ViewBase {
 
     static constexpr size_t n_dims = layout_type::n_dims;
 
-  private:
+  protected:
     pointer_type m_data;
     layout_type const m_layout;
 
@@ -362,31 +378,14 @@ class ViewBase {
     }
 
 
-  protected:
-
-    // making this specifically typed would require unpacking the layout,
-    // this is easier to maintain
-    template <typename... Args>
-    RAJA_HOST_DEVICE RAJA_INLINE
-    constexpr
-    auto operator_internal(Args... args) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
-    {
-      using helper_t = internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>;
-
-      return helper_t::createReturn(stripIndexType(m_layout(internal::stripVectorIndex(args)...)), camp::make_tuple(args...), m_data, 1);
-    }
-
-  public:
-
     template <typename... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-
-    auto operator()(Args... args) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
+    constexpr
+    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    operator()(Args... args) const
     {
-      return operator_internal(args...);
+      return view_make_return_value<value_type, linear_index_type>(m_layout, m_data, args...);
     }
 
 
@@ -400,10 +399,11 @@ class ViewBase {
     template <typename ... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    auto operator[](Args ... args) const ->
-    typename internal::ViewVectorHelper<linear_index_type, value_type, pointer_type, Args...>::type
+    constexpr
+    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    operator[](Args ... args) const
     {
-      return operator_internal(args...);
+      return view_make_return_value<value_type, linear_index_type>(m_layout, m_data, args...);
     }
 
 
@@ -461,20 +461,28 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    auto operator()(Args... args) const ->
-    decltype( Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...) )
+    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    operator()(Args... args) const
     {
-      return Base::operator_internal(vectorArgExtractor<IndexTypes>(args)...);
+      return view_make_return_value<value_type, linear_index_type>(Base::m_layout, Base::m_data, match_typed_view_arg<IndexTypes>(args)...);
     }
 
 
-    template <typename Arg>
+
+    /*
+     * Compatibility note (AJK):
+     * We are using variadic arguments even though operator[] takes exactly 1 argument
+     * This gets around a template instantiation bug in CUDA/nvcc 9.1, which seems to have
+     * been fixed in CUDA 9.2+
+     */
+    template <typename ... Args>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    auto operator[](Arg arg) const ->
-    decltype( Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg)) )
+    constexpr
+    view_return_type_t<value_type, pointer_type, linear_index_type, Args...>
+    operator[](Args ... args) const
     {
-      return Base::operator_internal(vectorArgExtractor<IndexTypes...>(arg));
+      return view_make_return_value<value_type, linear_index_type>(Base::m_layout, Base::m_data, match_typed_view_arg<IndexTypes>(args)...);
     }
 
 

@@ -109,25 +109,25 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
 
 // Convenience folds
 template <typename Result, typename... Args>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result foldl_sum(Args... args)
 {
   return foldl(RAJA::operators::plus<Result>(), args...);
 }
 
 template <typename Result, typename... Args>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr Result product(Args... args)
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result foldl_product(Args... args)
 {
   return foldl(RAJA::operators::multiplies<Result>(), args...);
 }
 
 template <typename Result, typename... Args>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result foldl_max(Args... args)
 {
   return foldl(RAJA::operators::maximum<Result>(), args...);
 }
 
 template <typename Result, typename... Args>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr Result min(Args... args)
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result foldl_min(Args... args)
 {
   return foldl(RAJA::operators::minimum<Result>(), args...);
 }

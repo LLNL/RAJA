@@ -179,7 +179,7 @@ public:
     BoundsCheck<0>(indices...);
 #endif
     // dot product of strides and indices
-    return sum<IdxLin>(
+    return foldl_sum<IdxLin>(
       (RangeInts==stride1_dim ?   // Is this dimension stride-one?
          indices :  // it's stride one, so dont bother with multiple
          strides[RangeInts]*indices // it's not stride one
