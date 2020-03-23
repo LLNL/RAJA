@@ -21,14 +21,4 @@ class ForallFunctionalSegmentTest : public ::testing::Test
 REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest,
                             RangeSegmentForall);
 
-
-//TYPED_TEST_SUITE_P(ForallFunctionalReductionTest);
-//template <typename T>
-//class ForallFunctionalReductionTest : public ::testing::Test
-//{
-//};
-//#include "test-forall-reduction.hpp"
-//REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalReductionTest,
-//                            ReductionForall);
-
 #endif  // __TEST_FORALL_HPP__
