@@ -18,13 +18,3 @@ using SequentialForallTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
                                ForallFunctionalSegmentTest,
                                SequentialForallTypes);
-
-// Generate Reduction Type Lists
-using SeqReductionTypes = list<RAJA::seq_reduce>;
-
-using SequentialForallReductionTypes = 
-    Test<cartesian_product<IdxTypes, ListHost, SequentialTypes, SeqReductionTypes>>::Types;
-
-INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallFunctionalReductionTest,
-                               SequentialForallReductionTypes);
