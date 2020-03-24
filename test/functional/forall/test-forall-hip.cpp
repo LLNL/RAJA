@@ -7,10 +7,13 @@
 
 #include "tests/test-forall.hpp"
 
-// Generate Hip Type List
 #if defined(RAJA_ENABLE_HIP)
-using HipTypes = list<RAJA::hip_exec<128>>;
 
+// Hip execution policy types
+using HipTypes = list< RAJA::hip_exec<128>,
+                       RAJA::hip_exec<256>  >;
+
+// Hip tests index, resource, and execution policy types
 using ListHip = list<camp::resources::Hip>;
 using HipForallTypes =
     Test<cartesian_product<IdxTypes, ListHip, HipTypes>>::Types;
@@ -18,4 +21,5 @@ using HipForallTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
                                ForallFunctionalSegmentTest,
                                HipForallTypes);
+
 #endif

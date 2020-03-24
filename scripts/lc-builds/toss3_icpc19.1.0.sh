@@ -19,6 +19,7 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-19.1.0/bin/icpc \
   -C ../host-configs/lc-builds/toss3/icpc_X_gcc8headers.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_TBB=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

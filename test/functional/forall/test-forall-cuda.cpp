@@ -7,10 +7,13 @@
 
 #include "tests/test-forall.hpp"
 
-// Generate Cuda Type List
 #if defined(RAJA_ENABLE_CUDA)
-using CudaTypes = list<RAJA::cuda_exec<128>>;
 
+// Cuda execution policy types
+using CudaTypes = list< RAJA::cuda_exec<128>,
+                        RAJA::cuda_exec<256> >;
+
+// Cuda tests index, resource, and execution policy types 
 using ListCuda = list<camp::resources::Cuda>;
 using CudaForallTypes =
     Test<cartesian_product<IdxTypes, ListCuda, CudaTypes>>::Types;
@@ -18,4 +21,5 @@ using CudaForallTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallFunctionalSegmentTest,
                                CudaForallTypes);
+
 #endif

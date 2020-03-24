@@ -7,12 +7,17 @@
 
 #include "tests/test-forall.hpp"
 
-// Generate TBB Type List
 #if defined(RAJA_ENABLE_TBB)
-using TBBTypes = list<RAJA::tbb_for_exec,
-                      RAJA::tbb_for_static<8>,
-                      RAJA::tbb_for_dynamic>;
 
+// TBB execution policy types
+using TBBTypes = list< RAJA::tbb_for_exec,
+                       RAJA::tbb_for_static< >,
+                       RAJA::tbb_for_static< 2 >,
+                       RAJA::tbb_for_static< 4 >,
+                       RAJA::tbb_for_static< 8 >,
+                       RAJA::tbb_for_dynamic >;
+
+// TBB tests index, resource, and execution policy types
 using TBBForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, TBBTypes>>::Types;
 

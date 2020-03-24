@@ -7,11 +7,12 @@
 
 #include "tests/test-forall.hpp"
 
-// Generate Sequential Type List
-using SequentialTypes = list<RAJA::seq_exec,
-                             RAJA::loop_exec,
-                             RAJA::simd_exec>;
+// Sequential execution policy types
+using SequentialTypes = list< RAJA::seq_exec,
+                              RAJA::loop_exec,
+                              RAJA::simd_exec >;
 
+// Sequential tests index, resource, and execution policy types
 using SequentialForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, SequentialTypes>>::Types;
 

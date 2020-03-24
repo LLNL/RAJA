@@ -7,11 +7,13 @@
 
 #include "tests/test-forall.hpp"
 
-// Generate OMP Target Type List
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OMPTargetTypes = list<RAJA::omp_target_parallel_for_exec<8>,
-                            RAJA::omp_target_parallel_for_exec_nt>;
 
+// OpenMP target execution policy types
+using OMPTargetTypes = list< RAJA::omp_target_parallel_for_exec<8>,
+                             RAJA::omp_target_parallel_for_exec_nt >;
+
+// OpenMP target tests index, resource, and execution policy types
 using OMPTargetForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, OMPTargetTypes>>::Types;
 
