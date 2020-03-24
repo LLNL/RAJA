@@ -38,7 +38,7 @@ void ForallListSegmentFunctionalTest(INDEX_TYPE N)
   size_t idxlen = idx_array.size();
 
   // Create list segment for tests
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(idx_array, idxlen);
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen);
 
   Resource working_res{WORKING_RES()};
   INDEX_TYPE* working_array;
@@ -77,18 +77,24 @@ void ForallListSegmentFunctionalTest(INDEX_TYPE N)
 }
 
 
-TYPED_TEST_P(ForallFunctionalTest, ListSegmentForall)
+TYPED_TEST_P(ForallFunctionalSegmentTest, ListSegmentForall)
 {
   using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
   using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
   using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
 
-  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
-  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047);
-  ForallListSegmentFunctionalTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000);
+  ForallListSegmentFunctionalTest<INDEX_TYPE, 
+                                  WORKING_RESOURCE, 
+                                  EXEC_POLICY>(13);
+
+  ForallListSegmentFunctionalTest<INDEX_TYPE, 
+                                  WORKING_RESOURCE, 
+                                  EXEC_POLICY>(2047);
+
+  ForallListSegmentFunctionalTest<INDEX_TYPE, 
+                                  WORKING_RESOURCE, 
+                                  EXEC_POLICY>(32000);
 
 }
-
-REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, ListSegmentForall);
 
 #endif  // __TEST_FORALL_LISTSEGMENT_HPP__

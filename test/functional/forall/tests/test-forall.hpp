@@ -19,8 +19,10 @@ class ForallFunctionalSegmentTest : public ::testing::Test
 };
 
 #include "test-forall-rangesegment.hpp"
+#include "test-forall-listsegment.hpp"
 
 REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest,
-                            RangeSegmentForall);
+                            RangeSegmentForall,
+                            ListSegmentForall);
 
 #endif  // __TEST_FORALL_HPP__
