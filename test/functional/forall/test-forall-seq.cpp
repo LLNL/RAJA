@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-rangesegment.hpp"
-#include "tests/test-forall-listsegment.hpp"
+#include "tests/test-forall.hpp"
 
 // Generate Sequential Type List
 using SequentialTypes = list<RAJA::seq_exec,
@@ -17,5 +16,5 @@ using SequentialForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, SequentialTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallFunctionalTest,
+                               ForallFunctionalSegmentTest,
                                SequentialForallTypes);

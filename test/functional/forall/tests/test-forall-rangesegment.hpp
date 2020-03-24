@@ -64,7 +64,7 @@ void runNegativeTests()
 }
 
 
-TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
+TYPED_TEST_P(ForallFunctionalSegmentTest, RangeSegmentForall)
 {
   using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
   using WORKING_RES = typename at<TypeParam, num<1>>::type;
@@ -76,7 +76,5 @@ TYPED_TEST_P(ForallFunctionalTest, RangeSegmentForall)
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
-
-REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalTest, RangeSegmentForall);
 
 #endif  // __TEST_FORALL_RANGESEGMENT_HPP__
