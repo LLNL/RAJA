@@ -147,29 +147,15 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void load(element_type const *ptr, camp::idx_t stride = 1){
-        m_length = s_num_elem;
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0].load(ptr + stride*s_num_full_elem, stride);
-        }
-      }
-
-      /*!
-       * @brief Load constructor, assuming scalars are in consecutive memory
-       * locations.
-       *
-       * For fixed length vectors, the length arguments is ignored, otherwise
-       * only the specified number of values is read in.
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void load_n(element_type const *ptr, camp::idx_t length, camp::idx_t stride = 1){
+      void load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = s_num_elem){
         m_length = length;
-        if(s_is_fixed || length == s_num_elem){
-          load(ptr, stride);
+        if(s_is_fixed || m_length == s_num_elem){
+          for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+            m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
+          }
+          if(s_num_partial_registers){
+            m_partial_register[0].load(ptr + stride*s_num_full_elem, stride);
+          }
         }
         else{
           for(camp::idx_t i = 0;i < length;++ i){
@@ -237,6 +223,19 @@ namespace RAJA
         }
       }
 
+      /*!
+       * @brief Get scalar value from vector
+       * This will not be the most efficient due to the offset calculation.
+       * @param i Offset of scalar to get
+       * @return Returns scalar value at i
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      element_type get(camp::idx_t i) const
+      {
+        return (*this)[i];
+      }
+
 
       /*!
        * @brief Set scalar value in vector register
@@ -262,13 +261,12 @@ namespace RAJA
       }
 
       /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
+       * @brief assign all vector values to same scalar value
+       * @param value The scalar value to use
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(element_type value)
-      {
+      void broadcast(element_type const &value){
         for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
           m_full_registers[i] = value;
         }
@@ -276,6 +274,111 @@ namespace RAJA
           m_partial_register[0] = value;
         }
         m_length = s_num_elem;
+      }
+
+
+      /*!
+       * @brief Copy values of another vector
+       * @param x The other vector to copy
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void copy(self_type const &x){
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          m_full_registers[i] = x.m_full_registers[i];
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          m_partial_register[0] = x.m_partial_register[0];
+        }
+        m_length = x.m_length;
+      }
+
+      /*!
+       * @brief Element-wise addition of two vectors
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type add(self_type const &x) const {
+        self_type result(*this);
+
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] = m_full_registers[i] + x.m_full_registers[i];
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          result.m_partial_register[0] = m_partial_register[0] + x.m_partial_register[0];
+        }
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
+      }
+
+      /*!
+       * @brief Element-wise subtraction of two vectors
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type subtract(self_type const &x) const {
+        self_type result(*this);
+
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] = m_full_registers[i] - x.m_full_registers[i];
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          result.m_partial_register[0] = m_partial_register[0] - x.m_partial_register[0];
+        }
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
+      }
+
+      /*!
+       * @brief Element-wise multiplication of two vectors
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type multiply(self_type const &x) const {
+        self_type result(*this);
+
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] = m_full_registers[i] * x.m_full_registers[i];
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          result.m_partial_register[0] = m_partial_register[0] * x.m_partial_register[0];
+        }
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
+      }
+
+      /*!
+       * @brief Element-wise division of two vectors
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide(self_type const &x) const {
+        self_type result(*this);
+
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] = m_full_registers[i] / x.m_full_registers[i];
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          result.m_partial_register[0] = m_partial_register[0] / x.m_partial_register[0];
+        }
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
+      }
+
+      /*!
+       * @brief Set entire vector to a single scalar value
+       * @param value Value to set all vector elements to
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator=(element_type value)
+      {
+        broadcast(value);
+        return *this;
       }
 
       /*!
@@ -287,13 +390,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator=(self_type const &x)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] = x.m_partial_register[0];
-        }
-        m_length = x.m_length;
+        copy(x);
 
         return *this;
       }
@@ -308,9 +405,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator+(self_type const &x) const
       {
-        self_type result = *this;
-        result += x;
-        return result;
+        return add(x);
       }
 
       /*!
@@ -322,14 +417,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator+=(self_type const &x)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] += x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] += x.m_partial_register[0];
-        }
-        m_length = RAJA::min(m_length, x.m_length);
-
+        *this = add(x);
         return *this;
       }
 
@@ -342,9 +430,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator-(self_type const &x) const
       {
-        self_type result = *this;
-        result -= x;
-        return result;
+        return subtract(x);
       }
 
       /*!
@@ -356,14 +442,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator-=(self_type const &x)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] -= x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] -= x.m_partial_register[0];
-        }
-        m_length = RAJA::min(m_length, x.m_length);
-
+        *this = subtract(x);
         return *this;
       }
 
@@ -388,14 +467,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator*=(self_type const &x)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] *= x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] *= x.m_partial_register[0];
-        }
-        m_length = RAJA::min(m_length, x.m_length);
-
+        (*this) = multiply(x);
         return *this;
       }
 
@@ -408,9 +480,7 @@ namespace RAJA
       RAJA_INLINE
       self_type operator/(self_type const &x) const
       {
-        self_type result = *this;
-        result /= x;
-        return result;
+        return divide(x);
       }
 
       /*!
@@ -422,14 +492,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator/=(self_type const &x)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] /= x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] /= x.m_partial_register[0];
-        }
-        m_length = RAJA::min(m_length, x.m_length);
-
+        (*this) = divide(x);
         return *this;
       }
 
@@ -455,6 +518,31 @@ namespace RAJA
         if(s_is_fixed && s_num_partial_registers){
           result.m_partial_register[0] =
           m_partial_register[0].fused_multiply_add(b.m_partial_register[0], c.m_partial_register[0]);
+        }
+        return result;
+      }
+
+      /**
+        * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
+        *
+        * Derived types can override this to implement intrinsic FMA's
+        *
+        * @param b Second product operand
+        * @param c Subtraction operand
+        * @return Value of (*this)*b-c
+        */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        self_type result = *this;
+        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
+          result.m_full_registers[i] =
+          m_full_registers[i].fused_multiply_subtract(b.m_full_registers[i], c.m_full_registers[i]);
+        }
+        if(s_is_fixed && s_num_partial_registers){
+          result.m_partial_register[0] =
+          m_partial_register[0].fused_multiply_subtract(b.m_partial_register[0], c.m_partial_register[0]);
         }
         return result;
       }

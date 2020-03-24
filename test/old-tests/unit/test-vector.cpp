@@ -59,6 +59,7 @@ protected:
   virtual void TearDown()
   {
   }
+
 };
 TYPED_TEST_SUITE_P(VectorTest);
 

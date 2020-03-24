@@ -304,7 +304,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
       {
-        return (self_type(*getThis()) * self_type(b)) - self_type(c);
+        return getThis()->fused_multiply_add(b, -c);
       }
 
   };

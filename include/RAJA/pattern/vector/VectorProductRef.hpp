@@ -169,7 +169,7 @@ namespace RAJA
       RAJA_INLINE
       vector_type operator-(vector_type const &x) const
       {
-        return get_result() - x;
+        return m_vector_a.fused_multiply_subtract(m_vector_b, x);
       }
 
 
@@ -181,9 +181,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type operator*(vector_type const &x) const
+      VectorProductRef<vector_type> operator*(vector_type const &x) const
       {
-        return get_result() * x;
+        return VectorProductRef<vector_type>(get_result(), x);
       }
 
 
@@ -285,15 +285,15 @@ namespace RAJA
   RAJA_INLINE
   VECTOR_TYPE
   operator-(ST x, VectorProductRef<VECTOR_TYPE> const &y){
-    return VECTOR_TYPE(x) - y.get_result();
+    y.get_left().fused_multiply_subtract(y.get_right(), x);
   }
 
   template<typename ST, typename VECTOR_TYPE>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  VECTOR_TYPE
+  VectorProductRef<VECTOR_TYPE>
   operator*(ST x, VectorProductRef<VECTOR_TYPE> const &y){
-    return VECTOR_TYPE(x) * y.get_result();
+    return VectorProductRef<VECTOR_TYPE>(VECTOR_TYPE(x), y.get_result());
   }
 
   template<typename ST, typename VECTOR_TYPE>

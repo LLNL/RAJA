@@ -93,8 +93,48 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
 
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(x[i], A[i]);
+    ASSERT_DOUBLE_EQ(x.get(i), A[i]);
   }
 
+  // test copy construction
+  register_t cc(x);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(cc[i], A[i]);
+  }
+
+  // test explicit copy
+  register_t ce(0);
+  ce.copy(x);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(ce[i], A[i]);
+  }
+
+  // test assignment
+  register_t ca(0);
+  ca = cc;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(ca[i], A[i]);
+  }
+
+  // test scalar construction (broadcast)
+  register_t bc((element_t)5);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(bc[i], 5.0);
+  }
+
+  // test scalar assignment (broadcast)
+  register_t ba((element_t)0);
+  ba = (element_t)13.0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(ba[i], 13.0);
+  }
+
+  // test explicit broadcast
+  register_t be((element_t)0);
+  be.broadcast((element_t)13.0);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(be[i], 13.0);
+  }
 }
 
 
@@ -149,17 +189,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
     y.set(i, B[i]);
   }
 
-  register_t z = x+y;
-
+  // operator +
+  register_t op_add = x+y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z[i], A[i] + B[i]);
+    ASSERT_DOUBLE_EQ(op_add[i], A[i] + B[i]);
   }
 
-  register_t z2 = x;
-  z2 += y;
-
+  // operator +=
+  register_t op_pluseq = x;
+  op_pluseq += y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z2[i], A[i] + B[i]);
+    ASSERT_DOUBLE_EQ(op_pluseq[i], A[i] + B[i]);
+  }
+
+  // function add
+  register_t func_add = x.add(y);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(func_add[i], A[i] + B[i]);
   }
 
 }
@@ -187,10 +233,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
     y.set(i, B[i]);
   }
 
-  register_t z = x-y;
-
+  // operator -
+  register_t op_sub = x-y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_EQ(z[i], A[i] - B[i]);
+    ASSERT_DOUBLE_EQ(op_sub[i], A[i] - B[i]);
+  }
+
+  // operator -=
+  register_t op_subeq = x;
+  op_subeq -= y;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_subeq[i], A[i] - B[i]);
+  }
+
+  // function subtract
+  register_t func_sub = x.subtract(y);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(func_sub[i], A[i] - B[i]);
   }
 
 }
@@ -213,17 +272,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
     y.set(i, B[i]);
   }
 
-  register_t z = x*y;
-
+  // operator *
+  register_t op_mul = x*y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z[i], A[i] * B[i]);
+    ASSERT_DOUBLE_EQ(op_mul[i], A[i] * B[i]);
   }
 
-  register_t z2 = x;
-  z2 *= y;
-
+  // operator *=
+  register_t op_muleq = x;
+  op_muleq *= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z2[i], A[i] * B[i]);
+    ASSERT_DOUBLE_EQ(op_muleq[i], A[i] * B[i]);
+  }
+
+  // function multiply
+  register_t func_mul = x.multiply(y);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(func_mul[i], A[i] * B[i]);
   }
 }
 
@@ -245,17 +310,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
     y.set(i, B[i]);
   }
 
-  register_t z = x/y;
-
+  // operator /
+  register_t op_div = x/y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z[i], A[i] / B[i]);
+    ASSERT_DOUBLE_EQ(op_div[i], A[i] / B[i]);
   }
 
-  register_t z2 = x;
-  z2 /= y;
-
+  // operator /=
+  register_t op_diveq = x;
+  op_diveq /= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(z2[i], A[i] / B[i]);
+    ASSERT_DOUBLE_EQ(op_diveq[i], A[i] / B[i]);
+  }
+
+  // function divide
+  register_t func_div = x.divide(y);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(func_div[i], A[i] / B[i]);
   }
 }
 
@@ -280,6 +351,65 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
   }
 
   ASSERT_DOUBLE_EQ(x.dot(y), expected);
+
+}
+
+TYPED_TEST_P(RegisterTest, VectorFMA)
+{
+
+  using register_t = TypeParam;
+
+  using element_t = typename register_t::element_type;
+  static constexpr size_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem], B[num_elem], C[num_elem], expected[num_elem];
+  register_t x, y, z, result;
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    C[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    x.set(i, A[i]);
+    y.set(i, B[i]);
+    z.set(i, C[i]);
+    expected[i] = A[i]*B[i]+C[i];
+  }
+
+  result = x.fused_multiply_add(y,z);
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(result[i], expected[i]);
+  }
+
+}
+
+
+TYPED_TEST_P(RegisterTest, VectorFMS)
+{
+
+  using register_t = TypeParam;
+
+  using element_t = typename register_t::element_type;
+  static constexpr size_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem], B[num_elem], C[num_elem], expected[num_elem];
+  register_t x, y, z, result;
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    C[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    x.set(i, A[i]);
+    y.set(i, B[i]);
+    z.set(i, C[i]);
+    expected[i] = A[i]*B[i]-C[i];
+  }
+
+  result = x.fused_multiply_subtract(y,z);
+
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(result[i], expected[i]);
+  }
 
 }
 
@@ -340,6 +470,8 @@ REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSetGet,
                                        VectorRegisterMultiply,
                                        VectorRegisterDivide,
                                        VectorRegisterDotProduct,
+                                       VectorFMA,
+                                       VectorFMS,
                                        VectorRegisterMax,
                                        VectorRegisterMin);
 

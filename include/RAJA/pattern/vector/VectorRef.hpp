@@ -136,10 +136,10 @@ namespace RAJA
       {
         vector_type value;
         if(STRIDE_ONE){
-          value.load_n(m_data+m_linear_index, m_length);
+          value.load(m_data+m_linear_index, 1, m_length);
         }
         else{
-          value.load_n(m_data+m_linear_index, m_length, m_stride);
+          value.load(m_data+m_linear_index, m_stride, m_length);
         }
         return value;
       }
