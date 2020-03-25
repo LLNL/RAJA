@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall.hpp"
+#include "tests/test-forall-segment.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
@@ -18,6 +18,6 @@ using OMPTargetForallTypes =
     Test<cartesian_product<IdxTypes, ListHost, OMPTargetTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TargetOmp,
-                               ForallFunctionalSegmentTest,
+                               ForallSegmentTest,
                                OMPTargetForallTypes);
 #endif

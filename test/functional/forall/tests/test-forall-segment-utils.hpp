@@ -1,5 +1,5 @@
-#ifndef __TEST_FORALL_UTILS_HPP__
-#define __TEST_FORALL_UTILS_HPP__
+#ifndef __TEST_FORALL_SEGMENT_UTILS_HPP__
+#define __TEST_FORALL_SEGMENT_UTILS_HPP__
 
 
 #include "camp/resource.hpp"
@@ -63,4 +63,4 @@ void deallocateForallTestData(Resource& work_res,
   host_res.deallocate(test_array);
 }
 
-#endif  // __TEST_FORALL_UTILS_HPP__
+#endif  // __TEST_FORALL_SEGMENT_UTILS_HPP__

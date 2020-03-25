@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall.hpp"
+#include "tests/test-forall-segment.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -19,7 +19,7 @@ using HipForallTypes =
     Test<cartesian_product<IdxTypes, ListHip, HipTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
-                               ForallFunctionalSegmentTest,
+                               ForallSegmentTest,
                                HipForallTypes);
 
 #endif

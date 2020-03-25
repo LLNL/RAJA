@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall.hpp"
+#include "tests/test-forall-segment.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -19,7 +19,7 @@ using CudaForallTypes =
     Test<cartesian_product<IdxTypes, ListCuda, CudaTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
-                               ForallFunctionalSegmentTest,
+                               ForallSegmentTest,
                                CudaForallTypes);
 
 #endif
