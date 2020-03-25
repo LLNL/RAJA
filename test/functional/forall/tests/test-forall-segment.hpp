@@ -10,7 +10,7 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "test-forall-segment-utils.hpp"
+#include "test-forall-utils.hpp"
 
 TYPED_TEST_SUITE_P(ForallSegmentTest);
 template <typename T>
