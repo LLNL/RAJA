@@ -72,7 +72,7 @@ namespace policy
   template<typename T, size_t UNROLL = 1, typename REGISTER = policy::vector::default_register_type>
   using StreamVector = StreamVectorExt<
       RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::s_num_elem>,
-      RAJA::RegisterTraits<REGISTER, T>::s_num_elem * UNROLL>;
+      UNROLL>;
 
   template<typename T, size_t NumElem, typename REGISTER = policy::vector::default_register_type>
   using FixedVector = FixedVectorExt<

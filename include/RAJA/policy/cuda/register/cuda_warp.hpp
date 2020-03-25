@@ -102,11 +102,15 @@ namespace RAJA {
        * @brief Gets our lane after our bitmask has been applied
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       static
       constexpr
       int get_lane() {
+#ifdef __CUDA_ARCH__
         return bitmask_t::maskValue(threadIdx.x);
+#else
+        return 0;
+#endif
       }
 
       RAJA_HOST_DEVICE
@@ -128,11 +132,12 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      void load(element_type const *ptr, size_t stride = 1){
+      self_type &load(element_type const *ptr, size_t stride = 1){
         auto lane = get_lane();
         if(lane < s_num_elem){
           m_value = ptr[stride*lane];
         }
+        return *this;
       }
 
 
@@ -146,11 +151,12 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      void store(element_type *ptr, size_t stride) const{
+      self_type const &store(element_type *ptr, size_t stride = 1) const{
         auto lane = get_lane();
         if(lane < s_num_elem){
           ptr[stride*lane] = m_value;
         }
+        return *this;
       }
 
       /*!
@@ -175,53 +181,50 @@ namespace RAJA {
       template<typename IDX>
       RAJA_INLINE
       RAJA_DEVICE
-      void set(IDX i, element_type value)
+      self_type &set(IDX i, element_type value)
 			{
 				auto lane = get_lane();
       	if(lane == i){
 					m_value = value;
 				}
+      	return *this;
 			}
 
 
       RAJA_DEVICE
       RAJA_INLINE
-      static
-      self_type broadcast(element_type const &a){
-        return self_type(a);
+      self_type &broadcast(element_type const &a){
+        m_value = a;
+        return *this;
       }
 
       RAJA_DEVICE
       RAJA_INLINE
-      static
-      void copy(self_type &dst, self_type const &src){
-        dst.m_value = src.m_value;
+      self_type &copy(self_type const &src){
+        m_value = src.m_value;
+        return *this;
       }
 
       RAJA_DEVICE
       RAJA_INLINE
-      constexpr
       self_type add(self_type const &b) const {
         return self_type(m_value + b.m_value);
       }
 
       RAJA_DEVICE
       RAJA_INLINE
-      constexpr
       self_type subtract(self_type const &b) const {
         return self_type(m_value - b.m_value);
       }
 
       RAJA_DEVICE
       RAJA_INLINE
-      constexpr
       self_type multiply(self_type const &b) const {
         return self_type(m_value * b.m_value);
       }
 
       RAJA_DEVICE
       RAJA_INLINE
-      constexpr
       self_type divide(self_type const &b) const {
         return self_type(m_value / b.m_value);
       }

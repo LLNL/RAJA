@@ -93,7 +93,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t stride = 1){
+      self_type &load(element_type const *ptr, size_t stride = 1){
         if(stride == 1){
           m_value = _mm256_loadu_pd(ptr);
         }
@@ -103,6 +103,7 @@ namespace RAJA
                               ptr[stride],
                               ptr[0]);
         }
+        return *this;
       }
 
 
@@ -116,7 +117,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      void store(element_type *ptr, size_t stride = 1) const{
+      self_type const &store(element_type *ptr, size_t stride = 1) const{
         if(stride == 1){
           _mm256_storeu_pd(ptr, m_value);
         }
@@ -125,6 +126,7 @@ namespace RAJA
             ptr[i*stride] = m_value[i];
           }
         }
+        return *this;
       }
 
       /*!
@@ -146,20 +148,25 @@ namespace RAJA
        */
       template<typename IDX>
       RAJA_INLINE
-      void set(IDX i, element_type value)
-      {m_value[i] = value;}
+      self_type &set(IDX i, element_type value)
+      {
+        m_value[i] = value;
+        return *this;
+      }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void broadcast(element_type const &value){
+      self_type &broadcast(element_type const &value){
         m_value =  _mm256_set1_pd(value);
+        return *this;
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void copy(self_type const &src){
+      self_type &copy(self_type const &src){
         m_value = src.m_value;
+        return *this;
       }
 
       RAJA_HOST_DEVICE

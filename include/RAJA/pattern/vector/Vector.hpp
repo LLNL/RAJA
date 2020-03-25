@@ -28,6 +28,68 @@
 namespace RAJA
 {
 
+  namespace internal
+  {
+
+  namespace detail
+  {
+
+    class VectorRegisterAccessHelper{
+
+
+    };
+
+    template<typename ELEMENT_TYPE, typename IDX>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    ELEMENT_TYPE
+    VectorGetByIndex(IDX){
+      printf("OFF END!\n");
+      return ELEMENT_TYPE(); // termination case: this is undefined behavior!
+    }
+
+    template<typename ELEMENT_TYPE, typename IDX, typename REGISTER0, typename ... REGISTER_REST>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    ELEMENT_TYPE
+    VectorGetByIndex(IDX i, REGISTER0 const &r0, REGISTER_REST const &...r_rest){
+      if((camp::idx_t)i < (camp::idx_t)REGISTER0::s_num_elem){
+        return r0.get(i);
+      }
+      else{
+        return VectorGetByIndex<ELEMENT_TYPE>((camp::idx_t)i-(camp::idx_t)REGISTER0::s_num_elem, r_rest...);
+      }
+    }
+
+
+
+
+    template<typename IDX, typename ELEMENT_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    void
+    VectorSetByIndex(IDX, ELEMENT_TYPE){
+      printf("OFF END!\n");
+      // NOP: this is undefined behavior!
+    }
+
+    template<typename IDX, typename ELEMENT_TYPE, typename REGISTER0, typename ... REGISTER_REST>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    void
+    VectorSetByIndex(IDX i, ELEMENT_TYPE value, REGISTER0 &r0, REGISTER_REST &...r_rest){
+      if((camp::idx_t)i < (camp::idx_t)REGISTER0::s_num_elem){
+        r0.set(i, value);
+      }
+      else{
+        VectorSetByIndex((camp::idx_t)i-(camp::idx_t)REGISTER0::s_num_elem, value, r_rest...);
+      }
+    }
+
+
+
+
+  } // namespace detail
 
 /*!
  * \file
@@ -36,57 +98,33 @@ namespace RAJA
  *
  */
 
-  template<typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
-  class Vector;
+  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  class VectorImpl;
 
-  template<template<typename, typename, size_t> class REGISTER_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t NUM_REG_ELEM, size_t NUM_ELEM, bool FIXED_LENGTH>
-  class Vector<REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>, NUM_ELEM, FIXED_LENGTH>
+  template<typename REGISTER0_TYPE, typename ... REGISTER_TYPES, camp::idx_t ... IDX_SEQ, bool FIXED_LENGTH>
+  class VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>
   {
     public:
-      using full_register_type =
-          REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, NUM_REG_ELEM>;
-      static constexpr camp::idx_t s_num_register_elem = NUM_REG_ELEM;
+      using register_types_t = camp::list<REGISTER0_TYPE, REGISTER_TYPES...>;
+      using register_tuple_t = camp::tuple<REGISTER0_TYPE, REGISTER_TYPES...>;
 
-      using self_type = Vector<full_register_type, NUM_ELEM, FIXED_LENGTH>;
+      static constexpr camp::idx_t s_num_elem =
+          RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::s_num_elem, REGISTER_TYPES::s_num_elem...);
+
+      using self_type = VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>;
       using vector_type = self_type;
-      using element_type = ELEMENT_TYPE;
+      using element_type = typename REGISTER0_TYPE::element_type;
 
 
       static constexpr camp::idx_t s_is_fixed = FIXED_LENGTH;
 
-      static constexpr camp::idx_t s_num_elem = NUM_ELEM;
-      static constexpr camp::idx_t s_byte_width = sizeof(element_type);
-      static constexpr camp::idx_t s_bit_width = s_byte_width*8;
-
-
-      static_assert(s_num_elem % s_num_register_elem == 0 || s_is_fixed,
-          "Vector must use a whole number of registers if it's variable length");
-
-
-      static constexpr camp::idx_t s_num_full_registers = s_num_elem / s_num_register_elem;
-
-      static constexpr camp::idx_t s_num_full_elem = s_num_full_registers*s_num_register_elem;
-
-      static constexpr camp::idx_t s_num_partial_registers =
-          s_num_full_elem == s_num_elem ? 0 : 1;
-
-      static constexpr camp::idx_t s_num_partial_elem = s_num_elem - s_num_full_elem;
-
-      using partial_register_type =
-          REGISTER_TYPE<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
 
     private:
-      /*
-       * Note (AJK):
-       * We make sure that we don't have "zero length arrays" which seems to make only the MSVC
-       * compile croak... and all other compilers seem happy with.
-       * I would expect that if the number of full or partial register is zero, and we
-       * never touch them, that they should get optimized out anyways.
-       */
-      full_register_type m_full_registers[s_num_full_registers > 0 ? s_num_full_registers : 1];
-      partial_register_type m_partial_register[s_num_partial_registers > 0 ? s_num_partial_registers : 1];
+
+      register_tuple_t m_registers;
 
       camp::idx_t m_length;
+
     public:
 
 
@@ -95,22 +133,17 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      Vector() : m_length(s_num_elem){}
+      VectorImpl() : m_length(s_num_elem){}
 
       /*!
        * @brief Copy constructor
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      Vector(self_type const &c) :
+      VectorImpl(self_type const &c) :
+        m_registers(c.m_registers),
         m_length(c.m_length)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = c.m_full_registers[i];
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0] = c.m_partial_register[0];
-        }
       }
 
       /*!
@@ -118,15 +151,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      Vector(element_type const &c)
+      VectorImpl(element_type const &c) :
+        m_length(s_num_elem)
       {
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i].broadcast(c);
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0].broadcast(c);
-        }
-        m_length = s_num_elem;
+        broadcast(c);
       }
 
 
@@ -135,7 +163,7 @@ namespace RAJA
       static
       constexpr
       bool is_root() {
-        return full_register_type::is_root();
+        return REGISTER0_TYPE::is_root();
       }
 
 
@@ -150,12 +178,10 @@ namespace RAJA
       void load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = s_num_elem){
         m_length = length;
         if(s_is_fixed || m_length == s_num_elem){
-          for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-            m_full_registers[i].load(ptr + i*stride*s_num_register_elem, stride);
-          }
-          if(s_num_partial_registers){
-            m_partial_register[0].load(ptr + stride*s_num_full_elem, stride);
-          }
+          camp::sink(camp::get<IDX_SEQ>(m_registers).load(
+              ptr + IDX_SEQ*stride*REGISTER0_TYPE::s_num_elem,
+              stride
+          )...);
         }
         else{
           for(camp::idx_t i = 0;i < length;++ i){
@@ -177,12 +203,10 @@ namespace RAJA
       RAJA_INLINE
       void store(element_type *ptr, camp::idx_t stride = 1) const{
         if(s_is_fixed || m_length == s_num_elem){
-          for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-            m_full_registers[i].store(ptr + i*stride*s_num_register_elem, stride);
-          }
-          if(s_num_partial_registers){
-            m_partial_register[0].store(ptr + stride*s_num_full_elem, stride);
-          }
+          camp::sink(camp::get<IDX_SEQ>(m_registers).store(
+              ptr + IDX_SEQ*stride*REGISTER0_TYPE::s_num_elem,
+              stride
+          )...);
         }
         else{
           for(camp::idx_t i = 0;i < m_length;++ i){
@@ -209,18 +233,7 @@ namespace RAJA
       RAJA_INLINE
       element_type operator[](camp::idx_t i) const
       {
-        // compute the register
-        camp::idx_t r = i/s_num_register_elem;
-
-        // compute the element in the register (equiv: i % s_num_register_elem)
-        camp::idx_t e = i - (r*s_num_register_elem);
-
-        if(!s_is_fixed || r < s_num_full_registers){
-          return m_full_registers[r][e];
-        }
-        else{
-          return m_partial_register[0][e];
-        }
+        return get(i);
       }
 
       /*!
@@ -233,7 +246,7 @@ namespace RAJA
       RAJA_INLINE
       element_type get(camp::idx_t i) const
       {
-        return (*this)[i];
+        return detail::VectorGetByIndex<element_type>(i, camp::get<IDX_SEQ>(m_registers)...);
       }
 
 
@@ -246,19 +259,9 @@ namespace RAJA
       RAJA_INLINE
       void set(camp::idx_t i, element_type value)
       {
-        // compute the register
-        camp::idx_t r = i/s_num_register_elem;
-
-        // compute the element in the register (equiv: i % s_num_register_elem)
-        camp::idx_t e = i - (r*s_num_register_elem);
-
-        if(!s_is_fixed || r < s_num_full_registers){
-          m_full_registers[r].set(e, value);
-        }
-        else{
-          m_partial_register[0].set(e, value);
-        }
+        detail::VectorSetByIndex(i, value, camp::get<IDX_SEQ>(m_registers)...);
       }
+
 
       /*!
        * @brief assign all vector values to same scalar value
@@ -267,12 +270,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       void broadcast(element_type const &value){
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = value;
-        }
-        if(s_num_partial_registers){
-          m_partial_register[0] = value;
-        }
+        camp::sink(camp::get<IDX_SEQ>(m_registers).broadcast(value)...);
         m_length = s_num_elem;
       }
 
@@ -284,12 +282,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       void copy(self_type const &x){
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          m_full_registers[i] = x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          m_partial_register[0] = x.m_partial_register[0];
-        }
+        m_registers = x.m_registers;
         m_length = x.m_length;
       }
 
@@ -301,12 +294,8 @@ namespace RAJA
       self_type add(self_type const &x) const {
         self_type result(*this);
 
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] = m_full_registers[i] + x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] = m_partial_register[0] + x.m_partial_register[0];
-        }
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) + camp::get<IDX_SEQ>(x.m_registers))...);
+
         result.m_length = RAJA::min(m_length, x.m_length);
 
         return result;
@@ -320,12 +309,8 @@ namespace RAJA
       self_type subtract(self_type const &x) const {
         self_type result(*this);
 
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] = m_full_registers[i] - x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] = m_partial_register[0] - x.m_partial_register[0];
-        }
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) - camp::get<IDX_SEQ>(x.m_registers))...);
+
         result.m_length = RAJA::min(m_length, x.m_length);
 
         return result;
@@ -339,12 +324,8 @@ namespace RAJA
       self_type multiply(self_type const &x) const {
         self_type result(*this);
 
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] = m_full_registers[i] * x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] = m_partial_register[0] * x.m_partial_register[0];
-        }
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) * camp::get<IDX_SEQ>(x.m_registers))...);
+
         result.m_length = RAJA::min(m_length, x.m_length);
 
         return result;
@@ -358,12 +339,8 @@ namespace RAJA
       self_type divide(self_type const &x) const {
         self_type result(*this);
 
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] = m_full_registers[i] / x.m_full_registers[i];
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] = m_partial_register[0] / x.m_partial_register[0];
-        }
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) / camp::get<IDX_SEQ>(x.m_registers))...);
+
         result.m_length = RAJA::min(m_length, x.m_length);
 
         return result;
@@ -510,15 +487,15 @@ namespace RAJA
       RAJA_INLINE
       self_type fused_multiply_add(self_type const &b, self_type const &c) const
       {
-        self_type result = *this;
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] =
-          m_full_registers[i].fused_multiply_add(b.m_full_registers[i], c.m_full_registers[i]);
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] =
-          m_partial_register[0].fused_multiply_add(b.m_partial_register[0], c.m_partial_register[0]);
-        }
+        self_type result;
+
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) =
+            camp::get<IDX_SEQ>(m_registers).fused_multiply_add(
+                camp::get<IDX_SEQ>(b.m_registers),
+                camp::get<IDX_SEQ>(c.m_registers)))...);
+
+        result.m_length = RAJA::foldl_min<camp::idx_t>(m_length, b.m_length, c.m_length);
+
         return result;
       }
 
@@ -535,15 +512,15 @@ namespace RAJA
       RAJA_INLINE
       self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
       {
-        self_type result = *this;
-        for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-          result.m_full_registers[i] =
-          m_full_registers[i].fused_multiply_subtract(b.m_full_registers[i], c.m_full_registers[i]);
-        }
-        if(s_is_fixed && s_num_partial_registers){
-          result.m_partial_register[0] =
-          m_partial_register[0].fused_multiply_subtract(b.m_partial_register[0], c.m_partial_register[0]);
-        }
+        self_type result;
+
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) =
+            camp::get<IDX_SEQ>(m_registers).fused_multiply_subtract(
+                camp::get<IDX_SEQ>(b.m_registers),
+                camp::get<IDX_SEQ>(c.m_registers)))...);
+
+        result.m_length = RAJA::foldl_min<camp::idx_t>(m_length, b.m_length, c.m_length);
+
         return result;
       }
 
@@ -556,21 +533,16 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        element_type result = (element_type)0;
         if(m_length == s_num_elem){
-          for(camp::idx_t i = 0;i < s_num_full_registers;++ i){
-            result += m_full_registers[i].sum();
-          }
-          if(s_num_partial_registers){
-            result += m_partial_register[0].sum();
-          }
+          return RAJA::foldl_sum<element_type>(camp::get<IDX_SEQ>(m_registers).sum()...);
         }
         else{
+          element_type result = (element_type)0;
           for(camp::idx_t i = 0;i < m_length;++ i){
             result += (*this)[i];
           }
+          return result;
         }
-        return result;
       }
 
       /*!
@@ -598,20 +570,7 @@ namespace RAJA
       element_type max() const
       {
         if(s_is_fixed || m_length == s_num_elem){
-          if(s_num_full_registers == 0){
-            return m_partial_register[0].max();
-          }
-
-          element_type result = (element_type)m_full_registers[0].max();
-          for(camp::idx_t i = 1;i < s_num_full_registers;++ i){
-            auto new_val = m_full_registers[i].max();
-            result = result > new_val ? result : new_val;
-          }
-          if(s_num_partial_registers){
-            auto new_val = m_partial_register[0].max();
-            result = result > new_val ? result : new_val;
-          }
-          return result;
+          return RAJA::foldl_max<element_type>(camp::get<IDX_SEQ>(m_registers).max()...);
         }
         else{
           element_type result = (*this)[0];
@@ -632,20 +591,7 @@ namespace RAJA
       element_type min() const
       {
         if(s_is_fixed || m_length == s_num_elem){
-          if(s_num_full_registers == 0){
-            return m_partial_register[0].min();
-          }
-
-          element_type result = (element_type)m_full_registers[0].min();
-          for(camp::idx_t i = 1;i < s_num_full_registers;++ i){
-            auto new_val = m_full_registers[i].min();
-            result = result < new_val ? result : new_val;
-          }
-          if(s_num_partial_registers){
-            auto new_val = m_partial_register[0].min();
-            result = result < new_val ? result : new_val;
-          }
-          return result;
+          return RAJA::foldl_min<element_type>(camp::get<IDX_SEQ>(m_registers).min()...);
         }
         else{
           element_type result = (*this)[0];
@@ -659,46 +605,96 @@ namespace RAJA
 
   };
 
+  //
+  // Operator Overloads for scalar OP vector
+  //
+
+  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
+  operator+(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) + y;
+  }
+
+  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
+  operator-(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) - y;
+  }
+
+  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
+  operator*(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) * y;
+  }
+
+  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
+  operator/(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) / y;
+  }
+
+
+  template<typename REGISTER_TYPE, size_t VEC_NUM_ELEM>
+  struct FixedVectorTypeHelper;
+
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t REG_NUM_ELEM, size_t VEC_NUM_ELEM>
+  struct FixedVectorTypeHelper<Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>, VEC_NUM_ELEM>{
+
+
+    static constexpr camp::idx_t s_num_full_registers = VEC_NUM_ELEM / REG_NUM_ELEM;
+
+    static constexpr camp::idx_t s_num_full_elem = s_num_full_registers*REG_NUM_ELEM;
+
+    static constexpr camp::idx_t s_num_partial_elem = VEC_NUM_ELEM - s_num_full_elem;
+
+    static constexpr camp::idx_t s_num_partial_registers = s_num_partial_elem > 0 ? 1 : 0;
+
+    using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>;
+
+    using partial_register_type =
+        Register<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
+
+
+    // Create lists of registers
+    using full_register_list = internal::list_of_n<full_register_type, s_num_full_registers>;
+    using partial_register_list = camp::list<partial_register_type>;
+
+    using register_list_t = typename
+        std::conditional<s_num_partial_registers == 0,
+        full_register_list,
+        typename camp::extend<full_register_list, partial_register_list>::type>::type;
+
+    using register_idx_seq_t = camp::make_idx_seq_t<s_num_full_registers+s_num_partial_registers>;
+
+    // Create actual VectorImpl type
+    using type = VectorImpl<register_list_t, register_idx_seq_t, true>;
+
+  };
+
+
+  } //namespace internal
+
+
+
+
 
 
   template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  using FixedVectorExt = Vector<REGISTER_TYPE, NUM_ELEM, true>;
+  //using FixedVectorExt = internal::VectorImpl<typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::register_list_t, typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::idx_seq_t, true>;
+  using FixedVectorExt = typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::type;
 
-  template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  using StreamVectorExt = Vector<REGISTER_TYPE, NUM_ELEM, false>;
+  template<typename REGISTER_TYPE, size_t NUM_REGISTERS>
+  using StreamVectorExt = internal::VectorImpl<internal::list_of_n<REGISTER_TYPE, NUM_REGISTERS>, camp::make_idx_seq_t<NUM_REGISTERS>, false>;
 
 
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
-  operator+(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
-    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) + y;
-  }
-
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
-  operator-(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
-    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) - y;
-  }
-
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
-  operator*(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
-    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) * y;
-  }
-
-  template<typename ST, typename REGISTER_TYPE, size_t NUM_ELEM, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>
-  operator/(ST x, Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH> const &y){
-    return Vector<REGISTER_TYPE, NUM_ELEM, FIXED_LENGTH>(x) / y;
-  }
 
 }  // namespace RAJA
 

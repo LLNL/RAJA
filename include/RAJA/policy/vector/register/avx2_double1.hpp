@@ -90,8 +90,9 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t  = 1){
+      self_type &load(element_type const *ptr, size_t  = 1){
         m_value[0] = ptr[0];
+        return *this;
       }
 
 
@@ -104,8 +105,9 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      void store(element_type *ptr, size_t = 1) const{
+      self_type store(element_type *ptr, size_t = 1) const{
         ptr[0] = m_value[0];
+        return *this;
       }
 
       /*!
@@ -127,21 +129,26 @@ namespace RAJA
        */
       template<typename IDX>
       RAJA_INLINE
-      void set(IDX , element_type value)
-      {m_value[0] = value;}
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void broadcast(element_type const &b){
-        m_value[0] = b;
+      self_type &set(IDX , element_type value)
+      {
+        m_value[0] = value;
+        return *this;
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void copy(self_type const &src){
+      self_type &broadcast(element_type const &b){
+        m_value[0] = b;
+        return *this;
+      }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &copy(self_type const &src){
         m_value = src.m_value;
+        return *this;
       }
 
       RAJA_HOST_DEVICE

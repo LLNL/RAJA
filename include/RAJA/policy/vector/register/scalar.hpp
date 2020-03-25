@@ -86,8 +86,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void load(element_type const *ptr, size_t = 1){
+      self_type &load(element_type const *ptr, size_t = 1){
         m_value = ptr[0];
+        return *this;
       }
 
       /*!
@@ -100,8 +101,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void store(element_type *ptr, size_t = 1) const{
+      self_type const &store(element_type *ptr, size_t = 1) const{
         ptr[0] = m_value;
+        return *this;
       }
 
 
@@ -126,22 +128,27 @@ namespace RAJA
       template<typename IDX>
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      void set(IDX , element_type value)
-      {m_value = value;}
+      self_type &set(IDX , element_type value)
+      {
+        m_value = value;
+        return *this;
+      }
 
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void broadcast(element_type const &a){
+      self_type &broadcast(element_type const &a){
         m_value = a;
+        return *this;
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void copy(self_type const &src){
+      self_type &copy(self_type const &src){
         m_value = src.m_value;
+        return *this;
       }
 
       RAJA_HOST_DEVICE
