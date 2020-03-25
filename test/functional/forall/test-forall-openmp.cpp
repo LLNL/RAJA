@@ -10,17 +10,19 @@
 #if defined(RAJA_ENABLE_OPENMP)
 
 // OpenMP execution policy types
-using OMPTypes = list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
-                       RAJA::omp_for_nowait_exec,
-                       RAJA::omp_for_exec,
-                       RAJA::omp_parallel_for_exec >;
+using OpenMPTypes = list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
+                          RAJA::omp_for_nowait_exec,
+                          RAJA::omp_for_exec,
+                          RAJA::omp_parallel_for_exec >;
 
-// OpenMP tests index, resource, and execution policy types
-using OMPForallTypes =
-    Test<cartesian_product<IdxTypes, ListHost, OMPTypes>>::Types;
+// Cartesian product of types for OpenMP tests
+using OpenMPForallSegmentTypes =
+  Test< cartesian_product<IdxTypeList, 
+                          HostResourceList,
+                          OpenMPTypes> >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Omp,
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
                                ForallSegmentTest,
-                               OMPForallTypes);
+                               OpenMPForallSegmentTypes);
 
 #endif

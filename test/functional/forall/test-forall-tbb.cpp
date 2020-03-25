@@ -17,11 +17,13 @@ using TBBTypes = list< RAJA::tbb_for_exec,
                        RAJA::tbb_for_static< 8 >,
                        RAJA::tbb_for_dynamic >;
 
-// TBB tests index, resource, and execution policy types
-using TBBForallTypes =
-    Test<cartesian_product<IdxTypes, ListHost, TBBTypes>>::Types;
+// Cartesian product of types for TBB tests
+using TBBForallSegmentTypes =
+  Test< cartesian_product<IdxTypeList, 
+                          HostResourceList, 
+                          TBBTypes> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
                                ForallSegmentTest,
-                               TBBForallTypes);
+                               TBBForallSegmentTypes);
 #endif

@@ -13,13 +13,14 @@
 using HipTypes = list< RAJA::hip_exec<128>,
                        RAJA::hip_exec<256>  >;
 
-// Hip tests index, resource, and execution policy types
-using ListHip = list<camp::resources::Hip>;
-using HipForallTypes =
-    Test<cartesian_product<IdxTypes, ListHip, HipTypes>>::Types;
+// Cartesian product of types for Hip tests
+using HipForallSegmentTypes = 
+  Test< cartesian_product<IdxTypeList, 
+                          HipResourceList, 
+                          HipSegmentExecTypes> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
                                ForallSegmentTest,
-                               HipForallTypes);
+                               HipForallSegmentTypes);
 
 #endif

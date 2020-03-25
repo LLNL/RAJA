@@ -10,16 +10,17 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 // Cuda execution policy types
-using CudaTypes = list< RAJA::cuda_exec<128>,
-                        RAJA::cuda_exec<256> >;
+using CudaSegmentExecTypes = list< RAJA::cuda_exec<128>,
+                                   RAJA::cuda_exec<256> >;
 
-// Cuda tests index, resource, and execution policy types 
-using ListCuda = list<camp::resources::Cuda>;
-using CudaForallTypes =
-    Test<cartesian_product<IdxTypes, ListCuda, CudaTypes>>::Types;
+// Cartesian product of types for Cuda tests
+using CudaForallSegmentTypes = 
+  Test< cartesian_product<IdxTypeList, 
+                          CudaResourceList, 
+                          CudaSegmentExecTypes> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallSegmentTest,
-                               CudaForallTypes);
+                               CudaForallSegmentTypes);
 
 #endif

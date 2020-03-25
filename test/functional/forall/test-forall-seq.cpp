@@ -12,10 +12,12 @@ using SequentialTypes = list< RAJA::seq_exec,
                               RAJA::loop_exec,
                               RAJA::simd_exec >;
 
-// Sequential tests index, resource, and execution policy types
-using SequentialForallTypes =
-    Test<cartesian_product<IdxTypes, ListHost, SequentialTypes>>::Types;
+// Cartesian product of types for Sequential tests
+using SequentialForallSegmentTypes =
+  Test< cartesian_product<IdxTypeList, 
+                          HostResourceList, 
+                          SequentialTypes>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
                                ForallSegmentTest,
-                               SequentialForallTypes);
+                               SequentialForallSegmentTypes);
