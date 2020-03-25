@@ -8,7 +8,7 @@
 #ifndef __TEST_FORALL_LISTSEGMENT_HPP__
 #define __TEST_FORALL_LISTSEGMENT_HPP__
 
-#include "test-forall.hpp"
+#include "test-forall-segment.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,7 +20,7 @@ using namespace camp::resources;
 using namespace camp;
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallListSegmentFunctionalTest(INDEX_TYPE N)
+void ForallListSegmentTest(INDEX_TYPE N)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -77,23 +77,17 @@ void ForallListSegmentFunctionalTest(INDEX_TYPE N)
 }
 
 
-TYPED_TEST_P(ForallFunctionalSegmentTest, ListSegmentForall)
+TYPED_TEST_P(ForallSegmentTest, ListSegmentForall)
 {
   using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
   using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
   using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
 
-  ForallListSegmentFunctionalTest<INDEX_TYPE, 
-                                  WORKING_RESOURCE, 
-                                  EXEC_POLICY>(13);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
 
-  ForallListSegmentFunctionalTest<INDEX_TYPE, 
-                                  WORKING_RESOURCE, 
-                                  EXEC_POLICY>(2047);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047);
 
-  ForallListSegmentFunctionalTest<INDEX_TYPE, 
-                                  WORKING_RESOURCE, 
-                                  EXEC_POLICY>(32000);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000);
 
 }
 

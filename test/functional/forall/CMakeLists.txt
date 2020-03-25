@@ -6,35 +6,35 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-forall-seq
-  SOURCES test-forall-seq.cpp)
+  NAME test-forall-segment-seq
+  SOURCES test-forall-segment-seq.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME test-forall-openmp
-    SOURCES test-forall-openmp.cpp)
+    NAME test-forall-segment-openmp
+    SOURCES test-forall-segment-openmp.cpp)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
   raja_add_test(
-    NAME test-forall-target-openmp
-    SOURCES test-forall-target-openmp.cpp)
+    NAME test-forall-segment-openmp-target
+    SOURCES test-forall-segment-openmp-target.cpp)
 endif()
 
 if(RAJA_ENABLE_TBB)
   raja_add_test(
-    NAME test-forall-tbb
-    SOURCES test-forall-tbb.cpp)
+    NAME test-forall-segment-tbb
+    SOURCES test-forall-segment-tbb.cpp)
 endif()
 
 if(RAJA_ENABLE_CUDA)
   raja_add_test(
-    NAME test-forall-cuda
-    SOURCES test-forall-cuda.cpp)
+    NAME test-forall-segment-cuda
+    SOURCES test-forall-segment-cuda.cpp)
 endif()
 
 if(RAJA_ENABLE_HIP)
   raja_add_test(
-    NAME test-forall-hip
-    SOURCES test-forall-hip.cpp)
+    NAME test-forall-segment-hip
+    SOURCES test-forall-segment-hip.cpp)
 endif()

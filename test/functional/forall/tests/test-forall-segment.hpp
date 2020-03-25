@@ -5,24 +5,24 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_HPP__
-#define __TEST_FORALL_HPP__
+#ifndef __TEST_FORALL_SEGMENT_HPP__
+#define __TEST_FORALL_SEGMENT_HPP__
 
 #include "RAJA/RAJA.hpp"
 
 #include "test-forall-utils.hpp"
 
-TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest);
+TYPED_TEST_SUITE_P(ForallSegmentTest);
 template <typename T>
-class ForallFunctionalSegmentTest : public ::testing::Test
+class ForallSegmentTest : public ::testing::Test
 {
 };
 
 #include "test-forall-rangesegment.hpp"
 #include "test-forall-listsegment.hpp"
 
-REGISTER_TYPED_TEST_SUITE_P(ForallFunctionalSegmentTest,
+REGISTER_TYPED_TEST_SUITE_P(ForallSegmentTest,
                             RangeSegmentForall,
                             ListSegmentForall);
 
-#endif  // __TEST_FORALL_HPP__
+#endif  // __TEST_FORALL_SEGMENT_HPP__

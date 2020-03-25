@@ -8,14 +8,14 @@
 #ifndef __TEST_FORALL_RANGESEGMENT_HPP__
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
-#include "test-forall.hpp"
+#include "test-forall-segment.hpp"
 #include <numeric>
 
 using namespace camp::resources;
 using namespace camp;
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegmentFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
+void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
@@ -59,20 +59,20 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
 void runNegativeTests()
 {
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
+  ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
+  ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
 }
 
 
-TYPED_TEST_P(ForallFunctionalSegmentTest, RangeSegmentForall)
+TYPED_TEST_P(ForallSegmentTest, RangeSegmentForall)
 {
   using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
   using WORKING_RES = typename at<TypeParam, num<1>>::type;
   using EXEC_POLICY = typename at<TypeParam, num<2>>::type;
 
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
-  ForallRangeSegmentFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
+  ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
+  ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
+  ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }

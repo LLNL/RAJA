@@ -8,8 +8,9 @@
 using namespace camp::resources;
 using namespace camp;
 
-
+//
 // Unroll types for gtest testing::Types
+//
 template <class T>
 struct Test;
 
@@ -19,20 +20,39 @@ struct Test<list<T...>> {
 };
 
 
-// Define Index Types
-using IdxTypes = list<RAJA::Index_type,
-                      short,
-                      unsigned short,
-                      int,
-                      unsigned int,
-                      long,
-                      unsigned long,
-                      long int,
-                      unsigned long int,
-                      long long,
-                      unsigned long long>;
+//
+// Index types for segments
+//
+using IdxTypeList = list<RAJA::Index_type,
+                         short,
+                         unsigned short,
+                         int,
+                         unsigned int,
+                         long,
+                         unsigned long,
+                         long int,
+                         unsigned long int,
+                         long long,
+                         unsigned long long>;
 
-using ListHost = list<camp::resources::Host>;
+
+//
+// Memory resource types for beck-end execution
+//
+using HostResourceList = list<camp::resources::Host>;
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaResourceList = list<camp::resources::Cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipResourceList = list<camp::resources::Hip>;
+#endif
+
+
+//
+// Memory allocation/deallocation  methods for test execution
+//
 
 template<typename T>
 void allocateForallTestData(T N,
