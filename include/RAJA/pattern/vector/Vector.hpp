@@ -44,7 +44,6 @@ namespace RAJA
     RAJA_INLINE
     ELEMENT_TYPE
     VectorGetByIndex(IDX){
-      printf("OFF END!\n");
       return ELEMENT_TYPE(); // termination case: this is undefined behavior!
     }
 
@@ -69,7 +68,6 @@ namespace RAJA
     RAJA_INLINE
     void
     VectorSetByIndex(IDX, ELEMENT_TYPE){
-      printf("OFF END!\n");
       // NOP: this is undefined behavior!
     }
 
