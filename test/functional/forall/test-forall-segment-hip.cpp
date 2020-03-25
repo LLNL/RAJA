@@ -21,6 +21,6 @@ using HipForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
                                ForallSegmentTest,
-                               HipForallExecPols);
+                               HipForallSegmentTypes);
 
 #endif

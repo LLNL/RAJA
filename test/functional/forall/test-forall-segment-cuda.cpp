@@ -21,6 +21,6 @@ using CudaForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallSegmentTest,
-                               CudaForallExecPols);
+                               CudaForallSegmentTypes);
 
 #endif

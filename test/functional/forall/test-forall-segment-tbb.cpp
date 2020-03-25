@@ -25,5 +25,5 @@ using TBBForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
                                ForallSegmentTest,
-                               TBBForallExecPols);
+                               TBBForallSegmentTypes);
 #endif

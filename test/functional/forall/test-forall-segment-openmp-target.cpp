@@ -21,5 +21,5 @@ using OpenMPTargetForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTarget,
                                ForallSegmentTest,
-                               OpenMPTargetForallExecPols);
+                               OpenMPTargetForallSegmentTypes);
 #endif

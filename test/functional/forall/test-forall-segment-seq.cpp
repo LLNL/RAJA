@@ -20,4 +20,4 @@ using SequentialForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
                                ForallSegmentTest,
-                               SequentialForallExecPols);
+                               SequentialForallSegmentTypes);

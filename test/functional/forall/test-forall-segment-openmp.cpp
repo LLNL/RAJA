@@ -23,6 +23,6 @@ using OpenMPForallSegmentTypes =
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
                                ForallSegmentTest,
-                               OpenMPForallExecPols);
+                               OpenMPForallSegmentTypes);
 
 #endif
