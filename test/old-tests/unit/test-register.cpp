@@ -46,6 +46,7 @@
      RAJA::StreamVector<double, 2>,
      RAJA::FixedVector<double, 1>,
      RAJA::FixedVector<double, 2>,
+     RAJA::FixedVector<double, 3>,
      RAJA::FixedVector<double, 4>,
      RAJA::FixedVector<double, 8>,
      RAJA::FixedVector<double, 16>>;
@@ -208,6 +209,21 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
     ASSERT_DOUBLE_EQ(func_add[i], A[i] + B[i]);
   }
 
+  // operator + scalar
+  register_t op_add_s1 = x + element_t(1);
+  register_t op_add_s2 = element_t(1) + x;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_add_s1[i], A[i] + element_t(1));
+    ASSERT_DOUBLE_EQ(op_add_s2[i], element_t(1) + A[i]);
+  }
+
+  // operator += scalar
+  register_t op_pluseq_s = x;
+  op_pluseq_s += element_t(1);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_pluseq_s[i], A[i] + element_t(1));
+  }
+
 }
 
 
@@ -252,6 +268,20 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
     ASSERT_DOUBLE_EQ(func_sub[i], A[i] - B[i]);
   }
 
+  // operator - scalar
+  register_t op_sub_s1 = x - element_t(1);
+  register_t op_sub_s2 = element_t(1) - x;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_sub_s1[i], A[i] - element_t(1));
+    ASSERT_DOUBLE_EQ(op_sub_s2[i], element_t(1) - A[i]);
+  }
+
+  // operator -= scalar
+  register_t op_subeq_s = x;
+  op_subeq_s -= element_t(1);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_subeq_s[i], A[i] - element_t(1));
+  }
 }
 
 TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
@@ -290,6 +320,21 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(func_mul[i], A[i] * B[i]);
   }
+
+  // operator * scalar
+  register_t op_mul_s1 = x * element_t(2);
+  register_t op_mul_s2 = element_t(2) * x;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_mul_s1[i], A[i] * element_t(2));
+    ASSERT_DOUBLE_EQ(op_mul_s2[i], element_t(2) * A[i]);
+  }
+
+  // operator *= scalar
+  register_t op_muleq_s = x;
+  op_muleq_s *= element_t(2);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_muleq_s[i], A[i] * element_t(2));
+  }
 }
 
 TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
@@ -327,6 +372,22 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   register_t func_div = x.divide(y);
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(func_div[i], A[i] / B[i]);
+  }
+
+
+  // operator / scalar
+  register_t op_div_s1 = x / element_t(2);
+  register_t op_div_s2 = element_t(2) / x;
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_div_s1[i], A[i] / element_t(2));
+    ASSERT_DOUBLE_EQ(op_div_s2[i], element_t(2) / A[i]);
+  }
+
+  // operator /= scalar
+  register_t op_diveq_s = x;
+  op_diveq_s /= element_t(2);
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_DOUBLE_EQ(op_diveq_s[i], A[i] / element_t(2));
   }
 }
 

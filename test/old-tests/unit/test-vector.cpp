@@ -64,6 +64,142 @@ protected:
 TYPED_TEST_SUITE_P(VectorTest);
 
 
+TYPED_TEST_P(VectorTest, GetSet)
+{
+  using vector_t = TypeParam;
+
+  using element_t = typename vector_t::element_type;
+
+  element_t A[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+    A[i] = (element_t)(i*2);
+  }
+
+  // For Fixed vectors, only try with fixed length
+  // For Stream vectors, try all lengths
+  camp::idx_t Nstart = 1;
+  if(vector_t::s_is_fixed){
+    Nstart = vector_t::s_num_elem;
+  }
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+
+    // load array A as vector
+    vector_t vec;
+    vec.load(&A[0], 1, N);
+
+    // check get operations
+    for(camp::idx_t i = 0;i < N;++ i){
+      ASSERT_DOUBLE_EQ(vec[i], (element_t)(i*2));
+      ASSERT_DOUBLE_EQ(vec.get(i), (element_t)(i*2));
+    }
+
+    // check set operations
+    for(camp::idx_t i = 0;i < N;++ i){
+      vec.set(i, (element_t)(i+1));
+    }
+    for(camp::idx_t i = 0;i < N;++ i){
+      ASSERT_DOUBLE_EQ(vec[i], (element_t)(i+1));
+    }
+
+  }
+}
+
+TYPED_TEST_P(VectorTest, MinMaxSumDot)
+{
+  using vector_t = TypeParam;
+
+  using element_t = typename vector_t::element_type;
+
+  element_t A[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+    A[i] = (element_t)i;
+  }
+
+  // For Fixed vectors, only try with fixed length
+  // For Stream vectors, try all lengths
+  camp::idx_t Nstart = 1;
+  if(vector_t::s_is_fixed){
+    Nstart = vector_t::s_num_elem;
+  }
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+
+    // load array A as vector
+    vector_t vec;
+    vec.load(&A[0], 1, N);
+
+    // check min
+    ASSERT_DOUBLE_EQ(vec.min(), (element_t)0);
+
+    // check max
+    ASSERT_DOUBLE_EQ(vec.max(), (element_t)(N-1));
+
+    // compute expected values
+    element_t ex_sum(0);
+    element_t ex_dot(0);
+    for(camp::idx_t i = 0;i < N;++ i){
+      ex_sum += A[i];
+      ex_dot += A[i]*A[i];
+    }
+
+    // check sum
+    ASSERT_DOUBLE_EQ(vec.sum(), ex_sum);
+
+    // check dot
+    ASSERT_DOUBLE_EQ(vec.dot(vec), ex_dot);
+
+  }
+}
+
+
+TYPED_TEST_P(VectorTest, FmaFms)
+{
+  using vector_t = TypeParam;
+
+  using element_t = typename vector_t::element_type;
+
+  element_t A[vector_t::s_num_elem];
+  element_t B[vector_t::s_num_elem];
+  element_t C[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+    A[i] = (element_t)i;
+    B[i] = (element_t)i*2;
+    C[i] = (element_t)i*3;
+  }
+
+  // For Fixed vectors, only try with fixed length
+  // For Stream vectors, try all lengths
+  camp::idx_t Nstart = 1;
+  if(vector_t::s_is_fixed){
+    Nstart = vector_t::s_num_elem;
+  }
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+
+    // load arrays as vectors
+    vector_t vec_A;
+    vec_A.load(&A[0], 1, N);
+
+    vector_t vec_B;
+    vec_B.load(&B[0], 1, N);
+
+    vector_t vec_C;
+    vec_C.load(&C[0], 1, N);
+
+
+    // check FMA (A*B+C)
+    vector_t fma = vec_A.fused_multiply_add(vec_B, vec_C);
+    for(camp::idx_t i = 0;i < N;++ i){
+      ASSERT_DOUBLE_EQ(fma[i], A[i]*B[i]+C[i]);
+    }
+
+    // check FMS (A*B-C)
+    vector_t fms = vec_A.fused_multiply_subtract(vec_B, vec_C);
+    for(camp::idx_t i = 0;i < N;++ i){
+      ASSERT_DOUBLE_EQ(fms[i], A[i]*B[i]-C[i]);
+    }
+
+  }
+}
+
 
 TYPED_TEST_P(VectorTest, ForallVectorRef1d)
 {
@@ -218,6 +354,6 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 }
 
 
-REGISTER_TYPED_TEST_SUITE_P(VectorTest, ForallVectorRef1d, ForallVectorRef2d);
+REGISTER_TYPED_TEST_SUITE_P(VectorTest, GetSet, MinMaxSumDot, FmaFms, ForallVectorRef1d, ForallVectorRef2d);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, VectorTest, VectorTestTypes);
