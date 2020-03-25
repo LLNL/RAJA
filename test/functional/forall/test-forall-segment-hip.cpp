@@ -10,17 +10,17 @@
 #if defined(RAJA_ENABLE_HIP)
 
 // Hip execution policy types
-using HipTypes = list< RAJA::hip_exec<128>,
-                       RAJA::hip_exec<256>  >;
+using HipForallExecPols = list< RAJA::hip_exec<128>,
+                                RAJA::hip_exec<256>  >;
 
 // Cartesian product of types for Hip tests
 using HipForallSegmentTypes = 
   Test< cartesian_product<IdxTypeList, 
                           HipResourceList, 
-                          HipSegmentExecTypes> >::Types;
+                          HipForallExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
                                ForallSegmentTest,
-                               HipForallSegmentTypes);
+                               HipForallExecPols);
 
 #endif

@@ -8,16 +8,16 @@
 #include "tests/test-forall-segment.hpp"
 
 // Sequential execution policy types
-using SequentialTypes = list< RAJA::seq_exec,
-                              RAJA::loop_exec,
-                              RAJA::simd_exec >;
+using SequentialForallExecPols = list< RAJA::seq_exec,
+                                       RAJA::loop_exec,
+                                       RAJA::simd_exec >;
 
 // Cartesian product of types for Sequential tests
 using SequentialForallSegmentTypes =
   Test< cartesian_product<IdxTypeList, 
                           HostResourceList, 
-                          SequentialTypes>>::Types;
+                          SequentialForallExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
                                ForallSegmentTest,
-                               SequentialForallSegmentTypes);
+                               SequentialForallExecPols);

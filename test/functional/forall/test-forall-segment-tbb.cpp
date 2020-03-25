@@ -10,20 +10,20 @@
 #if defined(RAJA_ENABLE_TBB)
 
 // TBB execution policy types
-using TBBTypes = list< RAJA::tbb_for_exec,
-                       RAJA::tbb_for_static< >,
-                       RAJA::tbb_for_static< 2 >,
-                       RAJA::tbb_for_static< 4 >,
-                       RAJA::tbb_for_static< 8 >,
-                       RAJA::tbb_for_dynamic >;
+using TBBForallExecPols = list< RAJA::tbb_for_exec,
+                                RAJA::tbb_for_static< >,
+                                RAJA::tbb_for_static< 2 >,
+                                RAJA::tbb_for_static< 4 >,
+                                RAJA::tbb_for_static< 8 >,
+                                RAJA::tbb_for_dynamic >;
 
 // Cartesian product of types for TBB tests
 using TBBForallSegmentTypes =
   Test< cartesian_product<IdxTypeList, 
                           HostResourceList, 
-                          TBBTypes> >::Types;
+                          TBBForallExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
                                ForallSegmentTest,
-                               TBBForallSegmentTypes);
+                               TBBForallExecPols);
 #endif
