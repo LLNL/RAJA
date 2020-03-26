@@ -43,10 +43,7 @@ namespace RAJA {
 
 #endif
 
-#include<RAJA/policy/vector/register/avx_double1.hpp>
-#include<RAJA/policy/vector/register/avx_double2.hpp>
-#include<RAJA/policy/vector/register/avx_double3.hpp>
-#include<RAJA/policy/vector/register/avx_double4.hpp>
+#include<RAJA/policy/vector/register/avx_double.hpp>
 
 
 #endif // __AVX__

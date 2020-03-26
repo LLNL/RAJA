@@ -17,8 +17,8 @@
 
 #ifdef __AVX__
 
-#ifndef RAJA_policy_vector_register_avx_double4_HPP
-#define RAJA_policy_vector_register_avx_double4_HPP
+#ifndef RAJA_policy_vector_register_avx_double_HPP
+#define RAJA_policy_vector_register_avx_double_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
@@ -33,23 +33,37 @@ namespace RAJA
 {
 
 
-  template<>
-  class Register<vector_avx_register, double, 4> :
-    public internal::RegisterBase<Register<vector_avx_register, double, 4>>
+  template<size_t N>
+  class Register<vector_avx_register, double, N> :
+    public internal::RegisterBase<Register<vector_avx_register, double, N>>
   {
+    static_assert(N >= 1, "Vector must have at least 1 lane");
+    static_assert(N <= 4, "AVX can only have 4 lanes of doubles");
+
     public:
-      using self_type = Register<vector_avx_register, double, 4>;
+      using self_type = Register<vector_avx_register, double, N>;
       using element_type = double;
       using register_type = __m256d;
 
-      static constexpr size_t s_num_elem = 4;
-      static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
-      static constexpr size_t s_bit_width = s_byte_width*8;
+      static constexpr size_t s_num_elem = N;
 
-
-
-    private:
+    protected:
       register_type m_value;
+
+      RAJA_INLINE
+      __m256i createMask() const {
+        // Generate a mask
+        return  _mm256_set_epi64x(0,  // never, since N < 4
+                                  N==3 ? -1 : 0,  // only if N==3
+                                  N>1  ? -1 : 0,  // only if N==2 || N==1
+                                  -1);            // Always, since N >= 1
+      }
+
+      RAJA_INLINE
+      __m256i createStridedOffsets(camp::idx_t stride) const {
+        // Generate a strided offset list
+        return  _mm256_set_epi64x(3*stride, 2*stride, stride, 0);
+      }
 
     public:
 
@@ -93,16 +107,53 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, size_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+        // Packed Load?
         if(stride == 1){
-          m_value = _mm256_loadu_pd(ptr);
+          // Full vector width uses regular load
+          if(N == 4){
+            m_value = _mm256_loadu_pd(ptr);
+          }
+
+          // Do a masked load
+          else{
+            m_value = _mm256_maskload_pd(ptr, createMask());
+          }
         }
+
+        // AVX has no gather instruction, so do it manually
         else{
-          m_value =_mm256_set_pd(ptr[3*stride],
-                              ptr[2*stride],
-                              ptr[stride],
-                              ptr[0]);
+          switch(N){
+            case 1:
+              m_value =_mm256_set_pd(0,
+                                  0,
+                                  0,
+                                  ptr[0]);
+              break;
+
+            case 2:
+              m_value =_mm256_set_pd(0,
+                                  0,
+                                  ptr[stride],
+                                  ptr[0]);
+              break;
+
+            case 3:
+              m_value =_mm256_set_pd(0,
+                                  ptr[2*stride],
+                                  ptr[stride],
+                                  ptr[0]);
+              break;
+
+            case 4:
+              m_value =_mm256_set_pd(ptr[3*stride],
+                                  ptr[2*stride],
+                                  ptr[stride],
+                                  ptr[0]);
+              break;
+          }
         }
+
         return *this;
       }
 
@@ -118,11 +169,22 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store(element_type *ptr, size_t stride = 1) const{
+        // Is this a packed store?
         if(stride == 1){
-          _mm256_storeu_pd(ptr, m_value);
+          // Is it full-width?
+          if(N == 4){
+            _mm256_storeu_pd(ptr, m_value);
+          }
+          // Need to do a masked store
+          else{
+            _mm256_maskstore_pd(ptr, createMask(), m_value);
+          }
+
         }
+
+        // Scatter operation:  AVX2 doesn't have a scatter, so it's manual
         else{
-          for(size_t i = 0;i < s_num_elem;++ i){
+          for(size_t i = 0;i < N;++ i){
             ptr[i*stride] = m_value[i];
           }
         }
@@ -236,17 +298,44 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        // permute the first two and last two lanes of the register
-        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
+        if(N == 4){
+          // permute the first two and last two lanes of the register
+          // A = { v[1], v[0], v[3], v[2] }
+          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
 
-        // take the minimum value of each lane
-        // this gives us b=XXYY where
-        // X = min(a[0], a[1])
-        // Y = min(a[2], a[3])
-        register_type b = _mm256_max_pd(m_value, a);
+          // take the maximum value of each lane
+          // B = { max{v[0], v[1]},
+          //       max{v[0], v[1]},
+          //       max{v[2], v[3]},
+          //       max{v[2], v[3]} }
+          register_type b = _mm256_max_pd(m_value, a);
 
-        // now take the minimum of a lower and upper lane
-        return std::max<double>(b[0], b[2]);
+          // now take the maximum of a lower and upper halves
+          return std::max<double>(b[0], b[2]);
+        }
+        else if(N == 3){
+          // permute the first two and last two lanes of the register
+          // use the third element TWICE, so we effectively remove the 4th
+          // lane
+          // A = { v[1], v[0], v[2], v[2] }
+          register_type a = _mm256_shuffle_pd(m_value, m_value, 0xD);
+
+          // take the maximum value of each lane
+          // B = { max{v[0], v[1]},
+          //       max{v[0], v[1]},
+          //       max{v[2], v[2]},   <-- just v[2]
+          //       max{v[2], v[3]} }
+          register_type b = _mm256_max_pd(m_value, a);
+
+          // now take the maximum of a lower and upper lane
+          return std::max<double>(b[0], b[2]);
+        }
+        else if(N == 2){
+          return std::max<double>(m_value[0], m_value[1]);
+        }
+        else{
+          return m_value[0];
+        }
       }
 
       /*!
@@ -266,19 +355,44 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        // permute the first two and last two lanes of the register
-        // m_value = ABCD
-        // a = AACC
-        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x05);
+        if(N == 4){
+          // permute the first two and last two lanes of the register
+          // A = { v[1], v[0], v[3], v[2] }
+          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
 
-        // take the minimum value of each lane
-        // this gives us b=XXYY where
-        // X = min(a[0], a[1])
-        // Y = min(a[2], a[3])
-        register_type b = _mm256_min_pd(m_value, a);
+          // take the minimum value of each lane
+          // B = { min{v[0], v[1]},
+          //       min{v[0], v[1]},
+          //       min{v[2], v[3]},
+          //       min{v[2], v[3]} }
+          register_type b = _mm256_min_pd(m_value, a);
 
-        // now take the minimum of a lower and upper lane
-        return std::min<double>(b[0], b[2]);
+          // now take the minimum of a lower and upper halves
+          return std::min<double>(b[0], b[2]);
+        }
+        else if(N == 3){
+          // permute the first two and last two lanes of the register
+          // use the third element TWICE, so we effectively remove the 4th
+          // lane
+          // A = { v[1], v[0], v[2], v[2] }
+          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x3);
+
+          // take the minimum value of each lane
+          // B = { min{v[0], v[1]},
+          //       min{v[0], v[1]},
+          //       min{v[2], v[2]},   <-- just v[2]
+          //       min{v[2], v[3]} }
+          register_type b = _mm256_min_pd(m_value, a);
+
+          // now take the minimum of a lower and upper lane
+          return std::min<double>(b[0], b[2]);
+        }
+        else if(N == 2){
+          return std::min<double>(m_value[0], m_value[1]);
+        }
+        else{
+          return m_value[0];
+        }
       }
 
       /*!
