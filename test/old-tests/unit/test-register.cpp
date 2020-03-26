@@ -14,54 +14,62 @@
 #include <stdlib.h>
 
   using RegisterTestTypes = ::testing::Types<
-#ifdef __AVX__
-     RAJA::Register<RAJA::vector_avx_register, double, 1>,
-     RAJA::Register<RAJA::vector_avx_register, double, 2>,
-     RAJA::Register<RAJA::vector_avx_register, double, 3>,
-     RAJA::Register<RAJA::vector_avx_register, double, 4>,
-     RAJA::Register<RAJA::vector_avx_register, float, 1>,
-     RAJA::Register<RAJA::vector_avx_register, float, 2>,
-     RAJA::Register<RAJA::vector_avx_register, float, 3>,
-     RAJA::Register<RAJA::vector_avx_register, float, 4>,
-     RAJA::Register<RAJA::vector_avx_register, float, 5>,
-     RAJA::Register<RAJA::vector_avx_register, float, 6>,
-     RAJA::Register<RAJA::vector_avx_register, float, 7>,
-     RAJA::Register<RAJA::vector_avx_register, float, 8>,
-#endif
-
-#ifdef __AVX2__
-     RAJA::Register<RAJA::vector_avx2_register, double, 1>,
-     RAJA::Register<RAJA::vector_avx2_register, double, 2>,
-     RAJA::Register<RAJA::vector_avx2_register, double, 3>,
-     RAJA::Register<RAJA::vector_avx2_register, double, 4>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 1>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 2>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 3>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 4>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 5>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 6>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 7>,
-     RAJA::Register<RAJA::vector_avx2_register, float, 8>,
-
-#endif
-     RAJA::Register<RAJA::vector_scalar_register, int, 1>,
-     RAJA::Register<RAJA::vector_scalar_register, float, 1>,
-     RAJA::Register<RAJA::vector_scalar_register, double, 1>,
-
-     // Test automatically wrapped types to make things easier for users
-     RAJA::StreamVector<double>,
-     RAJA::StreamVector<double, 2>,
-     RAJA::FixedVector<double, 1>,
-     RAJA::FixedVector<double, 2>,
-     RAJA::FixedVector<double, 3>,
-     RAJA::FixedVector<double, 4>,
-     RAJA::FixedVector<double, 8>,
-     RAJA::FixedVector<double, 16>,
-     RAJA::StreamVector<float>,
-     RAJA::StreamVector<float, 2>,
-     RAJA::FixedVector<float, 1>,
-     RAJA::FixedVector<float, 2>,
-     RAJA::FixedVector<float, 8>,
+//#ifdef __AVX__
+//     RAJA::Register<RAJA::vector_avx_register, double, 1>,
+//     RAJA::Register<RAJA::vector_avx_register, double, 2>,
+//     RAJA::Register<RAJA::vector_avx_register, double, 3>,
+//     RAJA::Register<RAJA::vector_avx_register, double, 4>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 1>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 2>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 3>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 4>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 5>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 6>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 7>,
+//     RAJA::Register<RAJA::vector_avx_register, float, 8>,
+//#endif
+//
+//#ifdef __AVX2__
+//     RAJA::Register<RAJA::vector_avx2_register, double, 1>,
+//     RAJA::Register<RAJA::vector_avx2_register, double, 2>,
+//     RAJA::Register<RAJA::vector_avx2_register, double, 3>,
+//     RAJA::Register<RAJA::vector_avx2_register, double, 4>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 1>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 2>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 3>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 4>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 5>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 6>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 7>,
+//     RAJA::Register<RAJA::vector_avx2_register, float, 8>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 1>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 2>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 3>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 4>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 5>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 6>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 7>,
+     RAJA::Register<RAJA::vector_avx2_register, int, 8>,
+//
+//#endif
+//     RAJA::Register<RAJA::vector_scalar_register, int, 1>,
+//     RAJA::Register<RAJA::vector_scalar_register, float, 1>,
+//     RAJA::Register<RAJA::vector_scalar_register, double, 1>,
+//
+//     // Test automatically wrapped types to make things easier for users
+//     RAJA::StreamVector<double>,
+//     RAJA::StreamVector<double, 2>,
+//     RAJA::FixedVector<double, 1>,
+//     RAJA::FixedVector<double, 2>,
+//     RAJA::FixedVector<double, 3>,
+//     RAJA::FixedVector<double, 4>,
+//     RAJA::FixedVector<double, 8>,
+//     RAJA::FixedVector<double, 16>,
+//     RAJA::StreamVector<float>,
+//     RAJA::StreamVector<float, 2>,
+//     RAJA::FixedVector<float, 1>,
+//     RAJA::FixedVector<float, 2>,
+//     RAJA::FixedVector<float, 8>,
      RAJA::FixedVector<float, 16>>;
 
 //using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
@@ -318,7 +326,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   // operator *
   register_t op_mul = x*y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(op_mul[i], A[i] * B[i]);
+    ASSERT_DOUBLE_EQ(op_mul[i], (A[i] * B[i]));
   }
 
   // operator *=

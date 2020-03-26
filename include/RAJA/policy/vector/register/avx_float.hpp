@@ -64,42 +64,6 @@ namespace RAJA
             -1);
       }
 
-      RAJA_INLINE
-      __m256i createStridedOffsets(camp::idx_t stride) const {
-        // Generate a strided offset list
-        return  _mm256_set_epi32(
-            7*stride, 6*stride, 5*stride, 4*stride,
-            3*stride, 2*stride, stride, 0);
-      }
-
-      RAJA_INLINE
-      __m256i createPermute1() const {
-        // Generate a permutation for first round of min/max routines
-        return  _mm256_set_epi32(
-            N >= 7 ? 6 : 0,
-            N >= 8 ? 7 : 0,
-            N >= 5 ? 4 : 0,
-            N >= 6 ? 5 : 0,
-            N >= 3 ? 2 : 0,
-            N >= 4 ? 3 : 0,
-            N >= 1 ? 0 : 0,
-            N >= 2 ? 1 : 0);
-      }
-
-      RAJA_INLINE
-      __m256i createPermute2() const {
-        // Generate a permutation for second round of min/max routines
-        return  _mm256_set_epi32(
-            N >= 6 ? 5 : 0,
-            N >= 5 ? 4 : 0,
-            N >= 8 ? 7 : 0,
-            N >= 7 ? 6 : 0,
-            N >= 2 ? 1 : 0,
-            N >= 1 ? 0 : 0,
-            N >= 4 ? 3 : 0,
-            N >= 2 ? 2 : 0);
-      }
-
     public:
 
       /*!
