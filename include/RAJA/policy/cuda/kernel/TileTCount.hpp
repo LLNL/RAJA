@@ -49,17 +49,18 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename TPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>>
+    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
     : public CudaStatementExecutor<
         Data,
-        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>> {
+        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types> {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>;
+      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -106,26 +107,30 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_block_xyz_direct<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+                    Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_block_xyz_direct<BlockDim>,
-                        EnclosedStmts...>> {
+                        EnclosedStmts...>,
+                        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
-                      RAJA::statement::tile_fixed<chunk_size>,
+                      RAJA::tile_fixed<chunk_size>,
                       cuda_block_xyz_direct<BlockDim>,
-                      EnclosedStmts...>>;
+                      EnclosedStmts...>,
+                      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -173,26 +178,30 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_block_xyz_loop<BlockDim>,
-                    EnclosedStmts...>>
+                    EnclosedStmts...>,
+                    Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_block_xyz_loop<BlockDim>,
-                        EnclosedStmts...>> {
+                        EnclosedStmts...>,
+                        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
-                      RAJA::statement::tile_fixed<chunk_size>,
+                      RAJA::tile_fixed<chunk_size>,
                       cuda_block_xyz_loop<BlockDim>,
-                      EnclosedStmts...>>;
+                      EnclosedStmts...>,
+                      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -243,26 +252,30 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_thread_xyz_direct<ThreadDim>,
-                        EnclosedStmts ...> >
+                        EnclosedStmts ...>,
+                        Types>
   : public CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_thread_xyz_direct<ThreadDim>,
-                    EnclosedStmts ...> > {
+                    EnclosedStmts ...>,
+                    Types> {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
-                          RAJA::statement::tile_fixed<chunk_size>,
+                          RAJA::tile_fixed<chunk_size>,
                           cuda_thread_xyz_direct<ThreadDim>,
-                          EnclosedStmts ...> >;
+                          EnclosedStmts ...>,
+                          Types>;
 
   using typename Base::enclosed_stmts_t;
 
