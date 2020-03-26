@@ -31,6 +31,23 @@ using MyTypes = ::testing::Types<RAJA::Index_type,
 
 TYPED_TEST_SUITE(RangeSegmentUnitTest, MyTypes);
 
+template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+void NegativeRangeSegConstructorsTest()
+{
+}
+
+template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+void NegativeRangeSegConstructorsTest()
+{
+  RAJA::TypedRangeSegment<T> r1(-10, 7);
+  RAJA::TypedRangeSegment<T> r3(-13, -1);
+  ASSERT_EQ(17, r1.size());
+  ASSERT_EQ(12, r3.size());
+#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
+  ASSERT_ANY_THROW(RAJA::TypedRangeSegment<T> r2(0, -50));
+#endif
+}
+
 TYPED_TEST(RangeSegmentUnitTest, Constructors)
 {
   RAJA::TypedRangeSegment<TypeParam> first(0, 10);
@@ -47,18 +64,7 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
   ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> neg(20, 19));
 #endif
 
-  if(std::is_signed<TypeParam>::value){
-#if !defined(__CUDA_ARCH__)
-    RAJA::TypedRangeSegment<TypeParam> r1(-10, 7);
-    RAJA::TypedRangeSegment<TypeParam> r3(-13, -1);
-    ASSERT_EQ(17, r1.size());
-    ASSERT_EQ(12, r3.size());
-#endif
-
-#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-    ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> r2(0, -50));
-#endif
-  }
+  NegativeRangeSegConstructorsTest<TypeParam>();
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Assignments)
@@ -81,6 +87,18 @@ TYPED_TEST(RangeSegmentUnitTest, Swaps)
   ASSERT_EQ(r2, r3);
 }
 
+template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+void NegativeRangeSegIteratorsTest()
+{
+}
+
+template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+void NegativeRangeSegIteratorsTest()
+{
+  RAJA::TypedRangeSegment<T> r3(-2, 100);
+  ASSERT_EQ(-2, *r3.begin());
+}
+
 TYPED_TEST(RangeSegmentUnitTest, Iterators)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
@@ -90,12 +108,7 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
   ASSERT_EQ(100, r1.size());
 
-#if !defined(__CUDA_ARCH__)
-  if(std::is_signed<TypeParam>::value){
-    RAJA::TypedRangeSegment<TypeParam> r3(-2, 100);
-    ASSERT_EQ(-2, *r3.begin());
-  }
-#endif
+  NegativeRangeSegIteratorsTest<TypeParam>();
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Slices)
