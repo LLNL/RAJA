@@ -90,14 +90,14 @@ TEST(IndexSetUnitTest, Swap)
   ASSERT_EQ(4, iset1.size());
   ASSERT_EQ(size_t(40), iset1.getLength());
   ASSERT_EQ(0, iset2.size());
-  ASSERT_EQ(0, iset2.getLength());
+  ASSERT_EQ(size_t(0), iset2.getLength());
 
   iset1.swap(iset2);
 
   ASSERT_EQ(4, iset2.size());
-  ASSERT_EQ(40, iset2.getLength());
+  ASSERT_EQ(size_t(40), iset2.getLength());
   ASSERT_EQ(0, iset1.size());
-  ASSERT_EQ(0, iset1.getLength());
+  ASSERT_EQ(size_t(0), iset1.getLength());
 }
 
 TEST(IndexSetUnitTest, Slice)
@@ -116,11 +116,11 @@ TEST(IndexSetUnitTest, Slice)
   iset1.push_back(range4);
   iset1.push_back(range5);
   ASSERT_EQ(5, iset1.size());
-  ASSERT_EQ(10, iset1.getLength());
+  ASSERT_EQ(size_t(10), iset1.getLength());
 
   RIndexSetType iset2 = iset1.createSlice(2, 5);
   ASSERT_EQ(3, iset2.size());
-  ASSERT_EQ(6, iset2.getLength());
+  ASSERT_EQ(size_t(6), iset2.getLength());
   const RangeSegType rs20 = iset2.getSegment<const RangeSegType>(0);
   ASSERT_EQ(4, *rs20.begin());
   ASSERT_EQ(6, *rs20.end());
@@ -134,7 +134,7 @@ TEST(IndexSetUnitTest, Slice)
   int segs[ ] = {0, 3};
   RIndexSetType iset3 = iset1.createSlice(segs, 2);
   ASSERT_EQ(2, iset3.size());
-  ASSERT_EQ(4, iset3.getLength());
+  ASSERT_EQ(size_t(4), iset3.getLength());
   const RangeSegType rs30 = iset3.getSegment<const RangeSegType>(0);
   ASSERT_EQ(0, *rs30.begin());
   ASSERT_EQ(2, *rs30.end());
@@ -147,7 +147,7 @@ TEST(IndexSetUnitTest, Slice)
   segvec.push_back(2);
   RIndexSetType iset4 = iset1.createSlice(segvec);
   ASSERT_EQ(2, iset4.size());
-  ASSERT_EQ(4, iset4.getLength());
+  ASSERT_EQ(size_t(4), iset4.getLength());
   const RangeSegType rs40 = iset4.getSegment<const RangeSegType>(0);
   ASSERT_EQ(6, *rs40.begin());
   ASSERT_EQ(8, *rs40.end());

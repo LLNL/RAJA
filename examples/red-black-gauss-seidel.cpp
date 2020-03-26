@@ -177,8 +177,8 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
 
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet;
 
-  int redN = (int)ceil(N * N / 2);
-  int blkN = (int)floor(N * N / 2);
+  int redN = ceil(N * N / 2);
+  int blkN = floor(N * N / 2);
   RAJA::Index_type *Red = new RAJA::Index_type[redN];
   RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
 
