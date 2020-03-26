@@ -43,7 +43,9 @@ void NegativeRangeSegConstructorsTest()
   RAJA::TypedRangeSegment<T> r3(-13, -1);
   ASSERT_EQ(17, r1.size());
   ASSERT_EQ(12, r3.size());
+#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
   ASSERT_ANY_THROW(RAJA::TypedRangeSegment<T> r2(0, -50));
+#endif
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Constructors)
@@ -62,9 +64,7 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
   ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> neg(20, 19));
 #endif
 
-#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
   NegativeRangeSegConstructorsTest<TypeParam>();
-#endif
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Assignments)
@@ -108,9 +108,7 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
   ASSERT_EQ(100, r1.size());
 
-#if !defined(__CUDA_ARCH__)
   NegativeRangeSegIteratorsTest<TypeParam>();
-#endif
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Slices)

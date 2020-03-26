@@ -141,9 +141,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   ASSERT_EQ(segment15.size(), 0);
 
   // NEGATIVE INDICES
-#if !defined(__CUDA_ARCH__)
   NegativeRangeStrideTestSizes<TypeParam>();
-#endif
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
