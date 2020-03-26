@@ -124,7 +124,21 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 
 inline int RAJA_ABORT_OR_THROW(const char *str)
 {
-  if (std::getenv("RAJA_NO_EXCEPT") != nullptr) {
+
+#ifdef RAJA_COMPILER_MSVC
+  char *value;
+  size_t len;
+  bool no_except = false;
+  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
+    no_except = true;
+    free(value);
+  }
+
+#else
+  bool no_except = std::getenv("RAJA_NO_EXCEPT") != nullptr;
+#endif
+
+  if (no_except) {
     std::abort();
   } else {
     throw std::runtime_error(str);

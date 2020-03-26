@@ -20,5 +20,6 @@
 #define RAJA_policy_openmp_kernel_HPP
 
 #include "RAJA/policy/openmp/kernel/Collapse.hpp"
+#include "RAJA/policy/openmp/kernel/OmpSyncThreads.hpp"
 
 #endif  // closing endif for header file include guard

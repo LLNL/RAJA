@@ -242,8 +242,8 @@ to specify which arguments each lambda takes and in which order. For example:
 By using ``RAJA::statement::Lambda`` parameters in this way, the code 
 potentially indicates more clearly which areguments are used. Of course, this 
 makes the execution policy more verbose, but that is typically hidden away 
-in a header file. Statements such as ``RAJA::statement::Segs``, and 
-``RAJA::statement::Params`` identify the positions of the segments and params 
+in a header file. Statements such as ``RAJA::Segs``, and 
+``RAJA::Params`` identify the positions of the segments and params 
 in the tuples to be used as arguments to the lambda expressions.
 
 As we noted earlier, the execution policy type passed to the 

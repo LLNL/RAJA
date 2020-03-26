@@ -69,13 +69,13 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
   layout = layout_b;
 
 
-  ASSERT_EQ(0, layout(0, 0));
+  ASSERT_EQ(TypeParam(0), layout(0, 0));
 
-  ASSERT_EQ(5, layout(1, 0));
-  ASSERT_EQ(15, layout(3, 0));
+  ASSERT_EQ(TypeParam(5), layout(1, 0));
+  ASSERT_EQ(TypeParam(15), layout(3, 0));
 
-  ASSERT_EQ(1, layout(0, 1));
-  ASSERT_EQ(5, layout(0, 5));
+  ASSERT_EQ(TypeParam(1), layout(0, 1));
+  ASSERT_EQ(TypeParam(5), layout(0, 5));
 
   // Check that we get the identity (mod 15)
   TypeParam pK = 0;
@@ -121,14 +121,14 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
   // Zero for J size should correctly produce projective layout
   const my_layout layout(7, 0);
 
-  ASSERT_EQ(0, layout(0, 0));
+  ASSERT_EQ(TypeParam(0), layout(0, 0));
 
-  ASSERT_EQ(1, layout(1, 0));
-  ASSERT_EQ(3, layout(3, 0));
+  ASSERT_EQ(TypeParam(1), layout(1, 0));
+  ASSERT_EQ(TypeParam(3), layout(3, 0));
 
   // J should be projected out
-  ASSERT_EQ(0, layout(0, 1));
-  ASSERT_EQ(0, layout(0, 5));
+  ASSERT_EQ(TypeParam(0), layout(0, 1));
+  ASSERT_EQ(TypeParam(0), layout(0, 5));
 
   TypeParam pK = 0;
   // Check that we get the identity (mod 7)
@@ -145,15 +145,15 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
     ASSERT_EQ(pK % 7, k2);
 
     // check projection of j
-    ASSERT_EQ(j, 0);
+    ASSERT_EQ(j, TypeParam(0));
     pK++;
   }
 }
 
 TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 {
-  RAJA::Layout<2> dynamic_layout(7, 5);
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,RAJA::list<TypeParam,TypeParam>,7,5>;
+  RAJA::Layout<2, TypeParam> dynamic_layout(7, 5);
+  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,TypeParam,RAJA::list<TypeParam,TypeParam>,7,5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i) {
@@ -171,12 +171,13 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
     RAJA::make_permuted_layout({{7, 5}},
                                RAJA::as_array<RAJA::PERM_JI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JI,
+                                                TypeParam,
                                                 RAJA::list<TypeParam,TypeParam>, 7,5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i) {
     for (TypeParam j = 0; j < 5; ++j) {
-      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+      ASSERT_EQ(TypeParam(dynamic_layout(i, j)), static_layout::s_oper(i,j));
     }
   }
 }
@@ -187,6 +188,7 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
     RAJA::make_permuted_layout({{7, 13, 5}},
                                RAJA::as_array<RAJA::PERM_JKI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JKI,
+                                                TypeParam,
                                                 RAJA::list<TypeParam,TypeParam,TypeParam>,
                                                 7,13,5>;
 
@@ -194,7 +196,7 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
   for (TypeParam i = 0; i < 7; ++i) {
     for (TypeParam j = 0; j < 9; ++j) {
       for (TypeParam k = 0; k < 5; ++k) {
-        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
+        ASSERT_EQ(TypeParam(dynamic_layout(i, j, k)), static_layout::s_oper(i,j,k));
       }
     }
   }
@@ -207,6 +209,7 @@ TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
     RAJA::make_permuted_layout({{7, 13, 5, 17}},
                                RAJA::as_array<RAJA::PERM_LJKI>::get());
   using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_LJKI,
+                                                TypeParam,
                                                 RAJA::list<TypeParam,TypeParam,TypeParam,TypeParam>,
                                                 7,13,5,17>;
 
@@ -215,7 +218,7 @@ TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
     for (TypeParam j = 0; j < 8; ++j) {
       for (TypeParam k = 0; k < 5; ++k) {
         for (TypeParam l = 0; l < 5; ++l) {
-          ASSERT_EQ(dynamic_layout(i, j, k, l), static_layout::s_oper(i,j,k,l));
+          ASSERT_EQ(TypeParam(dynamic_layout(i, j, k, l)), static_layout::s_oper(i,j,k,l));
         }
       }
     }
