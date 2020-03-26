@@ -255,20 +255,6 @@ namespace RAJA
         return self_type(_mm256_div_pd(m_value, b.m_value));
       }
 
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm256_fmadd_pd(m_value, b.m_value, c.m_value));
-      }
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm256_fmsub_pd(m_value, b.m_value, c.m_value));
-      }
-
       /*!
        * @brief Sum the elements of this vector
        * @return Sum of the values of the vectors scalar elements
@@ -276,8 +262,9 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        auto hsum = _mm256_hadd_pd(m_value, m_value);
-        return hsum[0] + hsum[2];
+        auto sh1 = _mm256_permute_pd(m_value, 0x5);
+        auto red1 = _mm256_add_pd(m_value, sh1);
+        return red1[0]+red1[2];
       }
 
       /*!

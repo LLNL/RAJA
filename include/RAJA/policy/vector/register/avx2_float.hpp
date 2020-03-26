@@ -307,7 +307,7 @@ namespace RAJA
         }
 
         // swap odd-even pairs and add
-        auto sh1 = _mm256_shuffle_ps(m_value, m_value, 0xB1);
+        auto sh1 = _mm256_permute_ps(m_value, 0xB1);
         auto red1 = _mm256_add_ps(m_value, sh1);
 
         if(N == 3 || N == 4){
@@ -315,7 +315,7 @@ namespace RAJA
         }
 
         // swap odd-even quads and add
-        auto sh2 = _mm256_shuffle_ps(red1, red1, 0x1B);
+        auto sh2 = _mm256_permute_ps(red1, 0x4E);
         auto red2 = _mm256_add_ps(red1, sh2);
 
         return red2[0] + red2[4];

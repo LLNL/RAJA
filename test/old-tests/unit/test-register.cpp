@@ -19,6 +19,14 @@
      RAJA::Register<RAJA::vector_avx_register, double, 2>,
      RAJA::Register<RAJA::vector_avx_register, double, 3>,
      RAJA::Register<RAJA::vector_avx_register, double, 4>,
+     RAJA::Register<RAJA::vector_avx_register, float, 1>,
+     RAJA::Register<RAJA::vector_avx_register, float, 2>,
+     RAJA::Register<RAJA::vector_avx_register, float, 3>,
+     RAJA::Register<RAJA::vector_avx_register, float, 4>,
+     RAJA::Register<RAJA::vector_avx_register, float, 5>,
+     RAJA::Register<RAJA::vector_avx_register, float, 6>,
+     RAJA::Register<RAJA::vector_avx_register, float, 7>,
+     RAJA::Register<RAJA::vector_avx_register, float, 8>,
 #endif
 
 #ifdef __AVX2__
@@ -48,7 +56,13 @@
      RAJA::FixedVector<double, 3>,
      RAJA::FixedVector<double, 4>,
      RAJA::FixedVector<double, 8>,
-     RAJA::FixedVector<double, 16>>;
+     RAJA::FixedVector<double, 16>,
+     RAJA::StreamVector<float>,
+     RAJA::StreamVector<float, 2>,
+     RAJA::FixedVector<float, 1>,
+     RAJA::FixedVector<float, 2>,
+     RAJA::FixedVector<float, 8>,
+     RAJA::FixedVector<float, 16>>;
 
 //using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
 
@@ -480,21 +494,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
   using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem];
-  register_t x;
+  for(int iter = 0;iter < 100;++ iter){
+    element_t A[num_elem];
+    register_t x;
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
-    x.set(i, A[i]);
+    for(size_t i = 0;i < num_elem; ++ i){
+      A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+      x.set(i, A[i]);
+    }
+
+    element_t expected = A[0];
+    for(size_t i = 1;i < num_elem;++ i){
+      expected = expected > A[i] ? expected : A[i];
+    }
+
+    ASSERT_DOUBLE_EQ(x.max(), expected);
+
   }
-
-  element_t expected = A[0];
-  for(size_t i = 1;i < num_elem;++ i){
-    expected = expected > A[i] ? expected : A[i];
-  }
-
-  ASSERT_DOUBLE_EQ(x.max(), expected);
-
 }
 
 TYPED_TEST_P(RegisterTest, VectorRegisterMin)
@@ -504,21 +520,23 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
   using element_t = typename register_t::element_type;
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem];
-  register_t x;
+  for(int iter = 0;iter < 100;++ iter){
+    element_t A[num_elem];
+    register_t x;
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
-    x.set(i, A[i]);
+    for(size_t i = 0;i < num_elem; ++ i){
+      A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+      x.set(i, A[i]);
+    }
+
+    element_t expected = A[0];
+    for(size_t i = 1;i < num_elem;++ i){
+      expected = expected < A[i] ? expected : A[i];
+    }
+
+    ASSERT_DOUBLE_EQ(x.min(), expected);
+
   }
-
-  element_t expected = A[0];
-  for(size_t i = 1;i < num_elem;++ i){
-    expected = expected < A[i] ? expected : A[i];
-  }
-
-  ASSERT_DOUBLE_EQ(x.min(), expected);
-
 }
 
 //REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSubtract);

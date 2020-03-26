@@ -188,6 +188,17 @@ namespace RAJA
       }
 
       /*!
+       * @brief Negate the value of this vector
+       * @return Value of -(*this)
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-() const
+      {
+        return self_type(0).subtract(*getThis());
+      }
+
+      /*!
        * @brief Subtract two vector registers
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
