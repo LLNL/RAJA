@@ -45,7 +45,7 @@ void ForallISetTest()
 
   std::vector<INDEX_TYPE> lindices;
   INDEX_TYPE idx = 0;
-  while (lindices.size() < 2000) {
+  while (lindices.size() < 3000) {
     double dval = dist(gen);
     if (dval > 0.3) {
       lindices.push_back(idx);

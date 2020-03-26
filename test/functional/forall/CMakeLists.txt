@@ -16,6 +16,9 @@ if(RAJA_ENABLE_OPENMP)
   raja_add_test(
     NAME test-forall-segment-openmp
     SOURCES test-forall-segment-openmp.cpp)
+  raja_add_test(
+    NAME test-forall-indexset-openmp
+    SOURCES test-forall-indexset-openmp.cpp)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
