@@ -8,6 +8,9 @@
 raja_add_test(
   NAME test-forall-segment-seq
   SOURCES test-forall-segment-seq.cpp)
+raja_add_test(
+  NAME test-forall-indexset-seq
+  SOURCES test-forall-indexset-seq.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
