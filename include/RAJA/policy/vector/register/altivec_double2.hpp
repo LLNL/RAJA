@@ -47,8 +47,6 @@ namespace RAJA
       using element_type = double;
 
       static constexpr size_t s_num_elem = 2;
-      static constexpr size_t s_byte_width = s_num_elem*sizeof(double);
-      static constexpr size_t s_bit_width = s_byte_width*8;
 
 
     private:

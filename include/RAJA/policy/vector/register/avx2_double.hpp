@@ -298,7 +298,7 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper halves
-          return std::max<double>(b[0], b[2]);
+          return std::max<element_type>(b[0], b[2]);
         }
         else if(N == 3){
           // permute the first two and last two lanes of the register
@@ -315,10 +315,10 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper lane
-          return std::max<double>(b[0], b[2]);
+          return std::max<element_type>(b[0], b[2]);
         }
         else if(N == 2){
-          return std::max<double>(m_value[0], m_value[1]);
+          return std::max<element_type>(m_value[0], m_value[1]);
         }
         else{
           return m_value[0];
@@ -355,7 +355,7 @@ namespace RAJA
           register_type b = _mm256_min_pd(m_value, a);
 
           // now take the minimum of a lower and upper halves
-          return std::min<double>(b[0], b[2]);
+          return std::min<element_type>(b[0], b[2]);
         }
         else if(N == 3){
           // permute the first two and last two lanes of the register
@@ -372,10 +372,10 @@ namespace RAJA
           register_type b = _mm256_min_pd(m_value, a);
 
           // now take the minimum of a lower and upper lane
-          return std::min<double>(b[0], b[2]);
+          return std::min<element_type>(b[0], b[2]);
         }
         else if(N == 2){
-          return std::min<double>(m_value[0], m_value[1]);
+          return std::min<element_type>(m_value[0], m_value[1]);
         }
         else{
           return m_value[0];

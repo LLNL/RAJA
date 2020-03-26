@@ -41,6 +41,7 @@ namespace RAJA {
 
 #endif // guard
 
+#include<RAJA/policy/vector/register/avx2_float.hpp>
 #include<RAJA/policy/vector/register/avx2_double.hpp>
 
 

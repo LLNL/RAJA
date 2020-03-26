@@ -15,27 +15,26 @@
 
   using RegisterTestTypes = ::testing::Types<
 #ifdef __AVX__
+     RAJA::Register<RAJA::vector_avx_register, double, 1>,
      RAJA::Register<RAJA::vector_avx_register, double, 2>,
      RAJA::Register<RAJA::vector_avx_register, double, 3>,
      RAJA::Register<RAJA::vector_avx_register, double, 4>,
-     RAJA::FixedVector<double, 27, RAJA::vector_avx_register>,
-     RAJA::FixedVector<double, 13, RAJA::vector_avx_register>,
-     RAJA::FixedVector<double, 8, RAJA::vector_avx_register>,
-     RAJA::FixedVector<double, 3, RAJA::vector_avx_register>,
-     RAJA::StreamVector<double, 1, RAJA::vector_avx_register>,
-     RAJA::StreamVector<double, 2, RAJA::vector_avx_register>,
 #endif
 
 #ifdef __AVX2__
+     RAJA::Register<RAJA::vector_avx2_register, double, 1>,
      RAJA::Register<RAJA::vector_avx2_register, double, 2>,
      RAJA::Register<RAJA::vector_avx2_register, double, 3>,
      RAJA::Register<RAJA::vector_avx2_register, double, 4>,
-     RAJA::FixedVector<double, 27, RAJA::vector_avx2_register>,
-     RAJA::FixedVector<double, 13, RAJA::vector_avx2_register>,
-     RAJA::FixedVector<double, 8, RAJA::vector_avx2_register>,
-     RAJA::FixedVector<double, 3, RAJA::vector_avx2_register>,
-     RAJA::StreamVector<double, 1, RAJA::vector_avx2_register>,
-     RAJA::StreamVector<double, 2, RAJA::vector_avx2_register>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 1>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 2>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 3>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 4>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 5>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 6>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 7>,
+     RAJA::Register<RAJA::vector_avx2_register, float, 8>,
+
 #endif
      RAJA::Register<RAJA::vector_scalar_register, int, 1>,
      RAJA::Register<RAJA::vector_scalar_register, float, 1>,
@@ -411,7 +410,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
     expected += A[i]*B[i];
   }
 
-  ASSERT_DOUBLE_EQ(x.dot(y), expected);
+  ASSERT_FLOAT_EQ(x.dot(y), expected);
 
 }
 
@@ -439,7 +438,7 @@ TYPED_TEST_P(RegisterTest, VectorFMA)
   result = x.fused_multiply_add(y,z);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(result[i], expected[i]);
+    ASSERT_FLOAT_EQ(result[i], expected[i]);
   }
 
 }
@@ -469,7 +468,7 @@ TYPED_TEST_P(RegisterTest, VectorFMS)
   result = x.fused_multiply_subtract(y,z);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(result[i], expected[i]);
+    ASSERT_FLOAT_EQ(result[i], expected[i]);
   }
 
 }
