@@ -139,6 +139,35 @@ insertion_sort(Iter begin,
 }
 
 /*!
+    \brief get number of strides for shell sort
+*/
+RAJA_HOST_DEVICE RAJA_INLINE
+constexpr size_t num_shell_strides()
+{
+  return 39;
+}
+
+/*!
+    \brief get strides for shell sort
+*/
+RAJA_HOST_DEVICE RAJA_INLINE
+constexpr long long unsigned get_shell_stride(int i)
+{
+  using array_type = long long unsigned[num_shell_strides()];
+  return (array_type{
+      // strides from M. Ciura 2001
+      1llu, 4llu, 10llu, 23llu, 57llu, 132llu, 301llu, 701llu, 1750llu,
+      // extended up to 2^47 with strides[n] = floor(2.25*strides[n-1])
+      3937llu, 8858llu, 19930llu, 44842llu, 100894llu, 227011llu, 510774llu,
+      1149241llu, 2585792llu, 5818032llu, 13090572llu, 29453787llu, 66271020llu,
+      149109795llu, 335497038llu, 754868335llu, 1698453753llu, 3821520944llu,
+      8598422124llu, 19346449779llu, 43529512002llu, 97941402004llu,
+      220368154509llu, 495828347645llu, 1115613782201llu, 2510131009952llu,
+      5647794772392llu, 12707538237882llu, 28591961035234llu, 64331912329276llu
+    })[i];
+}
+
+/*!
     \brief unstable shell sort given range inplace using comparison function
     and using O(N^?) comparisons and O(1) memory
 */
@@ -154,27 +183,15 @@ shell_sort(Iter begin,
 
   diff_type n = end - begin;
 
-  constexpr long long unsigned strides[] = {
-      // strides from M. Ciura 2001
-      1llu, 4llu, 10llu, 23llu, 57llu, 132llu, 301llu, 701llu, 1750llu,
-      // extended up to 2^47 with strides[n] = floor(2.25*strides[n-1])
-      3937llu, 8858llu, 19930llu, 44842llu, 100894llu, 227011llu, 510774llu,
-      1149241llu, 2585792llu, 5818032llu, 13090572llu, 29453787llu, 66271020llu,
-      149109795llu, 335497038llu, 754868335llu, 1698453753llu, 3821520944llu,
-      8598422124llu, 19346449779llu, 43529512002llu, 97941402004llu,
-      220368154509llu, 495828347645llu, 1115613782201llu, 2510131009952llu,
-      5647794772392llu, 12707538237882llu, 28591961035234llu, 64331912329276llu
-    };
-
   if (n <= static_cast<diff_type>(1)) {
     return;
-  } else if (strides[1] < static_cast<unsigned long long>(n)) {
+  } else if (get_shell_stride(1) < static_cast<unsigned long long>(n)) {
 
     int i_stride = 2;
     // find first stride larger than n
-    constexpr int num_strides = sizeof(strides)/sizeof(strides[0]);
+    constexpr int num_strides = num_shell_strides();
     for (; i_stride < num_strides; ++i_stride) {
-      if (strides[i_stride] >= static_cast<unsigned long long>(n)) {
+      if (get_shell_stride(i_stride) >= static_cast<unsigned long long>(n)) {
         break;
       }
     }
@@ -184,7 +201,7 @@ shell_sort(Iter begin,
     // for each stride size smaller than n, largest to smallest, not including 1
     // sort strided ranges with stride stride
     for (; i_stride > 0; --i_stride) {
-      diff_type stride = static_cast<diff_type>(strides[i_stride]);
+      diff_type stride = static_cast<diff_type>(get_shell_stride(i_stride));
 
       // for each unsorted item in the right side of each strided range
       for (diff_type i_next_unsorted = stride; i_next_unsorted != n; ++i_next_unsorted) {
