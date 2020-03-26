@@ -164,7 +164,7 @@ GPU_TEST(Sort, basic_device_intro_Sort)
 
 GPU_TEST(Sort, basic_device_merge_Sort)
 {
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  // RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
   // merge_sort is not currently supported in device code due
   // to memory requirements
   // testSorter(MergeSortGPU{}, MaxN);
