@@ -22,7 +22,6 @@
 
 #include "RAJA/policy/vector/forall.hpp"
 #include "RAJA/policy/vector/policy.hpp"
-#include "RAJA/policy/vector/register.hpp"
 #include "RAJA/policy/vector/kernel/For.hpp"
 #include "RAJA/policy/vector/kernel/ForICount.hpp"
 

@@ -21,8 +21,7 @@
 #include "RAJA/config.hpp"
 #ifdef RAJA_ALTIVEC
 
-#include<RAJA/policy/vector/register/scalar.hpp>
-
+#include<RAJA/pattern/register.hpp>
 #include<altivec.h>
 
 
@@ -50,10 +49,10 @@ namespace RAJA {
 
 }
 
-#include<RAJA/policy/vector/register/altivec_int32.hpp>
-#include<RAJA/policy/vector/register/altivec_int64.hpp>
-#include<RAJA/policy/vector/register/altivec_float.hpp>
-#include<RAJA/policy/vector/register/altivec_double.hpp>
+#include<RAJA/policy/register/altivec/altivec_int32.hpp>
+#include<RAJA/policy/register/altivec/altivec_int64.hpp>
+#include<RAJA/policy/register/altivec/altivec_float.hpp>
+#include<RAJA/policy/register/altivec/altivec_double.hpp>
 
 
 #endif // RAJA_ALTIVEC
