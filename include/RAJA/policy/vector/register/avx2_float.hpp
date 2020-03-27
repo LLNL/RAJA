@@ -277,6 +277,8 @@ namespace RAJA
         return self_type(_mm256_div_ps(m_value, b.m_value));
       }
 
+// only use FMA's if the compiler has them turned on
+#ifdef __FMA__
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type fused_multiply_add(self_type const &b, self_type const &c) const
@@ -290,6 +292,7 @@ namespace RAJA
       {
         return self_type(_mm256_fmsub_ps(m_value, b.m_value, c.m_value));
       }
+#endif
 
       /*!
        * @brief Sum the elements of this vector

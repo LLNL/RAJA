@@ -290,7 +290,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &x) const {
-        self_type result(*this);
+        self_type result;
 
         camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) + camp::get<IDX_SEQ>(x.m_registers))...);
 
@@ -305,7 +305,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &x) const {
-        self_type result(*this);
+        self_type result;
 
         camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) - camp::get<IDX_SEQ>(x.m_registers))...);
 
@@ -320,7 +320,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &x) const {
-        self_type result(*this);
+        self_type result;
 
         camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) * camp::get<IDX_SEQ>(x.m_registers))...);
 
@@ -335,7 +335,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &x) const {
-        self_type result(*this);
+        self_type result;
 
         camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) / camp::get<IDX_SEQ>(x.m_registers))...);
 
@@ -599,6 +599,41 @@ namespace RAJA
           }
           return result;
         }
+      }
+
+
+      /*!
+       * @brief Returns element-wise max of two vectors
+       * @return The vector containing max values of this and vector x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type vmax(self_type const &x) const
+      {
+        self_type result;
+
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers).vmax(camp::get<IDX_SEQ>(x.m_registers)))...);
+
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
+      }
+
+      /*!
+       * @brief Returns element-wise minimum of two vectors
+       * @return The vector containing minimum values of this and vector x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type vmin(self_type const &x) const
+      {
+        self_type result;
+
+        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers).vmin(camp::get<IDX_SEQ>(x.m_registers)))...);
+
+        result.m_length = RAJA::min(m_length, x.m_length);
+
+        return result;
       }
 
   };
