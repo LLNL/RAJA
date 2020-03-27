@@ -35,7 +35,10 @@
     RAJA::Register<RAJA::vector_avx_register, int, 6>,
     RAJA::Register<RAJA::vector_avx_register, int, 7>,
     RAJA::Register<RAJA::vector_avx_register, int, 8>,
-
+    RAJA::Register<RAJA::vector_avx_register, long, 1>,
+    RAJA::Register<RAJA::vector_avx_register, long, 2>,
+    RAJA::Register<RAJA::vector_avx_register, long, 3>,
+    RAJA::Register<RAJA::vector_avx_register, long, 4>,
 #endif
 
 #ifdef __AVX2__

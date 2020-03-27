@@ -43,6 +43,7 @@ namespace RAJA {
 
 #endif
 
+#include<RAJA/policy/vector/register/avx_int64.hpp>
 #include<RAJA/policy/vector/register/avx_int32.hpp>
 #include<RAJA/policy/vector/register/avx_float.hpp>
 #include<RAJA/policy/vector/register/avx_double.hpp>
