@@ -283,7 +283,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       element_type dot(self_type const &x) const
       {
-        return ((*getThis()) * x).sum();
+        return getThis()->multiply(x).sum();
       }
 
       /*!

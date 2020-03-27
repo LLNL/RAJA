@@ -268,16 +268,6 @@ namespace RAJA
         return red1[0]+red1[2];
       }
 
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        return self_type(_mm256_mul_pd(m_value, x.m_value)).sum();
-      }
 
       /*!
        * @brief Returns the largest element

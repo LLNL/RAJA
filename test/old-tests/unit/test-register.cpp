@@ -27,6 +27,15 @@
 //     RAJA::Register<RAJA::vector_avx_register, float, 6>,
 //     RAJA::Register<RAJA::vector_avx_register, float, 7>,
 //     RAJA::Register<RAJA::vector_avx_register, float, 8>,
+      RAJA::Register<RAJA::vector_avx_register, int, 1>,
+      RAJA::Register<RAJA::vector_avx_register, int, 2>,
+      RAJA::Register<RAJA::vector_avx_register, int, 3>,
+      RAJA::Register<RAJA::vector_avx_register, int, 4>,
+      RAJA::Register<RAJA::vector_avx_register, int, 5>,
+      RAJA::Register<RAJA::vector_avx_register, int, 6>,
+      RAJA::Register<RAJA::vector_avx_register, int, 7>,
+      RAJA::Register<RAJA::vector_avx_register, int, 8>,
+
 //#endif
 //
 //#ifdef __AVX2__
@@ -42,14 +51,14 @@
 //     RAJA::Register<RAJA::vector_avx2_register, float, 6>,
 //     RAJA::Register<RAJA::vector_avx2_register, float, 7>,
 //     RAJA::Register<RAJA::vector_avx2_register, float, 8>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 1>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 2>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 3>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 4>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 5>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 6>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 7>,
-     RAJA::Register<RAJA::vector_avx2_register, int, 8>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 1>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 2>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 3>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 4>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 5>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 6>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 7>,
+//     RAJA::Register<RAJA::vector_avx2_register, int, 8>,
 //
 //#endif
 //     RAJA::Register<RAJA::vector_scalar_register, int, 1>,

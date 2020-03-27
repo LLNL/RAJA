@@ -360,16 +360,6 @@ namespace RAJA
         return _mm256_extract_epi32(red2, 0) + _mm256_extract_epi32(red2, 4);
       }
 
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        return multiply(x).sum();
-      }
 
       /*!
        * @brief Returns the largest element
