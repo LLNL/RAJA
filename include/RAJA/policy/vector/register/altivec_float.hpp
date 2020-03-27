@@ -17,11 +17,10 @@
 
 
 
-#ifndef RAJA_policy_vector_register_altivec_double2_HPP
-#define RAJA_policy_vector_register_altivec_double2_HPP
+#ifndef RAJA_policy_vector_register_altivec_float_HPP
+#define RAJA_policy_vector_register_altivec_float_HPP
 
 #include "RAJA/config.hpp"
-
 #ifdef RAJA_ALTIVEC
 
 #include "RAJA/util/macros.hpp"
@@ -38,19 +37,23 @@ namespace RAJA
 {
 
 
-  template<>
-  class Register<vector_altivec_register, double, 2>:
-    public internal::RegisterBase<Register<vector_altivec_register, double, 2>>
+  template<size_t N>
+  class Register<vector_altivec_register, float, N>:
+    public internal::RegisterBase<Register<vector_altivec_register, float, N>>
   {
-    public:
-      using self_type = Register<vector_altivec_register, double, 2>;
-      using element_type = double;
 
-      static constexpr size_t s_num_elem = 2;
+    static_assert(N >= 1, "Vector must have at least 1 lane");
+    static_assert(N <= 4, "AltiVec can only have 4 lanes of floats");
+
+    public:
+      using self_type = Register<vector_altivec_register, float, N>;
+      using element_type = float;
+
+      static constexpr size_t s_num_elem = N;
 
 
     private:
-      vector double m_value;
+      vector float m_value;
 
 
     public:
@@ -61,7 +64,7 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      Register() : m_value{0.0, 0.0} {
+      Register() : m_value{0.0f, 0.0f, 0.0f, 0.0f} {
       }
 
       /*!
@@ -85,7 +88,12 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) : m_value{c, c} {}
+      Register(element_type const &c) :
+        m_value{c,
+                N >= 2 ? c : 0.0f,
+                N >= 3 ? c : 0.0f,
+                N >= 4 ? c : 0.0f}
+      {}
 
 
       /*!
@@ -99,11 +107,25 @@ namespace RAJA
       RAJA_INLINE
       self_type &load(element_type const *ptr, size_t stride = 1){
         if(stride == 1){
-          m_value = *((register_type const *)ptr);
+          if(N == 4){
+            m_value = *((register_type const *)ptr);
+          }
+          else{
+            m_value = register_type{
+              ptr[0],
+              N >= 2 ? ptr[1] : 0.0f,
+              N >= 3 ? ptr[2] : 0.0f,
+              N >= 4 ? ptr[3] : 0.0f};
+          }
         }
         else{
-          m_value = register_type{ptr[0], ptr[stride]};
+          m_value = register_type{
+                        ptr[0],
+                        N >= 2 ? ptr[stride] : 0.0f,
+                        N >= 3 ? ptr[2*stride] : 0.0f,
+                        N >= 4 ? ptr[3*stride] : 0.0f};
         }
+
         return *this;
       }
 
@@ -118,11 +140,11 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store(element_type *ptr, size_t stride = 1) const{
-        if(stride == 1){
+        if(stride == 1 && N ==4){
           *((register_type *)ptr) = m_value;
         }
         else{
-          for(size_t i = 0;i < s_num_elem;++ i){
+          for(size_t i = 0;i < N;++ i){
             ptr[i*stride] = m_value[i];
           }
         }
@@ -156,8 +178,11 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &broadcast(element_type const &a){
-        m_value = register_type{a, a};
+      self_type &broadcast(element_type const &c){
+        m_value = register_type{c,
+                N >= 2 ? c : 0.0f,
+                N >= 3 ? c : 0.0f,
+                N >= 4 ? c : 0.0f};
         return * this;
       }
 
@@ -214,7 +239,26 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        return m_value[0] + m_value[1];
+        vector unsigned char perm1 {
+          0x04, 0x05, 0x06, 0x07,  // m_value[1]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x08, 0x09, 0x0A, 0x0B}; // m_value[2]
+        auto sh1 = vec_perm(m_value, m_value, perm1);
+
+        auto red1 = vec_add(m_value, sh1);
+
+        vector unsigned char perm2 {
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x08, 0x09, 0x0A, 0x0B,  // m_value[2]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x04, 0x05, 0x06, 0x07};  // m_value[1]
+
+        auto sh2 = vec_perm(red1, red1, perm2);
+
+        auto red2 = vec_add(red1, sh2);
+
+        return red2[0];
       }
 
 
@@ -225,8 +269,38 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        // take the minimum of a lower and upper lane
-        return RAJA::max<double>(m_value[0], m_value[1]);
+        if(N == 1){
+          return m_value[0];
+        }
+
+        vector unsigned char perm1 {
+          0x04, 0x05, 0x06, 0x07,  // m_value[1]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x08, 0x09, 0x0A, 0x0B}; // m_value[2]
+        auto sh1 = vec_perm(m_value, m_value, perm1);
+
+        auto red1 = vec_max(m_value, sh1);
+
+        if(N == 2){
+          return red1[0];
+        }
+
+        if(N == 3){
+          return RAJA::max<element_type>(red1[0], m_value[2]);
+        }
+        vector unsigned char perm2 {
+          0x08, 0x09, 0x0A, 0x0B,  // m_value[2]
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x04, 0x05, 0x06, 0x07};  // m_value[1]
+
+        auto sh2 = vec_perm(red1, red1, perm2);
+
+        auto red2 = vec_max(red1, sh2);
+
+        return red2[0];
+
       }
 
       /*!
@@ -246,8 +320,37 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        // take the minimum of a lower and upper lane
-        return RAJA::min<double>(m_value[0], m_value[1]);
+        if(N == 1){
+          return m_value[0];
+        }
+
+        vector unsigned char perm1 {
+          0x04, 0x05, 0x06, 0x07,  // m_value[1]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x08, 0x09, 0x0A, 0x0B}; // m_value[2]
+        auto sh1 = vec_perm(m_value, m_value, perm1);
+
+        auto red1 = vec_min(m_value, sh1);
+
+        if(N == 2){
+          return red1[0];
+        }
+
+        if(N == 3){
+          return RAJA::min<element_type>(red1[0], m_value[2]);
+        }
+        vector unsigned char perm2 {
+          0x08, 0x09, 0x0A, 0x0B,  // m_value[2]
+          0x0C, 0x0D, 0x0E, 0x0F,  // m_value[3]
+          0x00, 0x01, 0x02, 0x03,  // m_value[0]
+          0x04, 0x05, 0x06, 0x07};  // m_value[1]
+
+        auto sh2 = vec_perm(red1, red1, perm2);
+
+        auto red2 = vec_min(red1, sh2);
+
+        return red2[0];
       }
 
       /*!

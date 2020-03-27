@@ -50,8 +50,10 @@ namespace RAJA {
 
 }
 
-#include<RAJA/policy/vector/register/altivec_double1.hpp>
-#include<RAJA/policy/vector/register/altivec_double2.hpp>
+#include<RAJA/policy/vector/register/altivec_int32.hpp>
+#include<RAJA/policy/vector/register/altivec_int64.hpp>
+#include<RAJA/policy/vector/register/altivec_float.hpp>
+#include<RAJA/policy/vector/register/altivec_double.hpp>
 
 
 #endif // RAJA_ALTIVEC

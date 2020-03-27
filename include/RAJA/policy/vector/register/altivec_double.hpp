@@ -17,11 +17,10 @@
 
 
 
-#ifndef RAJA_policy_vector_register_altivec_double1_HPP
-#define RAJA_policy_vector_register_altivec_double1_HPP
+#ifndef RAJA_policy_vector_register_altivec_double_HPP
+#define RAJA_policy_vector_register_altivec_double_HPP
 
 #include "RAJA/config.hpp"
-
 #ifdef RAJA_ALTIVEC
 
 #include "RAJA/util/macros.hpp"
@@ -38,16 +37,19 @@ namespace RAJA
 {
 
 
-  template<>
-  class Register<vector_altivec_register, double, 1>:
-    public internal::RegisterBase<Register<vector_altivec_register, double, 1>>
+  template<size_t N>
+  class Register<vector_altivec_register, double, N>:
+    public internal::RegisterBase<Register<vector_altivec_register, double, N>>
   {
+
+    static_assert(N >= 1, "Vector must have at least 1 lane");
+    static_assert(N <= 2, "AltiVec can only have 2 lanes of doubles");
+
     public:
-      using self_type = Register<vector_altivec_register, double, 1>;
+      using self_type = Register<vector_altivec_register, double, N>;
       using element_type = double;
 
-      static constexpr size_t s_num_elem = 1;
-
+      static constexpr size_t s_num_elem = N;
 
 
     private:
@@ -86,7 +88,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) : m_value{c, c} {}
+      Register(element_type const &c) : m_value{c, N == 2 ? c : 0.0} {}
 
 
       /*!
@@ -98,8 +100,20 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      void load(element_type const *ptr, size_t = 1){
-        m_value[0] = ptr[0];
+      self_type &load(element_type const *ptr, size_t stride = 1){
+        if(N == 2){
+          if(stride == 1){
+            m_value = *((register_type const *)ptr);
+          }
+          else{
+            m_value = register_type{ptr[0], ptr[stride]};
+          }
+        }
+        else{
+          m_value = register_type{ptr[0], 0.0};
+        }
+
+        return *this;
       }
 
 
@@ -112,8 +126,20 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      void store(element_type *ptr, size_t = 1) const{
-        ptr[0] = m_value[0];
+      self_type const &store(element_type *ptr, size_t stride = 1) const{
+        if(N == 2){
+          if(stride == 1){
+            *((register_type *)ptr) = m_value;
+          }
+          else{
+            ptr[0] = m_value[0];
+            ptr[stride] = m_value[1];
+          }
+        }
+        else{
+          ptr[0] = m_value[0];
+        }
+        return *this;
       }
 
       /*!
@@ -124,8 +150,8 @@ namespace RAJA
       template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type get(IDX ) const
-      {return m_value[0];}
+      element_type get(IDX i) const
+      {return m_value[i];}
 
 
       /*!
@@ -135,20 +161,25 @@ namespace RAJA
        */
       template<typename IDX>
       RAJA_INLINE
-      void set(IDX , element_type value)
-      {m_value[0] = value;}
+      self_type &set(IDX i, element_type value)
+      {
+        m_value[i] = value;
+        return *this;
+      }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void broadcast(element_type const &b){
-        m_value[0] = b;
+      self_type &broadcast(element_type const &a){
+        m_value = register_type{a, N==2? a : 0.0};
+        return * this;
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void copy(self_type const &src){
+      self_type &copy(self_type const &src){
         m_value = src.m_value;
+        return *this;
       }
 
       RAJA_HOST_DEVICE
@@ -196,7 +227,10 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        return m_value[0];
+        if(N == 1){
+          return m_value[0];
+        }
+        return m_value[0] + m_value[1];
       }
 
 
@@ -207,8 +241,11 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
+        if(N == 1){
+          return m_value[0];
+        }
         // take the minimum of a lower and upper lane
-        return m_value[0];
+        return RAJA::max<double>(m_value[0], m_value[1]);
       }
 
       /*!
@@ -218,7 +255,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        return RAJA::max(m_value[0], a.m_value[0]);
+        return self_type(vec_max(m_value, a.m_value));
       }
 
       /*!
@@ -228,8 +265,11 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
+        if(N == 1){
+          return m_value[0];
+        }
         // take the minimum of a lower and upper lane
-        return m_value[0];
+        return RAJA::min<double>(m_value[0], m_value[1]);
       }
 
       /*!
@@ -239,7 +279,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        return RAJA::min(m_value[0], a.m_value[0]);
+        return self_type(vec_min(m_value, a.m_value));
       }
   };
 

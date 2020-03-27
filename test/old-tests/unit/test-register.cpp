@@ -14,6 +14,21 @@
 #include <stdlib.h>
 
   using RegisterTestTypes = ::testing::Types<
+#ifdef RAJA_ALTIVEC
+    RAJA::Register<RAJA::vector_altivec_register, double, 1>,
+    RAJA::Register<RAJA::vector_altivec_register, double, 2>,
+    RAJA::Register<RAJA::vector_altivec_register, float, 1>,
+    RAJA::Register<RAJA::vector_altivec_register, float, 2>,
+    RAJA::Register<RAJA::vector_altivec_register, float, 3>,
+    RAJA::Register<RAJA::vector_altivec_register, float, 4>,
+    RAJA::Register<RAJA::vector_altivec_register, int, 1>,
+    RAJA::Register<RAJA::vector_altivec_register, int, 2>,
+    RAJA::Register<RAJA::vector_altivec_register, int, 3>,
+    RAJA::Register<RAJA::vector_altivec_register, int, 4>,
+    RAJA::Register<RAJA::vector_altivec_register, long, 1>,
+    RAJA::Register<RAJA::vector_altivec_register, long, 2>,
+#endif
+
 #ifdef __AVX__
     RAJA::Register<RAJA::vector_avx_register, double, 1>,
     RAJA::Register<RAJA::vector_avx_register, double, 2>,
@@ -87,7 +102,8 @@
     RAJA::FixedVector<float, 1>,
     RAJA::FixedVector<float, 2>,
     RAJA::FixedVector<float, 8>,
-    RAJA::FixedVector<float, 16>>;
+    RAJA::FixedVector<float, 16>
+  >;
 
 //using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
 
