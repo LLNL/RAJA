@@ -15,33 +15,19 @@
 
 using VectorTestTypes = ::testing::Types<
 
-#ifdef __AVX__
-    RAJA::FixedVector<double, 4, RAJA::vector_avx_register>,
-    RAJA::FixedVector<double, 8, RAJA::vector_avx_register>,
-    RAJA::StreamVector<double, 1, RAJA::vector_avx_register>,
-    RAJA::StreamVector<double, 2, RAJA::vector_avx_register>,
-#endif
-
-#ifdef __AVX2__
-    RAJA::FixedVector<double, 27, RAJA::vector_avx2_register>,
-    RAJA::FixedVector<double, 8, RAJA::vector_avx2_register>,
-    RAJA::StreamVector<double, 4, RAJA::vector_avx2_register>,
-    RAJA::StreamVector<double, 8, RAJA::vector_avx2_register>,
-#endif
-
-    RAJA::FixedVector<double, 3, RAJA::vector_scalar_register>,
-    RAJA::FixedVector<double, 5, RAJA::vector_scalar_register>,
-    RAJA::StreamVector<double, 1, RAJA::vector_scalar_register>,
-    RAJA::StreamVector<double, 7, RAJA::vector_scalar_register>,
-
-    // Test automatically wrapped types to make things easier for users
-    RAJA::StreamVector<double>,
-    RAJA::StreamVector<double, 2>,
-    RAJA::FixedVector<double, 1>,
-    RAJA::FixedVector<double, 2>,
-    RAJA::FixedVector<double, 4>,
-    RAJA::FixedVector<double, 8>,
-    RAJA::FixedVector<double, 16>>;
+  // Test automatically wrapped types, since the specific register
+  // implementations are tested elsewhere
+  RAJA::StreamVector<double>,
+  RAJA::StreamVector<double, 2>,
+  RAJA::StreamVector<double, 3>,
+  RAJA::StreamVector<double, 4>,
+  RAJA::FixedVector<double, 1>,
+  RAJA::FixedVector<double, 2>,
+  RAJA::FixedVector<double, 3>,
+  RAJA::FixedVector<double, 4>,
+  RAJA::FixedVector<double, 8>,
+  RAJA::FixedVector<double, 16>,
+  RAJA::FixedVector<double, 32>>;
 
 
 template <typename Policy>

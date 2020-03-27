@@ -34,14 +34,14 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<vector_avx2_register, int, N> :
-    public internal::RegisterBase<Register<vector_avx2_register, int, N>>
+  class Register<avx2_register, int, N> :
+    public internal::RegisterBase<Register<avx2_register, int, N>>
   {
     static_assert(N >= 1, "Vector must have at least 1 lane");
     static_assert(N <= 8, "AVX2 can only have 8 lanes of 32-bit ints");
 
     public:
-      using self_type = Register<vector_avx2_register, int, N>;
+      using self_type = Register<avx2_register, int, N>;
       using element_type = int;
       using register_type = __m256i;
 

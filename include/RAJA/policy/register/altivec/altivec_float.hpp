@@ -38,15 +38,15 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<vector_altivec_register, float, N>:
-    public internal::RegisterBase<Register<vector_altivec_register, float, N>>
+  class Register<altivec_register, float, N>:
+    public internal::RegisterBase<Register<altivec_register, float, N>>
   {
 
     static_assert(N >= 1, "Vector must have at least 1 lane");
     static_assert(N <= 4, "AltiVec can only have 4 lanes of floats");
 
     public:
-      using self_type = Register<vector_altivec_register, float, N>;
+      using self_type = Register<altivec_register, float, N>;
       using element_type = float;
 
       static constexpr size_t s_num_elem = N;

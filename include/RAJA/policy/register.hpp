@@ -26,7 +26,7 @@
 #ifdef __AVX2__
 #include<RAJA/policy/register/avx2.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
-#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_avx2_register
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::avx2_register
 #endif
 #endif
 
@@ -34,7 +34,7 @@
 #ifdef __AVX__
 #include<RAJA/policy/register/avx.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
-#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_avx_register
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::avx_register
 #endif
 #endif
 
@@ -43,7 +43,7 @@
 #ifdef RAJA_ALTIVEC
 #include<RAJA/policy/register/altivec.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
-#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_altivec_register
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::altivec_register
 #endif
 #endif
 
@@ -51,7 +51,7 @@
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 #include<RAJA/policy/register/scalar/scalar.hpp>
 #ifndef RAJA_VECTOR_REGISTER_TYPE
-#define RAJA_VECTOR_REGISTER_TYPE RAJA::vector_scalar_register
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::scalar_register
 #endif
 
 

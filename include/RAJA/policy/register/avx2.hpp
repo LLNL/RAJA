@@ -23,11 +23,11 @@
 #include<RAJA/pattern/register.hpp>
 
 namespace RAJA {
-  struct vector_avx2_register {};
+  struct avx2_register {};
 
   template<typename T>
-  struct RegisterTraits<vector_avx2_register, T>{
-      using register_type = vector_avx2_register;
+  struct RegisterTraits<avx2_register, T>{
+      using register_type = avx2_register;
       using element_type = T;
 
       static constexpr size_t s_bit_width = 256;

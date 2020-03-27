@@ -38,8 +38,8 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<vector_altivec_register, long, N>:
-    public internal::RegisterBase<Register<vector_altivec_register, long, N>>
+  class Register<altivec_register, long, N>:
+    public internal::RegisterBase<Register<altivec_register, long, N>>
   {
 
     static_assert(N >= 1, "Vector must have at least 1 lane");
@@ -47,7 +47,7 @@ namespace RAJA
     static_assert(sizeof(signed long long) == 8, "long is wrong size!");
 
     public:
-      using self_type = Register<vector_altivec_register, long, N>;
+      using self_type = Register<altivec_register, long, N>;
       using element_type = long;
 
       static constexpr size_t s_num_elem = N;

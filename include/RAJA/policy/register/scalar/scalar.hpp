@@ -23,7 +23,7 @@
 namespace RAJA
 {
 
-  struct vector_scalar_register {};
+  struct scalar_register {};
 
   /**
    * A specialization for a single element register.
@@ -31,11 +31,11 @@ namespace RAJA
    * whatever registers it deems appropriate.
    */
   template<typename T>
-  class Register<vector_scalar_register, T, 1> :
-      public internal::RegisterBase<Register<vector_scalar_register, T, 1>>
+  class Register<scalar_register, T, 1> :
+      public internal::RegisterBase<Register<scalar_register, T, 1>>
   {
     public:
-      using self_type = Register<vector_scalar_register, T, 1>;
+      using self_type = Register<scalar_register, T, 1>;
       using element_type = T;
       using register_type = T;
 

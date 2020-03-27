@@ -26,10 +26,10 @@
 
 
 namespace RAJA {
-  struct vector_altivec_register {};
+  struct altivec_register {};
 
   template<typename T>
-  struct RegisterTraits<vector_altivec_register, T>{
+  struct RegisterTraits<altivec_register, T>{
 
       static
       vector double foo(){
