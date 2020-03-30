@@ -99,8 +99,8 @@ TYPED_TEST(ListSegmentUnitTest, Iterators)
   std::vector<TypeParam> idx1{5,3,1,2};
   RAJA::TypedListSegment<TypeParam> list( idx1 );
 
-  ASSERT_EQ(5, *list.begin());
-  ASSERT_EQ(2, *(list.end()-1));
+  ASSERT_EQ(TypeParam(5), *list.begin());
+  ASSERT_EQ(TypeParam(2), *(list.end()-1));
 
   ASSERT_EQ(4, list.size());
 }

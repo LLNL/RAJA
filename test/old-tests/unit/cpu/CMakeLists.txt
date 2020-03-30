@@ -20,10 +20,6 @@ raja_add_test(
   DEPENDS_ON bis)
 
 raja_add_test(
-  NAME test-scan
-  SOURCES test-scan.cpp)
-
-raja_add_test(
   NAME test-synchronize
   SOURCES test-synchronize.cpp)
 

@@ -149,6 +149,9 @@ struct BuiltinAtomicCAS<4> {
                            OPER const &oper,
                            ShortCircuit const &sc) const
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
+#endif
     unsigned oldval, newval, readback;
 
     oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
@@ -164,6 +167,9 @@ struct BuiltinAtomicCAS<4> {
     }
     return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
   }
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4244 )  // Reenable warning
+#endif
 };
 
 template <>
@@ -180,6 +186,9 @@ struct BuiltinAtomicCAS<8> {
                            OPER const &oper,
                            ShortCircuit const &sc) const
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
+#endif
     unsigned long long oldval, newval, readback;
 
     oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
@@ -195,6 +204,11 @@ struct BuiltinAtomicCAS<8> {
     }
     return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
   }
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4244 )  // Reenable warning
+#endif
+
 };
 
 
