@@ -35,6 +35,14 @@ using IdxTypeList = list<RAJA::Index_type,
                          long long,
                          unsigned long long>;
 
+// Data types for atomics
+using AtomicDataTypes = list< int,
+                              unsigned,
+                              long long,
+                              unsigned long long,
+                              float,
+                              double
+                            >;
 
 //
 // Memory resource types for beck-end execution

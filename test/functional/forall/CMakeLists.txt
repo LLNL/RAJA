@@ -6,10 +6,18 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-forall-atomic-basic-seq
+  SOURCES test-forall-atomic-basic-seq.cpp)
+
+raja_add_test(
   NAME test-forall-segment-seq
   SOURCES test-forall-segment-seq.cpp)
 
 if(RAJA_ENABLE_OPENMP)
+  raja_add_test(
+    NAME test-forall-atomic-basic-openmp
+    SOURCES test-forall-atomic-basic-openmp.cpp)
+
   raja_add_test(
     NAME test-forall-segment-openmp
     SOURCES test-forall-segment-openmp.cpp)
@@ -29,11 +37,19 @@ endif()
 
 if(RAJA_ENABLE_CUDA)
   raja_add_test(
+    NAME test-forall-atomic-basic-cuda
+    SOURCES test-forall-atomic-basic-cuda.cpp)
+
+  raja_add_test(
     NAME test-forall-segment-cuda
     SOURCES test-forall-segment-cuda.cpp)
 endif()
 
 if(RAJA_ENABLE_HIP)
+  raja_add_test(
+    NAME test-forall-atomic-basic-hip
+    SOURCES test-forall-atomic-basic-cuda.cpp)
+
   raja_add_test(
     NAME test-forall-segment-hip
     SOURCES test-forall-segment-hip.cpp)
