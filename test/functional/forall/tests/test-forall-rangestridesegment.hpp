@@ -9,7 +9,6 @@
 #define __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 
 #include "test-forall-segment.hpp"
-#include <numeric>
 
 using namespace camp::resources;
 using namespace camp;
@@ -31,7 +30,6 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, DIFF_TYPE s
                                      &check_array,
                                      &test_array);
 
-  std::cout << N << std::endl;
   INDEX_TYPE val = first;
   for (INDEX_TYPE i = 0; i < N; i++) {
     test_array[i] = val;
