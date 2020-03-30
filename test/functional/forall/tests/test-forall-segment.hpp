@@ -19,10 +19,12 @@ class ForallSegmentTest : public ::testing::Test
 };
 
 #include "test-forall-rangesegment.hpp"
+#include "test-forall-rangestridesegment.hpp"
 #include "test-forall-listsegment.hpp"
 
 REGISTER_TYPED_TEST_SUITE_P(ForallSegmentTest,
                             RangeSegmentForall,
+                            RangeStrideSegmentForall,
                             ListSegmentForall);
 
 #endif  // __TEST_FORALL_SEGMENT_HPP__
