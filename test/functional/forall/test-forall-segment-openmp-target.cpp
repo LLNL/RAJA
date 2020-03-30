@@ -16,7 +16,7 @@ using OpenMPTargetForallExecPols = list< RAJA::omp_target_parallel_for_exec<8>,
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallSegmentTypes =
   Test< cartesian_product<IdxTypeList, 
-                          HostResourceList, 
+                          OpenMPTargetResourceList, 
                           OpenMPTargetForallExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTarget,

@@ -45,6 +45,10 @@ using HostResourceList = list<camp::resources::Host>;
 using CudaResourceList = list<camp::resources::Cuda>;
 #endif
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetResourceList = list<camp::resources::Omp>;
+#endif
+
 #if defined(RAJA_ENABLE_HIP)
 using HipResourceList = list<camp::resources::Hip>;
 #endif

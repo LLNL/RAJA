@@ -22,21 +22,30 @@ if(RAJA_ENABLE_OPENMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-openmp-target
-    SOURCES test-forall-segment-openmp-target.cpp)
+##raja_add_test(
+##  NAME test-forall-segment-openmp-target
+##  SOURCES test-forall-segment-openmp-target.cpp)
+##raja_add_test(
+##  NAME test-forall-indexset-openmp-target
+##  SOURCES test-forall-indexset-openmp-target.cpp)
 endif()
 
 if(RAJA_ENABLE_TBB)
   raja_add_test(
     NAME test-forall-segment-tbb
     SOURCES test-forall-segment-tbb.cpp)
+  raja_add_test(
+    NAME test-forall-indexset-tbb
+    SOURCES test-forall-indexset-tbb.cpp)
 endif()
 
 if(RAJA_ENABLE_CUDA)
   raja_add_test(
     NAME test-forall-segment-cuda
     SOURCES test-forall-segment-cuda.cpp)
+  raja_add_test(
+    NAME test-forall-indexset-cuda
+    SOURCES test-forall-indexset-cuda.cpp)
 endif()
 
 if(RAJA_ENABLE_HIP)
