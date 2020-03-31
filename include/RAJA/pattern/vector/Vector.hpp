@@ -96,7 +96,7 @@ namespace RAJA
  *
  */
 
-  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  template<typename REGISTER_TYPES, typename IDX_SEQ, bool FIXED_LENGTH>
   class VectorImpl;
 
   template<typename REGISTER0_TYPE, typename ... REGISTER_TYPES, camp::idx_t ... IDX_SEQ, bool FIXED_LENGTH>
@@ -173,7 +173,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = s_num_elem){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = s_num_elem){
         m_length = length;
         if(s_is_fixed || m_length == s_num_elem){
           camp::sink(camp::get<IDX_SEQ>(m_registers).load(
@@ -186,6 +186,7 @@ namespace RAJA
             set(i, ptr[i*stride]);
           }
         }
+        return *this;
       }
 
 
@@ -199,7 +200,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
         if(s_is_fixed || m_length == s_num_elem){
           camp::sink(camp::get<IDX_SEQ>(m_registers).store(
               ptr + IDX_SEQ*stride*REGISTER0_TYPE::s_num_elem,
@@ -211,6 +212,7 @@ namespace RAJA
             ptr[i*stride] = (*this)[i];
           }
         }
+        return *this;
       }
 
       RAJA_HOST_DEVICE
@@ -255,9 +257,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void set(camp::idx_t i, element_type value)
+      self_type &set(camp::idx_t i, element_type value)
       {
         detail::VectorSetByIndex(i, value, camp::get<IDX_SEQ>(m_registers)...);
+        return *this;
       }
 
 
@@ -267,9 +270,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void broadcast(element_type const &value){
+      self_type &broadcast(element_type const &value){
         camp::sink(camp::get<IDX_SEQ>(m_registers).broadcast(value)...);
         m_length = s_num_elem;
+        return *this;
       }
 
 
@@ -279,9 +283,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void copy(self_type const &x){
+      self_type  &copy(self_type const &x){
         m_registers = x.m_registers;
         m_length = x.m_length;
+        return *this;
       }
 
       /*!
@@ -690,6 +695,8 @@ namespace RAJA
 
     static constexpr camp::idx_t s_num_partial_registers = s_num_partial_elem > 0 ? 1 : 0;
 
+    static constexpr camp::idx_t s_num_registers = s_num_full_registers+s_num_partial_registers;
+
     using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>;
 
     using partial_register_type =
@@ -721,7 +728,6 @@ namespace RAJA
 
 
   template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  //using FixedVectorExt = internal::VectorImpl<typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::register_list_t, typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::idx_seq_t, true>;
   using FixedVectorExt = typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::type;
 
   template<typename REGISTER_TYPE, size_t NUM_REGISTERS>

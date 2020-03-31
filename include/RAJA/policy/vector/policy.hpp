@@ -67,6 +67,14 @@ using FixedVector = FixedVectorExt<
     RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::s_num_elem>,
     NumElem>;
 
+
+template<typename T, camp::idx_t ROWS, camp::idx_t COLS, typename REGISTER_POLICY  = policy::register_default>
+using FixedMatrix =
+    internal::MatrixImpl<typename internal::FixedVectorTypeHelper<Register<REGISTER_POLICY, T, 4>, (size_t)COLS>::type, MATRIX_ROW_MAJOR, camp::make_idx_seq_t<internal::FixedVectorTypeHelper<Register<REGISTER_POLICY, T, 4>, COLS>::s_num_registers>, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS> >;
+    //internal::MatrixImpl<FixedVector<T, COLS, REGISTER>, MATRIX_ROW_MAJOR, camp::make_idx_seq_t<1>, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS> >;
+
+
+
 }  // end of namespace RAJA
 
 #endif

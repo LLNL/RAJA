@@ -97,6 +97,16 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
+      /*!
+       * @brief Construct from explicit scalars for each element.
+       */
+      RAJA_INLINE
+      Register(element_type c0,
+               element_type c1,
+               element_type c2,
+               element_type c3) :
+            m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
+
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -137,7 +147,7 @@ namespace RAJA
             m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
                                           ptr,
                                           createStridedOffsets(stride),
-                                          createMask(),
+                                          _mm256_castsi256_pd(createMask()),
                                           sizeof(element_type));
           }
         }

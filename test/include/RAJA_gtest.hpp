@@ -106,4 +106,9 @@
 #pragma warning( default : 4389 )  // reenable warning
 #endif
 
+
+// This always returns a 0, but forces compiler not to compile-out
+// constant values
+#define NO_OPT_ZERO (rand()/RAND_MAX)
+
 #endif  // closing endif for header file include guard
