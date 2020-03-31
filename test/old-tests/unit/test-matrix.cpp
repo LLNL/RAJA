@@ -11,7 +11,6 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
-#include <stdlib.h>
 
 using MatrixTestTypes = ::testing::Types<
 

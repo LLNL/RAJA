@@ -11,7 +11,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
-#include <stdlib.h>
+
 
 using VectorTestTypes = ::testing::Types<
 
@@ -198,15 +198,15 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
-    N += (size_t)(100*((double)rand()/RAND_MAX));
+    N += (size_t)(100*NO_OPT_RAND);
   }
 
   element_t *A = new element_t[N];
   element_t *B = new element_t[N];
   element_t *C = new element_t[N];
   for(size_t i = 0;i < N; ++ i){
-    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
-    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    A[i] = (element_t)(NO_OPT_RAND*1000.0);
+    B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = 0.0;
   }
 
@@ -244,16 +244,16 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
-    N += (size_t)(10*((double)rand()/RAND_MAX));
-    M += (size_t)(10*((double)rand()/RAND_MAX));
+    N += (size_t)(10*NO_OPT_RAND);
+    M += (size_t)(10*NO_OPT_RAND);
   }
 
   element_t *A = new element_t[N*M];
   element_t *B = new element_t[N*M];
   element_t *C = new element_t[N*M];
   for(index_t i = 0;i < N*M; ++ i){
-    A[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
-    B[i] = (element_t)(((double)rand()/RAND_MAX)*1000.0);
+    A[i] = (element_t)(NO_OPT_RAND*1000.0);
+    B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = 0.0;
   }
 

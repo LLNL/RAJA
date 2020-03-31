@@ -26,6 +26,7 @@
 #endif
 
 #include "gtest/gtest.h"
+#include <stdlib.h>
 
 #define GPU_TEST(X, Y)                 \
   static void gpu_test_##X##_##Y();    \
@@ -110,5 +111,6 @@
 // This always returns a 0, but forces compiler not to compile-out
 // constant values
 #define NO_OPT_ZERO (rand()/RAND_MAX)
+#define NO_OPT_RAND (1.0+(double)rand()/RAND_MAX)
 
 #endif  // closing endif for header file include guard
