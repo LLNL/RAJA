@@ -60,7 +60,7 @@ RAJA::kernel Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::kernel`` variants, we use ``RAJA::statement::Tile`` types
-for the outer loop tiling and ``RAJA::statement::tile_fixed`` types to 
+for the outer loop tiling and ``RAJA::tile_fixed`` types to 
 indicate the tile dimensions. The complete sequential RAJA variant is:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp

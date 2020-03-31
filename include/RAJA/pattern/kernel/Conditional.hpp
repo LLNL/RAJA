@@ -195,8 +195,8 @@ namespace internal
 {
 
 
-template <typename Condition, typename... EnclosedStmts>
-struct StatementExecutor<statement::If<Condition, EnclosedStmts...>> {
+template <typename Condition, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -204,7 +204,7 @@ struct StatementExecutor<statement::If<Condition, EnclosedStmts...>> {
   {
 
     if (Condition::eval(data)) {
-      execute_statement_list<camp::list<EnclosedStmts...>>(
+      execute_statement_list<camp::list<EnclosedStmts...>, Types>(
           std::forward<Data>(data));
     }
   }
