@@ -123,7 +123,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
 
   // Check reduction
@@ -173,9 +173,9 @@ GPU_TYPED_TEST_P(Kernel, Basic)
     tMax.max(arr[id]);
   });
 
-  ASSERT_FLOAT_EQ(total, tsum.get());
-  ASSERT_FLOAT_EQ(-1, tMin.get());
-  ASSERT_FLOAT_EQ(50, tMax.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)-1, (double)tMin.get());
+  ASSERT_FLOAT_EQ((double)50, (double)tMax.get());
 
   std::vector<Idx0> idx_x;
   std::vector<Idx1> idx_y;
@@ -204,7 +204,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
   total = 0.0;
   tsum.reset(0.0);
@@ -232,28 +232,9 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
 
-  total = 0.0;
-  tsum.reset(0.0);
-  auto iterSpace3 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
-                                     idy_list,
-                                     RAJA::TypedRangeSegment<Idx1>(0, 10));
-  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j, Idx1 k) {
-    Index_type id = get_val(i) * x_len + get_val(j);
-    idx_test[id] = get_val(i) * x_len + get_val(j) + get_val(k) - get_val(k);
-    tsum += get_val(i) * 1.1 + get_val(j);
-  });
-
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(idx_test[i * x_len + j], i * x_len + j);
-      total += i * 1.1 + j;
-    }
-  }
-
-  ASSERT_FLOAT_EQ(total, tsum.get());
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaFree(arr));
@@ -269,18 +250,19 @@ REGISTER_TYPED_TEST_SUITE_P(Kernel, Basic);
 #ifdef RAJA_ENABLE_HIP
 GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 {
-  using Pol = at_v<TypeParam, 0>;
-  using IndexTypes = at_v<TypeParam, 1>;
+  using Pol2d = at_v<TypeParam, 0>;
+  using Pol3d = at_v<TypeParam, 1>;
+  using IndexTypes = at_v<TypeParam, 2>;
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
-  RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
-  RAJA::ReduceMin<at_v<TypeParam, 2>, RAJA::Real_type> tMin(0.0);
-  RAJA::ReduceMax<at_v<TypeParam, 2>, RAJA::Real_type> tMax(0.0);
+  RAJA::ReduceSum<at_v<TypeParam, 3>, RAJA::Real_type> tsum(0.0);
+  RAJA::ReduceMin<at_v<TypeParam, 3>, RAJA::Real_type> tMin(0.0);
+  RAJA::ReduceMax<at_v<TypeParam, 3>, RAJA::Real_type> tMax(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
   auto v = this->d_view;
-  RAJA::kernel<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
     v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
@@ -320,12 +302,12 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   auto ranges2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, stride1),
                                   RAJA::TypedRangeSegment<Idx1>(0, stride1));
 
-  RAJA::kernel<Pol>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       tsum += get_val(i) * 1.1 + get_val(j);
   });
 
-  RAJA::kernel<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(d_arr[id]);
@@ -335,7 +317,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   tMin.reset(0.0);
   tMax.reset(0.0);
 
-  RAJA::kernel<Pol>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(ranges2, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
       // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       RAJA::Index_type id = get_val(j) + get_val(i) * stride1;
       tMin.min(d_arr[id]);
@@ -360,7 +342,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 
   auto rangeList = RAJA::make_tuple(idx_list, idy_list);
 
-  RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
     // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
       v(get_val(i), j) = get_val(i) * x_len + j;
       tsum += get_val(i) * 1.1 + j;
@@ -382,7 +364,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   hipErrchk(hipMalloc(&d_idx_test, sizeof(double) * x_len * y_len));
 
   auto iterSpace2 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list);
-  RAJA::kernel<Pol>(iterSpace2, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j) {
+  RAJA::kernel<Pol2d>(iterSpace2, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j) {
       Index_type id = get_val(i)*x_len + get_val(j);
       d_idx_test[id] = get_val(i) * x_len + get_val(j);
       tsum += get_val(i) * 1.1 + get_val(j);
@@ -401,7 +383,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
   total=0.0;
   tsum.reset(0.0);
   auto iterSpace3 = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0,x_len), idy_list,RAJA::TypedRangeSegment<Idx1>(0,10));
-  RAJA::kernel<Pol>(iterSpace3, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j, Idx1 k) {
+  RAJA::kernel<Pol3d>(iterSpace3, [=] RAJA_HOST_DEVICE (Idx0 i, Idx1 j, Idx1 k) {
       Index_type id = get_val(i)*x_len + get_val(j);
       d_idx_test[id] = get_val(i) * x_len + get_val(j) + get_val(k) - get_val(k);
     tsum += get_val(i) * 1.1 + get_val(j);
@@ -433,10 +415,10 @@ using TestTypes = ::testing::Types<
          RAJA::seq_reduce>,
     list<KernelPolicy<
              statement::Tile<1,
-                             statement::tile_fixed<2>,
+                             tile_fixed<2>,
                              RAJA::loop_exec,
                              statement::Tile<0,
-                                             statement::tile_fixed<2>,
+                                             tile_fixed<2>,
                                              RAJA::loop_exec,
                                              For<0, s, For<1, s, Lambda<0>>>>>>,
          list<Index_type, Index_type>,
@@ -456,7 +438,7 @@ using OMPTypes = ::testing::Types<
         RAJA::omp_reduce>,
     list<KernelPolicy<
              statement::Tile<1,
-                             statement::tile_fixed<2>,
+                             tile_fixed<2>,
                              RAJA::omp_parallel_for_exec,
                              For<1, RAJA::loop_exec, For<0, s, Lambda<0>>>>>,
          list<TypedIndex, Index_type>,
@@ -482,10 +464,24 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, Kernel, CUDATypes);
 #endif
 #if defined(RAJA_ENABLE_HIP)
 using HIPTypes = ::testing::Types<
-    list<KernelPolicy<For<
-             1,
-             s,
-             HipKernel<For<0, RAJA::hip_thread_x_loop, Lambda<0>>>>>,
+    list<KernelPolicy<
+           For<1, s,
+             HipKernel<
+              For<0, RAJA::hip_thread_x_loop, 
+                Lambda<0>
+              >
+            >
+          >
+        >,
+        KernelPolicy<
+           For<1, s,
+             HipKernel<               
+                 For<0, RAJA::hip_thread_x_loop, 
+                   Lambda<0, Segs<0, 1>, ValuesT<int, 0>>
+                 >               
+             >
+           >
+         >,
          list<TypedIndex, Index_type>,
          RAJA::hip_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(HIP, Kernel_gpu, HIPTypes);
@@ -541,7 +537,7 @@ GPU_TEST(Kernel, CudaCollapse2)
 {
   using Pol = RAJA::KernelPolicy<
       CudaKernel<
-        statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+        statement::Tile<0, tile_fixed<32>, cuda_block_x_loop,
           For<0, cuda_thread_x_loop,
             For<1, cuda_thread_y_loop,
               Lambda<0>
@@ -681,14 +677,14 @@ GPU_TEST(Kernel, SubRange_Complex)
 {
   using PolA = RAJA::KernelPolicy<
       CudaKernel<
-      statement::Tile<0, statement::tile_fixed<128>, cuda_block_x_loop,
+      statement::Tile<0, tile_fixed<128>, cuda_block_x_loop,
         For<0, RAJA::cuda_thread_x_loop,
           Lambda<0>>>>>;
 
   using PolB = RAJA::KernelPolicy<
       CudaKernel<
-      statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<32>, cuda_block_y_loop,
+      statement::Tile<0, tile_fixed<32>, cuda_block_x_loop,
+        statement::Tile<1, tile_fixed<32>, cuda_block_y_loop,
           For<0, cuda_thread_x_direct,
             For<1, cuda_thread_y_direct,
               For<2, RAJA::seq_exec, Lambda<0>>>>>>>>;
@@ -784,7 +780,7 @@ GPU_TEST(Kernel_gpu, HipCollapse2)
 {
   using Pol = RAJA::KernelPolicy<
       HipKernel<
-        statement::Tile<0, statement::tile_fixed<32>, hip_block_x_loop,
+        statement::Tile<0, tile_fixed<32>, hip_block_x_loop,
           For<0, hip_thread_x_loop,
             For<1, hip_thread_y_loop,
               Lambda<0>
@@ -935,14 +931,14 @@ GPU_TEST(Kernel_gpu, SubRange_Complex)
 {
   using PolA = RAJA::KernelPolicy<
       HipKernel<
-      statement::Tile<0, statement::tile_fixed<128>, hip_block_x_loop,
+      statement::Tile<0, tile_fixed<128>, hip_block_x_loop,
         For<0, RAJA::hip_thread_x_loop,
           Lambda<0>>>>>;
 
   using PolB = RAJA::KernelPolicy<
       HipKernel<
-      statement::Tile<0, statement::tile_fixed<32>, hip_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<32>, hip_block_y_loop,
+      statement::Tile<0, tile_fixed<32>, hip_block_x_loop,
+        statement::Tile<1, tile_fixed<32>, hip_block_y_loop,
           For<0, hip_thread_x_direct,
             For<1, hip_thread_y_direct,
               For<2, RAJA::seq_exec, Lambda<0>>>>>>>>;
@@ -990,13 +986,12 @@ TEST(Kernel, FissionFusion)
 {
   using namespace RAJA;
 
-
   // Loop Fusion
-  using Pol_Fusion = KernelPolicy<For<0, seq_exec, Lambda<0>, Lambda<1>>>;
+  using Pol_Fusion = KernelPolicy<For<0, seq_exec, Lambda<0, Segs<0>>, Lambda<1, Segs<0>>>>;
 
   // Loop Fission
   using Pol_Fission =
-      KernelPolicy<For<0, seq_exec, Lambda<0>>, For<0, seq_exec, Lambda<1>>>;
+      KernelPolicy<For<0, seq_exec, Lambda<0, Segs<0>>>, For<0, seq_exec, Lambda<1, Segs<0>>>>;
 
 
   constexpr int N = 16;
@@ -1011,18 +1006,18 @@ TEST(Kernel, FissionFusion)
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](int i, int) { x[i] += 1; },
+      [=](int i) { x[i] += 1; },
 
-      [=](int i, int) { x[i] += 2; });
+      [=](int i) { x[i] += 2; });
 
 
   kernel<Pol_Fusion>(
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](int i, int) { y[i] += 1; },
+      [=](int i) { y[i] += 1; },
 
-      [=](int i, int) { y[i] += 2; });
+      [=](int i) { y[i] += 2; });
 
   for (int i = 0; i < N; ++i) {
     ASSERT_EQ(x[i], y[i]);
@@ -1041,10 +1036,10 @@ TEST(Kernel, FissionFusion_Conditional)
   // Loop Fission if param == 1
 
   using Pol = KernelPolicy<
-      If<Equals<Param<0>, Value<0>>, For<0, seq_exec, Lambda<0>, Lambda<1>>>,
+      If<Equals<Param<0>, Value<0>>, For<0, seq_exec, Lambda<0, Segs<0>>, Lambda<1, Segs<0>>>>,
       If<Equals<Param<0>, Value<1>>,
-         For<0, seq_exec, Lambda<0>>,
-         For<0, seq_exec, Lambda<1>>>>;
+         For<0, seq_exec, Lambda<0, Segs<0>>>,
+         For<0, seq_exec, Lambda<1, Segs<0>>>>>;
 
 
   constexpr int N = 16;
@@ -1063,9 +1058,9 @@ TEST(Kernel, FissionFusion_Conditional)
 
         RAJA::make_tuple(param),
 
-        [=](int i, int, int) { x[i] += 1; },
+        [=](int i) { x[i] += 1; },
 
-        [=](int i, int, int) { x[i] += 2; });
+        [=](int i) { x[i] += 2; });
 
     for (int i = 0; i < N; ++i) {
       ASSERT_EQ(x[i], 3 + 3 * param);
@@ -1203,11 +1198,11 @@ TEST(Kernel, Tile)
   // Loop Fusion
   using Pol = KernelPolicy<
       statement::Tile<1,
-                      statement::tile_fixed<4>,
+                      tile_fixed<4>,
                       seq_exec,
-                      For<0, seq_exec, For<1, seq_exec, Lambda<0>>>,
-                      For<0, seq_exec, For<1, seq_exec, Lambda<0>>>>,
-      For<1, seq_exec, Lambda<1>>>;
+                      For<0, seq_exec, For<1, seq_exec, Lambda<0, Segs<0>>>>,
+                      For<0, seq_exec, For<1, seq_exec, Lambda<0, Segs<0>>>>>,
+      For<1, seq_exec, Lambda<1, Segs<1>>>>;
 
 
   constexpr int N = 16;
@@ -1220,8 +1215,8 @@ TEST(Kernel, Tile)
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=](RAJA::Index_type i, RAJA::Index_type) { x[i] += 1; },
-      [=](RAJA::Index_type, RAJA::Index_type j) { x[j] *= 10; });
+      [=](RAJA::Index_type i) { x[i] += 1; },
+      [=](RAJA::Index_type j) { x[j] *= 10; });
 
   for (int i = 0; i < N; ++i) {
     ASSERT_EQ(x[i], 320);
@@ -1241,7 +1236,7 @@ TEST(Kernel, TileTCount)
   // Loop Fusion
   using Pol = KernelPolicy<
       statement::TileTCount<0, Param<0>,
-                      statement::tile_fixed<T>, seq_exec,
+                      tile_fixed<T>, seq_exec,
                       For<0, seq_exec, Lambda<0>>>>;
 
 
@@ -1292,7 +1287,7 @@ TEST(Kernel, TileTCountTyped)
   // Loop Fusion
   using Pol = KernelPolicy<
       statement::TileTCount<0, Param<0>,
-                      statement::tile_fixed<T>, seq_exec,
+                      tile_fixed<T>, seq_exec,
                       For<0, seq_exec, Lambda<0>>>>;
 
 
@@ -1764,7 +1759,7 @@ TEST(Kernel, ReduceSeqSum)
       RAJA::statement::For<0, seq_exec,
         Lambda<0>,
         RAJA::statement::Reduce<seq_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >
      >;
@@ -1780,7 +1775,7 @@ TEST(Kernel, ReduceSeqSum)
       [=](Index_type i, int &value) {
         value = data[i];
       },
-      [=](Index_type, int &value) {
+      [=](int &value) {
         (*sumPtr) += value;
       });
 
@@ -1803,7 +1798,7 @@ GPU_TEST(Kernel, ReduceCudaSum1)
       KernelPolicy<CudaKernel<
         For<0, cuda_thread_x_loop, Lambda<0>>,
         RAJA::statement::Reduce<cuda_block_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -1817,7 +1812,7 @@ GPU_TEST(Kernel, ReduceCudaSum1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         trip_count += value;
@@ -2098,7 +2093,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop1)
       KernelPolicy<CudaKernel<
         For<0, cuda_warp_loop, Lambda<0>>,
         RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -2113,7 +2108,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -2139,7 +2134,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop2)
           For<0, cuda_warp_loop, Lambda<0>>
         >,
         RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -2155,7 +2150,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop2)
       [=] __device__ (Index_type i, Index_type j, long &value) {
         value += i + j*N;
       },
-      [=] __device__ (Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -2185,7 +2180,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop3)
           >,
           RAJA::statement::CudaSyncWarp,
           RAJA::statement::Reduce<cuda_warp_reduce, RAJA::operators::plus, Param<0>,
-            Lambda<1>
+            Lambda<1, Params<0>>
           >
         >
       >>;
@@ -2202,7 +2197,7 @@ GPU_TEST(Kernel, ReduceCudaWarpLoop3)
       [=] __device__ (Index_type i, Index_type j, Index_type k, long &value) {
         value = i + j*N + k*N*M;
       },
-      [=] __device__ (Index_type, Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         total_count += value;
@@ -2227,7 +2222,7 @@ GPU_TEST(Kernel, CudaExec)
   // Loop Fusion
   using Pol =
       KernelPolicy<CudaKernel<
-       statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+       statement::Tile<0, tile_fixed<32>, cuda_block_x_loop,
          For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -2259,7 +2254,7 @@ GPU_TEST(Kernel, CudaForICount)
   // Loop Fusion
   using Pol =
       KernelPolicy<CudaKernel<
-       statement::Tile<0, statement::tile_fixed<T>, cuda_block_x_loop,
+       statement::Tile<0, tile_fixed<T>, cuda_block_x_loop,
          ForICount<0, Param<0>, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -2307,7 +2302,7 @@ GPU_TEST(Kernel, CudaTileTCount)
   // Loop Fusion
   using Pol =
       KernelPolicy<CudaKernel<
-       statement::TileTCount<0, Param<0>, statement::tile_fixed<T>, cuda_block_x_loop,
+       statement::TileTCount<0, Param<0>, tile_fixed<T>, cuda_block_x_loop,
          For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -2352,7 +2347,7 @@ GPU_TEST(Kernel, CudaConditional)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<0, statement::tile_fixed<32>, cuda_block_x_loop,
+      statement::Tile<0, tile_fixed<32>, cuda_block_x_loop,
         For<0, cuda_thread_x_loop, If<Param<0>, Lambda<0>>, Lambda<1>>>>>;
 
   for (int param = 0; param < 2; ++param) {
@@ -2414,9 +2409,9 @@ GPU_TEST(Kernel, CudaExec1a)
   constexpr long N = (long)128;
 
   using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<0, statement::tile_fixed<16>, cuda_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<32>, cuda_block_y_loop,
-          statement::Tile<2, statement::tile_fixed<128>, cuda_block_z_loop,
+      statement::Tile<0, tile_fixed<16>, cuda_block_x_loop,
+        statement::Tile<1, tile_fixed<32>, cuda_block_y_loop,
+          statement::Tile<2, tile_fixed<128>, cuda_block_z_loop,
             For<0, cuda_thread_x_direct,
               For<1, cuda_thread_y_direct,
                 For<2, cuda_thread_z_loop,
@@ -2487,9 +2482,9 @@ GPU_TEST(Kernel, CudaExec1ac)
   constexpr long N = (long)128;
 
   using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<0, statement::tile_fixed<16>, cuda_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<16>, cuda_block_y_loop,
-          statement::Tile<2, statement::tile_fixed<16>, cuda_block_z_loop,
+      statement::Tile<0, tile_fixed<16>, cuda_block_x_loop,
+        statement::Tile<1, tile_fixed<16>, cuda_block_y_loop,
+          statement::Tile<2, tile_fixed<16>, cuda_block_z_loop,
             For<0, cuda_thread_x_loop,
               For<1, cuda_thread_y_loop,
                 For<2, cuda_thread_z_direct,
@@ -2527,7 +2522,7 @@ GPU_TEST(Kernel, CudaExec1b)
   // Loop Fusion
   using Pol =
       KernelPolicy<CudaKernel<
-        statement::Tile<0, statement::tile_fixed<128>, cuda_block_z_loop,
+        statement::Tile<0, tile_fixed<128>, cuda_block_z_loop,
           For<0, cuda_thread_y_loop, Lambda<0>>>>>;
 
 
@@ -2557,7 +2552,7 @@ GPU_TEST(Kernel, CudaExec1c)
   // Loop Fusion
   using Pol = KernelPolicy<
       CudaKernelExt<cuda_explicit_launch<false, 5, 3>,
-           statement::Tile<2, statement::tile_fixed<2>, cuda_block_z_loop,
+           statement::Tile<2, tile_fixed<2>, cuda_block_z_loop,
                     For<0, cuda_block_x_loop,
                         For<1, cuda_block_y_loop,
                             For<2, cuda_thread_z_loop, Lambda<0>>>>>>>;
@@ -2592,7 +2587,7 @@ GPU_TEST(Kernel, CudaComplexNested)
   using Pol = KernelPolicy<CudaKernel<
       For<0, cuda_block_x_loop,
           For<1, cuda_thread_x_loop, For<2, cuda_thread_y_loop, Lambda<0>>>,
-          For<2, cuda_thread_x_loop, Lambda<0>>>>>;
+          For<2, cuda_thread_x_loop, Lambda<0, Segs<0>, ValuesT<Index_type, 0>, Segs<2>>>>>>;
 
   int *ptr = nullptr;
   cudaErrchk(cudaMallocManaged(&ptr, sizeof(int) * N));
@@ -2766,7 +2761,7 @@ GPU_TEST(Kernel, CudaExec_tile1threaddirect)
   // Loop Fusion
   using Pol = KernelPolicy<
       CudaKernel<statement::Tile<0,
-                                 statement::tile_fixed<128>,
+                                 tile_fixed<128>,
                                  seq_exec,
                                  For<0, cuda_thread_x_direct, Lambda<0>>>>>;
 
@@ -2924,8 +2919,8 @@ GPU_TEST(Kernel, Hyperplane_cuda_3d_tiled)
 
   using Pol = RAJA::KernelPolicy<CudaKernel<
       For<0, cuda_block_x_loop,
-        RAJA::statement::Tile<2, RAJA::statement::tile_fixed<13>, seq_exec,
-          RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
+        RAJA::statement::Tile<2, RAJA::tile_fixed<13>, seq_exec,
+          RAJA::statement::Tile<3, RAJA::tile_fixed<7>, seq_exec,
             For<2, cuda_thread_x_direct,
               For<3, cuda_thread_y_direct,
                 Hyperplane<1, seq_exec, ArgList<2, 3>,
@@ -3043,8 +3038,8 @@ GPU_TEST(Kernel, CudaExec_1threadexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernel<
-      statement::Tile<2, statement::tile_fixed<64>, cuda_block_z_loop,
-        statement::Tile<3, statement::tile_fixed<16>, seq_exec,
+      statement::Tile<2, tile_fixed<64>, cuda_block_z_loop,
+        statement::Tile<3, tile_fixed<16>, seq_exec,
           For<0, cuda_block_x_loop,
             For<1, cuda_block_y_loop,
               For<2, cuda_thread_x_direct,
@@ -3092,7 +3087,7 @@ GPU_TEST(Kernel, CudaExec_fixedspillexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernelFixed<1024,
-      statement::Tile<0, statement::tile_fixed<1024>, cuda_block_x_loop,
+      statement::Tile<0, tile_fixed<1024>, cuda_block_x_loop,
         For<0, cuda_thread_x_direct,
           Lambda<0>
         >
@@ -3148,7 +3143,7 @@ GPU_TEST(Kernel_gpu, ReduceHipSum1)
       KernelPolicy<HipKernel<
         For<0, hip_thread_x_loop, Lambda<0>>,
         RAJA::statement::Reduce<hip_block_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -3162,7 +3157,7 @@ GPU_TEST(Kernel_gpu, ReduceHipSum1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which receieved the
         // reduced value
         trip_count += value;
@@ -3439,7 +3434,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop1)
       KernelPolicy<HipKernel<
         For<0, hip_warp_loop, Lambda<0>>,
         RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0>>
         >
       >>;
 
@@ -3454,7 +3449,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop1)
       [=] __device__ (Index_type i, long &value) {
         value += i;
       },
-      [=] __device__ (Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -3479,7 +3474,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop2)
           For<0, hip_warp_loop, Lambda<0>>
         >,
         RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-          Lambda<1>
+          Lambda<1, Params<0> >
         >
       >>;
 
@@ -3495,7 +3490,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop2)
       [=] __device__ (Index_type i, Index_type j, long &value) {
         value += i + j*N;
       },
-      [=] __device__ (Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which recieved the
         // reduced value
         total_count += value;
@@ -3524,7 +3519,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop3)
           >,
           RAJA::statement::HipSyncThreads,
           RAJA::statement::Reduce<hip_warp_reduce, RAJA::operators::plus, Param<0>,
-            Lambda<1>
+            Lambda<1, Params<0>>
           >
         >
       >>;
@@ -3541,7 +3536,7 @@ GPU_TEST(Kernel_gpu, ReduceHipWarpLoop3)
       [=] __device__ (Index_type i, Index_type j, Index_type k, long &value) {
         value = i + j*N + k*N*M;
       },
-      [=] __device__ (Index_type, Index_type, Index_type, long &value) {
+      [=] __device__ (long &value) {
         // This only gets executed on the "root" thread which reecieved the
         // reduced value
         total_count += value;
@@ -3565,7 +3560,7 @@ GPU_TEST(Kernel_gpu, HipExec)
   // Loop Fusion
   using Pol =
       KernelPolicy<HipKernel<
-       statement::Tile<0, statement::tile_fixed<32>, hip_block_x_loop,
+       statement::Tile<0, tile_fixed<32>, hip_block_x_loop,
          For<0, hip_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -3596,7 +3591,7 @@ GPU_TEST(Kernel_gpu, HipForICount)
   // Loop Fusion
   using Pol =
       KernelPolicy<HipKernel<
-       statement::Tile<0, statement::tile_fixed<T>, hip_block_x_loop,
+       statement::Tile<0, tile_fixed<T>, hip_block_x_loop,
          ForICount<0, Param<0>, hip_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -3643,7 +3638,7 @@ GPU_TEST(Kernel_gpu, HipTileTCount)
   // Loop Fusion
   using Pol =
       KernelPolicy<HipKernel<
-       statement::TileTCount<0, Param<0>, statement::tile_fixed<T>, hip_block_x_loop,
+       statement::TileTCount<0, Param<0>, tile_fixed<T>, hip_block_x_loop,
          For<0, hip_thread_x_direct, Lambda<0>>>>>;
 
 
@@ -3687,7 +3682,7 @@ GPU_TEST(Kernel_gpu, HipConditional)
 
   // Loop Fusion
   using Pol = KernelPolicy<HipKernel<
-      statement::Tile<0, statement::tile_fixed<32>, hip_block_x_loop,
+      statement::Tile<0, tile_fixed<32>, hip_block_x_loop,
         For<0, hip_thread_x_loop, If<Param<0>, Lambda<0>>, Lambda<1>>>>>;
 
   for (int param = 0; param < 2; ++param) {
@@ -3747,9 +3742,9 @@ GPU_TEST(Kernel_gpu, HipExec1a)
   constexpr long N = (long)128;
 
   using Pol = KernelPolicy<HipKernel<
-      statement::Tile<0, statement::tile_fixed<16>, hip_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<32>, hip_block_y_loop,
-          statement::Tile<2, statement::tile_fixed<128>, hip_block_z_loop,
+      statement::Tile<0, tile_fixed<16>, hip_block_x_loop,
+        statement::Tile<1, tile_fixed<32>, hip_block_y_loop,
+          statement::Tile<2, tile_fixed<128>, hip_block_z_loop,
             For<0, hip_thread_x_direct,
               For<1, hip_thread_y_direct,
                 For<2, hip_thread_z_loop,
@@ -3818,9 +3813,9 @@ GPU_TEST(Kernel_gpu, HipExec1ac)
   constexpr long N = (long)128;
 
   using Pol = KernelPolicy<HipKernel<
-      statement::Tile<0, statement::tile_fixed<16>, hip_block_x_loop,
-        statement::Tile<1, statement::tile_fixed<16>, hip_block_y_loop,
-          statement::Tile<2, statement::tile_fixed<16>, hip_block_z_loop,
+      statement::Tile<0, tile_fixed<16>, hip_block_x_loop,
+        statement::Tile<1, tile_fixed<16>, hip_block_y_loop,
+          statement::Tile<2, tile_fixed<16>, hip_block_z_loop,
             For<0, hip_thread_x_loop,
               For<1, hip_thread_y_loop,
                 For<2, hip_thread_z_direct,
@@ -3857,7 +3852,7 @@ GPU_TEST(Kernel_gpu, HipExec1b)
   // Loop Fusion
   using Pol =
       KernelPolicy<HipKernel<
-        statement::Tile<0, statement::tile_fixed<128>, hip_block_z_loop,
+        statement::Tile<0, tile_fixed<128>, hip_block_z_loop,
           For<0, hip_thread_y_loop, Lambda<0>>>>>;
 
 
@@ -3886,7 +3881,7 @@ GPU_TEST(Kernel_gpu, HipExec1c)
   // Loop Fusion
   using Pol = KernelPolicy<
       HipKernelExt<hip_explicit_launch<false, 5, 3>,
-           statement::Tile<2, statement::tile_fixed<2>, hip_block_z_loop,
+           statement::Tile<2, tile_fixed<2>, hip_block_z_loop,
                     For<0, hip_block_x_loop,
                         For<1, hip_block_y_loop,
                             For<2, hip_thread_z_loop, Lambda<0>>>>>>>;
@@ -3920,7 +3915,7 @@ GPU_TEST(Kernel_gpu, HipComplexNested)
   using Pol = KernelPolicy<HipKernel<
       For<0, hip_block_x_loop,
           For<1, hip_thread_x_loop, For<2, hip_thread_y_loop, Lambda<0>>>,
-          For<2, hip_thread_x_loop, Lambda<0>>>>>;
+          For<2, hip_thread_x_loop, Lambda<0, Segs<0>, ValuesT<RAJA::Index_type, 0>, Segs<2>>>>>>;
 
   int *ptr = (int*) malloc(sizeof(int) * N);
   int *d_ptr = nullptr;
@@ -4090,7 +4085,7 @@ GPU_TEST(Kernel_gpu, HipExec_tile1threaddirect)
   // Loop Fusion
   using Pol = KernelPolicy<
       HipKernel<statement::Tile<0,
-                                 statement::tile_fixed<128>,
+                                 tile_fixed<128>,
                                  seq_exec,
                                  For<0, hip_thread_x_direct, Lambda<0>>>>>;
 
@@ -4217,8 +4212,8 @@ GPU_TEST(Kernel_gpu, Hyperplane_hip_3d_tiled)
 
   using Pol = RAJA::KernelPolicy<HipKernel<
       For<0, hip_block_x_loop,
-        RAJA::statement::Tile<2, RAJA::statement::tile_fixed<13>, seq_exec,
-          RAJA::statement::Tile<3, RAJA::statement::tile_fixed<7>, seq_exec,
+        RAJA::statement::Tile<2, RAJA::tile_fixed<13>, seq_exec,
+          RAJA::statement::Tile<3, RAJA::tile_fixed<7>, seq_exec,
             For<2, hip_thread_x_direct,
               For<3, hip_thread_y_direct,
                 Hyperplane<1, seq_exec, ArgList<2, 3>,
@@ -4339,8 +4334,8 @@ GPU_TEST(Kernel_gpu, HipExec_1threadexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<HipKernel<
-      statement::Tile<2, statement::tile_fixed<64>, hip_block_z_loop,
-        statement::Tile<3, statement::tile_fixed<16>, seq_exec,
+      statement::Tile<2, tile_fixed<64>, hip_block_z_loop,
+        statement::Tile<3, tile_fixed<16>, seq_exec,
           For<0, hip_block_x_loop,
             For<1, hip_block_y_loop,
               For<2, hip_thread_x_direct,
@@ -4385,7 +4380,7 @@ GPU_TEST(Kernel, HipExec_fixedspillexec)
 
   // Loop Fusion
   using Pol = KernelPolicy<HipKernelFixed<1024,
-      statement::Tile<0, statement::tile_fixed<1024>, hip_block_x_loop,
+      statement::Tile<0, tile_fixed<1024>, hip_block_x_loop,
         For<0, hip_thread_x_direct,
           Lambda<0>
         >

@@ -44,7 +44,7 @@ void NegativeRangeSegConstructorsTest()
   ASSERT_EQ(17, r1.size());
   ASSERT_EQ(12, r3.size());
 #if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-  ASSERT_ANY_THROW(RAJA::TypedRangeSegment<T> r2(0, -50));
+  ASSERT_ANY_THROW(RAJA::TypedRangeSegment<T> r2(T(0), T(-50)));
 #endif
 }
 
@@ -96,17 +96,18 @@ template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* =
 void NegativeRangeSegIteratorsTest()
 {
   RAJA::TypedRangeSegment<T> r3(-2, 100);
-  ASSERT_EQ(-2, *r3.begin());
+  ASSERT_EQ(T(-2), *r3.begin());
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Iterators)
 {
   RAJA::TypedRangeSegment<TypeParam> r1(0, 100);
-  ASSERT_EQ(0, *r1.begin());
-  ASSERT_EQ(99, *(--r1.end()));
-  ASSERT_EQ(100, r1.end() - r1.begin());
-  ASSERT_EQ(100, std::distance(r1.begin(), r1.end()));
-  ASSERT_EQ(100, r1.size());
+  ASSERT_EQ(TypeParam(0), *r1.begin());
+  ASSERT_EQ(TypeParam(99), *(--r1.end()));
+  ASSERT_EQ(TypeParam(100), r1.end() - r1.begin());
+  using difftype_t = decltype(std::distance(r1.begin(), r1.end()));
+  ASSERT_EQ(difftype_t(100), std::distance(r1.begin(), r1.end()));
+  ASSERT_EQ(difftype_t(100), r1.size());
 
   NegativeRangeSegIteratorsTest<TypeParam>();
 }
@@ -117,8 +118,8 @@ TYPED_TEST(RangeSegmentUnitTest, Slices)
   
   auto s = r.slice(10,100);
 
-  ASSERT_EQ(10, *s.begin());
-  ASSERT_EQ(110, *(s.end()));
+  ASSERT_EQ(TypeParam(10), *s.begin());
+  ASSERT_EQ(TypeParam(110), *(s.end()));
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Equality)
