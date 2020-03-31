@@ -90,8 +90,8 @@ public:
                 "All segments must have the same value_type");
 
   //! Construct empty index set
-#ifdef _WIN32
-   // this one instance of constexpr does not work on VS2012 or VS2015 (unknown about VS2017)
+#if _MSC_VER < 1910
+   // this one instance of constexpr does not work on VS2012 or VS2015
   RAJA_INLINE TypedIndexSet() : PARENT() {}
 #else
   RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
