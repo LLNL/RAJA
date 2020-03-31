@@ -40,7 +40,7 @@ struct builtin_atomic {
 namespace detail
 {
 
-#if defined(RAJA_COMPILER_MSVC) || defined(_WIN32)
+#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
