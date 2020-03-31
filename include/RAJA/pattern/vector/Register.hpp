@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_register_register_HPP
-#define RAJA_pattern_register_register_HPP
+#ifndef RAJA_pattern_vector_register_HPP
+#define RAJA_pattern_vector_register_HPP
 
 #include "RAJA/config.hpp"
 

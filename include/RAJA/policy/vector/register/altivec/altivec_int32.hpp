@@ -17,14 +17,14 @@
 
 
 
-#ifndef RAJA_policy_vector_register_altivec_float_HPP
-#define RAJA_policy_vector_register_altivec_float_HPP
+#ifndef RAJA_policy_vector_register_altivec_int32_HPP
+#define RAJA_policy_vector_register_altivec_int32_HPP
 
 #include "RAJA/config.hpp"
 #ifdef RAJA_ALTIVEC
 
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 
 // Include SIMD intrinsics header file
@@ -38,22 +38,22 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<altivec_register, float, N>:
-    public internal::RegisterBase<Register<altivec_register, float, N>>
+  class Register<altivec_register, int, N>:
+    public internal::RegisterBase<Register<altivec_register, int, N>>
   {
 
     static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AltiVec can only have 4 lanes of floats");
+    static_assert(N <= 4, "AltiVec can only have 4 lanes of 32-bit ints");
 
     public:
-      using self_type = Register<altivec_register, float, N>;
-      using element_type = float;
+      using self_type = Register<altivec_register, int, N>;
+      using element_type = int;
 
       static constexpr size_t s_num_elem = N;
 
 
     private:
-      vector float m_value;
+      vector int m_value;
 
 
     public:
@@ -64,7 +64,7 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      Register() : m_value{0.0f, 0.0f, 0.0f, 0.0f} {
+      Register() : m_value{0, 0, 0, 0} {
       }
 
       /*!
@@ -90,9 +90,9 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) :
         m_value{c,
-                N >= 2 ? c : 0.0f,
-                N >= 3 ? c : 0.0f,
-                N >= 4 ? c : 0.0f}
+                N >= 2 ? c : 0,
+                N >= 3 ? c : 0,
+                N >= 4 ? c : 0}
       {}
 
 
@@ -113,17 +113,17 @@ namespace RAJA
           else{
             m_value = register_type{
               ptr[0],
-              N >= 2 ? ptr[1] : 0.0f,
-              N >= 3 ? ptr[2] : 0.0f,
-              N >= 4 ? ptr[3] : 0.0f};
+              N >= 2 ? ptr[1] : 0,
+              N >= 3 ? ptr[2] : 0,
+              N >= 4 ? ptr[3] : 0};
           }
         }
         else{
           m_value = register_type{
                         ptr[0],
-                        N >= 2 ? ptr[stride] : 0.0f,
-                        N >= 3 ? ptr[2*stride] : 0.0f,
-                        N >= 4 ? ptr[3*stride] : 0.0f};
+                        N >= 2 ? ptr[stride] : 0,
+                        N >= 3 ? ptr[2*stride] : 0,
+                        N >= 4 ? ptr[3*stride] : 0};
         }
 
         return *this;
@@ -180,9 +180,9 @@ namespace RAJA
       RAJA_INLINE
       self_type &broadcast(element_type const &c){
         m_value = register_type{c,
-                N >= 2 ? c : 0.0f,
-                N >= 3 ? c : 0.0f,
-                N >= 4 ? c : 0.0f};
+                N >= 2 ? c : 0,
+                N >= 3 ? c : 0,
+                N >= 4 ? c : 0};
         return * this;
       }
 
@@ -215,22 +215,21 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &b) const {
-        return self_type(vec_div(m_value, b.m_value));
+        if(N==4){
+          return self_type(vec_div(m_value, b.m_value));
+        }
+        else{
+          return self_type(
+              register_type{
+                m_value[0]/b.m_value[0],
+                N >= 2 ? m_value[1]/b.m_value[1] : 0,
+                N >= 3 ? m_value[2]/b.m_value[2] : 0,
+                N >= 4 ? m_value[3]/b.m_value[3] : 0}
+          );
+        }
       }
 
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        return self_type(vec_madd(m_value, b.m_value, c.m_value));
-      }
 
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        return self_type(vec_msub(m_value, b.m_value, c.m_value));
-      }
 
       /*!
        * @brief Sum the elements of this vector

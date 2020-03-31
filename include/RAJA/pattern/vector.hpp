@@ -18,6 +18,8 @@
 #ifndef RAJA_pattern_vector_HPP
 #define RAJA_pattern_vector_HPP
 
+#include "RAJA/pattern/vector/Register.hpp"
+
 #include "RAJA/pattern/vector/Vector.hpp"
 #include "RAJA/pattern/vector/VectorIndex.hpp"
 #include "RAJA/pattern/vector/VectorProductRef.hpp"

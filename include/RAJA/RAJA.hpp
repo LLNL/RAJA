@@ -47,7 +47,6 @@
 //
 // Generic templates to describe SIMD/SIMT registers and vectors
 //
-#include "RAJA/pattern/register.hpp"
 #include "RAJA/pattern/vector.hpp"
 
 //
@@ -64,7 +63,6 @@
 // All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
-#include "RAJA/policy/register.hpp"
 #include "RAJA/policy/vector.hpp"
 
 #if defined(RAJA_ENABLE_TBB)

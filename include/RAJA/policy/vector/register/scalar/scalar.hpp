@@ -18,7 +18,7 @@
 #ifndef RAJA_policy_vector_register_scalar_HPP
 #define RAJA_policy_vector_register_scalar_HPP
 
-#include<RAJA/pattern/register.hpp>
+#include<RAJA/pattern/vector.hpp>
 
 namespace RAJA
 {

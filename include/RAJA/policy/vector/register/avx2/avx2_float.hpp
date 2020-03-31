@@ -17,12 +17,12 @@
 
 #ifdef __AVX2__
 
-#ifndef RAJA_policy_vector_register_avx2_double_HPP
-#define RAJA_policy_vector_register_avx2_double_HPP
+#ifndef RAJA_policy_vector_register_avx2_float_HPP
+#define RAJA_policy_vector_register_avx2_float_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -34,16 +34,16 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<avx2_register, double, N> :
-    public internal::RegisterBase<Register<avx2_register, double, N>>
+  class Register<avx2_register, float, N> :
+    public internal::RegisterBase<Register<avx2_register, float, N>>
   {
     static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AVX2 can only have 4 lanes of doubles");
+    static_assert(N <= 8, "AVX2 can only have 8 lanes of floats");
 
     public:
-      using self_type = Register<avx2_register, double, N>;
-      using element_type = double;
-      using register_type = __m256d;
+      using self_type = Register<avx2_register, float, N>;
+      using element_type = float;
+      using register_type = __m256;
 
       static constexpr size_t s_num_elem = N;
 
@@ -53,16 +53,51 @@ namespace RAJA
       RAJA_INLINE
       __m256i createMask() const {
         // Generate a mask
-        return  _mm256_set_epi64x(0,  // never, since N < 4
-                                  N==3 ? -1 : 0,  // only if N==3
-                                  N>1  ? -1 : 0,  // only if N==2 || N==1
-                                  -1);            // Always, since N >= 1
+        return  _mm256_set_epi32(
+            N >= 8 ? -1 : 0,
+            N >= 7 ? -1 : 0,
+            N >= 6 ? -1 : 0,
+            N >= 5 ? -1 : 0,
+            N >= 4 ? -1 : 0,
+            N >= 3 ? -1 : 0,
+            N >= 2 ? -1 : 0,
+            -1);
       }
 
       RAJA_INLINE
       __m256i createStridedOffsets(camp::idx_t stride) const {
         // Generate a strided offset list
-        return  _mm256_set_epi64x(3*stride, 2*stride, stride, 0);
+        return  _mm256_set_epi32(
+            7*stride, 6*stride, 5*stride, 4*stride,
+            3*stride, 2*stride, stride, 0);
+      }
+
+      RAJA_INLINE
+      __m256i createPermute1() const {
+        // Generate a permutation for first round of min/max routines
+        return  _mm256_set_epi32(
+            N >= 7 ? 6 : 0,
+            N >= 8 ? 7 : 0,
+            N >= 5 ? 4 : 0,
+            N >= 6 ? 5 : 0,
+            N >= 3 ? 2 : 0,
+            N >= 4 ? 3 : 0,
+            N >= 1 ? 0 : 0,
+            N >= 2 ? 1 : 0);
+      }
+
+      RAJA_INLINE
+      __m256i createPermute2() const {
+        // Generate a permutation for second round of min/max routines
+        return  _mm256_set_epi32(
+            N >= 6 ? 5 : 0,
+            N >= 5 ? 4 : 0,
+            N >= 8 ? 7 : 0,
+            N >= 7 ? 6 : 0,
+            N >= 2 ? 1 : 0,
+            N >= 1 ? 0 : 0,
+            N >= 4 ? 3 : 0,
+            N >= 2 ? 2 : 0);
       }
 
     public:
@@ -71,7 +106,7 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      Register() : m_value(_mm256_setzero_pd()) {
+      Register() : m_value(_mm256_setzero_ps()) {
       }
 
       /*!
@@ -95,17 +130,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
-
-      /*!
-       * @brief Construct from explicit scalars for each element.
-       */
-      RAJA_INLINE
-      Register(element_type c0,
-               element_type c1,
-               element_type c2,
-               element_type c3) :
-            m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
+      Register(element_type const &c) : m_value(_mm256_set1_ps(c)) {}
 
 
       /*!
@@ -119,16 +144,16 @@ namespace RAJA
       RAJA_INLINE
       self_type &load(element_type const *ptr, camp::idx_t stride = 1){
         // Full vector width uses regular load/gather instruction
-        if(N == 4){
+        if(N == 8){
 
           // Packed Load
           if(stride == 1){
-            m_value = _mm256_loadu_pd(ptr);
+            m_value = _mm256_loadu_ps(ptr);
           }
 
           // Gather
           else{
-            m_value = _mm256_i64gather_pd(ptr,
+            m_value = _mm256_i32gather_ps(ptr,
                                           createStridedOffsets(stride),
                                           sizeof(element_type));
           }
@@ -139,15 +164,15 @@ namespace RAJA
 
           // Masked Packed Load
           if(stride == 1){
-            m_value = _mm256_maskload_pd(ptr, createMask());
+            m_value = _mm256_maskload_ps(ptr, createMask());
           }
 
           // Masked Gather
           else{
-            m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
+            m_value = _mm256_mask_i32gather_ps(_mm256_setzero_ps(),
                                           ptr,
                                           createStridedOffsets(stride),
-                                          _mm256_castsi256_pd(createMask()),
+                                          createMask(),
                                           sizeof(element_type));
           }
         }
@@ -169,12 +194,12 @@ namespace RAJA
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
-          if(N == 4){
-            _mm256_storeu_pd(ptr, m_value);
+          if(N == 8){
+            _mm256_storeu_ps(ptr, m_value);
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_pd(ptr, createMask(), m_value);
+            _mm256_maskstore_ps(ptr, createMask(), m_value);
           }
 
         }
@@ -216,7 +241,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type const &value){
-        m_value =  _mm256_set1_pd(value);
+        m_value =  _mm256_set1_ps(value);
         return *this;
       }
 
@@ -231,25 +256,25 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
-        return self_type(_mm256_add_pd(m_value, b.m_value));
+        return self_type(_mm256_add_ps(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
-        return self_type(_mm256_sub_pd(m_value, b.m_value));
+        return self_type(_mm256_sub_ps(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        return self_type(_mm256_mul_pd(m_value, b.m_value));
+        return self_type(_mm256_mul_ps(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &b) const {
-        return self_type(_mm256_div_pd(m_value, b.m_value));
+        return self_type(_mm256_div_ps(m_value, b.m_value));
       }
 
 // only use FMA's if the compiler has them turned on
@@ -258,14 +283,14 @@ namespace RAJA
       RAJA_HOST_DEVICE
       self_type fused_multiply_add(self_type const &b, self_type const &c) const
       {
-        return self_type(_mm256_fmadd_pd(m_value, b.m_value, c.m_value));
+        return self_type(_mm256_fmadd_ps(m_value, b.m_value, c.m_value));
       }
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
       {
-        return self_type(_mm256_fmsub_pd(m_value, b.m_value, c.m_value));
+        return self_type(_mm256_fmsub_ps(m_value, b.m_value, c.m_value));
       }
 #endif
 
@@ -276,9 +301,27 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        auto sh1 = _mm256_permute_pd(m_value, 0x5);
-        auto red1 = _mm256_add_pd(m_value, sh1);
-        return red1[0]+red1[2];
+        // Some simple cases
+        if(N == 1){
+          return m_value[0];
+        }
+        if(N == 2){
+          return m_value[0]+m_value[1];
+        }
+
+        // swap odd-even pairs and add
+        auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+        auto red1 = _mm256_add_ps(m_value, sh1);
+
+        if(N == 3 || N == 4){
+          return red1[0] + red1[2];
+        }
+
+        // swap odd-even quads and add
+        auto sh2 = _mm256_permute_ps(red1, 0x4E);
+        auto red2 = _mm256_add_ps(red1, sh2);
+
+        return red2[0] + red2[4];
       }
 
 
@@ -289,44 +332,31 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        if(N == 4){
-          // permute the first two and last two lanes of the register
-          // A = { v[1], v[0], v[3], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
-
-          // take the maximum value of each lane
-          // B = { max{v[0], v[1]},
-          //       max{v[0], v[1]},
-          //       max{v[2], v[3]},
-          //       max{v[2], v[3]} }
-          register_type b = _mm256_max_pd(m_value, a);
-
-          // now take the maximum of a lower and upper halves
-          return std::max<element_type>(b[0], b[2]);
-        }
-        else if(N == 3){
-          // permute the first two and last two lanes of the register
-          // use the third element TWICE, so we effectively remove the 4th
-          // lane
-          // A = { v[1], v[0], v[2], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0xD);
-
-          // take the maximum value of each lane
-          // B = { max{v[0], v[1]},
-          //       max{v[0], v[1]},
-          //       max{v[2], v[2]},   <-- just v[2]
-          //       max{v[2], v[3]} }
-          register_type b = _mm256_max_pd(m_value, a);
-
-          // now take the maximum of a lower and upper lane
-          return std::max<element_type>(b[0], b[2]);
-        }
-        else if(N == 2){
-          return std::max<element_type>(m_value[0], m_value[1]);
-        }
-        else{
+        // Some simple cases
+        if(N == 1){
           return m_value[0];
         }
+        if(N == 2){
+          return std::max<element_type>(m_value[0], m_value[1]);
+        }
+
+        // swap odd-even pairs and add
+        auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1());
+        auto red1 = _mm256_max_ps(m_value, sh1);
+
+        if(N == 3){
+          return std::max<element_type>(red1[0], m_value[2]);
+        }
+        if(N == 4){
+          return std::max<element_type>(red1[0], red1[2]);
+        }
+
+        // swap odd-even quads and add
+        auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2());
+        auto red2 = _mm256_max_ps(red1, sh2);
+
+        return std::max<element_type>(red2[0], red2[4]);
+
       }
 
       /*!
@@ -336,7 +366,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        return self_type(_mm256_max_pd(m_value, a.m_value));
+        return self_type(_mm256_max_ps(m_value, a.m_value));
       }
 
       /*!
@@ -346,44 +376,32 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        if(N == 4){
-          // permute the first two and last two lanes of the register
-          // A = { v[1], v[0], v[3], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
-
-          // take the minimum value of each lane
-          // B = { min{v[0], v[1]},
-          //       min{v[0], v[1]},
-          //       min{v[2], v[3]},
-          //       min{v[2], v[3]} }
-          register_type b = _mm256_min_pd(m_value, a);
-
-          // now take the minimum of a lower and upper halves
-          return std::min<element_type>(b[0], b[2]);
-        }
-        else if(N == 3){
-          // permute the first two and last two lanes of the register
-          // use the third element TWICE, so we effectively remove the 4th
-          // lane
-          // A = { v[1], v[0], v[2], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x3);
-
-          // take the minimum value of each lane
-          // B = { min{v[0], v[1]},
-          //       min{v[0], v[1]},
-          //       min{v[2], v[2]},   <-- just v[2]
-          //       min{v[2], v[3]} }
-          register_type b = _mm256_min_pd(m_value, a);
-
-          // now take the minimum of a lower and upper lane
-          return std::min<element_type>(b[0], b[2]);
-        }
-        else if(N == 2){
-          return std::min<element_type>(m_value[0], m_value[1]);
-        }
-        else{
+        // Some simple cases
+        if(N == 1){
           return m_value[0];
         }
+        if(N == 2){
+          return std::min<element_type>(m_value[0], m_value[1]);
+        }
+
+        // swap odd-even pairs and add
+        auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1());
+        auto red1 = _mm256_min_ps(m_value, sh1);
+
+        if(N == 3){
+          return std::min<element_type>(red1[0], m_value[2]);
+        }
+        if(N == 4){
+          return std::min<element_type>(red1[0], red1[2]);
+        }
+
+        // swap odd-even quads and add
+        auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2());
+        auto red2 = _mm256_min_ps(red1, sh2);
+
+        return std::min<element_type>(red2[0], red2[4]);
+
+
       }
 
       /*!
@@ -393,7 +411,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        return self_type(_mm256_min_pd(m_value, a.m_value));
+        return self_type(_mm256_min_ps(m_value, a.m_value));
       }
   };
 

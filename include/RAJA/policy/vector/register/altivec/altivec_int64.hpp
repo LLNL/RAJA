@@ -24,7 +24,7 @@
 #ifdef RAJA_ALTIVEC
 
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 
 // Include SIMD intrinsics header file

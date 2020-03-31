@@ -20,7 +20,7 @@
 #ifndef RAJA_policy_vector_register_avx_HPP
 #define RAJA_policy_vector_register_avx_HPP
 
-#include<RAJA/pattern/register.hpp>
+#include<RAJA/pattern/vector.hpp>
 
 namespace RAJA {
   struct avx_register {};
@@ -42,10 +42,10 @@ namespace RAJA {
 
 #endif
 
-#include<RAJA/policy/register/avx/avx_int64.hpp>
-#include<RAJA/policy/register/avx/avx_int32.hpp>
-#include<RAJA/policy/register/avx/avx_float.hpp>
-#include<RAJA/policy/register/avx/avx_double.hpp>
+#include<RAJA/policy/vector/register/avx/avx_int64.hpp>
+#include<RAJA/policy/vector/register/avx/avx_int32.hpp>
+#include<RAJA/policy/vector/register/avx/avx_float.hpp>
+#include<RAJA/policy/vector/register/avx/avx_double.hpp>
 
 
 #endif // __AVX__

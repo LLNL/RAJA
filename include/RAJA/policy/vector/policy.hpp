@@ -19,7 +19,62 @@
 #define policy_vector_HPP
 
 #include "RAJA/policy/PolicyBase.hpp"
-#include<RAJA/policy/register.hpp>
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/vector.hpp"
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// SIMD register types and policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+
+
+
+#ifdef __AVX2__
+#include<RAJA/policy/vector/register/avx2.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::avx2_register
+#endif
+#endif
+
+
+#ifdef __AVX__
+#include<RAJA/policy/vector/register/avx.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::avx_register
+#endif
+#endif
+
+
+
+#ifdef RAJA_ALTIVEC
+#include<RAJA/policy/vector/register/altivec.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::altivec_register
+#endif
+#endif
+
+
+// The scalar register is always supported (doesn't require any SIMD/SIMT)
+#include<RAJA/policy/vector/register/scalar/scalar.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::scalar_register
+#endif
+
+
+namespace RAJA
+{
+namespace policy
+{
+    // This sets the default SIMD register that will be used
+    using register_default = RAJA_VECTOR_REGISTER_TYPE;
+
+} // namespace policy
+} // namespace RAJA
+
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -71,7 +126,6 @@ using FixedVector = FixedVectorExt<
 template<typename T, camp::idx_t ROWS, camp::idx_t COLS, typename REGISTER_POLICY  = policy::register_default>
 using FixedMatrix =
     internal::MatrixImpl<typename internal::FixedVectorTypeHelper<Register<REGISTER_POLICY, T, 4>, (size_t)COLS>::type, MATRIX_ROW_MAJOR, camp::make_idx_seq_t<internal::FixedVectorTypeHelper<Register<REGISTER_POLICY, T, 4>, COLS>::s_num_registers>, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS> >;
-    //internal::MatrixImpl<FixedVector<T, COLS, REGISTER>, MATRIX_ROW_MAJOR, camp::make_idx_seq_t<1>, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS> >;
 
 
 

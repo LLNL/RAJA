@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>

@@ -15,14 +15,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef __AVX__
+#ifdef __AVX2__
 
-#ifndef RAJA_policy_vector_register_avx_int64_HPP
-#define RAJA_policy_vector_register_avx_int64_HPP
+#ifndef RAJA_policy_vector_register_avx2_int64_HPP
+#define RAJA_policy_vector_register_avx2_int64_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/register.hpp"
+#include "RAJA/pattern/vector.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -34,14 +34,14 @@ namespace RAJA
 
 
   template<size_t N>
-  class Register<avx_register, long, N> :
-    public internal::RegisterBase<Register<avx_register, long, N>>
+  class Register<avx2_register, long, N> :
+    public internal::RegisterBase<Register<avx2_register, long, N>>
   {
     static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AVX can only have 4 lanes of int64s");
+    static_assert(N <= 4, "AVX2 can only have 4 lanes of int64s");
 
     public:
-      using self_type = Register<avx_register, long, N>;
+      using self_type = Register<avx2_register, long, N>;
       using element_type = long;
       using register_type = __m256i;
 
@@ -121,29 +121,41 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load(element_type const *ptr, camp::idx_t stride = 1){
-        // Packed Loads
-        if(stride == 1){
+        // Full vector width uses regular load/gather instruction
+        if(N == 4){
 
-          // Full Load
-          if(N == 4){
+          // Packed Load
+          if(stride == 1){
             m_value = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(ptr));
           }
 
-          // Masked Load
+          // Gather
           else{
+            m_value = _mm256_i64gather_epi64(ptr,
+                                          createStridedOffsets(stride),
+                                          sizeof(element_type));
+          }
+        }
+
+        // Not-full vector (1,2 or 3 doubles) uses a masked load/gather
+        else {
+
+          // Masked Packed Load
+          if(stride == 1){
             m_value = _mm256_castpd_si256(
                 _mm256_maskload_pd(reinterpret_cast<double const *>(ptr), createMask())
             );
           }
-        }
 
-        // Strided load
-        else {
-          for(size_t i = 0;i < N;++ i){
-            set(i, ptr[i*stride]);
+          // Masked Gather
+          else{
+            m_value = _mm256_mask_i64gather_epi64(_mm256_set1_epi64x(0),
+                                          ptr,
+                                          createStridedOffsets(stride),
+                                          createMask(),
+                                          sizeof(element_type));
           }
         }
-
         return *this;
       }
 
@@ -240,39 +252,13 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
-        // no 4-way 64-bit add, but there is a 2-way SSE... split and conquer
-
-        // Low 128-bits  - use _mm256_castsi256_si128???
-        auto low_a = _mm256_castsi256_si128(m_value);
-        auto low_b = _mm256_castsi256_si128(b.m_value);
-        auto res_low = _mm256_castsi128_si256(_mm_add_epi64(low_a, low_b));
-
-        // Hi 128-bits
-        auto hi_a = _mm256_extractf128_si256(m_value, 1);
-        auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
-        auto res_hi = _mm_add_epi64(hi_a, hi_b);
-
-        // Stitch back together
-        return self_type(_mm256_insertf128_si256(res_low, res_hi, 1));
+        return self_type(_mm256_add_epi64(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
-        // no 4-way 64-bit subtract, but there is a 2-way SSE... split and conquer
-
-        // Low 128-bits  - use _mm256_castsi256_si128???
-        auto low_a = _mm256_castsi256_si128(m_value);
-        auto low_b = _mm256_castsi256_si128(b.m_value);
-        auto res_low = _mm256_castsi128_si256(_mm_sub_epi64(low_a, low_b));
-
-        // Hi 128-bits
-        auto hi_a = _mm256_extractf128_si256(m_value, 1);
-        auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
-        auto res_hi = _mm_sub_epi64(hi_a, hi_b);
-
-        // Stitch back together
-        return self_type(_mm256_insertf128_si256(res_low, res_hi, 1));
+        return self_type(_mm256_sub_epi64(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
@@ -310,22 +296,10 @@ namespace RAJA
       {
         // swap pairs and add
         auto sh1 = permute<0x5>(m_value);
-
-        // Add lower 128-bits
-        auto low_a = _mm256_castsi256_si128(m_value);
-        auto low_b = _mm256_castsi256_si128(sh1);
-        auto res_low = _mm_add_epi64(low_a, low_b);
-
-        // Add upper 128-bits
-        auto hi_a = _mm256_extractf128_si256(m_value, 1);
-        auto hi_b = _mm256_extractf128_si256(sh1, 1);
-        auto res_hi = _mm_add_epi64(hi_a, hi_b);
-
-        // Sum upper and lower
-        auto res = _mm_add_epi64(res_hi, res_low);
+        auto red1 = _mm256_add_epi64(m_value, sh1);
 
         // add lower and upper
-        return _mm_extract_epi64(res, 0);
+        return _mm256_extract_epi64(red1, 0) + _mm256_extract_epi64(red1, 2);
       }
 
 
