@@ -28,8 +28,6 @@
 
 #include "RAJA/index/IndexValue.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 
@@ -46,7 +44,7 @@ template <camp::idx_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
   using IndexRange = camp::idx_seq<RangeInts...>;
-  using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
+  using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
@@ -108,7 +106,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
   {
     OffsetLayout_impl ret{rhs};
-    VarOps::ignore_args((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
+    camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
     return ret;
   }
 

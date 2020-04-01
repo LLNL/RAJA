@@ -26,6 +26,7 @@
 #include "camp/defines.hpp"
 #include "camp/list/list.hpp"
 #include "camp/tuple.hpp"
+#include "camp/resource.hpp"
 
 namespace RAJA
 {
@@ -41,6 +42,8 @@ using ::camp::idx_t;
 using ::camp::make_tuple;
 
 using ::camp::tuple;
+
+using ::camp::resources::Platform;
 
 }  // end namespace RAJA
 

@@ -117,7 +117,7 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   IndexType loc = DefaultLoc<IndexType>().value();
 
-#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020
+#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020 || defined(__HIPCC__)
   RAJA_HOST_DEVICE constexpr ValueLoc() {}
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
   RAJA_HOST_DEVICE
@@ -315,6 +315,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -346,6 +347,7 @@ public:
   }
 
   /// \brief reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMinLoc &minloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
@@ -374,6 +376,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
@@ -429,6 +432,7 @@ public:
   }
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMaxLoc &maxloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));

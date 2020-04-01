@@ -50,14 +50,16 @@ namespace internal
 template <typename Data,
           camp::idx_t ArgumentId,
           typename TPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -123,18 +125,114 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
-                    hip_block_xyz_loop<BlockDim>,
-                    EnclosedStmts...>>
+                    RAJA::tile_fixed<chunk_size>,
+                    hip_block_xyz_direct<BlockDim>,
+                    EnclosedStmts...>,
+    Types>
   {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    using segment_t = camp::decay<decltype(segment)>;
+
+    // compute trip count
+    auto len = segment.end() - segment.begin();
+    auto i = get_hip_dim<BlockDim>(dim3(blockIdx.x,blockIdx.y,blockIdx.z)) * chunk_size;
+
+    // get a chunk
+    if (i < len) {
+
+      // Keep copy of original segment, so we can restore it
+      segment_t orig_segment = segment;
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, chunk_size);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+
+      // Set range back to original values
+      segment = orig_segment;
+    }
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+
+    // Compute how many blocks
+    int len = segment_length<ArgumentId>(data);
+    int num_blocks = len / chunk_size;
+    if (num_blocks * chunk_size < len) {
+      num_blocks++;
+    }
+
+    LaunchDims dims;
+    set_hip_dim<BlockDim>(dims.blocks, num_blocks);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_hip_dim<BlockDim>(dims.min_blocks, num_blocks);
+
+
+
+    // privatize data, so we can mess with the segments
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, chunk_size);
+
+
+    LaunchDims enclosed_dims =
+        enclosed_stmts_t::calculateDimensions(private_data);
+
+    return dims.max(enclosed_dims);
+  }
+};
+
+/*!
+ * A specialized RAJA::kernel hip_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId,
+                    RAJA::tile_fixed<chunk_size>,
+                    hip_block_xyz_loop<BlockDim>,
+                    EnclosedStmts...>,
+    Types>
+  {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -214,17 +312,19 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
-                  RAJA::statement::tile_fixed<chunk_size>,
+                  RAJA::tile_fixed<chunk_size>,
                   hip_thread_xyz_direct<ThreadDim>,
-                  EnclosedStmts ...> >{
+                  EnclosedStmts ...>,
+  Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline
@@ -297,17 +397,19 @@ template <typename Data,
           camp::idx_t chunk_size,
           int ThreadDim,
           int MinThreads,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
-                  RAJA::statement::tile_fixed<chunk_size>,
+                  RAJA::tile_fixed<chunk_size>,
                   hip_thread_xyz_loop<ThreadDim, MinThreads>,
-                  EnclosedStmts ...> >{
+                  EnclosedStmts ...>,
+  Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   static
   inline

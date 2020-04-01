@@ -13,10 +13,10 @@
 namespace RAJA {
 namespace internal {
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
+template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>> 
+                                             EnclosedStmts...>, Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
@@ -33,16 +33,16 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
-          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+          execute_statement_list<camp::list<EnclosedStmts...>, Types>(private_data);
         }
       }
     }
 };
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, typename... EnclosedStmts>
+template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2>,
-                                             EnclosedStmts...>> 
+                                             EnclosedStmts...>, Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
@@ -62,17 +62,17 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
             private_data.template assign_offset<Arg0>(i0);
             private_data.template assign_offset<Arg1>(i1);
             private_data.template assign_offset<Arg2>(i2);
-            execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+            execute_statement_list<camp::list<EnclosedStmts...>, Types>(private_data);
           }
         }
       }
     }
 };
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, camp::idx_t Arg3, typename... EnclosedStmts>
+template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, camp::idx_t Arg3, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2, Arg3>,
-                                             EnclosedStmts...>> 
+                                             EnclosedStmts...>, Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
@@ -95,7 +95,7 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
               private_data.template assign_offset<Arg1>(i1);
               private_data.template assign_offset<Arg2>(i2);
               private_data.template assign_offset<Arg3>(i2);
-              execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+              execute_statement_list<camp::list<EnclosedStmts...>, Types>(private_data);
             }
           }
         }

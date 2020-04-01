@@ -44,7 +44,7 @@ statement types.
 
    using KERNEL_EXEC_POL =
      RAJA::KernelPolicy<
-       RAJA::statement::Tile<0, RAJA::statement::tile_fixed<2>, RAJA::seq_exec,
+       RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::seq_exec,
          RAJA::statement::For<0, RAJA::seq_exec,
            RAJA::statement::Lambda<0>
          >
@@ -77,7 +77,7 @@ number and local tile index, if needed inside the kernel body, as shown below::
   using KERNEL_EXEC_POL2 =
     RAJA::KernelPolicy<
       RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, 
-                                  RAJA::statement::tile_fixed<2>, RAJA::seq_exec,
+                                  RAJA::tile_fixed<2>, RAJA::seq_exec,
         RAJA::statement::ForICount<0, RAJA::statement::Param<1>, 
                                    RAJA::seq_exec,
           RAJA::statement::Lambda<0>

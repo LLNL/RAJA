@@ -42,17 +42,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int ThreadDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
+        Types> {
 
   using Base = HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>>;
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
+        Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -87,20 +91,24 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId, RAJA::hip_warp_direct,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_direct,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_direct,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -132,20 +140,25 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId, RAJA::hip_warp_loop,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_loop,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_loop,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
+
 
   using typename Base::enclosed_stmts_t;
 
@@ -190,26 +203,32 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_warp_masked_direct<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t>;
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -246,26 +265,32 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_warp_masked_loop<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t>;
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -312,26 +337,32 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_thread_masked_direct<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t>;
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -367,26 +398,32 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_thread_masked_loop<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>,
+    Types> {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>,
+          Types>;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t>;
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -434,17 +471,21 @@ template <typename Data,
           typename ParamId,
           int ThreadDim,
           int MinThreads,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        Types> {
 
   using Base = HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>>;
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -478,6 +519,52 @@ struct HipStatementExecutor<
 
 
 
+/*
+ * Executor for block work sharing inside HipKernel.
+ * Provides a direct mapping of each block in xyz.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+    Types>
+    : public HipStatementExecutor<
+        Data,
+        statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+        Types> {
+
+  using Base = HipStatementExecutor<
+      Data,
+      statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+      Types>;
+
+  using typename Base::enclosed_stmts_t;
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    auto len = segment_length<ArgumentId>(data);
+    auto i = get_hip_dim<BlockDim>(blockIdx);
+
+    if (i < len) {
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+      data.template assign_param<ParamId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+  }
+};
 
 /*
  * Executor for block work sharing inside HipKernel.
@@ -490,17 +577,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+        Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>>;
+      statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -534,17 +625,21 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...> >
+    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, seq_exec, EnclosedStmts...> > {
+        statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+        Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<ArgumentId, seq_exec, EnclosedStmts...> >;
+      statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
 
