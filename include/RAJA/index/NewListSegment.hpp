@@ -88,7 +88,7 @@ public:
   ///
   NewTypedListSegment(const value_type* values,
                       Index_type length,
-                      camp::resources::Resource* resource, 
+                      camp::resources::Resource& resource, 
                       IndexOwnership owned = Owned)
     : m_resource(resource), m_use_resource(true)
   {
@@ -104,7 +104,7 @@ public:
   ///
   template <typename Container>
   NewTypedListSegment(const Container& container,
-                      camp::resources::Resource* resource)
+                      camp::resources::Resource& resource)
     : m_resource(resource), m_use_resource(true),
       m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
@@ -125,8 +125,8 @@ public:
         ++src;
       }
 
-      m_data = m_resource->allocate<value_type>(m_size);
-      m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
+      m_data = m_resource.allocate<value_type>(m_size);
+      m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
       m_owned = Owned;
 
       host_res.deallocate(tmp);
@@ -152,7 +152,8 @@ public:
   NewTypedListSegment(const value_type* values,
                       Index_type length,
                       IndexOwnership owned = Owned)
-    : m_resource(nullptr), m_use_resource(false)
+    : m_resource(camp::resources::Resource{camp::resources::Host()}), 
+      m_use_resource(false)
   {
     initIndexData(m_use_resource, 
                   values, length, owned);
@@ -166,7 +167,8 @@ public:
   ///
   template <typename Container>
   explicit NewTypedListSegment(const Container& container)
-    : m_resource(nullptr), m_use_resource(false),
+    : m_resource(camp::resources::Resource{camp::resources::Host()}), 
+      m_use_resource(false),
       m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
     if (m_size > 0) { 
@@ -204,7 +206,7 @@ public:
     if (m_data != nullptr && m_owned == Owned) {
 
       if (m_use_resource) {
-        m_resource->deallocate(m_data);
+        m_resource.deallocate(m_data);
       } else {
         deallocate(std::integral_constant<bool, Has_GPU>());
       }
@@ -396,8 +398,8 @@ private:
           tmp[i] = container[i];
         }
 
-        m_data = m_resource->allocate<value_type>(m_size);
-        m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
+        m_data = m_resource.allocate<value_type>(m_size);
+        m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
 
         host_res.deallocate(tmp);
          
@@ -415,7 +417,7 @@ private:
 
 
   // Copy of camp resource passed to ctor
-  camp::resources::Resource* m_resource;
+  camp::resources::Resource m_resource;
 
   // Boolean indicating whether camp resource is used to manage index data
   bool m_use_resource;
