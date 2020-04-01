@@ -39,19 +39,19 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      VectorIndex() : m_index(index_type(0)), m_length(vector_type::s_num_elem) {}
+      VectorIndex() : m_index(index_type(0)), m_length(vector_type::num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit VectorIndex(index_type value) : m_index(value), m_length(vector_type::s_num_elem) {}
+      explicit VectorIndex(index_type value) : m_index(value), m_length(vector_type::num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      VectorIndex(index_type value, size_t length) : m_index(value), m_length(length) {}
+      VectorIndex(index_type value, camp::idx_t length) : m_index(value), m_length(length) {}
 
 
       RAJA_INLINE
@@ -64,13 +64,13 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      size_t size() const {
+      camp::idx_t size() const {
         return m_length;
       }
 
     private:
       index_type m_index;
-      size_t m_length;
+      camp::idx_t m_length;
   };
 
 

@@ -33,7 +33,7 @@ namespace RAJA
 {
 
 
-  template<size_t N>
+  template<camp::idx_t N>
   class Register<avx_register, long, N> :
     public internal::RegisterBase<Register<avx_register, long, N>>
   {
@@ -45,7 +45,6 @@ namespace RAJA
       using element_type = long;
       using register_type = __m256i;
 
-      static constexpr size_t s_num_elem = N;
 
     private:
       register_type m_value;
@@ -139,7 +138,7 @@ namespace RAJA
 
         // Strided load
         else {
-          for(size_t i = 0;i < N;++ i){
+          for(camp::idx_t i = 0;i < N;++ i){
             set(i, ptr[i*stride]);
           }
         }
@@ -158,7 +157,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, size_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -174,7 +173,7 @@ namespace RAJA
 
         // Scatter operation:  AVX2 doesn't have a scatter, so it's manual
         else{
-          for(size_t i = 0;i < N;++ i){
+          for(camp::idx_t i = 0;i < N;++ i){
             ptr[i*stride] = get(i);
           }
         }

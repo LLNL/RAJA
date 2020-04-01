@@ -65,7 +65,7 @@ struct StatementExecutor<
     using diff_t = decltype(distance);
 
 
-    diff_t distance_simd = distance - (distance%VectorType::s_num_elem);
+    diff_t distance_simd = distance - (distance%VectorType::num_elem());
     diff_t distance_remainder = distance - distance_simd;
 
     // compute the vector index type and new LoopTypes
@@ -75,8 +75,8 @@ struct StatementExecutor<
 
 
     // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = VectorType::s_num_elem;
-    for (diff_t i = 0; i < distance_simd; i+=VectorType::s_num_elem) {
+    camp::get<ArgumentId>(data.vector_sizes) = VectorType::num_elem();
+    for (diff_t i = 0; i < distance_simd; i+=VectorType::num_elem()) {
 
       data.template assign_offset<ArgumentId>(i);
       execute_statement_list<stmt_list_t, NewTypes>(data);

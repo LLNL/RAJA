@@ -136,7 +136,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem];
   register_t x;
@@ -198,7 +198,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem*2];
   for(size_t i = 0;i < num_elem*2; ++ i){
@@ -231,7 +231,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem];
   register_t x, y;
@@ -289,7 +289,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem];
   register_t x;
@@ -343,7 +343,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem];
   register_t x, y;
@@ -396,7 +396,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem];
   register_t x, y;
@@ -450,7 +450,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem];
   register_t x, y;
@@ -474,7 +474,7 @@ TYPED_TEST_P(RegisterTest, VectorFMA)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem], C[num_elem], expected[num_elem];
   register_t x, y, z, result;
@@ -504,7 +504,7 @@ TYPED_TEST_P(RegisterTest, VectorFMS)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   element_t A[num_elem], B[num_elem], C[num_elem], expected[num_elem];
   register_t x, y, z, result;
@@ -532,7 +532,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   for(int iter = 0;iter < 100;++ iter){
     element_t A[num_elem], B[num_elem];
@@ -569,7 +569,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
   using register_t = TypeParam;
 
   using element_t = typename register_t::element_type;
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr size_t num_elem = register_t::num_elem();
 
   for(int iter = 0;iter < 100;++ iter){
     element_t A[num_elem], B[num_elem];

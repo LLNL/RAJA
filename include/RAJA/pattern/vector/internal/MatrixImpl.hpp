@@ -317,7 +317,7 @@ namespace internal {
 }  // namespace internal
 
 //    StreamVectorExt<
-//    RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::s_num_elem>,
+//    RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::num_elem()>,
 //    UNROLL>;
 
 

@@ -53,11 +53,11 @@ namespace RAJA
     RAJA_INLINE
     ELEMENT_TYPE
     VectorGetByIndex(IDX i, REGISTER0 const &r0, REGISTER_REST const &...r_rest){
-      if((camp::idx_t)i < (camp::idx_t)REGISTER0::s_num_elem){
+      if((camp::idx_t)i < (camp::idx_t)REGISTER0::num_elem()){
         return r0.get(i);
       }
       else{
-        return VectorGetByIndex<ELEMENT_TYPE>((camp::idx_t)i-(camp::idx_t)REGISTER0::s_num_elem, r_rest...);
+        return VectorGetByIndex<ELEMENT_TYPE>((camp::idx_t)i-(camp::idx_t)REGISTER0::num_elem(), r_rest...);
       }
     }
 
@@ -77,11 +77,11 @@ namespace RAJA
     RAJA_INLINE
     void
     VectorSetByIndex(IDX i, ELEMENT_TYPE value, REGISTER0 &r0, REGISTER_REST &...r_rest){
-      if((camp::idx_t)i < (camp::idx_t)REGISTER0::s_num_elem){
+      if((camp::idx_t)i < (camp::idx_t)REGISTER0::num_elem()){
         r0.set(i, value);
       }
       else{
-        VectorSetByIndex((camp::idx_t)i-(camp::idx_t)REGISTER0::s_num_elem, value, r_rest...);
+        VectorSetByIndex((camp::idx_t)i-(camp::idx_t)REGISTER0::num_elem(), value, r_rest...);
       }
     }
 
@@ -107,8 +107,10 @@ namespace RAJA
       using register_types_t = camp::list<REGISTER0_TYPE, REGISTER_TYPES...>;
       using register_tuple_t = camp::tuple<REGISTER0_TYPE, REGISTER_TYPES...>;
 
-      static constexpr camp::idx_t s_num_elem =
-          RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::s_num_elem, REGISTER_TYPES::s_num_elem...);
+      static constexpr camp::idx_t num_elem(){
+        return
+          RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::num_elem(), REGISTER_TYPES::num_elem()...);
+      }
 
       using self_type = VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>;
       using vector_type = self_type;
@@ -132,7 +134,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      VectorImpl() : m_length(s_num_elem){}
+      VectorImpl() : m_length(num_elem()){}
 
       /*!
        * @brief Copy constructor
@@ -151,7 +153,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       VectorImpl(element_type const &c) :
-        m_length(s_num_elem)
+        m_length(num_elem())
       {
         broadcast(c);
       }
@@ -174,11 +176,11 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = s_num_elem){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = num_elem()){
         m_length = length;
-        if(s_is_fixed || m_length == s_num_elem){
+        if(s_is_fixed || m_length == num_elem()){
           camp::sink(camp::get<IDX_SEQ>(m_registers).load(
-              ptr + IDX_SEQ*stride*REGISTER0_TYPE::s_num_elem,
+              ptr + IDX_SEQ*stride*REGISTER0_TYPE::num_elem(),
               stride
           )...);
         }
@@ -202,9 +204,9 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
-        if(s_is_fixed || m_length == s_num_elem){
+        if(s_is_fixed || m_length == num_elem()){
           camp::sink(camp::get<IDX_SEQ>(m_registers).store(
-              ptr + IDX_SEQ*stride*REGISTER0_TYPE::s_num_elem,
+              ptr + IDX_SEQ*stride*REGISTER0_TYPE::num_elem(),
               stride
           )...);
         }
@@ -273,7 +275,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &broadcast(element_type const &value){
         camp::sink(camp::get<IDX_SEQ>(m_registers).broadcast(value)...);
-        m_length = s_num_elem;
+        m_length = num_elem();
         return *this;
       }
 
@@ -537,7 +539,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum() const
       {
-        if(m_length == s_num_elem){
+        if(m_length == num_elem()){
           return RAJA::foldl_sum<element_type>(camp::get<IDX_SEQ>(m_registers).sum()...);
         }
         else{
@@ -573,7 +575,7 @@ namespace RAJA
       RAJA_INLINE
       element_type max() const
       {
-        if(s_is_fixed || m_length == s_num_elem){
+        if(s_is_fixed || m_length == num_elem()){
           return RAJA::foldl_max<element_type>(camp::get<IDX_SEQ>(m_registers).max()...);
         }
         else{
@@ -594,7 +596,7 @@ namespace RAJA
       RAJA_INLINE
       element_type min() const
       {
-        if(s_is_fixed || m_length == s_num_elem){
+        if(s_is_fixed || m_length == num_elem()){
           return RAJA::foldl_min<element_type>(camp::get<IDX_SEQ>(m_registers).min()...);
         }
         else{
@@ -681,10 +683,10 @@ namespace RAJA
   }
 
 
-  template<typename REGISTER_TYPE, size_t VEC_NUM_ELEM>
+  template<typename REGISTER_TYPE, camp::idx_t VEC_NUM_ELEM>
   struct FixedVectorTypeHelper;
 
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, size_t REG_NUM_ELEM, size_t VEC_NUM_ELEM>
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t REG_NUM_ELEM, camp::idx_t VEC_NUM_ELEM>
   struct FixedVectorTypeHelper<Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>, VEC_NUM_ELEM>{
 
 

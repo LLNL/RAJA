@@ -37,7 +37,7 @@ namespace RAJA
 {
 
 
-  template<size_t N>
+  template<camp::idx_t N>
   class Register<altivec_register, float, N>:
     public internal::RegisterBase<Register<altivec_register, float, N>>
   {
@@ -49,7 +49,6 @@ namespace RAJA
       using self_type = Register<altivec_register, float, N>;
       using element_type = float;
 
-      static constexpr size_t s_num_elem = N;
 
 
     private:
@@ -105,7 +104,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, size_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
         if(stride == 1){
           if(N == 4){
             m_value = *((register_type const *)ptr);
@@ -139,12 +138,12 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, size_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
         if(stride == 1 && N ==4){
           *((register_type *)ptr) = m_value;
         }
         else{
-          for(size_t i = 0;i < N;++ i){
+          for(camp::idx_t i = 0;i < N;++ i){
             ptr[i*stride] = m_value[i];
           }
         }

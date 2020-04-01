@@ -65,7 +65,7 @@ struct StatementExecutor<
     using value_type = typename Iterator::value_type;
     using vector_index_type = VectorIndex<value_type, vector_type>;
 
-    diff_t distance_simd = distance - (distance%vector_type::s_num_elem);
+    diff_t distance_simd = distance - (distance%vector_type::num_elem());
     diff_t distance_remainder = distance - distance_simd;
 
     // Create new Types with vector type for ArgumentId
@@ -75,8 +75,8 @@ struct StatementExecutor<
     ForICountWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = vector_type::s_num_elem;
-    for (diff_t i = 0; i < distance_simd; i+=vector_type::s_num_elem) {
+    camp::get<ArgumentId>(data.vector_sizes) = vector_type::num_elem();
+    for (diff_t i = 0; i < distance_simd; i+=vector_type::num_elem()) {
       for_wrapper(i);
     }
 

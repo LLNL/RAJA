@@ -32,16 +32,25 @@ namespace RAJA {
   struct RegisterTraits<altivec_register, T>{
 
       static
-      vector double foo(){
-        return (vector double)(0);
+      vector T foo(){
+        return (vector T)(0);
       }
 
       using register_type = decltype(foo());
       using element_type = T;
 
-      static constexpr size_t s_byte_width = sizeof(register_type);
-      static constexpr size_t s_bit_width = s_byte_width * 8;
-      static constexpr size_t s_num_elem = s_byte_width / sizeof(T);
+
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t num_elem(){return byte_width()/sizeof(T);}
+
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t byte_width(){return sizeof(register_type);}
+
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t bit_width(){return byte_width()*8;}
 
   };
 

@@ -39,9 +39,7 @@ namespace RAJA
       using element_type = T;
       using register_type = T;
 
-      static constexpr size_t s_num_elem = 1;
-      static constexpr size_t s_byte_width = sizeof(T);
-      static constexpr size_t s_bit_width = s_byte_width*8;
+
 
     private:
       T m_value;
@@ -86,7 +84,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr, size_t = 1){
+      self_type &load(element_type const *ptr, camp::idx_t = 1){
         m_value = ptr[0];
         return *this;
       }
@@ -101,7 +99,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store(element_type *ptr, size_t = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t = 1) const{
         ptr[0] = m_value;
         return *this;
       }

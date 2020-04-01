@@ -29,27 +29,36 @@
 
 
 namespace RAJA {
-	template<size_t LANE_BITS>
+	template<camp::idx_t LANE_BITS>
   struct vector_cuda_warp_register {};
 
-  template<size_t LANE_BITS, typename T>
+  template<camp::idx_t LANE_BITS, typename T>
   struct RegisterTraits<vector_cuda_warp_register<LANE_BITS>, T>{
 
 		static_assert(LANE_BITS >= 1 && LANE_BITS <= 5, "Invalid number of lanes");
 
-      using register_type = T;
-      using element_type = T;
+    using register_type = T;
+    using element_type = T;
 
-      static constexpr size_t s_num_elem = 1 << (LANE_BITS);
-      static constexpr size_t s_byte_width = s_num_elem * sizeof(T);
-      static constexpr size_t s_bit_width = s_byte_width * 8;
+
+    RAJA_INLINE
+    static constexpr
+    camp::idx_t num_elem(){return 1 << (LANE_BITS);}
+
+    RAJA_INLINE
+    static constexpr
+    camp::idx_t byte_width(){return num_elem()*sizeof(T);}
+
+    RAJA_INLINE
+    static constexpr
+    camp::idx_t bit_width(){return byte_width()*8;}
 
   };
 
 
 
 
-  template<size_t LANE_BITS, typename ELEMENT_TYPE, size_t NUM_ELEM>
+  template<camp::idx_t LANE_BITS, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM>
   class Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM> :
     public internal::RegisterBase<Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM>>
   {
@@ -58,13 +67,9 @@ namespace RAJA {
       using element_type = ELEMENT_TYPE;
       using register_type = element_type;
 
-      static constexpr size_t s_num_elem = NUM_ELEM;
-      static constexpr size_t s_byte_width = s_num_elem*sizeof(ELEMENT_TYPE);
-      static constexpr size_t s_bit_width = s_byte_width*8;
-
       using bitmask_t = BitMask<LANE_BITS, 0>;
 
-			static_assert(s_num_elem <= RegisterTraits<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>::s_num_elem, "Too many elements");
+			static_assert(num_elem() <= RegisterTraits<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>::num_elem(), "Too many elements");
 
 		private:
       element_type m_value;
@@ -132,9 +137,9 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      self_type &load(element_type const *ptr, size_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
         auto lane = get_lane();
-        if(lane < s_num_elem){
+        if(lane < num_elem()){
           m_value = ptr[stride*lane];
         }
         return *this;
@@ -151,9 +156,9 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      self_type const &store(element_type *ptr, size_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
         auto lane = get_lane();
-        if(lane < s_num_elem){
+        if(lane < num_elem()){
           ptr[stride*lane] = m_value;
         }
         return *this;
@@ -257,7 +262,7 @@ namespace RAJA {
 			
 				auto ident = element_type();
 				auto lane = get_lane();
-				auto value = lane < s_num_elem ? m_value : ident;
+				auto value = lane < num_elem() ? m_value : ident;
 				return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 
@@ -276,7 +281,7 @@ namespace RAJA {
 
         auto ident = element_type();
         auto lane = get_lane();
-        auto value = lane < s_num_elem ? m_value : ident;
+        auto value = lane < num_elem() ? m_value : ident;
         return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 
@@ -304,7 +309,7 @@ namespace RAJA {
 
         auto ident = element_type();
         auto lane = get_lane();
-        auto value = lane < s_num_elem ? m_value : ident;
+        auto value = lane < num_elem() ? m_value : ident;
         return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 

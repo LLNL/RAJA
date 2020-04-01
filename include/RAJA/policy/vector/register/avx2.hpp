@@ -30,9 +30,17 @@ namespace RAJA {
       using register_type = avx2_register;
       using element_type = T;
 
-      static constexpr size_t s_bit_width = 256;
-      static constexpr size_t s_byte_width = 32;
-      static constexpr size_t s_num_elem = s_byte_width / sizeof(T);
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t num_elem(){return 32 / sizeof(T);}
+
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t byte_width(){return 32;}
+
+      RAJA_INLINE
+      static constexpr
+      camp::idx_t bit_width(){return 256;}
 
   };
 
