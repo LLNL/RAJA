@@ -103,7 +103,7 @@ for-loops, the loop would appear as::
 
   for (int k = 2; k< 4; ++k) {
     for (int j = 1; j < 3; ++j) { 
-      for (int i = 0; j < 2; ++i) { 
+      for (int i = 0; i < 2; ++i) { 
         // print loop index triple...
       }
     }
