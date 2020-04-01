@@ -129,8 +129,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // OpenMP policy
   // using fdPolicy = RAJA::KernelPolicy<
-  // RAJA::statement::For<0, RAJA::omp_parallel_for_exec >,
-  // RAJA::statement::For<1, RAJA::seq_exec > >;
+  //   RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+  //   RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
 
   // CUDA policy
   // using fdPolicy = RAJA::KernelPolicy<
