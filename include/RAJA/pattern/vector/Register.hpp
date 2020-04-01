@@ -325,5 +325,9 @@ namespace RAJA
 
 
 
+// Bring in the register policy file so we get the default register type
+// and all of the register traits setup
+#include "RAJA/policy/vector/register.hpp"
+
 
 #endif

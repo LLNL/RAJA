@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_matrix_HPP
-#define RAJA_pattern_vector_matrix_HPP
+#ifndef RAJA_pattern_vector_matriximpl_HPP
+#define RAJA_pattern_vector_matriximpl_HPP
 
 #include "RAJA/config.hpp"
 
@@ -44,9 +44,56 @@ namespace internal {
 
 namespace internal {
 
+  /*
+   * Matrix Shape transformation helper
+   *
+   * Given a starting matrix, this provides 4 aliases for compatible matrices
+   *
+   *    Row Major
+   *    Column Major
+   *    Row Major transposed
+   *    Column Major transposed
+   */
+
+  template<typename MATRIX>
+  struct MatrixShapeHelper;
+
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  struct MatrixShapeHelper<
+    MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
+  {
+    // DONE:
+    using row_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+
+    using col_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_COL...>, camp::idx_seq<IDX_ROW...> >;
+
+
+    // TODO:
+    // need: give me a vector form VECTOR_TYPE with a new length sizeof...(IDX_COL)
+    using col_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+    using row_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+  };
+
+
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  struct MatrixShapeHelper<
+    MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
+  {
+    // Original matrix
+    using col_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+
+    // Original vectors with rows and columns swapped
+    using row_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_COL...>, camp::idx_seq<IDX_ROW...> >;
+
+    // TODO:
+    using row_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+    using col_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+  };
+
+
+
   template<typename MATA, typename MATB>
   struct MatrixMatrixProductHelper;
-
 
 
   template<typename A_VECTOR_TYPE, camp::idx_t ... A_IDX_REG, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
@@ -62,7 +109,6 @@ namespace internal {
 
       static_assert(sizeof...(A_IDX_COL) == sizeof...(B_IDX_ROW),
           "Matrices are incompatible for multiplication");
-
 
       RAJA_HOST_DEVICE
       static

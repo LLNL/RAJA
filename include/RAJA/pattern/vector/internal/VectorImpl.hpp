@@ -15,13 +15,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_vector_HPP
-#define RAJA_pattern_vector_vector_HPP
+#ifndef RAJA_pattern_vector_vectorimpl_HPP
+#define RAJA_pattern_vector_vectorimpl_HPP
 
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/vector/VectorProductRef.hpp"
+#include "RAJA/pattern/vector/internal/VectorProductRef.hpp"
+#include "RAJA/pattern/vector/internal/VectorRef.hpp"
 
 #include <array>
 
@@ -721,17 +722,6 @@ namespace RAJA
 
 
   } //namespace internal
-
-
-
-
-
-
-  template<typename REGISTER_TYPE, size_t NUM_ELEM>
-  using FixedVectorExt = typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::type;
-
-  template<typename REGISTER_TYPE, size_t NUM_REGISTERS>
-  using StreamVectorExt = internal::VectorImpl<internal::list_of_n<REGISTER_TYPE, NUM_REGISTERS>, camp::make_idx_seq_t<NUM_REGISTERS>, false>;
 
 
 

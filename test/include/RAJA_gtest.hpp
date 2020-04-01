@@ -111,6 +111,9 @@
 // This always returns a 0, but forces compiler not to compile-out
 // constant values
 #define NO_OPT_ZERO (rand()/RAND_MAX)
+
+// Returns a random value between 1.0 and 2.0, and helps force the compiler
+// to not compile-out constant values
 #define NO_OPT_RAND (1.0+(double)rand()/RAND_MAX)
 
 #endif  // closing endif for header file include guard
