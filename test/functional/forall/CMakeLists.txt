@@ -22,12 +22,12 @@ if(RAJA_ENABLE_OPENMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-##raja_add_test(
-##  NAME test-forall-segment-openmp-target
-##  SOURCES test-forall-segment-openmp-target.cpp)
-##raja_add_test(
-##  NAME test-forall-indexset-openmp-target
-##  SOURCES test-forall-indexset-openmp-target.cpp)
+  raja_add_test(
+    NAME test-forall-segment-openmp-target
+    SOURCES test-forall-segment-openmp-target.cpp)
+  raja_add_test(
+    NAME test-forall-indexset-openmp-target
+    SOURCES test-forall-indexset-openmp-target.cpp)
 endif()
 
 if(RAJA_ENABLE_TBB)
