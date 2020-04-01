@@ -1,6 +1,12 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef __TEST_FORALL_UTILS_HPP__
 #define __TEST_FORALL_UTILS_HPP__
-
 
 #include "camp/resource.hpp"
 #include "gtest/gtest.h"
