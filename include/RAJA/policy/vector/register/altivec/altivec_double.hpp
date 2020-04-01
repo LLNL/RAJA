@@ -46,6 +46,7 @@ namespace RAJA
     static_assert(N <= 2, "AltiVec can only have 2 lanes of doubles");
 
     public:
+      using register_policy = altivec_register;
       using self_type = Register<altivec_register, double, N>;
       using element_type = double;
 

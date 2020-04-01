@@ -29,6 +29,12 @@
 namespace RAJA
 {
 
+  enum VECTOR_LENGTH_TYPE
+  {
+    VECTOR_STREAM,
+    VECTOR_FIXED
+  };
+
   namespace internal
   {
 
@@ -104,6 +110,7 @@ namespace RAJA
   class VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>
   {
     public:
+      using register_policy = typename REGISTER0_TYPE::register_policy;
       using register_types_t = camp::list<REGISTER0_TYPE, REGISTER_TYPES...>;
       using register_tuple_t = camp::tuple<REGISTER0_TYPE, REGISTER_TYPES...>;
 
@@ -111,6 +118,10 @@ namespace RAJA
         return
           RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::num_elem(), REGISTER_TYPES::num_elem()...);
       }
+
+      static constexpr camp::idx_t num_registers(){
+              return sizeof...(REGISTER_TYPES);
+            }
 
       using self_type = VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>;
       using vector_type = self_type;
@@ -683,44 +694,77 @@ namespace RAJA
   }
 
 
-  template<typename REGISTER_TYPE, camp::idx_t VEC_NUM_ELEM>
-  struct FixedVectorTypeHelper;
 
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t REG_NUM_ELEM, camp::idx_t VEC_NUM_ELEM>
-  struct FixedVectorTypeHelper<Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>, VEC_NUM_ELEM>{
+  /*
+   * Helper that compute template arguments to VectorImpl
+   */
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t VEC_NUM_ELEM>
+  struct VectorTypeHelper{
+
+      using register_traits_t = RegisterTraits<REGISTER_POLICY, ELEMENT_TYPE>;
+
+    static constexpr camp::idx_t num_full_registers(){
+      return VEC_NUM_ELEM / register_traits_t::num_elem();
+    }
+
+    // number of elements in a partial final register for Fix
+    static constexpr camp::idx_t num_partial_elem(){
+      return VEC_NUM_ELEM - num_full_registers()*register_traits_t::num_elem();
+    }
 
 
-    static constexpr camp::idx_t s_num_full_registers = VEC_NUM_ELEM / REG_NUM_ELEM;
+    static constexpr camp::idx_t num_registers(){
+      return num_full_registers() + (num_partial_elem() > 0 ? 1 : 0);
+    }
 
-    static constexpr camp::idx_t s_num_full_elem = s_num_full_registers*REG_NUM_ELEM;
+    using register_idx_seq_t = camp::make_idx_seq_t<num_registers()>;
 
-    static constexpr camp::idx_t s_num_partial_elem = VEC_NUM_ELEM - s_num_full_elem;
-
-    static constexpr camp::idx_t s_num_partial_registers = s_num_partial_elem > 0 ? 1 : 0;
-
-    static constexpr camp::idx_t s_num_registers = s_num_full_registers+s_num_partial_registers;
-
-    using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE, REG_NUM_ELEM>;
+    using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
     using partial_register_type =
-        Register<REGISTER_POLICY, ELEMENT_TYPE, s_num_partial_elem ? s_num_partial_elem : 1>;
+        Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem() ? num_partial_elem() : 1>;
 
 
-    // Create lists of registers
-    using full_register_list = internal::list_of_n<full_register_type, s_num_full_registers>;
-    using partial_register_list = camp::list<partial_register_type>;
+    // Create lists of registers for a fixed vector
+    using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers()>;
+    using fixed_partial_register_list = camp::list<partial_register_type>;
 
-    using register_list_t = typename
-        std::conditional<s_num_partial_registers == 0,
-        full_register_list,
-        typename camp::extend<full_register_list, partial_register_list>::type>::type;
+    using fixed_register_list_t = typename
+        std::conditional<num_partial_elem() == 0,
+        fixed_full_registers,
+        typename camp::extend<fixed_full_registers, fixed_partial_register_list>::type>::type;
 
-    using register_idx_seq_t = camp::make_idx_seq_t<s_num_full_registers+s_num_partial_registers>;
 
-    // Create actual VectorImpl type
-    using type = VectorImpl<register_list_t, register_idx_seq_t, true>;
+    using stream_register_list_t = list_of_n<full_register_type, num_registers()>;
+
+
+    // Create actual VectorImpl type for a fixed length Vector
+    using fixed_type = VectorImpl<fixed_register_list_t, register_idx_seq_t, true>;
+
+    // Create actual VectorImpl type for a variable length Vector
+    using stream_type = VectorImpl<stream_register_list_t, register_idx_seq_t, false>;
 
   };
+
+
+  /*
+   * Helper that computes a similar vector to the one provided, but of a
+   * different length
+   */
+  template<typename VECTOR_TYPE, camp::idx_t NEW_LENGTH>
+  struct VectorNewLengthHelepr {
+      using register_policy = typename VECTOR_TYPE::register_policy;
+      using element_type = typename VECTOR_TYPE::element_type;
+
+      using vector_helper = VectorTypeHelper<register_policy, element_type, NEW_LENGTH>;
+
+      using type = typename std::conditional<VECTOR_TYPE::s_is_fixed,
+            typename vector_helper::fixed_type,
+            typename vector_helper::stream_type
+          >::type;
+
+  };
+
 
 
   } //namespace internal

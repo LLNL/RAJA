@@ -56,38 +56,97 @@ namespace internal {
    */
 
   template<typename MATRIX>
-  struct MatrixShapeHelper;
+  struct MatrixReshapeHelper;
 
   template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  struct MatrixShapeHelper<
+  struct MatrixReshapeHelper<
     MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
   {
-    // DONE:
-    using row_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
 
-    using col_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_COL...>, camp::idx_seq<IDX_ROW...> >;
+    using orig_vector_t = VECTOR_TYPE;
+    using flip_vector_t = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
 
+    using row_major_t = MatrixImpl<orig_vector_t,
+                                  MATRIX_ROW_MAJOR,
+                                  camp::idx_seq<IDX_REG...>,
+                                  camp::idx_seq<IDX_ROW...>,
+                                  camp::idx_seq<IDX_COL...> >;
 
-    // TODO:
-    // need: give me a vector form VECTOR_TYPE with a new length sizeof...(IDX_COL)
-    using col_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
-    using row_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+    using col_major_t = MatrixImpl<flip_vector_t,
+                                   MATRIX_COL_MAJOR,
+                                   camp::idx_seq<IDX_REG...>,
+                                   camp::idx_seq<IDX_ROW...>,
+                                   camp::idx_seq<IDX_COL...> >;
+
+    using row_major_transpose_t = MatrixImpl<flip_vector_t,
+                                             MATRIX_ROW_MAJOR,
+                                             camp::idx_seq<IDX_REG...>,
+                                             camp::idx_seq<IDX_COL...>,
+                                             camp::idx_seq<IDX_ROW...> >;
+
+    using col_major_transpose_t = MatrixImpl<orig_vector_t,
+                                             MATRIX_COL_MAJOR,
+                                             camp::idx_seq<IDX_REG...>,
+                                             camp::idx_seq<IDX_COL...>,
+                                             camp::idx_seq<IDX_ROW...> >;
+
+    // Original matrix
+    using orig_matrix_t = row_major_t;
+
+    // Original matrix with row/col major flipped
+    using flip_matrix_t = col_major_t;
+
+    // transpose of original matrix keeping original row/col major
+    using similar_transpose_t = row_major_transpose_t;
+
+    // transpose of original matrix flipping original row/col major
+    using flip_transpose_t = col_major_transpose_t;
   };
 
 
   template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  struct MatrixShapeHelper<
+  struct MatrixReshapeHelper<
     MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
   {
-    // Original matrix
-    using col_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using orig_vector_t = VECTOR_TYPE;
+      using flip_vector_t = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
 
-    // Original vectors with rows and columns swapped
-    using row_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_COL...>, camp::idx_seq<IDX_ROW...> >;
 
-    // TODO:
-    using row_major_t = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
-    using col_major_transpose_t = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using row_major_t = MatrixImpl<flip_vector_t,
+                                    MATRIX_ROW_MAJOR,
+                                    camp::idx_seq<IDX_REG...>,
+                                    camp::idx_seq<IDX_ROW...>,
+                                    camp::idx_seq<IDX_COL...> >;
+
+      using col_major_t = MatrixImpl<orig_vector_t,
+                                     MATRIX_COL_MAJOR,
+                                     camp::idx_seq<IDX_REG...>,
+                                     camp::idx_seq<IDX_ROW...>,
+                                     camp::idx_seq<IDX_COL...> >;
+
+      using row_major_transpose_t = MatrixImpl<orig_vector_t,
+                                               MATRIX_ROW_MAJOR,
+                                               camp::idx_seq<IDX_REG...>,
+                                               camp::idx_seq<IDX_COL...>,
+                                               camp::idx_seq<IDX_ROW...> >;
+
+      using col_major_transpose_t = MatrixImpl<flip_vector_t,
+                                               MATRIX_COL_MAJOR,
+                                               camp::idx_seq<IDX_REG...>,
+                                               camp::idx_seq<IDX_COL...>,
+                                               camp::idx_seq<IDX_ROW...> >;
+
+      // Original matrix
+      using orig_matrix_t = col_major_t;
+
+      // Original matrix with row/col major flipped
+      using flip_matrix_t = row_major_t;
+
+      // transpose of original matrix keeping original row/col major
+      using similar_transpose_t = col_major_transpose_t;
+
+      // transpose of original matrix flipping original row/col major
+      using flip_transpose_t = row_major_transpose_t;
   };
 
 
@@ -160,7 +219,8 @@ namespace internal {
       using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
 
       using vector_type = VECTOR_TYPE;
-      using row_vector_type = VECTOR_TYPE;
+      using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
+      using col_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
       using element_type = typename VECTOR_TYPE::element_type;
 
       static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
@@ -225,9 +285,9 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type operator*(vector_type v){
+      col_vector_type operator*(row_vector_type v){
         //return vector_type(v.dot(m_rows[IDX_ROW])...);
-        vector_type result;
+        col_vector_type result;
         camp::sink(
             result.set(IDX_ROW, v.dot(m_rows[IDX_ROW]))...
             );
@@ -309,16 +369,14 @@ namespace internal {
         return get(row, col);
       }
 
+
+
   };
 
 
 
 
 }  // namespace internal
-
-//    StreamVectorExt<
-//    RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::num_elem()>,
-//    UNROLL>;
 
 
 

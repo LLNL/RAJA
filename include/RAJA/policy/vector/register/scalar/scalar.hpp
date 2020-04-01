@@ -35,6 +35,7 @@ namespace RAJA
       public internal::RegisterBase<Register<scalar_register, T, 1>>
   {
     public:
+      using register_policy = scalar_register;
       using self_type = Register<scalar_register, T, 1>;
       using element_type = T;
       using register_type = T;

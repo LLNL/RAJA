@@ -41,6 +41,7 @@ namespace RAJA
     static_assert(N <= 4, "AVX2 can only have 4 lanes of int64s");
 
     public:
+      using register_policy = avx2_register;
       using self_type = Register<avx2_register, long, N>;
       using element_type = long;
       using register_type = __m256i;

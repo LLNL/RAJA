@@ -41,6 +41,7 @@ namespace RAJA
     static_assert(N <= 4, "AVX can only have 4 lanes of doubles");
 
     public:
+      using register_policy = avx_register;
       using self_type = Register<avx_register, double, N>;
       using element_type = double;
       using register_type = __m256d;

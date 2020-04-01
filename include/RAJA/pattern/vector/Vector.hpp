@@ -24,25 +24,22 @@ namespace RAJA
 {
 
 
-  template<typename REGISTER_TYPE, camp::idx_t NUM_ELEM>
-  using FixedVectorExt = typename internal::FixedVectorTypeHelper<REGISTER_TYPE, NUM_ELEM>::type;
 
-  template<typename REGISTER_TYPE, camp::idx_t NUM_REGISTERS>
-  using StreamVectorExt = internal::VectorImpl<internal::list_of_n<REGISTER_TYPE, NUM_REGISTERS>, camp::make_idx_seq_t<NUM_REGISTERS>, false>;
+  template<typename T, camp::idx_t UNROLL = 1, typename REGISTER_POLICY = policy::register_default>
+  using StreamVector = typename
+      internal::VectorTypeHelper<REGISTER_POLICY,
+                                 T,
+                                 UNROLL*RAJA::RegisterTraits<REGISTER_POLICY, T>::num_elem()>::stream_type;
 
-
-
-  template<typename T, camp::idx_t UNROLL = 1, typename REGISTER = policy::register_default>
-  using StreamVector = StreamVectorExt<
-      RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::num_elem()>,
-      UNROLL>;
-
-  template<typename T, camp::idx_t NumElem, typename REGISTER = policy::register_default>
-  using FixedVector = FixedVectorExt<
-      RAJA::Register<REGISTER, T, RAJA::RegisterTraits<REGISTER, T>::num_elem()>,
-      NumElem>;
+  template<typename T, camp::idx_t NUM_ELEM, typename REGISTER_POLICY = policy::register_default>
+  using FixedVector = typename
+      internal::VectorTypeHelper<REGISTER_POLICY,
+                                 T,
+                                 NUM_ELEM>::fixed_type;
 
 
+  template<typename VECTOR_TYPE, camp::idx_t NUM_ELEM>
+  using changeVectorLength = typename internal::VectorNewLengthHelepr<VECTOR_TYPE, NUM_ELEM>::type;
 
 }  // namespace RAJA
 

@@ -36,7 +36,7 @@ namespace RAJA
 
   template<typename REGISTER_POLICY, typename T>
   struct RegisterTraits{
-      using register_type = REGISTER_POLICY;
+      using register_policy = REGISTER_POLICY;
       using element_type = camp::decay<T>;
 
       RAJA_INLINE

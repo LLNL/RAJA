@@ -63,6 +63,7 @@ namespace RAJA {
     public internal::RegisterBase<Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM>>
   {
     public:
+      using register_policy = vector_cuda_warp_register<LANE_BITS>;
       using self_type = Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM>;
       using element_type = ELEMENT_TYPE;
       using register_type = element_type;

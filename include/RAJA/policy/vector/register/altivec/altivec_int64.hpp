@@ -47,6 +47,7 @@ namespace RAJA
     static_assert(sizeof(signed long long) == 8, "long is wrong size!");
 
     public:
+      using register_policy = altivec_register;
       using self_type = Register<altivec_register, long, N>;
       using element_type = long;
 

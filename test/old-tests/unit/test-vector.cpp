@@ -11,7 +11,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
-
+#include "RAJA_gtest.hpp"
 
 using VectorTestTypes = ::testing::Types<
 

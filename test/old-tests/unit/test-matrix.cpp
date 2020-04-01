@@ -15,7 +15,11 @@
 using MatrixTestTypes = ::testing::Types<
 
     // Test automatically wrapped types to make things easier for users
-    RAJA::FixedMatrix<double, 4, 4>
+    RAJA::FixedMatrix<double, 4, 4>,
+    RAJA::FixedMatrix<double, 4, 8>,
+    RAJA::FixedMatrix<double, 8, 4>,
+    RAJA::FixedMatrix<double, 1, 7>,
+    RAJA::FixedMatrix<double, 7, 1>
   >;
 
 
@@ -126,7 +130,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
 
   using A_t = TypeParam;
-  using B_t = A_t;
+  using B_t = RAJA::TransposeMatrix<A_t>;
   using element_t = typename A_t::element_type;
 
   // initialize two matrices
@@ -168,7 +172,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
 
   using A_t = TypeParam;
-  using B_t = A_t;
+  using B_t = RAJA::TransposeMatrix<A_t>;
   using element_t = typename A_t::element_type;
 
   // initialize two matrices

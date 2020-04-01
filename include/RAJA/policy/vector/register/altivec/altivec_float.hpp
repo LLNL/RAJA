@@ -46,6 +46,7 @@ namespace RAJA
     static_assert(N <= 4, "AltiVec can only have 4 lanes of floats");
 
     public:
+      using register_policy = altivec_register;
       using self_type = Register<altivec_register, float, N>;
       using element_type = float;
 
