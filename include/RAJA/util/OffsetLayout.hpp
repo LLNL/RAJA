@@ -85,7 +85,10 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(!(0<=idx && idx < base_.sizes[N])) BoundsCheckError<N>(idx);
+    if(!(offsets[N] <=idx && idx < offsets[N] + base_.sizes[N]))
+    {
+      BoundsCheckError<N>(idx);
+    }
     RAJA_UNUSED_VAR(idx);
     BoundsCheck<N+1>(indices...);
   }
