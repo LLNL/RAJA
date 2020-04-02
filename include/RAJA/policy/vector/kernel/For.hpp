@@ -70,7 +70,7 @@ struct StatementExecutor<
 
     // compute the vector index type and new LoopTypes
     using value_type = camp::at_v<typename DataT::index_types_t, ArgumentId>;
-    using vector_index_type = VectorIndex<value_type, VectorType>;
+    using vector_index_type = TensorIndex<value_type, VectorType>;
     using NewTypes = setSegmentType<Types, ArgumentId, vector_index_type>;
 
 

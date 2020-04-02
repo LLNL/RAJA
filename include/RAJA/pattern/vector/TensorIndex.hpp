@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_vectorindex_HPP
-#define RAJA_pattern_vector_vectorindex_HPP
+#ifndef RAJA_pattern_vector_tensorindex_HPP
+#define RAJA_pattern_vector_tensorindex_HPP
 
 #include "RAJA/config.hpp"
 
@@ -28,8 +28,8 @@ namespace RAJA
 
 
 
-  template<typename IDX, typename VECTOR_TYPE>
-  class VectorIndex {
+  template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM = 0>
+  class TensorIndex {
     public:
       using value_type = strip_index_type_t<IDX>;
       using index_type = IDX;
@@ -39,19 +39,19 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      VectorIndex() : m_index(index_type(0)), m_length(vector_type::num_elem()) {}
+      TensorIndex() : m_index(index_type(0)), m_length(vector_type::num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit VectorIndex(index_type value) : m_index(value), m_length(vector_type::num_elem()) {}
+      explicit TensorIndex(index_type value) : m_index(value), m_length(vector_type::num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      VectorIndex(index_type value, camp::idx_t length) : m_index(value), m_length(length) {}
+      TensorIndex(index_type value, camp::idx_t length) : m_index(value), m_length(length) {}
 
 
       RAJA_INLINE
@@ -68,10 +68,36 @@ namespace RAJA
         return m_length;
       }
 
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      camp::idx_t dim() const {
+        return DIM;
+      }
+
     private:
       index_type m_index;
       camp::idx_t m_length;
   };
+
+
+  /*!
+   * Index that specifies the starting element index of a Vector
+   */
+  template<typename IDX, typename VECTOR_TYPE>
+  using VectorIndex =  TensorIndex<IDX, VECTOR_TYPE, 0>;
+
+  /*!
+   * Index that specifies the starting Row index of a matrix
+   */
+  template<typename IDX, typename MATRIX_TYPE>
+  using RowIndex =  TensorIndex<IDX, MATRIX_TYPE, 0>;
+
+  /*!
+   * Index that specifies the starting Column index of a matrix
+   */
+  template<typename IDX, typename MATRIX_TYPE>
+  using ColIndex =  TensorIndex<IDX, MATRIX_TYPE, 1>;
 
 
   namespace internal{
@@ -80,23 +106,23 @@ namespace RAJA
     /* Partial specialization for the strip_index_type_t helper in
        IndexValue.hpp
     */
-    template<typename IDX, typename VECTOR_TYPE>
-    struct StripIndexTypeT<VectorIndex<IDX, VECTOR_TYPE>>
+    template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM>
+    struct StripIndexTypeT<TensorIndex<IDX, VECTOR_TYPE, DIM>>
     {
-        using type = typename VectorIndex<IDX, VECTOR_TYPE>::value_type;
+        using type = typename TensorIndex<IDX, VECTOR_TYPE, DIM>::value_type;
     };
 
 
     // Helper that strips the Vector type from an argument
     template<typename ARG>
-    struct VectorIndexTraits {
+    struct TensorIndexTraits {
         using arg_type = ARG;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
         constexpr
-        bool isVectorIndex(){
+        bool isTensorIndex(){
           return false;
         }
 
@@ -104,7 +130,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        arg_type const &stripVector(arg_type const &arg){
+        arg_type const &strip(arg_type const &arg){
           return arg;
         }
 
@@ -115,17 +141,25 @@ namespace RAJA
         camp::idx_t size(arg_type const &){
           return 1;
         }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t dim(){
+          return 0;
+        }
     };
 
-    template<typename IDX, typename VECTOR_TYPE>
-    struct VectorIndexTraits<VectorIndex<IDX, VECTOR_TYPE>> {
+    template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM>
+    struct TensorIndexTraits<TensorIndex<IDX, VECTOR_TYPE, DIM>> {
         using arg_type = IDX;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
         constexpr
-        bool isVectorIndex(){
+        bool isTensorIndex(){
           return true;
         }
 
@@ -133,7 +167,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        arg_type const &stripVector(VectorIndex<IDX, VECTOR_TYPE> const &arg){
+        arg_type const &strip(TensorIndex<IDX, VECTOR_TYPE> const &arg){
           return *arg;
         }
 
@@ -141,8 +175,16 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t size(VectorIndex<IDX, VECTOR_TYPE> const &arg){
+        camp::idx_t size(TensorIndex<IDX, VECTOR_TYPE> const &arg){
           return arg.size();
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t dim(){
+          return DIM;
         }
     };
 
@@ -157,19 +199,19 @@ namespace RAJA
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    bool isVectorIndex()
+    bool isTensorIndex()
     {
-      return VectorIndexTraits<ARG>::isVectorIndex();
+      return TensorIndexTraits<ARG>::isTensorIndex();
     }
 
     template<typename ARG>
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    auto stripVectorIndex(ARG const &arg) ->
-    typename VectorIndexTraits<ARG>::arg_type const &
+    auto stripTensorIndex(ARG const &arg) ->
+    typename TensorIndexTraits<ARG>::arg_type const &
     {
-      return VectorIndexTraits<ARG>::stripVector(arg);
+      return TensorIndexTraits<ARG>::strip(arg);
     }
 
     /*
@@ -183,26 +225,47 @@ namespace RAJA
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    camp::idx_t getVectorSize(ARG const &arg)
+    camp::idx_t getTensorSize(ARG const &arg)
     {
-      return VectorIndexTraits<ARG>::size(arg);
+      return TensorIndexTraits<ARG>::size(arg);
+    }
+
+    /*
+     * Returns vector dim of argument.
+     *
+     * For scalars, always returns 0.
+     *
+     * For VectorIndex types, returns the DIM argument.
+     * For vector_exec, this is always 0
+     *
+     * For matrices, DIM means:
+     *   0 : Row
+     *   1 : Column
+     */
+    template<typename ARG>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    camp::idx_t getTensorDim(ARG const &)
+    {
+      return TensorIndexTraits<ARG>::dim();
     }
 
     /*
      * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
      * includes the vector length with them
      */
-    template<typename IDX, typename VECTOR_TYPE, camp::idx_t id>
-    struct LambdaSegExtractor<VectorIndex<IDX, VECTOR_TYPE>, id>
+    template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM, camp::idx_t id>
+    struct LambdaSegExtractor<TensorIndex<IDX, VECTOR_TYPE, DIM>, id>
     {
 
       template<typename Data>
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      static VectorIndex<IDX, VECTOR_TYPE> extract(Data &&data)
+      static TensorIndex<IDX, VECTOR_TYPE, DIM> extract(Data &&data)
       {
-        return VectorIndex<IDX, VECTOR_TYPE>(
+        return TensorIndex<IDX, VECTOR_TYPE, DIM>(
             camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
             camp::get<id>(data.vector_sizes));
       }

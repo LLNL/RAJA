@@ -375,7 +375,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   using vector_t = RAJA::StreamVector<double,2>;
-  using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
+  using VecIZ = RAJA::TensorIndex<IZ, vector_t>;
 
   using EXECPOL =
     RAJA::KernelPolicy<

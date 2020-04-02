@@ -81,9 +81,9 @@ namespace internal
     template<typename ... ARGS, camp::idx_t ... IDX>
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    static constexpr camp::idx_t get_vector_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
+    static constexpr camp::idx_t get_tensor_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
       return RAJA::foldl_max<camp::idx_t>(
-          (isVectorIndex<ARGS>() ? IDX : -1) ...);
+          (isTensorIndex<ARGS>() ? IDX : -1) ...);
     }
 
 
@@ -98,9 +98,9 @@ namespace internal
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr camp::idx_t count_num_vector_args(){
+  static constexpr camp::idx_t count_num_tensor_args(){
     return RAJA::foldl_sum<camp::idx_t>(
-        (isVectorIndex<ARGS>() ? 1 : 0) ...);
+        (isTensorIndex<ARGS>() ? 1 : 0) ...);
   }
 
   /*
@@ -109,8 +109,8 @@ namespace internal
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr camp::idx_t get_vector_arg_idx(){
-    return detail::get_vector_arg_idx_expanded(
+  static constexpr camp::idx_t get_tensor_arg_idx(){
+    return detail::get_tensor_arg_idx_expanded(
         camp::list<ARGS...>{},
         camp::make_idx_seq_t<sizeof...(ARGS)>{});
   }
@@ -121,8 +121,8 @@ namespace internal
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr camp::idx_t get_vector_args_size(ARGS ... args){
-    return RAJA::foldl_max<camp::idx_t>(getVectorSize<ARGS>(args) ...);
+  static constexpr camp::idx_t get_tensor_args_size(ARGS ... args){
+    return RAJA::foldl_max<camp::idx_t>(getTensorSize<ARGS>(args) ...);
   }
 
   namespace detail {
@@ -158,8 +158,8 @@ namespace internal
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
-      using vector_type = typename camp::at_v<camp::list<Args...>, get_vector_arg_idx<Args...>()>::vector_type;
-      using return_type = VectorRef<vector_type, LinIdx, PointerType, StrideOneDim == get_vector_arg_idx<Args...>()>;
+      using vector_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<Args...>()>::vector_type;
+      using return_type = VectorRef<vector_type, LinIdx, PointerType, StrideOneDim == get_tensor_arg_idx<Args...>()>;
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -167,7 +167,7 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-        return return_type(stripIndexType(layout(stripVectorIndex(args)...)), get_vector_args_size(args...), data, layout.template get_dim_stride<get_vector_arg_idx<Args...>()>());
+        return return_type(stripIndexType(layout(stripTensorIndex(args)...)), get_tensor_args_size(args...), data, layout.template get_dim_stride<get_tensor_arg_idx<Args...>()>());
       }
   };
 
@@ -186,7 +186,7 @@ namespace internal
   template<typename ElementType, typename PointerType, typename LinIdx, typename LayoutType, typename ... Args>
   using view_return_type_t =
       typename detail::ViewReturnHelper<
-        count_num_vector_args<Args...>(),
+        count_num_tensor_args<Args...>(),
         camp::list<Args...>,
         ElementType,
         PointerType,
@@ -208,7 +208,7 @@ namespace internal
   view_return_type_t<ElementType, PointerType, LinIdx, LayoutType, Args...>
   view_make_return_value(LayoutType const &layout, PointerType const &data, Args const &... args){
     return detail::ViewReturnHelper<
-        count_num_vector_args<Args...>(),
+        count_num_tensor_args<Args...>(),
         camp::list<Args...>,
         ElementType,
         PointerType,
@@ -253,17 +253,17 @@ namespace internal
    * typed indices.
    */
   template<typename Expected, typename Arg, typename VectorType>
-  struct MatchTypedViewArgHelper<Expected, RAJA::VectorIndex<Arg, VectorType> >{
+  struct MatchTypedViewArgHelper<Expected, RAJA::TensorIndex<Arg, VectorType> >{
 
     static_assert(std::is_convertible<Arg, Expected>::value,
         "Argument isn't compatible");
 
     using arg_type = strip_index_type_t<Arg>;
 
-    using type = RAJA::VectorIndex<arg_type, VectorType>;
+    using type = RAJA::TensorIndex<arg_type, VectorType>;
 
     static constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    type extract(RAJA::VectorIndex<Arg, VectorType> vec_arg){
+    type extract(RAJA::TensorIndex<Arg, VectorType> vec_arg){
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };

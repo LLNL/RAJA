@@ -63,7 +63,7 @@ struct StatementExecutor<
     using Iterator = decltype(end);
     using vector_type = VectorType;
     using value_type = typename Iterator::value_type;
-    using vector_index_type = VectorIndex<value_type, vector_type>;
+    using vector_index_type = TensorIndex<value_type, vector_type>;
 
     diff_t distance_simd = distance - (distance%vector_type::num_elem());
     diff_t distance_remainder = distance - distance_simd;
