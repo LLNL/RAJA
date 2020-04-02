@@ -26,26 +26,30 @@
 namespace RAJA
 {
 
+  namespace internal {
+    template<typename ARG>
+    struct TensorIndexTraits;
+  }
 
-
-  template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM = 0>
+  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM = 0>
   class TensorIndex {
     public:
+      using self_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
       using value_type = strip_index_type_t<IDX>;
       using index_type = IDX;
-      using vector_type = VECTOR_TYPE;
+      using tensor_type = TENSOR_TYPE;
+      using tensor_traits = internal::TensorIndexTraits<self_type>;
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      TensorIndex() : m_index(index_type(0)), m_length(tensor_traits::num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      TensorIndex() : m_index(index_type(0)), m_length(vector_type::num_elem()) {}
-
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      constexpr
-      explicit TensorIndex(index_type value) : m_index(value), m_length(vector_type::num_elem()) {}
+      explicit TensorIndex(index_type value) : m_index(value), m_length(tensor_traits::num_elem()) {}
 
 
       RAJA_INLINE
@@ -149,10 +153,19 @@ namespace RAJA
         camp::idx_t dim(){
           return 0;
         }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t num_elem(){
+          return 1;
+        }
     };
 
-    template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM>
-    struct TensorIndexTraits<TensorIndex<IDX, VECTOR_TYPE, DIM>> {
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM>
+    struct TensorIndexTraits<TensorIndex<IDX, TENSOR_TYPE, DIM>> {
+        using index_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
         using arg_type = IDX;
 
         RAJA_INLINE
@@ -167,7 +180,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        arg_type const &strip(TensorIndex<IDX, VECTOR_TYPE> const &arg){
+        arg_type const &strip(index_type const &arg){
           return *arg;
         }
 
@@ -175,7 +188,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t size(TensorIndex<IDX, VECTOR_TYPE> const &arg){
+        camp::idx_t size(index_type const &arg){
           return arg.size();
         }
 
@@ -185,6 +198,14 @@ namespace RAJA
         constexpr
         camp::idx_t dim(){
           return DIM;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        camp::idx_t num_elem(){
+          return TENSOR_TYPE::num_elem(DIM);
         }
     };
 
@@ -246,7 +267,7 @@ namespace RAJA
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    camp::idx_t getTensorDim(ARG const &)
+    camp::idx_t getTensorDim()
     {
       return TensorIndexTraits<ARG>::dim();
     }
@@ -255,17 +276,17 @@ namespace RAJA
      * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
      * includes the vector length with them
      */
-    template<typename IDX, typename VECTOR_TYPE, camp::idx_t DIM, camp::idx_t id>
-    struct LambdaSegExtractor<TensorIndex<IDX, VECTOR_TYPE, DIM>, id>
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
+    struct LambdaSegExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
     {
 
       template<typename Data>
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      static TensorIndex<IDX, VECTOR_TYPE, DIM> extract(Data &&data)
+      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
       {
-        return TensorIndex<IDX, VECTOR_TYPE, DIM>(
+        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
             camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
             camp::get<id>(data.vector_sizes));
       }

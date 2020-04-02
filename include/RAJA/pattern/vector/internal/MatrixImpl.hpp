@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/vector/Vector.hpp"
+#include "RAJA/pattern/vector/internal/MatrixRef.hpp"
 #include "camp/camp.hpp"
 namespace RAJA
 {
@@ -333,6 +334,7 @@ namespace internal {
   {
     public:
       using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
 
       using vector_type = VECTOR_TYPE;
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
@@ -343,8 +345,6 @@ namespace internal {
           "Internal mismatch in vector types");
 
 
-      static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
-      static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
 
     private:
       template<typename A, typename B>
@@ -378,7 +378,7 @@ namespace internal {
       MatrixImpl(ROWS const &... rows) :
         m_rows{rows...}
       {
-        static_assert(sizeof...(ROWS) == s_num_rows,
+        static_assert(sizeof...(ROWS) == base_type::s_num_rows,
             "Incompatible number of row vectors");
       }
 
@@ -542,7 +542,7 @@ namespace internal {
   {
     public:
       using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
-
+      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
       using vector_type = VECTOR_TYPE;
 
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
@@ -553,8 +553,6 @@ namespace internal {
 
       using element_type = typename VECTOR_TYPE::element_type;
 
-      static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
-      static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
 
     private:
       template<typename A, typename B>
@@ -588,7 +586,7 @@ namespace internal {
       MatrixImpl(COLS const &... cols) :
       m_cols{cols...}
       {
-        static_assert(sizeof...(COLS) == s_num_cols,
+        static_assert(sizeof...(COLS) == base_type::s_num_cols,
             "Incompatible number of column vectors");
       }
 

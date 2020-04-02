@@ -78,12 +78,12 @@ namespace internal
      *
      * returns -1 if none of the arguments are VectorIndexs
      */
-    template<typename ... ARGS, camp::idx_t ... IDX>
+    template<camp::idx_t DIM, typename ... ARGS, camp::idx_t ... IDX>
     RAJA_INLINE
     RAJA_HOST_DEVICE
     static constexpr camp::idx_t get_tensor_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
       return RAJA::foldl_max<camp::idx_t>(
-          (isTensorIndex<ARGS>() ? IDX : -1) ...);
+          (isTensorIndex<ARGS>()&&getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
     }
 
 
@@ -106,11 +106,11 @@ namespace internal
   /*
    * Returns which argument has a vector index
    */
-  template<typename ... ARGS>
+  template<camp::idx_t DIM, typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t get_tensor_arg_idx(){
-    return detail::get_tensor_arg_idx_expanded(
+    return detail::get_tensor_arg_idx_expanded<DIM>(
         camp::list<ARGS...>{},
         camp::make_idx_seq_t<sizeof...(ARGS)>{});
   }
@@ -118,11 +118,14 @@ namespace internal
   /*
    * Returns the number of elements in the vector argument
    */
-  template<typename ... ARGS>
+  template<camp::idx_t DIM, typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t get_tensor_args_size(ARGS ... args){
-    return RAJA::foldl_max<camp::idx_t>(getTensorSize<ARGS>(args) ...);
+    return RAJA::foldl_max<camp::idx_t>(
+        getTensorDim<ARGS>()==DIM
+        ? getTensorSize<ARGS>(args)
+        : 0 ...);
   }
 
   namespace detail {
@@ -130,7 +133,7 @@ namespace internal
   template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper
   {
-      static_assert(NumVectors < 2, "Not supported: too many vector indices");
+      static_assert(NumVectors < 3, "Not supported: too many tensor indices");
   };
 
 
@@ -158,8 +161,8 @@ namespace internal
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
-      using vector_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<Args...>()>::vector_type;
-      using return_type = VectorRef<vector_type, LinIdx, PointerType, StrideOneDim == get_tensor_arg_idx<Args...>()>;
+      using vector_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
+      using return_type = VectorRef<vector_type, LinIdx, PointerType, StrideOneDim == get_tensor_arg_idx<0, Args...>()>;
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -167,7 +170,43 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-        return return_type(stripIndexType(layout(stripTensorIndex(args)...)), get_tensor_args_size(args...), data, layout.template get_dim_stride<get_tensor_arg_idx<Args...>()>());
+        return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
+                           get_tensor_args_size<0>(args...),
+                           data,
+                           layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>());
+      }
+  };
+
+  /*
+   * Specialization for Matrix return types
+   */
+  template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
+  struct ViewReturnHelper<2, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
+  {
+      using matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
+      using col_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<1, Args...>()>::tensor_type;
+      using return_type = internal::MatrixRef<matrix_type,
+                                              LinIdx,
+                                              PointerType,
+                                              StrideOneDim == get_tensor_arg_idx<0, Args...>(),
+                                              StrideOneDim == get_tensor_arg_idx<1, Args...>()>;
+
+      // Make sure we don't have a type mismatch between row and column indices
+      static_assert(std::is_same<matrix_type, col_matrix_type>::value,
+          "Row and Column matrix types do not match");
+
+      template<typename LayoutType>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
+        return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
+                           get_tensor_args_size<0>(args...),
+                           get_tensor_args_size<1>(args...),
+                           data,
+                           layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>(),
+                           layout.template get_dim_stride<get_tensor_arg_idx<1, Args...>()>());
       }
   };
 

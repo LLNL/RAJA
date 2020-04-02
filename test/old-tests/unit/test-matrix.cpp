@@ -197,6 +197,119 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 }
 
 
+TYPED_TEST_P(MatrixTest, MatrixViewLoad)
+{
+
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  // Row-Major data
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_cols];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      data1[i][j] = i*j*j;
+    }
+  }
+
+  // Create a view of the data
+  RAJA::View<double, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::s_num_rows, matrix_t::s_num_cols);
+
+  // Load data
+  matrix_t m1 = view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0));
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m1.get(i,j), data1[i][j]);
+    }
+  }
+
+
+  // Column-Major data
+  element_t data2[matrix_t::s_num_cols][matrix_t::s_num_rows];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      data2[j][i] = i*j*j;
+    }
+  }
+
+  // Create a view of the data
+  RAJA::View<double, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::s_num_rows, matrix_t::s_num_cols}}, {{1,0}}));
+
+  // Load data
+  matrix_t m2 = view2(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0));
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m2.get(i,j), data2[j][i]);
+    }
+  }
+
+}
+
+TYPED_TEST_P(MatrixTest, MatrixViewStore)
+{
+
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+
+  // Fill data
+  matrix_t m;
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      m.set(i,j, i*j*j);
+    }
+  }
+
+
+
+  // Create a Row-Major data buffer
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_cols];
+
+  // Create a view of the data
+  RAJA::View<double, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::s_num_rows, matrix_t::s_num_cols);
+
+  // Store using view
+  view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0)) = m;
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m.get(i,j), data1[i][j]);
+    }
+  }
+
+
+
+
+  // Create a Column-Major data buffer
+  element_t data2[matrix_t::s_num_cols][matrix_t::s_num_rows];
+
+  // Create a view of the data
+  RAJA::View<double, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::s_num_rows, matrix_t::s_num_cols}}, {{1,0}}));
+
+  // Store using view
+  view2(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0)) = m;
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m.get(i,j), data2[j][i]);
+    }
+  }
+
+
+}
+
+
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
 
@@ -334,6 +447,8 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest, MatrixCtor,
                                         MatrixGetSet,
                                         MatrixLoad,
                                         MatrixStore,
+                                        MatrixViewLoad,
+                                        MatrixViewStore,
                                         MatrixVector,
                                         MatrixMatrix,
                                         MatrixMatrixAccumulate);

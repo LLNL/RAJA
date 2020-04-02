@@ -40,6 +40,15 @@ namespace RAJA
       using col_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
       using element_type = typename VECTOR_TYPE::element_type;
 
+
+      static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
+      static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
+
+      RAJA_INLINE
+      static constexpr camp::idx_t num_elem(camp::idx_t dim){
+        return (dim==0) ? s_num_rows : s_num_cols;
+      }
+
     private:
       RAJA_INLINE
       RAJA_HOST_DEVICE

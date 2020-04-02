@@ -114,7 +114,7 @@ namespace RAJA
       using register_types_t = camp::list<REGISTER0_TYPE, REGISTER_TYPES...>;
       using register_tuple_t = camp::tuple<REGISTER0_TYPE, REGISTER_TYPES...>;
 
-      static constexpr camp::idx_t num_elem(){
+      static constexpr camp::idx_t num_elem(camp::idx_t = 0){
         return
           RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::num_elem(), REGISTER_TYPES::num_elem()...);
       }
