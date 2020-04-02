@@ -17,7 +17,6 @@
 using namespace camp::resources;
 using namespace camp;
 
-
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallISetTest()
 {
