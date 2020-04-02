@@ -10,6 +10,8 @@
 
 #include "RAJA/RAJA.hpp"
 
+#include <random>
+
 #include "test-forall-utils.hpp"
 
 //
