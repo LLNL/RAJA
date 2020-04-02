@@ -15,11 +15,17 @@
 using MatrixTestTypes = ::testing::Types<
 
     // Test automatically wrapped types to make things easier for users
-    RAJA::FixedMatrix<double, 4, 4>,
-    RAJA::FixedMatrix<double, 4, 8>,
-    RAJA::FixedMatrix<double, 8, 4>,
-    RAJA::FixedMatrix<double, 1, 7>,
-    RAJA::FixedMatrix<double, 7, 1>
+    RAJA::FixedMatrix<double, 4, 4, RAJA::MATRIX_ROW_MAJOR>,
+    RAJA::FixedMatrix<double, 4, 8, RAJA::MATRIX_ROW_MAJOR>,
+    RAJA::FixedMatrix<double, 8, 4, RAJA::MATRIX_ROW_MAJOR>,
+    RAJA::FixedMatrix<double, 1, 7, RAJA::MATRIX_ROW_MAJOR>,
+    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_ROW_MAJOR>,
+
+    RAJA::FixedMatrix<double, 4, 4, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::FixedMatrix<double, 4, 8, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::FixedMatrix<double, 8, 4, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::FixedMatrix<double, 1, 7, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_COL_MAJOR>
   >;
 
 
@@ -91,6 +97,105 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   }
 
 }
+
+TYPED_TEST_P(MatrixTest, MatrixLoad)
+{
+
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  // Row-Major data
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_cols];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      data1[i][j] = i*j*j;
+    }
+  }
+
+  // Load data
+  matrix_t m1;
+  m1.load(&data1[0][0], matrix_t::s_num_cols, 1);
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m1.get(i,j), data1[i][j]);
+    }
+  }
+
+
+
+  // Column-Major data
+  element_t data2[matrix_t::s_num_cols][matrix_t::s_num_rows];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      data2[j][i] = i*j*j;
+    }
+  }
+
+  // Load data
+  matrix_t m2;
+  m2.load(&data2[0][0], 1, matrix_t::s_num_rows);
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m2.get(i,j), data2[j][i]);
+    }
+  }
+
+
+}
+
+
+
+TYPED_TEST_P(MatrixTest, MatrixStore)
+{
+
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+
+  // Fill data
+  matrix_t m;
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      m.set(i,j, i*j*j);
+    }
+  }
+
+
+
+  // Store to a Row-Major data buffer
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_cols];
+  m.store(&data1[0][0], matrix_t::s_num_cols, 1);
+
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m.get(i,j), data1[i][j]);
+    }
+  }
+
+  // Store to a Column-Major data buffer
+  element_t data2[matrix_t::s_num_cols][matrix_t::s_num_rows];
+  m.store(&data2[0][0], 1, matrix_t::s_num_rows);
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
+      ASSERT_FLOAT_EQ(m.get(i,j), data2[j][i]);
+    }
+  }
+
+
+}
+
 
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
@@ -227,6 +332,8 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest, MatrixCtor,
                                         MatrixGetSet,
+                                        MatrixLoad,
+                                        MatrixStore,
                                         MatrixVector,
                                         MatrixMatrix,
                                         MatrixMatrixAccumulate);

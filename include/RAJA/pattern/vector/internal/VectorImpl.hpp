@@ -120,7 +120,7 @@ namespace RAJA
       }
 
       static constexpr camp::idx_t num_registers(){
-              return sizeof...(REGISTER_TYPES);
+              return 1 + sizeof...(REGISTER_TYPES);
             }
 
       using self_type = VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>;
@@ -661,35 +661,35 @@ namespace RAJA
   // Operator Overloads for scalar OP vector
   //
 
-  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator+(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+  operator+(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
     return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) + y;
   }
 
-  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator-(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+  operator-(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
     return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) - y;
   }
 
-  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator*(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+  operator*(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
     return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) * y;
   }
 
-  template<typename ST, typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
+  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator/(ST x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
+  operator/(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
     return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) / y;
   }
 
