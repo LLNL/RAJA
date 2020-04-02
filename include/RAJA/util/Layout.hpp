@@ -186,8 +186,7 @@ public:
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(static_cast<long int>(sizes[N]) > 0 &&
-       !(0<=static_cast<long int>(idx) && static_cast<long int>(idx) < static_cast<long int>(sizes[N])))
+    if(sizes[N] > 0 && !(0<=idx && idx < static_cast<Idx>(sizes[N])))
     {
       BoundsCheckError<N>(idx);
     }
@@ -236,9 +235,9 @@ public:
                                               Indices &&... indices) const
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
-    long int totSize{1};
+    IdxLin totSize{1};
     for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
-    if(totSize > 0 && (linear_index < 0 || static_cast<long int>(linear_index) >= totSize)) {
+    if(totSize > 0 && (linear_index < 0 || linear_index >= totSize)) {
       printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
              static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
       RAJA_ASSERT(linear_index < 0 || linear_index >= totSize);
