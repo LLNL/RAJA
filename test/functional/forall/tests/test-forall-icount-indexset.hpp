@@ -25,8 +25,7 @@ void Forall_IcountISetTest()
 
   using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
   using RangeStrideSegType = RAJA::TypedRangeStrideSegment<INDEX_TYPE>;
-  // RDH   using ListSegType        = RAJA::TypedListSegment<INDEX_TYPE>;
-  using ListSegType        = RAJA::NewTypedListSegment<INDEX_TYPE>;
+  using ListSegType        = RAJA::TypedListSegment<INDEX_TYPE>;
 
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 

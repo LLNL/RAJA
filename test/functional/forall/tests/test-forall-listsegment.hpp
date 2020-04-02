@@ -40,10 +40,8 @@ void ForallListSegmentTest(INDEX_TYPE N)
   Resource working_res{WORKING_RES()};
 
   // Create list segment for tests
-  RAJA::NewTypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen,
-                                             working_res);
-//RAJA::NewTypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen);
-//RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen);
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
+                                          working_res);
 
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
