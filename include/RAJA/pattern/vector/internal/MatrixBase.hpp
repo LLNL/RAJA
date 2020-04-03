@@ -184,13 +184,14 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename RMAT>
+      template<typename VT, MatrixLayout L, typename REG, typename ROW, typename COL>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, RMAT>::result_type
-      operator*(RMAT const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, REG, ROW, COL>>::result_type
+      operator*(MatrixImpl<VT, L, REG, ROW, COL> const &mat) const {
         return getThis()->multiply(mat);
       }
+
 
       /*!
        * @brief Multiply a vector with this vector

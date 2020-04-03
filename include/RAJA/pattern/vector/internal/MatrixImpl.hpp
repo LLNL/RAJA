@@ -21,7 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/vector/Vector.hpp"
-#include "RAJA/pattern/vector/internal/MatrixRef.hpp"
+
 #include "camp/camp.hpp"
 namespace RAJA
 {
@@ -191,7 +191,7 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply(A_type const &A, B_type const &B){
-        return result_type(calc_row_product(B_VECTOR_TYPE(), A.m_rows[A_IDX_ROW], B)...);
+        return result_type(calc_row_product(B_VECTOR_TYPE(0), A.m_rows[A_IDX_ROW], B)...);
       }
 
       RAJA_HOST_DEVICE
@@ -262,11 +262,32 @@ namespace internal {
 
 
 
+  template<typename ROW_MATRIX, typename COL_MATRIX>
+  struct MatrixViewCombiner;
+
+  template<typename A_VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... A_IDX_REG, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
+           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_REG, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  struct MatrixViewCombiner<
+    MatrixImpl<A_VECTOR_TYPE, LAYOUT, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
+    MatrixImpl<B_VECTOR_TYPE, LAYOUT, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
+  {
+      using row_major_vector = changeVectorLength<A_VECTOR_TYPE, sizeof...(B_IDX_COL)>;
+      using col_major_vector = changeVectorLength<A_VECTOR_TYPE, sizeof...(A_IDX_ROW)>;
+
+      using vector_type = typename std::conditional<LAYOUT==MATRIX_ROW_MAJOR, row_major_vector, col_major_vector>::type;
+
+      using reg_idx_type = camp::make_idx_seq_t<vector_type::num_registers()>;
+
+      using type = MatrixImpl<vector_type, LAYOUT, reg_idx_type, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...>>;
+  };
+
 } // namespace internal
 } // namespace RAJA
 
 
 #include "RAJA/pattern/vector/internal/MatrixBase.hpp"
+#include "RAJA/pattern/vector/internal/MatrixProductRef.hpp"
+#include "RAJA/pattern/vector/internal/MatrixRef.hpp"
 
 namespace RAJA
 {

@@ -183,17 +183,18 @@ namespace internal
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper<2, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
-      using matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
+      using row_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
       using col_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<1, Args...>()>::tensor_type;
+
+      // compute a matrix type using features from the row and col
+      using matrix_type = typename MatrixViewCombiner<row_matrix_type, col_matrix_type>::type;
+
       using return_type = internal::MatrixRef<matrix_type,
                                               LinIdx,
                                               PointerType,
                                               StrideOneDim == get_tensor_arg_idx<0, Args...>(),
                                               StrideOneDim == get_tensor_arg_idx<1, Args...>()>;
 
-      // Make sure we don't have a type mismatch between row and column indices
-      static_assert(std::is_same<matrix_type, col_matrix_type>::value,
-          "Row and Column matrix types do not match");
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -291,18 +292,18 @@ namespace internal
    * In this case, there is no VectorIndex to unpack, just strip any strongly
    * typed indices.
    */
-  template<typename Expected, typename Arg, typename VectorType>
-  struct MatchTypedViewArgHelper<Expected, RAJA::TensorIndex<Arg, VectorType> >{
+  template<typename Expected, typename Arg, typename VectorType, camp::idx_t DIM>
+  struct MatchTypedViewArgHelper<Expected, RAJA::TensorIndex<Arg, VectorType, DIM> >{
 
     static_assert(std::is_convertible<Arg, Expected>::value,
         "Argument isn't compatible");
 
     using arg_type = strip_index_type_t<Arg>;
 
-    using type = RAJA::TensorIndex<arg_type, VectorType>;
+    using type = RAJA::TensorIndex<arg_type, VectorType, DIM>;
 
     static constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    type extract(RAJA::TensorIndex<Arg, VectorType> vec_arg){
+    type extract(RAJA::TensorIndex<Arg, VectorType, DIM> vec_arg){
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };

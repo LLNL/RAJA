@@ -35,6 +35,27 @@ namespace RAJA
   template<typename MATRIX_TYPE>
   using TransposeMatrix = typename internal::MatrixReshapeHelper<MATRIX_TYPE>::similar_transpose_t;
 
+
+  /*!
+   * Converts a Row index to a Column index
+   */
+  template<typename IDX, typename MATRIX_TYPE>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toColIndex(RowIndex<IDX, MATRIX_TYPE> const &r){
+    return ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*r, r.size());
+  }
+
+  /*!
+   * Converts a Column index to a Row index
+   */
+  template<typename IDX, typename MATRIX_TYPE>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toRowIndex(ColIndex<IDX, MATRIX_TYPE> const &c){
+    return RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*c, c.size());
+  }
+
 }  // namespace RAJA
 
 

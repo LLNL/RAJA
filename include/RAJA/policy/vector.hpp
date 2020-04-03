@@ -23,6 +23,5 @@
 #include "RAJA/policy/vector/forall.hpp"
 #include "RAJA/policy/vector/policy.hpp"
 #include "RAJA/policy/vector/kernel/For.hpp"
-#include "RAJA/policy/vector/kernel/ForICount.hpp"
 
 #endif  // closing endif for header file include guard

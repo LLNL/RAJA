@@ -45,8 +45,8 @@ namespace vector
 {
 
 
-template <typename VectorType, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const vector_exec<VectorType>&,
+template <typename TENSOR_TYPE, camp::idx_t DIM, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const tensor_exec<TENSOR_TYPE, DIM>&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
@@ -56,20 +56,20 @@ RAJA_INLINE void forall_impl(const vector_exec<VectorType>&,
   using diff_t = decltype(distance);
 
   using value_type = typename Iterable::value_type;
-  using vector_type = VectorType;
-  using vector_index_type = VectorIndex<value_type, vector_type>;
+  using tensor_type = TENSOR_TYPE;
+  using tensor_index_type = TensorIndex<value_type, tensor_type, DIM>;
 
-  diff_t distance_simd = distance - (distance%vector_type::num_elem());
+  diff_t distance_simd = distance - (distance%tensor_type::num_elem(DIM));
   diff_t distance_remainder = distance - distance_simd;
 
   // Streaming loop for complete vector widths
-  for (diff_t i = 0; i < distance_simd; i+=vector_type::num_elem()) {
-    loop_body(vector_index_type(*(begin + i)));
+  for (diff_t i = 0; i < distance_simd; i+=tensor_type::num_elem(DIM)) {
+    loop_body(tensor_index_type(*(begin + i)));
   }
 
   // Postamble for reamining elements
   if(distance_remainder > 0){
-    loop_body(vector_index_type(*(begin + distance_simd), distance_remainder));
+    loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
   }
 
 }

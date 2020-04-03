@@ -42,11 +42,12 @@ namespace internal
  *
  */
 template <camp::idx_t ArgumentId,
-          typename VectorType,
+          typename TENSOR_TYPE,
+          camp::idx_t DIM,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, RAJA::vector_exec<VectorType>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::policy::vector::tensor_exec<TENSOR_TYPE, DIM>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -64,19 +65,20 @@ struct StatementExecutor<
     auto distance = std::distance(begin, end);
     using diff_t = decltype(distance);
 
-
-    diff_t distance_simd = distance - (distance%VectorType::num_elem());
+    diff_t distance_simd = distance - (distance%TENSOR_TYPE::num_elem(DIM));
     diff_t distance_remainder = distance - distance_simd;
 
     // compute the vector index type and new LoopTypes
     using value_type = camp::at_v<typename DataT::index_types_t, ArgumentId>;
-    using vector_index_type = TensorIndex<value_type, VectorType>;
-    using NewTypes = setSegmentType<Types, ArgumentId, vector_index_type>;
+    using tensor_index_type = TensorIndex<value_type, TENSOR_TYPE, DIM>;
+    using NewTypes = setSegmentType<Types, ArgumentId, tensor_index_type>;
 
+
+    //using tensor_offset_type = TensorIndex<tensor_index_type::value_type, TENSOR_TYPE, DIM>;
 
     // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = VectorType::num_elem();
-    for (diff_t i = 0; i < distance_simd; i+=VectorType::num_elem()) {
+    camp::get<ArgumentId>(data.vector_sizes) = TENSOR_TYPE::num_elem(DIM);
+    for (diff_t i = 0; i < distance_simd; i+=TENSOR_TYPE::num_elem(DIM)) {
 
       data.template assign_offset<ArgumentId>(i);
       execute_statement_list<stmt_list_t, NewTypes>(data);

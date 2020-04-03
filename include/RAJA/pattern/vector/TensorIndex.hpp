@@ -31,7 +31,7 @@ namespace RAJA
     struct TensorIndexTraits;
   }
 
-  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM = 0>
+  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM>
   class TensorIndex {
     public:
       using self_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
@@ -56,6 +56,12 @@ namespace RAJA
       RAJA_HOST_DEVICE
       constexpr
       TensorIndex(index_type value, camp::idx_t length) : m_index(value), m_length(length) {}
+
+      template<typename T, camp::idx_t D>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      TensorIndex(TensorIndex<IDX, T, D> const &c) : m_index(*c), m_length(c.size()) {}
 
 
       RAJA_INLINE
@@ -102,6 +108,8 @@ namespace RAJA
    */
   template<typename IDX, typename MATRIX_TYPE>
   using ColIndex =  TensorIndex<IDX, MATRIX_TYPE, 1>;
+
+
 
 
   namespace internal{
@@ -288,6 +296,27 @@ namespace RAJA
       {
         return TensorIndex<IDX, TENSOR_TYPE, DIM>(
             camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
+            camp::get<id>(data.vector_sizes));
+      }
+
+    };
+
+    /*
+     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
+     * includes the vector length with them
+     */
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
+    struct LambdaOffsetExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
+    {
+
+      template<typename Data>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
+      {
+        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
+            IDX(camp::get<id>(data.offset_tuple)), // convert offset type to IDX
             camp::get<id>(data.vector_sizes));
       }
 

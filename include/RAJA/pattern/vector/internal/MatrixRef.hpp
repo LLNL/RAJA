@@ -264,22 +264,37 @@ namespace internal
       }
 
 
-//      /*!
-//       * @brief Multiply two vector registers, element wise
-//       * @param x Vector to subctract from this register
-//       * @return Value of (*this)+x
-//       */
-//      RAJA_HOST_DEVICE
-//      RAJA_INLINE
-//      MatrixProductRef<matrix_type> operator*(matrix_type const &x) const
-//      {
-//        return MatrixProductRef<matrix_type>(load(), x);
-//      }
+      /*!
+       * @brief Multiply two vector registers, element wise
+       * @param x Vector to subctract from this register
+       * @return Value of (*this)+x
+       */
+      template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_REG, typename IDX_ROW, typename IDX_COL>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      MatrixProductRef<matrix_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_REG, IDX_ROW, IDX_COL> >
+      operator*(MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_REG, IDX_ROW, IDX_COL> const &x) const
+      {
+        return MatrixProductRef<matrix_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_REG, IDX_ROW, IDX_COL> >(load(), x);
+      }
 
       /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
+       * @brief Multiply two MatrixRefs
+       */
+      template<typename MT, typename ID,
+                typename PT, bool RSO, bool CSO>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      MatrixProductRef<matrix_type, MT >
+      operator*(MatrixRef<MT, ID, PT, RSO, CSO> const &x) const
+      {
+        return MatrixProductRef<matrix_type, MT>(load(), x.load());
+      }
+
+      /*!
+       * @brief Multiply a matrix with this matrix, and store the result
+       *
+       * Note that this only works with square matrices.
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -295,16 +310,16 @@ namespace internal
 
 
 
-//  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-//  VECTOR_TYPE
-//  operator+(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return VECTOR_TYPE(x) + y.load();
+//  template<typename MATRIX_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
+//  MATRIX_TYPE
+//  operator+(typename MATRIX_TYPE::element_type x, MatrixRef<MATRIX_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
+//    return MATRIX_TYPE(x) + y.load();
 //  }
 //
 //  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
 //  VECTOR_TYPE
 //  operator-(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return VECTOR_TYPE(x) - y.load();
+//    return MATRIX_TYPE(x) - y.load();
 //  }
 //
 //  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
@@ -312,12 +327,8 @@ namespace internal
 //  operator*(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
 //    return VectorProductRef<VECTOR_TYPE>(VECTOR_TYPE(x), y.load());
 //  }
-//
-//  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-//  VECTOR_TYPE
-//  operator/(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return VECTOR_TYPE(x) / y.load();
-//  }
+
+
 
 }  // namespace internal
 }  // namespace RAJA

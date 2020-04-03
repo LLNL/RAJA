@@ -166,6 +166,34 @@ struct LambdaSegExtractor
 
 
 
+/*
+ * Helper that extracts a segment value for a lambda argument
+ *
+ * By default we use the Span and offset in LoopData to construct the
+ * value.
+ *
+ * This class allows specialization on the segment type in LoopTypes so that
+ * fancier constructions can happen (ie vector_exec, etc.)
+ */
+template<typename OffsetType, camp::idx_t id>
+struct LambdaOffsetExtractor
+{
+
+  static_assert(!std::is_same<OffsetType, void>::value,
+      "Segment not assigned, but used in Lambda with Offsets<> argument");
+
+  template<typename Data>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr
+  static OffsetType extract(Data &&data)
+  {
+    return OffsetType(camp::get<id>(data.offset_tuple));
+  }
+
+};
+
+
 
 /*
  * Helper that provides first level of argument extraction
@@ -193,7 +221,7 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_offset_t, id>>
   constexpr
   static OffsetType extract(Data &&data)
   {
-    return OffsetType(camp::get<id>(data.offset_tuple));
+    return LambdaOffsetExtractor<OffsetType, id>::extract(std::forward<Data>(data));
   }
 
 };
