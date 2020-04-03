@@ -703,39 +703,37 @@ namespace RAJA
 
       using register_traits_t = RegisterTraits<REGISTER_POLICY, ELEMENT_TYPE>;
 
-    static constexpr camp::idx_t num_full_registers(){
-      return VEC_NUM_ELEM / register_traits_t::num_elem();
-    }
+    static constexpr camp::idx_t num_full_registers =
+      VEC_NUM_ELEM / register_traits_t::num_elem();
+
 
     // number of elements in a partial final register for Fix
-    static constexpr camp::idx_t num_partial_elem(){
-      return VEC_NUM_ELEM - num_full_registers()*register_traits_t::num_elem();
-    }
+    static constexpr camp::idx_t num_partial_elem =
+      VEC_NUM_ELEM - num_full_registers*register_traits_t::num_elem();
 
 
-    static constexpr camp::idx_t num_registers(){
-      return num_full_registers() + (num_partial_elem() > 0 ? 1 : 0);
-    }
+    static constexpr camp::idx_t num_registers =
+      num_full_registers + (num_partial_elem > 0 ? 1 : 0);
 
-    using register_idx_seq_t = camp::make_idx_seq_t<num_registers()>;
+    using register_idx_seq_t = camp::make_idx_seq_t<num_registers>;
 
     using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
     using partial_register_type =
-        Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem() ? num_partial_elem() : 1>;
+        Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem ? num_partial_elem : 1>;
 
 
     // Create lists of registers for a fixed vector
-    using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers()>;
+    using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers>;
     using fixed_partial_register_list = camp::list<partial_register_type>;
 
     using fixed_register_list_t = typename
-        std::conditional<num_partial_elem() == 0,
+        std::conditional<num_partial_elem == 0,
         fixed_full_registers,
         typename camp::extend<fixed_full_registers, fixed_partial_register_list>::type>::type;
 
 
-    using stream_register_list_t = list_of_n<full_register_type, num_registers()>;
+    using stream_register_list_t = list_of_n<full_register_type, num_registers>;
 
 
     // Create actual VectorImpl type for a fixed length Vector
