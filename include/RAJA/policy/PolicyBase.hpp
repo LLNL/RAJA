@@ -35,6 +35,7 @@ enum class Policy {
   target_openmp,
   cuda,
   hip,
+  sycl,
   tbb
 };
 
@@ -176,6 +177,9 @@ struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
 };
 template <typename Pol>
 struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
+};
+template <typename Pol>
+struct is_sycl_policy : RAJA::policy_is<Pol, RAJA::Policy::sycl> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,

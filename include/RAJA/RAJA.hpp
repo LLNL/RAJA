@@ -72,6 +72,10 @@
 #include "RAJA/policy/hip.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+#include "RAJA/policy/sycl.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
 

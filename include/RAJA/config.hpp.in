@@ -90,6 +90,7 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
+#cmakedefine RAJA_ENABLE_SYCL
 
 /*!
  ******************************************************************************
