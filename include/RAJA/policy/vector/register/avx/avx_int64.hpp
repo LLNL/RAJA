@@ -187,7 +187,6 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
-      constexpr
       RAJA_INLINE
       element_type get(IDX i) const
       {

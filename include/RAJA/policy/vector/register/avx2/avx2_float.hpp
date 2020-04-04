@@ -172,7 +172,7 @@ namespace RAJA
             m_value = _mm256_mask_i32gather_ps(_mm256_setzero_ps(),
                                           ptr,
                                           createStridedOffsets(stride),
-                                          createMask(),
+                                          _mm256_castsi256_ps(createMask()),
                                           sizeof(element_type));
           }
         }

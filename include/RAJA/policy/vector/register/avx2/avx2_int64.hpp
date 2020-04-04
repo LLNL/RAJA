@@ -131,7 +131,7 @@ namespace RAJA
 
           // Gather
           else{
-            m_value = _mm256_i64gather_epi64(ptr,
+            m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const *>(ptr),
                                           createStridedOffsets(stride),
                                           sizeof(element_type));
           }
@@ -150,7 +150,7 @@ namespace RAJA
           // Masked Gather
           else{
             m_value = _mm256_mask_i64gather_epi64(_mm256_set1_epi64x(0),
-                                          ptr,
+                                          reinterpret_cast<long long const *>(ptr),
                                           createStridedOffsets(stride),
                                           createMask(),
                                           sizeof(element_type));
@@ -199,7 +199,6 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
-      constexpr
       RAJA_INLINE
       element_type get(IDX i) const
       {

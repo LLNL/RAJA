@@ -303,10 +303,17 @@ namespace internal {
       camp::idx_t m_value;
 
     public:
+      using self_type = SemiStaticValue<DEFAULT, false>;
+
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
       SemiStaticValue() : m_value(DEFAULT) {}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      SemiStaticValue(self_type const &c) : m_value(c.m_value) {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -327,6 +334,18 @@ namespace internal {
   class SemiStaticValue<DEFAULT, true>
   {
     public:
+      using self_type = SemiStaticValue<DEFAULT, true>;
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      SemiStaticValue(){}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      SemiStaticValue(self_type const &){}
+
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr camp::idx_t get() const{
@@ -390,7 +409,7 @@ namespace internal {
       RAJA_INLINE
       MatrixImpl(self_type const &c) :
         m_rows{c.m_rows[IDX_ROW]...},
-        m_num_rows{c.m_num_rows}
+        m_num_rows(c.m_num_rows)
       {}
 
       template<typename ... ROWS>
@@ -598,7 +617,7 @@ namespace internal {
       RAJA_INLINE
       MatrixImpl(self_type const &c) :
         m_cols{c.m_cols[IDX_COL]...},
-        m_num_cols{c.m_num_cols}
+        m_num_cols(c.m_num_cols)
       {}
 
       template<typename ... COLS>

@@ -179,7 +179,7 @@ namespace RAJA
         if(stride == 1){
           // Is it full-width?
           if(N == 8){
-            _mm256_storeu_epi32(ptr, m_value);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr), m_value);
           }
           // Need to do a masked store
           else{
@@ -203,7 +203,6 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
-      constexpr
       RAJA_INLINE
       element_type get(IDX i) const
       {

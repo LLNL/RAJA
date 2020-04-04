@@ -169,7 +169,7 @@ namespace RAJA
 
           // Masked Gather
           else{
-            m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_ps(),
+            m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_si256(),
                                           ptr,
                                           createStridedOffsets(stride),
                                           createMask(),
@@ -195,7 +195,7 @@ namespace RAJA
         if(stride == 1){
           // Is it full-width?
           if(N == 8){
-            _mm256_storeu_epi32(ptr, m_value);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr), m_value);
           }
           // Need to do a masked store
           else{
@@ -219,7 +219,6 @@ namespace RAJA
        * @return Returns scalar value at i
        */
       template<typename IDX>
-      constexpr
       RAJA_INLINE
       element_type get(IDX i) const
       {
@@ -301,14 +300,19 @@ namespace RAJA
         auto prod_even = _mm256_mul_epi32(m_value, b.m_value);
 
         // Swap 32-bit words
-        auto sh_a = _mm256_permute_ps(m_value, 0xB1);
-        auto sh_b = _mm256_permute_ps(b.m_value, 0xB1);
+        auto sh_a = _mm256_castps_si256(
+            _mm256_permute_ps(_mm256_castsi256_ps(m_value), 0xB1));
+
+        auto sh_b = _mm256_castps_si256(
+                    _mm256_permute_ps(_mm256_castsi256_ps(b.m_value), 0xB1));
 
         // multiply 1, 3, 5, 7
         auto prod_odd = _mm256_mul_epi32(sh_a, sh_b);
 
         // Stitch prod_odd and prod_even back together
-        auto sh_odd = _mm256_permute_ps(prod_odd, 0xB1);
+        auto sh_odd = _mm256_castps_si256(
+                    _mm256_permute_ps(_mm256_castsi256_ps(prod_odd), 0xB1));
+
         return self_type(_mm256_blend_epi32(prod_even, sh_odd, 0xAA));
       }
 
@@ -346,7 +350,8 @@ namespace RAJA
         }
 
         // swap odd-even pairs and add
-        auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+        auto sh1 = _mm256_castps_si256(
+            _mm256_permute_ps(_mm256_castsi256_ps(m_value), 0xB1) );
         auto red1 = _mm256_add_epi32(m_value, sh1);
 
         if(N == 3 || N == 4){
@@ -354,7 +359,8 @@ namespace RAJA
         }
 
         // swap odd-even quads and add
-        auto sh2 = _mm256_permute_ps(red1, 0x4E);
+        auto sh2 = _mm256_castps_si256(
+            _mm256_permute_ps(_mm256_castsi256_ps(red1), 0x4E));
         auto red2 = _mm256_add_epi32(red1, sh2);
 
         return _mm256_extract_epi32(red2, 0) + _mm256_extract_epi32(red2, 4);
