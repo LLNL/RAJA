@@ -105,13 +105,14 @@ public:
   using reference = value_type&;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0) {}
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const stripped_value_type& rhs)
+  constexpr numeric_iterator() = default;
+  ~numeric_iterator() = default;
+  constexpr numeric_iterator(const numeric_iterator&) = default;
+  constexpr numeric_iterator(numeric_iterator&&) = default;
+  constexpr numeric_iterator& operator=(const numeric_iterator&) = default;
+  constexpr numeric_iterator& operator=(numeric_iterator&&) = default;
+  constexpr numeric_iterator(const stripped_value_type& rhs)
       : val(rhs)
-  {
-  }
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
-      : val(rhs.val)
   {
   }
 
@@ -257,7 +258,7 @@ public:
   }
 
 private:
-  stripped_value_type val;
+  stripped_value_type val = 0;
 };
 
 template <typename Type = Index_type,
@@ -273,18 +274,17 @@ public:
   using reference = DifferenceType&;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : val(0), stride(1) {}
+  constexpr strided_numeric_iterator() = default;
+  ~strided_numeric_iterator() = default;
+  constexpr strided_numeric_iterator(const strided_numeric_iterator&) = default;
+  constexpr strided_numeric_iterator(strided_numeric_iterator&&) = default;
+  constexpr strided_numeric_iterator& operator=(const strided_numeric_iterator&) = default;
+  constexpr strided_numeric_iterator& operator=(strided_numeric_iterator&&) = default;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,
       DifferenceType stride_ = DifferenceType(1))
       : val(rhs), stride(stride_)
-  {
-  }
-
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
-      const strided_numeric_iterator& rhs)
-      : val(rhs.val), stride(rhs.stride)
   {
   }
 
@@ -403,8 +403,8 @@ public:
   }
 
 private:
-  stripped_value_type val;
-  DifferenceType stride;
+  stripped_value_type val = 0;
+  DifferenceType stride = 1;
 };
 
 
