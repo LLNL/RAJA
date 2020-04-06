@@ -109,8 +109,8 @@ public:
   ~numeric_iterator() = default;
   constexpr numeric_iterator(const numeric_iterator&) = default;
   constexpr numeric_iterator(numeric_iterator&&) = default;
-  constexpr numeric_iterator& operator=(const numeric_iterator&) = default;
-  constexpr numeric_iterator& operator=(numeric_iterator&&) = default;
+  numeric_iterator& operator=(const numeric_iterator&) = default;
+  numeric_iterator& operator=(numeric_iterator&&) = default;
   constexpr numeric_iterator(const stripped_value_type& rhs)
       : val(rhs)
   {
@@ -278,8 +278,8 @@ public:
   ~strided_numeric_iterator() = default;
   constexpr strided_numeric_iterator(const strided_numeric_iterator&) = default;
   constexpr strided_numeric_iterator(strided_numeric_iterator&&) = default;
-  constexpr strided_numeric_iterator& operator=(const strided_numeric_iterator&) = default;
-  constexpr strided_numeric_iterator& operator=(strided_numeric_iterator&&) = default;
+  strided_numeric_iterator& operator=(const strided_numeric_iterator&) = default;
+  strided_numeric_iterator& operator=(strided_numeric_iterator&&) = default;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,
