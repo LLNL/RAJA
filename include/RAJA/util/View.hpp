@@ -112,6 +112,75 @@ struct View {
 };
 
 template <typename ValueType,
+          typename LayoutType,
+          typename PointerType = ValueType **>
+struct MultiView {
+  using value_type = ValueType;
+  using pointer_type = PointerType;
+  using layout_type = LayoutType;
+  using nc_value_type = typename std::remove_const<value_type>::type;
+  using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
+      typename std::remove_pointer<
+        typename std::remove_pointer<pointer_type>::type>::type>::type>::type;
+  using NonConstView = MultiView<nc_value_type, layout_type, nc_pointer_type>;
+
+  layout_type const layout;
+  pointer_type data;
+
+  template <typename... Args>
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
+      : layout(dim_sizes...), data(data_ptr)
+  {
+  }
+
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type &&layout)
+      : layout(layout), data(data_ptr)
+  {
+  }
+
+  // We found the compiler-generated copy constructor does not actually
+  // copy-construct the object on the device in certain nvcc versions. By
+  // explicitly defining the copy constructor we are able ensure proper
+  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr MultiView(MultiView const &V)
+      : layout(V.layout), data(V.data)
+  {
+  }
+
+  template <bool IsConstView = std::is_const<value_type>::value>
+  RAJA_INLINE constexpr MultiView(
+      typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
+      : layout(rhs.layout), data(rhs.data)
+  {
+  }
+
+  RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
+
+  //template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
+  //RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>
+  //shift(const std::array<IdxLin, n_dims>& shift)
+  //{
+  //  static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
+
+  //  typename add_offset<layout_type>::type shift_layout(layout);
+  //  shift_layout.shift(shift);
+
+  //  return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
+  //}
+
+  // first = pointer index, rest = layout args
+  // making this specifically typed would require unpacking the layout,
+  // this is easier to maintain
+  template <typename ArgFirst, typename... ArgRest>
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(ArgFirst af, ArgRest... ar) const
+  {
+    auto pidx = stripIndexType(af);
+    auto idx = stripIndexType(layout(ar...));
+    return data[pidx][idx];
+  }
+};
+
+template <typename ValueType,
           typename PointerType,
           typename LayoutType,
           typename... IndexTypes>
