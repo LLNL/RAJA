@@ -41,17 +41,20 @@ namespace RAJA
       using self_type = Register<REGISTER_POLICY, T, NUM_ELEM>;
       using element_type = camp::decay<T>;
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
       static constexpr camp::idx_t num_elem(){return NUM_ELEM;}
 
     private:
-      RAJA_INLINE
+
       RAJA_HOST_DEVICE
+      RAJA_INLINE
       self_type *getThis(){
         return static_cast<self_type *>(this);
       }
 
-      RAJA_INLINE
       RAJA_HOST_DEVICE
+      RAJA_INLINE
       constexpr
       self_type const *getThis() const{
         return static_cast<self_type const *>(this);
@@ -67,6 +70,17 @@ namespace RAJA
         return true;
       }
 
+      /*!
+       * @brief convenience routine to allow Vector classes to use
+       * camp::sink() across a variety of register types, and use things like
+       * ternary operators
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      bool sink() const{
+        return false;
+      }
 
       /*!
        * @brief Set entire vector to a single scalar value

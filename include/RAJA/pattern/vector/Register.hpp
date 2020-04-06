@@ -39,14 +39,17 @@ namespace RAJA
       using register_policy = REGISTER_POLICY;
       using element_type = camp::decay<T>;
 
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       static constexpr
       camp::idx_t num_elem(){return 1;}
 
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       static constexpr
       camp::idx_t byte_width(){return sizeof(element_type);}
 
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       static constexpr
       camp::idx_t bit_width(){return 8*sizeof(element_type);}

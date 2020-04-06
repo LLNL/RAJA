@@ -102,6 +102,7 @@ using RegisterTestTypes = ::testing::Types<
     RAJA::FixedVector<float, 2>,
     RAJA::FixedVector<float, 8>,
     RAJA::FixedVector<float, 16>
+
   >;
 
 //using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;

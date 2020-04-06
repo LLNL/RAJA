@@ -41,29 +41,92 @@ namespace RAJA
   namespace detail
   {
 
-    class VectorRegisterAccessHelper{
+    template<typename TYPE_LIST>
+    struct tuple_from_list;
+
+    template<typename ... TYPES>
+    struct tuple_from_list<camp::list<TYPES...>>{
+        using type = camp::tuple<TYPES...>;
+    };
+
+    template<typename TYPE_LIST>
+    using tuple_from_list_t = typename tuple_from_list<TYPE_LIST>::type;
+
+
+    /*
+     * Helper that compute template arguments to VectorImpl
+     */
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t VEC_NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE>
+    struct VectorTypeHelper{
+
+      using register_traits_t = RegisterTraits<REGISTER_POLICY, ELEMENT_TYPE>;
+
+      static constexpr camp::idx_t num_full_registers =
+        VEC_NUM_ELEM / register_traits_t::num_elem();
+
+
+      // number of elements in a partial final register for Fix
+      static constexpr camp::idx_t num_partial_elem =
+        VEC_NUM_ELEM - num_full_registers*register_traits_t::num_elem();
+
+
+      static constexpr camp::idx_t num_registers =
+        num_full_registers + (num_partial_elem > 0 ? 1 : 0);
+
+      using register_idx_seq_t = camp::make_idx_seq_t<num_registers>;
+
+      using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
+
+      using partial_register_type =
+          Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem ? num_partial_elem : 1>;
+
+
+      // Create lists of registers for a fixed vector
+      using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers>;
+      using fixed_partial_register_list = camp::list<partial_register_type>;
+
+      using fixed_register_list_t = typename
+          std::conditional<num_partial_elem == 0,
+          fixed_full_registers,
+          typename camp::extend<fixed_full_registers, fixed_partial_register_list>::type>::type;
+
+
+      using stream_register_list_t = list_of_n<full_register_type, num_registers>;
+
+
+      using register_list_t = typename
+          std::conditional<VECTOR_TYPE == VECTOR_STREAM,
+            stream_register_list_t,
+            fixed_register_list_t>::type;
+
+      using register_tuple_t = tuple_from_list_t<register_list_t>;
 
 
     };
 
-    template<typename ELEMENT_TYPE, typename IDX>
+
+
+
+
+    template<typename ELEMENT_TYPE>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     ELEMENT_TYPE
-    VectorGetByIndex(IDX){
+    VectorGetByIndex(camp::idx_t){
       return ELEMENT_TYPE(); // termination case: this is undefined behavior!
     }
 
-    template<typename ELEMENT_TYPE, typename IDX, typename REGISTER0, typename ... REGISTER_REST>
+    template<typename ELEMENT_TYPE, typename REGISTER0, typename ... REGISTER_REST>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     ELEMENT_TYPE
-    VectorGetByIndex(IDX i, REGISTER0 const &r0, REGISTER_REST const &...r_rest){
-      if((camp::idx_t)i < (camp::idx_t)REGISTER0::num_elem()){
+    VectorGetByIndex(camp::idx_t i, REGISTER0 const &r0, REGISTER_REST const &...r_rest){
+
+      if(i < REGISTER0::num_elem()){
         return r0.get(i);
       }
       else{
-        return VectorGetByIndex<ELEMENT_TYPE>((camp::idx_t)i-(camp::idx_t)REGISTER0::num_elem(), r_rest...);
+        return VectorGetByIndex<ELEMENT_TYPE>(i-REGISTER0::num_elem(), r_rest...);
       }
     }
 
@@ -92,657 +155,356 @@ namespace RAJA
     }
 
 
+    template<typename REGISTER_TUPLE, typename REG_SEQ, camp::idx_t NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE>
+    struct VectorOpHelper;
+
+    template<typename REGISTER0, typename ... REGISTERS, camp::idx_t ... REG_SEQ, camp::idx_t NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE>
+    struct VectorOpHelper<camp::tuple<REGISTER0, REGISTERS...>, camp::idx_seq<REG_SEQ...>, NUM_ELEM, VECTOR_TYPE>
+    {
+        using register_policy = typename REGISTER0::register_policy;
+        using element_type = typename REGISTER0::element_type;
+        using tuple_t = camp::tuple<REGISTER0, REGISTERS...>;
+        using register_traits_t = RegisterTraits<register_policy, element_type>;
+        using range_type = TypedRangeSegment<camp::idx_t, camp::idx_t>;
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        constexpr
+        bool has_full_register(camp::idx_t length){
+          return length >= register_traits_t::num_elem();
+        }
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        constexpr
+        bool is_full_register(camp::idx_t reg_idx, camp::idx_t length){
+          return (reg_idx+1)*register_traits_t::num_elem() <= length;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        range_type remainder(camp::idx_t length){
+          return range_type((length / register_traits_t::num_elem()) * register_traits_t::num_elem(), length);
+        }
+
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        element_type get(tuple_t const &registers, camp::idx_t i)
+        {
+
+          return detail::VectorGetByIndex<element_type>(i, camp::get<REG_SEQ>(registers)...);
+        }
+
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void set(tuple_t &registers, camp::idx_t i, element_type value)
+        {
+          detail::VectorSetByIndex(i, value, camp::get<REG_SEQ>(registers)...);
+        }
+
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void load(tuple_t &registers, element_type const *ptr, camp::idx_t stride, camp::idx_t length){
+
+          // Do full vector loads where possible
+          camp::sink((
+
+              // Is REG_SEQ getting fully loaded?
+              is_full_register(REG_SEQ, length) ?
+
+              // It's a full load:
+              camp::get<REG_SEQ>(registers).load(
+                  ptr + REG_SEQ*register_traits_t::num_elem()*stride,
+                  stride).sink()
+
+              // Not a full load, so NOP (register will get loaded below)
+              : camp::get<REG_SEQ>(registers).sink()
+
+            )...);
+
+          // Load remainder of elements
+          for(camp::idx_t i : remainder(length)){
+            set(registers, i, ptr[i*stride]);
+          }
+
+
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void store(tuple_t const &registers, element_type *ptr, camp::idx_t stride, camp::idx_t length){
+          // Do full vector stores where possible
+          camp::sink((
+
+              // Is REG_SEQ getting fully loaded?
+              is_full_register(REG_SEQ, length) ?
+
+              // It's a full load:
+              camp::get<REG_SEQ>(registers).store(
+                  ptr + REG_SEQ*register_traits_t::num_elem()*stride,
+                  stride).sink()
+
+              // Not a full load, so NOP (register will get loaded below)
+              : camp::get<REG_SEQ>(registers).sink()
+
+            )...);
+
+          // Store remainder of elements
+          for(camp::idx_t i : remainder(length)){
+            ptr[i*stride] = get(registers, i);
+          }
+        }
+
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void broadcast(tuple_t &registers, element_type const &value){
+
+          camp::sink(camp::get<REG_SEQ>(registers).broadcast(value)...);
+
+        }
+
+
+
+        /*!
+         * @brief Element-wise addition of two vectors
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void add(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a) + camp::get<REG_SEQ>(registers_b))...);
+
+
+        }
+
+        /*!
+         * @brief Element-wise subtraction of two vectors
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void subtract(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a) - camp::get<REG_SEQ>(registers_b))...);
+
+        }
+
+        /*!
+         * @brief Element-wise multiplication of two vectors
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void multiply(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a) * camp::get<REG_SEQ>(registers_b))...);
+
+        }
+
+        /*!
+         * @brief Element-wise division of two vectors
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void divide(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a) / camp::get<REG_SEQ>(registers_b))...);
+
+        }
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void fused_multiply_add(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t const &registers_c, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) =
+              camp::get<REG_SEQ>(registers_a).fused_multiply_add(
+                  camp::get<REG_SEQ>(registers_b),
+                  camp::get<REG_SEQ>(registers_c)))...);
+
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void fused_multiply_subtract(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t const &registers_c, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) =
+              camp::get<REG_SEQ>(registers_a).fused_multiply_subtract(
+                  camp::get<REG_SEQ>(registers_b),
+                  camp::get<REG_SEQ>(registers_c)))...);
+
+        }
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void vmin(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a).vmin(camp::get<REG_SEQ>(registers_b)))...);
+
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        void vmax(tuple_t const &registers_a, tuple_t const &registers_b, tuple_t &registers_result) {
+
+          camp::sink((camp::get<REG_SEQ>(registers_result) = camp::get<REG_SEQ>(registers_a).vmax(camp::get<REG_SEQ>(registers_b)))...);
+
+        }
+
+
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        element_type sum(tuple_t const &registers, camp::idx_t length){
+          // Sum across vectors
+          REGISTER0 reg_reduce = camp::get<0>(registers);
+
+          // Reduce all full registers to a single register
+          camp::sink((
+
+              // Is REG_SEQ getting fully loaded?
+              // And not register 0, since we started with that
+              (is_full_register(REG_SEQ, length) && REG_SEQ > 0 )?
+
+              // Add to total
+              (reg_reduce = reg_reduce + camp::get<REG_SEQ>(registers)).sink()
+
+              // Not a full load, so NOP (register will get loaded below)
+              : camp::get<REG_SEQ>(registers).sink()
+
+            )...);
+
+          // Reduce full registers to scalar
+          element_type scalar_reduce =
+             has_full_register(length) ?
+                 reg_reduce.sum() : element_type(0);
+
+          // Reduce remainder of elements
+          for(camp::idx_t i : remainder(length)){
+            scalar_reduce += get(registers, i);
+          }
+
+          return scalar_reduce;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        element_type max(tuple_t const &registers, camp::idx_t length){
+          // Sum across vectors
+          REGISTER0 reg_reduce = camp::get<0>(registers);
+
+          // Reduce all full registers to a single register
+          camp::sink((
+
+              // Is REG_SEQ getting fully loaded?
+              // And not register 0, since we started with that
+              (is_full_register(REG_SEQ, length) && REG_SEQ > 0 )?
+
+              // Vector Reduce
+              (reg_reduce = reg_reduce.vmax(camp::get<REG_SEQ>(registers))).sink()
+
+              // Not a full load, so NOP (register will get loaded below)
+              : camp::get<REG_SEQ>(registers).sink()
+
+            )...);
+
+          // Reduce full registers to scalar
+          element_type scalar_reduce =
+             has_full_register(length) ?
+                 reg_reduce.max() : camp::get<0>(registers).get(0);
+
+
+          // Reduce remainder of elements
+          for(camp::idx_t i : remainder(length)){
+            element_type v = get(registers, i);
+            scalar_reduce = scalar_reduce < v ? v : scalar_reduce;
+          }
+
+          return scalar_reduce;
+        }
+
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        element_type min(tuple_t const &registers, camp::idx_t length){
+          // Sum across vectors
+          REGISTER0 reg_reduce = camp::get<0>(registers);
+
+          // Reduce all full registers to a single register
+          camp::sink((
+
+              // Is REG_SEQ getting fully loaded?
+              // And not register 0, since we started with that
+              (is_full_register(REG_SEQ, length) && REG_SEQ > 0 )?
+
+              // Vector Reduce
+              (reg_reduce = reg_reduce.vmin(camp::get<REG_SEQ>(registers))).sink()
+
+              // Not a full load, so NOP (register will get loaded below)
+              : camp::get<REG_SEQ>(registers).sink()
+
+            )...);
+
+          // Reduce full registers to scalar
+          element_type scalar_reduce =
+             has_full_register(length) ?
+                 reg_reduce.min() : camp::get<0>(registers).get(0);
+
+
+          // Reduce remainder of elements
+          for(camp::idx_t i : remainder(length)){
+            element_type v = get(registers, i);
+            scalar_reduce = scalar_reduce > v ? v : scalar_reduce;
+          }
+
+          return scalar_reduce;
+        }
+
+    };
+
+
 
 
   } // namespace detail
 
-/*!
- * \file
- * Vector operation functions in the namespace RAJA
 
- *
- */
 
-  template<typename REGISTER_TYPES, typename IDX_SEQ, bool FIXED_LENGTH>
-  class VectorImpl;
 
-  template<typename REGISTER0_TYPE, typename ... REGISTER_TYPES, camp::idx_t ... IDX_SEQ, bool FIXED_LENGTH>
-  class VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>
+  } // namespace internal
+
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE>
+  class Vector;
+
+  namespace internal
   {
-    public:
-      using register_policy = typename REGISTER0_TYPE::register_policy;
-      using register_types_t = camp::list<REGISTER0_TYPE, REGISTER_TYPES...>;
-      using register_tuple_t = camp::tuple<REGISTER0_TYPE, REGISTER_TYPES...>;
-
-      static constexpr camp::idx_t num_elem(camp::idx_t = 0){
-        return
-          RAJA::foldl_sum<camp::idx_t>(REGISTER0_TYPE::num_elem(), REGISTER_TYPES::num_elem()...);
-      }
-
-      static constexpr camp::idx_t num_registers(){
-              return 1 + sizeof...(REGISTER_TYPES);
-            }
-
-      using self_type = VectorImpl<camp::list<REGISTER0_TYPE, REGISTER_TYPES...>, camp::idx_seq<IDX_SEQ...>, FIXED_LENGTH>;
-      using vector_type = self_type;
-      using element_type = typename REGISTER0_TYPE::element_type;
-
-
-      static constexpr camp::idx_t s_is_fixed = FIXED_LENGTH;
-
-
-    private:
-
-      register_tuple_t m_registers;
-
-      camp::idx_t m_length;
-
-    public:
-
-
-      /*!
-       * @brief Default constructor, zeros register contents
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      VectorImpl() : m_length(num_elem()){}
-
-      /*!
-       * @brief Copy constructor
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      VectorImpl(self_type const &c) :
-        m_registers(c.m_registers),
-        m_length(c.m_length)
-      {
-      }
-
-      /*!
-       * @brief Scalar constructor (broadcast)
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      VectorImpl(element_type const &c) :
-        m_length(num_elem())
-      {
-        broadcast(c);
-      }
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      constexpr
-      bool is_root() {
-        return REGISTER0_TYPE::is_root();
-      }
-
-
-
-      /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
-       *
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = num_elem()){
-        m_length = length;
-        if(s_is_fixed || m_length == num_elem()){
-          camp::sink(camp::get<IDX_SEQ>(m_registers).load(
-              ptr + IDX_SEQ*stride*REGISTER0_TYPE::num_elem(),
-              stride
-          )...);
-        }
-        else{
-          for(camp::idx_t i = 0;i < length;++ i){
-            set(i, ptr[i*stride]);
-          }
-        }
-        return *this;
-      }
-
-
-      /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
-       *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
-        if(s_is_fixed || m_length == num_elem()){
-          camp::sink(camp::get<IDX_SEQ>(m_registers).store(
-              ptr + IDX_SEQ*stride*REGISTER0_TYPE::num_elem(),
-              stride
-          )...);
-        }
-        else{
-          for(camp::idx_t i = 0;i < m_length;++ i){
-            ptr[i*stride] = (*this)[i];
-          }
-        }
-        return *this;
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      camp::idx_t size() const
-      {
-        return m_length;
-      }
-
-      /*!
-       * @brief Get scalar value from vector
-       * This will not be the most efficient due to the offset calculation.
-       * @param i Offset of scalar to get
-       * @return Returns scalar value at i
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type operator[](camp::idx_t i) const
-      {
-        return get(i);
-      }
-
-      /*!
-       * @brief Get scalar value from vector
-       * This will not be the most efficient due to the offset calculation.
-       * @param i Offset of scalar to get
-       * @return Returns scalar value at i
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type get(camp::idx_t i) const
-      {
-        return detail::VectorGetByIndex<element_type>(i, camp::get<IDX_SEQ>(m_registers)...);
-      }
-
-
-      /*!
-       * @brief Set scalar value in vector register
-       * @param i Offset of scalar to set
-       * @param value Value of scalar to set
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &set(camp::idx_t i, element_type value)
-      {
-        detail::VectorSetByIndex(i, value, camp::get<IDX_SEQ>(m_registers)...);
-        return *this;
-      }
-
-
-      /*!
-       * @brief assign all vector values to same scalar value
-       * @param value The scalar value to use
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &broadcast(element_type const &value){
-        camp::sink(camp::get<IDX_SEQ>(m_registers).broadcast(value)...);
-        m_length = num_elem();
-        return *this;
-      }
-
-
-      /*!
-       * @brief Copy values of another vector
-       * @param x The other vector to copy
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type  &copy(self_type const &x){
-        m_registers = x.m_registers;
-        m_length = x.m_length;
-        return *this;
-      }
-
-      /*!
-       * @brief Element-wise addition of two vectors
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type add(self_type const &x) const {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) + camp::get<IDX_SEQ>(x.m_registers))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-      /*!
-       * @brief Element-wise subtraction of two vectors
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type subtract(self_type const &x) const {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) - camp::get<IDX_SEQ>(x.m_registers))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-      /*!
-       * @brief Element-wise multiplication of two vectors
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type multiply(self_type const &x) const {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) * camp::get<IDX_SEQ>(x.m_registers))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-      /*!
-       * @brief Element-wise division of two vectors
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type divide(self_type const &x) const {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers) / camp::get<IDX_SEQ>(x.m_registers))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-      /*!
-       * @brief Set entire vector to a single scalar value
-       * @param value Value to set all vector elements to
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator=(element_type value)
-      {
-        broadcast(value);
-        return *this;
-      }
-
-      /*!
-       * @brief Assign one register to antoher
-       * @param x Vector to copy
-       * @return Value of (*this)
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator=(self_type const &x)
-      {
-        copy(x);
-
-        return *this;
-      }
-
-
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return add(x);
-      }
-
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator+=(self_type const &x)
-      {
-        *this = add(x);
-        return *this;
-      }
-
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return subtract(x);
-      }
-
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator-=(self_type const &x)
-      {
-        *this = subtract(x);
-        return *this;
-      }
-
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      VectorProductRef<self_type> operator*(self_type const &x) const
-      {
-        return VectorProductRef<self_type>(*this, x);
-      }
-
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator*=(self_type const &x)
-      {
-        (*this) = multiply(x);
-        return *this;
-      }
-
-      /*!
-       * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator/(self_type const &x) const
-      {
-        return divide(x);
-      }
-
-      /*!
-       * @brief Divide this vector by another vector
-       * @param x Vector to divide by
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator/=(self_type const &x)
-      {
-        (*this) = divide(x);
-        return *this;
-      }
-
-
-      /**
-        * @brief Fused multiply add: fma(b, c) = (*this)*b+c
-        *
-        * Derived types can override this to implement intrinsic FMA's
-        *
-        * @param b Second product operand
-        * @param c Sum operand
-        * @return Value of (*this)*b+c
-        */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) =
-            camp::get<IDX_SEQ>(m_registers).fused_multiply_add(
-                camp::get<IDX_SEQ>(b.m_registers),
-                camp::get<IDX_SEQ>(c.m_registers)))...);
-
-        result.m_length = RAJA::foldl_min<camp::idx_t>(m_length, b.m_length, c.m_length);
-
-        return result;
-      }
-
-      /**
-        * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
-        *
-        * Derived types can override this to implement intrinsic FMA's
-        *
-        * @param b Second product operand
-        * @param c Subtraction operand
-        * @return Value of (*this)*b-c
-        */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) =
-            camp::get<IDX_SEQ>(m_registers).fused_multiply_subtract(
-                camp::get<IDX_SEQ>(b.m_registers),
-                camp::get<IDX_SEQ>(c.m_registers)))...);
-
-        result.m_length = RAJA::foldl_min<camp::idx_t>(m_length, b.m_length, c.m_length);
-
-        return result;
-      }
-
-
-      /*!
-       * @brief Sum the elements of this vector
-       * @return Sum of the values of the vectors scalar elements
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type sum() const
-      {
-        if(m_length == num_elem()){
-          return RAJA::foldl_sum<element_type>(camp::get<IDX_SEQ>(m_registers).sum()...);
-        }
-        else{
-          element_type result = (element_type)0;
-          for(camp::idx_t i = 0;i < m_length;++ i){
-            result += (*this)[i];
-          }
-          return result;
-        }
-      }
-
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       *
-       * NOTE: we could really do something more optimized here!
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type dot(self_type const &x) const
-      {
-        self_type z = (*this) * x;
-        return z.sum();
-      }
-
-
-      /*!
-       * @brief Returns the largest element
-       * @return The largest scalar element in the register
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type max() const
-      {
-        if(s_is_fixed || m_length == num_elem()){
-          return RAJA::foldl_max<element_type>(camp::get<IDX_SEQ>(m_registers).max()...);
-        }
-        else{
-          element_type result = (*this)[0];
-          for(camp::idx_t i = 1;i < m_length;++ i){
-            auto new_val = (*this)[i];
-            result = result > new_val ? result : new_val;
-          }
-          return result;
-        }
-      }
-
-      /*!
-       * @brief Returns the largest element
-       * @return The largest scalar element in the register
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type min() const
-      {
-        if(s_is_fixed || m_length == num_elem()){
-          return RAJA::foldl_min<element_type>(camp::get<IDX_SEQ>(m_registers).min()...);
-        }
-        else{
-          element_type result = (*this)[0];
-          for(camp::idx_t i = 1;i < m_length;++ i){
-            auto new_val = (*this)[i];
-            result = result < new_val ? result : new_val;
-          }
-          return result;
-        }
-      }
-
-
-      /*!
-       * @brief Returns element-wise max of two vectors
-       * @return The vector containing max values of this and vector x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type vmax(self_type const &x) const
-      {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers).vmax(camp::get<IDX_SEQ>(x.m_registers)))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-      /*!
-       * @brief Returns element-wise minimum of two vectors
-       * @return The vector containing minimum values of this and vector x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type vmin(self_type const &x) const
-      {
-        self_type result;
-
-        camp::sink((camp::get<IDX_SEQ>(result.m_registers) = camp::get<IDX_SEQ>(m_registers).vmin(camp::get<IDX_SEQ>(x.m_registers)))...);
-
-        result.m_length = RAJA::min(m_length, x.m_length);
-
-        return result;
-      }
-
-  };
-
-  //
-  // Operator Overloads for scalar OP vector
-  //
-
-  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator+(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
-    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) + y;
-  }
-
-  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator-(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
-    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) - y;
-  }
-
-  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator*(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
-    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) * y;
-  }
-
-  template<typename REGISTER_TUPLE, typename IDX_SEQ, bool FIXED_LENGTH>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>
-  operator/(typename VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>::element_type x, VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH> const &y){
-    return VectorImpl<REGISTER_TUPLE, IDX_SEQ, FIXED_LENGTH>(x) / y;
-  }
-
-
-
-  /*
-   * Helper that compute template arguments to VectorImpl
-   */
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t VEC_NUM_ELEM>
-  struct VectorTypeHelper{
-
-      using register_traits_t = RegisterTraits<REGISTER_POLICY, ELEMENT_TYPE>;
-
-    static constexpr camp::idx_t num_full_registers =
-      VEC_NUM_ELEM / register_traits_t::num_elem();
-
-
-    // number of elements in a partial final register for Fix
-    static constexpr camp::idx_t num_partial_elem =
-      VEC_NUM_ELEM - num_full_registers*register_traits_t::num_elem();
-
-
-    static constexpr camp::idx_t num_registers =
-      num_full_registers + (num_partial_elem > 0 ? 1 : 0);
-
-    using register_idx_seq_t = camp::make_idx_seq_t<num_registers>;
-
-    using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
-
-    using partial_register_type =
-        Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem ? num_partial_elem : 1>;
-
-
-    // Create lists of registers for a fixed vector
-    using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers>;
-    using fixed_partial_register_list = camp::list<partial_register_type>;
-
-    using fixed_register_list_t = typename
-        std::conditional<num_partial_elem == 0,
-        fixed_full_registers,
-        typename camp::extend<fixed_full_registers, fixed_partial_register_list>::type>::type;
-
-
-    using stream_register_list_t = list_of_n<full_register_type, num_registers>;
-
-
-    // Create actual VectorImpl type for a fixed length Vector
-    using fixed_type = VectorImpl<fixed_register_list_t, register_idx_seq_t, true>;
-
-    // Create actual VectorImpl type for a variable length Vector
-    using stream_type = VectorImpl<stream_register_list_t, register_idx_seq_t, false>;
-
-  };
 
 
   /*
@@ -750,17 +512,11 @@ namespace RAJA
    * different length
    */
   template<typename VECTOR_TYPE, camp::idx_t NEW_LENGTH>
-  struct VectorNewLengthHelepr {
-      using register_policy = typename VECTOR_TYPE::register_policy;
-      using element_type = typename VECTOR_TYPE::element_type;
+  struct VectorNewLengthHelper;
 
-      using vector_helper = VectorTypeHelper<register_policy, element_type, NEW_LENGTH>;
-
-      using type = typename std::conditional<VECTOR_TYPE::s_is_fixed,
-            typename vector_helper::fixed_type,
-            typename vector_helper::stream_type
-          >::type;
-
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE, camp::idx_t NEW_LENGTH>
+  struct VectorNewLengthHelper<Vector<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>, NEW_LENGTH> {
+      using type = Vector<REGISTER_POLICY, ELEMENT_TYPE, NEW_LENGTH, VECTOR_TYPE>;
   };
 
 
