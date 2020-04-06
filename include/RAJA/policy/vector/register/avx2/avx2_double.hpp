@@ -32,17 +32,13 @@
 namespace RAJA
 {
 
-
-  template<camp::idx_t N>
-  class Register<avx2_register, double, N> :
-    public internal::RegisterBase<Register<avx2_register, double, N>>
+  template<>
+  class Register<avx2_register, double> :
+    public internal::RegisterBase<Register<avx2_register, double>>
   {
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AVX2 can only have 4 lanes of doubles");
-
     public:
       using register_policy = avx2_register;
-      using self_type = Register<avx2_register, double, N>;
+      using self_type = Register<avx2_register, double>;
       using element_type = double;
       using register_type = __m256d;
 
@@ -51,7 +47,7 @@ namespace RAJA
       register_type m_value;
 
       RAJA_INLINE
-      __m256i createMask() const {
+      __m256i createMask(camp::idx_t N) const {
         // Generate a mask
         return  _mm256_set_epi64x(0,  // never, since N < 4
                                   N==3 ? -1 : 0,  // only if N==3
@@ -66,6 +62,10 @@ namespace RAJA
       }
 
     public:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static constexpr camp::idx_t num_elem(){return 4;}
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -117,7 +117,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
         // Full vector width uses regular load/gather instruction
         if(N == 4){
 
@@ -139,7 +139,7 @@ namespace RAJA
 
           // Masked Packed Load
           if(stride == 1){
-            m_value = _mm256_maskload_pd(ptr, createMask());
+            m_value = _mm256_maskload_pd(ptr, createMask(N));
           }
 
           // Masked Gather
@@ -147,7 +147,7 @@ namespace RAJA
             m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
                                           ptr,
                                           createStridedOffsets(stride),
-                                          _mm256_castsi256_pd(createMask()),
+                                          _mm256_castsi256_pd(createMask(N)),
                                           sizeof(element_type));
           }
         }
@@ -165,7 +165,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 4) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -174,7 +174,7 @@ namespace RAJA
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_pd(ptr, createMask(), m_value);
+            _mm256_maskstore_pd(ptr, createMask(N), m_value);
           }
 
         }
@@ -248,7 +248,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t = 4) const {
         return self_type(_mm256_div_pd(m_value, b.m_value));
       }
 
@@ -274,7 +274,7 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t = 4) const
       {
         auto sh1 = _mm256_permute_pd(m_value, 0x5);
         auto red1 = _mm256_add_pd(m_value, sh1);
@@ -287,7 +287,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 4) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register
@@ -344,7 +344,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 4) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register

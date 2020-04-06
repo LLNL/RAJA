@@ -13,79 +13,32 @@
 #include "RAJA_gtest.hpp"
 
 using RegisterTestTypes = ::testing::Types<
-#ifdef RAJA_ALTIVEC
-    RAJA::Register<RAJA::altivec_register, double, 1>,
-    RAJA::Register<RAJA::altivec_register, double, 2>,
-    RAJA::Register<RAJA::altivec_register, float, 1>,
-    RAJA::Register<RAJA::altivec_register, float, 2>,
-    RAJA::Register<RAJA::altivec_register, float, 3>,
-    RAJA::Register<RAJA::altivec_register, float, 4>,
-    RAJA::Register<RAJA::altivec_register, int, 1>,
-    RAJA::Register<RAJA::altivec_register, int, 2>,
-    RAJA::Register<RAJA::altivec_register, int, 3>,
-    RAJA::Register<RAJA::altivec_register, int, 4>,
-    RAJA::Register<RAJA::altivec_register, long, 1>,
-    RAJA::Register<RAJA::altivec_register, long, 2>,
-#endif
-
-#ifdef __AVX__
-    RAJA::Register<RAJA::avx_register, double, 1>,
-    RAJA::Register<RAJA::avx_register, double, 2>,
-    RAJA::Register<RAJA::avx_register, double, 3>,
-    RAJA::Register<RAJA::avx_register, double, 4>,
-    RAJA::Register<RAJA::avx_register, float, 1>,
-    RAJA::Register<RAJA::avx_register, float, 2>,
-    RAJA::Register<RAJA::avx_register, float, 3>,
-    RAJA::Register<RAJA::avx_register, float, 4>,
-    RAJA::Register<RAJA::avx_register, float, 5>,
-    RAJA::Register<RAJA::avx_register, float, 6>,
-    RAJA::Register<RAJA::avx_register, float, 7>,
-    RAJA::Register<RAJA::avx_register, float, 8>,
-    RAJA::Register<RAJA::avx_register, int, 1>,
-    RAJA::Register<RAJA::avx_register, int, 2>,
-    RAJA::Register<RAJA::avx_register, int, 3>,
-    RAJA::Register<RAJA::avx_register, int, 4>,
-    RAJA::Register<RAJA::avx_register, int, 5>,
-    RAJA::Register<RAJA::avx_register, int, 6>,
-    RAJA::Register<RAJA::avx_register, int, 7>,
-    RAJA::Register<RAJA::avx_register, int, 8>,
-    RAJA::Register<RAJA::avx_register, long, 1>,
-    RAJA::Register<RAJA::avx_register, long, 2>,
-    RAJA::Register<RAJA::avx_register, long, 3>,
-    RAJA::Register<RAJA::avx_register, long, 4>,
-#endif
+//#ifdef RAJA_ALTIVEC
+//    RAJA::Register<RAJA::altivec_register, double>,
+//    RAJA::Register<RAJA::altivec_register, float>,
+//    RAJA::Register<RAJA::altivec_register, int>,
+//    RAJA::Register<RAJA::altivec_register, long>,
+//#endif
+//
+//#ifdef __AVX__
+//    RAJA::Register<RAJA::avx_register, double>,
+//    RAJA::Register<RAJA::avx_register, float>,
+//    RAJA::Register<RAJA::avx_register, int>,
+//    RAJA::Register<RAJA::avx_register, long>,
+//#endif
 
 #ifdef __AVX2__
-    RAJA::Register<RAJA::avx2_register, double, 1>,
-    RAJA::Register<RAJA::avx2_register, double, 2>,
-    RAJA::Register<RAJA::avx2_register, double, 3>,
-    RAJA::Register<RAJA::avx2_register, double, 4>,
-    RAJA::Register<RAJA::avx2_register, float, 1>,
-    RAJA::Register<RAJA::avx2_register, float, 2>,
-    RAJA::Register<RAJA::avx2_register, float, 3>,
-    RAJA::Register<RAJA::avx2_register, float, 4>,
-    RAJA::Register<RAJA::avx2_register, float, 5>,
-    RAJA::Register<RAJA::avx2_register, float, 6>,
-    RAJA::Register<RAJA::avx2_register, float, 7>,
-    RAJA::Register<RAJA::avx2_register, float, 8>,
-    RAJA::Register<RAJA::avx2_register, int, 1>,
-    RAJA::Register<RAJA::avx2_register, int, 2>,
-    RAJA::Register<RAJA::avx2_register, int, 3>,
-    RAJA::Register<RAJA::avx2_register, int, 4>,
-    RAJA::Register<RAJA::avx2_register, int, 5>,
-    RAJA::Register<RAJA::avx2_register, int, 6>,
-    RAJA::Register<RAJA::avx2_register, int, 7>,
-    RAJA::Register<RAJA::avx2_register, int, 8>,
-    RAJA::Register<RAJA::avx2_register, long, 1>,
-    RAJA::Register<RAJA::avx2_register, long, 2>,
-    RAJA::Register<RAJA::avx2_register, long, 3>,
-    RAJA::Register<RAJA::avx2_register, long, 4>,
+    RAJA::Register<RAJA::avx2_register, double>,
+    RAJA::Register<RAJA::avx2_register, float>,
+    RAJA::Register<RAJA::avx2_register, int>,
+    RAJA::Register<RAJA::avx2_register, long>,
 
 
 #endif
-    RAJA::Register<RAJA::scalar_register, int, 1>,
-    RAJA::Register<RAJA::scalar_register, float, 1>,
-    RAJA::Register<RAJA::scalar_register, double, 1>,
+    RAJA::Register<RAJA::scalar_register, int>,
+    RAJA::Register<RAJA::scalar_register, long>,
+    RAJA::Register<RAJA::scalar_register, float>,
+    RAJA::Register<RAJA::scalar_register, double>,
 
     // Test automatically wrapped types to make things easier for users
     RAJA::StreamVector<double>,
@@ -105,7 +58,6 @@ using RegisterTestTypes = ::testing::Types<
 
   >;
 
-//using RegisterTestTypes = ::testing::Types<RAJA::Register<RAJA::vector_scalar_register, double, 1>>;
 
 template <typename NestedPolicy>
 class RegisterTest : public ::testing::Test

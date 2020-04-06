@@ -31,12 +31,12 @@ namespace RAJA
    * whatever registers it deems appropriate.
    */
   template<typename T>
-  class Register<scalar_register, T, 1> :
-      public internal::RegisterBase<Register<scalar_register, T, 1>>
+  class Register<scalar_register, T> :
+      public internal::RegisterBase<Register<scalar_register, T>>
   {
     public:
       using register_policy = scalar_register;
-      using self_type = Register<scalar_register, T, 1>;
+      using self_type = Register<scalar_register, T>;
       using element_type = T;
       using register_type = T;
 
@@ -46,6 +46,10 @@ namespace RAJA
       T m_value;
 
     public:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static constexpr camp::idx_t num_elem(){return 1;}
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -85,7 +89,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t = 1){
+      self_type &load(element_type const *ptr, camp::idx_t = 1, camp::idx_t = 1){
         m_value = ptr[0];
         return *this;
       }
@@ -100,7 +104,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t = 1, camp::idx_t = 1) const{
         ptr[0] = m_value;
         return *this;
       }
@@ -170,7 +174,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t = 1) const {
         return self_type(m_value / b.m_value);
       }
 
@@ -213,7 +217,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      element_type sum() const
+      element_type sum(camp::idx_t = 1) const
       {
         return m_value;
       }
@@ -239,7 +243,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      element_type max() const
+      element_type max(camp::idx_t = 1) const
       {
         return m_value;
       }
@@ -261,7 +265,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t = 1) const
       {
         return m_value;
       }

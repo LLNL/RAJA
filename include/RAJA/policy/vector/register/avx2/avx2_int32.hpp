@@ -33,16 +33,13 @@ namespace RAJA
 {
 
 
-  template<camp::idx_t N>
-  class Register<avx2_register, int, N> :
-    public internal::RegisterBase<Register<avx2_register, int, N>>
+  template<>
+  class Register<avx2_register, int> :
+    public internal::RegisterBase<Register<avx2_register, int>>
   {
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 8, "AVX2 can only have 8 lanes of 32-bit ints");
-
     public:
       using register_policy = avx2_register;
-      using self_type = Register<avx2_register, int, N>;
+      using self_type = Register<avx2_register, int>;
       using element_type = int;
       using register_type = __m256i;
 
@@ -51,7 +48,7 @@ namespace RAJA
       register_type m_value;
 
       RAJA_INLINE
-      __m256i createMask() const {
+      __m256i createMask(camp::idx_t N) const {
         // Generate a mask
         return  _mm256_set_epi32(
             N >= 8 ? -1 : 0,
@@ -73,7 +70,7 @@ namespace RAJA
       }
 
       RAJA_INLINE
-      __m256i createPermute1() const {
+      __m256i createPermute1(camp::idx_t N) const {
         // Generate a permutation for first round of min/max routines
         return  _mm256_set_epi32(
             N >= 7 ? 6 : 0,
@@ -87,7 +84,7 @@ namespace RAJA
       }
 
       RAJA_INLINE
-      __m256i createPermute2() const {
+      __m256i createPermute2(camp::idx_t N) const {
         // Generate a permutation for second round of min/max routines
         return  _mm256_set_epi32(
             N >= 6 ? 5 : 0,
@@ -101,6 +98,11 @@ namespace RAJA
       }
 
     public:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static constexpr camp::idx_t num_elem(){return 8;}
+
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -142,7 +144,7 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 8){
         // Full vector width uses regular load/gather instruction
         if(N == 8){
 
@@ -164,7 +166,7 @@ namespace RAJA
 
           // Masked Packed Load
           if(stride == 1){
-            m_value = _mm256_maskload_epi32(ptr, createMask());
+            m_value = _mm256_maskload_epi32(ptr, createMask(N));
           }
 
           // Masked Gather
@@ -172,7 +174,7 @@ namespace RAJA
             m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_si256(),
                                           ptr,
                                           createStridedOffsets(stride),
-                                          createMask(),
+                                          createMask(N),
                                           sizeof(element_type));
           }
         }
@@ -190,7 +192,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N=8) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -199,7 +201,7 @@ namespace RAJA
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_epi32(ptr, createMask(), m_value);
+            _mm256_maskstore_epi32(ptr, createMask(N), m_value);
           }
 
         }
@@ -318,7 +320,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t N = 8) const {
         // AVX2 does not supply an integer divide, so do it manually
         return self_type(_mm256_set_epi32(
             N >= 8 ? get(7)/b.get(7) : 0,
@@ -339,7 +341,7 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t N = 8) const
       {
         // Some simple cases
         if(N == 1){
@@ -372,7 +374,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 8) const
       {
         // Some simple cases
         if(N == 1){
@@ -384,7 +386,7 @@ namespace RAJA
         }
 
         // swap odd-even pairs and add
-        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1());
+        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1(N));
         auto red1 = _mm256_max_epi32(m_value, sh1);
 
         if(N == 3){
@@ -395,7 +397,7 @@ namespace RAJA
         }
 
         // swap odd-even quads and add
-        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2());
+        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2(N));
         auto red2 = _mm256_max_epi32(red1, sh2);
 
         return std::max<element_type>(_mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
@@ -416,7 +418,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 8) const
       {
         // Some simple cases
         if(N == 1){
@@ -428,7 +430,7 @@ namespace RAJA
         }
 
         // swap odd-even pairs and add
-        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1());
+        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1(N));
         auto red1 = _mm256_min_epi32(m_value, sh1);
 
         if(N == 3){
@@ -439,7 +441,7 @@ namespace RAJA
         }
 
         // swap odd-even quads and add
-        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2());
+        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2(N));
         auto red2 = _mm256_min_epi32(red1, sh2);
 
         return std::min<element_type>(_mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));

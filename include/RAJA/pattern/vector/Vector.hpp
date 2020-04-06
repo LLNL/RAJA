@@ -50,7 +50,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static constexpr camp::idx_t num_registers(){
-        return camp::tuple_size<register_tuple_t>::value;
+        return type_helper_t::s_num_registers;
       }
 
 
@@ -582,7 +582,7 @@ namespace RAJA
   using StreamVector =
       Vector<REGISTER_POLICY,
                            T,
-                           UNROLL*RAJA::RegisterTraits<REGISTER_POLICY, T>::num_elem(),
+                           UNROLL*RAJA::Register<REGISTER_POLICY, T>::num_elem(),
                            VECTOR_STREAM>;
 
   template<typename T, camp::idx_t NUM_ELEM, typename REGISTER_POLICY = policy::register_default>

@@ -59,45 +59,15 @@ namespace RAJA
     template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t VEC_NUM_ELEM, VECTOR_LENGTH_TYPE VECTOR_TYPE>
     struct VectorTypeHelper{
 
-      using register_traits_t = RegisterTraits<REGISTER_POLICY, ELEMENT_TYPE>;
+      using register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      static constexpr camp::idx_t num_full_registers =
-        VEC_NUM_ELEM / register_traits_t::num_elem();
+      static constexpr camp::idx_t s_num_full_registers =
+        VEC_NUM_ELEM / register_type::num_elem();
 
+      static constexpr camp::idx_t s_num_registers =
+          s_num_full_registers + (VEC_NUM_ELEM*s_num_full_registers == VEC_NUM_ELEM ? 0 : 1);
 
-      // number of elements in a partial final register for Fix
-      static constexpr camp::idx_t num_partial_elem =
-        VEC_NUM_ELEM - num_full_registers*register_traits_t::num_elem();
-
-
-      static constexpr camp::idx_t num_registers =
-        num_full_registers + (num_partial_elem > 0 ? 1 : 0);
-
-      using register_idx_seq_t = camp::make_idx_seq_t<num_registers>;
-
-      using full_register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
-
-      using partial_register_type =
-          Register<REGISTER_POLICY, ELEMENT_TYPE, num_partial_elem ? num_partial_elem : 1>;
-
-
-      // Create lists of registers for a fixed vector
-      using fixed_full_registers = internal::list_of_n<full_register_type, num_full_registers>;
-      using fixed_partial_register_list = camp::list<partial_register_type>;
-
-      using fixed_register_list_t = typename
-          std::conditional<num_partial_elem == 0,
-          fixed_full_registers,
-          typename camp::extend<fixed_full_registers, fixed_partial_register_list>::type>::type;
-
-
-      using stream_register_list_t = list_of_n<full_register_type, num_registers>;
-
-
-      using register_list_t = typename
-          std::conditional<VECTOR_TYPE == VECTOR_STREAM,
-            stream_register_list_t,
-            fixed_register_list_t>::type;
+      using register_list_t = list_of_n<register_type, s_num_registers>;
 
       using register_tuple_t = tuple_from_list_t<register_list_t>;
 
@@ -164,7 +134,6 @@ namespace RAJA
         using register_policy = typename REGISTER0::register_policy;
         using element_type = typename REGISTER0::element_type;
         using tuple_t = camp::tuple<REGISTER0, REGISTERS...>;
-        using register_traits_t = RegisterTraits<register_policy, element_type>;
         using range_type = TypedRangeSegment<camp::idx_t, camp::idx_t>;
 
         RAJA_HOST_DEVICE
@@ -172,7 +141,7 @@ namespace RAJA
         static
         constexpr
         bool has_full_register(camp::idx_t length){
-          return length >= register_traits_t::num_elem();
+          return length >= REGISTER0::num_elem();
         }
 
 
@@ -181,14 +150,14 @@ namespace RAJA
         static
         constexpr
         bool is_full_register(camp::idx_t reg_idx, camp::idx_t length){
-          return (reg_idx+1)*register_traits_t::num_elem() <= length;
+          return (reg_idx+1)*REGISTER0::num_elem() <= length;
         }
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
         static
         range_type remainder(camp::idx_t length){
-          return range_type((length / register_traits_t::num_elem()) * register_traits_t::num_elem(), length);
+          return range_type((length / REGISTER0::num_elem()) * REGISTER0::num_elem(), length);
         }
 
 
@@ -227,7 +196,7 @@ namespace RAJA
 
               // It's a full load:
               camp::get<REG_SEQ>(registers).load(
-                  ptr + REG_SEQ*register_traits_t::num_elem()*stride,
+                  ptr + REG_SEQ*REGISTER0::num_elem()*stride,
                   stride).sink()
 
               // Not a full load, so NOP (register will get loaded below)
@@ -255,7 +224,7 @@ namespace RAJA
 
               // It's a full load:
               camp::get<REG_SEQ>(registers).store(
-                  ptr + REG_SEQ*register_traits_t::num_elem()*stride,
+                  ptr + REG_SEQ*REGISTER0::num_elem()*stride,
                   stride).sink()
 
               // Not a full load, so NOP (register will get loaded below)

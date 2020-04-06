@@ -35,15 +35,13 @@ namespace RAJA
   template<typename Derived>
   class RegisterBase;
 
-  template<typename REGISTER_POLICY, typename T, camp::idx_t NUM_ELEM>
-  class RegisterBase<Register<REGISTER_POLICY, T, NUM_ELEM>>{
+  template<typename REGISTER_POLICY, typename T>
+  class RegisterBase<Register<REGISTER_POLICY, T>>{
     public:
-      using self_type = Register<REGISTER_POLICY, T, NUM_ELEM>;
+      using self_type = Register<REGISTER_POLICY, T>;
       using element_type = camp::decay<T>;
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static constexpr camp::idx_t num_elem(){return NUM_ELEM;}
+
 
     private:
 

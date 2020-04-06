@@ -24,27 +24,6 @@
 
 namespace RAJA {
   struct avx2_register {};
-
-  template<typename T>
-  struct RegisterTraits<avx2_register, T>{
-      using register_type = avx2_register;
-      using element_type = T;
-
-      RAJA_INLINE
-      static constexpr
-      camp::idx_t num_elem(){return 32 / sizeof(T);}
-
-      RAJA_INLINE
-      static constexpr
-      camp::idx_t byte_width(){return 32;}
-
-      RAJA_INLINE
-      static constexpr
-      camp::idx_t bit_width(){return 256;}
-
-  };
-
-
 }
 
 #endif // guard
