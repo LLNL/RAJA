@@ -29,11 +29,11 @@ namespace RAJA
   template<typename Derived>
   class MatrixBase;
 
-  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  class MatrixBase<MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
+  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
+  class MatrixBase<MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
   {
     public:
-      using self_type = MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using self_type = MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >;
 
       using vector_type = VECTOR_TYPE;
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
@@ -191,11 +191,11 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename VT, MatrixLayout L, typename ROW, typename COL>
+      template<typename VT, MatrixLayout L, typename ROW, typename COL, MatrixSizeType ST>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, ROW, COL>>::result_type
-      operator*(MatrixImpl<VT, L, ROW, COL> const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, ROW, COL, ST>>::result_type
+      operator*(MatrixImpl<VT, L, ROW, COL, ST> const &mat) const {
         return getThis()->multiply(mat);
       }
 

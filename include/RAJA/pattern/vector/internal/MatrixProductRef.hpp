@@ -187,13 +187,13 @@ namespace internal
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_ROW, typename IDX_COL>
+      template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_ROW, typename IDX_COL, MatrixSizeType SIZE_TYPE>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL> >
-      operator*(MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL> const &x) const
+      MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> >
+      operator*(MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> const &x) const
       {
-        return MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL> >(get_result(), x);
+        return MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> >(get_result(), x);
       }
 
       /*!

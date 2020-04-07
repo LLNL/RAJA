@@ -23,7 +23,9 @@
 namespace RAJA
 {
 
-//  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
+//  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixSizeType SIZE_TYPE, MatrixLayout LAYOUT, typename REGISTER_POLICY>
+//  class Matrix : public internal::MatrixImpl<
+//    Vector<T, >
 
   template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
   using FixedMatrix =
@@ -31,7 +33,8 @@ namespace RAJA
         FixedVector<T, ((LAYOUT==MATRIX_ROW_MAJOR) ? COLS:  ROWS), REGISTER_POLICY>,
         LAYOUT,
         camp::make_idx_seq_t<ROWS>,
-        camp::make_idx_seq_t<COLS> >;
+        camp::make_idx_seq_t<COLS>,
+        MATRIX_FIXED>;
 
   template<typename MATRIX_TYPE>
   using TransposeMatrix = typename internal::MatrixReshapeHelper<MATRIX_TYPE>::similar_transpose_t;
