@@ -31,14 +31,14 @@ struct Test<list<T...>> {
 //
 using IdxTypeList = list<RAJA::Index_type,
                          short,
+#if defined(TEST_EXHAUSTIVE)
                          unsigned short,
                          int,
                          unsigned int,
-                         long,
-                         unsigned long,
                          long int,
-                         unsigned long int,
+                         unsigned long,
                          long long,
+#endif
                          unsigned long long>;
 
 
