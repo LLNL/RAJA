@@ -44,5 +44,27 @@ TEST(MultiViewUnitTest, BasicTest)
     }
   }
 
+  // switch values
+  printf ( "Switching values\n" );
+  for ( int kk = 0; kk < 2; ++kk )
+  {
+    for ( int jj = 0; jj < 6; ++jj )
+    {
+      int temp = arrView(0, kk, jj);
+      arrView(0, kk, jj) = arrView(1, kk, jj);
+      arrView(1, kk, jj) = temp;
+    }
+  }
+
+  for ( int zz = 0; zz < 2; ++zz )
+  {
+    for ( int kk = 0; kk < 2; ++kk )
+    {
+      for ( int jj = 0; jj < 6; ++jj )
+      {
+        printf ( "arr%i(%i, %i) %d\n", zz, kk, jj, arrView(zz, kk, jj) );
+      }
+    }
+  }
 }
 

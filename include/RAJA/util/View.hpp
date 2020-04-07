@@ -156,17 +156,17 @@ struct MultiView {
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
-  //template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  //RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>
-  //shift(const std::array<IdxLin, n_dims>& shift)
-  //{
-  //  static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
+  template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
+  RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>
+  shift(const std::array<IdxLin, n_dims>& shift)
+  {
+    static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
 
-  //  typename add_offset<layout_type>::type shift_layout(layout);
-  //  shift_layout.shift(shift);
+    typename add_offset<layout_type>::type shift_layout(layout);
+    shift_layout.shift(shift);
 
-  //  return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
-  //}
+    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
+  }
 
   // first = pointer index, rest = layout args
   // making this specifically typed would require unpacking the layout,
