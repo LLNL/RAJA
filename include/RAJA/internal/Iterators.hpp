@@ -113,20 +113,29 @@ public:
   using reference = value_type&;
   using iterator_category = std::random_access_iterator_tag;
 
-  constexpr numeric_iterator() {}
-  constexpr numeric_iterator(const numeric_iterator& rhs) : val(rhs.val) {}
-  constexpr numeric_iterator(numeric_iterator&& rhs) : val(rhs.val) {}
-  numeric_iterator& operator=(const numeric_iterator& rhs)
+  RAJA_HOST_DEVICE constexpr numeric_iterator() {}
+  RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
+      : val(rhs.val)
+  {
+  }
+  RAJA_HOST_DEVICE constexpr numeric_iterator(numeric_iterator&& rhs)
+      : val(rhs.val)
+  {
+  }
+  RAJA_HOST_DEVICE numeric_iterator& operator=(const numeric_iterator& rhs)
   {
     val = rhs.val;
     return *this;
   }
-  numeric_iterator& operator=(numeric_iterator&& rhs)
+  RAJA_HOST_DEVICE numeric_iterator& operator=(numeric_iterator&& rhs)
   {
     val = rhs.val;
     return *this;
   }
-  constexpr numeric_iterator(const stripped_value_type& rhs) : val(rhs) {}
+  RAJA_HOST_DEVICE constexpr numeric_iterator(const stripped_value_type& rhs)
+      : val(rhs)
+  {
+  }
 
   RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return 1; }
 
@@ -290,22 +299,25 @@ public:
   using reference = DifferenceType&;
   using iterator_category = std::random_access_iterator_tag;
 
-  constexpr strided_numeric_iterator() {}
-  constexpr strided_numeric_iterator(const strided_numeric_iterator& rhs)
+  RAJA_HOST_DEVICE constexpr strided_numeric_iterator() {}
+  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
+      const strided_numeric_iterator& rhs)
       : val(rhs.val), stride(rhs.stride)
   {
   }
-  constexpr strided_numeric_iterator(strided_numeric_iterator&& rhs)
+  RAJA_HOST_DEVICE constexpr strided_iterator(strided_numeric_iterator&& rhs)
       : val(rhs.val), stride(rhs.stride)
   {
   }
-  strided_numeric_iterator& operator=(const strided_numeric_iterator& rhs)
+  RAJA_HOST_DEVICE strided_numeric_iterator& operator=(
+      const strided_numeric_iterator& rhs)
   {
     val = rhs.val;
     stride = rhs.stride;
     return *this;
   }
-  strided_numeric_iterator& operator=(strided_numeric_iterator&& rhs)
+  RAJA_HOST_DEVICE strided_numeric_iterator& operator=(
+      strided_numeric_iterator&& rhs)
   {
     val = rhs.val;
     stride = rhs.stride;
