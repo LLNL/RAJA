@@ -305,7 +305,7 @@ public:
       : val(rhs.val), stride(rhs.stride)
   {
   }
-  RAJA_HOST_DEVICE constexpr strided_iterator(strided_numeric_iterator&& rhs)
+  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(strided_numeric_iterator&& rhs)
       : val(rhs.val), stride(rhs.stride)
   {
   }
