@@ -31,11 +31,17 @@ namespace RAJA
     MATRIX_COL_MAJOR
   };
 
+  enum MatrixSizeType
+  {
+    MATRIX_STREAM,
+    MATRIX_FIXED
+  };
+
 
 namespace internal {
 
 
-  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_REG, typename IDX_ROW, typename IDX_COL>
+  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_ROW, typename IDX_COL>
   class MatrixImpl;
 
 
@@ -54,9 +60,9 @@ namespace internal {
   template<typename MATRIX>
   struct MatrixReshapeHelper;
 
-  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
   struct MatrixReshapeHelper<
-    MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
+    MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
   {
 
     using orig_vector_t = VECTOR_TYPE;
@@ -64,25 +70,21 @@ namespace internal {
 
     using row_major_t = MatrixImpl<orig_vector_t,
                                   MATRIX_ROW_MAJOR,
-                                  camp::idx_seq<IDX_REG...>,
                                   camp::idx_seq<IDX_ROW...>,
                                   camp::idx_seq<IDX_COL...> >;
 
     using col_major_t = MatrixImpl<flip_vector_t,
                                    MATRIX_COL_MAJOR,
-                                   camp::make_idx_seq_t<flip_vector_t::num_registers()>,
                                    camp::idx_seq<IDX_ROW...>,
                                    camp::idx_seq<IDX_COL...> >;
 
     using row_major_transpose_t = MatrixImpl<flip_vector_t,
                                              MATRIX_ROW_MAJOR,
-                                             camp::make_idx_seq_t<flip_vector_t::num_registers()>,
                                              camp::idx_seq<IDX_COL...>,
                                              camp::idx_seq<IDX_ROW...> >;
 
     using col_major_transpose_t = MatrixImpl<orig_vector_t,
                                              MATRIX_COL_MAJOR,
-                                             camp::idx_seq<IDX_REG...>,
                                              camp::idx_seq<IDX_COL...>,
                                              camp::idx_seq<IDX_ROW...> >;
 
@@ -100,9 +102,9 @@ namespace internal {
   };
 
 
-  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
   struct MatrixReshapeHelper<
-    MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
+    MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > >
   {
       using orig_vector_t = VECTOR_TYPE;
       using flip_vector_t = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
@@ -110,25 +112,21 @@ namespace internal {
 
       using row_major_t = MatrixImpl<flip_vector_t,
                                     MATRIX_ROW_MAJOR,
-                                    camp::make_idx_seq_t<flip_vector_t::num_registers()>,
                                     camp::idx_seq<IDX_ROW...>,
                                     camp::idx_seq<IDX_COL...> >;
 
       using col_major_t = MatrixImpl<orig_vector_t,
                                      MATRIX_COL_MAJOR,
-                                     camp::idx_seq<IDX_REG...>,
                                      camp::idx_seq<IDX_ROW...>,
                                      camp::idx_seq<IDX_COL...> >;
 
       using row_major_transpose_t = MatrixImpl<orig_vector_t,
                                                MATRIX_ROW_MAJOR,
-                                               camp::idx_seq<IDX_REG...>,
                                                camp::idx_seq<IDX_COL...>,
                                                camp::idx_seq<IDX_ROW...> >;
 
       using col_major_transpose_t = MatrixImpl<flip_vector_t,
                                                MATRIX_COL_MAJOR,
-                                               camp::make_idx_seq_t<flip_vector_t::num_registers()>,
                                                camp::idx_seq<IDX_COL...>,
                                                camp::idx_seq<IDX_ROW...> >;
 
@@ -151,16 +149,16 @@ namespace internal {
   struct MatrixMatrixProductHelper;
 
 
-  template<typename A_VECTOR_TYPE, camp::idx_t ... A_IDX_REG, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
-           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_REG, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  template<typename A_VECTOR_TYPE, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
+           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
   struct MatrixMatrixProductHelper<
-    MatrixImpl<A_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
-    MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
+    MatrixImpl<A_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
+    MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
   {
-      using A_type = MatrixImpl<A_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >;
-      using B_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
+      using A_type = MatrixImpl<A_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >;
+      using B_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
 
-      using result_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
+      using result_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
 
       static_assert(sizeof...(A_IDX_COL) == sizeof...(B_IDX_ROW),
           "Matrices are incompatible for multiplication");
@@ -205,19 +203,18 @@ namespace internal {
 
 
 
-  template<typename A_VECTOR_TYPE, camp::idx_t ... A_IDX_REG, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
-           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_REG, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  template<typename A_VECTOR_TYPE, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
+           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
   struct MatrixMatrixProductHelper<
-    MatrixImpl<A_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
-    MatrixImpl<B_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
+    MatrixImpl<A_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
+    MatrixImpl<B_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
   {
-      using A_type = MatrixImpl<A_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >;
-      using B_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
+      using A_type = MatrixImpl<A_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >;
+      using B_type = MatrixImpl<B_VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
 
       using result_vector = changeVectorLength<B_VECTOR_TYPE, sizeof...(A_IDX_ROW)>;
-      using result_register_seq = camp::make_idx_seq_t<result_vector::num_registers()>;
 
-      using result_type = MatrixImpl<result_vector, MATRIX_COL_MAJOR, result_register_seq, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
+      using result_type = MatrixImpl<result_vector, MATRIX_COL_MAJOR, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >;
 
       static_assert(sizeof...(A_IDX_COL) == sizeof...(B_IDX_ROW),
           "Matrices are incompatible for multiplication");
@@ -265,20 +262,19 @@ namespace internal {
   template<typename ROW_MATRIX, typename COL_MATRIX>
   struct MatrixViewCombiner;
 
-  template<typename A_VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... A_IDX_REG, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
-           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_REG, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  template<typename A_VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL,
+           typename B_VECTOR_TYPE, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
   struct MatrixViewCombiner<
-    MatrixImpl<A_VECTOR_TYPE, LAYOUT, camp::idx_seq<A_IDX_REG...>, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
-    MatrixImpl<B_VECTOR_TYPE, LAYOUT, camp::idx_seq<B_IDX_REG...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
+    MatrixImpl<A_VECTOR_TYPE, LAYOUT, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...> >,
+    MatrixImpl<B_VECTOR_TYPE, LAYOUT, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...> >>
   {
       using row_major_vector = changeVectorLength<A_VECTOR_TYPE, sizeof...(B_IDX_COL)>;
       using col_major_vector = changeVectorLength<A_VECTOR_TYPE, sizeof...(A_IDX_ROW)>;
 
       using vector_type = typename std::conditional<LAYOUT==MATRIX_ROW_MAJOR, row_major_vector, col_major_vector>::type;
 
-      using reg_idx_type = camp::make_idx_seq_t<vector_type::num_registers()>;
 
-      using type = MatrixImpl<vector_type, LAYOUT, reg_idx_type, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...>>;
+      using type = MatrixImpl<vector_type, LAYOUT, camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<B_IDX_COL...>>;
   };
 
 } // namespace internal
@@ -293,73 +289,7 @@ namespace RAJA
 {
 namespace internal {
 
-  template<camp::idx_t DEFAULT, bool IS_STATIC>
-  class SemiStaticValue;
 
-  template<camp::idx_t DEFAULT>
-  class SemiStaticValue<DEFAULT, false>
-  {
-    private:
-      camp::idx_t m_value;
-
-    public:
-      using self_type = SemiStaticValue<DEFAULT, false>;
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      SemiStaticValue() : m_value(DEFAULT) {}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      SemiStaticValue(self_type const &c) : m_value(c.m_value) {}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr camp::idx_t get() const{
-        return m_value;
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void set(camp::idx_t new_value){
-        m_value = new_value;
-      }
-
-      static constexpr bool s_is_fixed = false;
-  };
-
-  template<camp::idx_t DEFAULT>
-  class SemiStaticValue<DEFAULT, true>
-  {
-    public:
-      using self_type = SemiStaticValue<DEFAULT, true>;
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      SemiStaticValue(){}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      SemiStaticValue(self_type const &){}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr camp::idx_t get() const{
-        return DEFAULT;
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      void set(camp::idx_t ){
-        // NOP
-      }
-
-      static constexpr bool s_is_fixed = true;
-  };
 
 
 
@@ -368,20 +298,20 @@ namespace internal {
   /*
    * Row-Major implementation of MatrixImpl
    */
-  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  class MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > :
-   public MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  class MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > :
+   public MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
   {
     public:
-      using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
-      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
+      using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
 
       using vector_type = VECTOR_TYPE;
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
       using col_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
       using element_type = typename VECTOR_TYPE::element_type;
 
-      static_assert(vector_type::num_elem() == row_vector_type::num_elem(),
+      static_assert(vector_type::s_num_elem == row_vector_type::s_num_elem,
           "Internal mismatch in vector types");
 
 
@@ -432,6 +362,16 @@ namespace internal {
         camp::sink((m_rows[IDX_ROW] = v.m_rows[IDX_ROW])...);
         m_num_rows.set(v.m_num_rows.get());
         return *this;
+      }
+
+
+      /*!
+       * Gets size of matrix along specified dimension
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr camp::idx_t dim_elem(camp::idx_t dim){
+        return (dim==0) ? m_num_rows.get() : m_rows[0].size();
       }
 
       /*!
@@ -576,19 +516,19 @@ namespace internal {
   /*
    * Column-Major implementation of MatrixImpl
    */
-  template<typename VECTOR_TYPE, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  class MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > :
-   public MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
+  template<typename VECTOR_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  class MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> > :
+   public MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
   {
     public:
-      using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
-      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
+      using self_type = MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using base_type = MatrixBase<MatrixImpl<VECTOR_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>;
       using vector_type = VECTOR_TYPE;
 
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
       using col_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
 
-      static_assert(vector_type::num_elem() == col_vector_type::num_elem(),
+      static_assert(vector_type::s_num_elem == col_vector_type::s_num_elem,
           "Internal mismatch in vector types");
 
       using element_type = typename VECTOR_TYPE::element_type;
@@ -640,6 +580,15 @@ namespace internal {
         camp::sink((m_cols[IDX_COL] = v.m_cols[IDX_COL])...);
         m_num_cols.set(v.m_num_cols.get());
         return *this;
+      }
+
+      /*!
+       * Gets size of matrix along specified dimension
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr camp::idx_t dim_elem(camp::idx_t dim){
+        return (dim==0) ? m_cols[0].size() : m_num_cols.get();
       }
 
       /*!

@@ -56,8 +56,8 @@ TYPED_TEST_P(VectorTest, GetSet)
 
   using element_t = typename vector_t::element_type;
 
-  element_t A[vector_t::num_elem()];
-  for(camp::idx_t i = 0;i < vector_t::num_elem();++ i){
+  element_t A[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
     A[i] = (element_t)(i*2);
   }
 
@@ -65,9 +65,9 @@ TYPED_TEST_P(VectorTest, GetSet)
   // For Stream vectors, try all lengths
   camp::idx_t Nstart = 1;
   if(vector_t::s_is_fixed){
-    Nstart = vector_t::num_elem();
+    Nstart = vector_t::s_num_elem;
   }
-  for(camp::idx_t N = Nstart; N <= vector_t::num_elem(); ++ N){
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
 
     // load array A as vector
     vector_t vec;
@@ -96,8 +96,8 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
 
   using element_t = typename vector_t::element_type;
 
-  element_t A[vector_t::num_elem()];
-  for(camp::idx_t i = 0;i < vector_t::num_elem();++ i){
+  element_t A[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
     A[i] = (element_t)i;
   }
 
@@ -105,9 +105,9 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
   // For Stream vectors, try all lengths
   camp::idx_t Nstart = 1;
   if(vector_t::s_is_fixed){
-    Nstart = vector_t::num_elem();
+    Nstart = vector_t::s_num_elem;
   }
-  for(camp::idx_t N = Nstart; N <= vector_t::num_elem(); ++ N){
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
 
     // load array A as vector
     vector_t vec;
@@ -143,10 +143,10 @@ TYPED_TEST_P(VectorTest, FmaFms)
 
   using element_t = typename vector_t::element_type;
 
-  element_t A[vector_t::num_elem()];
-  element_t B[vector_t::num_elem()];
-  element_t C[vector_t::num_elem()];
-  for(camp::idx_t i = 0;i < vector_t::num_elem();++ i){
+  element_t A[vector_t::s_num_elem];
+  element_t B[vector_t::s_num_elem];
+  element_t C[vector_t::s_num_elem];
+  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
     A[i] = (element_t)i;
     B[i] = (element_t)i*2;
     C[i] = (element_t)i*3;
@@ -156,9 +156,9 @@ TYPED_TEST_P(VectorTest, FmaFms)
   // For Stream vectors, try all lengths
   camp::idx_t Nstart = 1;
   if(vector_t::s_is_fixed){
-    Nstart = vector_t::num_elem();
+    Nstart = vector_t::s_num_elem;
   }
-  for(camp::idx_t N = Nstart; N <= vector_t::num_elem(); ++ N){
+  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
 
     // load arrays as vectors
     vector_t vec_A;
@@ -194,7 +194,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 10*vector_t::num_elem();
+  size_t N = 10*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){
@@ -239,8 +239,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   using element_t = typename vector_t::element_type;
 
 
-  index_t N = 3*vector_t::num_elem();
-  index_t M = 4*vector_t::num_elem();
+  index_t N = 3*vector_t::s_num_elem;
+  index_t M = 4*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   if(!vector_t::s_is_fixed){

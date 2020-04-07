@@ -59,11 +59,11 @@ RAJA_INLINE void forall_impl(const tensor_exec<TENSOR_TYPE, DIM>&,
   using tensor_type = TENSOR_TYPE;
   using tensor_index_type = TensorIndex<value_type, tensor_type, DIM>;
 
-  diff_t distance_simd = distance - (distance%tensor_type::num_elem(DIM));
+  diff_t distance_simd = distance - (distance%tensor_type::s_dim_elem(DIM));
   diff_t distance_remainder = distance - distance_simd;
 
   // Streaming loop for complete vector widths
-  for (diff_t i = 0; i < distance_simd; i+=tensor_type::num_elem(DIM)) {
+  for (diff_t i = 0; i < distance_simd; i+=tensor_type::s_dim_elem(DIM)) {
     loop_body(tensor_index_type(*(begin + i)));
   }
 

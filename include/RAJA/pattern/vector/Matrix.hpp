@@ -23,12 +23,13 @@
 namespace RAJA
 {
 
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY  = policy::register_default>
+//  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
+
+  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
   using FixedMatrix =
       internal::MatrixImpl<
         FixedVector<T, ((LAYOUT==MATRIX_ROW_MAJOR) ? COLS:  ROWS), REGISTER_POLICY>,
         LAYOUT,
-        camp::make_idx_seq_t<FixedVector<T, ((LAYOUT==MATRIX_ROW_MAJOR) ? COLS:  ROWS), REGISTER_POLICY>::num_registers()>,
         camp::make_idx_seq_t<ROWS>,
         camp::make_idx_seq_t<COLS> >;
 

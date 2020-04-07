@@ -29,11 +29,11 @@ namespace RAJA
   template<typename Derived>
   class MatrixBase;
 
-  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_REG, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
-  class MatrixBase<MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
+  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL>
+  class MatrixBase<MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >>
   {
     public:
-      using self_type = MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_REG...>, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
+      using self_type = MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...> >;
 
       using vector_type = VECTOR_TYPE;
       using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
@@ -44,10 +44,7 @@ namespace RAJA
       static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
       static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
 
-      RAJA_INLINE
-      static constexpr camp::idx_t num_elem(camp::idx_t dim){
-        return (dim==0) ? s_num_rows : s_num_cols;
-      }
+
 
     private:
       RAJA_INLINE
@@ -71,6 +68,16 @@ namespace RAJA
       constexpr
       bool is_root() {
         return VECTOR_TYPE::is_root();
+      }
+
+      /*!
+       * Gets the maximum size of matrix along specified dimension
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr camp::idx_t s_dim_elem(camp::idx_t dim){
+        return (dim==0) ? s_num_rows : s_num_cols;
       }
 
 
@@ -184,11 +191,11 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename VT, MatrixLayout L, typename REG, typename ROW, typename COL>
+      template<typename VT, MatrixLayout L, typename ROW, typename COL>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, REG, ROW, COL>>::result_type
-      operator*(MatrixImpl<VT, L, REG, ROW, COL> const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, ROW, COL>>::result_type
+      operator*(MatrixImpl<VT, L, ROW, COL> const &mat) const {
         return getThis()->multiply(mat);
       }
 
@@ -210,39 +217,6 @@ namespace RAJA
 
 
 
-#if 0
-      /*!
-       * @brief Fused multiply add: fma(b, c) = (*this)*b+c
-       *
-       * Derived types can override this to implement intrinsic FMA's
-       *
-       * @param b Second product operand
-       * @param c Sum operand
-       * @return Value of (*this)*b+c
-       */
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        return (self_type(*getThis()) * self_type(b)) + self_type(c);
-      }
-
-      /*!
-       * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
-       *
-       * Derived types can override this to implement intrinsic FMS's
-       *
-       * @param b Second product operand
-       * @param c Subtraction operand
-       * @return Value of (*this)*b-c
-       */
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        return getThis()->fused_multiply_add(b, -c);
-      }
-#endif
   };
 
   }

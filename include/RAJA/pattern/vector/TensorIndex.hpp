@@ -213,7 +213,7 @@ namespace RAJA
         static
         constexpr
         camp::idx_t num_elem(){
-          return TENSOR_TYPE::num_elem(DIM);
+          return TENSOR_TYPE::s_dim_elem(DIM);
         }
     };
 

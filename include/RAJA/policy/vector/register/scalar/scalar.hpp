@@ -47,9 +47,7 @@ namespace RAJA
 
     public:
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static constexpr camp::idx_t num_elem(){return 1;}
+      static constexpr camp::idx_t s_num_elem = 1;
 
       /*!
        * @brief Default constructor, zeros register contents

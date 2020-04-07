@@ -65,7 +65,7 @@ struct StatementExecutor<
     auto distance = std::distance(begin, end);
     using diff_t = decltype(distance);
 
-    diff_t distance_simd = distance - (distance%TENSOR_TYPE::num_elem(DIM));
+    diff_t distance_simd = distance - (distance%TENSOR_TYPE::s_dim_elem(DIM));
     diff_t distance_remainder = distance - distance_simd;
 
     // compute the vector index type and new LoopTypes
@@ -73,12 +73,9 @@ struct StatementExecutor<
     using tensor_index_type = TensorIndex<value_type, TENSOR_TYPE, DIM>;
     using NewTypes = setSegmentType<Types, ArgumentId, tensor_index_type>;
 
-
-    //using tensor_offset_type = TensorIndex<tensor_index_type::value_type, TENSOR_TYPE, DIM>;
-
     // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = TENSOR_TYPE::num_elem(DIM);
-    for (diff_t i = 0; i < distance_simd; i+=TENSOR_TYPE::num_elem(DIM)) {
+    camp::get<ArgumentId>(data.vector_sizes) = TENSOR_TYPE::s_dim_elem(DIM);
+    for (diff_t i = 0; i < distance_simd; i+=TENSOR_TYPE::s_dim_elem(DIM)) {
 
       data.template assign_offset<ArgumentId>(i);
       execute_statement_list<stmt_list_t, NewTypes>(data);
