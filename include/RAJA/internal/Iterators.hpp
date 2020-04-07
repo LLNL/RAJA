@@ -114,7 +114,6 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
   constexpr numeric_iterator() {}
-  ~numeric_iterator() {}
   constexpr numeric_iterator(const numeric_iterator& rhs) : val(rhs.val) {}
   constexpr numeric_iterator(numeric_iterator&& rhs) : val(rhs.val) {}
   numeric_iterator& operator=(const numeric_iterator& rhs)
@@ -292,7 +291,6 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
   constexpr strided_numeric_iterator() {}
-  ~strided_numeric_iterator() {}
   constexpr strided_numeric_iterator(const strided_numeric_iterator& rhs)
       : val(rhs.val), stride(rhs.stride)
   {
