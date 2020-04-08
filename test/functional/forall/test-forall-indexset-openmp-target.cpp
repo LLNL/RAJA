@@ -9,14 +9,16 @@
 
 // OpenMP target execution policy types
 using OpenMPTargetForallIndexSetExecPols = 
-  list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_target_parallel_for_exec<8>>,
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_target_parallel_for_exec_nt> >;
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, 
+                               RAJA::omp_target_parallel_for_exec<8>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, 
+                               RAJA::omp_target_parallel_for_exec_nt> >;
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallIndexSetTypes =
-  Test< cartesian_product<IdxTypeList, 
-                          HostResourceList, 
-                          OpenMPTargetForallIndexSetExecPols>>::Types;
+  Test< camp::cartesian_product<IdxTypeList, 
+                                HostResourceList, 
+                                OpenMPTargetForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallIndexSetTest,

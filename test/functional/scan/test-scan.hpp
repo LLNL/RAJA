@@ -13,16 +13,12 @@
 
 #include "camp/list.hpp"
 
-using namespace camp;
-using camp::list;
-using namespace camp::resources;
-
 // Unroll types for gtest testing::Types
 template<class T>
 struct Test;
 
 template<class ...T>
-struct Test<list<T...>>{
+struct Test<camp::list<T...>>{
   using Types = ::testing::Types<T...>;
 };
 
@@ -33,29 +29,29 @@ class ScanFunctionalTest: public ::testing::Test {};
 
 
 // Define scan operation types
-using OpTypes = list< RAJA::operators::plus<int>,
+using OpTypes = camp::list< RAJA::operators::plus<int>,
 #if 0  // Parallel tests with plus operator and float data do not work
        // likely due to precision being too low and plus not associative
-                      RAJA::operators::plus<float>,
+                            RAJA::operators::plus<float>,
 #endif
-                      RAJA::operators::plus<double>,
-                      RAJA::operators::minimum<int>,
-                      RAJA::operators::minimum<float>,
-                      RAJA::operators::minimum<double>,
-                      RAJA::operators::maximum<int>,
-                      RAJA::operators::maximum<float>,
-                      RAJA::operators::maximum<double> >;
+                            RAJA::operators::plus<double>,
+                            RAJA::operators::minimum<int>,
+                            RAJA::operators::minimum<float>,
+                            RAJA::operators::minimum<double>,
+                            RAJA::operators::maximum<int>,
+                            RAJA::operators::maximum<float>,
+                            RAJA::operators::maximum<double> >;
 
-using ListHostRes = list< camp::resources::Host >;
+using ListHostRes = camp::list< camp::resources::Host >;
 
 
 template <typename T>
 void allocScanTestData(int N, 
-                       Resource& work_res, 
+                       camp::resources::Resource& work_res, 
                        T** work_in, T** work_out, 
                        T** host_in, T** host_out)
 {
-  Resource host_res{Host()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
   *work_in  = work_res.allocate<T>(N);
   *work_out = work_res.allocate<T>(N);
@@ -65,11 +61,11 @@ void allocScanTestData(int N,
 }
 
 template <typename T>
-void deallocScanTestData(Resource& work_res,
+void deallocScanTestData(camp::resources::Resource& work_res,
                          T* work_in, T* work_out,
                          T* host_in, T* host_out)
 {
-  Resource host_res{Host()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
   work_res.deallocate(work_in);
   work_res.deallocate(work_out);

@@ -9,21 +9,21 @@
 
 // OpenMP execution policy types
 using OpenMPForallIndexSetExecPols = 
-  list< RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>,
-        RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::loop_exec>,
-        RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec>,
-        RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::seq_exec>,
-        RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::loop_exec>,
-        RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::simd_exec>,
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_exec>,
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>,
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_nowait_exec> >;
+  camp::list< RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>,
+              RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::loop_exec>,
+              RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec>,
+              RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::seq_exec>,
+              RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::loop_exec>,
+              RAJA::ExecPolicy<RAJA::omp_parallel_segit, RAJA::simd_exec>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_exec>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_nowait_exec> >;
 
 // Cartesian product of types for OpenMP tests
 using OpenMPForallIndexSetTypes =
-  Test< cartesian_product<IdxTypeList, 
-                          HostResourceList, 
-                          OpenMPForallIndexSetExecPols>>::Types;
+  Test< camp::cartesian_product<IdxTypeList, 
+                                HostResourceList, 
+                                OpenMPForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
                                ForallIndexSetTest,

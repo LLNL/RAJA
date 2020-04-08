@@ -9,10 +9,8 @@
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
 #include "test-forall-segment.hpp"
-#include <numeric>
 
-using namespace camp::resources;
-using namespace camp;
+#include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
@@ -20,7 +18,7 @@ void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
@@ -66,9 +64,9 @@ void runNegativeTests()
 
 TYPED_TEST_P(ForallSegmentTest, RangeSegmentForall)
 {
-  using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
-  using WORKING_RES = typename at<TypeParam, num<1>>::type;
-  using EXEC_POLICY = typename at<TypeParam, num<2>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
   ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);

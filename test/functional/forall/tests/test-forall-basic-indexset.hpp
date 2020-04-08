@@ -14,9 +14,6 @@
 #include <algorithm>
 #include <vector>
 
-using namespace camp::resources;
-using namespace camp;
-
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallISetTest()
 {
@@ -28,7 +25,7 @@ void ForallISetTest()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   INDEX_TYPE last_idx = 0;
 
@@ -92,9 +89,9 @@ void ForallISetTest()
 
 TYPED_TEST_P(ForallIndexSetTest, IndexSetForall)
 {
-  using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ForallISetTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }

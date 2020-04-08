@@ -11,9 +11,6 @@
 #include "camp/resource.hpp"
 #include "gtest/gtest.h"
 
-using namespace camp::resources;
-using namespace camp;
-
 //
 // Unroll types for gtest testing::Types
 //
@@ -21,7 +18,7 @@ template <class T>
 struct Test;
 
 template <class... T>
-struct Test<list<T...>> {
+struct Test<camp::list<T...>> {
   using Types = ::testing::Types<T...>;
 };
 
@@ -29,34 +26,34 @@ struct Test<list<T...>> {
 //
 // Index types for segments
 //
-using IdxTypeList = list<RAJA::Index_type,
-                         short,
+using IdxTypeList = camp::list<RAJA::Index_type,
+                               int,
 #if defined(TEST_EXHAUSTIVE)
-                         unsigned short,
-                         int,
-                         unsigned int,
-                         long int,
-                         unsigned long,
-                         long long,
+                               unsigned int,
+                               short,
+                               unsigned short,
+                               long int,
+                               unsigned long,
+                               long long,
 #endif
-                         unsigned long long>;
+                               unsigned long long>;
 
 
 //
 // Memory resource types for beck-end execution
 //
-using HostResourceList = list<camp::resources::Host>;
+using HostResourceList = camp::list<camp::resources::Host>;
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = list<camp::resources::Cuda>;
+using CudaResourceList = camp::list<camp::resources::Cuda>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = list<camp::resources::Omp>;
+using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipResourceList = list<camp::resources::Hip>;
+using HipResourceList = camp::list<camp::resources::Hip>;
 #endif
 
 
@@ -66,12 +63,12 @@ using HipResourceList = list<camp::resources::Hip>;
 
 template<typename T>
 void allocateForallTestData(T N,
-                            Resource& work_res,
+                            camp::resources::Resource& work_res,
                             T** work_array,
                             T** check_array,
                             T** test_array)
 {
-  Resource host_res{Host()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
   *work_array = work_res.allocate<T>(N);
 
@@ -80,12 +77,12 @@ void allocateForallTestData(T N,
 }
 
 template<typename T>
-void deallocateForallTestData(Resource& work_res,
+void deallocateForallTestData(camp::resources::Resource& work_res,
                               T* work_array,
                               T* check_array,
                               T* test_array)
 {
-  Resource host_res{Host()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
   work_res.deallocate(work_array);
 

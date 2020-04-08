@@ -9,14 +9,14 @@
 
 // Cuda execution policy types
 using CudaForallIndexSetExecPols = 
-  list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>,
-        RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>> >;
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>> >;
 
 // Cartesian product of types for Cuda tests
 using CudaForallIndexSetTypes =
-  Test< cartesian_product<IdxTypeList, 
-                          CudaResourceList, 
-                          CudaForallIndexSetExecPols>>::Types;
+  Test< camp::cartesian_product<IdxTypeList, 
+                                CudaResourceList, 
+                                CudaForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallIndexSetTest,

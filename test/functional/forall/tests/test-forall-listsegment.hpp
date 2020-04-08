@@ -9,15 +9,13 @@
 #define __TEST_FORALL_LISTSEGMENT_HPP__
 
 #include "test-forall-segment.hpp"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <algorithm>
 #include <numeric>
-
-using namespace camp::resources;
-using namespace camp;
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallListSegmentTest(INDEX_TYPE N)
@@ -37,7 +35,7 @@ void ForallListSegmentTest(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   // Create list segment for tests
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
@@ -81,9 +79,9 @@ void ForallListSegmentTest(INDEX_TYPE N)
 
 TYPED_TEST_P(ForallSegmentTest, ListSegmentForall)
 {
-  using INDEX_TYPE       = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using EXEC_POLICY      = typename at<TypeParam, num<2>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
 

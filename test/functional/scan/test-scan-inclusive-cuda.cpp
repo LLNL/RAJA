@@ -10,10 +10,10 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 // CUDA policy types to test
-using CudaExecTypes = list< RAJA::cuda_exec<128>,
-                            RAJA::cuda_exec<256> >;
+using CudaExecTypes = camp::list< RAJA::cuda_exec<128>,
+                                  RAJA::cuda_exec<256> >;
 
-using ListCudaRes = list<camp::resources::Cuda>;
+using ListCudaRes = camp::list<camp::resources::Cuda>;
 
 using CudaInclusiveScanTypes =
   Test<cartesian_product< CudaExecTypes, ListCudaRes, OpTypes >>::Types;
