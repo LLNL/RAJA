@@ -267,7 +267,8 @@ public:
                    Index_type length,
                    IndexOwnership owned = Owned)
     : m_resource(camp::resources::Resource{camp::resources::Host()}),
-      m_use_resource(false)
+      m_use_resource(false),
+      m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(m_use_resource,
                   values, length, owned);
@@ -295,7 +296,8 @@ public:
   /// Copy-constructor for list segment.
   ///
   TypedListSegment(const TypedListSegment& other)
-    : m_resource(other.m_resource), m_use_resource(other.m_use_resource)
+    : m_resource(other.m_resource), m_use_resource(other.m_use_resource),
+      m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(other.m_use_resource,
                   other.m_data, other.m_size, other.m_owned);
