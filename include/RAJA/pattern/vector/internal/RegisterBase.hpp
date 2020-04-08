@@ -110,11 +110,9 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
-      constexpr
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      element_type operator[](IDX i) const
+      element_type operator[](camp::idx_t i) const
       {
         return getThis()->get(i);
       }

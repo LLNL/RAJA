@@ -371,7 +371,7 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      constexpr camp::idx_t dim_elem(camp::idx_t dim){
+      constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
         return (dim==0) ? m_num_rows.get() : m_rows[0].size();
       }
 
@@ -598,7 +598,7 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      constexpr camp::idx_t dim_elem(camp::idx_t dim){
+      constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
         return (dim==0) ? m_cols[0].size() : m_num_cols.get();
       }
 

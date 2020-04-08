@@ -13,12 +13,12 @@
 #include "RAJA_gtest.hpp"
 
 using RegisterTestTypes = ::testing::Types<
-//#ifdef RAJA_ALTIVEC
-//    RAJA::Register<RAJA::altivec_register, double>,
-//    RAJA::Register<RAJA::altivec_register, float>,
-//    RAJA::Register<RAJA::altivec_register, int>,
-//    RAJA::Register<RAJA::altivec_register, long>,
-//#endif
+#ifdef RAJA_ALTIVEC
+    RAJA::Register<RAJA::altivec_register, double>,
+    RAJA::Register<RAJA::altivec_register, float>,
+    RAJA::Register<RAJA::altivec_register, int>,
+    RAJA::Register<RAJA::altivec_register, long>,
+#endif
 
 #ifdef __AVX__
     RAJA::Register<RAJA::avx_register, double>,
@@ -32,15 +32,15 @@ using RegisterTestTypes = ::testing::Types<
     RAJA::Register<RAJA::avx2_register, float>,
     RAJA::Register<RAJA::avx2_register, int>,
     RAJA::Register<RAJA::avx2_register, long>,
-
-
 #endif
+
+    // scalar_register is supported on all platforms
     RAJA::Register<RAJA::scalar_register, int>,
     RAJA::Register<RAJA::scalar_register, long>,
     RAJA::Register<RAJA::scalar_register, float>,
     RAJA::Register<RAJA::scalar_register, double>,
 
-    // Test automatically wrapped types to make things easier for users
+//    // Test automatically wrapped types to make things easier for users
     RAJA::StreamVector<int>,
     RAJA::StreamVector<int, 2>,
     RAJA::StreamVector<long>,
@@ -110,6 +110,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   // test copy construction
   register_t cc(x);
   for(size_t i = 0;i < num_elem; ++ i){
+    printf("i=%d, cc=%e, x=%e, A=%e\n", (int)i, (double)cc[i], (double)x[i], (double)A[i]);
     ASSERT_DOUBLE_EQ(cc[i], A[i]);
   }
 

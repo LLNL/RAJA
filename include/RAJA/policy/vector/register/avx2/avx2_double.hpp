@@ -96,16 +96,6 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
-      /*!
-       * @brief Construct from explicit scalars for each element.
-       */
-      RAJA_INLINE
-      Register(element_type c0,
-               element_type c1,
-               element_type c2,
-               element_type c3) :
-            m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
-
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -196,10 +186,9 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
       constexpr
       RAJA_INLINE
-      element_type get(IDX i) const
+      element_type get(camp::idx_t i) const
       {return m_value[i];}
 
 
@@ -208,9 +197,8 @@ namespace RAJA
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
-      template<typename IDX>
       RAJA_INLINE
-      self_type &set(IDX i, element_type value)
+      self_type &set(camp::idx_t i, element_type value)
       {
         m_value[i] = value;
         return *this;
@@ -305,7 +293,7 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper halves
-          return std::max<element_type>(b[0], b[2]);
+          return RAJA::max<element_type>(b[0], b[2]);
         }
         else if(N == 3){
           // permute the first two and last two lanes of the register
@@ -322,10 +310,10 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper lane
-          return std::max<element_type>(b[0], b[2]);
+          return RAJA::max<element_type>(b[0], b[2]);
         }
         else if(N == 2){
-          return std::max<element_type>(m_value[0], m_value[1]);
+          return RAJA::max<element_type>(m_value[0], m_value[1]);
         }
         else if(N == 1){
           return m_value[0];

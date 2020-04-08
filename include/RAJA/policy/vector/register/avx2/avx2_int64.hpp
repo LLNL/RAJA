@@ -202,9 +202,8 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
       RAJA_INLINE
-      element_type get(IDX i) const
+      element_type get(camp::idx_t i) const
       {
         // got to be a nicer way to do this!?!?
         switch(i){
@@ -222,9 +221,8 @@ namespace RAJA
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
-      template<typename IDX>
       RAJA_INLINE
-      self_type &set(IDX i, element_type value)
+      self_type &set(camp::idx_t i, element_type value)
       {
         // got to be a nicer way to do this!?!?
         switch(i){

@@ -36,18 +36,13 @@
 namespace RAJA
 {
 
-
-  template<camp::idx_t N>
-  class Register<altivec_register, int, N>:
-    public internal::RegisterBase<Register<altivec_register, int, N>>
+  template<>
+  class Register<altivec_register, int>:
+    public internal::RegisterBase<Register<altivec_register, int>>
   {
-
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AltiVec can only have 4 lanes of 32-bit ints");
-
     public:
       using register_policy = altivec_register;
-      using self_type = Register<altivec_register, int, N>;
+      using self_type = Register<altivec_register, int>;
       using element_type = int;
 
 
@@ -60,6 +55,8 @@ namespace RAJA
 
       using register_type = decltype(m_value);
 
+      static constexpr camp::idx_t s_num_elem = 4;
+
       /*!
        * @brief Default constructor, zeros register contents
        */
@@ -71,7 +68,6 @@ namespace RAJA
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
-      constexpr
       explicit Register(register_type const &c) : m_value(c) {}
 
 
@@ -79,7 +75,6 @@ namespace RAJA
        * @brief Copy constructor
        */
       RAJA_INLINE
-      constexpr
       Register(self_type const &c) : m_value(c.m_value) {}
 
 
@@ -88,12 +83,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) :
-        m_value{c,
-                N >= 2 ? c : 0,
-                N >= 3 ? c : 0,
-                N >= 4 ? c : 0}
-      {}
+      Register(element_type const &c) : m_value{c,c,c,c} {}
 
 
       /*!
@@ -105,14 +95,17 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
+        if(N <= 0){
+          m_value = register_type(0);
+        }
         if(stride == 1){
           if(N == 4){
             m_value = *((register_type const *)ptr);
           }
           else{
             m_value = register_type{
-              ptr[0],
+              N >= 1 ? ptr[0] : 0,
               N >= 2 ? ptr[1] : 0,
               N >= 3 ? ptr[2] : 0,
               N >= 4 ? ptr[3] : 0};
@@ -120,7 +113,7 @@ namespace RAJA
         }
         else{
           m_value = register_type{
-                        ptr[0],
+                        N >= 1 ? ptr[0] : 0,
                         N >= 2 ? ptr[stride] : 0,
                         N >= 3 ? ptr[2*stride] : 0,
                         N >= 4 ? ptr[3*stride] : 0};
@@ -139,7 +132,10 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 4) const{
+        if(N <= 0){
+          return *this;
+        }
         if(stride == 1 && N ==4){
           *((register_type *)ptr) = m_value;
         }
@@ -156,10 +152,8 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
-      constexpr
       RAJA_INLINE
-      element_type get(IDX i) const
+      element_type get(camp::idx_t i) const
       {return m_value[i];}
 
 
@@ -168,9 +162,8 @@ namespace RAJA
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
-      template<typename IDX>
       RAJA_INLINE
-      self_type &set(IDX i, element_type value)
+      self_type &set(camp::idx_t i, element_type value)
       {
         m_value[i] = value;
         return *this;
@@ -179,10 +172,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type const &c){
-        m_value = register_type{c,
-                N >= 2 ? c : 0,
-                N >= 3 ? c : 0,
-                N >= 4 ? c : 0};
+        m_value = register_type{c,c,c,c};
         return * this;
       }
 
@@ -214,14 +204,17 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t N = 4) const {
+        if(N <= 0){
+          return self_type();
+        }
         if(N==4){
           return self_type(vec_div(m_value, b.m_value));
         }
         else{
           return self_type(
               register_type{
-                m_value[0]/b.m_value[0],
+                N >= 1 ? m_value[0]/b.m_value[0] : 0,
                 N >= 2 ? m_value[1]/b.m_value[1] : 0,
                 N >= 3 ? m_value[2]/b.m_value[2] : 0,
                 N >= 4 ? m_value[3]/b.m_value[3] : 0}
@@ -236,8 +229,12 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t N = 4) const
       {
+        if(N <= 0){
+          return element_type(0);
+        }
+
         vector unsigned char perm1 {
           0x04, 0x05, 0x06, 0x07,  // m_value[1]
           0x00, 0x01, 0x02, 0x03,  // m_value[0]
@@ -266,8 +263,11 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 4) const
       {
+        if(N <= 0){
+          return RAJA::operators::limits<element_type>::min();
+        }
         if(N == 1){
           return m_value[0];
         }
@@ -317,8 +317,11 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 4) const
       {
+        if(N <= 0){
+          return RAJA::operators::limits<element_type>::max();
+        }
         if(N == 1){
           return m_value[0];
         }
