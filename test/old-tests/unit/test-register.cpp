@@ -110,7 +110,6 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   // test copy construction
   register_t cc(x);
   for(size_t i = 0;i < num_elem; ++ i){
-    printf("i=%d, cc=%e, x=%e, A=%e\n", (int)i, (double)cc[i], (double)x[i], (double)A[i]);
     ASSERT_DOUBLE_EQ(cc[i], A[i]);
   }
 
@@ -609,9 +608,9 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  using register_t = RAJA::Register<RAJA::vector_cuda_warp_register<5>, element_t, 32>;
+  //using register_t = RAJA::Register<RAJA::cuda_warp_register<5>, element_t, 32>;
 
-  using vector_t = RAJA::FixedVectorExt<register_t, 32>;
+  using vector_t = RAJA::CudaWarpFixedVector<element_t, 32, 5>;
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -689,7 +688,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp16)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  using register_t = RAJA::Register<RAJA::vector_cuda_warp_register<4>, element_t, 16>;
+  using register_t = RAJA::Register<RAJA::cuda_warp_register<4>, element_t>;
 
 
   using Pol = RAJA::KernelPolicy<

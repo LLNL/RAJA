@@ -29,48 +29,28 @@
 
 
 namespace RAJA {
+
+  /*!
+   * A warp distributed vector.
+   */
 	template<camp::idx_t LANE_BITS>
-  struct vector_cuda_warp_register {};
-
-  template<camp::idx_t LANE_BITS, typename T>
-  struct RegisterTraits<vector_cuda_warp_register<LANE_BITS>, T>{
-
-		static_assert(LANE_BITS >= 1 && LANE_BITS <= 5, "Invalid number of lanes");
-
-    using register_type = T;
-    using element_type = T;
-
-
-    RAJA_INLINE
-    static constexpr
-    camp::idx_t num_elem(){return 1 << (LANE_BITS);}
-
-    RAJA_INLINE
-    static constexpr
-    camp::idx_t byte_width(){return num_elem()*sizeof(T);}
-
-    RAJA_INLINE
-    static constexpr
-    camp::idx_t bit_width(){return byte_width()*8;}
-
-  };
+  struct cuda_warp_register {
+	    static_assert(LANE_BITS >= 1 && LANE_BITS <= 5, "Invalid number of lanes");
+	};
 
 
 
-
-  template<camp::idx_t LANE_BITS, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM>
-  class Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM> :
-    public internal::RegisterBase<Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM>>
+  template<camp::idx_t LANE_BITS, typename ELEMENT_TYPE>
+  class Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE> :
+    public internal::RegisterBase<Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>>
   {
     public:
-      using register_policy = vector_cuda_warp_register<LANE_BITS>;
-      using self_type = Register<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, NUM_ELEM>;
+      using register_policy = cuda_warp_register<LANE_BITS>;
+      using self_type = Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>;
       using element_type = ELEMENT_TYPE;
       using register_type = element_type;
 
       using bitmask_t = BitMask<LANE_BITS, 0>;
-
-			static_assert(num_elem() <= RegisterTraits<vector_cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>::num_elem(), "Too many elements");
 
 		private:
       element_type m_value;
@@ -78,11 +58,14 @@ namespace RAJA {
 
 		public:
 
+      static constexpr camp::idx_t s_num_elem = 1<<(LANE_BITS);
+
       /*!
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
+      constexpr
       Register() : m_value(element_type(0)) {
       }
 
@@ -90,7 +73,7 @@ namespace RAJA {
        * @brief Copy constructor from raw value
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       constexpr
       explicit Register(element_type const &c) : m_value(c) {}
 
@@ -99,7 +82,7 @@ namespace RAJA {
        * @brief Copy constructor
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       constexpr
       Register(self_type const &c) : m_value(c.m_value) {}
 
@@ -137,14 +120,15 @@ namespace RAJA {
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      RAJA_DEVICE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      RAJA_HOST_DEVICE
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = s_num_elem){
         auto lane = get_lane();
-        if(lane < num_elem()){
+        if(lane < s_num_elem){
           m_value = ptr[stride*lane];
         }
         return *this;
       }
+
 
 
       /*!
@@ -156,10 +140,10 @@ namespace RAJA {
        * available.
        */
       RAJA_INLINE
-      RAJA_DEVICE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      RAJA_HOST_DEVICE
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = s_num_elem) const{
         auto lane = get_lane();
-        if(lane < num_elem()){
+        if(lane < s_num_elem){
           ptr[stride*lane] = m_value;
         }
         return *this;
@@ -170,11 +154,10 @@ namespace RAJA {
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      template<typename IDX>
       constexpr
       RAJA_INLINE
       RAJA_DEVICE
-      element_type get(IDX i) const
+      element_type get(camp::idx_t i) const
 			{
 				return __shfl_sync(0xffffffff, m_value, i);
 			}
@@ -184,10 +167,9 @@ namespace RAJA {
        * @param i Offset of scalar to set
        * @param value Value of scalar to set
        */
-      template<typename IDX>
       RAJA_INLINE
       RAJA_DEVICE
-      self_type &set(IDX i, element_type value)
+      self_type &set(camp::idx_t i, element_type value)
 			{
 				auto lane = get_lane();
       	if(lane == i){
@@ -231,8 +213,8 @@ namespace RAJA {
 
       RAJA_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
-        return self_type(m_value / b.m_value);
+      self_type divide(self_type const &b, camp::idx_t N = s_num_elem) const {
+        return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
       }
 
       RAJA_DEVICE
@@ -256,14 +238,14 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type sum() const
+      element_type sum(camp::idx_t N = s_num_elem) const
       {
 				// Allreduce sum
 				using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::plus>;
 			
 				auto ident = element_type();
 				auto lane = get_lane();
-				auto value = lane < num_elem() ? m_value : ident;
+				auto value = lane < N ? m_value : ident;
 				return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 
@@ -275,14 +257,14 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type max() const
+      element_type max(camp::idx_t N = s_num_elem) const
       {
         // Allreduce maximum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
 
         auto ident = element_type();
         auto lane = get_lane();
-        auto value = lane < num_elem() ? m_value : ident;
+        auto value = lane < N ? m_value : ident;
         return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 
@@ -303,14 +285,14 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type min() const
+      element_type min(camp::idx_t N = s_num_elem) const
       {
         // Allreduce minimum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
 
         auto ident = element_type();
         auto lane = get_lane();
-        auto value = lane < num_elem() ? m_value : ident;
+        auto value = lane < N ? m_value : ident;
         return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
       }
 

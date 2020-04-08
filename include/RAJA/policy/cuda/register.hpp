@@ -26,14 +26,12 @@ namespace RAJA
 
 
   template<typename T, camp::idx_t LANE_BITS = 5, camp::idx_t UNROLL = 1>
-  using CudaWarpStreamVector = StreamVectorExt<
-      RAJA::Register<vector_cuda_warp_register<LANE_BITS>, T, RAJA::RegisterTraits<vector_cuda_warp_register<LANE_BITS>, T>::num_elem()>,
-      RAJA::RegisterTraits<vector_cuda_warp_register<LANE_BITS>, T>::num_elem() * UNROLL>;
+  using CudaWarpStreamVector = StreamVector<
+      T, UNROLL, cuda_warp_register<LANE_BITS>>;
 
-  template<typename T, camp::idx_t NumElem, camp::idx_t LANE_BITS = 5>
-  using CudaWarpFixedVector = FixedVectorExt<
-      RAJA::Register<RAJA::vector_cuda_warp_register<LANE_BITS>, T, RAJA::RegisterTraits<vector_cuda_warp_register<LANE_BITS>, T>::num_elem()>,
-      NumElem>;
+  template<typename T, camp::idx_t NUM_ELEM, camp::idx_t LANE_BITS = 5>
+  using CudaWarpFixedVector = FixedVector<
+      T, NUM_ELEM, cuda_warp_register<LANE_BITS>>;
 
 }
 

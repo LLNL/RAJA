@@ -796,12 +796,12 @@ struct CudaStatementExecutor<
     auto distance = segment_length<ArgumentId>(data);
     using diff_t = decltype(distance);
 
-    diff_t distance_simd = distance - (distance%VectorType::num_elem());
+    diff_t distance_simd = distance - (distance%VectorType::s_num_elem);
     diff_t distance_remainder = distance - distance_simd;
 
     // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = VectorType::num_elem();
-    for (diff_t i = 0; i < distance_simd; i+=VectorType::num_elem()) {
+    camp::get<ArgumentId>(data.vector_sizes) = VectorType::s_num_elem;
+    for (diff_t i = 0; i < distance_simd; i+=VectorType::s_num_elem) {
       // Assign i to the argument
       // Note: this is independent of warp lane... each lane gets SAME index!
       data.template assign_offset<ArgumentId>(i);

@@ -27,8 +27,30 @@ namespace RAJA
   class Vector : public internal::makeVectorBase<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>
   {
     public:
+      using self_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>;
       using base_type = internal::makeVectorBase<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>;
-      using base_type::base_type;
+//      using base_type::base_type;
+
+      /*!
+       * @brief Default constructor, zeros register contents
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Vector(){}
+
+      /*!
+       * @brief Copy constructor
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Vector(self_type const &c) : base_type(c){}
+
+      /*!
+       * @brief Scalar constructor (broadcast)
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Vector(ELEMENT_TYPE const &c) :base_type(c){}
 
   };
 
