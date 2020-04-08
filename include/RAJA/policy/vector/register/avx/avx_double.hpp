@@ -32,31 +32,28 @@
 namespace RAJA
 {
 
-
-  template<camp::idx_t N>
-  class Register<avx_register, double, N> :
-    public internal::RegisterBase<Register<avx_register, double, N>>
+  template<>
+  class Register<avx_register, double> :
+    public internal::RegisterBase<Register<avx_register, double>>
   {
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AVX can only have 4 lanes of doubles");
-
     public:
       using register_policy = avx_register;
-      using self_type = Register<avx_register, double, N>;
+      using self_type = Register<avx_register, double>;
       using element_type = double;
       using register_type = __m256d;
 
 
-    protected:
+    private:
       register_type m_value;
 
       RAJA_INLINE
-      __m256i createMask() const {
+      __m256i createMask(camp::idx_t N) const {
         // Generate a mask
-        return  _mm256_set_epi64x(0,  // never, since N < 4
-                                  N==3 ? -1 : 0,  // only if N==3
-                                  N>1  ? -1 : 0,  // only if N==2 || N==1
-                                  -1);            // Always, since N >= 1
+        return  _mm256_set_epi64x(
+            N >= 4 ? -1 : 0,
+            N >= 3 ? -1 : 0,
+            N >= 2 ? -1 : 0,
+            N >= 1 ? -1 : 0);
       }
 
       RAJA_INLINE
@@ -66,6 +63,8 @@ namespace RAJA
       }
 
     public:
+
+      static constexpr camp::idx_t s_num_elem = 4;
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -97,6 +96,16 @@ namespace RAJA
       RAJA_INLINE
       Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
+      /*!
+       * @brief Construct from explicit scalars for each element.
+       */
+      RAJA_INLINE
+      Register(element_type c0,
+               element_type c1,
+               element_type c2,
+               element_type c3) :
+            m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
+
 
       /*!
        * @brief Strided load constructor, when scalars are located in memory
@@ -107,7 +116,11 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_pd();
+        }
         // Packed Load?
         if(stride == 1){
           // Full vector width uses regular load
@@ -117,7 +130,7 @@ namespace RAJA
 
           // Do a masked load
           else{
-            m_value = _mm256_maskload_pd(ptr, createMask());
+            m_value = _mm256_maskload_pd(ptr, createMask(N));
           }
         }
 
@@ -153,7 +166,6 @@ namespace RAJA
               break;
           }
         }
-
         return *this;
       }
 
@@ -168,7 +180,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 4) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -177,7 +189,7 @@ namespace RAJA
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_pd(ptr, createMask(), m_value);
+            _mm256_maskstore_pd(ptr, createMask(N), m_value);
           }
 
         }
@@ -251,7 +263,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t = 4) const {
         return self_type(_mm256_div_pd(m_value, b.m_value));
       }
 
@@ -260,7 +272,7 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t = 4) const
       {
         auto sh1 = _mm256_permute_pd(m_value, 0x5);
         auto red1 = _mm256_add_pd(m_value, sh1);
@@ -273,7 +285,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 4) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register
@@ -288,7 +300,7 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper halves
-          return std::max<element_type>(b[0], b[2]);
+          return RAJA::max<element_type>(b[0], b[2]);
         }
         else if(N == 3){
           // permute the first two and last two lanes of the register
@@ -305,14 +317,15 @@ namespace RAJA
           register_type b = _mm256_max_pd(m_value, a);
 
           // now take the maximum of a lower and upper lane
-          return std::max<element_type>(b[0], b[2]);
+          return RAJA::max<element_type>(b[0], b[2]);
         }
         else if(N == 2){
-          return std::max<element_type>(m_value[0], m_value[1]);
+          return RAJA::max<element_type>(m_value[0], m_value[1]);
         }
-        else{
+        else if(N == 1){
           return m_value[0];
         }
+        return RAJA::operators::limits<double>::min();
       }
 
       /*!
@@ -330,7 +343,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 4) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register
@@ -345,7 +358,7 @@ namespace RAJA
           register_type b = _mm256_min_pd(m_value, a);
 
           // now take the minimum of a lower and upper halves
-          return std::min<element_type>(b[0], b[2]);
+          return RAJA::min<element_type>(b[0], b[2]);
         }
         else if(N == 3){
           // permute the first two and last two lanes of the register
@@ -362,14 +375,15 @@ namespace RAJA
           register_type b = _mm256_min_pd(m_value, a);
 
           // now take the minimum of a lower and upper lane
-          return std::min<element_type>(b[0], b[2]);
+          return RAJA::min<element_type>(b[0], b[2]);
         }
         else if(N == 2){
-          return std::min<element_type>(m_value[0], m_value[1]);
+          return RAJA::min<element_type>(m_value[0], m_value[1]);
         }
-        else{
+        else if(N == 1){
           return m_value[0];
         }
+        return RAJA::operators::limits<double>::max();
       }
 
       /*!

@@ -408,8 +408,6 @@ namespace RAJA
         auto red2 = _mm256_min_ps(red1, sh2);
 
         return std::min<element_type>(red2[0], red2[4]);
-
-
       }
 
       /*!

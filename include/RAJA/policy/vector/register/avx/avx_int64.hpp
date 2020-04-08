@@ -32,17 +32,13 @@
 namespace RAJA
 {
 
-
-  template<camp::idx_t N>
-  class Register<avx_register, long, N> :
-    public internal::RegisterBase<Register<avx_register, long, N>>
+  template<>
+  class Register<avx_register, long> :
+    public internal::RegisterBase<Register<avx_register, long>>
   {
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 4, "AVX can only have 4 lanes of int64s");
-
     public:
       using register_policy = avx_register;
-      using self_type = Register<avx_register, long, N>;
+      using self_type = Register<avx_register, long>;
       using element_type = long;
       using register_type = __m256i;
 
@@ -51,12 +47,13 @@ namespace RAJA
       register_type m_value;
 
       RAJA_INLINE
-      __m256i createMask() const {
+      __m256i createMask(camp::idx_t N) const {
         // Generate a mask
-        return  _mm256_set_epi64x(0,  // never, since N < 4
-                                  N==3 ? -1 : 0,  // only if N==3
-                                  N>1  ? -1 : 0,  // only if N==2 || N==1
-                                  -1);            // Always, since N >= 1
+        return  _mm256_set_epi64x(
+            N >= 4 ? -1 : 0,
+            N >= 3 ? -1 : 0,
+            N >= 2 ? -1 : 0,
+            N >= 1 ? -1 : 0);
       }
 
       RAJA_INLINE
@@ -79,6 +76,9 @@ namespace RAJA
       }
 
     public:
+
+      static constexpr camp::idx_t s_num_elem = 4;
+
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -120,7 +120,11 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_si256();
+        }
         // Packed Loads
         if(stride == 1){
 
@@ -132,7 +136,7 @@ namespace RAJA
           // Masked Load
           else{
             m_value = _mm256_castpd_si256(
-                _mm256_maskload_pd(reinterpret_cast<double const *>(ptr), createMask())
+                _mm256_maskload_pd(reinterpret_cast<double const *>(ptr), createMask(N))
             );
           }
         }
@@ -158,7 +162,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 4) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -167,7 +171,7 @@ namespace RAJA
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_epi64(ptr, createMask(), m_value);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(ptr), createMask(N), m_value);
           }
 
         }
@@ -277,18 +281,18 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        // AVX2 does not supply an integer divide, so do it manually
+        // AVX2 does not supply an long multiply, so do it manually
         return self_type(_mm256_set_epi64x(
-            N >= 4 ? get(3)*b.get(3) : 0,
-            N >= 3 ? get(2)*b.get(2) : 0,
-            N >= 2 ? get(1)*b.get(1) : 0,
-            N >= 1 ? get(0)*b.get(0) : 0
+            get(3)*b.get(3),
+            get(2)*b.get(2),
+            get(1)*b.get(1),
+            get(0)*b.get(0)
             ));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t N = 4) const {
         // AVX2 does not supply an integer divide, so do it manually
         return self_type(_mm256_set_epi64x(
             N >= 4 ? get(3)/b.get(3) : 0,
@@ -305,8 +309,11 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t N = 4) const
       {
+        if(N <= 0){
+          return element_type(0);
+        }
         // swap pairs and add
         auto sh1 = permute<0x5>(m_value);
 
@@ -333,8 +340,12 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 4) const
       {
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::min();
+        }
+
         // AVX2 does not supply an 64bit integer max?!?
         auto red = get(0);
 
@@ -361,32 +372,12 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        switch(N){
-          case 1:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                0,
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          case 2:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          case 3:
-            return self_type(_mm256_set_epi64x(
-                0,
-                get(2) > a.get(2) ? get(2) : a.get(2),
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          default:
-            return self_type(_mm256_set_epi64x(
-                get(3) > a.get(3) ? get(3) : a.get(3),
-                get(2) > a.get(2) ? get(2) : a.get(2),
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-        }
+          return self_type(_mm256_set_epi64x(
+              get(3) > a.get(3) ? get(3) : a.get(3),
+              get(2) > a.get(2) ? get(2) : a.get(2),
+              get(1) > a.get(1) ? get(1) : a.get(1),
+              get(0) > a.get(0) ? get(0) : a.get(0) ));
+        
       }
 
       /*!
@@ -394,8 +385,12 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 4) const
       {
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::max();
+        }
+
         // AVX2 does not supply an 64bit integer max?!?
         auto red = get(0);
 
@@ -422,32 +417,12 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        switch(N){
-          case 1:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                0,
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          case 2:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          case 3:
-            return self_type(_mm256_set_epi64x(
-                0,
-                get(2) < a.get(2) ? get(2) : a.get(2),
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          default:
-            return self_type(_mm256_set_epi64x(
-                get(3) < a.get(3) ? get(3) : a.get(3),
-                get(2) < a.get(2) ? get(2) : a.get(2),
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-        }
+          return self_type(_mm256_set_epi64x(
+              get(3) < a.get(3) ? get(3) : a.get(3),
+              get(2) < a.get(2) ? get(2) : a.get(2),
+              get(1) < a.get(1) ? get(1) : a.get(1),
+              get(0) < a.get(0) ? get(0) : a.get(0) ));
+        
       }
   };
 

@@ -32,17 +32,13 @@
 namespace RAJA
 {
 
-
-  template<camp::idx_t N>
-  class Register<avx_register, float, N> :
-    public internal::RegisterBase<Register<avx_register, float, N>>
+  template<>
+  class Register<avx_register, float> :
+    public internal::RegisterBase<Register<avx_register, float>>
   {
-    static_assert(N >= 1, "Vector must have at least 1 lane");
-    static_assert(N <= 8, "AVX can only have 8 lanes of floats");
-
     public:
       using register_policy = avx_register;
-      using self_type = Register<avx_register, float, N>;
+      using self_type = Register<avx_register, float>;
       using element_type = float;
       using register_type = __m256;
 
@@ -51,7 +47,7 @@ namespace RAJA
       register_type m_value;
 
       RAJA_INLINE
-      __m256i createMask() const {
+      __m256i createMask(camp::idx_t N) const {
         // Generate a mask
         return  _mm256_set_epi32(
             N >= 8 ? -1 : 0,
@@ -65,6 +61,8 @@ namespace RAJA
       }
 
     public:
+
+      static constexpr camp::idx_t s_num_elem = 8;
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -106,7 +104,11 @@ namespace RAJA
        * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1){
+      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 8){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_ps();
+        }
         // Packed data is either a full, or masked load
         if(stride == 1){
           if(N == 8)
@@ -114,7 +116,7 @@ namespace RAJA
             m_value = _mm256_loadu_ps(ptr);
           }
           else {
-            m_value = _mm256_maskload_ps(ptr, createMask());
+            m_value = _mm256_maskload_ps(ptr, createMask(N));
           }
         }
         // AVX has no gather instruction, so do it manually
@@ -138,7 +140,7 @@ namespace RAJA
        * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1) const{
+      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 8) const{
         // Is this a packed store?
         if(stride == 1){
           // Is it full-width?
@@ -147,7 +149,7 @@ namespace RAJA
           }
           // Need to do a masked store
           else{
-            _mm256_maskstore_ps(ptr, createMask(), m_value);
+            _mm256_maskstore_ps(ptr, createMask(N), m_value);
           }
 
         }
@@ -221,7 +223,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b) const {
+      self_type divide(self_type const &b, camp::idx_t = 8) const {
         return self_type(_mm256_div_ps(m_value, b.m_value));
       }
 
@@ -231,7 +233,7 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum() const
+      element_type sum(camp::idx_t N = 8) const
       {
         // Some simple cases
         if(N == 1){
@@ -262,14 +264,17 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max() const
+      element_type max(camp::idx_t N = 8) const
       {
         // Some simple cases
+        if(N <= 0 || N >8){
+          return RAJA::operators::limits<float>::min();
+        }
         if(N == 1){
           return m_value[0];
         }
         if(N == 2){
-          return std::max<element_type>(m_value[0], m_value[1]);
+          return RAJA::max<element_type>(m_value[0], m_value[1]);
         }
 
         // swap odd-even pairs and add
@@ -284,7 +289,7 @@ namespace RAJA
 
         // Some more simple shortcuts
         if(N == 3){
-          return std::max<element_type>(red1[0], m_value[2]);
+          return RAJA::max<element_type>(red1[0], m_value[2]);
         }
 
 
@@ -296,14 +301,14 @@ namespace RAJA
           return red2[0];
         }
         if(N == 5){
-          return std::max<element_type>(red2[0], m_value[4]);
+          return RAJA::max<element_type>(red2[0], m_value[4]);
         }
         if(N == 6){
-          return std::max<element_type>(red2[0], red1[4]);
+          return RAJA::max<element_type>(red2[0], red1[4]);
         }
 
         // 7 or 8 lanes
-        return std::max<element_type>(red2[0], red2[4]);
+        return RAJA::max<element_type>(red2[0], red2[4]);
       }
 
       /*!
@@ -321,14 +326,17 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min() const
+      element_type min(camp::idx_t N = 8) const
       {
         // Some simple cases
+        if(N <= 0 || N >8){
+          return RAJA::operators::limits<float>::max();
+        }
         if(N == 1){
           return m_value[0];
         }
         if(N == 2){
-          return std::min<element_type>(m_value[0], m_value[1]);
+          return RAJA::min<element_type>(m_value[0], m_value[1]);
         }
 
         // swap odd-even pairs and add
@@ -343,7 +351,7 @@ namespace RAJA
 
         // Some more simple shortcuts
         if(N == 3){
-          return std::min<element_type>(red1[0], m_value[2]);
+          return RAJA::min<element_type>(red1[0], m_value[2]);
         }
 
 
@@ -355,14 +363,14 @@ namespace RAJA
           return red2[0];
         }
         if(N == 5){
-          return std::min<element_type>(red2[0], m_value[4]);
+          return RAJA::min<element_type>(red2[0], m_value[4]);
         }
         if(N == 6){
-          return std::min<element_type>(red2[0], red1[4]);
+          return RAJA::min<element_type>(red2[0], red1[4]);
         }
 
         // 7 or 8 lanes
-        return std::min<element_type>(red2[0], red2[4]);
+        return RAJA::min<element_type>(red2[0], red2[4]);
       }
 
       /*!
@@ -383,4 +391,4 @@ namespace RAJA
 
 #endif
 
-#endif //__AVX2__
+#endif //__AVX__

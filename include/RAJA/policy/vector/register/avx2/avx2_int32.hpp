@@ -345,6 +345,9 @@ namespace RAJA
       RAJA_INLINE
       element_type sum(camp::idx_t N = 8) const
       {
+        if(N <= 0){
+          return element_type(0);
+        }
         // Some simple cases
         if(N == 1){
           return get(0);

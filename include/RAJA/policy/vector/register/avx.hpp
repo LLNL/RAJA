@@ -29,10 +29,10 @@ namespace RAJA {
 
 #endif
 
-//#include<RAJA/policy/vector/register/avx/avx_int64.hpp>
-//#include<RAJA/policy/vector/register/avx/avx_int32.hpp>
-//#include<RAJA/policy/vector/register/avx/avx_float.hpp>
-//#include<RAJA/policy/vector/register/avx/avx_double.hpp>
+#include<RAJA/policy/vector/register/avx/avx_int64.hpp>
+#include<RAJA/policy/vector/register/avx/avx_int32.hpp>
+#include<RAJA/policy/vector/register/avx/avx_float.hpp>
+#include<RAJA/policy/vector/register/avx/avx_double.hpp>
 
 
 #endif // __AVX__

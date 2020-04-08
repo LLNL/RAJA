@@ -267,7 +267,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        // AVX2 does not supply an integer divide, so do it manually
+        // AVX2 does not supply an long multiply, so do it manually
         return self_type(_mm256_set_epi64x(
             get(3)*b.get(3),
             get(2)*b.get(2),
@@ -295,8 +295,11 @@ namespace RAJA
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t = 4) const
+      element_type sum(camp::idx_t N = 4) const
       {
+        if(N <= 0){
+          return element_type(0);
+        }
         // swap pairs and add
         auto sh1 = permute<0x5>(m_value);
         auto red1 = _mm256_add_epi64(m_value, sh1);
@@ -341,34 +344,14 @@ namespace RAJA
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      self_type vmax(self_type a, camp::idx_t N = 4) const
+      self_type vmax(self_type a) const
       {
-        switch(N){
-          case 1:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                0,
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          case 2:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          case 3:
-            return self_type(_mm256_set_epi64x(
-                0,
-                get(2) > a.get(2) ? get(2) : a.get(2),
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-          default:
-            return self_type(_mm256_set_epi64x(
-                get(3) > a.get(3) ? get(3) : a.get(3),
-                get(2) > a.get(2) ? get(2) : a.get(2),
-                get(1) > a.get(1) ? get(1) : a.get(1),
-                get(0) > a.get(0) ? get(0) : a.get(0) ));
-        }
+          return self_type(_mm256_set_epi64x(
+              get(3) > a.get(3) ? get(3) : a.get(3),
+              get(2) > a.get(2) ? get(2) : a.get(2),
+              get(1) > a.get(1) ? get(1) : a.get(1),
+              get(0) > a.get(0) ? get(0) : a.get(0) ));
+        
       }
 
       /*!
@@ -406,34 +389,14 @@ namespace RAJA
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      self_type vmin(self_type a, camp::idx_t N = 4) const
+      self_type vmin(self_type a) const
       {
-        switch(N){
-          case 1:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                0,
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          case 2:
-            return self_type(_mm256_set_epi64x(
-                0,
-                0,
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          case 3:
-            return self_type(_mm256_set_epi64x(
-                0,
-                get(2) < a.get(2) ? get(2) : a.get(2),
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-          default:
-            return self_type(_mm256_set_epi64x(
-                get(3) < a.get(3) ? get(3) : a.get(3),
-                get(2) < a.get(2) ? get(2) : a.get(2),
-                get(1) < a.get(1) ? get(1) : a.get(1),
-                get(0) < a.get(0) ? get(0) : a.get(0) ));
-        }
+          return self_type(_mm256_set_epi64x(
+              get(3) < a.get(3) ? get(3) : a.get(3),
+              get(2) < a.get(2) ? get(2) : a.get(2),
+              get(1) < a.get(1) ? get(1) : a.get(1),
+              get(0) < a.get(0) ? get(0) : a.get(0) ));
+        
       }
   };
 

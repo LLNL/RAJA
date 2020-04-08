@@ -19,13 +19,13 @@ using RegisterTestTypes = ::testing::Types<
 //    RAJA::Register<RAJA::altivec_register, int>,
 //    RAJA::Register<RAJA::altivec_register, long>,
 //#endif
-//
-//#ifdef __AVX__
-//    RAJA::Register<RAJA::avx_register, double>,
-//    RAJA::Register<RAJA::avx_register, float>,
-//    RAJA::Register<RAJA::avx_register, int>,
-//    RAJA::Register<RAJA::avx_register, long>,
-//#endif
+
+#ifdef __AVX__
+    RAJA::Register<RAJA::avx_register, double>,
+    RAJA::Register<RAJA::avx_register, float>,
+    RAJA::Register<RAJA::avx_register, int>,
+    RAJA::Register<RAJA::avx_register, long>,
+#endif
 
 #ifdef __AVX2__
     RAJA::Register<RAJA::avx2_register, double>,
