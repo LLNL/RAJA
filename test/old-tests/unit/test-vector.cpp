@@ -114,10 +114,10 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
     vec.load(&A[0], 1, N);
 
     // check min
-    ASSERT_DOUBLE_EQ(vec.min(), (element_t)0);
+    ASSERT_DOUBLE_EQ(vec.min(N), (element_t)0);
 
     // check max
-    ASSERT_DOUBLE_EQ(vec.max(), (element_t)(N-1));
+    ASSERT_DOUBLE_EQ(vec.max(N), (element_t)(N-1));
 
     // compute expected values
     element_t ex_sum(0);

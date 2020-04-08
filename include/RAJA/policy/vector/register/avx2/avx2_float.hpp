@@ -141,6 +141,10 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 8){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_ps();
+        }
         // Full vector width uses regular load/gather instruction
         if(N == 8){
 
@@ -331,6 +335,9 @@ namespace RAJA
       element_type max(camp::idx_t N = 8) const
       {
         // Some simple cases
+        if(N <= 0 || N >8){
+          return RAJA::operators::limits<float>::min();
+        }
         if(N == 1){
           return m_value[0];
         }
@@ -375,6 +382,9 @@ namespace RAJA
       element_type min(camp::idx_t N = 8) const
       {
         // Some simple cases
+        if(N <= 0 || N >8){
+          return RAJA::operators::limits<float>::max();
+        }
         if(N == 1){
           return m_value[0];
         }

@@ -49,10 +49,11 @@ namespace RAJA
       RAJA_INLINE
       __m256i createMask(camp::idx_t N) const {
         // Generate a mask
-        return  _mm256_set_epi64x(0,  // never, since N < 4
-                                  N==3 ? -1 : 0,  // only if N==3
-                                  N>1  ? -1 : 0,  // only if N==2 || N==1
-                                  -1);            // Always, since N >= 1
+        return  _mm256_set_epi64x(
+            N >= 4 ? -1 : 0,
+            N >= 3 ? -1 : 0,
+            N >= 2 ? -1 : 0,
+            N >= 1 ? -1 : 0);
       }
 
       RAJA_INLINE
@@ -116,8 +117,12 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_pd();
+        }
         // Full vector width uses regular load/gather instruction
-        if(N == 4){
+        else if(N == 4){
 
           // Packed Load
           if(stride == 1){
@@ -322,9 +327,10 @@ namespace RAJA
         else if(N == 2){
           return std::max<element_type>(m_value[0], m_value[1]);
         }
-        else{
+        else if(N == 1){
           return m_value[0];
         }
+        return RAJA::operators::limits<double>::min();
       }
 
       /*!
@@ -379,9 +385,10 @@ namespace RAJA
         else if(N == 2){
           return std::min<element_type>(m_value[0], m_value[1]);
         }
-        else{
+        else if(N == 1){
           return m_value[0];
         }
+        return RAJA::operators::limits<double>::max();
       }
 
       /*!

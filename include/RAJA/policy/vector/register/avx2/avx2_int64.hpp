@@ -49,10 +49,11 @@ namespace RAJA
       RAJA_INLINE
       __m256i createMask(camp::idx_t N) const {
         // Generate a mask
-        return  _mm256_set_epi64x(0,  // never, since N < 4
-                                  N==3 ? -1 : 0,  // only if N==3
-                                  N>1  ? -1 : 0,  // only if N==2 || N==1
-                                  -1);            // Always, since N >= 1
+        return  _mm256_set_epi64x(
+            N >= 4 ? -1 : 0,
+            N >= 3 ? -1 : 0,
+            N >= 2 ? -1 : 0,
+            N >= 1 ? -1 : 0);
       }
 
       RAJA_INLINE
@@ -120,6 +121,10 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
+        // no elements
+        if(N <= 0){
+          m_value = _mm256_setzero_si256();
+        }
         // Full vector width uses regular load/gather instruction
         if(N == 4){
 
@@ -308,6 +313,10 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 4) const
       {
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::min();
+        }
+
         // AVX2 does not supply an 64bit integer max?!?
         auto red = get(0);
 
@@ -369,6 +378,10 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 4) const
       {
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::max();
+        }
+
         // AVX2 does not supply an 64bit integer max?!?
         auto red = get(0);
 

@@ -75,6 +75,13 @@ namespace RAJA
         void set(camp::idx_t new_value){
           m_value = new_value;
         }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        void min(self_type const &a, self_type const &b){
+          m_value = a.m_value < b.m_value ?
+                    a.m_value : b.m_value;
+        }
     };
 
     template<camp::idx_t DEFAULT>
@@ -103,6 +110,11 @@ namespace RAJA
         RAJA_INLINE
         void set(camp::idx_t ){
           // NOP
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        void min(self_type const &, self_type const &){
         }
     };
 
@@ -297,6 +309,7 @@ namespace RAJA
         self_type& load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = NUM_ELEM){
 
           m_length.set(length);
+//          printf("load(n=%d)\n", (int)length);
 
           camp::sink(
               m_registers[REG_SEQ].load(
@@ -312,11 +325,17 @@ namespace RAJA
         RAJA_INLINE
         self_type const& store(element_type *ptr, camp::idx_t stride = 1) const {
 
+//          printf("store: length=%d  ", (int)m_length.get());
+//
+//          camp::sink(printf("REG[%d].store(n=%d) ", (int)REG_SEQ, (int)regNumElem(REG_SEQ))...);
+
           camp::sink(
               m_registers[REG_SEQ].store(
                   ptr + REG_SEQ*s_num_reg_elem*stride,
                   stride,
                   regNumElem(REG_SEQ)) ...);
+
+//          printf("\n");
 
           return *getThis();
         }
@@ -326,6 +345,8 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         void broadcast(element_type const &value){
+
+          m_length.set(NUM_ELEM);
 
           camp::sink(m_registers[REG_SEQ].broadcast(value)...);
 
@@ -339,7 +360,9 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type  &copy(self_type const &x){
+
           camp::sink( (m_registers[REG_SEQ] = x.m_registers[REG_SEQ])...);
+
           m_length.set(x.m_length.get());
 
           return *getThis();
@@ -356,6 +379,8 @@ namespace RAJA
 
           self_type result;
 
+          result.m_length.min(m_length, b.m_length);
+
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].add(b.m_registers[REG_SEQ]))...);
 
           return result;
@@ -369,6 +394,8 @@ namespace RAJA
         self_type subtract(self_type const &b) const {
 
           self_type result;
+
+          result.m_length.min(m_length, b.m_length);
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].subtract(b.m_registers[REG_SEQ]))...);
 
@@ -384,6 +411,8 @@ namespace RAJA
 
           self_type result;
 
+          result.m_length.min(m_length, b.m_length);
+
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].multiply(b.m_registers[REG_SEQ]))...);
 
           return result;
@@ -398,6 +427,8 @@ namespace RAJA
 
           self_type result;
 
+          result.m_length.min(m_length, b.m_length);
+
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].divide(b.m_registers[REG_SEQ], regNumElem(REG_SEQ)))...);
 
           return result;
@@ -410,6 +441,8 @@ namespace RAJA
 
           self_type result;
 
+          result.m_length.min(m_length, b.m_length);
+
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].fused_multiply_add(b.m_registers[REG_SEQ], c.m_registers[REG_SEQ]))...);
 
           return result;
@@ -420,6 +453,8 @@ namespace RAJA
         self_type fused_multiply_subtract(self_type const &b, self_type const &c) const {
 
           self_type result;
+
+          result.m_length.min(m_length, b.m_length);
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].fused_multiply_subtract(b.m_registers[REG_SEQ], c.m_registers[REG_SEQ]))...);
 
@@ -433,6 +468,8 @@ namespace RAJA
 
           self_type result;
 
+          result.m_length.min(m_length, b.m_length);
+
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].vmin(b.m_registers[REG_SEQ]))...);
 
           return result;
@@ -445,6 +482,8 @@ namespace RAJA
         self_type vmax(self_type const &b) const {
 
           self_type result;
+
+          result.m_length.min(m_length, b.m_length);
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].vmax(b.m_registers[REG_SEQ]))...);
 
@@ -468,20 +507,20 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type sum() const {
+        element_type sum(camp::idx_t = NUM_ELEM) const {
           return foldl_sum<element_type>(m_registers[REG_SEQ].sum(regNumElem(REG_SEQ))...);
         }
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type max() const {
+        element_type max(camp::idx_t = NUM_ELEM) const {
           return foldl_max<element_type>(m_registers[REG_SEQ].max(regNumElem(REG_SEQ))...);
         }
 
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type min() const {
+        element_type min(camp::idx_t = NUM_ELEM) const {
           return foldl_min<element_type>(m_registers[REG_SEQ].min(regNumElem(REG_SEQ))...);
         }
 
