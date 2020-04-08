@@ -187,7 +187,7 @@ namespace internal
       using col_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<1, Args...>()>::tensor_type;
 
       // compute a matrix type using features from the row and col
-      using matrix_type = typename MatrixViewCombiner<row_matrix_type, col_matrix_type>::type;
+      using matrix_type = MatrixViewCombiner<row_matrix_type, col_matrix_type>;
 
       using return_type = internal::MatrixRef<matrix_type,
                                               LinIdx,

@@ -52,6 +52,8 @@ namespace internal
 
       using result_type = typename helper_t::result_type;
 
+      using register_policy = typename A_MATRIX_TYPE::register_policy;
+
     private:
       A_MATRIX_TYPE m_matrix_a;
       B_MATRIX_TYPE m_matrix_b;
@@ -187,13 +189,13 @@ namespace internal
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename VECTOR_TYPE, MatrixLayout LAYOUT, typename IDX_ROW, typename IDX_COL, MatrixSizeType SIZE_TYPE>
+      template<camp::idx_t ROWS, camp::idx_t COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> >
-      operator*(MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> const &x) const
+      MatrixProductRef<result_type, Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> >
+      operator*(Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> const &x) const
       {
-        return MatrixProductRef<result_type, MatrixImpl<VECTOR_TYPE, LAYOUT, IDX_ROW, IDX_COL, SIZE_TYPE> >(get_result(), x);
+        return MatrixProductRef<result_type, Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> >(get_result(), x);
       }
 
       /*!

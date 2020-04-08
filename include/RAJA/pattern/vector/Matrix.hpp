@@ -18,23 +18,50 @@
 #ifndef RAJA_pattern_vector_matrix_HPP
 #define RAJA_pattern_vector_matrix_HPP
 
+namespace RAJA
+{
+
+  enum MatrixLayout {
+    MATRIX_ROW_MAJOR,
+    MATRIX_COL_MAJOR
+  };
+
+  enum MatrixSizeType
+  {
+    MATRIX_STREAM,
+    MATRIX_FIXED
+  };
+
+  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
+  class Matrix;
+
+}//namespace RAJA
+
 #include "RAJA/pattern/vector/internal/MatrixImpl.hpp"
 
 namespace RAJA
 {
 
-//  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixSizeType SIZE_TYPE, MatrixLayout LAYOUT, typename REGISTER_POLICY>
-//  class Matrix : public internal::MatrixImpl<
-//    Vector<T, >
+  /*!
+   * Wrapping class for internal::MatrixImpl that hides all of the long camp::idx_seq<...> template stuff from the user.
+   */
+  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
+  class Matrix : public internal::MatrixImpl<Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>, REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS>, SIZE_TYPE>
+  {
+    public:
+      using self_type = Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>;
+      using base_type = internal::MatrixImpl<self_type, REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS>, SIZE_TYPE>;
+
+      using base_type::base_type;
+  };
 
   template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
   using FixedMatrix =
-      internal::MatrixImpl<
-        FixedVector<T, ((LAYOUT==MATRIX_ROW_MAJOR) ? COLS:  ROWS), REGISTER_POLICY>,
-        LAYOUT,
-        camp::make_idx_seq_t<ROWS>,
-        camp::make_idx_seq_t<COLS>,
-        MATRIX_FIXED>;
+      Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, MATRIX_FIXED>;
+
+  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
+  using StreamMatrix =
+      Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, MATRIX_STREAM>;
 
   template<typename MATRIX_TYPE>
   using TransposeMatrix = typename internal::MatrixReshapeHelper<MATRIX_TYPE>::similar_transpose_t;

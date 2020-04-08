@@ -29,32 +29,34 @@ namespace RAJA
   template<typename Derived>
   class MatrixBase;
 
-  template<typename VECTOR_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
-  class MatrixBase<MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
+  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
+  class MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
   {
     public:
-      using self_type = MatrixImpl<VECTOR_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >;
+      //using self_type = MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >;
+      using self_type = MATRIX_TYPE;
 
-      using vector_type = VECTOR_TYPE;
-      using row_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_COL)>;
-      using col_vector_type = changeVectorLength<VECTOR_TYPE, sizeof...(IDX_ROW)>;
-      using element_type = typename VECTOR_TYPE::element_type;
+      static constexpr VectorSizeType s_vector_size_type = (SIZE_TYPE==MATRIX_FIXED) ? VECTOR_FIXED : VECTOR_STREAM;
+      using row_vector_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_COL), s_vector_size_type>;
+      using col_vector_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_ROW), s_vector_size_type>;
 
+      using element_type = ELEMENT_TYPE;
+      using register_policy = REGISTER_POLICY;
 
+      static constexpr MatrixLayout s_layout = LAYOUT;
+      static constexpr MatrixSizeType s_size_type = SIZE_TYPE;
       static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
       static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
 
-
-
     private:
-      RAJA_INLINE
       RAJA_HOST_DEVICE
+      RAJA_INLINE
       self_type *getThis(){
         return static_cast<self_type *>(this);
       }
 
-      RAJA_INLINE
       RAJA_HOST_DEVICE
+      RAJA_INLINE
       constexpr
       self_type const *getThis() const{
         return static_cast<self_type const *>(this);
@@ -67,7 +69,7 @@ namespace RAJA
       static
       constexpr
       bool is_root() {
-        return VECTOR_TYPE::is_root();
+        return row_vector_type::is_root();
       }
 
       /*!
@@ -191,11 +193,12 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<typename VT, MatrixLayout L, typename ROW, typename COL, MatrixSizeType ST>
+
+      template<camp::idx_t ROWS, camp::idx_t COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, MatrixImpl<VT, L, ROW, COL, ST>>::result_type
-      operator*(MatrixImpl<VT, L, ROW, COL, ST> const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, Matrix<ELEMENT_TYPE, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>>::result_type
+      operator*(Matrix<ELEMENT_TYPE, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE> const &mat) const {
         return getThis()->multiply(mat);
       }
 
