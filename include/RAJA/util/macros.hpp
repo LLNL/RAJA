@@ -122,7 +122,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
   (((dividend) + (divisor)-1) / (divisor))
 
 
-inline int RAJA_ABORT_OR_THROW(const char *str)
+inline void RAJA_ABORT_OR_THROW(const char *str)
 {
 
 #ifdef RAJA_COMPILER_MSVC

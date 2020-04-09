@@ -237,12 +237,15 @@ private:
   {
     Index_type num = getNumSegments();
 
-    RangeStrideSegment Iter = (pend == PUSH_BACK)
-                                  ? RangeStrideSegment(0, num, 1)
-                                  : RangeStrideSegment(num - 1, -1, -1);
-
-    for (Index_type i : Iter)
-      segment_push_into(i, c, pend, pcopy);
+    if (pend == PUSH_BACK) {
+      for (Index_type i = 0; i < num; ++i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    } else {
+      for (Index_type i = num-1; i > -1; --i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    }
   }
 
 

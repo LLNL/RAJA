@@ -25,5 +25,5 @@ module load rocm
 module load cmake/3.14.5
 
 cmake \
-  -C ../host-configs/lc-builds/hip.cmake \
+  -C ../host-configs/lc-builds/toss3/hip.cmake \
   ..

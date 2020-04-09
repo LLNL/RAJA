@@ -6,10 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-hip-scan
-  SOURCES test-scan.cpp)
-
-raja_add_test(
   NAME test-hip-reduce-sum
   SOURCES test-reduce-sum.cpp)
 
