@@ -8,8 +8,8 @@
 #include "test-scan-exclusive.hpp"
 
 // Sequential policy types to test
-using SequentialExecTypes = list< RAJA::seq_exec, 
-                                  RAJA::loop_exec >;
+using SequentialExecTypes = camp::list< RAJA::seq_exec, 
+                                        RAJA::loop_exec >;
 
 using SequentialExclusiveScanTypes = 
   Test<cartesian_product< SequentialExecTypes, ListHostRes, OpTypes >>::Types;

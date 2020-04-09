@@ -11,12 +11,12 @@
 #if defined(RAJA_ENABLE_TBB)
 
 // TBB policy types to test
-using TBBExecTypes = list< RAJA::tbb_for_exec,
-                           RAJA::tbb_for_static< >,
-                           RAJA::tbb_for_static< 2 >,
-                           RAJA::tbb_for_static< 4 >,
-                           RAJA::tbb_for_static< 8 >,
-                           RAJA::tbb_for_dynamic >;
+using TBBExecTypes = camp::list< RAJA::tbb_for_exec,
+                                 RAJA::tbb_for_static< >,
+                                 RAJA::tbb_for_static< 2 >,
+                                 RAJA::tbb_for_static< 4 >,
+                                 RAJA::tbb_for_static< 8 >,
+                                 RAJA::tbb_for_dynamic >;
 
 using TBBExclusiveScanTypes = 
   Test<cartesian_product< TBBExecTypes, ListHostRes, OpTypes >>::Types;

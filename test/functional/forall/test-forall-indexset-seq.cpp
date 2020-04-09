@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "tests/test-forall-indexset.hpp"
 
 // Sequential execution policy types
-using SequentialForallExecPols = camp::list< RAJA::seq_exec,
-                                             RAJA::loop_exec,
-                                             RAJA::simd_exec >;
+using SequentialForallIndexSetExecPols = 
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::loop_exec>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> >;
 
 // Cartesian product of types for Sequential tests
-using SequentialForallSegmentTypes =
+using SequentialForallIndexSetTypes =
   Test< camp::cartesian_product<IdxTypeList, 
                                 HostResourceList, 
-                                SequentialForallExecPols>>::Types;
+                                SequentialForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallSegmentTest,
-                               SequentialForallSegmentTypes);
+                               ForallIndexSetTest,
+                               SequentialForallIndexSetTypes);

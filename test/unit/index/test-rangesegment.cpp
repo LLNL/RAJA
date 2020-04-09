@@ -43,9 +43,9 @@ void NegativeRangeSegConstructorsTest()
   RAJA::TypedRangeSegment<T> r3(-13, -1);
   ASSERT_EQ(17, r1.size());
   ASSERT_EQ(12, r3.size());
-#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-  ASSERT_ANY_THROW(RAJA::TypedRangeSegment<T> r2(T(0), T(-50)));
-#endif
+  // Test clamping when begin > end
+  RAJA::TypedRangeSegment<T> smaller(T(0), T(-50));
+  ASSERT_EQ(smaller.begin(), smaller.end());
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Constructors)
@@ -59,10 +59,9 @@ TYPED_TEST(RangeSegmentUnitTest, Constructors)
 
   ASSERT_EQ(moved, copied);
 
-  // Test exception when begin > end
-#if !defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_HIP)
-  ASSERT_ANY_THROW(RAJA::TypedRangeSegment<TypeParam> neg(20, 19));
-#endif
+  // Test clamping when begin > end
+  RAJA::TypedRangeSegment<TypeParam> smaller(20, 19);
+  ASSERT_EQ(smaller.begin(), smaller.end());
 
   NegativeRangeSegConstructorsTest<TypeParam>();
 }

@@ -10,9 +10,9 @@
 #if defined(RAJA_ENABLE_OPENMP)
 
 // OpenMP policy types to test
-using OpenMPExecTypes = list< RAJA::omp_parallel_for_exec,
-                              RAJA::omp_for_exec,
-                              RAJA::omp_for_nowait_exec >;
+using OpenMPExecTypes = camp::list< RAJA::omp_parallel_for_exec,
+                                    RAJA::omp_for_exec,
+                                    RAJA::omp_for_nowait_exec >;
 
 using OpenMPExclusiveScanTypes = 
   Test<cartesian_product< OpenMPExecTypes, ListHostRes, OpTypes >>::Types;

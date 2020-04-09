@@ -12,9 +12,6 @@
 
 #include "test-scan.hpp"
 
-using namespace camp::resources;
-using namespace camp;
-
 template <typename OP>
 ::testing::AssertionResult check_inclusive(
   const typename OP::result_type* actual,
@@ -39,7 +36,7 @@ void ScanInclusiveFunctionalTest(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   T* work_in;
   T* work_out;
@@ -74,7 +71,7 @@ void ScanInclusiveInplaceFunctionalTest(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   T* work_in;
   T* work_out;

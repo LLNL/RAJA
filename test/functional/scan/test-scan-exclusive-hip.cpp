@@ -10,10 +10,10 @@
 #if defined(RAJA_ENABLE_HIP)
 
 // CUDA policy types to test
-using HipExecTypes = list< RAJA::hip_exec<128>,
-                           RAJA::hip_exec<256> >;
+using HipExecTypes = camp::list< RAJA::hip_exec<128>,
+                                 RAJA::hip_exec<256> >;
 
-using ListHipRes = list<camp::resources::Hip>;
+using ListHipRes = camp::list<camp::resources::Hip>;
 
 using HipExclusiveScanTypes = 
   Test<cartesian_product< HipExecTypes, ListHipRes, OpTypes >>::Types;

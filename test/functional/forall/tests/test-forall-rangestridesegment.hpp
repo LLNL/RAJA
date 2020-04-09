@@ -10,16 +10,15 @@
 
 #include "test-forall-segment.hpp"
 
-using namespace camp::resources;
-using namespace camp;
-
-template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, DIFF_TYPE stride)
+template <typename INDEX_TYPE, typename DIFF_TYPE, 
+          typename WORKING_RES, typename EXEC_POLICY>
+void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, 
+                                  DIFF_TYPE stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(first, last, stride);
   INDEX_TYPE N = r1.size();
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
@@ -70,9 +69,9 @@ void runNegativeStrideTests()
 
 TYPED_TEST_P(ForallSegmentTest, RangeStrideSegmentForall)
 {
-  using INDEX_TYPE  = typename at<TypeParam, num<0>>::type;
-  using WORKING_RES = typename at<TypeParam, num<1>>::type;
-  using EXEC_POLICY = typename at<TypeParam, num<2>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
   using DIFF_TYPE   = typename std::make_signed<INDEX_TYPE>::type;
 
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, 1);

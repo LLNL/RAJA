@@ -12,9 +12,6 @@
 
 #include "test-scan.hpp"
 
-using namespace camp::resources;
-using namespace camp;
-
 template <typename OP, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
                                            const T* original,
@@ -40,7 +37,7 @@ void ScanExclusiveFunctionalTest(int N,
 {
   using T = typename OP_TYPE::result_type;
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   T* work_in;
   T* work_out;
@@ -78,7 +75,7 @@ void ScanExclusiveInplaceFunctionalTest(int N,
 {
   using T = typename OP_TYPE::result_type;
 
-  Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES()};
 
   T* work_in;
   T* work_out;

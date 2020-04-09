@@ -5,22 +5,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
+#include "tests/test-forall-indexset.hpp"
 
 // Cuda execution policy types
-using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
-                                       RAJA::cuda_exec<256> >;
+using CudaForallIndexSetExecPols = 
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>> >;
 
 // Cartesian product of types for Cuda tests
-using CudaForallSegmentTypes = 
+using CudaForallIndexSetTypes =
   Test< camp::cartesian_product<IdxTypeList, 
                                 CudaResourceList, 
-                                CudaForallExecPols> >::Types;
+                                CudaForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
-                               ForallSegmentTest,
-                               CudaForallSegmentTypes);
-
-#endif
+                               ForallIndexSetTest,
+                               CudaForallIndexSetTypes);
