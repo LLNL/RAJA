@@ -32,3 +32,9 @@ if(RAJA_ENABLE_CUDA)
     NAME test-forall-indexset-cuda
     SOURCES test-forall-indexset-cuda.cpp)
 endif()
+
+if(RAJA_ENABLE_HIP)
+  raja_add_test(
+    NAME test-forall-indexset-hip
+    SOURCES test-forall-indexset-hip.cpp)
+endif()
