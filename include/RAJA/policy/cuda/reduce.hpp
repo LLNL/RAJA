@@ -139,7 +139,7 @@ union AsIntegerArray {
   static_assert(sizeof(integer_type) <= max_integer_type_size,
                 "integer_type greater than max integer type size");
 
-  constexpr static size_t num_integer_type =
+  static constexpr size_t num_integer_type =
       (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
 
   T value;

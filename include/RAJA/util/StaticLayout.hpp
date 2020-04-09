@@ -120,7 +120,8 @@ struct StaticLayoutBase_impl<IdxLin,
    * @return Total size spanned by indices
    */
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr static IdxLin size()
+
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IdxLin size()
   {
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions

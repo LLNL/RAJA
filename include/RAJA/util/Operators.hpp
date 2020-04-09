@@ -69,13 +69,13 @@ namespace types
 
 template <typename T>
 struct is_unsigned_int {
-  constexpr static const bool value =
+  static constexpr const bool value =
       std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
 
 template <typename T>
 struct is_signed_int {
-  constexpr static const bool value =
+  static constexpr const bool value =
       !std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
 
@@ -463,7 +463,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    return (lhs < rhs) ? rhs : lhs;
+    return (lhs >= rhs) ? lhs : rhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
   {
@@ -560,7 +560,7 @@ struct project2nd : public detail::binary_function<T, U, U> {
 
 template <typename T>
 struct is_associative {
-  constexpr static const bool value =
+  static constexpr const bool value =
       std::is_base_of<detail::associative_tag, T>::value;
 };
 
