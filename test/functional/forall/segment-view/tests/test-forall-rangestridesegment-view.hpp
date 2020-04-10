@@ -29,8 +29,12 @@ void ForallRangeStrideSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last,
                                      &check_array,
                                      &test_array);
 
+  memset( test_array, 0, sizeof(INDEX_TYPE) * N );
+
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
+
   INDEX_TYPE val = first;
-  for (INDEX_TYPE i = 0; i < N; i++) {
+  for (INDEX_TYPE i = 0; i < N; ++i) {
     test_array[ (val-first)/stride ] = val;
     val += stride;
   }
@@ -68,6 +72,10 @@ void runNegativeStrideViewTests()
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-10, -1, 2);
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 2);
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 3);
+
+// Test negative strides
+  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, -1, -1);
+  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, 0, -2);
 }
 
 
@@ -86,6 +94,7 @@ TYPED_TEST_P(ForallSegmentViewTest, RangeStrideSegmentForallView)
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 21, 2);
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 2);
 
+// Test size zero segments
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, -2);
   ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, -2);
 
