@@ -7,10 +7,9 @@
 
 #include "tests/test-forall-indexset.hpp"
 
-// Hip execution policy types
-using HipForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<128>>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<256>> >;
+#if defined(RAJA_ENABLE_HIP)
+
+#include "../test-forall-indexset-execpol.hpp"
 
 // Cartesian product of types for Hip tests
 using HipForallIndexSetTypes =
@@ -21,3 +20,5 @@ using HipForallIndexSetTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
                                ForallIndexSetTest,
                                HipForallIndexSetTypes);
+
+#endif

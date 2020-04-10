@@ -7,11 +7,7 @@
 
 #include "tests/test-forall-indexset-view.hpp"
 
-// Sequential execution policy types
-using SequentialForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::loop_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> >;
+#include "../test-forall-indexset-execpol.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallIndexSetTypes =

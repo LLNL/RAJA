@@ -9,9 +9,7 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-// Cuda execution policy types
-using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
-                                       RAJA::cuda_exec<256> >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for Cuda tests
 using CudaForallSegmentTypes = 

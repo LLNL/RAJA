@@ -9,9 +9,7 @@
 
 #if defined(RAJA_ENABLE_HIP)
 
-// Hip execution policy types
-using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
-                                      RAJA::hip_exec<256>  >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for Hip tests
 using HipForallSegmentTypes = 
