@@ -12,7 +12,7 @@
 
 #include <random>
 
-#include "../../test-forall-utils.hpp"
+#include "test-forall-utils.hpp"
 
 //
 // Utility routine to construct index set with mix of Range, RangeStride, 

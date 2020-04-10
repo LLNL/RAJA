@@ -8,7 +8,7 @@
 #ifndef __TEST_FORALL_BASIC_INDEXSET_HPP__
 #define __TEST_FORALL_BASIC_INDEXSET_HPP__
 
-#include "test-forall-indexset-utils.hpp"
+#include "../../test-forall-indexset-utils.hpp"
 
 #include <cstdio>
 #include <algorithm>
