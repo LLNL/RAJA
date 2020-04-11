@@ -51,6 +51,47 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
                                        test_array);
 }
 
+template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
+void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last, 
+                                      INDEX_TYPE offset)
+{
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(first+offset, last+offset);
+  INDEX_TYPE N = r1.end() - r1.begin();
+
+  camp::resources::Resource working_res{WORKING_RES()};
+  INDEX_TYPE* working_array;
+  INDEX_TYPE* check_array;
+  INDEX_TYPE* test_array;
+
+  allocateForallTestData<INDEX_TYPE>(N,
+                                     working_res,
+                                     &working_array,
+                                     &check_array,
+                                     &test_array);
+
+  std::iota(test_array, test_array + N, *r1.begin());
+
+  RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> > 
+    work_view(working_array, 
+              RAJA::make_offset_layout<1, INDEX_TYPE>({{first+offset}}, 
+                                                      {{last+offset}}));
+
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    work_view( idx ) = idx;
+  });
+
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
+
+  for (INDEX_TYPE i = 0; i < N; i++) {
+    ASSERT_EQ(test_array[i], check_array[i]);
+  }
+
+  deallocateForallTestData<INDEX_TYPE>(working_res,
+                                       working_array,
+                                       check_array,
+                                       test_array);
+}
+
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
 void runNegativeViewTests()
@@ -63,6 +104,9 @@ void runNegativeViewTests()
 {
   ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
   ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
+
+  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 1);
+  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 2);
 }
 
 
@@ -75,6 +119,10 @@ TYPED_TEST_P(ForallSegmentViewTest, RangeSegmentForallView)
   ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
   ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
   ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
+
+  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5, 1);
+  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5, 2);
+  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 3);
 
   runNegativeViewTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
