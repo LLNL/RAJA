@@ -153,14 +153,17 @@ GPU_TEST(Sort, basic_device_heap_Sort)
   testSorter(HeapSortPairsGPU{}, MaxN);
 }
 
+#if !defined(RAJA_ENABLE_HIP)
 GPU_TEST(Sort, basic_device_intro_Sort)
 {
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   // intro_sort is implemented via recursion, so the device may
   // run out of stack space or perform poorly due to local memory usage
+  // or fail to link with hip
   testSorter(IntroSortGPU{}, MaxN);
   testSorter(IntroSortPairsGPU{}, MaxN);
 }
+#endif
 
 GPU_TEST(Sort, basic_device_merge_Sort)
 {
