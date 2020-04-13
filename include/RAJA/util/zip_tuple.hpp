@@ -182,10 +182,11 @@ struct zip_tuple
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(Os&&... os)
     : m_tuple(std::forward<Os>(os)...) { }
 
-  // assignment from values convertible to Ts
-  // template < typename ... Os
-  //          , typename = concepts::enable_if<DefineConcept(concepts::convertible_to<typename std::remove_reference<Ts>::type>(camp::val<Os&&>()))...> >
-  // zip_tuple& operator=(Os&&... os) { RAJA::detail::sink(get<Is>() = std::forward<Os>(os)...); return *this; }
+  // assignment from types convertible to Ts
+  template < typename ... Os
+           , typename = concepts::enable_if<DefineConcept(concepts::convertible_to<typename std::remove_reference<Ts>::type>(camp::val<Os&&>()))...> >
+  zip_tuple& assign(Os&&... os)
+  { return assign_helper(IdxSeq{}, std::forward<Os>(os)...); }
 
   // copy and move constructors
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &      o)
@@ -263,6 +264,11 @@ private:
   using IsValMover = typename std::conditional<is_val, Move, PassThrough>::type;
 
   value_type m_tuple;
+
+  // assignment helper from types convertible to Ts
+  template < typename ... Os, camp::idx_t ... Is >
+  zip_tuple& assign_helper(camp::idx_seq<Is...>, Os&&... os)
+  { RAJA::detail::sink(get<Is>() = std::forward<Os>(os)...); return *this; }
 
   // copy and move constructor helpers
   template < camp::idx_t ... Is >
