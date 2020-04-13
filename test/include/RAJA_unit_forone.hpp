@@ -62,7 +62,7 @@ inline void forone_gpu(L&& run)
    cudaErrchk(cudaGetLastError());
    cudaErrchk(cudaDeviceSynchronize());
 #elif defined(RAJA_ENABLE_HIP)
-   forone_hip<<<1,1>>>(std::forward<L>(run));
+   hipLaunchKernelGGL(forone_hip<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
    hipErrchk(hipGetLastError());
    hipErrchk(hipDeviceSynchronize());
 #else
