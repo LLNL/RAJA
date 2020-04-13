@@ -39,7 +39,7 @@ TEST(Sort, basic_intro_Sort)
 TEST(Sort, basic_merge_Sort)
 {
   testSorter(MergeSort{});
-  // testSorter(MergeSortPairs{});
+  testSorter(MergeSortPairs{});
 }
 
 TEST(Sort, basic_loop_Sort)
@@ -51,7 +51,7 @@ TEST(Sort, basic_loop_Sort)
 TEST(Sort, basic_loop_StableSort)
 {
   testSorter(PolicyStableSort<RAJA::loop_exec>{});
-  // testSorter(PolicyStableSortPairs<RAJA::loop_exec>{});
+  testSorter(PolicyStableSortPairs<RAJA::loop_exec>{});
 }
 
 TEST(Sort, basic_seq_Sort)
@@ -63,7 +63,7 @@ TEST(Sort, basic_seq_Sort)
 TEST(Sort, basic_seq_StableSort)
 {
   testSorter(PolicyStableSort<RAJA::seq_exec>{});
-  // testSorter(PolicyStableSortPairs<RAJA::seq_exec>{});
+  testSorter(PolicyStableSortPairs<RAJA::seq_exec>{});
 }
 
 #if defined(RAJA_ENABLE_OPENMP)
