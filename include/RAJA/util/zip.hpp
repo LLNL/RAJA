@@ -403,7 +403,7 @@ struct ZipIterator
 
   RAJA_HOST_DEVICE inline void safe_iter_swap(ZipIterator& rhs)
   {
-    zip_for_each(m_iterators, rhs.m_iterators, detail::IterSwap{});
+    detail::zip_for_each(m_iterators, rhs.m_iterators, detail::IterSwap{});
   }
 
   RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator& lhs, ZipIterator& rhs)
