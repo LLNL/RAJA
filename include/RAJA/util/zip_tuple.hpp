@@ -34,7 +34,7 @@ namespace RAJA
 namespace detail
 {
 
-// ignore arguments
+// ignore arguments, used for pack expansion where the results are ignored.
 template< typename ... Args >
 RAJA_HOST_DEVICE inline void sink(Args&&...) { };
 
@@ -135,6 +135,9 @@ struct IterSwap
 };
 
 
+/*!
+    \brief Call f on each member of t (f(t)...).
+*/
 template < typename Tuple, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
@@ -142,6 +145,9 @@ void zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
   RAJA::detail::sink(std::forward<F>(f)(std::forward<Tuple>(t).template get<Is>())...);
 }
 
+/*!
+    \brief Call f on each member of t0 and t1 (f(t0, t1)...).
+*/
 template < typename Tuple0, typename Tuple1, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
@@ -149,6 +155,9 @@ void zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
   RAJA::detail::sink(std::forward<F>(f)(std::forward<Tuple0>(t0).template get<Is>(), std::forward<Tuple1>(t1).template get<Is>())...);
 }
 
+/*!
+    \brief Call f on each member of t (f(t)...).
+*/
 template < typename Tuple, typename F >
 RAJA_HOST_DEVICE inline
 void zip_for_each(Tuple&& t, F&& f)
@@ -156,6 +165,9 @@ void zip_for_each(Tuple&& t, F&& f)
   zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f), typename camp::decay<Tuple>::IdxSeq{});
 }
 
+/*!
+    \brief Call f on each member of t0 and t1 (f(t0, t1)...).
+*/
 template < typename Tuple0, typename Tuple1, typename F >
 RAJA_HOST_DEVICE inline
 void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
@@ -166,17 +178,24 @@ void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
 }
 
 
+/*!
+    \brief Tuple used by ZipIterator for storing multiple references and values.
+    Acts like a reference to its members allowing copy/move construction/assignment
+    based on the reference type of the zip_tuple.
+*/
 template < bool is_val, typename ... Ts >
 struct zip_tuple
 {
   using value_type = RAJA::tuple<Ts...>;
 
+  // zip_tuple type with opposite is_val
   template < typename ... Os >
   using opp_tuple = zip_tuple<!is_val, Os...>;
 
+  // camp::idx_seq for this type, also used by zip_for_each
   using IdxSeq = camp::make_idx_seq_t<sizeof...(Ts)>;
 
-  // constructor from values convertible to Ts
+  // constructor from types convertible to Ts
   template < typename ... Os
            , typename = concepts::enable_if<DefineConcept(concepts::convertible_to<Ts>(camp::val<Os&&>()))...> >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(Os&&... os)
@@ -244,7 +263,9 @@ struct zip_tuple
   {
     zip_for_each(lhs, rhs, detail::Swap{});
   }
-  // safe_swap for swapping zip_tuples with opposite is_val, calls swap on each pair in the tuple
+
+  // safe_swap for swapping zip_tuples with opposite is_val
+  // calls swap on each pair in the tuple
   template < typename ... Os,
          typename = typename std::enable_if<(sizeof...(Ts) == sizeof...(Os))>::type >
   RAJA_HOST_DEVICE friend RAJA_INLINE void safe_swap(zip_tuple& lhs, opp_tuple<Os...>& rhs)
@@ -252,7 +273,7 @@ struct zip_tuple
     zip_for_each(lhs, rhs, detail::Swap{});
   }
 
-  // allow printing of zip_tuples by printing tuple
+  // allow printing of zip_tuples by printing value_type
   friend inline std::ostream& operator<<(std::ostream& o, zip_tuple const& v)
   {
     return o << v.m_tuple;

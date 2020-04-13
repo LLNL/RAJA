@@ -32,6 +32,10 @@
 namespace RAJA
 {
 
+/*!
+    \brief ZipIterator class for simultaneously iterating over
+    multiple iterators. This is not a standards compliant iterator.
+*/
 template < typename... Iters >
 struct ZipIterator
 {
@@ -202,6 +206,10 @@ private:
 };
 
 
+/*!
+    \brief Zip multiple iterators together to iterate them simultaneously with
+    a single ZipIterator object.
+*/
 template < typename... Args >
 RAJA_HOST_DEVICE
 auto zip(Args&&... args)
@@ -210,6 +218,10 @@ auto zip(Args&&... args)
   return {std::forward<Args>(args)...};
 }
 
+/*!
+    \brief Comparator object that compares the first member
+    of tuple like objects.
+*/
 template < typename T, typename Compare >
 struct CompareFirst
 {
@@ -219,6 +231,7 @@ struct CompareFirst
 
   RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs)
   {
+    // TODO: make get<I>(zip_tupe) not conflict with camp::get<I>(camp::tuple)
     return comp(lhs.template get<0>(), rhs.template get<0>());
   }
 
@@ -226,6 +239,10 @@ private:
   Compare comp;
 };
 
+/*!
+    \brief Make a comparator to compare first member of tuple
+    like objects of type T.
+*/
 template < typename T, typename Compare >
 RAJA_HOST_DEVICE
 auto compare_first(Compare comp)
