@@ -189,8 +189,7 @@ struct ZipIterator
     return *((*this) + rhs);
   }
 
-
-  RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator& lhs, ZipIterator& rhs)
+  RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator lhs, ZipIterator rhs)
   {
     detail::zip_for_each(lhs.m_iterators, rhs.m_iterators, detail::IterSwap{});
   }
