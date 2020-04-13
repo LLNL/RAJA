@@ -31,6 +31,10 @@
 namespace RAJA
 {
 
+
+template< typename ... Args >
+RAJA_HOST_DEVICE inline void sink(Args&&...) { };
+
 namespace detail
 {
 
@@ -111,48 +115,34 @@ namespace detail
   };
 
 
-  template < typename... Ts >
-  struct zip_ref;
-
-  template < typename... Args >
-  RAJA_HOST_DEVICE auto forward_as_zip_ref(Args&&... args)
-    -> zip_ref<Args&&...>
-  {
-    return zip_ref<Args&&...>(std::forward<Args>(args)...);
-  }
-
   template < typename Tuple, typename F, camp::idx_t... Is >
   RAJA_HOST_DEVICE inline
-  auto zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
-    -> decltype(forward_as_zip_ref(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple>(t)))...))
+  void zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
   {
-    return forward_as_zip_ref(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple>(t)))...);
+    RAJA::sink(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple>(t)))...);
   }
 
   template < typename Tuple0, typename Tuple1, typename F, camp::idx_t... Is >
   RAJA_HOST_DEVICE inline
-  auto zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
-    -> decltype(forward_as_zip_ref(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple0>(t0)), camp::get<Is>(std::forward<Tuple1>(t1)))...))
+  void zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
   {
-    return forward_as_zip_ref(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple0>(t0)), camp::get<Is>(std::forward<Tuple1>(t1)))...);
+    RAJA::sink(std::forward<F>(f)(camp::get<Is>(std::forward<Tuple0>(t0)), camp::get<Is>(std::forward<Tuple1>(t1)))...);
   }
 
   template < typename Tuple, typename F >
   RAJA_HOST_DEVICE inline
-  auto zip_for_each(Tuple&& t, F&& f)
-    -> decltype(zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple>>::value>{}))
+  void zip_for_each(Tuple&& t, F&& f)
   {
-    return zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple>>::value>{});
+    zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple>>::value>{});
   }
 
   template < typename Tuple0, typename Tuple1, typename F >
   RAJA_HOST_DEVICE inline
-  auto zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
-    -> decltype(zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple0>>::value>{}))
+  void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
   {
     static_assert(camp::tuple_size<camp::decay<Tuple0>>::value == camp::tuple_size<camp::decay<Tuple1>>::value,
         "Tuple0 and Tuple1 must have the same size");
-    return zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple0>>::value>{});
+    zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1), std::forward<F>(f), camp::make_idx_seq_t<camp::tuple_size<camp::decay<Tuple0>>::value>{});
   }
 
   template < typename... Ts >
