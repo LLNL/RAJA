@@ -122,7 +122,7 @@ GPU_TEST(Sort, basic_HIP_Sort)
   testSorter(PolicySortPairs<RAJA::hip_exec<256>>{});
 }
 
-GPU_TEST(Sort, basic_HIP_Sort)
+GPU_TEST(Sort, basic_HIP_StableSort)
 {
   testSorter(PolicyStableSort<RAJA::hip_exec<256>>{});
   testSorter(PolicyStableSortPairs<RAJA::hip_exec<256>>{});
