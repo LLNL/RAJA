@@ -493,7 +493,7 @@ merge_sort(Iter begin,
     // merge
 
     // copy input
-    using itertype = camp::decay<decltype(*begin)>;
+    using itertype = RAJA::detail::IterVal<Iter>;
     itertype * copyarr = RAJA::allocate_aligned_type<itertype>( RAJA::DATA_ALIGN, len * sizeof(itertype) );
     for ( int cc = 0; cc < len; ++cc )
     {
