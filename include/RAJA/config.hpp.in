@@ -368,6 +368,17 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
 
+
+// This is the same as undefined compiler, but squelches the warning message
+#elif defined(RAJA_COMPILER_MSVC)
+
+#define RAJA_FORCEINLINE_RECURSIVE
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d) d
+#define RAJA_SIMD
+#define RAJA_NO_SIMD
+
+
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")

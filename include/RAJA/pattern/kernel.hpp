@@ -118,8 +118,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
 
   using param_tuple_t = camp::decay<ParamTuple>;
 
-  using loop_data_t = internal::LoopData<PolicyType,
-                                         segment_tuple_t,
+  using loop_data_t = internal::LoopData<segment_tuple_t,
                                          param_tuple_t,
                                          camp::decay<Bodies>...>;
 
@@ -133,10 +132,11 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
+  using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
-  internal::execute_statement_list<PolicyType>(loop_data);
+  internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
 
   util::callPostLaunchPlugins(context);
 }
@@ -160,6 +160,7 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
