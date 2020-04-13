@@ -38,7 +38,7 @@ namespace detail
 template< typename ... Args >
 RAJA_HOST_DEVICE inline void sink(Args&&...) { };
 
-struct Noop
+struct PassThrough
 {
   template < typename T >
   RAJA_HOST_DEVICE RAJA_INLINE auto operator()(T&& t) const
@@ -193,15 +193,15 @@ struct zip_tuple
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple const& o)
     : zip_tuple(          o , IdxSeq{}) { }
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &&     o)
-    : zip_tuple(std::move(o), IdxSeq{}) { } // move if is_val, noop otherwise
+    : zip_tuple(std::move(o), IdxSeq{}) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operators
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(zip_tuple &      o)
-    { if (this != &o) { assign_helper(          o , IdxSeq{}); } return *this; }
+  { return assign_helper(          o , IdxSeq{}); }
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(zip_tuple const& o)
-    { if (this != &o) { assign_helper(          o , IdxSeq{}); } return *this; }
+  { return assign_helper(          o , IdxSeq{}); }
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(zip_tuple &&     o)
-    { if (this != &o) { assign_helper(std::move(o), IdxSeq{}); } return *this; }
+  { return assign_helper(std::move(o), IdxSeq{}); }
 
   // copy and move constructors from opp_tuple type zip_tuples
   template < typename ... Os, typename = typename std::enable_if<sizeof...(Ts) == sizeof...(Os)>::type >
@@ -212,18 +212,18 @@ struct zip_tuple
     : zip_tuple(          o , IdxSeq{}) { }
   template < typename ... Os, typename = typename std::enable_if<sizeof...(Ts) == sizeof...(Os)>::type >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple<Os...> &&     o)
-    : zip_tuple(std::move(o), IdxSeq{}) { } // move if is_val, noop otherwise
+    : zip_tuple(std::move(o), IdxSeq{}) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operators from opp_tuple type zip_tuples
   template < typename ... Os >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(opp_tuple<Os...> &      o)
-  { assign_helper(          o , IdxSeq{}); return *this; }
+  { return assign_helper(          o , IdxSeq{}); }
   template < typename ... Os >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(opp_tuple<Os...> const& o)
-  { assign_helper(          o , IdxSeq{}); return *this; }
+  { return assign_helper(          o , IdxSeq{}); }
   template < typename ... Os >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& operator=(opp_tuple<Os...> &&     o)
-  { assign_helper(std::move(o), IdxSeq{}); return *this; }
+  { return assign_helper(std::move(o), IdxSeq{}); }
 
   // get member functions for zip_tuples
   // the reference type returned by get depends on the reference type
@@ -260,20 +260,20 @@ struct zip_tuple
 private:
   // move if is_val is true, otherwise copy in move constructor
   // this allows values to be moved, and references to stay lvalue references
-  using ValMover = typename std::conditional<is_val, Move, Noop>::type;
+  using IsValMover = typename std::conditional<is_val, Move, PassThrough>::type;
 
   value_type m_tuple;
 
   // copy and move constructor helpers
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &      o, camp::idx_seq<Is...>)
-    : zip_tuple(           o .template get<Is>()...) { }
+    : zip_tuple(             o .template get<Is>()...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple const& o, camp::idx_seq<Is...>)
-    : zip_tuple(           o .template get<Is>()...) { }
+    : zip_tuple(             o .template get<Is>()...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &&     o, camp::idx_seq<Is...>)
-    : zip_tuple(ValMover{}(o).template get<Is>()...) { } // move if is_val, noop otherwise
+    : zip_tuple(IsValMover{}(o).template get<Is>()...) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operator helpers
   template < camp::idx_t ... Is >
@@ -289,13 +289,13 @@ private:
   // copy and move constructor helpers from opp_tuple type zip_tuples
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple<Os...> &      o, camp::idx_seq<Is...>)
-    : zip_tuple(           o .template get<Is>()...) { }
+    : zip_tuple(             o .template get<Is>()...) { }
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple<Os...> const& o, camp::idx_seq<Is...>)
-    : zip_tuple(           o .template get<Is>()...) { }
+    : zip_tuple(             o .template get<Is>()...) { }
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple<Os...> &&     o, camp::idx_seq<Is...>)
-    : zip_tuple(ValMover{}(o).template get<Is>()...) { } // move if is_val, noop otherwise
+    : zip_tuple(IsValMover{}(o).template get<Is>()...) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operator helpers from opp_tuple type zip_tuples
   template < typename ... Os, camp::idx_t ... Is >

@@ -176,24 +176,19 @@ struct ZipIterator
     return deref_helper(camp::make_idx_seq_t<sizeof...(Iters)>{});
   }
   // TODO:: figure out what to do with this
-  RAJA_HOST_DEVICE inline reference operator->() const
-  {
-    return *(*this);
-  }
+  // RAJA_HOST_DEVICE inline reference operator->() const
+  // {
+  //   return *(*this);
+  // }
   RAJA_HOST_DEVICE reference operator[](difference_type rhs) const
   {
     return *((*this) + rhs);
   }
 
 
-  RAJA_HOST_DEVICE inline void safe_iter_swap(ZipIterator& rhs)
-  {
-    detail::zip_for_each(m_iterators, rhs.m_iterators, detail::IterSwap{});
-  }
-
   RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator& lhs, ZipIterator& rhs)
   {
-    lhs.safe_iter_swap(rhs);
+    detail::zip_for_each(lhs.m_iterators, rhs.m_iterators, detail::IterSwap{});
   }
 
 private:
@@ -214,10 +209,6 @@ auto zip(Args&&... args)
 {
   return {std::forward<Args>(args)...};
 }
-
-// struct to simplify
-template < typename T, typename Compare >
-struct CompareFirst;
 
 template < typename T, typename Compare >
 struct CompareFirst
