@@ -468,6 +468,7 @@ merge_sort(Iter begin,
            Iter end,
            Compare comp)
 {
+#if !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
   // iterative mergesort (bottom up) for future parallelism
 
   // min helper
@@ -531,6 +532,10 @@ merge_sort(Iter begin,
       // PRO - Can use on GPU, O(1) storage required.
       // CON - Shifting would cause slowdown O(n^2 log n).
   //}
+#else
+  // TODO: implement for device code
+  RAJA_ASSERT( begin == end || comp(*begin, *begin) );
+#endif
 }
 
 }  // namespace detail
