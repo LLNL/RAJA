@@ -388,7 +388,7 @@ struct ZipIterator
 
   RAJA_HOST_DEVICE inline reference operator*() const
   {
-    return detail::zip_for_each(m_iterators, detail::DeRef{});
+    return deref_helper(camp::make_idx_seq_t<sizeof...(Iters)>{});
   }
   // TODO:: figure out what to do with this
   RAJA_HOST_DEVICE inline reference operator->() const
@@ -413,6 +413,12 @@ struct ZipIterator
 
 private:
   RAJA::tuple<camp::decay<Iters>...> m_iterators;
+
+  template < camp::idx_t ... Is >
+  RAJA_HOST_DEVICE inline reference deref_helper(camp::idx_seq<Is...>) const
+  {
+    return reference(*RAJA::get<Is>(m_iterators)...);
+  }
 };
 
 
