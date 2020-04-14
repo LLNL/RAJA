@@ -24,9 +24,9 @@ cd travis-build
 if [[ "$DO_BUILD" == "yes" ]] ; then
     or_die cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
-      or_die make -j 3
+      or_die make -j 6
     else
-      or_die make -j 3 VERBOSE=1
+      or_die make -j 6 VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
       or_die ctest -V
