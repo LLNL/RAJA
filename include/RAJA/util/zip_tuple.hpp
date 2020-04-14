@@ -34,10 +34,6 @@ namespace RAJA
 namespace detail
 {
 
-// ignore arguments, used for pack expansion where the results are ignored.
-template< typename ... Args >
-RAJA_HOST_DEVICE inline void sink(Args&&...) { };
-
 struct PassThrough
 {
   template < typename T >
@@ -142,7 +138,7 @@ template < typename Tuple, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
 {
-  RAJA::detail::sink(std::forward<F>(f)(std::forward<Tuple>(t).template get<Is>())...);
+  camp::sink(std::forward<F>(f)(std::forward<Tuple>(t).template get<Is>())...);
 }
 
 /*!
@@ -152,7 +148,7 @@ template < typename Tuple0, typename Tuple1, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
 {
-  RAJA::detail::sink(std::forward<F>(f)(std::forward<Tuple0>(t0).template get<Is>(), std::forward<Tuple1>(t1).template get<Is>())...);
+  camp::sink(std::forward<F>(f)(std::forward<Tuple0>(t0).template get<Is>(), std::forward<Tuple1>(t1).template get<Is>())...);
 }
 
 /*!
@@ -289,7 +285,7 @@ private:
   // assignment helper from types convertible to Ts
   template < typename ... Os, camp::idx_t ... Is >
   zip_tuple& assign_helper(camp::idx_seq<Is...>, Os&&... os)
-  { RAJA::detail::sink(get<Is>() = std::forward<Os>(os)...); return *this; }
+  { camp::sink(get<Is>() = std::forward<Os>(os)...); return *this; }
 
   // copy and move constructor helpers
   template < camp::idx_t ... Is >
@@ -305,13 +301,13 @@ private:
   // copy and move assignment operator helpers
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple &      o, camp::idx_seq<Is...>)
-  { if (this != &o) { RAJA::detail::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple const& o, camp::idx_seq<Is...>)
-  { if (this != &o) { RAJA::detail::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple &&     o, camp::idx_seq<Is...>)
-  { if (this != &o) { RAJA::detail::sink(get<Is>() = std::move(o).template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() = std::move(o).template get<Is>()...); } return *this; }
 
   // copy and move constructor helpers from opp_tuple type zip_tuples
   template < typename ... Os, camp::idx_t ... Is >
@@ -327,13 +323,13 @@ private:
   // copy and move assignment operator helpers from opp_tuple type zip_tuples
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple<Os...> &      o, camp::idx_seq<Is...>)
-  { RAJA::detail::sink(get<Is>() =           o .template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() =           o .template get<Is>()...); return *this; }
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple<Os...> const& o, camp::idx_seq<Is...>)
-  { RAJA::detail::sink(get<Is>() =           o .template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() =           o .template get<Is>()...); return *this; }
   template < typename ... Os, camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple<Os...> &&     o, camp::idx_seq<Is...>)
-  { RAJA::detail::sink(get<Is>() = std::move(o).template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() = std::move(o).template get<Is>()...); return *this; }
 
 };
 
