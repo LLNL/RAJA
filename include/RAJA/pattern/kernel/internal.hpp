@@ -18,6 +18,7 @@
 #ifndef RAJA_pattern_kernel_internal_HPP
 #define RAJA_pattern_kernel_internal_HPP
 
+
 #include "RAJA/pattern/kernel/internal/LoopData.hpp"
 #include "RAJA/pattern/kernel/internal/LoopTypes.hpp"
 #include "RAJA/pattern/kernel/internal/Statement.hpp"

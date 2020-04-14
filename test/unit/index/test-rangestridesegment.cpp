@@ -73,6 +73,25 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Iterators)
     ASSERT_EQ(difftype_t(25), r1.size());
 }
 
+template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+void NegativeRangeStrideTestSizes()
+{
+}
+
+template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+void NegativeRangeStrideTestSizes()
+{
+  RAJA::TypedRangeStrideSegment<T> segment16(-10, -2, 2);
+  using difftype_t = decltype(std::distance(segment16.begin(), segment16.end()));
+  ASSERT_EQ(segment16.size(), difftype_t(4));
+
+  RAJA::TypedRangeStrideSegment<T> segment17(-5, 5, 2);
+  ASSERT_EQ(segment17.size(), difftype_t(5));
+
+  RAJA::TypedRangeStrideSegment<T> segment18(0, -5, 1);
+  ASSERT_EQ(segment18.size(), difftype_t(0));
+}
+
 TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
 {
   RAJA::TypedRangeStrideSegment<TypeParam> segment1(0, 20, 1);
@@ -125,28 +144,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   ASSERT_EQ(segment15.size(), difftype_t(0));
 
   // NEGATIVE INDICES
-#if !defined(__CUDA_ARCH__)
-
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
-#endif
-
-  if (std::is_signed<TypeParam>::value) {
-    RAJA::TypedRangeStrideSegment<TypeParam> segment16(-10, -2, 2);
-    ASSERT_EQ(segment16.size(), difftype_t(4));
-
-    RAJA::TypedRangeStrideSegment<TypeParam> segment17(-5, 5, 2);
-    ASSERT_EQ(segment17.size(), difftype_t(5));
-
-    RAJA::TypedRangeStrideSegment<TypeParam> segment18(0, -5, 1);
-    ASSERT_EQ(segment18.size(), difftype_t(0));
-
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default  : 4245 )
-#endif
-
-  }
-#endif
+  NegativeRangeStrideTestSizes<TypeParam>();
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
