@@ -153,7 +153,7 @@ GPU_TEST(Sort, basic_device_heap_Sort)
   testSorter(HeapSortPairsGPU{}, MaxN);
 }
 
-#if !defined(RAJA_ENABLE_HIP)
+#if 0
 GPU_TEST(Sort, basic_device_intro_Sort)
 {
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
