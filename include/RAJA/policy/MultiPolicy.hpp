@@ -22,8 +22,6 @@
 
 #include <tuple>
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/internal/get_platform.hpp"
@@ -100,8 +98,8 @@ using policy::multi::MultiPolicy;
 
 namespace detail
 {
-template <size_t... Indices, typename... Policies, typename Selector>
-auto make_multi_policy(VarOps::index_sequence<Indices...>,
+template <camp::idx_t... Indices, typename... Policies, typename Selector>
+auto make_multi_policy(camp::idx_seq<Indices...>,
                        Selector s,
                        std::tuple<Policies...> policies)
     -> MultiPolicy<Selector, Policies...>
@@ -138,7 +136,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
   return detail::make_multi_policy(
-      VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
+      camp::make_idx_seq_t<sizeof...(Policies)>{}, s, policies);
 }
 
 namespace detail

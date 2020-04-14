@@ -42,17 +42,20 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int ThreadDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>, Types> {
 
   using Base = CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>>;
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
+        Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -87,20 +90,22 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId, RAJA::cuda_warp_direct,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>,
+  Types>
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_warp_direct,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_warp_direct,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
 
@@ -132,20 +137,21 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId, RAJA::cuda_warp_loop,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>, Types >
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_warp_loop,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_warp_loop,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
 
@@ -189,26 +195,30 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::cuda_warp_masked_direct<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>, Types >
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_warp_masked_direct<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_warp_masked_direct<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -245,26 +255,30 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::cuda_warp_masked_loop<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>, Types >
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_warp_masked_loop<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_warp_masked_loop<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -314,26 +328,30 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::cuda_thread_masked_direct<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>, Types >
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_thread_masked_direct<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_thread_masked_direct<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -369,26 +387,30 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::cuda_thread_masked_loop<Mask>,
-                       EnclosedStmts ...> >
+                       EnclosedStmts ...>, Types >
   : public CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::cuda_thread_masked_loop<Mask>,
-                   EnclosedStmts ...> > {
+                   EnclosedStmts ...>, Types > {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::cuda_thread_masked_loop<Mask>,
-                         EnclosedStmts ...> >;
+                         EnclosedStmts ...>, Types >;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
@@ -439,17 +461,21 @@ template <typename Data,
           typename ParamId,
           int ThreadDim,
           int MinThreads,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        Types> {
 
   using Base = CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>>;
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -493,17 +519,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>>;
+      statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -537,17 +567,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>>
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>> {
+        statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>>;
+      statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
 
@@ -585,17 +619,18 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...> >
+    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>, Types >
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, seq_exec, EnclosedStmts...> > {
+        statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types > {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::For<ArgumentId, seq_exec, EnclosedStmts...> >;
+      statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types >;
 
   using typename Base::enclosed_stmts_t;
 
