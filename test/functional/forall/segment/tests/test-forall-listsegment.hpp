@@ -55,9 +55,9 @@ void ForallListSegmentTest(INDEX_TYPE N)
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  std::for_each( std::begin(idx_array), std::end(idx_array), 
-                 [=](INDEX_TYPE& idx ) { test_array[idx] = idx; }
-               );
+  for (size_t i = 0; i < idxlen; ++i) {
+    test_array[ idx_array[i] ] = idx_array[i];
+  }
 
   RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[idx] = idx;

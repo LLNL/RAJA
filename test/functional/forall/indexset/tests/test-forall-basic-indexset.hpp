@@ -63,11 +63,9 @@ void ForallISetTest()
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  std::for_each( std::begin(is_indices), std::end(is_indices), 
-                 [=](INDEX_TYPE& idx) { 
-                   test_array[idx] = idx; 
-                 }
-               );
+  for (size_t i = 0; i < is_indices.size(); ++i) {
+    test_array[ is_indices[i] ] = is_indices[i];
+  }
 
   RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[idx] = idx;

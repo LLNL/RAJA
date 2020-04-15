@@ -29,14 +29,16 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
                                      &check_array,
                                      &test_array);
 
-  std::iota(test_array, test_array + N, *r1.begin());
+  INDEX_TYPE rbegin = *r1.begin();
+
+  std::iota(test_array, test_array + N, rbegin);
 
   RAJA::Layout<1> layout(N);
   RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> > 
     work_view(working_array, layout);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    work_view( idx - *r1.begin() ) = idx;
+    work_view( idx - rbegin ) = idx;
   });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
@@ -69,7 +71,9 @@ void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last,
                                      &check_array,
                                      &test_array);
 
-  std::iota(test_array, test_array + N, *r1.begin());
+  INDEX_TYPE rbegin = *r1.begin();
+
+  std::iota(test_array, test_array + N, rbegin);
 
   RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> > 
     work_view(working_array, 

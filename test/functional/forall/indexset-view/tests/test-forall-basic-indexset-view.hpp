@@ -63,11 +63,9 @@ void ForallISetViewTest()
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  std::for_each( std::begin(is_indices), std::end(is_indices), 
-                 [=](INDEX_TYPE& idx) { 
-                   test_array[idx] = idx; 
-                 }
-               );
+  for (size_t i = 0; i < is_indices.size(); ++i) {
+    test_array[ is_indices[i] ] = is_indices[i];
+  }
 
   RAJA::Layout<1> layout(N);
   RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >
