@@ -21,6 +21,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #define RAJA_TEST_ENABLE_GPU
+using forone_equivalent_exec_policy = RAJA::cuda_exec<1>;
 #define RAJA_TEST_DEVICE_LAMBDA [=] __device__
 
 template <typename L>
@@ -38,6 +39,7 @@ __global__ void forone_cuda(L run)
 #elif defined(RAJA_ENABLE_HIP)
 
 #define RAJA_TEST_ENABLE_GPU
+using forone_equivalent_exec_policy = RAJA::hip_exec<1>;
 #define RAJA_TEST_DEVICE_LAMBDA [=] __device__
 
 template <typename L>

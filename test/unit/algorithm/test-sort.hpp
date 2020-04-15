@@ -40,8 +40,49 @@ struct sort_pairs_interface_tag { };
 struct sort_default_interface_tag { };
 struct sort_comp_interface_tag { };
 
+// synchronize based on a RAJA execution policy
+template < typename policy >
+struct PolicySynchronize
+{
+  void synchronize()
+  {
+    // no synchronization needed
+  }
+};
+
+#if defined(RAJA_ENABLE_CUDA)
+// partial specializatoin for cuda_exec
+template < size_t BLOCK_SIZE, bool Async >
+struct PolicySynchronize<RAJA::cuda_exec<BLOCK_SIZE, Async>>
+{
+  void synchronize()
+  {
+    if (Async) { RAJA::synchronize<RAJA::cuda_synchronize>(); }
+  }
+};
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+// partial specializatoin for hip_exec
+template < size_t BLOCK_SIZE, bool Async >
+struct PolicySynchronize<RAJA::hip_exec<BLOCK_SIZE, Async>>
+{
+  void synchronize()
+  {
+    if (Async) { RAJA::synchronize<RAJA::hip_synchronize>(); }
+  }
+};
+#endif
+
+using PolicySynchronizeCPU = PolicySynchronize<RAJA::loop_exec>;
+#ifdef RAJA_TEST_ENABLE_GPU
+using PolicySynchronizeGPU = PolicySynchronize<forone_equivalent_exec_policy>;
+#endif
+
+
 template < typename policy >
 struct PolicySort
+  : PolicySynchronize<policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -60,6 +101,7 @@ struct PolicySort
 
 template < typename policy >
 struct PolicyStableSort
+  : PolicySynchronize<policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -78,6 +120,7 @@ struct PolicyStableSort
 
 template < typename policy >
 struct PolicySortPairs
+  : PolicySynchronize<policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -96,6 +139,7 @@ struct PolicySortPairs
 
 template < typename policy >
 struct PolicyStableSortPairs
+  : PolicySynchronize<policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -113,6 +157,7 @@ struct PolicyStableSortPairs
 };
 
 struct InsertionSort
+  : PolicySynchronizeCPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -130,6 +175,7 @@ struct InsertionSort
 };
 
 struct InsertionSortPairs
+  : PolicySynchronizeCPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -160,6 +206,7 @@ struct InsertionSortPairs
 };
 
 struct ShellSort
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -177,6 +224,7 @@ struct ShellSort
 };
 
 struct ShellSortPairs
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -207,6 +255,7 @@ struct ShellSortPairs
 };
 
 struct HeapSort
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -224,6 +273,7 @@ struct HeapSort
 };
 
 struct HeapSortPairs
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -254,6 +304,7 @@ struct HeapSortPairs
 };
 
 struct IntroSort
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -271,6 +322,7 @@ struct IntroSort
 };
 
 struct IntroSortPairs
+  : PolicySynchronizeCPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -301,6 +353,7 @@ struct IntroSortPairs
 };
 
 struct MergeSort
+  : PolicySynchronizeCPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -318,6 +371,7 @@ struct MergeSort
 };
 
 struct MergeSortPairs
+  : PolicySynchronizeCPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -351,6 +405,7 @@ struct MergeSortPairs
 #ifdef RAJA_TEST_ENABLE_GPU
 
 struct InsertionSortGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -378,6 +433,7 @@ struct InsertionSortGPU
 };
 
 struct InsertionSortPairsGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -412,6 +468,7 @@ struct InsertionSortPairsGPU
 };
 
 struct ShellSortGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -439,6 +496,7 @@ struct ShellSortGPU
 };
 
 struct ShellSortPairsGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -473,6 +531,7 @@ struct ShellSortPairsGPU
 };
 
 struct HeapSortGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -500,6 +559,7 @@ struct HeapSortGPU
 };
 
 struct HeapSortPairsGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -534,6 +594,7 @@ struct HeapSortPairsGPU
 };
 
 struct IntroSortGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -561,6 +622,7 @@ struct IntroSortGPU
 };
 
 struct IntroSortPairsGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -595,6 +657,7 @@ struct IntroSortPairsGPU
 };
 
 struct MergeSortGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -622,6 +685,7 @@ struct MergeSortGPU
 };
 
 struct MergeSortPairsGPU
+  : PolicySynchronizeGPU
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -766,9 +830,7 @@ void doSort(SortData<sort_interface_tag, T> const& data,
   memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
 #endif
   sorter(data.sorted_keys, data.sorted_keys+N);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  sorter.synchronize();
 }
 
 template <typename T,
@@ -785,9 +847,7 @@ void doSort(SortData<sort_interface_tag, T> const& data,
   memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
 #endif
   sorter(data.sorted_keys, data.sorted_keys+N, comp);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  sorter.synchronize();
 }
 
 template <typename K,
@@ -807,9 +867,7 @@ void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
   memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
 #endif
   sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  sorter.synchronize();
 }
 
 template <typename K,
@@ -829,9 +887,7 @@ void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
   memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
 #endif
   sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals, comp);
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
+  sorter.synchronize();
 }
 
 
