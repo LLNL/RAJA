@@ -10,6 +10,8 @@
 
 #include "test-forall-segment-view.hpp"
 
+#include "../../test-forall-functors.hpp"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -58,13 +60,14 @@ void ForallListSegmentViewTest(INDEX_TYPE N)
     test_array[ idx_array[i] ] = idx_array[i];
   }
 
+  using view_type = RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >;
+  
   RAJA::Layout<1> layout(N);
-  RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> > 
-    work_view(working_array, layout);
+  view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    work_view( idx ) = idx;
-  });
+  ListSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view); 
+
+  RAJA::forall<EXEC_POLICY>(lseg, tbody);
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -115,17 +118,19 @@ void ForallListSegmentOffsetViewTest(INDEX_TYPE N, INDEX_TYPE offset)
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  std::for_each( std::begin(idx_array), std::end(idx_array), 
-                 [=](INDEX_TYPE& idx ) { test_array[idx-offset] = idx; }
-               );
+  for (size_t i = 0; i < idxlen; ++i) {
+    test_array[ idx_array[i]-offset ] = idx_array[i];
+  }
 
-  RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> > 
-    work_view(working_array, 
-              RAJA::make_offset_layout<1, INDEX_TYPE>({{offset}}, {{N+offset}}));
+  using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
 
-  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    work_view( idx ) = idx;
-  });
+  view_type work_view(working_array, 
+                      RAJA::make_offset_layout<1, INDEX_TYPE>( {{offset}}, 
+                                                               {{N+offset}} ));
+
+  ListSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view);
+
+  RAJA::forall<EXEC_POLICY>(lseg, tbody);
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 

@@ -10,6 +10,8 @@
 
 #include "../../test-forall-indexset-utils.hpp"
 
+#include "../../test-forall-functors.hpp"
+
 #include <cstdio>
 #include <algorithm>
 #include <vector>
@@ -67,13 +69,14 @@ void ForallISetViewTest()
     test_array[ is_indices[i] ] = is_indices[i];
   }
 
-  RAJA::Layout<1> layout(N);
-  RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >
-    work_view(working_array, layout);
+  using view_type = RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >;
 
-  RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    work_view( idx ) = idx;
-  });
+  RAJA::Layout<1> layout(N);
+  view_type work_view(working_array, layout);
+
+  IndexSetViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view);
+
+  RAJA::forall<EXEC_POLICY>(iset, tbody);
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
