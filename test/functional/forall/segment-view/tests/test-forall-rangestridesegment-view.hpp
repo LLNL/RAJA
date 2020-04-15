@@ -10,6 +10,8 @@
 
 #include "test-forall-segment-view.hpp"
 
+#include "../../test-forall-functors.hpp"
+
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeStrideSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last, 
@@ -33,19 +35,22 @@ void ForallRangeStrideSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last,
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  INDEX_TYPE val = first;
+  INDEX_TYPE idx = first;
   for (INDEX_TYPE i = 0; i < N; ++i) {
-    test_array[ (val-first)/stride ] = val;
-    val += stride;
+    test_array[ (idx-first)/stride ] = idx;
+    idx += stride;
   }
 
-  RAJA::Layout<1> layout(N);
-  RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> > 
-    work_view(working_array, layout);
+  using view_type = RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >;
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE val) {
-    work_view( (val-first)/stride ) = val;
-  });
+  RAJA::Layout<1> layout(N);
+  view_type work_view(working_array, layout);
+
+  RangeStrideSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view, 
+                                                                 first, 
+                                                                 stride);
+
+  RAJA::forall<EXEC_POLICY>(r1, tbody);
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 

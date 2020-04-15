@@ -113,6 +113,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanExclusive)
 
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
+                              OP_TYPE>(0);
+  ScanExclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
                               OP_TYPE>(357);
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
@@ -123,6 +126,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanExclusive)
   // 
   using T = typename OP_TYPE::result_type;
 
+  ScanExclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
+                              OP_TYPE>(0, T(13));
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
                               OP_TYPE>(357, T(15));
@@ -139,6 +145,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
 
   ScanExclusiveInplaceFunctionalTest<EXEC_POLICY, 
                                      WORKING_RESOURCE,
+                                     OP_TYPE>(0);
+  ScanExclusiveInplaceFunctionalTest<EXEC_POLICY, 
+                                     WORKING_RESOURCE,
                                      OP_TYPE>(357);
   ScanExclusiveInplaceFunctionalTest<EXEC_POLICY,
                                      WORKING_RESOURCE,
@@ -149,6 +158,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
   //
   using T = typename OP_TYPE::result_type;
 
+  ScanExclusiveInplaceFunctionalTest<EXEC_POLICY,
+                                     WORKING_RESOURCE,
+                                     OP_TYPE>(0, T(13));
   ScanExclusiveInplaceFunctionalTest<EXEC_POLICY,
                                      WORKING_RESOURCE,
                                      OP_TYPE>(357, T(15));
