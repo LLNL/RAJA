@@ -56,16 +56,12 @@ namespace omp
 ///
 
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
+RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>& exec,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-
-  RAJA::region<RAJA::omp_parallel_region>([&]() {
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    forall_impl(InnerPolicy{}, iter, body.get_priv());
-  });
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, exec, iter, loop_body);
 }
 template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
@@ -73,9 +69,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Host host_res;
   RAJA::resources::Event event;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
@@ -91,15 +85,12 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
+RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exc,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for nowait
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
-  }
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, exec, iter, loop_body);
 }
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res, 
@@ -107,8 +98,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Host host_res;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
@@ -116,7 +106,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     loop_body(begin_it[i]);
   }
 
-  return &res ? host_res.get_event() : RAJA::resources::Event();
+  return host_res.get_event();
 }
 
 ///
@@ -124,15 +114,12 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_exec&,
+RAJA_INLINE void forall_impl(const omp_for_exec& exec,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
-  }
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, exec, iter, loop_body);
 }
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
@@ -140,8 +127,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Host host_res;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
@@ -149,7 +135,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     loop_body(begin_it[i]);
   }
 
-  return &res ? host_res.get_event() : RAJA::resources::Event();
+  return host_res.get_event();
 }
 
 ///
@@ -157,15 +143,12 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
 ///
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
+RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>& exec,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
-  }
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, exec, iter, loop_body);
 }
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
@@ -173,8 +156,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Host host_res;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)
@@ -182,7 +164,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     loop_body(begin_it[i]);
   }
 
-  return &res ? host_res.get_event() : RAJA::resources::Event();
+  return host_res.get_event();
 }
 
 //

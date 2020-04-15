@@ -72,6 +72,18 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
                              Iterable&& iter,
                              Func&& loop_body)
 {
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, p, iter, loop_body);
+}
+
+template <typename Iterable, typename Func>
+RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
+                                               const tbb_for_dynamic& p,
+                                               Iterable&& iter,
+                                               Func&& loop_body)
+{
+  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+
   using std::begin;
   using std::distance;
   using std::end;
@@ -85,29 +97,8 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
     for (auto i = r.begin(); i != r.end(); ++i)
       body(b[i]);
   });
-}
-template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const tbb_for_dynamic& p,
-                                               Iterable&& iter,
-                                               Func&& loop_body)
-{
-  RAJA::resources::Host host_res;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
-  using std::begin;
-  using std::end;
-  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
-  ::tbb::parallel_for(brange(begin(iter), end(iter), p.grain_size),
-                      [=](const brange& r) {
-                        using RAJA::internal::thread_privatize;
-                        auto privatizer = thread_privatize(loop_body);
-                        auto body = privatizer.get_priv();
-                        for (const auto& i : r)
-                          body(i);
-                      });
-
-  return &res ? host_res.get_event() : RAJA::resources::Event();
+  return host_res.get_event();
 }
 ///
 /// TBB parallel for static policy implementation
@@ -157,23 +148,26 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Host host_res;
-  if (&res) host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
   using std::begin;
+  using std::distance;
   using std::end;
-  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
-  ::tbb::parallel_for(brange(begin(iter), end(iter), ChunkSize),
-                      [=](const brange& r) {
-                        using RAJA::internal::thread_privatize;
-                        auto privatizer = thread_privatize(loop_body);
-                        auto body = privatizer.get_priv();
-                        for (const auto& i : r)
-                          body(i);
-                      },
-                      tbb_static_partitioner{});
+  using brange = ::tbb::blocked_range<size_t>;
+  auto b = begin(iter);
+  size_t dist = std::abs(distance(begin(iter), end(iter)));
+  ::tbb::parallel_for(
+      brange(0, dist, ChunkSize),
+      [=](const brange& r) {
+        using RAJA::internal::thread_privatize;
+        auto privatizer = thread_privatize(loop_body);
+        auto body = privatizer.get_priv();
+        for (auto i = r.begin(); i != r.end(); ++i)
+          body(b[i]);
+      },
+      tbb_static_partitioner{});
 
-  return &res ? host_res.get_event() : RAJA::resources::Event();
+  return host_res.get_event();
 }
 
 }  // namespace tbb
