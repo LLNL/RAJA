@@ -752,6 +752,15 @@ struct SortData<sort_interface_tag, K, V>
     }
   }
 
+  void copy_data(size_t N) const
+  {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaErrchk(cudaMemcpy(sorted_keys, orig_keys, N*sizeof(K), cudaMemcpyDefault));
+#else
+    memcpy(sorted_keys, orig_keys, N*sizeof(K));
+#endif
+  }
+
   SortData(SortData const&) = delete;
   SortData& operator=(SortData const&) = delete;
 
@@ -798,6 +807,16 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
     }
   }
 
+  void copy_data(size_t N) const
+  {
+    base::copy_data(N);
+#if defined(RAJA_ENABLE_CUDA)
+    cudaErrchk(cudaMemcpy(sorted_vals, orig_vals, N*sizeof(V), cudaMemcpyDefault));
+#else
+    memcpy(sorted_vals, orig_vals, N*sizeof(V));
+#endif
+  }
+
   SortData(SortData const&) = delete;
   SortData& operator=(SortData const&) = delete;
 
@@ -824,11 +843,7 @@ void doSort(SortData<sort_interface_tag, T> const& data,
             Compare,
             Sorter sorter, sort_interface_tag, sort_default_interface_tag)
 {
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(T), cudaMemcpyDefault));
-#else
-  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
-#endif
+  data.copy_data(N);
   sorter(data.sorted_keys, data.sorted_keys+N);
   sorter.synchronize();
 }
@@ -841,11 +856,7 @@ void doSort(SortData<sort_interface_tag, T> const& data,
             Compare comp,
             Sorter sorter, sort_interface_tag, sort_comp_interface_tag)
 {
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(T), cudaMemcpyDefault));
-#else
-  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(T));
-#endif
+  data.copy_data(N);
   sorter(data.sorted_keys, data.sorted_keys+N, comp);
   sorter.synchronize();
 }
@@ -859,13 +870,7 @@ void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
             Compare,
             Sorter sorter, sort_pairs_interface_tag, sort_default_interface_tag)
 {
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(K), cudaMemcpyDefault));
-  cudaErrchk(cudaMemcpy(data.sorted_vals, data.orig_vals, N*sizeof(V), cudaMemcpyDefault));
-#else
-  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(K));
-  memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
-#endif
+  data.copy_data(N);
   sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals);
   sorter.synchronize();
 }
@@ -879,13 +884,7 @@ void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
             Compare comp,
             Sorter sorter, sort_pairs_interface_tag, sort_comp_interface_tag)
 {
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMemcpy(data.sorted_keys, data.orig_keys, N*sizeof(K), cudaMemcpyDefault));
-  cudaErrchk(cudaMemcpy(data.sorted_vals, data.orig_vals, N*sizeof(V), cudaMemcpyDefault));
-#else
-  memcpy(data.sorted_keys, data.orig_keys, N*sizeof(K));
-  memcpy(data.sorted_vals, data.orig_vals, N*sizeof(V));
-#endif
+  data.copy_data(N);
   sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals, comp);
   sorter.synchronize();
 }
