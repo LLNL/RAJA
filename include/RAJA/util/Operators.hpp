@@ -69,13 +69,13 @@ namespace types
 
 template <typename T>
 struct is_unsigned_int {
-  constexpr static const bool value =
+  static constexpr const bool value =
       std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
 
 template <typename T>
 struct is_signed_int {
-  constexpr static const bool value =
+  static constexpr const bool value =
       !std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
 
@@ -206,38 +206,65 @@ struct larger_of {
 
 }  // namespace types
 
-namespace detail
-{
+
+
+template <typename T, typename Enable = void>
+struct limits;
+
+
+// limits for signed integer types
 template <typename T>
-struct signed_limits {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  !std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
-    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
+    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu) );
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
     return static_cast<T>(~(1llu << ((8llu * sizeof(T)) - 1llu)));
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
 };
 
+// limits for signed integer types
 template <typename T>
-struct unsigned_limits {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
     return static_cast<T>(0);
   }
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4309 )
+#endif
     return static_cast<T>(0xFFFFFFFFFFFFFFFF);
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4309 )
+#endif
   }
 };
 
-template <typename T>
-struct floating_point_limits {
-};
 
 template <>
-struct floating_point_limits<float> {
+struct limits<float> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min()
   {
     return -FLT_MAX;
@@ -249,7 +276,7 @@ struct floating_point_limits<float> {
 };
 
 template <>
-struct floating_point_limits<double> {
+struct limits<double> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr double min()
   {
     return -DBL_MAX;
@@ -261,7 +288,7 @@ struct floating_point_limits<double> {
 };
 
 template <>
-struct floating_point_limits<long double> {
+struct limits<long double> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr long double min()
   {
     return -LDBL_MAX;
@@ -271,16 +298,7 @@ struct floating_point_limits<long double> {
     return LDBL_MAX;
   }
 };
-}  // end namespace detail
 
-template <typename T>
-struct limits : public std::conditional<
-                    std::is_integral<T>::value,
-                    typename std::conditional<std::is_unsigned<T>::value,
-                                              detail::unsigned_limits<T>,
-                                              detail::signed_limits<T>>::type,
-                    detail::floating_point_limits<T>>::type {
-};
 
 #if defined(RAJA_CHECK_LIMITS)
 template <typename T>
@@ -445,7 +463,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    return (lhs < rhs) ? rhs : lhs;
+    return (lhs >= rhs) ? lhs : rhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
   {
@@ -542,7 +560,7 @@ struct project2nd : public detail::binary_function<T, U, U> {
 
 template <typename T>
 struct is_associative {
-  constexpr static const bool value =
+  static constexpr const bool value =
       std::is_base_of<detail::associative_tag, T>::value;
 };
 

@@ -36,16 +36,18 @@ namespace internal
 template <typename Data,
           template <typename...> class ReduceOperator,
           typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<Data,
                              statement::Reduce<RAJA::cuda_block_reduce,
                                                ReduceOperator,
                                                ParamId,
-                                               EnclosedStmts...>> {
+                                               EnclosedStmts...>,
+                                               Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
@@ -93,16 +95,18 @@ struct CudaStatementExecutor<Data,
 template <typename Data,
           template <typename...> class ReduceOperator,
           typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<Data,
                              statement::Reduce<RAJA::cuda_warp_reduce,
                                                ReduceOperator,
                                                ParamId,
-                                               EnclosedStmts...>> {
+                                               EnclosedStmts...>,
+                                               Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
