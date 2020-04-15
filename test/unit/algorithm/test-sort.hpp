@@ -1122,10 +1122,16 @@ void testSorterSizes(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
   testSorterInterfaces<double>(seed, MaxN, sorter);
 }
 
+inline unsigned get_random_seed()
+{
+  static unsigned seed = std::random_device{}();
+  return seed;
+}
+
 template <typename Sorter>
 void testSorter(Sorter sorter, RAJA::Index_type MaxN = 10000)
 {
-  unsigned seed = std::random_device{}();
+  unsigned seed = get_random_seed();
 
   testSorterSizes(seed, 0, sorter);
   for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
