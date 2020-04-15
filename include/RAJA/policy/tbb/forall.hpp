@@ -121,27 +121,14 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
+RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>& p,
                              Iterable&& iter,
                              Func&& loop_body)
 {
-  using std::begin;
-  using std::distance;
-  using std::end;
-  using brange = ::tbb::blocked_range<size_t>;
-  auto b = begin(iter);
-  size_t dist = std::abs(distance(begin(iter), end(iter)));
-  ::tbb::parallel_for(
-      brange(0, dist, ChunkSize),
-      [=](const brange& r) {
-        using RAJA::internal::thread_privatize;
-        auto privatizer = thread_privatize(loop_body);
-        auto body = privatizer.get_priv();
-        for (auto i = r.begin(); i != r.end(); ++i)
-          body(b[i]);
-      },
-      tbb_static_partitioner{});
+  RAJA::resources::Resource res{RAJA::resources::Host()};
+  forall_impl(res, p, iter, loop_body);
 }
+
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                const tbb_for_static<ChunkSize>&,
