@@ -108,6 +108,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusive)
 
   ScanInclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
+                              OP_TYPE>(0);
+  ScanInclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
                               OP_TYPE>(357);
   ScanInclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
@@ -120,6 +123,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
+  ScanInclusiveInplaceFunctionalTest<EXEC_POLICY, 
+                                     WORKING_RESOURCE,
+                                     OP_TYPE>(0);
   ScanInclusiveInplaceFunctionalTest<EXEC_POLICY, 
                                      WORKING_RESOURCE,
                                      OP_TYPE>(357);
