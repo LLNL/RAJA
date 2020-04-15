@@ -52,7 +52,26 @@ namespace RAJA
       using self_type = Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>;
       using base_type = internal::MatrixImpl<self_type, REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS>, SIZE_TYPE>;
 
-      using base_type::base_type;
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Matrix(){}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Matrix(T c) : base_type(c){}
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Matrix(self_type const &c) : base_type(c){}
+
+      template<typename ... RR>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      Matrix(RR const &... rows) : base_type(rows...){}
+
+
+
   };
 
   template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>

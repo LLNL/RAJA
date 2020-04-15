@@ -53,6 +53,15 @@
 //#define DEBUG_LTIMES
 
 
+#define VARIANT_C                    0
+#define VARIANT_C_VIEWS              0
+#define VARIANT_RAJA_SEQ             0
+#define VARIANT_RAJA_SEQ_ARGS        0
+#define VARIANT_RAJA_VECTOR          0
+#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_SEQ_SHMEM       1
+#define VARIANT_RAJA_MATRIX_SHMEM    1
+
 using namespace RAJA;
 
 //
@@ -88,14 +97,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
   const long num_m = 32 + (rand()/RAND_MAX);
-  const long num_g = 32 + (rand()/RAND_MAX);
+  const long num_g = 36 + (rand()/RAND_MAX);
   const long num_d = 64 + (rand()/RAND_MAX);
   const long num_z = 64*1024 + (rand()/RAND_MAX);
 
 #ifdef DEBUG_LTIMES
   const long num_iter = 1;
 #else
-  const long num_iter = 4;
+  const long num_iter = 150 ;
 #endif
 
   double total_flops = num_g*num_z*(2*num_d)*num_m;
@@ -103,7 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double min_bytes_store = 8*(num_m*num_g*num_z);
   double min_bytes_io = min_bytes_load + min_bytes_store;
 
-  std::cout << "num_m = " << num_m << ", num_g = " << num_g << 
+  std::cout << "num_m = " << num_m << ", num_g = " << num_g <<
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
 
   std::cout << "total flops:  " << (long)total_flops << "\n";
@@ -134,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  if(0){
+if(VARIANT_C){
   std::cout << "\n Running baseline C-version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -175,7 +184,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-if(1){
+if(VARIANT_C_VIEWS){
   std::cout << "\n Running C-version of LTimes (with Views)...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -233,7 +242,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-if(1){
+if(VARIANT_RAJA_SEQ){
   std::cout << "\n Running RAJA sequential version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -304,7 +313,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-if(1){
+if(VARIANT_RAJA_SEQ_ARGS){
   std::cout << "\n Running RAJA sequential ARGS version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -375,7 +384,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-if(1){
+if(VARIANT_RAJA_VECTOR){
   std::cout << "\n Running RAJA vectorized version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -454,7 +463,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-if(1){
+if(VARIANT_RAJA_MATRIX){
   std::cout << "\n Running RAJA matrix version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -471,16 +480,26 @@ if(1){
   // phi(m, g, z) : 2 -> z is stride-1 dimension
   using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
+  // create new data arrays and initialize them with threaded first-touch
+  double *thr_psi_data = new double[num_d*num_g*num_z];
+  double *thr_phi_data = new double[num_m*num_g*num_z];
+
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
   std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
-  PsiView psi(psi_data,
+  PsiView psi_orig(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  PsiView psi(thr_psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
   std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
-  PhiView phi(phi_data,
+  PhiView phi_orig(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  PhiView phi(thr_phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   using matrix_t = RAJA::FixedMatrix<double,8,8>;
@@ -492,25 +511,42 @@ if(1){
 
   using EXECPOL =
     RAJA::KernelPolicy<
+    statement::For<2, omp_parallel_for_exec,  // g
+      statement::Tile<3, tile_fixed<128>, loop_exec,
        statement::For<0, matrix_row_exec<matrix_t>,  // m
          statement::For<1, matrix_col_exec<matrix_t>,  // d
-           statement::For<2, loop_exec,  // g
+         statement::Tile<3, tile_fixed<16>, loop_exec,
              statement::For<3, matrix_col_exec<matrix_t>,  // z
                statement::Lambda<0>
              >
            >
          >
-       >
+       > > >
      >;
 
 
-
+// rzgenies: 36 cores at 2.1GHz, 2FMAs/cycle=16ops/cycle = 1.152TF peak
 
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IG>(0, num_g),
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
+
+#pragma omp for
+  for(int ig = 0;ig < num_g;++ ig){
+    IG g(ig);
+    for(ID d(0);d < num_d;++ d){
+      for(IZ z(0);z < num_z;++ z){
+        psi(d,g,z) = psi_orig(d,g,z);
+      }
+    }
+    for(IM m(0);m < num_m;++ m){
+      for(IZ z(0);z < num_z;++ z){
+        phi(m,g,z) = phi_orig(m,g,z);
+      }
+    }
+  }
 
   RAJA::Timer timer;
   timer.start();
@@ -526,9 +562,12 @@ if(1){
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops * num_iter / t / 1.0e9;
+  double bw_rate = min_bytes_io * num_iter/ t / 1.0e9;
   std::cout << "  RAJA matrix version of LTimes run time (sec.): "
-            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
+            << t <<", GFLOPS/sec: " << gflop_rate << ", GB/sec: " << bw_rate << std::endl;
 
+  delete[] thr_psi_data;
+  delete[] thr_phi_data;
 
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
@@ -536,7 +575,7 @@ if(1){
 }
 
 //----------------------------------------------------------------------------//
-if(1){
+if(VARIANT_RAJA_SEQ_SHMEM){
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -741,7 +780,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-{
+if(VARIANT_RAJA_MATRIX_SHMEM){
   std::cout << "\n Running RAJA matrix shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));

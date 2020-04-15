@@ -29,7 +29,6 @@ namespace RAJA
     public:
       using self_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>;
       using base_type = internal::makeVectorBase<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>;
-//      using base_type::base_type;
 
       /*!
        * @brief Default constructor, zeros register contents

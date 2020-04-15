@@ -220,7 +220,6 @@ namespace RAJA
        * @param i Offset of scalar to get
        * @return Returns scalar value at i
        */
-      constexpr
       RAJA_INLINE
       element_type get(camp::idx_t i) const
       {return m_value[i];}

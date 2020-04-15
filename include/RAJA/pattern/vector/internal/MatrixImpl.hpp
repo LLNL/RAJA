@@ -142,7 +142,7 @@ namespace internal {
 
         camp::sink(
                 (psum[B_IDX_ROW%2] =
-                    B.m_rows[B_IDX_ROW].fused_multiply_add(
+                    B.row(B_IDX_ROW).fused_multiply_add(
                         B_VECTOR_TYPE(a_row[A_IDX_COL]),
                         psum[B_IDX_ROW%2]))...
                 );
@@ -155,14 +155,14 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply(A_type const &A, B_type const &B){
-        return result_type(calc_row_product(B_VECTOR_TYPE(0), A.m_rows[A_IDX_ROW], B)...);
+        return result_type(calc_row_product(B_VECTOR_TYPE(0), A.row(A_IDX_ROW), B)...);
       }
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
       result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
-        return result_type(calc_row_product(C.m_rows[A_IDX_ROW], A.m_rows[A_IDX_ROW], B)...);
+        return result_type(calc_row_product(C.row(A_IDX_ROW), A.row(A_IDX_ROW), B)...);
       }
 
   };
@@ -202,7 +202,7 @@ namespace internal {
 
         camp::sink(
                 (psum[A_IDX_COL%2] =
-                    A.m_cols[A_IDX_COL].fused_multiply_add(
+                    A.col(A_IDX_COL).fused_multiply_add(
                         A_VECTOR_TYPE(b_col[B_IDX_ROW]),
                         psum[A_IDX_COL%2]))...
                 );
@@ -215,14 +215,14 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply(A_type const &A, B_type const &B){
-        return result_type(calc_row_product(result_vector(), B.m_cols[B_IDX_COL], A)...);
+        return result_type(calc_row_product(result_vector(), B.col(B_IDX_COL), A)...);
       }
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
       result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
-        return result_type(calc_row_product(C.m_cols[B_IDX_COL], B.m_cols[B_IDX_COL], A)...);
+        return result_type(calc_row_product(C.col(B_IDX_COL), B.col(B_IDX_COL), A)...);
       }
 
   };
@@ -305,8 +305,6 @@ namespace internal {
 
 
     private:
-      template<typename A, typename B, typename AR, typename AC, typename BR, typename BC>
-      friend struct MatrixMatrixProductHelperExpanded;
 
       vector_type m_rows[sizeof...(IDX_ROW)];
       SemiStaticValue<sizeof...(IDX_ROW), SIZE_TYPE == MATRIX_FIXED> m_num_rows;
@@ -480,32 +478,28 @@ namespace internal {
         );
       }
 
-      template<typename IDX_I, typename IDX_J>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &set(IDX_I row, IDX_J col, element_type val){
+      self_type &set(camp::idx_t row, camp::idx_t col, element_type val){
         m_rows[row].set(col, val);
         return *getThis();
       }
 
-      template<typename IDX_I, typename IDX_J>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(IDX_I row, IDX_J col){
+      element_type get(camp::idx_t row, camp::idx_t col){
         return m_rows[row].get(col);
       }
 
-      template<typename IDX_I>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type &row(IDX_I row){
+      vector_type &row(camp::idx_t row){
         return m_rows[row];
       }
 
-      template<typename IDX_I>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type const &row(IDX_I row) const{
+      vector_type const &row(camp::idx_t row) const{
         return m_rows[row];
       }
 
@@ -533,8 +527,6 @@ namespace internal {
 
 
     private:
-      template<typename A, typename B, typename AR, typename AC, typename BR, typename BC>
-      friend struct MatrixMatrixProductHelperExpanded;
 
       vector_type m_cols[sizeof...(IDX_COL)];
       SemiStaticValue<sizeof...(IDX_COL), SIZE_TYPE == MATRIX_FIXED> m_num_cols;
@@ -703,32 +695,28 @@ namespace internal {
         );
       }
 
-      template<typename IDX_I, typename IDX_J>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &set(IDX_I row, IDX_J col, element_type val){
+      self_type &set(camp::idx_t row, camp::idx_t col, element_type val){
         m_cols[col].set(row, val);
         return *getThis();
       }
 
-      template<typename IDX_I, typename IDX_J>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(IDX_I row, IDX_J col){
+      element_type get(camp::idx_t row, camp::idx_t col){
         return m_cols[col].get(row);
       }
 
-      template<typename IDX_I>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type &col(IDX_I c){
+      vector_type &col(camp::idx_t c){
         return m_cols[c];
       }
 
-      template<typename IDX_I>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type const &col(IDX_I c) const{
+      vector_type const &col(camp::idx_t c) const{
         return m_cols[c];
       }
 

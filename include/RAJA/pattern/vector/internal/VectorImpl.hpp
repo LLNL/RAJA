@@ -131,6 +131,15 @@ namespace RAJA
     using tuple_from_list_t = typename tuple_from_list<TYPE_LIST>::type;
 
 
+    template<typename T, typename I>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr
+    T const &to_first(T const &value, I const &){
+      return value;
+    }
+
+
     /*
      * Helper that compute template arguments to VectorImpl
      */
@@ -230,7 +239,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         VectorBase(element_type const &c) :
-          m_registers{register_type(c + element_type(0*REG_SEQ))...},
+          m_registers{to_first(register_type(c), REG_SEQ)...},
           m_length()
         {
         }
