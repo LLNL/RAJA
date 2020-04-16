@@ -46,51 +46,6 @@ struct ForallViewCUDA : ::testing::Test {
   }
 };
 
-GPU_TEST_F(ForallViewCUDA, ForallViewLayout)
-{
-  const Index_type alen = ::alen;
-  double* arr_h = ::arr_h;
-  double* arr_d = ::arr_d;
-  double test_val = ::test_val;
-
-  const RAJA::Layout<1> my_layout(alen);
-  RAJA::View<double, RAJA::Layout<1>> view(arr_d, my_layout);
-
-  forall<RAJA::cuda_exec<block_size>>(RAJA::RangeSegment(0, alen),
-                                      [=] RAJA_HOST_DEVICE(Index_type i) {
-                                        view(i) = test_val;
-                                      });
-
-  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
-
-  for (Index_type i = 0; i < alen; ++i) {
-    EXPECT_EQ(arr_h[i], test_val);
-  }
-}
-
-GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout)
-{
-  const Index_type alen = ::alen;
-  double* arr_h = ::arr_h;
-  double* arr_d = ::arr_d;
-  double test_val = ::test_val;
-
-  RAJA::OffsetLayout<1> my_layout =
-      RAJA::make_offset_layout<1>({{1}}, {{alen + 1}});
-  RAJA::View<double, RAJA::OffsetLayout<1>> view(arr_d, my_layout);
-
-  forall<RAJA::cuda_exec<block_size>>(RAJA::RangeSegment(1, alen + 1),
-                                      [=] RAJA_DEVICE(Index_type i) {
-                                        view(i) = test_val;
-                                      });
-
-  cudaErrchk(cudaMemcpy(arr_h, arr_d, alen * sizeof(double), cudaMemcpyDeviceToHost));
-
-  for (Index_type i = 0; i < alen; ++i) {
-    EXPECT_EQ(arr_h[i], test_val);
-  }
-}
-
 GPU_TEST_F(ForallViewCUDA, ForallViewOffsetLayout2D)
 {
 

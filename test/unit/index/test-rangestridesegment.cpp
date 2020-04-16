@@ -16,17 +16,19 @@ template<typename T>
 class RangeStrideSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
+                                 int, 
+#if defined(TEST_EXHAUSTIVE)
+                                 unsigned int,
                                  char, 
                                  unsigned char,
                                  short,
                                  unsigned short,
-                                 int, 
-                                 unsigned int,
                                  long,
                                  unsigned long,
                                  long int,
                                  unsigned long int,
                                  long long,
+#endif
                                  unsigned long long>;
 
 TYPED_TEST_SUITE(RangeStrideSegmentUnitTest, MyTypes);
