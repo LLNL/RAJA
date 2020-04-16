@@ -7,10 +7,9 @@
 
 #include "tests/test-forall-indexset.hpp"
 
-// Cuda execution policy types
-using CudaForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128>>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>> >;
+#if defined(RAJA_ENABLE_CUDA)
+
+#include "../test-forall-indexset-execpol.hpp"
 
 // Cartesian product of types for Cuda tests
 using CudaForallIndexSetTypes =
@@ -21,3 +20,5 @@ using CudaForallIndexSetTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallIndexSetTest,
                                CudaForallIndexSetTypes);
+
+#endif
