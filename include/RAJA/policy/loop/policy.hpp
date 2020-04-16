@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef policy_loop_HPP
@@ -74,9 +66,9 @@ using loop_reduce = seq_reduce;
 }  // end namespace policy
 
 using policy::loop::loop_exec;
-using policy::loop::loop_segit;
 using policy::loop::loop_reduce;
+using policy::loop::loop_segit;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif

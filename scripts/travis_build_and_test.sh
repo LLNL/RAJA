@@ -1,5 +1,12 @@
-#!/bin/bash
-env
+#!/usr/bin/env bash
+
+###############################################################################
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)   
+###############################################################################
+
 function or_die () {
     "$@"
     local status=$?

@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_pattern_kernel_Tile_HPP
@@ -35,6 +27,7 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -68,6 +61,8 @@ struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using exec_policy_t = ExecPolicy;
 };
 
+}  // end namespace statement
+
 ///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
 struct tile_fixed {
@@ -80,28 +75,27 @@ struct tile_dynamic {
 };
 
 
-}  // end namespace statement
 
 namespace internal
 {
 
+/*!
+ * A generic RAJA::kernel forall_impl tile wrapper for statement::For
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
+template <camp::idx_t ArgumentId, typename Data, typename Types, typename... EnclosedStmts>
+struct TileWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
-template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
-struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
-
-  using Base = GenericWrapper<Data, EnclosedStmts...>;
+  using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
   using privatizer = NestedPrivatizer<TileWrapper>;
 
-  template <typename InSegmentType>
-  RAJA_INLINE void operator()(InSegmentType s)
+  template <typename InSegmentIndexType>
+  RAJA_INLINE void operator()(InSegmentIndexType si)
   {
     // Assign the tile's segment to the tuple
-    camp::get<ArgumentId>(Base::data.segment_tuple) = s;
-
-    // Assign the beginning index to the index_tuple for proper use
-    // in shmem windows
-    camp::get<ArgumentId>(Base::data.offset_tuple) = 0;
+    camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
 
     // Execute enclosed statements
     Base::exec();
@@ -113,6 +107,12 @@ template <typename Iterable>
 struct IterableTiler {
   using value_type = camp::decay<Iterable>;
 
+  struct iterate
+  {
+    value_type s;
+    Index_type i;
+  };
+
   class iterator
   {
     // NOTE: this must be held by value for NVCC support, *even on the host*
@@ -120,7 +120,7 @@ struct IterableTiler {
     const Index_type block_id;
 
   public:
-    using value_type = camp::decay<Iterable>;
+    using value_type = iterate;
     using difference_type = camp::idx_t;
     using pointer = value_type *;
     using reference = value_type &;
@@ -138,14 +138,14 @@ struct IterableTiler {
     value_type operator*()
     {
       auto start = block_id * itiler.block_size;
-      return itiler.it.slice(start, itiler.block_size);
+      return iterate{itiler.it.slice(start, itiler.block_size), block_id};
     }
 
     RAJA_HOST_DEVICE
     RAJA_INLINE difference_type operator-(const iterator &rhs) const
     {
-      return static_cast<difference_type>(block_id)
-             - static_cast<difference_type>(rhs.block_id);
+      return static_cast<difference_type>(block_id) -
+             static_cast<difference_type>(rhs.block_id);
     }
 
     RAJA_HOST_DEVICE
@@ -187,8 +187,8 @@ struct IterableTiler {
       : it{it_}, block_size{block_size_}
   {
     using std::begin;
-    using std::end;
     using std::distance;
+    using std::end;
     dist = it.end() - it.begin();  // distance(begin(it), end(it));
     num_blocks = dist / block_size;
     // if (dist % block_size) num_blocks += 1;
@@ -211,13 +211,19 @@ struct IterableTiler {
   camp::idx_t dist;
 };
 
-
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::Tile
+ *
+ *
+ */
 template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
-          typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<
+    statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>, Types> {
+
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
@@ -227,12 +233,13 @@ struct StatementExecutor<statement::
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
 
-    // Create a tile iterator, needs to survive until the forall is 
-    // done executing. 
+    // Create a tile iterator, needs to survive until the forall is
+    // done executing.
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);
+    TileWrapper<ArgumentId, Data, Types,
+                EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     forall_impl(EPol{}, tiled_iterable, tile_wrapper);
@@ -244,9 +251,11 @@ struct StatementExecutor<statement::
 
 template<camp::idx_t ArgumentId,
   typename EPol,
-  typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Tile<ArgumentId, statement::tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>> {
+  typename... EnclosedStmts,
+  typename Types>
+struct StatementExecutor<
+    statement::Tile<ArgumentId, statement::tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>, Types> {
+  
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
@@ -270,7 +279,6 @@ struct StatementExecutor<statement::
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }
 };
-
 
 }  // end namespace internal
 }  // end namespace RAJA

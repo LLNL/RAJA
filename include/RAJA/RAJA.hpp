@@ -6,8 +6,8 @@
  * \brief   Main RAJA header file.
  *
  *          This is the main header file to include in code that uses RAJA.
- *          It provides a single access point to all RAJA features by 
- *          including other RAJA headers. 
+ *          It provides a single access point to all RAJA features by
+ *          including other RAJA headers.
  *
  *          IMPORTANT: If changes are made to this file, note that contents
  *                     of some header files require that they are included
@@ -17,18 +17,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_HPP
@@ -36,11 +28,13 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/camp_aliases.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/plugins.hpp"
+#include "RAJA/util/Registry.hpp"
 
 
 //
@@ -50,11 +44,6 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
 
-
-//
-// Shared memory abstractions
-//
-#include "RAJA/pattern/shared_memory.hpp"
 
 //
 // All platforms must support sequential execution.
@@ -79,8 +68,16 @@
 #include "RAJA/policy/cuda.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#include "RAJA/policy/openmp_target.hpp"
+#endif
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
@@ -110,22 +107,26 @@
 #include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
 //
-// Shared memory view patterns
+// View for sequences of objects
 //
-#include "RAJA/util/ShmemTile.hpp"
+#include "RAJA/util/Span.hpp"
 
 //
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
 
+//
+// Shared memory view patterns
+//
+#include "RAJA/util/LocalArray.hpp"
 
 //
-// Generic iteration templates for perfectly nested loops
+// Bit masking operators
 //
-#include "RAJA/pattern/forallN.hpp"
-
+#include "RAJA/util/BitMask.hpp"
 
 //
 // Reduction objects
@@ -152,12 +153,6 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
-
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
-
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
 
 #include "RAJA/pattern/scan.hpp"
 

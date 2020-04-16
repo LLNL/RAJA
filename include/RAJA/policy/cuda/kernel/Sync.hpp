@@ -10,20 +10,11 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #ifndef RAJA_policy_cuda_kernel_Sync_HPP
 #define RAJA_policy_cuda_kernel_Sync_HPP
@@ -50,40 +41,57 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that performs a CUDA __syncthreads().
- *
- *
  */
 struct CudaSyncThreads : public internal::Statement<camp::nil> {
 };
+
+/*!
+ * A RAJA::kernel statement that performs a CUDA __syncwarp().
+ */
+struct CudaSyncWarp : public internal::Statement<camp::nil> {
+};
+
 
 }  // namespace statement
 
 namespace internal
 {
 
-template <typename Data, typename IndexCalc>
-struct CudaStatementExecutor<Data, statement::CudaSyncThreads, IndexCalc> {
+template <typename Data, typename Types>
+struct CudaStatementExecutor<Data, statement::CudaSyncThreads, Types> {
 
-  inline __device__ void exec(Data &, int, int) { __syncthreads(); }
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &, bool) { __syncthreads(); }
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
-    // nop
+    return LaunchDims();
   }
+};
 
-  inline RAJA_DEVICE void initThread(Data &data)
+template <typename Data, typename Types>
+struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types> {
+
+  static
+  inline
+  RAJA_DEVICE
+#if CUDART_VERSION >= 9000
+  void exec(Data &, bool) { __syncwarp(); }
+#else
+  void exec(Data &, bool) {  }
+#endif
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
   {
-    // nop
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return LaunchDim();
+    return LaunchDims();
   }
 };
 

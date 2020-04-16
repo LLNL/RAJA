@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_policy_cuda_kernel_Conditional_HPP
@@ -47,50 +39,34 @@ namespace internal
 template <typename Data,
           typename Conditional,
           typename... EnclosedStmts,
-          typename IndexCalc>
+          typename Types>
 struct CudaStatementExecutor<Data,
                              statement::If<Conditional, EnclosedStmts...>,
-                             IndexCalc> {
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  IndexCalc index_calc;
-
-  inline RAJA_DEVICE void exec(Data &data,
-                               int num_logical_blocks,
-                               int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
   {
-
     if (Conditional::eval(data)) {
 
       // execute enclosed statements
-      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+      enclosed_stmts_t::exec(data, thread_active);
     }
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
-  {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
-  }
 
-  inline RAJA_DEVICE void initThread(Data &data)
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    enclosed_stmts.initThread(data);
-  }
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    return enclosed_stmts.calculateDimensions(data, max_physical);
+    return enclosed_stmts_t::calculateDimensions(data);
   }
 };
 

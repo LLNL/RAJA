@@ -1,24 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+###############################################################################
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
 
 ##
-## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+## Execute these commands before running this script to build RAJA.
 ##
-## Produced at the Lawrence Livermore National Laboratory.
+## First grab a node to compile and run your code:
 ##
-## LLNL-CODE-689114
+## > qsub -I -n 1 -A <your_project> -t <# minutes> -q debug
 ##
-## All rights reserved.
+## Then set up your build environment.
 ##
-## This file is part of RAJA.
-##
-## For details about use and distribution, please read RAJA/LICENSE.
-##
-
-##
-## Execute these commands before running this script to
-## set up your build environment:
-##
-##  > soft add +cmake-3.9.1 
+##  > soft add +cmake-3.9.1
 ##  > soft add +gcc-7.1.0
 ##
 

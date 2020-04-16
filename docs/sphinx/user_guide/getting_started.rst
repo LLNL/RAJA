@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 
@@ -26,37 +20,39 @@ Requirements
 ============
 
 The primary requirement for using RAJA is a C++11 compliant compiler.
-Accessing the full range of RAJA features, such as all available programming
-model back-ends, requires additional support. Available options and how
-to enable or disable them are described in :ref:`configopt-label`. To
-build and use RAJA in its simplest form requires:
+Accessing various programming model back-ends requires that they be supported
+by the compiler you chose. Available options and how to enable or disable 
+them are described in :ref:`configopt-label`. To build and use RAJA in its 
+simplest form requires:
 
 - C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ 3.3 or greater
+- `CMake <https://cmake.org/>`_ version 3.9 or greater.
 
 
 ==================
 Get the Code
 ==================
 
-The RAJA project is hosted on a `GitHub project <https://github.com/LLNL/RAJA>`_.
+The RAJA project is hosted on `GitHub <https://github.com/LLNL/RAJA>`_.
 To get the code, clone the repository into a local working space using
 the command::
 
    $ git clone --recursive https://github.com/LLNL/RAJA.git
 
 The ``--recursive`` argument above is needed to pull in other projects
-that we use as Git *submodules*. Currently, we have only two:
+RAJA depends on as Git *submodules*. Currently, RAJA submodule dependencies 
+are:
 
-- The `BLT build system <https://github.com/LLNL/blt>`_
-- The `CUB project <https://github.com/NVlabs/cub>`_
+- `BLT build system <https://github.com/LLNL/blt>`_
+- `Camp portable utility library <https://github.com/LLNL/camp>`_
+- `NVIDIA CUB <https://github.com/NVlabs/cub>`_
 
-You probably don't need to know much about either of these projects to start
-using RAJA. But, if you want to know more, click on the links above.
+You probably don't need to know much about these other projects to start
+using RAJA. But, if you want to know more about them, click on the links above.
 
 After running the clone command, a copy of the RAJA repository will reside in
-a ``RAJA`` subdirectory and you will be on the ``develop`` branch of RAJA,
-which is our default branch.
+a ``RAJA`` subdirectory where you ran the clone command. You will be on the 
+``develop`` branch of RAJA, which is our default branch.
 
 If you forget to pass the ``--recursive`` argument to the ``git clone``
 command, you can type the following commands after cloning::
@@ -83,24 +79,29 @@ your system.
 Building RAJA
 --------------
 
-RAJA uses CMake to configure a build. Basic configuration looks like::
+RAJA uses CMake to configure a build. A basic configuration looks like::
 
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
 
-.. note:: Builds must be *out-of-source*.  RAJA does not allow building in
-          the source directory, so you must create a build directory.
+.. note:: * RAJA requires a minimum CMake version of 3.9.
+          * Builds must be *out-of-source*.  RAJA does not allow building in
+            the source directory, so you must create a build directory.
 
 When you run CMake, it will provide output about the compiler that has been 
 found and which features are discovered. Some RAJA features, like OpenMP 
 support are enabled if they are discovered. For a complete summary of 
 configuration options, please see :ref:`configopt-label`.
 
-After CMake successfully completes, RAJA is compiled by executing the ``make``
+After CMake successfully completes, you compile RAJA by executing the ``make``
 command in the build directory; i.e.,::
 
   $ cd build-dir
   $ make
+
+If you have access to a multi-core system you can compile in parallel by running
+``make -j`` (to build with all available cores) or ``make -j N`` to build using
+N cores.
 
 .. note:: RAJA is configured to build its unit tests by default. If you do not
           disable them with the appropriate CMake option, you can run them
@@ -109,23 +110,38 @@ command in the build directory; i.e.,::
 
           $ make test
 
+          after the build completes.
+
           You can also run individual tests by invoking individual test 
           executables directly. They live in subdirectories in the ``test`` 
           directory. RAJA tests use the 
           `Google Test framework <https://github.com/google/googletest>`_, 
           so you can also run tests via Google Test commands.
 
+          It is very important to note that the version of Googletest that
+          is used in RAJA version v0.11.0 or newer requires CUDA version 
+          9.2.x or newer when compiling with nvcc. Thus, if you build
+          RAJA with CUDA enabled and want to also enable RAJA tests, you
+          must use CUDA version 9.2.x or newer.
+
+.. note:: You may use externally-supplied versions of the camp and cub 
+          libraries with RAJA if you wish. To do so, pass the following 
+          options to CMake:
+            * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
+            * External cub: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<cub dir name> 
 
 ----------------
 Installing RAJA
 ----------------
 
-To install RAJA, run the following command in your build directory::
+To install RAJA as a library, run the following command in your build 
+directory::
 
   $ make install
 
 This will copy RAJA header files to the ``include`` directory and the RAJA
-library will be installed in the ``lib`` directory in your build space.
+library will be installed in the ``lib`` directory you specified using the
+``-DCMAKE_INSTALL_PREFIX`` CMake option.
 
 
 ======================
@@ -139,6 +155,9 @@ in the file: ``<build-dir>/examples/bin/daxpy``. Simply type the name
 of the executable in your build directory to run it; i.e.,::
 
   $ ./examples/bin/daxpy 
+
+The ``RAJA/examples`` directory also contains many other RAJA example codes 
+you can run and experiment with.
 
 For an overview of all the main RAJA features, see :ref:`features-label`.
 A full tutorial with a variety of examples showing how to use RAJA features

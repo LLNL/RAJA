@@ -9,23 +9,16 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
+#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 
 #include <cstddef>
@@ -41,14 +34,20 @@ enum class Policy {
   openmp,
   target_openmp,
   cuda,
+  hip,
   tbb
 };
 
-enum class Pattern { undefined, forall, region, reduce, taskgraph, synchronize };
+enum class Pattern {
+  undefined,
+  forall,
+  region,
+  reduce,
+  taskgraph,
+  synchronize
+};
 
 enum class Launch { undefined, sync, async };
-
-enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4 };
 
 struct PolicyBase {
 };
@@ -114,7 +113,7 @@ namespace reduce
 struct ordered {
 };
 
-}  // end namespace wrapper
+}  // namespace reduce
 
 
 template <Policy Pol, Pattern Pat, typename... Args>
@@ -174,6 +173,9 @@ struct is_target_openmp_policy
 };
 template <typename Pol>
 struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
+};
+template <typename Pol>
+struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,

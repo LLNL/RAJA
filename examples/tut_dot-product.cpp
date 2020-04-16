@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
@@ -45,6 +37,10 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+#endif
+
 //
 //  Function to check dot product result.
 //
@@ -63,8 +59,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
+  double *a = memoryManager::allocate<double>(N);
+  double *b = memoryManager::allocate<double>(N);
 
   for (int i = 0; i < N; ++i) {
     a[i] = 1.0;
@@ -78,11 +74,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running C-version of dot product...\n";
 
+  // _csytle_dotprod_start
   double dot = 0.0;
 
   for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];
   }
+  // _csytle_dotprod_end
 
   std::cout << "\t (a, b) = " << dot << std::endl;
 
@@ -92,6 +90,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
+  // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -99,6 +98,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
 
   dot = seqdot.get();
+  // _rajaseq_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -109,6 +110,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
+  // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
@@ -116,6 +118,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = ompdot.get();
+  // _rajaomp_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
@@ -127,7 +131,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
-  RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> cudot(0.0);
+  // _rajacuda_dotprod_start
+  RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
@@ -135,9 +140,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });    
 
   dot = cudot.get();
+  // _rajacuda_dotprod_end
+
   std::cout << "\t (a, b) = " << dot << std::endl;
 
   checkResult(dot, dot_ref);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running RAJA HIP dot product...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
+
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += d_a[i] * d_b[i];
+  });
+
+  dot = hpdot.get();
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
 #endif
 
 //----------------------------------------------------------------------------//

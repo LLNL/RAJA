@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_region_openmp_HPP
@@ -37,23 +29,27 @@ namespace omp
  *  });
  *
  * \endcode
- * 
+ *
  * \tparam Policy region policy
  *
-*/
+ */
 
 template <typename Func>
 RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
 {
 
 #pragma omp parallel
-  body();
+    { // curly brackets to ensure body() is encapsulated in omp parallel region
+      //thread private copy of body
+      auto loopbody = body;
+      loopbody();
+    }
 }
 
-}  // closing brace for omp namespace
+}  // namespace omp
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

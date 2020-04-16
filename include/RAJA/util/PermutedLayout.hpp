@@ -3,25 +3,17 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout permutation operations for
- *          forallN templates.
+ * \brief   RAJA header file defining Layout, a N-dimensional index calculator
+ *          with permuted stride orderings
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_PERMUTEDLAYOUT_HPP
@@ -32,8 +24,6 @@
 #include <iostream>
 
 #include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
@@ -90,7 +80,15 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
   }
 
 
-  return Layout<Rank, IdxLin>(sizes, strides);
+  // return Layout<Rank, IdxLin>(sizes, strides);
+  auto ret  = Layout<Rank, IdxLin>();
+  for (size_t i = 0; i < Rank; ++i) {
+    ret.sizes[i] = sizes[i];
+    ret.strides[i] = strides[i];
+    ret.inv_strides[i] = strides[i] ? strides[i] : 1;
+    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
+  }
+  return ret;
 }
 
 

@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_IndexSetBuilders_HPP
@@ -53,9 +45,10 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildTypedIndexSetAligned(IndexSet& hiset,
-                               const Index_type* const indices_in,
-                               Index_type length);
+void buildTypedIndexSetAligned(
+    RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& hiset,
+    const Index_type* const indices_in,
+    Index_type length);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +105,6 @@ void buildLockFreeColorIndexset(
     Index_type* elemPermutation = 0l,
     Index_type* ielemPermutation = 0l);
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

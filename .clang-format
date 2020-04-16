@@ -18,7 +18,7 @@ PenaltyReturnTypeOnItsOwnLine : 65000
 PenaltyBreakString : 10
 
 # These improve formatting results but require clang 3.6/7 or higher
-BreakBeforeBinaryOperators : NonAssignment
+BreakBeforeBinaryOperators : None
 AlignAfterOpenBracket: true
 BinPackArguments : false
 AlignOperands : true

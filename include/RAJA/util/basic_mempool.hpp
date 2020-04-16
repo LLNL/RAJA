@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_BASIC_MEMPOOL_HPP
@@ -68,10 +60,11 @@ public:
   using used_value_type = typename used_type::value_type;
 
   MemoryArena(void* ptr, size_t size)
-      : m_allocation{ptr, static_cast<char*>(ptr) + size},
-        m_free_space({free_value_type{ptr, static_cast<char*>(ptr) + size}}),
-        m_used_space()
+    : m_allocation{ ptr, static_cast<char*>(ptr)+size },
+      m_free_space(),
+      m_used_space()
   {
+     m_free_space[ptr] = static_cast<char*>(ptr)+size ;
     if (m_allocation.begin == nullptr) {
       fprintf(stderr, "Attempt to create MemoryArena with no memory");
       std::abort();
@@ -86,8 +79,8 @@ public:
 
   size_t capacity()
   {
-    return static_cast<char*>(m_allocation.end)
-           - static_cast<char*>(m_allocation.begin);
+    return static_cast<char*>(m_allocation.end) -
+           static_cast<char*>(m_allocation.begin);
   }
 
   bool unused() { return m_used_space.empty(); }

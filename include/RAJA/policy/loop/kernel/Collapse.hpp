@@ -8,22 +8,12 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #ifndef RAJA_policy_loop_kernel_Collapse_HPP
 #define RAJA_policy_loop_kernel_Collapse_HPP
@@ -40,15 +30,15 @@ namespace internal
 //
 // Termination case for seq_exec collapsed loops
 //
-template <typename... EnclosedStmts>
-struct StatementExecutor<statement::
-                             Collapse<loop_exec, ArgList<>, EnclosedStmts...>> {
+template <typename... EnclosedStmts, typename Types>
+struct StatementExecutor<
+    statement::Collapse<loop_exec, ArgList<>, EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
     // termination case: no more loops, just execute enclosed statements
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+    execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
   }
 };
 
@@ -57,19 +47,20 @@ struct StatementExecutor<statement::
 // Executor that handles collapsing of an arbitrarily deep set of seq_exec
 // loops
 //
-template <camp::idx_t Arg0, camp::idx_t... ArgRest, typename... EnclosedStmts>
+template <camp::idx_t Arg0, camp::idx_t... ArgRest, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<loop_exec,
                                              ArgList<Arg0, ArgRest...>,
-                                             EnclosedStmts...>> {
+                                             EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
   {
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, Arg0, Data>;
+
     // compute next-most inner loop Executor
-    using next_loop_t =
-        StatementExecutor<statement::Collapse<loop_exec,
-                                              ArgList<ArgRest...>,
-                                              EnclosedStmts...>>;
+    using next_loop_t = StatementExecutor<
+        statement::Collapse<loop_exec, ArgList<ArgRest...>, EnclosedStmts...>, NewTypes>;
 
     auto len0 = segment_length<Arg0>(data);
 

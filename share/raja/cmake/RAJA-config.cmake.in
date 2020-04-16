@@ -1,43 +1,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-# Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For additional details, please also read RAJA/LICENSE.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 #
 #=== Usage ===================================================================
@@ -68,30 +33,14 @@
 if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_CONFIG_LOADED TRUE)
 
-  # Install layout
-  set(RAJA_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@)
-  set(RAJA_INCLUDE_DIR    @CMAKE_INSTALL_PREFIX@/include)
-  set(RAJA_LIB_DIR        @CMAKE_INSTALL_PREFIX@/lib)
-  set(RAJA_CMAKE_DIR      @CMAKE_INSTALL_PREFIX@/share/raja/cmake)
-
-  # Includes needed to use RAJA
-  set(RAJA_INCLUDE_PATH @CMAKE_INSTALL_PREFIX@/include)
-  set(RAJA_LIB_PATH     @CMAKE_INSTALL_PREFIX@/lib)
-  set(RAJA_COMPILE_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(RAJA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-
-  set(RAJA_RT_LIBRARIES "${RT_LIBRARIES}")
-
-  set(RAJA_TIMER_TYPE    ${RAJA_TIMER_TYPE})
-  set(ENABLE_CUDA   ${ENABLE_CUDA})
-  set(ENABLE_FT     ${ENABLE_FT})
-  set(ENABLE_OPENMP ${ENABLE_OPENMP})
-  set(ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
-  set(ENABLE_TESTS  ${ENABLE_TESTS})
-  set(RAJA_REPORT_FT     ${RAJA_REPORT_FT})
-  set(RAJA_USE_COMPLEX   ${RAJA_USE_COMPLEX})
-  set(RAJA_USE_DOUBLE    ${RAJA_USE_DOUBLE})
-  set(RAJA_USE_FLOAT     ${RAJA_USE_FLOAT})
-  # Library targets imported from file
+  if (NOT DEFINED camp_DIR)
+    set(camp_DIR @CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
+  endif ()
+  find_package(camp REQUIRED)
   include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
 endif()
+
+# Export version number
+set(RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@)
+set(RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@)
+set(RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@)

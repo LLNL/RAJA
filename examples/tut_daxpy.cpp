@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
@@ -175,6 +167,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   a = ta;
   checkResult(a, aref, N);
 //printResult(a, N); 
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+//
+// RAJA HIP parallel GPU version (256 threads per thread block).
+//
+  std::cout << "\n Running RAJA HIP daxpy...\n";
+
+  a = 0; b = 0;
+  hipErrchk(hipMalloc( (void**)&a, N * sizeof(double) ));
+  hipErrchk(hipMalloc( (void**)&b, N * sizeof(double) ));
+
+  hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
+
+  RAJA::forall<RAJA::hip_exec<256>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    a[i] += b[i] * c;
+  });
+
+  hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
+
+  hipErrchk(hipFree(a));
+  hipErrchk(hipFree(b));
+
+  a = ta;
+  checkResult(a, aref, N);
+//printResult(a, N);
 #endif
 
 //----------------------------------------------------------------------------//

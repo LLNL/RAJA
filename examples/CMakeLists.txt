@@ -1,17 +1,8 @@
 ###############################################################################
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-689114
-#
-# All rights reserved.
-#
-# This file is part of RAJA.
-#
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 raja_add_executable(
@@ -51,8 +42,8 @@ raja_add_executable(
   SOURCES tut_scan.cpp)
 
 raja_add_executable(
-  NAME tut_atomic-binning
-  SOURCES tut_atomic-binning.cpp)
+  NAME tut_atomic-histogram
+  SOURCES tut_atomic-histogram.cpp)
 
 raja_add_executable(
   NAME tut_offset-layout
@@ -61,6 +52,14 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_batched-matrix-multiply
   SOURCES tut_batched-matrix-multiply.cpp)
+
+raja_add_executable(
+  NAME tut_matrix-transpose-local-array
+  SOURCES tut_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
+  NAME tut_tiled-matrix-transpose
+  SOURCES tut_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
   NAME pi-reduce_vs_atomic
@@ -78,17 +77,22 @@ raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
   
-  
-if(ENABLE_CUDA)
 raja_add_executable(
-  NAME cuda-shmem-ltimes
-  SOURCES cuda-shmem-ltimes.cpp)
-endif()
+  NAME ltimes
+  SOURCES ltimes.cpp)
 
-raja_add_executable(
-  NAME cpu-shmem-ltimes
-  SOURCES cpu-shmem-ltimes.cpp)
+if(ENABLE_TARGET_OPENMP)
+  raja_add_executable(
+    NAME target-kernel
+    SOURCES omp-target-kernel.cpp)
+
+  raja_add_executable(
+    NAME omp-target-ltimes
+    SOURCES omp-target-ltimes.cpp)
+endif()
 
 raja_add_executable(
   NAME kernel-dynamic-tile
   SOURCES kernel-dynamic-tile.cpp)
+
+add_subdirectory(plugin)

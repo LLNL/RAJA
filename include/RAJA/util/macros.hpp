@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_INTERNAL_MACROS_HPP
@@ -30,6 +22,10 @@
 
 #include <cstdlib>
 #include <stdexcept>
+
+#if defined(RAJA_ENABLE_HIP)
+#include <hip/hip_runtime.h>
+#endif
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
@@ -47,12 +43,13 @@
 #if defined(RAJA_ENABLE_CLANG_CUDA)
 #define RAJA_SUPPRESS_HD_WARN
 #else
-#if defined(_WIN32)  // windows is non-compliant, yay
-#define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
-#else
-#define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#define RAJA_SUPPRESS_HD_WARN RAJA_PRAGMA(nv_exec_check_disable)
 #endif
-#endif
+
+#elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#define RAJA_SUPPRESS_HD_WARN
 
 #else
 
@@ -127,7 +124,21 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
-  if (std::getenv("RAJA_NO_EXCEPT") != nullptr) {
+
+#ifdef RAJA_COMPILER_MSVC
+  char *value;
+  size_t len;
+  bool no_except = false;
+  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
+    no_except = true;
+    free(value);
+  }
+
+#else
+  bool no_except = std::getenv("RAJA_NO_EXCEPT") != nullptr;
+#endif
+
+  if (no_except) {
     std::abort();
   } else {
     throw std::runtime_error(str);

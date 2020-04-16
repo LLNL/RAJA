@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef _TYPE_HELPER_HPP_
@@ -39,7 +31,7 @@ struct type_cat;
 
 template <typename... Ss, typename... Ts>
 struct type_cat<std::tuple<Ss...>, std::tuple<Ts...>> {
-  typedef std::tuple<Ss..., Ts...> type;
+  using type = std::tuple<Ss..., Ts...>;
 };
 
 
@@ -50,36 +42,34 @@ template <typename S, typename... Ss, typename... Ts>
 struct product<std::tuple<S, Ss...>, std::tuple<Ts...>> {
   // the cartesian product of {S} and {Ts...}
   // is a list of pairs -- here: a std::tuple of 2-element std::tuples
-  typedef std::tuple<std::tuple<S, Ts>...> S_cross_Ts;
+  using S_cross_Ts = std::tuple<std::tuple<S, Ts>...>;
 
   // the cartesian product of {Ss...} and {Ts...} (computed recursively)
-  typedef
-      typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type Ss_cross_Ts;
+  using Ss_cross_Ts = typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type;
 
   // concatenate both products
-  typedef typename type_cat<S_cross_Ts, Ss_cross_Ts>::type type;
+  using type = typename type_cat<S_cross_Ts, Ss_cross_Ts>::type;
 };
 
 template <typename... Ss, typename... Ts, typename... Smembers>
 struct product<std::tuple<std::tuple<Smembers...>, Ss...>, std::tuple<Ts...>> {
   // the cartesian product of {S} and {Ts...}
   // is a list of pairs -- here: a std::tuple of 2-element std::tuples
-  typedef std::tuple<std::tuple<Smembers..., Ts>...> S_cross_Ts;
+  using S_cross_Ts = std::tuple<std::tuple<Smembers..., Ts>...>;
 
   // the cartesian product of {Ss...} and {Ts...} (computed recursively)
-  typedef
-      typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type Ss_cross_Ts;
+  using Ss_cross_Ts = typename product<std::tuple<Ss...>, std::tuple<Ts...>>::type;
 
   // concatenate both products
-  typedef typename type_cat<S_cross_Ts, Ss_cross_Ts>::type type;
+  using type = typename type_cat<S_cross_Ts, Ss_cross_Ts>::type;
 };
 
 // end the recursion
 template <typename... Ts>
 struct product<std::tuple<>, std::tuple<Ts...>> {
-  typedef std::tuple<> type;
+  using type = std::tuple<>;
 };
-}
+}  // namespace types
 
 
 namespace tt
@@ -132,7 +122,7 @@ struct apply<Fn, L<Ts...>> {
 template <template <class> class Outer, class T>
 using apply_t = typename apply<Outer, T>::type;
 
-} // closing brace for namespace tt
+}  // namespace tt
 
 
 namespace detail
@@ -144,7 +134,7 @@ template <template <class...> class T, typename... Ts>
 struct ForTesting<T<Ts...>> {
   using type = ::testing::Types<Ts...>;
 };
-}
+}  // namespace detail
 
 template <typename T>
 using ForTesting = typename ::detail::ForTesting<T>::type;

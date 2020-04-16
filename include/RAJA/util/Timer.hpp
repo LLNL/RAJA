@@ -11,18 +11,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_Timer_HPP
@@ -64,14 +56,16 @@ private:
 
 public:
   BGQTimer() : tstart(), tstop(), telapsed(0) {}
+
   void start() { gettimeofday(&tstart, 0); }
+
   void stop()
   {
     gettimeofday(&tstop, 0);
-    auto start = std::chrono::seconds(tstart.tv_sec)
-                 + std::chrono::microseconds(tstart.tv_usec);
-    auto stop = std::chrono::seconds(tstop.tv_sec)
-                + std::chrono::microseconds(tstop.tv_usec);
+    auto start = std::chrono::seconds(tstart.tv_sec) +
+                 std::chrono::microseconds(tstart.tv_usec);
+    auto stop = std::chrono::seconds(tstop.tv_sec) +
+                std::chrono::microseconds(tstop.tv_usec);
     telapsed += DurationType(stop - start).count();
   }
 
@@ -86,7 +80,7 @@ private:
 };
 
 using TimerBase = BGQTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_CHRONO)
@@ -118,7 +112,9 @@ public:
   ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), telapsed(0)
   {
   }
+
   void start() { tstart = ClockType::now(); }
+
   void stop()
   {
     tstop = ClockType::now();
@@ -137,7 +133,7 @@ private:
 };
 
 using TimerBase = ChronoTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_GETTIME)
@@ -165,7 +161,9 @@ private:
 
 public:
   GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
+
   void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
+
   void stop()
   {
     clock_gettime(CLOCK_MONOTONIC, &tstop);
@@ -197,7 +195,7 @@ private:
 };
 
 using TimerBase = GettimeTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #elif defined(RAJA_USE_CLOCK)
 
@@ -226,6 +224,7 @@ public:
   ClockTimer() : telapsed(0) { ; }
 
   void start() { tstart = clock(); }
+
   void stop()
   {
     tstop = clock();
@@ -248,7 +247,7 @@ private:
 };
 
 using TimerBase = ClockTimer;
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #else
 
@@ -274,6 +273,6 @@ public:
 #endif
 };
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

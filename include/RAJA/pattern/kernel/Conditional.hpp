@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_pattern_kernel_Conditional_HPP
@@ -28,6 +20,8 @@
 
 
 #include "RAJA/config.hpp"
+
+#include "RAJA/pattern/kernel/internal.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -46,24 +40,6 @@ template <typename Condition, typename... EnclosedStmts>
 struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
 };
 
-
-/*!
- * An expression that returns the value of the specified RAJA::kernel
- * parameter.
- *
- * This allows run-time values to affect the control logic within
- * RAJA::kernel execution policies.
- */
-template <camp::idx_t ParamId>
-struct Param {
-
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static auto eval(Data const &data)
-      -> decltype(camp::get<ParamId>(data.param_tuple))
-  {
-    return camp::get<ParamId>(data.param_tuple);
-  }
-};
 
 /*!
  * An expression that returns a compile time literal value.
@@ -219,8 +195,8 @@ namespace internal
 {
 
 
-template <typename Condition, typename... EnclosedStmts>
-struct StatementExecutor<statement::If<Condition, EnclosedStmts...>> {
+template <typename Condition, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -228,7 +204,7 @@ struct StatementExecutor<statement::If<Condition, EnclosedStmts...>> {
   {
 
     if (Condition::eval(data)) {
-      execute_statement_list<camp::list<EnclosedStmts...>>(
+      execute_statement_list<camp::list<EnclosedStmts...>, Types>(
           std::forward<Data>(data));
     }
   }

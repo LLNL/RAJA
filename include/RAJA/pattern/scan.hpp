@@ -9,18 +9,10 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_scan_HPP
@@ -81,6 +73,9 @@ inclusive_scan_inplace(const ExecPolicy &p,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
+  if (begin == end) {
+    return;
+  }
   impl::scan::inclusive_inplace(p, begin, end, binop);
 }
 
@@ -115,6 +110,9 @@ exclusive_scan_inplace(const ExecPolicy &p,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
+  if (begin == end) {
+    return;
+  }
   impl::scan::exclusive_inplace(p, begin, end, binop, value);
 }
 
@@ -132,8 +130,8 @@ exclusive_scan_inplace(const ExecPolicy &p,
 * \param[in] binop binary function to apply for scan
 * \param[in] value identity value for binary function, binop
 *
-* \note{The range of [begin, end) must be separate from [out, out + (end -
-*begin))}
+* \note{The range of [begin, end) must be separate from [out, out + dist (begin,
+*end))}
 ******************************************************************************
 */
 template <typename ExecPolicy,
@@ -157,6 +155,9 @@ inclusive_scan(const ExecPolicy &p,
                 "Iterator must model RandomAccessIterator");
   static_assert(type_traits::is_random_access_iterator<IterOut>::value,
                 "Output Iterator must model RandomAccessIterator");
+  if (begin == end) {
+    return;
+  }
   impl::scan::inclusive(p, begin, end, out, binop);
 }
 
@@ -174,8 +175,8 @@ inclusive_scan(const ExecPolicy &p,
 * \param[in] binop binary function to apply for scan
 * \param[in] value identity value for binary function, binop
 *
-* \note{The range of [begin, end) must be separate from [out, out + (end -
-*begin))}
+* \note{The range of [begin, end) must be separate from [out, out + dist (begin,
+*end))}
 ******************************************************************************
 */
 template <typename ExecPolicy,
@@ -201,6 +202,9 @@ exclusive_scan(const ExecPolicy &p,
                 "Iterator must model RandomAccessIterator");
   static_assert(type_traits::is_random_access_iterator<IterOut>::value,
                 "Output Iterator must model RandomAccessIterator");
+  if (begin == end) {
+    return;
+  }
   impl::scan::exclusive(p, begin, end, out, binop, value);
 }
 
@@ -212,7 +216,7 @@ exclusive_scan(const ExecPolicy &p,
 * \brief  inclusive in-place scan execution pattern
 *
 * \param[in] p Execution policy
-* \param[in,out] Random-Access Range
+* \param[in,out] c Random-Access Container
 * \param[in] binop binary function to apply for scan
 * \param[in] value identity value for binary function, binop
 *
@@ -232,6 +236,9 @@ inclusive_scan_inplace(const ExecPolicy &p,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
+  if (std::begin(c) == std::end(c)) {
+    return;
+  }
   impl::scan::inclusive_inplace(p, std::begin(c), std::end(c), binop);
 }
 
@@ -263,6 +270,9 @@ exclusive_scan_inplace(const ExecPolicy &p,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
+  if (std::begin(c) == std::end(c)) {
+    return;
+  }
   impl::scan::exclusive_inplace(p, std::begin(c), std::end(c), binop, value);
 }
 
@@ -272,9 +282,7 @@ exclusive_scan_inplace(const ExecPolicy &p,
 * \brief  inclusive scan execution pattern
 *
 * \param[in] p Execution policy
-* \param[in] begin Pointer or Random-Access Iterator to start of data range
-* \param[in] end Pointer or Random-Access Iterator to end of data range
-*(exclusive)
+* \param[in] c Random-Access Container
 * \param[out] out Pointer or Random-Access Iterator to start of output data
 *range
 * \param[in] binop binary function to apply for scan
@@ -292,7 +300,7 @@ concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>,
                     type_traits::is_iterator<IterOut>>
 inclusive_scan(const ExecPolicy &p,
-               Container &c,
+               const Container &c,
                IterOut out,
                Function binop = Function{})
 {
@@ -304,6 +312,9 @@ inclusive_scan(const ExecPolicy &p,
                 "Container must model RandomAccessRange");
   static_assert(type_traits::is_random_access_iterator<IterOut>::value,
                 "Output Iterator must model RandomAccessIterator");
+  if (std::begin(c) == std::end(c)) {
+    return;
+  }
   impl::scan::inclusive(p, std::begin(c), std::end(c), out, binop);
 }
 
@@ -313,9 +324,7 @@ inclusive_scan(const ExecPolicy &p,
 * \brief  exclusive scan execution pattern
 *
 * \param[in] p Execution policy
-* \param[in] begin Pointer or Random-Access Iterator to start of data range
-* \param[in] end Pointer or Random-Access Iterator to end of data range
-*(exclusive)
+* \param[in] c Random-Access Container
 * \param[out] out Pointer or Random-Access Iterator to start of output data
 *range
 * \param[in] binop binary function to apply for scan
@@ -334,7 +343,7 @@ concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>,
                     type_traits::is_iterator<IterOut>>
 exclusive_scan(const ExecPolicy &p,
-               Container &c,
+               const Container &c,
                IterOut out,
                Function binop = Function{},
                T value = Function::identity())
@@ -347,6 +356,9 @@ exclusive_scan(const ExecPolicy &p,
                 "Container must model RandomAccessRange");
   static_assert(type_traits::is_random_access_iterator<IterOut>::value,
                 "Output Iterator must model RandomAccessIterator");
+  if (std::begin(c) == std::end(c)) {
+    return;
+  }
   impl::scan::exclusive(p, std::begin(c), std::end(c), out, binop, value);
 }
 
@@ -378,6 +390,6 @@ inclusive_scan_inplace(Args &&... args)
   inclusive_scan_inplace(ExecPolicy{}, std::forward<Args>(args)...);
 }
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_SOA_PTR_HPP
@@ -44,10 +36,9 @@ namespace detail
  * This is useful for creating a vectorizable data layout and getting
  * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
  */
-template <
-    typename T,
-    typename mempool =
-        RAJA::basic_mempool::MemPool<RAJA::basic_mempool::generic_allocator> >
+template <typename T,
+          typename mempool = RAJA::basic_mempool::MemPool<
+              RAJA::basic_mempool::generic_allocator> >
 class SoAPtr
 {
   using value_type = T;
@@ -84,12 +75,12 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, doing_min>, mempool>
+template <typename T, typename IndexType, bool doing_min, typename mempool>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
 {
-  using value_type = RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
-  using second_type = Index_type;
+  using second_type = IndexType;
 
 public:
   SoAPtr() = default;
@@ -132,8 +123,8 @@ private:
   second_type* mem_idx = nullptr;
 };
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif /* RAJA_SOA_PTR_HPP */

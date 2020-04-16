@@ -1,17 +1,10 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef __RAJA_PRIVATIZER_HPP
 #define __RAJA_PRIVATIZER_HPP
 
@@ -26,7 +19,8 @@ namespace internal
 {
 
 // template <typename T>
-// struct HasPrivatizer : DefineConcept(typename T::privatizer(camp::val<T>())) {
+// struct HasPrivatizer : DefineConcept(typename T::privatizer(camp::val<T>()))
+// {
 // };
 // DefineTypeTraitFromConcept(has_privatizer, HasPrivatizer);
 
@@ -48,7 +42,8 @@ public:
 
 static_assert(!has_privatizer<int>::value, "if this fires, abandon all hope");
 
-struct GenericWrapperBase {};
+struct GenericWrapperBase {
+};
 
 template <typename T>
 struct Privatizer {
@@ -106,4 +101,3 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
 }  // namespace RAJA
 
 #endif /* __RAJA_PRIVATIZER_HPP */
-

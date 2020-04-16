@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
@@ -41,6 +33,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -75,11 +71,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running C-version of vector addition...\n";
+  std::cout << "\n Running C-style vector addition...\n";
 
+  // _cstyle_vector_add_start
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
+  // _cstyle_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -91,9 +89,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
+  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
+  // _rajaseq_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -134,9 +134,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
+  // _rajaomp_vector_add_start
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
+  // _rajaomp_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
@@ -148,13 +150,42 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
+  // _rajacuda_vector_add_start
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });    
+  // _rajacuda_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running RAJA HIP vector addition...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    d_c[i] = d_a[i] + d_b[i];
+  });
+
+  hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
+
+  checkResult(c, N);
+//printResult(c, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
+  memoryManager::deallocate_gpu(d_c);
 #endif
 
 //----------------------------------------------------------------------------//

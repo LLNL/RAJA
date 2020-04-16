@@ -1,3 +1,9 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #include <iostream>
 
 #include "benchmark/benchmark_api.h"
@@ -6,7 +12,8 @@
 
 #define N 10000000
 
-static void benchmark_daxpy_raw(benchmark::State& state) {
+static void benchmark_daxpy_raw(benchmark::State& state)
+{
   double* a = new double[N];
   double* b = new double[N];
 
@@ -17,13 +24,13 @@ static void benchmark_daxpy_raw(benchmark::State& state) {
   double c = 3.14159;
 
   while (state.KeepRunning()) {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N), [=] (int i) {
-        a[i] += b[i] * c;
-    });
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+                                 [=](int i) { a[i] += b[i] * c; });
   }
 }
 
-static void benchmark_daxpy_host(benchmark::State& state) {
+static void benchmark_daxpy_host(benchmark::State& state)
+{
   double* a = new double[N];
   double* b = new double[N];
 
@@ -34,13 +41,13 @@ static void benchmark_daxpy_host(benchmark::State& state) {
   double c = 3.14159;
 
   while (state.KeepRunning()) {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N), [=] __host__ (int i) {
-        a[i] += b[i] * c;
-    });
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+                                 [=] __host__(int i) { a[i] += b[i] * c; });
   }
 }
 
-static void benchmark_daxpy_host_device(benchmark::State& state) {
+static void benchmark_daxpy_host_device(benchmark::State& state)
+{
   double* a = new double[N];
   double* b = new double[N];
 
@@ -51,9 +58,10 @@ static void benchmark_daxpy_host_device(benchmark::State& state) {
   double c = 3.14159;
 
   while (state.KeepRunning()) {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N), [=] RAJA_HOST_DEVICE (int i) {
-        a[i] += b[i] * c;
-    });
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+                                 [=] RAJA_HOST_DEVICE(int i) {
+                                   a[i] += b[i] * c;
+                                 });
   }
 }
 

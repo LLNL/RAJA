@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_IndexSet_HPP
@@ -64,8 +56,8 @@ template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T = void>
 struct ExecPolicy
     : public RAJA::make_policy_pattern_t<SEG_EXEC_POLICY_T::policy,
                                          RAJA::Pattern::forall> {
-  typedef SEG_ITER_POLICY_T seg_it;
-  typedef SEG_EXEC_POLICY_T seg_exec;
+  using seg_it = SEG_ITER_POLICY_T;
+  using seg_exec = SEG_EXEC_POLICY_T;
 };
 
 }  // end namespace indexset
@@ -93,12 +85,17 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, typename PARENT::value_type>::value
-                    || T0_TypeId == 0,
+  static_assert(std::is_same<value_type, typename PARENT::value_type>::value ||
+                    T0_TypeId == 0,
                 "All segments must have the same value_type");
 
   //! Construct empty index set
+#if _MSC_VER < 1910
+   // this one instance of constexpr does not work on VS2012 or VS2015
+  RAJA_INLINE TypedIndexSet() : PARENT() {}
+#else
   RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
+#endif
 
   //! Copy-constructor for index set
   RAJA_INLINE
@@ -240,12 +237,15 @@ private:
   {
     Index_type num = getNumSegments();
 
-    RangeStrideSegment Iter = (pend == PUSH_BACK)
-                                  ? RangeStrideSegment(0, num, 1)
-                                  : RangeStrideSegment(num - 1, -1, -1);
-
-    for (Index_type i : Iter)
-      segment_push_into(i, c, pend, pcopy);
+    if (pend == PUSH_BACK) {
+      for (Index_type i = 0; i < num; ++i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    } else {
+      for (Index_type i = num-1; i > -1; --i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    }
   }
 
 
@@ -757,27 +757,20 @@ private:
 };
 
 
-RAJA_DEPRECATE_ALIAS(
-    "IndexSet will be deprecated soon. Please transition to TypedIndexSet")
-typedef TypedIndexSet<RAJA::RangeSegment,
-                      RAJA::ListSegment,
-                      RAJA::RangeStrideSegment>
-    IndexSet;
-
 namespace type_traits
 {
 
 template <typename T>
 struct is_index_set
-    : SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
 };
 
 template <typename T>
 struct is_indexset_policy
-    : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
-}
+}  // namespace type_traits
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

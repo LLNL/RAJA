@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_MultiPolicy_HPP
@@ -30,11 +22,11 @@
 
 #include <tuple>
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/policy/PolicyBase.hpp"
 
-#include "RAJA/util/chai_support.hpp"
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
+
 #include "RAJA/util/concepts.hpp"
 
 namespace RAJA
@@ -106,15 +98,15 @@ using policy::multi::MultiPolicy;
 
 namespace detail
 {
-template <size_t... Indices, typename... Policies, typename Selector>
-auto make_multi_policy(VarOps::index_sequence<Indices...>,
+template <camp::idx_t... Indices, typename... Policies, typename Selector>
+auto make_multi_policy(camp::idx_seq<Indices...>,
                        Selector s,
                        std::tuple<Policies...> policies)
     -> MultiPolicy<Selector, Policies...>
 {
   return MultiPolicy<Selector, Policies...>(s, std::get<Indices>(policies)...);
 }
-}
+}  // namespace detail
 
 /// make_multi_policy - Construct a MultiPolicy from the given selector and
 /// Policies
@@ -144,22 +136,11 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
   return detail::make_multi_policy(
-      VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
+      camp::make_idx_seq_t<sizeof...(Policies)>{}, s, policies);
 }
 
 namespace detail
 {
-
-#if defined(RAJA_ENABLE_CHAI)
-// Top level MultiPolicy shouldn't select a CHAI execution space
-// Once a specific policy is selected, that policy will select the correct
-// policy... see policy_invoker in MultiPolicy.hpp
-template <typename SELECTOR, typename... POLICIES>
-struct get_platform<RAJA::MultiPolicy<SELECTOR, POLICIES...>> {
-  static constexpr Platform value = Platform::undefined;
-};
-#endif
-
 
 template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
@@ -189,18 +170,13 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-
-      // Now we know what policy is going to be invoked, so we can tell
-      // CHAI what execution space to use
-      detail::setChaiExecutionSpace<Policy>();
-
+      util::PluginContext context{util::make_context<Policy>()};
+      util::callPreLaunchPlugins(context); 
 
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
 
-
-      detail::clearChaiExecutionSpace();
-
+      util::callPostLaunchPlugins(context);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }

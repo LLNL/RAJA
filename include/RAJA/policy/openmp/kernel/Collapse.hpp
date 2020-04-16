@@ -9,29 +9,18 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_openmp_nested_HPP
-#define RAJA_policy_openmp_nested_HPP
+#ifndef RAJA_policy_openmp_kernel_collapse_HPP
+#define RAJA_policy_openmp_kernel_collapse_HPP
 
 #include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-
-#include <cassert>
-#include <climits>
 
 #include "RAJA/pattern/detail/privatizer.hpp"
 
@@ -43,7 +32,6 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 #if !defined(RAJA_COMPILER_MSVC)
 #define RAJA_COLLAPSE(X) collapse(X)
@@ -67,10 +55,10 @@ namespace internal
 // Collapsing two loops
 /////////
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
+template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>> {
+                                             EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -84,18 +72,20 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     auto i0 = l0;
     auto i1 = l1;
 
+    // Set the argument types for this loop
+    using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;
+    using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
+
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for \
-    private(i0,i1) \
-    firstprivate(privatizer) \
+#pragma omp parallel for private(i0, i1) firstprivate(privatizer) \
     RAJA_COLLAPSE(2)
     for (i0 = 0; i0 < l0; ++i0) {
       for (i1 = 0; i1 < l1; ++i1) {
-        auto &private_data = privatizer.get_priv();
+        auto& private_data = privatizer.get_priv();
         private_data.template assign_offset<Arg0>(i0);
         private_data.template assign_offset<Arg1>(i1);
-        execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+        execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(private_data);
       }
     }
   }
@@ -105,10 +95,11 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 template <camp::idx_t Arg0,
           camp::idx_t Arg1,
           camp::idx_t Arg2,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2>,
-                                             EnclosedStmts...>> {
+                                             EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -121,25 +112,31 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     auto i1 = l1;
     auto i2 = l2;
 
+    // Set the argument types for this loop
+    using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;
+    using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
+    using NewTypes2 = setSegmentTypeFromData<NewTypes1, Arg2, Data>;
+
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for \
-    private(i0,i1,i2) \
-    firstprivate(privatizer) \
+#pragma omp parallel for private(i0, i1, i2) firstprivate(privatizer) \
     RAJA_COLLAPSE(3)
     for (i0 = 0; i0 < l0; ++i0) {
       for (i1 = 0; i1 < l1; ++i1) {
         for (i2 = 0; i2 < l2; ++i2) {
-          auto &private_data = privatizer.get_priv();
+          auto& private_data = privatizer.get_priv();
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
           private_data.template assign_offset<Arg2>(i2);
-          execute_statement_list<camp::list<EnclosedStmts...>>(private_data);
+          execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(private_data);
         }
       }
     }
   }
 };
+
+
+
 
 
 }  // namespace internal

@@ -11,18 +11,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_Types_HPP
@@ -77,11 +69,11 @@ struct SizeList {
 
 #if defined(RAJA_USE_DOUBLE)
 ///
-typedef double Real_type;
+using Real_type = double;
 
 #elif defined(RAJA_USE_FLOAT)
 ///
-typedef float Real_type;
+using Real_type = float;
 
 #else
 #error RAJA Real_type is undefined!
@@ -90,7 +82,7 @@ typedef float Real_type;
 
 #if defined(RAJA_USE_COMPLEX)
 ///
-typedef std::complex<Real_type> Complex_type;
+using Complex_type = std::complex<Real_type>;
 #endif
 
 /*
@@ -106,29 +98,23 @@ typedef std::complex<Real_type> Complex_type;
 // alignment attribute supported for versions > 12
 //
 #if __ICC >= 1300
-typedef Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)))
-TDRAReal_ptr;
+using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)));
 
-typedef const Real_type* RAJA_RESTRICT
-    __attribute__((align_value(RAJA::DATA_ALIGN))) const_TDRAReal_ptr;
+using const_TDRAReal_ptr = const TDRAReal_ptr;
 #endif
 
 #elif defined(RAJA_COMPILER_GNU)
 
 #elif defined(RAJA_COMPILER_CLANG)
-typedef Real_type aligned_real_type __attribute__((aligned(RAJA::DATA_ALIGN)));
+using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((aligned(RAJA::DATA_ALIGN)));
 
-typedef aligned_real_type* RAJA_RESTRICT TDRAReal_ptr;
-
-typedef const aligned_real_type* RAJA_RESTRICT const_TDRAReal_ptr;
+using const_TDRAReal_ptr = const TDRAReal_ptr;
 
 #else
 
-typedef Real_type aligned_real_type;
+using TDRAReal_ptr = Real_type* RAJA_RESTRICT;
 
-typedef aligned_real_type* RAJA_RESTRICT TDRAReal_ptr;
-
-typedef const aligned_real_type* RAJA_RESTRICT const_TDRAReal_ptr;
+using const_TDRAReal_ptr = const TDRAReal_ptr;
 
 #endif
 
@@ -309,9 +295,9 @@ public:
   ///
   const Real_type* get() const { return dptr; }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -423,9 +409,9 @@ public:
     return ConstRestrictAlignedRealPtr(dptr);
   }
 
-///
-/// Compiler-specific bracket operators.
-///
+  ///
+  /// Compiler-specific bracket operators.
+  ///
 
 #if defined(RAJA_COMPILER_ICC)
   ///
@@ -672,58 +658,58 @@ private:
  ******************************************************************************
  */
 #if defined(RAJA_USE_BARE_PTR)
-typedef Real_type* Real_ptr;
-typedef const Real_type* const_Real_ptr;
+using Real_ptr = Real_type*;
+using const_Real_ptr = const Real_type*;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef Complex_type* Complex_ptr;
-typedef const Complex_type* const_Complex_ptr;
+using Complex_ptr = Complex_type*;
+using const_Complex_ptr = const Complex_type*;
 #endif
 
-typedef Real_type* UnalignedReal_ptr;
-typedef const Real_type* const_UnalignedReal_ptr;
+using UnalignedReal_ptr = Real_type*;
+using const_UnalignedReal_ptr = const Real_type*;
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
-typedef Real_type* RAJA_RESTRICT Real_ptr;
-typedef const Real_type* RAJA_RESTRICT const_Real_ptr;
+using Real_ptr = Real_type* RAJA_RESTRICT;
+using const_Real_ptr = const Real_type* RAJA_RESTRICT;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef Complex_type* RAJA_RESTRICT Complex_ptr;
-typedef const Complex_type* RAJA_RESTRICT const_Complex_ptr;
+using Complex_ptr = Complex_type* RAJA_RESTRICT;
+using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
 #endif
 
-typedef Real_type* RAJA_RESTRICT UnalignedReal_ptr;
-typedef const Real_type* RAJA_RESTRICT const_UnalignedReal_ptr;
+using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
-typedef TDRAReal_ptr Real_ptr;
-typedef const_TDRAReal_ptr const_Real_ptr;
+using Real_ptr = TDRAReal_ptr;
+using const_Real_ptr = const_TDRAReal_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef Complex_type* RAJA_RESTRICT Complex_ptr;
-typedef const Complex_type* RAJA_RESTRICT const_Complex_ptr;
+using Complex_ptr = Complex_type* RAJA_RESTRICT;
+using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
 #endif
 
-typedef Real_type* RAJA_RESTRICT UnalignedReal_ptr;
-typedef const Real_type* RAJA_RESTRICT const_UnalignedReal_ptr;
+using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_PTR_CLASS)
-typedef RestrictAlignedRealPtr Real_ptr;
-typedef ConstRestrictAlignedRealPtr const_Real_ptr;
+using Real_ptr = RestrictAlignedRealPtr;
+using const_Real_ptr = ConstRestrictAlignedRealPtr;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef RestrictComplexPtr Complex_ptr;
-typedef ConstRestrictComplexPtr const_Complex_ptr;
+using Complex_ptr = RestrictComplexPtr;
+using const_Complex_ptr = ConstRestrictComplexPtr;
 #endif
 
-typedef RestrictRealPtr UnalignedReal_ptr;
-typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
+using UnalignedReal_ptr = RestrictRealPtr;
+using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 
 #else
 #error RAJA pointer type is undefined!
 
 #endif
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

@@ -1,5 +1,13 @@
-RAJA v0.6.0
-============
+
+[comment]: # (#################################################################)
+[comment]: # (Copyright 2016-19, Lawrence Livermore National Security, LLC)
+[comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
+[comment]: # (for details.)
+[comment]: # 
+[comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
+[comment]: # (#################################################################)
+
+# <img src="/share/raja/logo/RAJA_LOGO_Color.png?raw=true" width="128" valign="middle" alt="RAJA"/>
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
 [![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -45,9 +53,9 @@ To clone the repo, use the command:
     git clone --recursive https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
-compiler that supports the C++11 standard. The simplest way to build the code 
-is to do the following in the top-level RAJA directory (in-source builds 
-are not allowed!):
+compiler that supports the C++11 standard. The simplest way to build the code,
+using your system default compiler, is to run the following sequence of 
+commands in the top-level RAJA directory (in-source builds are not allowed!):
 
     mkdir build
     cd build
@@ -57,20 +65,20 @@ are not allowed!):
 More details about RAJA configuration options are located in the User 
 Documentation.
 
+We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
+submodule or as an installed library.
+
 User Documentation
 -------------------
 
 The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
 is the best place to start learning about RAJA and how to use it.
 
-Other references that may be of interest include:
+To cite RAJA, please use the following references:
 
-  * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
-  * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
+* RAJA Performance Portability Layer. https://github.com/LLNL/RAJA
 
-To cite RAJA, please use the following reference:
-
-* R. D. Hornung and J. A. Keasler, [The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf), Tech Report, LLNL-TR-661403, Sep. 2014.
+* D. A. Beckingsale, J. Burmark, R. Hornung, H. Jones, W. Killian, A. J. Kunen, O. Pearce, P. Robinson, B. S. Ryujin, T. R. W. Scogland, "RAJA: Porrtable Performance for Large-Scale Scientific Applications", 2019 IEEE/ACM International Workshop on Performance, Portability and Productivity in HPC (P3HPC). [Download here](https://conferences.computer.org/sc19w/2019/#!/toc/14)
 
 Related Software
 --------------------
@@ -119,21 +127,51 @@ The original developers of RAJA are:
 Please see the [RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
-Release
+License
 -----------
 
-Copyright (c) 2016-2017, Lawrence Livermore National Security, LLC.
+RAJA is licensed under the BSD 3-Clause license,
+(BSD-3-Clause or https://opensource.org/licenses/BSD-3-Clause).
 
-Produced at the Lawrence Livermore National Laboratory.
+Copyrights and patents in the RAJA project are retained by contributors.
+No copyright assignment is required to contribute to RAJA.
 
-All rights reserved.
-
+Unlimited Open Source - BSD 3-clause Distribution
 `LLNL-CODE-689114`  `OCEC-16-063`
 
-Unlimited Open Source - BSD Distribution
-
-For release details and restrictions, please read the RELEASE, LICENSE,
-and NOTICE files, also linked here:
+For release details and restrictions, please see the information in the
+following:
 - [RELEASE](./RELEASE)
 - [LICENSE](./LICENSE)
 - [NOTICE](./NOTICE)
+
+
+SPDX usage
+------------
+
+Individual files contain SPDX tags instead of the full license text.
+This enables machine processing of license information based on the SPDX
+License Identifiers that are available here: https://spdx.org/licenses/
+
+Files that are licensed as BSD 3-Clause contain the following
+text in the license header:
+
+    SPDX-License-Identifier: (BSD-3-Clause)
+
+External Packages
+-------------------
+RAJA bundles its external dependencies as submodules in the git repository.
+These packages are covered by various permissive licenses.  A summary listing
+follows. See the license included with each package for full details.
+
+PackageName: BLT  
+PackageHomePage: https://github.com/LLNL/blt
+PackageLicenseDeclared: BSD-3-Clause
+
+PackageName: camp
+PackageHomePage: https://github.com/LLNL/camp
+PackageLicenseDeclared: BSD-3-Clause
+
+PackageName: CUB  
+PackageHomePage: https://github.com/NVlabs/cub
+PackageLicenseDeclared: BSD-3-Clause

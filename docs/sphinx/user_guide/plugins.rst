@@ -1,15 +1,9 @@
 .. ##
-.. ## Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
 .. ##
-.. ## Produced at the Lawrence Livermore National Laboratory
-.. ##
-.. ## LLNL-CODE-689114
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of RAJA.
-.. ##
-.. ## For details about use and distribution, please read RAJA/LICENSE.
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
 .. _plugins-label:
@@ -19,8 +13,8 @@ Plugins
 *******
 
 RAJA provides a plugin mechanism to support optional components that provide
-additional functionality to make writing applications easier. Currently,
-there is only one RAJA plugin that we support, CHAI.
+additional functionality to make writing applications easier. Currently, there
+is only one library that provides a RAJA plugin: CHAI.
 
 =======
 CHAI
@@ -33,15 +27,11 @@ one memory space to another as needed to run a RAJA-based kernel.
 The data can be accessed inside any RAJA kernel, and regardless of where 
 that kernel executes, CHAI will make the data available.
 
-To build RAJA with CHAI integration, you need to download and install CHAI. 
-Please see the `CHAI project <https://github.com/LLNL/CHAI>` for details. 
+To build CHAI with RAJA integration, you need to download and install CHAI with
+the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see the `CHAI project
+<https://github.com/LLNL/CHAI>` for details
 
-After CHAI is installed, RAJA can be configured to use it by passing two 
-additional arguments to CMake::
-
-    $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
-
-After RAJA has been built with CHAI support enabled, applications can use CHAI
+After CHAI has been build with RAJA support enabled, applications can use CHAI
 ``ManangedArray`` objects to access data inside a RAJA kernel; for example,::
 
   chai::ManagedArray<float> array(1000);
@@ -54,6 +44,10 @@ After RAJA has been built with CHAI support enabled, applications can use CHAI
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 
-Here, the data held by ``array`` is initialized on a CUDA GPU device. Then, it
-is copied to the host CPU and printed. All necessary data copies are done
+Here, the data held by ``array`` is allocated on the host CPU. Then, it is 
+initialized on a CUDA GPU device. CHAI sees that the data lives on the CPU
+and is needed in a GPU device data environment. So it copies the data from
+CPU to GPU, making it available for access in the first RAJA kernel. Next, 
+it is printed in the second kernel which runs on the CPU. So CHAI copies the 
+data back to the host CPU. All necessary data copies are done
 transparently on demand as needed for each kernel.

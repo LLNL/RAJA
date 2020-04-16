@@ -1,16 +1,8 @@
 ###############################################################################
-# Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-#    
-# Produced at the Lawrence Livermore National Laboratory
-#    
-# LLNL-CODE-689114
-# 
-# All rights reserved.
-#  
-# This file is part of RAJA.
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# For details about use and distribution, please read RAJA/LICENSE.
-#
+# SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 ## Floating point options
@@ -21,7 +13,7 @@ option(RAJA_USE_FLOAT Off)
 option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
-if (ENABLE_CUDA)
+if (ENABLE_CUDA OR ENABLE_HIP)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -34,6 +26,7 @@ endif()
 ## Fault tolerance options
 option(ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
+option(ENABLE_ITERATOR_OVERFLOW_DEBUG "Enable Overflow checking during Iterator operations" OFF)
 
 ## Timer options
 set(RAJA_TIMER "chrono" CACHE STRING
@@ -56,10 +49,10 @@ else ()
     set(RAJA_USE_CLOCK   OFF CACHE BOOL "Use clock from time.h for timer"    )
 endif ()
 
-include(CheckFunctionExists)
-check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
-check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
-check_function_exists(_mm_malloc RAJA_HAVE_MM_MALLOC)
+include(CheckSymbolExists)
+check_symbol_exists(posix_memalign stdlib.h RAJA_HAVE_POSIX_MEMALIGN)
+check_symbol_exists(std::aligned_alloc stdlib.h RAJA_HAVE_ALIGNED_ALLOC)
+check_symbol_exists(_mm_malloc "" RAJA_HAVE_MM_MALLOC)
 
 # Set up RAJA_ENABLE prefixed options
 set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
@@ -67,7 +60,7 @@ set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
 set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
 set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
-set(RAJA_ENABLE_CHAI ${ENABLE_CHAI})
+set(RAJA_ENABLE_HIP ${ENABLE_HIP})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
 
 # Configure a header file with all the variables we found.

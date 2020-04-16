@@ -12,18 +12,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_forall_openmp_HPP
@@ -69,14 +61,11 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                              Func&& loop_body)
 {
 
-  RAJA::region<RAJA::omp_parallel_region>([&](){
-
-      using RAJA::internal::thread_privatize;
-      auto body = thread_privatize(loop_body);
-      forall_impl(InnerPolicy{}, iter, body.get_priv());
-
-    });
-
+  RAJA::region<RAJA::omp_parallel_region>([&]() {
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+    forall_impl(InnerPolicy{}, iter, body.get_priv());
+  });
 }
 
 ///
@@ -199,14 +188,12 @@ RAJA_INLINE void forall(
 }
 */
 
-}  // closing brace for omp namespace
+}  // namespace omp
 
-}  // closing brace for policy namespace
+}  // namespace policy
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
-
-#include "RAJA/policy/openmp/target_forall.hpp"

@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cmath>
@@ -39,7 +31,7 @@
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    -  Index list segment
- *    -  IndexSet segment container
+ *    -  TypedIndexSet segment container
  *    -  Hierarchical execution policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -50,6 +42,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -119,6 +115,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol_ref, 0, N_vert*N_vert * sizeof(double));
 
+  // _cstyle_vertexsum_start
   for (int j = 0 ; j < N_elem ; ++j) {
     for (int i = 0 ; i < N_elem ; ++i) {
       int ie = i + j*jeoff ;
@@ -129,6 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       vertexvol_ref[ iv[3] ] += elemvol[ie] / 4.0 ;
     }
   }
+  // _cstyle_vertexsum_end
 
 //std::cout << "\n Vertex volumes (reference)...\n";
 //printMeshData(vertexvol_ref, N_vert, jvoff);
@@ -140,13 +138,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
-  using EXEC_POL1 = RAJA::KernelPolicy<
-                              RAJA::statement::For<1, RAJA::seq_exec,    // j
-                              RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;  // i
+  // _raja_seq_vertexsum_start
+  using EXEC_POL1 = 
+    RAJA::KernelPolicy< 
+      RAJA::statement::For<1, RAJA::seq_exec,    // j
+        RAJA::statement::For<0, RAJA::seq_exec,  // i
+          RAJA::statement::Lambda<0>
+        > 
+      > 
+    >;
 
-  RAJA::kernel<EXEC_POL1>(
-                       RAJA::make_tuple(RAJA::RangeSegment(0, N_elem),
-                                        RAJA::RangeSegment(0, N_elem)),
+  RAJA::kernel<EXEC_POL1>( RAJA::make_tuple(RAJA::RangeSegment(0, N_elem),
+                                            RAJA::RangeSegment(0, N_elem)),
     [=](int i, int j) {
       int ie = i + j*jeoff ;
       int* iv = &(elem2vert_map[4*ie]);
@@ -155,6 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
       vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_seq_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";
@@ -184,13 +188,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Since none of the elements with the same number share a common vertex,
 // we can iterate over each subset ("color") in parallel.
 //
-// We use RAJA ListSegments and a RAJA IndexSet to define the element 
+// We use RAJA ListSegments and a RAJA TypedIndexSet to define the element 
 // partitioning. 
 //
 
 //
 // First, gather the element indices for each color in a vector.
 //
+  // _colorvectors_vertexsum_start 
   std::vector<int> idx0;
   std::vector<int> idx1;
   std::vector<int> idx2;
@@ -214,13 +219,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
+  // _colorvectors_vertexsum_end
  
 // 
-// Second, create a RAJA IndexSet with four ListSegments
+// Second, create a RAJA TypedIndexSet with four ListSegments
 //
-// The IndexSet is a variadic template, where the template arguments
-// are the segment types that the IndexSet can hold. 
+// The TypedIndexSet is a variadic template, where the template arguments
+// are the segment types that the TypedIndexSet can hold. 
 // 
+  // _colorindexset_vertexsum_start
   using SegmentType = RAJA::TypedListSegment<int>;
 
   RAJA::TypedIndexSet<SegmentType> colorset;
@@ -229,11 +236,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   colorset.push_back( SegmentType(&idx1[0], idx1.size()) ); 
   colorset.push_back( SegmentType(&idx2[0], idx2.size()) ); 
   colorset.push_back( SegmentType(&idx3[0], idx3.size()) ); 
+  // _colorindexset_vertexsum_end
 
 //----------------------------------------------------------------------------//
  
 //
-// RAJA vertex volume calculation - sequential IndexSet version 
+// RAJA vertex volume calculation - sequential TypedIndexSet version 
 // (sequential iteration over segments, 
 //  sequential iteration of each segment)
 //
@@ -244,6 +252,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_seq_colorindexset_vertexsum_start
   using EXEC_POL2 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::seq_exec>;
 
@@ -254,6 +263,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_seq_colorindexset_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";
@@ -263,7 +273,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 //
-// RAJA vertex volume calculation - OpenMP IndexSet version
+// RAJA vertex volume calculation - OpenMP TypedIndexSet version
 // (sequential iteration over segments, 
 //  OpenMP parallel iteration of each segment)
 //
@@ -291,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 //
-// RAJA vertex volume calculation - CUDA IndexSet version
+// RAJA vertex volume calculation - CUDA TypedIndexSet version
 // (sequential iteration over segments, 
 //  CUDA parallel execution of each segment)
 //
@@ -299,6 +309,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_cuda_colorindexset_vertexsum_start
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
@@ -309,8 +320,50 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_cuda_colorindexset_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
+//std::cout << "\n Vertex volumes...\n";
+//printMeshData(vertexvol, N_vert, jvoff);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+//
+// RAJA vertex volume calculation - HIP IndexSet version
+// (sequential iteration over segments,
+//  HIP parallel execution of each segment)
+//
+  double* d_elemvol    = memoryManager::allocate_gpu<double>(N_elem*N_elem);
+  double* d_vertexvol  = memoryManager::allocate_gpu<double>(N_vert*N_vert);
+  int* d_elem2vert_map = memoryManager::allocate_gpu<int>(4*N_elem*N_elem);
+
+  hipMemcpy(d_elemvol, elemvol, N_elem*N_elem*sizeof(double), hipMemcpyHostToDevice);
+  hipMemcpy(d_elem2vert_map, elem2vert_map, 4*N_elem*N_elem*sizeof(int), hipMemcpyHostToDevice);
+
+  std::cout << "\n Running RAJA HIP index set version...\n";
+
+  std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
+  hipMemcpy(d_vertexvol, vertexvol, N_vert*N_vert*sizeof(double), hipMemcpyHostToDevice);
+
+  using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                     RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+
+  RAJA::forall<EXEC_POL4>(colorset, [=] RAJA_DEVICE (int ie) {
+    int* iv = &(d_elem2vert_map[4*ie]);
+    d_vertexvol[ iv[0] ] += d_elemvol[ie] / 4.0 ;
+    d_vertexvol[ iv[1] ] += d_elemvol[ie] / 4.0 ;
+    d_vertexvol[ iv[2] ] += d_elemvol[ie] / 4.0 ;
+    d_vertexvol[ iv[3] ] += d_elemvol[ie] / 4.0 ;
+  });
+
+  hipMemcpy(vertexvol, d_vertexvol, N_vert*N_vert*sizeof(double), hipMemcpyDeviceToHost);
+  checkResult(vertexvol, vertexvol_ref, N_vert);
+
+  memoryManager::deallocate_gpu(d_elemvol);
+  memoryManager::deallocate_gpu(d_vertexvol);
+  memoryManager::deallocate_gpu(d_elem2vert_map);
 //std::cout << "\n Vertex volumes...\n";
 //printMeshData(vertexvol, N_vert, jvoff);
 #endif

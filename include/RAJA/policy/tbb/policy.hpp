@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef policy_tbb_HPP
@@ -87,15 +79,15 @@ struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
                                                           Platform::host> {
 };
 
-}  // closing brace for tbb
-}  // closing brace for policy
+}  // namespace tbb
+}  // namespace policy
 
+using policy::tbb::tbb_for_dynamic;
 using policy::tbb::tbb_for_exec;
 using policy::tbb::tbb_for_static;
-using policy::tbb::tbb_for_dynamic;
-using policy::tbb::tbb_segit;
 using policy::tbb::tbb_reduce;
+using policy::tbb::tbb_segit;
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif

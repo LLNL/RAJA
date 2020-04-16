@@ -1,4 +1,4 @@
-/*!
+ /*!
  ******************************************************************************
  *
  * \file
@@ -8,22 +8,12 @@
  ******************************************************************************
  */
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 
 #ifndef RAJA_policy_cuda_kernel_Tile_HPP
 #define RAJA_policy_cuda_kernel_Tile_HPP
@@ -50,29 +40,28 @@ namespace RAJA
 namespace internal
 {
 
-
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename TPol,
           typename... EnclosedStmts,
-          typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             TPol,
-                                             seq_exec,
-                                             EnclosedStmts...>,
-                             IndexCalc> {
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
-
-  inline __device__ void exec(Data &data,
-                              int num_logical_blocks,
-                              int block_carry)
-  {
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active){
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
@@ -91,34 +80,18 @@ struct CudaStatementExecutor<Data,
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
 
-      // Reinitialize thread calculations (TODO: optimize this)
-      enclosed_stmts.initThread(data);
-
       // execute enclosed statements
-      enclosed_stmts.exec(data, num_logical_blocks, block_carry);
+      enclosed_stmts_t::exec(data, thread_active);
     }
-
 
     // Set range back to original values
     segment = orig_segment;
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
-  {
-    enclosed_stmts.initBlocks(data, num_logical_blocks, block_stride);
-  }
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    enclosed_stmts.initThread(data);
-  }
-
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
 
     // privatize data, so we can mess with the segments
@@ -132,63 +105,74 @@ struct CudaStatementExecutor<Data,
     segment = segment.slice(0, TPol::chunk_size);
 
     // compute dimensions of children with segment restricted to tile
-    LaunchDim dim =
-        enclosed_stmts.calculateDimensions(private_data, max_physical);
+    LaunchDims enclosed_dims =
+        enclosed_stmts_t::calculateDimensions(private_data);
 
-
-    return dim;
+    return enclosed_dims;
   }
 };
 
 
-
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
+          int BlockDim,
           typename... EnclosedStmts,
-          typename IndexCalc>
-struct CudaStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::statement::tile_fixed<chunk_size>,
-                                             cuda_block_exec,
-                                             EnclosedStmts...>,
-                             IndexCalc>
-  : public CudaBlockLoop<ArgumentId, chunk_size>
-{
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId,
+                    RAJA::tile_fixed<chunk_size>,
+                    cuda_block_xyz_direct<BlockDim>,
+                    EnclosedStmts...>,
+                    Types>
+  {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, IndexCalc>;
-  enclosed_stmts_t enclosed_stmts;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
-  inline RAJA_DEVICE void exec(Data &data,
-                               int num_logical_blocks,
-                               int block_carry)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
   {
-    execBlockLoop(*this, data, num_logical_blocks, block_carry);
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    using segment_t = camp::decay<decltype(segment)>;
+
+    // compute trip count
+    auto len = segment.end() - segment.begin();
+    auto i = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+
+    // check have chunk
+    if (i < len) {
+
+      // Keep copy of original segment, so we can restore it
+      segment_t orig_segment = segment;
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, chunk_size);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+
+      // Set range back to original values
+      segment = orig_segment;
+    }
   }
 
 
-  inline RAJA_HOST_DEVICE void initBlocks(Data &data,
-                                     int num_logical_blocks,
-                                     int block_stride)
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
-    int len = segment_length<ArgumentId>(data);
-    initBlockLoop(enclosed_stmts, data, len, num_logical_blocks, block_stride);
-  }
-
-
-  inline RAJA_DEVICE void initThread(Data &data)
-  {
-    enclosed_stmts.initThread(data);
-  }
-
-  RAJA_INLINE
-  LaunchDim calculateDimensions(Data const &data, LaunchDim const &max_physical)
-  {
-
-    LaunchDim dim = enclosed_stmts.calculateDimensions(data, max_physical);
 
     // Compute how many blocks
     int len = segment_length<ArgumentId>(data);
@@ -197,12 +181,298 @@ struct CudaStatementExecutor<Data,
       num_blocks++;
     }
 
-    dim.addBlocks(num_blocks);
-    dim.addThreads(std::min((int)chunk_size, (int)len));
+    LaunchDims dims;
+    set_cuda_dim<BlockDim>(dims.blocks, num_blocks);
 
-    return dim;
+    // since we are direct-mapping, we REQUIRE len
+    set_cuda_dim<BlockDim>(dims.min_blocks, num_blocks);
+
+
+    // privatize data, so we can mess with the segments
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, chunk_size);
+
+
+    LaunchDims enclosed_dims =
+        enclosed_stmts_t::calculateDimensions(private_data);
+
+    return dims.max(enclosed_dims);
   }
 };
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId,
+                    RAJA::tile_fixed<chunk_size>,
+                    cuda_block_xyz_loop<BlockDim>,
+                    EnclosedStmts...>, Types>
+  {
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Keep copy of original segment, so we can restore it
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
+
+    // compute trip count
+    auto len = segment.end() - segment.begin();
+    auto i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    auto i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
+
+    // Iterate through grid stride of chunks
+    for (int i = i0; i < len; i += i_stride) {
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, chunk_size);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+
+    // Compute how many blocks
+    int len = segment_length<ArgumentId>(data);
+    int num_blocks = len / chunk_size;
+    if (num_blocks * chunk_size < len) {
+      num_blocks++;
+    }
+
+    LaunchDims dims;
+    set_cuda_dim<BlockDim>(dims.blocks, num_blocks);
+
+
+
+    // privatize data, so we can mess with the segments
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, chunk_size);
+
+
+    LaunchDims enclosed_dims =
+        enclosed_stmts_t::calculateDimensions(private_data);
+
+    return dims.max(enclosed_dims);
+  }
+};
+
+
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          typename ... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+  Data,
+  statement::Tile<ArgumentId,
+                  RAJA::tile_fixed<chunk_size>,
+                  cuda_thread_xyz_direct<ThreadDim>,
+                  EnclosedStmts ...>, Types>{
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Keep copy of original segment, so we can restore it
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
+
+    // compute trip count
+    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+
+    // Assign our new tiled segment
+    segment = orig_segment.slice(i0, chunk_size);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+
+    // Compute how many blocks
+    int len = segment_length<ArgumentId>(data);
+    int num_threads = len / chunk_size;
+    if(num_threads * chunk_size < len){
+      num_threads++;
+    }
+
+    LaunchDims dims;
+    set_cuda_dim<ThreadDim>(dims.threads, num_threads);
+
+
+    // privatize data, so we can mess with the segments
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, chunk_size);
+
+
+    LaunchDims enclosed_dims =
+      enclosed_stmts_t::calculateDimensions(private_data);
+
+    return(dims.max(enclosed_dims));
+  }
+};
+
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ *
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          int MinThreads,
+          typename ... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+  Data,
+  statement::Tile<ArgumentId,
+                  RAJA::tile_fixed<chunk_size>,
+                  cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                  EnclosedStmts ...>, Types>{
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Keep copy of original segment, so we can restore it
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
+
+    // compute trip count
+    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+
+    // Get our stride from the dimension
+    auto i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
+
+    // Iterate through grid stride of chunks
+    int len = segment_length<ArgumentId>(data);
+    for (int i = i0; i < len; i += i_stride) {
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, chunk_size);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+
+    // Compute how many blocks
+    int len = segment_length<ArgumentId>(data);
+    int num_threads = len / chunk_size;
+    if(num_threads * chunk_size < len){
+      num_threads++;
+    }
+    num_threads = std::max(num_threads, MinThreads);
+
+    LaunchDims dims;
+    set_cuda_dim<ThreadDim>(dims.threads, num_threads);
+    set_cuda_dim<ThreadDim>(dims.min_threads, MinThreads);
+
+    // privatize data, so we can mess with the segments
+    using data_t = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto &segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, chunk_size);
+
+
+    LaunchDims enclosed_dims =
+      enclosed_stmts_t::calculateDimensions(private_data);
+
+    return(dims.max(enclosed_dims));
+  }
+};
+
 
 
 

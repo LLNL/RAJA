@@ -9,18 +9,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_INDEXVALUE_HPP
@@ -36,7 +28,8 @@
 namespace RAJA
 {
 
-struct IndexValueBase{};
+struct IndexValueBase {
+};
 
 /*!
  * \brief Strongly typed "integer" class.
@@ -62,7 +55,7 @@ struct IndexValue : public IndexValueBase {
    * \brief Explicit constructor.
    * \param v   Initial value
    */
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(Index_type v)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(value_type v)
       : value(v)
   {
   }
@@ -298,8 +291,7 @@ convertIndex_helper(typename FROM::IndexValueType const val)
 }
 
 
-
-}  // closing brace for namespace internal
+}  // namespace internal
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
@@ -318,29 +310,64 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
  * underlying value_type value.
  */
 // This version is enabled if FROM is a strongly typed class
-template<typename FROM>
-constexpr
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
-                        typename FROM::value_type>::type
-stripIndexType(FROM const val)
+template <typename FROM>
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
+                            typename FROM::value_type>::type
+    stripIndexType(FROM const val)
 {
   return *val;
 }
 /*
  * enabled if FROM is not a strongly typed class
  */
-template<typename FROM>
-constexpr
-RAJA_HOST_DEVICE
-RAJA_INLINE
-typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value, FROM>::type
-stripIndexType(FROM const val)
+template <typename FROM>
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value,
+                            FROM>::type
+    stripIndexType(FROM const val)
 {
   return val;
 }
 
+namespace internal{
+template<typename FROM, typename Enable = void>
+struct StripIndexTypeT {};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = typename FROM::value_type;
+};
+
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value>::type>
+{
+    using type = FROM;
+};
+} // namespace internal
+
+/*!
+ * \brief Strips a strongly typed index to its underlying type
+ * In the case of a non-strongly typed index, the original type is returned.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
+
+/*!
+ * \brief Converts a type into a signed type. Also handles floating point
+ * types as std::make_signed only supports integral types.
+ *
+ * \param FROM the original type
+ */
+template<typename FROM>
+using make_signed_t = typename std::conditional < 
+                                  std::is_floating_point<FROM>::value,
+                                    std::common_type<FROM>,
+                                    std::make_signed<FROM>
+                               >::type::type;
 
 }  // namespace RAJA
 
@@ -367,18 +394,17 @@ stripIndexType(FROM const val)
 /*!
  * \brief Helper Macro to create new Index types.
  * \param TYPE the name of the type
+ * \param IDXT the index types value type
  * \param NAME a string literal to identify this index type
  */
 #define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
   class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
   {                                                                  \
-    using parent = ::RAJA::IndexValue<TYPE, IDXT>;                   \
-                                                                     \
   public:                                                            \
-    using IndexValueType = TYPE;                                     \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
-        : parent::IndexValue(v)                                      \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                              \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue() {}               \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)               \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue(v)                 \
     {                                                                \
     }                                                                \
     static inline std::string getName() { return NAME; }             \

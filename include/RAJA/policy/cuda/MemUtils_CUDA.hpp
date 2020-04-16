@@ -10,18 +10,10 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_MemUtils_CUDA_HPP
@@ -37,10 +29,11 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "RAJA/util/types.hpp"
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
+#include "RAJA/util/types.hpp"
 
+#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 namespace RAJA
@@ -48,7 +41,6 @@ namespace RAJA
 
 namespace cuda
 {
-
 
 
 //! Allocator for pinned memory for use in basic_mempool
@@ -120,8 +112,8 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
-  dim3 gridDim = 0;
-  dim3 blockDim = 0;
+  cuda_dim_t gridDim{0, 0, 0};
+  cuda_dim_t blockDim{0, 0, 0};
   cudaStream_t stream = 0;
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
@@ -156,7 +148,7 @@ extern cudaInfo tl_status;
 
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
-}  // closing brace for detail namespace
+}  // namespace detail
 
 //! Ensure all streams in use are synchronized wrt raja kernel launches
 RAJA_INLINE
@@ -211,7 +203,15 @@ void launch(cudaStream_t stream)
   }
 }
 
-//! Indicate stream is asynchronous
+//! Launch kernel and indicate stream is asynchronous
+RAJA_INLINE
+void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
+{
+  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
+  launch(stream);
+}
+
+//! Check for errors
 RAJA_INLINE
 void peekAtLastError() { cudaErrchk(cudaPeekAtLastError()); }
 
@@ -221,11 +221,11 @@ bool setupReducers() { return detail::tl_status.setup_reducers; }
 
 //! get gridDim of current launch
 RAJA_INLINE
-dim3 currentGridDim() { return detail::tl_status.gridDim; }
+cuda_dim_t currentGridDim() { return detail::tl_status.gridDim; }
 
 //! get blockDim of current launch
 RAJA_INLINE
-dim3 currentBlockDim() { return detail::tl_status.blockDim; }
+cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get stream for current launch
 RAJA_INLINE
@@ -234,8 +234,8 @@ cudaStream_t currentStream() { return detail::tl_status.stream; }
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
-    dim3 gridDim,
-    dim3 blockDim,
+    cuda_dim_t gridDim,
+    cuda_dim_t blockDim,
     size_t RAJA_UNUSED_ARG(dynamic_smem),
     cudaStream_t stream,
     LOOP_BODY&& loop_body)
@@ -251,35 +251,26 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   return return_type(std::forward<LOOP_BODY>(loop_body));
 }
 
-
-
-namespace internal
-{
-
 RAJA_INLINE
-int getMaxBlocks(){
-  static int max_blocks = -1;
-
-  if(max_blocks <= 0){
-    int cur_device = -1;
-    cudaGetDevice(&cur_device);
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cur_device);
-    int s_num_sm = prop.multiProcessorCount;
-    int s_max_threads_per_sm = prop.maxThreadsPerMultiProcessor;
-    max_blocks = s_num_sm * (s_max_threads_per_sm/1024);
-    //printf("MAX_BLOCKS=%d\n", max_blocks);
-  }
-
-  return max_blocks;
+cudaDeviceProp get_device_prop()
+{
+  int device;
+  cudaErrchk(cudaGetDevice(&device));
+  cudaDeviceProp prop;
+  cudaErrchk(cudaGetDeviceProperties(&prop, device));
+  return prop;
 }
 
-} // namespace internal
+RAJA_INLINE
+cudaDeviceProp& device_prop()
+{
+  static cudaDeviceProp prop = get_device_prop();
+  return prop;
+}
 
+}  // namespace cuda
 
-}  // closing brace for cuda namespace
-
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA
 
