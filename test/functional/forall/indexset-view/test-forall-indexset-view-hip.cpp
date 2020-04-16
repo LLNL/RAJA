@@ -5,16 +5,20 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset.hpp"
+#include "tests/test-forall-indexset-view.hpp"
+
+#if defined(RAJA_ENABLE_HIP)
 
 #include "../test-forall-indexset-execpol.hpp"
 
-// Cartesian product of types for Sequential tests
-using SequentialForallIndexSetTypes =
+// Cartesian product of types for Hip tests
+using HipForallIndexSetTypes =
   Test< camp::cartesian_product<IdxTypeList, 
-                                HostResourceList, 
-                                SequentialForallIndexSetExecPols>>::Types;
+                                HipResourceList, 
+                                HipForallIndexSetExecPols>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallIndexSetTest,
-                               SequentialForallIndexSetTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
+                               ForallIndexSetViewTest,
+                               HipForallIndexSetTypes);
+
+#endif

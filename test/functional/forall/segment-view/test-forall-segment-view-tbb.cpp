@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset.hpp"
+#include "tests/test-forall-segment-view.hpp"
 
-#include "../test-forall-indexset-execpol.hpp"
+#if defined(RAJA_ENABLE_TBB)
 
-// Cartesian product of types for Sequential tests
-using SequentialForallIndexSetTypes =
+#include "../test-forall-execpol.hpp"
+
+// Cartesian product of types for TBB tests
+using TBBForallSegmentTypes =
   Test< camp::cartesian_product<IdxTypeList, 
                                 HostResourceList, 
-                                SequentialForallIndexSetExecPols>>::Types;
+                                TBBForallExecPols> >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallIndexSetTest,
-                               SequentialForallIndexSetTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
+                               ForallSegmentViewTest,
+                               TBBForallSegmentTypes);
+#endif

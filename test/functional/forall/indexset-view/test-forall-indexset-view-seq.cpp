@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset.hpp"
+#include "tests/test-forall-indexset-view.hpp"
 
 #include "../test-forall-indexset-execpol.hpp"
 
@@ -16,5 +16,5 @@ using SequentialForallIndexSetTypes =
                                 SequentialForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallIndexSetTest,
+                               ForallIndexSetViewTest,
                                SequentialForallIndexSetTypes);

@@ -10,6 +10,8 @@
 
 #include "test-forall-segment.hpp"
 
+#include "../../test-forall-functors.hpp"
+
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, 
@@ -29,15 +31,19 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last,
                                      &check_array,
                                      &test_array);
 
-  INDEX_TYPE val = first;
-  for (INDEX_TYPE i = 0; i < N; i++) {
-    test_array[i] = val;
-    val += stride;
+  memset( test_array, 0, sizeof(INDEX_TYPE) * N );
+
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N); 
+
+  INDEX_TYPE idx = first;
+  for (INDEX_TYPE i = 0; i < N; ++i) {
+    test_array[ (idx-first)/stride ] = idx;
+    idx += stride; 
   }
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE val) {
-    working_array[(val-first)/stride] = val;
-  });
+  RangeStrideSegmentTestFunctor<INDEX_TYPE> tbody(working_array, first, stride);
+
+  RAJA::forall<EXEC_POLICY>(r1, tbody);
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -64,6 +70,10 @@ void runNegativeStrideTests()
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-10, -1, 2);
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 2);
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 3);
+
+// Test negative strides
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, -1, -1);
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, 0, -2);
 }
 
 
@@ -82,6 +92,7 @@ TYPED_TEST_P(ForallSegmentTest, RangeStrideSegmentForall)
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 21, 2);
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 2);
 
+// Test size zero segments
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, -2);
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, -2);
 

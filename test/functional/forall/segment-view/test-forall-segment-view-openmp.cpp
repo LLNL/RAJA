@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "tests/test-forall-segment-view.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -18,7 +18,7 @@ using OpenMPForallSegmentTypes =
                                 OpenMPForallExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
-                               ForallSegmentTest,
+                               ForallSegmentViewTest,
                                OpenMPForallSegmentTypes);
 
 #endif

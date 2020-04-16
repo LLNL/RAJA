@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_BASIC_INDEXSET_HPP__
-#define __TEST_FORALL_BASIC_INDEXSET_HPP__
+#ifndef __TEST_FORALL_BASIC_INDEXSET_VIEW__HPP__
+#define __TEST_FORALL_BASIC_INDEXSET_VIEW__HPP__
 
 #include "../../test-forall-indexset-utils.hpp"
 
@@ -17,7 +17,7 @@
 #include <vector>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallISetTest()
+void ForallISetViewTest()
 {
 
   using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
@@ -69,7 +69,12 @@ void ForallISetTest()
     test_array[ is_indices[i] ] = is_indices[i];
   }
 
-  IndexSetTestFunctor<INDEX_TYPE> tbody(working_array);
+  using view_type = RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >;
+
+  RAJA::Layout<1> layout(N);
+  view_type work_view(working_array, layout);
+
+  IndexSetViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view);
 
   RAJA::forall<EXEC_POLICY>(iset, tbody);
 
@@ -87,13 +92,13 @@ void ForallISetTest()
 }
 
 
-TYPED_TEST_P(ForallIndexSetTest, IndexSetForall)
+TYPED_TEST_P(ForallIndexSetViewTest, IndexSetForallView)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallISetTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
+  ForallISetViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_BASIC_INDEXSET_HPP__
+#endif  // __TEST_FORALL_BASIC_INDEXSET_VIEW__HPP__
