@@ -22,6 +22,7 @@
 #include "type_helper.hpp"
 #include "RAJA_unit_forone.hpp"
 
+#include <string>
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
@@ -87,9 +88,15 @@ struct PolicySort
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
 
+  std::string m_name;
+
+  PolicySort(std::string const& policy_name)
+    : m_name(std::string("RAJA::sort<") + policy_name + std::string(">"))
+  { }
+
   const char* name()
   {
-    return "RAJA::sort<policy>";
+    return m_name.c_str();
   }
 
   template < typename... Args >
@@ -106,9 +113,15 @@ struct PolicyStableSort
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
 
+  std::string m_name;
+
+  PolicyStableSort(std::string const& policy_name)
+    : m_name(std::string("RAJA::stable_sort<") + policy_name + std::string(">"))
+  { }
+
   const char* name()
   {
-    return "RAJA::stable_sort<policy>";
+    return m_name.c_str();
   }
 
   template < typename... Args >
@@ -125,9 +138,15 @@ struct PolicySortPairs
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
+  std::string m_name;
+
+  PolicySortPairs(std::string const& policy_name)
+    : m_name(std::string("RAJA::sort<") + policy_name + std::string(">[pairs]"))
+  { }
+
   const char* name()
   {
-    return "RAJA::sort_pairs<policy>";
+    return m_name.c_str();
   }
 
   template < typename... Args >
@@ -144,9 +163,15 @@ struct PolicyStableSortPairs
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
+  std::string m_name;
+
+  PolicyStableSortPairs(std::string const& policy_name)
+    : m_name(std::string("RAJA::stable_sort<") + policy_name + std::string(">[pairs]"))
+  { }
+
   const char* name()
   {
-    return "RAJA::stable_sort_pairs<policy>";
+    return m_name.c_str();
   }
 
   template < typename... Args >
