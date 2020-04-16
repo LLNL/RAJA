@@ -85,7 +85,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exc,
+RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exec,
                              Iterable&& iter,
                              Func&& loop_body)
 {
