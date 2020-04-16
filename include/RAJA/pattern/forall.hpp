@@ -487,7 +487,7 @@ RAJA_INLINE RAJA::resources::Event forall(RAJA::resources::Resource &r, Args&&..
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
 
-  //RAJA_FORCEINLINE_RECURSIVE
+  RAJA_FORCEINLINE_RECURSIVE
   auto e = wrap::forall(r, ExecutionPolicy(), std::forward<Args>(args)...);
 
   util::callPostLaunchPlugins(context);

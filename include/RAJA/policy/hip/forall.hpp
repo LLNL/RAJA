@@ -159,7 +159,7 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async> exec,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
-  RAJA::resources::Resource res{RAJA::resources::Hip()};
+  RAJA::resources::Resource res{RAJA::resources::Hip(0)};
   forall_impl(res, exec, iter, loop_body);
 }
 
