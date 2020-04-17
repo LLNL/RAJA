@@ -10,8 +10,6 @@
 
 #include "test-forall-segment.hpp"
 
-#include "../../test-forall-functors.hpp"
-
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, 
@@ -41,9 +39,9 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last,
     idx += stride; 
   }
 
-  RangeStrideSegmentTestFunctor<INDEX_TYPE> tbody(working_array, first, stride);
-
-  RAJA::forall<EXEC_POLICY>(r1, tbody);
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    working_array[ (idx-first)/stride ] = idx;
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
