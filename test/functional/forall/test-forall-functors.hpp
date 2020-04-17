@@ -61,6 +61,44 @@ public:
    VT work_view;
 };
 
+template <typename T, typename VT>
+class RangeSegment2DViewTestFunctor
+{
+public:
+   RangeSegment2DViewTestFunctor(VT& v, T n)
+   : work_view(v), N(n) { ; }
+
+   RAJA_HOST_DEVICE
+   void operator() (T idx)
+   {
+     const T row = idx / N;
+     const T col = idx % N;
+     work_view(row, col) = row * N + col;
+   }
+
+   VT work_view;
+   T N;
+};
+
+template <typename T, typename VT>
+class RangeSegment2DOffsetViewTestFunctor
+{
+public:
+   RangeSegment2DOffsetViewTestFunctor(VT& v, T n)
+   : work_view(v), N(n) { ; }
+
+   RAJA_HOST_DEVICE
+   void operator() (T idx)
+   {
+     const T row = idx / N;
+     const T col = idx % N;
+     work_view(row, col) = idx;
+   }
+
+   VT work_view;
+   T N;
+};
+
 
 ////////////////////////////////////////////////////////////////////
 // Functors that provide loop bodies for range-stride segment tests
