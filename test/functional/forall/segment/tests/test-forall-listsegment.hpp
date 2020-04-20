@@ -10,8 +10,6 @@
 
 #include "test-forall-segment.hpp"
 
-#include "../../test-forall-functors.hpp"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -61,9 +59,9 @@ void ForallListSegmentTest(INDEX_TYPE N)
     test_array[ idx_array[i] ] = idx_array[i];
   }
 
-  ListSegmentTestFunctor<INDEX_TYPE> tbody(working_array);
-
-  RAJA::forall<EXEC_POLICY>(lseg, tbody);
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    working_array[idx] = idx;
+  }); 
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 

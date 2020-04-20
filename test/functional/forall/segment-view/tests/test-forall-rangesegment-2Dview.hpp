@@ -10,11 +10,8 @@
 
 #include "test-forall-segment-view.hpp"
 
-#include "../../test-forall-functors.hpp"
-
 #include <iostream>
 #include <numeric>
-
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegment2DViewTest(INDEX_TYPE N)
@@ -42,9 +39,11 @@ void ForallRangeSegment2DViewTest(INDEX_TYPE N)
   
   view_type work_view(working_array, layout);
 
-  RangeSegment2DViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view, N);
-
-  RAJA::forall<EXEC_POLICY>(r1, tbody);
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    const INDEX_TYPE row = idx / N;
+    const INDEX_TYPE col = idx % N;
+    work_view(row, col) = row * N + col;
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * lentot);
 
@@ -95,10 +94,11 @@ void ForallRangeSegment2DOffsetViewTest(INDEX_TYPE N)
   
   view_type work_view(working_array, layout);
 
-  RangeSegment2DOffsetViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view, 
-                                                                   N);
-
-  RAJA::forall<EXEC_POLICY>(r1, tbody);
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    const INDEX_TYPE row = idx / N;
+    const INDEX_TYPE col = idx % N;
+    work_view(row, col) = idx;  
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * lentot);
 
