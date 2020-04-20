@@ -28,7 +28,7 @@ struct Test<camp::list<T...>> {
 //
 using IdxTypeList = camp::list<RAJA::Index_type,
                                int,
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
                                unsigned int,
                                short,
                                unsigned short,

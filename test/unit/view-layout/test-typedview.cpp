@@ -24,7 +24,7 @@ class TypedIntegralViewUnitTest : public ::testing::Test {};
 
 using allTypes = ::testing::Types<RAJA::Index_type,
                                   int,
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
                                   unsigned int,
                                   char,
                                   unsigned char,
@@ -42,7 +42,7 @@ using allTypes = ::testing::Types<RAJA::Index_type,
 
 using IntegralTypes = ::testing::Types<RAJA::Index_type,
                                        int,
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
                                        unsigned int,
                                        char,
                                        unsigned char,
