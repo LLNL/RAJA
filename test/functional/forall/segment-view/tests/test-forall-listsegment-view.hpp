@@ -122,9 +122,10 @@ void ForallListSegmentOffsetViewTest(INDEX_TYPE N, INDEX_TYPE offset)
 
   using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
 
+  INDEX_TYPE N_offset = N + offset;
   view_type work_view(working_array, 
                       RAJA::make_offset_layout<1, INDEX_TYPE>( {{offset}}, 
-                                                               {{N+offset}} ));
+                                                               {{N_offset}} ));
 
   RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     work_view( idx ) = idx;
