@@ -17,7 +17,7 @@ class RangeSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
                                  int, 
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
                                  unsigned int,
                                  char, 
                                  unsigned char,
