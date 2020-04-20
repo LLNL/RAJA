@@ -9,10 +9,7 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-// OpenMP target execution policy types
-using OpenMPTargetForallExecPols = 
-  camp::list< RAJA::omp_target_parallel_for_exec<8>,
-              RAJA::omp_target_parallel_for_exec_nt >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallSegmentTypes =

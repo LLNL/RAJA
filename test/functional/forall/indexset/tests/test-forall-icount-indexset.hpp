@@ -8,7 +8,7 @@
 #ifndef __TEST_FORALL_ICOUNT_INDEXSET_HPP__
 #define __TEST_FORALL_ICOUNT_INDEXSET_HPP__
 
-#include "test-forall-indexset-utils.hpp"
+#include "../../test-forall-indexset-utils.hpp"
 
 #include <cstdio>
 #include <algorithm>
@@ -65,11 +65,9 @@ void Forall_IcountISetTest()
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
   INDEX_TYPE ticount = 0;
-  std::for_each( std::begin(is_indices), std::end(is_indices), 
-                 [&](INDEX_TYPE& idx) { 
-                   test_array[ticount++] = idx; 
-                 }
-               );
+  for (size_t i = 0; i < is_indices.size(); ++i) {
+    test_array[ ticount++ ] = is_indices[i];
+  }
 
   RAJA::forall_Icount<EXEC_POLICY>(iset, 
     [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {

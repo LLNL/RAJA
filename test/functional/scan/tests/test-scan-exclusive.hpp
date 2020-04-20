@@ -10,7 +10,7 @@
 
 #include <numeric>
 
-#include "test-scan.hpp"
+#include "test-scan-utils.hpp"
 
 template <typename OP, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
@@ -107,10 +107,13 @@ void ScanExclusiveInplaceFunctionalTest(int N,
 
 TYPED_TEST_P(ScanFunctionalTest, ScanExclusive)
 {
-  using EXEC_POLICY      = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using OP_TYPE          = typename at<TypeParam, num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
+  ScanExclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
+                              OP_TYPE>(0);
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
                               OP_TYPE>(357);
@@ -125,6 +128,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanExclusive)
 
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
+                              OP_TYPE>(0, T(13));
+  ScanExclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
                               OP_TYPE>(357, T(15));
   ScanExclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
@@ -133,10 +139,13 @@ TYPED_TEST_P(ScanFunctionalTest, ScanExclusive)
 
 TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
 {
-  using EXEC_POLICY      = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using OP_TYPE          = typename at<TypeParam, num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
+  ScanExclusiveInplaceFunctionalTest<EXEC_POLICY, 
+                                     WORKING_RESOURCE,
+                                     OP_TYPE>(0);
   ScanExclusiveInplaceFunctionalTest<EXEC_POLICY, 
                                      WORKING_RESOURCE,
                                      OP_TYPE>(357);
@@ -149,6 +158,9 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
   //
   using T = typename OP_TYPE::result_type;
 
+  ScanExclusiveInplaceFunctionalTest<EXEC_POLICY,
+                                     WORKING_RESOURCE,
+                                     OP_TYPE>(0, T(13));
   ScanExclusiveInplaceFunctionalTest<EXEC_POLICY,
                                      WORKING_RESOURCE,
                                      OP_TYPE>(357, T(15));

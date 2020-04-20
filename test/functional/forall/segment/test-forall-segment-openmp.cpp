@@ -9,12 +9,7 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-// OpenMP execution policy types
-using OpenMPForallExecPols = 
-  camp::list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
-              RAJA::omp_for_nowait_exec,
-              RAJA::omp_for_exec,
-              RAJA::omp_parallel_for_exec >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for OpenMP tests
 using OpenMPForallSegmentTypes =

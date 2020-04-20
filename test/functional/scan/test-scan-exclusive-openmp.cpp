@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-scan-exclusive.hpp"
+#include "tests/test-scan-exclusive.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-// OpenMP policy types to test
-using OpenMPExecTypes = camp::list< RAJA::omp_parallel_for_exec,
-                                    RAJA::omp_for_exec,
-                                    RAJA::omp_for_nowait_exec >;
+#include "../forall/test-forall-utils.hpp"
+#include "../forall/test-forall-execpol.hpp"
 
 using OpenMPExclusiveScanTypes = 
-  Test<cartesian_product< OpenMPExecTypes, ListHostRes, OpTypes >>::Types;
+  Test< camp::cartesian_product< OpenMPForallExecPols,
+                                 HostResourceList, 
+                                 ScanOpTypes >>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, 
                                ScanFunctionalTest, 
