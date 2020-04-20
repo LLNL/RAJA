@@ -19,11 +19,13 @@ class ForallSegmentViewTest : public ::testing::Test
 };
 
 #include "test-forall-rangesegment-view.hpp"
+#include "test-forall-rangesegment-2Dview.hpp"
 #include "test-forall-rangestridesegment-view.hpp"
 #include "test-forall-listsegment-view.hpp"
 
 REGISTER_TYPED_TEST_SUITE_P(ForallSegmentViewTest,
                             RangeSegmentForallView,
+                            RangeSegmentForall2DView,
                             RangeStrideSegmentForallView,
                             ListSegmentForallView);
 

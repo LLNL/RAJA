@@ -24,7 +24,7 @@ template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicRefPol()
 {
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, int, tenk>();
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned, tenk>();
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, long long, tenk>();
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned long long, tenk>();

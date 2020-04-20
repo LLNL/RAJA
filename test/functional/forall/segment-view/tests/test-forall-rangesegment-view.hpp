@@ -10,8 +10,6 @@
 
 #include "test-forall-segment-view.hpp"
 
-#include "../../test-forall-functors.hpp"
-
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
@@ -31,7 +29,7 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
                                      &check_array,
                                      &test_array);
 
-  INDEX_TYPE rbegin = *r1.begin();
+  const INDEX_TYPE rbegin = *r1.begin();
 
   std::iota(test_array, test_array + N, rbegin);
 
@@ -40,9 +38,9 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::Layout<1> layout(N);
   view_type work_view(working_array, layout);
 
-  RangeSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view, rbegin);
-
-  RAJA::forall<EXEC_POLICY>(r1, tbody);
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    work_view( idx - rbegin ) = idx;
+  }); 
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -74,19 +72,21 @@ void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last,
                                      &check_array,
                                      &test_array);
 
-  INDEX_TYPE rbegin = *r1.begin();
+  const INDEX_TYPE rbegin = *r1.begin();
 
   std::iota(test_array, test_array + N, rbegin);
 
   using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
 
+  INDEX_TYPE f_offset = first + offset;
+  INDEX_TYPE l_offset = last + offset;
   view_type work_view(working_array, 
-                      RAJA::make_offset_layout<1, INDEX_TYPE>({{first+offset}},
-                                                              {{last+offset}}));
+                      RAJA::make_offset_layout<1, INDEX_TYPE>({{f_offset}},
+                                                              {{l_offset}}));
 
-  RangeSegmentOffsetViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view);
-
-  RAJA::forall<EXEC_POLICY>(r1, tbody);
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    work_view( idx ) = idx;
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 

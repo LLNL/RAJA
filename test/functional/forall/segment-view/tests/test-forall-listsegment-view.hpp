@@ -10,8 +10,6 @@
 
 #include "test-forall-segment-view.hpp"
 
-#include "../../test-forall-functors.hpp"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -65,9 +63,9 @@ void ForallListSegmentViewTest(INDEX_TYPE N)
   RAJA::Layout<1> layout(N);
   view_type work_view(working_array, layout);
 
-  ListSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view); 
-
-  RAJA::forall<EXEC_POLICY>(lseg, tbody);
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    work_view( idx ) = idx;
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -124,13 +122,14 @@ void ForallListSegmentOffsetViewTest(INDEX_TYPE N, INDEX_TYPE offset)
 
   using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
 
+  INDEX_TYPE N_offset = N + offset;
   view_type work_view(working_array, 
                       RAJA::make_offset_layout<1, INDEX_TYPE>( {{offset}}, 
-                                                               {{N+offset}} ));
+                                                               {{N_offset}} ));
 
-  ListSegmentViewTestFunctor<INDEX_TYPE, view_type> tbody(work_view);
-
-  RAJA::forall<EXEC_POLICY>(lseg, tbody);
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    work_view( idx ) = idx;
+  });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
