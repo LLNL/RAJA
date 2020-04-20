@@ -175,7 +175,7 @@ public:
   {
     printf("Error at index %d, value %ld is not within bounds [0, %ld] \n",
            static_cast<int>(N), static_cast<long int>(idx), static_cast<long int>(sizes[N] - 1));
-    RAJA_ASSERT(0 <= idx && idx < (sizes[N]) && "Layout index out of bounds \n");
+    RAJA_EXIT_KERNEL
   }
 
   template <camp::idx_t N>
@@ -240,7 +240,7 @@ public:
     if(totSize > 0 && (linear_index < 0 || linear_index >= totSize)) {
       printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
              static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
-      RAJA_ASSERT(linear_index < 0 || linear_index >= totSize);
+      RAJA_EXIT_KERNEL
      }
 #endif
 

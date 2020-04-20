@@ -74,7 +74,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
            static_cast<int>(N), static_cast<long int>(idx),
            static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
-    RAJA_ASSERT(offsets[N] <= idx && idx < (offsets[N] + base_.sizes[N]) && "Layout index out of bounds \n");
+    RAJA_EXIT_KERNEL
   }
 
   template <camp::idx_t N>

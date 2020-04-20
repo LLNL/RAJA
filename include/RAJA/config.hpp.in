@@ -195,7 +195,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_BOUNDS_CHECK_constexpr
 
 #if !defined(NDEBUG)
-#define RAJA_ASSERT(EXP) assert( (EXP) )
+#define RAJA_EXIT_KERNEL assert( 0 );
 #endif
 
 //
@@ -203,16 +203,16 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //      to halt HIP kernels.
 //
 #if defined(NDEBUG) && defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) asm ("trap;")
+#define RAJA_EXIT_KERNEL asm ("trap;");
 #endif
 
 #if defined(NDEBUG) && !defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) abort();
+#define RAJA_EXIT_KERNEL abort();
 #endif
 
 #else
 #define RAJA_BOUNDS_CHECK_constexpr constexpr
-#define RAJA_ASSERT(EXP)
+#define RAJA_EXIT_KERNEL
 #endif
 
 //
