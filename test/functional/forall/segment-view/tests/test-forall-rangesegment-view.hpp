@@ -78,9 +78,11 @@ void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last,
 
   using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
 
+  INDEX_TYPE f_offset = first + offset;
+  INDEX_TYPE l_offset = last + offset;
   view_type work_view(working_array, 
-                      RAJA::make_offset_layout<1, INDEX_TYPE>({{first+offset}},
-                                                              {{last+offset}}));
+                      RAJA::make_offset_layout<1, INDEX_TYPE>({{f_offset}},
+                                                              {{l_offset}}));
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     work_view( idx ) = idx;
