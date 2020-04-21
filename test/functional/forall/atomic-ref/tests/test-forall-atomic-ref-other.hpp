@@ -347,12 +347,23 @@ typename std::enable_if<
          >::type
 testAtomicRefOtherOp(RAJA::RangeSegment seg, T* count, T* list)
 {
+  // Use seg, count, list without changing actual contents to satisfy gcc4.9.3 warnings
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+      T temp = list[i];
+      list[i] = (T)1;
+      list[i] = temp;
+      });
+
+  T ctemp = count[0];
+  count[0] = 0;
+  count[0] = ctemp;
 }
 
 template  < typename ExecPolicy,
             typename AtomicPolicy,
             typename T,
             template <typename, typename> class OtherOp>
+// Run test if T is integral and operation is int_op, or for any all_op
 typename std::enable_if<
             (std::is_integral<T>::value && std::is_base_of<int_op,OtherOp<T,AtomicPolicy>>::value)
             || (std::is_base_of<all_op,OtherOp<T,AtomicPolicy>>::value)
