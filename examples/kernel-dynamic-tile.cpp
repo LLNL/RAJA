@@ -15,8 +15,8 @@ int main(int argc, char* argv[])
 
   kernel_param<
     KernelPolicy< 
-      statement::Tile<1, statement::tile_dynamic<1>, seq_exec,
-        statement::Tile<0, statement::tile_dynamic<0>, seq_exec,
+      statement::Tile<1, tile_dynamic<1>, seq_exec,
+        statement::Tile<0, tile_dynamic<0>, seq_exec,
           statement::For<1, seq_exec, 
              statement::For<0, seq_exec, statement::Lambda<0> >
           >
