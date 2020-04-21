@@ -122,8 +122,15 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
   (((dividend) + (divisor)-1) / (divisor))
 
 
+RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
+
+//TODO add support for HIP use asm("s_trap 2");
+#if defined(__CUDA_ARCH__)
+  asm ("trap;");
+
+#else
 
 #ifdef RAJA_COMPILER_MSVC
   char *value;
@@ -143,6 +150,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   } else {
     throw std::runtime_error(str);
   }
+#endif
 }
 
 //! Macros for marking deprecated features in RAJA

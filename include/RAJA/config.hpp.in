@@ -202,26 +202,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #if defined(RAJA_ENABLE_BOUNDS_CHECK)
 #define RAJA_BOUNDS_CHECK_INTERNAL
 #define RAJA_BOUNDS_CHECK_constexpr
-
-#if !defined(NDEBUG)
-#define RAJA_EXIT_KERNEL assert( 0 );
-#endif
-
-//
-//TODO: Once HIP is supported use asm("s_trap 2");
-//      to halt HIP kernels.
-//
-#if defined(NDEBUG) && defined(__CUDA_ARCH__)
-#define RAJA_EXIT_KERNEL asm ("trap;");
-#endif
-
-#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
-#define RAJA_EXIT_KERNEL abort();
-#endif
-
 #else
 #define RAJA_BOUNDS_CHECK_constexpr constexpr
-#define RAJA_EXIT_KERNEL
 #endif
 
 //
