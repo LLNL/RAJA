@@ -95,7 +95,7 @@ struct int_op {}; // represents underlying op type = integral
 
 template < typename T, typename AtomicPolicy >
 struct AndEqOtherOp : int_op {
-  AndEqOtherOp(T* count, RAJA::RangeSegment seg)
+  AndEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
   { count[0] = np2m1((T)seg.size()); }
@@ -108,7 +108,7 @@ struct AndEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy >
 struct FetchAndOtherOp : int_op {
-  FetchAndOtherOp(T* count, RAJA::RangeSegment seg)
+  FetchAndOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = max; }
@@ -121,7 +121,7 @@ struct FetchAndOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy >
 struct OrEqOtherOp : int_op {
-  OrEqOtherOp(T* count, RAJA::RangeSegment seg)
+  OrEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   { count[0] = T(0); }
@@ -134,7 +134,7 @@ struct OrEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy >
 struct FetchOrOtherOp : int_op {
-  FetchOrOtherOp(T* count, RAJA::RangeSegment seg)
+  FetchOrOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   { count[0] = T(0); }
@@ -147,7 +147,7 @@ struct FetchOrOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy >
 struct XorEqOtherOp : int_op {
-  XorEqOtherOp(T* count, RAJA::RangeSegment seg)
+  XorEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = T(0);
@@ -163,7 +163,7 @@ struct XorEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy >
 struct FetchXorOtherOp : int_op {
-  FetchXorOtherOp(T* count, RAJA::RangeSegment seg)
+  FetchXorOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = T(0);
@@ -182,7 +182,7 @@ struct all_op {}; // these op types can accept integral or float
 
 template < typename T, typename AtomicPolicy >
 struct LoadOtherOp : all_op {
-  LoadOtherOp(T* count, RAJA::RangeSegment seg)
+  LoadOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)seg.size()), max(min),
     final_min(min), final_max(min)
   { count[0] = min; }
@@ -195,7 +195,7 @@ struct LoadOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct OperatorTOtherOp : all_op {
-  OperatorTOtherOp(T* count, RAJA::RangeSegment RAJA_UNUSED_ARG(seg))
+  OperatorTOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> RAJA_UNUSED_ARG(seg))
     : other(count), min(T(0)), max(min),
     final_min(min), final_max(min)
   { count[0] = min; }
@@ -208,7 +208,7 @@ struct OperatorTOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct StoreOtherOp : all_op {
-  StoreOtherOp(T* count, RAJA::RangeSegment seg)
+  StoreOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)seg.size(); }
@@ -221,7 +221,7 @@ struct StoreOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct AssignOtherOp : all_op {
-  AssignOtherOp(T* count, RAJA::RangeSegment seg)
+  AssignOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)seg.size(); }
@@ -234,7 +234,7 @@ struct AssignOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct CASOtherOp : all_op {
-  CASOtherOp(T* count, RAJA::RangeSegment seg)
+  CASOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -253,7 +253,7 @@ struct CASOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct CompareExchangeWeakOtherOp : all_op {
-  CompareExchangeWeakOtherOp(T* count, RAJA::RangeSegment seg)
+  CompareExchangeWeakOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -270,7 +270,7 @@ struct CompareExchangeWeakOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct CompareExchangeStrongOtherOp : all_op {
-  CompareExchangeStrongOtherOp(T* count, RAJA::RangeSegment seg)
+  CompareExchangeStrongOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -287,7 +287,7 @@ struct CompareExchangeStrongOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct MaxEqOtherOp : all_op {
-  MaxEqOtherOp(T* count, RAJA::RangeSegment seg)
+  MaxEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
   { count[0] = (T)0; }
@@ -300,7 +300,7 @@ struct MaxEqOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct FetchMaxOtherOp : all_op {
-  FetchMaxOtherOp(T* count, RAJA::RangeSegment seg)
+  FetchMaxOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
   { count[0] = (T)0; }
@@ -313,7 +313,7 @@ struct FetchMaxOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct MinEqOtherOp : all_op {
-  MinEqOtherOp(T* count, RAJA::RangeSegment seg)
+  MinEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(min)
   { count[0] = (T)seg.size(); }
@@ -326,7 +326,7 @@ struct MinEqOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy >
 struct FetchMinOtherOp : all_op {
-  FetchMinOtherOp(T* count, RAJA::RangeSegment seg)
+  FetchMinOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
   { count[0] = (T)seg.size(); }
@@ -345,18 +345,8 @@ template  < typename ExecPolicy,
 typename std::enable_if<
             (std::is_floating_point<T>::value && std::is_base_of<int_op,OtherOp<T,AtomicPolicy>>::value)
          >::type
-testAtomicRefOtherOp(RAJA::RangeSegment seg, T* count, T* list)
+testAtomicRefOtherOp(RAJA::TypedRangeSegment<RAJA::Index_type> RAJA_UNUSED_ARG(seg), T* RAJA_UNUSED_ARG(count), T* RAJA_UNUSED_ARG(list))
 {
-  // Use seg, count, list without changing actual contents to satisfy gcc4.9.3 warnings
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
-      T temp = list[i];
-      list[i] = (T)1;
-      list[i] = temp;
-      });
-
-  T ctemp = count[0];
-  count[0] = 0;
-  count[0] = ctemp;
 }
 
 template  < typename ExecPolicy,
@@ -368,7 +358,7 @@ typename std::enable_if<
             (std::is_integral<T>::value && std::is_base_of<int_op,OtherOp<T,AtomicPolicy>>::value)
             || (std::is_base_of<all_op,OtherOp<T,AtomicPolicy>>::value)
          >::type
-testAtomicRefOtherOp(RAJA::RangeSegment seg, T* count, T* list)
+testAtomicRefOtherOp(RAJA::TypedRangeSegment<RAJA::Index_type> seg, T* count, T* list)
 {
   OtherOp<T, AtomicPolicy> otherop(count, seg);
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
@@ -426,7 +416,7 @@ template <typename ExecPolicy,
           typename T>
 void testAtomicFunctionRefOther( RAJA::Index_type N )
 {
-  RAJA::RangeSegment seg(0, N);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
 
   camp::resources::Resource count_res{WORKINGRES()};
   camp::resources::Resource list_res{WORKINGRES()};

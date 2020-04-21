@@ -46,8 +46,8 @@ template <typename ExecPolicy,
           typename T>
 void testAtomicViewBasic( RAJA::Index_type N )
 {
-  RAJA::RangeSegment seg(0, N);
-  RAJA::RangeSegment seg_half(0, N / 2);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg_half(0, N / 2);
 
   camp::resources::Resource src_res{WORKINGRES()};
   camp::resources::Resource dest_res{WORKINGRES()};

@@ -46,7 +46,7 @@ template <typename ExecPolicy,
           typename T>
 void testAtomicFunctionBasic( RAJA::Index_type seglimit )
 {
-  RAJA::RangeSegment seg(0, seglimit);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, seglimit);
 
 // initialize an array
   const int len = 10;

@@ -25,7 +25,7 @@
 
 template < typename T, typename AtomicPolicy >
 struct PreIncCountOp {
-  PreIncCountOp(T* count, RAJA::RangeSegment seg)
+  PreIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -38,7 +38,7 @@ struct PreIncCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PostIncCountOp {
-  PostIncCountOp(T* count, RAJA::RangeSegment seg)
+  PostIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -51,7 +51,7 @@ struct PostIncCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct AddEqCountOp {
-  AddEqCountOp(T* count, RAJA::RangeSegment seg)
+  AddEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -64,7 +64,7 @@ struct AddEqCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct FetchAddCountOp {
-  FetchAddCountOp(T* count, RAJA::RangeSegment seg)
+  FetchAddCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -77,7 +77,7 @@ struct FetchAddCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PreDecCountOp {
-  PreDecCountOp(T* count, RAJA::RangeSegment seg)
+  PreDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -90,7 +90,7 @@ struct PreDecCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PostDecCountOp {
-  PostDecCountOp(T* count, RAJA::RangeSegment seg)
+  PostDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -103,7 +103,7 @@ struct PostDecCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct SubEqCountOp {
-  SubEqCountOp(T* count, RAJA::RangeSegment seg)
+  SubEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -116,7 +116,7 @@ struct SubEqCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct FetchSubCountOp {
-  FetchSubCountOp(T* count, RAJA::RangeSegment seg)
+  FetchSubCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -131,7 +131,7 @@ template <typename ExecPolicy,
          typename AtomicPolicy,
          typename T,
   template <typename, typename> class CountOp>
-void testAtomicRefCount(RAJA::RangeSegment seg,
+void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
     T* count, T* list, bool* hit)
 {
   CountOp<T, AtomicPolicy> countop(count, seg);
@@ -191,7 +191,7 @@ template <typename ExecPolicy,
           typename T>
 void testAtomicFunctionRefMath( RAJA::Index_type N )
 {
-  RAJA::RangeSegment seg(0, N);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
 
   camp::resources::Resource count_res{WORKINGRES()};
   camp::resources::Resource list_res{WORKINGRES()};
