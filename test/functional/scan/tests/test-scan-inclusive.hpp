@@ -10,7 +10,7 @@
 
 #include <numeric>
 
-#include "test-scan.hpp"
+#include "test-scan-utils.hpp"
 
 template <typename OP>
 ::testing::AssertionResult check_inclusive(
@@ -102,10 +102,13 @@ void ScanInclusiveInplaceFunctionalTest(int N)
 
 TYPED_TEST_P(ScanFunctionalTest, ScanInclusive)
 {
-  using EXEC_POLICY      = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using OP_TYPE          = typename at<TypeParam, num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
+  ScanInclusiveFunctionalTest<EXEC_POLICY, 
+                              WORKING_RESOURCE, 
+                              OP_TYPE>(0);
   ScanInclusiveFunctionalTest<EXEC_POLICY, 
                               WORKING_RESOURCE, 
                               OP_TYPE>(357);
@@ -116,10 +119,13 @@ TYPED_TEST_P(ScanFunctionalTest, ScanInclusive)
 
 TYPED_TEST_P(ScanFunctionalTest, ScanInclusiveInplace)
 {
-  using EXEC_POLICY      = typename at<TypeParam, num<0>>::type;
-  using WORKING_RESOURCE = typename at<TypeParam, num<1>>::type;
-  using OP_TYPE          = typename at<TypeParam, num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
+  ScanInclusiveInplaceFunctionalTest<EXEC_POLICY, 
+                                     WORKING_RESOURCE,
+                                     OP_TYPE>(0);
   ScanInclusiveInplaceFunctionalTest<EXEC_POLICY, 
                                      WORKING_RESOURCE,
                                      OP_TYPE>(357);

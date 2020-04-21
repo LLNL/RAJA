@@ -6,20 +6,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-scan-exclusive.hpp"
+#include "tests/test-scan-exclusive.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
 
-// TBB policy types to test
-using TBBExecTypes = camp::list< RAJA::tbb_for_exec,
-                                 RAJA::tbb_for_static< >,
-                                 RAJA::tbb_for_static< 2 >,
-                                 RAJA::tbb_for_static< 4 >,
-                                 RAJA::tbb_for_static< 8 >,
-                                 RAJA::tbb_for_dynamic >;
+#include "../forall/test-forall-utils.hpp"
+#include "../forall/test-forall-execpol.hpp"
 
 using TBBExclusiveScanTypes = 
-  Test<cartesian_product< TBBExecTypes, ListHostRes, OpTypes >>::Types;
+  Test<camp::cartesian_product< TBBForallExecPols, 
+                                HostResourceList, 
+                                ScanOpTypes >>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB, 
                                ScanFunctionalTest, 

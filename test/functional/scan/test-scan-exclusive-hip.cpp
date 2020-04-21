@@ -5,18 +5,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-scan-exclusive.hpp"
+#include "tests/test-scan-exclusive.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 
-// CUDA policy types to test
-using HipExecTypes = camp::list< RAJA::hip_exec<128>,
-                                 RAJA::hip_exec<256> >;
-
-using ListHipRes = camp::list<camp::resources::Hip>;
+#include "../forall/test-forall-utils.hpp"
+#include "../forall/test-forall-execpol.hpp"
 
 using HipExclusiveScanTypes = 
-  Test<cartesian_product< HipExecTypes, ListHipRes, OpTypes >>::Types;
+  Test< camp::cartesian_product< HipForallExecPols,
+                                 HipResourceList, 
+                                 ScanOpTypes >>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip, 
                                ScanFunctionalTest, 
