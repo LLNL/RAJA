@@ -7,12 +7,9 @@
 
 #include "tests/test-forall-indexset.hpp"
 
-// OpenMP target execution policy types
-using OpenMPTargetForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, 
-                               RAJA::omp_target_parallel_for_exec<8>>,
-              RAJA::ExecPolicy<RAJA::seq_segit, 
-                               RAJA::omp_target_parallel_for_exec_nt> >;
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+#include "../test-forall-indexset-execpol.hpp"
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallIndexSetTypes =
@@ -23,3 +20,5 @@ using OpenMPTargetForallIndexSetTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
                                ForallIndexSetTest,
                                OpenMPTargetForallIndexSetTypes);
+
+#endif

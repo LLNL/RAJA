@@ -24,7 +24,7 @@ template <typename ExecPolicy, typename AtomicPolicy>
 void testAtomicRefPol()
 {
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, int, tenk>();
-#if defined(TEST_EXHAUSTIVE)
+#if defined(RAJA_TEST_EXHAUSTIVE)
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned, tenk>();
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, long long, tenk>();
   testAtomicRefIntegral<ExecPolicy, AtomicPolicy, unsigned long long, tenk>();
@@ -55,7 +55,7 @@ GPU_TEST(Atomic, CUDA_cuda_AtomicRefOtherFunctionalTest)
 }
 #endif
 
-#if defined(TEST_EXHAUSTIVE) || !defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_TEST_EXHAUSTIVE) || !defined(RAJA_ENABLE_OPENMP)
 TEST(Atomic, basic_seq_AtomicRefOtherFunctionalTest)
 {
   testAtomicRefPol<RAJA::seq_exec, RAJA::seq_atomic>();

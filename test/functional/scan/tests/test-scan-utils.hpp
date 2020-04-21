@@ -13,15 +13,6 @@
 
 #include "camp/list.hpp"
 
-// Unroll types for gtest testing::Types
-template<class T>
-struct Test;
-
-template<class ...T>
-struct Test<camp::list<T...>>{
-  using Types = ::testing::Types<T...>;
-};
-
 
 // Scan functional test class
 template<typename T>
@@ -29,18 +20,18 @@ class ScanFunctionalTest: public ::testing::Test {};
 
 
 // Define scan operation types
-using OpTypes = camp::list< RAJA::operators::plus<int>,
+using ScanOpTypes = camp::list< RAJA::operators::plus<int>,
 #if 0  // Parallel tests with plus operator and float data do not work
        // likely due to precision being too low and plus not associative
-                            RAJA::operators::plus<float>,
+                                RAJA::operators::plus<float>,
 #endif
-                            RAJA::operators::plus<double>,
-                            RAJA::operators::minimum<int>,
-                            RAJA::operators::minimum<float>,
-                            RAJA::operators::minimum<double>,
-                            RAJA::operators::maximum<int>,
-                            RAJA::operators::maximum<float>,
-                            RAJA::operators::maximum<double> >;
+                                RAJA::operators::plus<double>,
+                                RAJA::operators::minimum<int>,
+                                RAJA::operators::minimum<float>,
+                                RAJA::operators::minimum<double>,
+                                RAJA::operators::maximum<int>,
+                                RAJA::operators::maximum<float>,
+                                RAJA::operators::maximum<double> >;
 
 using ListHostRes = camp::list< camp::resources::Host >;
 

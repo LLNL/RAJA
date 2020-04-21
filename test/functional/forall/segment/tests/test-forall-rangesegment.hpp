@@ -29,10 +29,12 @@ void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
                                      &check_array,
                                      &test_array);
 
-  std::iota(test_array, test_array + N, *r1.begin());
+  const INDEX_TYPE rbegin = *r1.begin();
+
+  std::iota(test_array, test_array + N, rbegin);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[idx - *r1.begin()] = idx;
+    working_array[idx - rbegin] = idx;
   });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
