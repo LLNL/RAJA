@@ -125,13 +125,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
-
-//TODO add support for HIP use asm("s_trap 2");
 #if defined(__CUDA_ARCH__)
   asm ("trap;");
 
-#else
-
+#elif defined(__HIPCC__)
+  abort();
+#else 
 #ifdef RAJA_COMPILER_MSVC
   char *value;
   size_t len;
