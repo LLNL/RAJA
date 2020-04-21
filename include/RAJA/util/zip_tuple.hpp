@@ -193,13 +193,13 @@ struct zip_tuple
 
   // constructor from types convertible to Ts
   template < typename ... Os
-           , typename = concepts::enable_if<DefineConcept(concepts::convertible_to<Ts>(camp::val<Os&&>()))...> >
+           , typename = concepts::enable_if<type_traits::convertible_to<Os&&, Ts>...> >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(Os&&... os)
     : m_tuple(std::forward<Os>(os)...) { }
 
   // assignment from types convertible to Ts
   template < typename ... Os
-           , typename = concepts::enable_if<DefineConcept(concepts::convertible_to<typename std::remove_reference<Ts>::type>(camp::val<Os&&>()))...> >
+           , typename = concepts::enable_if<type_traits::convertible_to<Os&&, typename std::remove_reference<Ts>::type>...> >
   zip_tuple& assign(Os&&... os)
   { return assign_helper(IdxSeq{}, std::forward<Os>(os)...); }
 

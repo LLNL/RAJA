@@ -57,7 +57,7 @@ struct ZipIterator
   }
 
   template < typename... Args,
-             typename = concepts::enable_if<DefineConcept(concepts::convertible_to<Iters>(camp::val<Args&&>()))...> >
+             typename = concepts::enable_if<type_traits::convertible_to<Args&&, Iters>...> >
   RAJA_HOST_DEVICE inline ZipIterator(Args&&... args)
     : m_iterators(std::forward<Args>(args)...)
   {
