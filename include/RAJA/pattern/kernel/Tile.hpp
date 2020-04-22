@@ -264,7 +264,8 @@ struct StatementExecutor<
 
     // Get the tiling policies chunk size
     auto chunk_size = camp::get<ArgumentId>(data.param_tuple);
-    static_assert(camp::concepts::metalib::is_same<TileSize, decltype(chunk_size)>::value);
+    static_assert(camp::concepts::metalib::is_same<TileSize, decltype(chunk_size)>::value,
+                  "Extracted parameter must be of type TileSize.");
 
     // Create a tile iterator
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size.size);
