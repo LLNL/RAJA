@@ -6,5 +6,7 @@
 ###############################################################################
 
 add_subdirectory(indexset)
+add_subdirectory(indexset-view)
 
 add_subdirectory(segment)
+add_subdirectory(segment-view)

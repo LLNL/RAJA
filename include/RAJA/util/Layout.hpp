@@ -175,7 +175,7 @@ public:
   {
     printf("Error at index %d, value %ld is not within bounds [0, %ld] \n",
            static_cast<int>(N), static_cast<long int>(idx), static_cast<long int>(sizes[N] - 1));
-    RAJA_ASSERT(0 <= idx && idx < (sizes[N]) && "Layout index out of bounds \n");
+    RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
   template <camp::idx_t N>
@@ -186,7 +186,10 @@ public:
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(!(0<=idx && idx < sizes[N])) BoundsCheckError<N>(idx);
+    if(sizes[N] > 0 && !(0<=idx && idx < static_cast<Idx>(sizes[N])))
+    {
+      BoundsCheckError<N>(idx);
+    }
     RAJA_UNUSED_VAR(idx);
     BoundsCheck<N+1>(indices...);
   }
@@ -232,12 +235,12 @@ public:
                                               Indices &&... indices) const
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
-    RAJA::Index_type totSize{1};
+    IdxLin totSize{1};
     for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
-    if(linear_index < 0 || linear_index >= totSize) {
+    if(totSize > 0 && (linear_index < 0 || linear_index >= totSize)) {
       printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
              static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
-      RAJA_ASSERT(linear_index < 0 || linear_index >= totSize);
+      RAJA_ABORT_OR_THROW("Out of bounds error \n");
      }
 #endif
 
