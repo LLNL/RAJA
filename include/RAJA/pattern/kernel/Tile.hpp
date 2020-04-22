@@ -217,12 +217,12 @@ struct IterableTiler {
  *
  */
 template <camp::idx_t ArgumentId,
-          typename TPol,
+          camp::idx_t ChunkSize,
           typename EPol,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>, Types> {
+    statement::Tile<ArgumentId, tile_fixed<ChunkSize>, EPol, EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -231,7 +231,7 @@ struct StatementExecutor<
     auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Get the tiling policies chunk size
-    auto chunk_size = TPol::chunk_size;
+    auto chunk_size = tile_fixed<ChunkSize>::chunk_size;
 
     // Create a tile iterator, needs to survive until the forall is
     // done executing.
@@ -254,7 +254,7 @@ template<camp::idx_t ArgumentId,
   typename... EnclosedStmts,
   typename Types>
 struct StatementExecutor<
-    statement::Tile<ArgumentId, statement::tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>, Types> {
+    statement::Tile<ArgumentId, tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>, Types> {
   
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -270,7 +270,8 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size.size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data, EnclosedStmts...> tile_wrapper(data);
+    TileWrapper<ArgumentId, Data, Types,
+                EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     forall_impl(EPol{}, tiled_iterable, tile_wrapper);
