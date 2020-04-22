@@ -1,7 +1,8 @@
 #include "RAJA/RAJA.hpp"
 
-int main(int argc, char* argv[])
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
+  std::cout << "\n\nRAJA dynamic_tile example...\n\n";
 
 //Using policy = KernelPolicy<Tile<tile_dynamic<0>, seq_exec, …>>;
 //RAJA::kernel_param<policy>(
@@ -18,7 +19,7 @@ int main(int argc, char* argv[])
       statement::Tile<1, tile_dynamic<1>, seq_exec,
         statement::Tile<0, tile_dynamic<0>, seq_exec,
           statement::For<1, seq_exec, 
-             statement::For<0, seq_exec, statement::Lambda<0> >
+             statement::For<0, seq_exec, statement::Lambda<0>>
           >
         >
       >
