@@ -14,8 +14,8 @@
 #include "../test-forall-atomic-utils.hpp"
 
 using SeqAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 AtomicSeqExecs,
-                                                                 AtomicSeqPols,
+                                                                 SequentialForallAtomicExecPols,
+                                                                 SequentialAtomicPols,
                                                                  HostResourceList,
                                                                  AtomicDataTypeList >
                                       >::Types;

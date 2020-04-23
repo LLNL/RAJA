@@ -18,12 +18,12 @@
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                   CudaForallExecPols,
-                                                                  AtomicCudaPols,
+                                                                  CudaAtomicPols,
                                                                   CudaResourceList,
                                                                   AtomicDataTypeList >
                                        >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
-                                CudaForallAtomicBasicFunctionalTest,
+                                SeqForallAtomicBasicFunctionalTest,
                                 CudaAtomicForallBasicTypes );
 #endif

@@ -22,14 +22,14 @@ class SeqForallAtomicBasicFunctionalTest : public ::testing::Test
 {
 };
 
-#if defined(RAJA_ENABLE_CUDA)
-TYPED_TEST_SUITE_P(CudaForallAtomicBasicFunctionalTest);
+//#if defined(RAJA_ENABLE_CUDA)
+//TYPED_TEST_SUITE_P(CudaForallAtomicBasicFunctionalTest);
 
-template <typename T>
-class CudaForallAtomicBasicFunctionalTest : public ::testing::Test
-{
-};
-#endif
+//template <typename T>
+//class CudaForallAtomicBasicFunctionalTest : public ::testing::Test
+//{
+//};
+//#endif
 
 #if defined(RAJA_ENABLE_HIP)
 TYPED_TEST_SUITE_P(HipForallAtomicBasicFunctionalTest);
@@ -126,20 +126,20 @@ REGISTER_TYPED_TEST_SUITE_P( SeqForallAtomicBasicFunctionalTest,
                              seq_ForallAtomicBasicFunctionalTest
                            );
 
-#if defined(RAJA_ENABLE_CUDA)
-GPU_TYPED_TEST_P(CudaForallAtomicBasicFunctionalTest, cuda_ForallAtomicBasicFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
-}
+//#if defined(RAJA_ENABLE_CUDA)
+//GPU_TYPED_TEST_P(CudaForallAtomicBasicFunctionalTest, cuda_ForallAtomicBasicFunctionalTest)
+//{
+//  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+//  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
+//  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
+//  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+//  testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
+//}
 
-REGISTER_TYPED_TEST_SUITE_P( CudaForallAtomicBasicFunctionalTest,
-                             cuda_ForallAtomicBasicFunctionalTest
-                           );
-#endif
+//REGISTER_TYPED_TEST_SUITE_P( CudaForallAtomicBasicFunctionalTest,
+//                             cuda_ForallAtomicBasicFunctionalTest
+//                           );
+//#endif
 
 #if defined(RAJA_ENABLE_HIP)
 GPU_TYPED_TEST_P(HipForallAtomicBasicFunctionalTest, hip_ForallAtomicBasicFunctionalTest)

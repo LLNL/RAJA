@@ -15,8 +15,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OmpAtomicForallBasicTypes = Test< camp::cartesian_product<
-                                                                 AtomicOmpExecs,
-                                                                 AtomicOmpPols,
+                                                                 OpenMPForallAtomicExecPols,
+                                                                 OpenMPAtomicPols,
                                                                  HostResourceList,
                                                                  AtomicDataTypeList >
                                       >::Types;

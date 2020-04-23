@@ -16,8 +16,8 @@
 #include "../test-forall-atomic-utils.hpp"
 
 using SeqAtomicForallRefOtherTypes = Test< camp::cartesian_product<
-                                                                  SequentialForallExecPols,
-                                                                  AtomicSeqPols,
+                                                                  SequentialForallAtomicExecPols,
+                                                                  SequentialAtomicPols,
                                                                   HostResourceList,
                                                                   AtomicDataTypeList>
                                         >::Types;

@@ -18,7 +18,7 @@
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OmpTargetAtomicForallViewTypes = Test< camp::cartesian_product<
                                                                  OpenMPTargetForallExecPols,
-                                                                 AtomicOmpPols,
+                                                                 OpenMPAtomicPols,
                                                                  OpenMPTargetResourceList,
                                                                  AtomicDataTypeList >
                                       >::Types;

@@ -12,69 +12,77 @@
 
 #include "test-forall-utils.hpp"
 
-using AtomicSeqExecs = camp::list< RAJA::seq_exec,
-                                   RAJA::loop_exec
-                                   //RAJA::simd_exec  // fails for atomic-view with clang9
-                                 >;
+using SequentialForallAtomicExecPols =
+  camp::list<
+              RAJA::seq_exec,
+              RAJA::loop_exec
+              //RAJA::simd_exec not expected to work with atomics
+            >;
 
-using AtomicSeqPols = camp::list<
+using SequentialAtomicPols =
+  camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                  RAJA::auto_atomic,
-                                  RAJA::builtin_atomic,
+              RAJA::auto_atomic,
+              RAJA::builtin_atomic,
 #endif
-                                  RAJA::seq_atomic
-                                >;
+              RAJA::seq_atomic
+            >;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using AtomicOmpExecs = camp::list<
+using OpenMPForallAtomicExecPols =
+  camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                   RAJA::omp_for_nowait_exec,
-                                   RAJA::omp_parallel_for_exec,
+              RAJA::omp_for_nowait_exec,
+              RAJA::omp_parallel_for_exec,
 #endif
-                                   //RAJA::omp_parallel_exec<RAJA::seq_exec>, // fails for atomic-basic and atomic-ref-math
-                                   RAJA::omp_for_exec
-                                 >;
+              RAJA::omp_for_exec
+              //RAJA::omp_parallel_exec<RAJA::seq_exec> not expected to work with atomics
+            >;
 
-using AtomicOmpPols = camp::list<
+using OpenMPAtomicPols =
+  camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                  RAJA::omp_atomic,
-                                  RAJA::builtin_atomic,
+              RAJA::omp_atomic,
+              RAJA::builtin_atomic,
 #endif
-                                  RAJA::auto_atomic
-                                >;
+              RAJA::auto_atomic
+            >;
 #endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_CUDA)
-using AtomicCudaPols = camp::list<
+using CudaAtomicPols =
+  camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                   RAJA::auto_atomic,
+              RAJA::auto_atomic,
 #endif
-                                   RAJA::cuda_atomic
-                                 >;
+              RAJA::cuda_atomic
+            >;
 #endif  // RAJA_ENABLE_CUDA
 
 #if defined(RAJA_ENABLE_HIP)
-using AtomicHipPols = camp::list<
+using HipAtomicPols =
+  camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                   RAJA::auto_atomic,
+               RAJA::auto_atomic,
 #endif
-                                   RAJA::hip_atomic
-                                >;
+               RAJA::hip_atomic
+            >;
 #endif  // RAJA_ENABLE_HIP
 
 //
-// Atomic index types for segments
+// Atomic data types
 //
-using AtomicDataTypeList = camp::list<
-                                  RAJA::Index_type,
-                                  int,
+using AtomicDataTypeList =
+  camp::list<
+              RAJA::Index_type,
+              int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                  unsigned,
-                                  long long,
-                                  unsigned long long,
-                                  float,
+              unsigned,
+              long long,
+              unsigned long long,
+              float,
 #endif
-                                  double
-                                 >;
+              double
+           >;
 
 #endif  // __TEST_FORALL_ATOMIC_UTILS_HPP__
