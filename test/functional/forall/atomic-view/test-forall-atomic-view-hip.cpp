@@ -18,10 +18,9 @@
 #if defined(RAJA_ENABLE_HIP)
 using HipAtomicForallViewTypes = Test< camp::cartesian_product<
                                                                 HipForallExecPols,
-                                                                 //AtomicHipExecs,
-                                                                 AtomicHipPols,
-                                                                 HipResourceList,
-                                                                 AtomicDataTypeList >
+                                                                AtomicHipPols,
+                                                                HipResourceList,
+                                                                AtomicDataTypeList >
                                       >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,

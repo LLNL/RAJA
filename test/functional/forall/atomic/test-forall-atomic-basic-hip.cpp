@@ -18,7 +18,6 @@
 #if defined(RAJA_ENABLE_HIP)
 using HipAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                  HipForallExecPols,
-                                                                 //AtomicHipExecs,
                                                                  AtomicHipPols,
                                                                  HipResourceList,
                                                                  AtomicDataTypeList >

@@ -18,7 +18,6 @@
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                   CudaForallExecPols,
-                                                                  //AtomicCudaExecs,
                                                                   AtomicCudaPols,
                                                                   CudaResourceList,
                                                                   AtomicDataTypeList >

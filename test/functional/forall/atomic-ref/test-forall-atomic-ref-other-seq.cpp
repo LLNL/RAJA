@@ -17,7 +17,6 @@
 
 using SeqAtomicForallRefOtherTypes = Test< camp::cartesian_product<
                                                                   SequentialForallExecPols,
-                                                                  //AtomicSeqExecs,
                                                                   AtomicSeqPols,
                                                                   HostResourceList,
                                                                   AtomicDataTypeList>
