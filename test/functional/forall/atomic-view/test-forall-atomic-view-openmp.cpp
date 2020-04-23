@@ -22,6 +22,6 @@ using OmpAtomicForallViewTypes = Test< camp::cartesian_product<
                                       >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTest,
-                                SeqForallAtomicViewFunctionalTest,
+                                ForallAtomicViewFunctionalTest,
                                 OmpAtomicForallViewTypes );
 #endif

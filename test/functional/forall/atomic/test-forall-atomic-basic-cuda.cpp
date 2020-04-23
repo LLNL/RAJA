@@ -24,6 +24,6 @@ using CudaAtomicForallBasicTypes = Test< camp::cartesian_product<
                                        >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
-                                SeqForallAtomicBasicFunctionalTest,
+                                ForallAtomicBasicFunctionalTest,
                                 CudaAtomicForallBasicTypes );
 #endif

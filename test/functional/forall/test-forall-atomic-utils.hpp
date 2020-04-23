@@ -36,7 +36,8 @@ using OpenMPForallAtomicExecPols =
               RAJA::omp_parallel_for_exec,
 #endif
               RAJA::omp_for_exec
-              //RAJA::omp_parallel_exec<RAJA::seq_exec> not expected to work with atomics
+              //RAJA::omp_parallel_exec<RAJA::seq_exec>
+              //can work with atomics but tests not suited to omp parallel region
             >;
 
 using OpenMPAtomicPols =

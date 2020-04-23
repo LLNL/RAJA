@@ -24,6 +24,6 @@ using CudaAtomicForallRefMathTypes = Test< camp::cartesian_product<
                                         >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
-                                CudaForallAtomicRefMathFunctionalTest,
+                                ForallAtomicRefMathFunctionalTest,
                                 CudaAtomicForallRefMathTypes );
 #endif

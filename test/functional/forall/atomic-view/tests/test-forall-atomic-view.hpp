@@ -15,30 +15,12 @@
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 
-TYPED_TEST_SUITE_P(SeqForallAtomicViewFunctionalTest);
+TYPED_TEST_SUITE_P(ForallAtomicViewFunctionalTest);
 
 template <typename T>
-class SeqForallAtomicViewFunctionalTest : public ::testing::Test
+class ForallAtomicViewFunctionalTest : public ::testing::Test
 {
 };
-
-#if defined(RAJA_ENABLE_CUDA)
-TYPED_TEST_SUITE_P(CudaForallAtomicViewFunctionalTest);
-
-template <typename T>
-class CudaForallAtomicViewFunctionalTest : public ::testing::Test
-{
-};
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-TYPED_TEST_SUITE_P(HipForallAtomicViewFunctionalTest);
-
-template <typename T>
-class HipForallAtomicViewFunctionalTest : public ::testing::Test
-{
-};
-#endif
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
@@ -99,7 +81,7 @@ void testAtomicViewBasic( RAJA::Index_type N )
   dest_res.deallocate( dest );
 }
 
-TYPED_TEST_P(SeqForallAtomicViewFunctionalTest, seq_ForallAtomicViewFunctionalTest)
+TYPED_TEST_P(ForallAtomicViewFunctionalTest, AtomicViewFunctionalForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -108,38 +90,8 @@ TYPED_TEST_P(SeqForallAtomicViewFunctionalTest, seq_ForallAtomicViewFunctionalTe
   testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( SeqForallAtomicViewFunctionalTest,
-                             seq_ForallAtomicViewFunctionalTest
+REGISTER_TYPED_TEST_SUITE_P( ForallAtomicViewFunctionalTest,
+                             AtomicViewFunctionalForall
                            );
-
-#if defined(RAJA_ENABLE_CUDA)
-GPU_TYPED_TEST_P(CudaForallAtomicViewFunctionalTest, cuda_ForallAtomicViewFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
-}
-
-REGISTER_TYPED_TEST_SUITE_P( CudaForallAtomicViewFunctionalTest,
-                             cuda_ForallAtomicViewFunctionalTest
-                           );
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-GPU_TYPED_TEST_P(HipForallAtomicViewFunctionalTest, hip_ForallAtomicViewFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
-}
-
-REGISTER_TYPED_TEST_SUITE_P( HipForallAtomicViewFunctionalTest,
-                             hip_ForallAtomicViewFunctionalTest
-                           );
-#endif
 
 #endif  //__TEST_FORALL_ATOMIC_VIEW_HPP__

@@ -24,6 +24,6 @@ using OmpTargetAtomicForallBasicTypes = Test< camp::cartesian_product<
                                             >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTargetTest,
-                                SeqForallAtomicBasicFunctionalTest,
+                                ForallAtomicBasicFunctionalTest,
                                 OmpTargetAtomicForallBasicTypes );
 #endif

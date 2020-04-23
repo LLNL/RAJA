@@ -15,30 +15,12 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
-TYPED_TEST_SUITE_P(SeqForallAtomicBasicFunctionalTest);
+TYPED_TEST_SUITE_P(ForallAtomicBasicFunctionalTest);
 
 template <typename T>
-class SeqForallAtomicBasicFunctionalTest : public ::testing::Test
+class ForallAtomicBasicFunctionalTest : public ::testing::Test
 {
 };
-
-//#if defined(RAJA_ENABLE_CUDA)
-//TYPED_TEST_SUITE_P(CudaForallAtomicBasicFunctionalTest);
-
-//template <typename T>
-//class CudaForallAtomicBasicFunctionalTest : public ::testing::Test
-//{
-//};
-//#endif
-
-#if defined(RAJA_ENABLE_HIP)
-TYPED_TEST_SUITE_P(HipForallAtomicBasicFunctionalTest);
-
-template <typename T>
-class HipForallAtomicBasicFunctionalTest : public ::testing::Test
-{
-};
-#endif
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
@@ -48,7 +30,7 @@ void testAtomicFunctionBasic( RAJA::Index_type seglimit )
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, seglimit);
 
-// initialize an array
+  // initialize an array
   const int len = 10;
 
   camp::resources::Resource work_res{WORKINGRES()};
@@ -113,7 +95,7 @@ void testAtomicFunctionBasic( RAJA::Index_type seglimit )
   work_res.deallocate(dest);
 }
 
-TYPED_TEST_P(SeqForallAtomicBasicFunctionalTest, seq_ForallAtomicBasicFunctionalTest)
+TYPED_TEST_P(ForallAtomicBasicFunctionalTest, AtomicBasicFunctionalForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -122,38 +104,8 @@ TYPED_TEST_P(SeqForallAtomicBasicFunctionalTest, seq_ForallAtomicBasicFunctional
   testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( SeqForallAtomicBasicFunctionalTest,
-                             seq_ForallAtomicBasicFunctionalTest
+REGISTER_TYPED_TEST_SUITE_P( ForallAtomicBasicFunctionalTest,
+                             AtomicBasicFunctionalForall
                            );
-
-//#if defined(RAJA_ENABLE_CUDA)
-//GPU_TYPED_TEST_P(CudaForallAtomicBasicFunctionalTest, cuda_ForallAtomicBasicFunctionalTest)
-//{
-//  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-//  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-//  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-//  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-//  testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
-//}
-
-//REGISTER_TYPED_TEST_SUITE_P( CudaForallAtomicBasicFunctionalTest,
-//                             cuda_ForallAtomicBasicFunctionalTest
-//                           );
-//#endif
-
-#if defined(RAJA_ENABLE_HIP)
-GPU_TYPED_TEST_P(HipForallAtomicBasicFunctionalTest, hip_ForallAtomicBasicFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
-}
-
-REGISTER_TYPED_TEST_SUITE_P( HipForallAtomicBasicFunctionalTest,
-                             hip_ForallAtomicBasicFunctionalTest
-                           );
-#endif
 
 #endif  //__TEST_FORALL_ATOMIC_BASIC_HPP__

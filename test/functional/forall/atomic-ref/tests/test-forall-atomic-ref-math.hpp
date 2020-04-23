@@ -152,30 +152,12 @@ void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
 }
 
 
-TYPED_TEST_SUITE_P(SeqForallAtomicRefMathFunctionalTest);
+TYPED_TEST_SUITE_P(ForallAtomicRefMathFunctionalTest);
 
 template <typename T>
-class SeqForallAtomicRefMathFunctionalTest : public ::testing::Test
+class ForallAtomicRefMathFunctionalTest : public ::testing::Test
 {
 };
-
-#if defined(RAJA_ENABLE_CUDA)
-TYPED_TEST_SUITE_P(CudaForallAtomicRefMathFunctionalTest);
-
-template <typename T>
-class CudaForallAtomicRefMathFunctionalTest : public ::testing::Test
-{
-};
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-TYPED_TEST_SUITE_P(HipForallAtomicRefMathFunctionalTest);
-
-template <typename T>
-class HipForallAtomicRefMathFunctionalTest : public ::testing::Test
-{
-};
-#endif
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
@@ -216,7 +198,7 @@ void testAtomicFunctionRefMath( RAJA::Index_type N )
   hit_res.deallocate( hit );
 }
 
-TYPED_TEST_P(SeqForallAtomicRefMathFunctionalTest, seq_ForallAtomicRefMathFunctionalTest)
+TYPED_TEST_P(ForallAtomicRefMathFunctionalTest, AtomicRefMathFunctionalForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -225,38 +207,8 @@ TYPED_TEST_P(SeqForallAtomicRefMathFunctionalTest, seq_ForallAtomicRefMathFuncti
   testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( SeqForallAtomicRefMathFunctionalTest,
-                             seq_ForallAtomicRefMathFunctionalTest
+REGISTER_TYPED_TEST_SUITE_P( ForallAtomicRefMathFunctionalTest,
+                             AtomicRefMathFunctionalForall
                            );
-
-#if defined(RAJA_ENABLE_CUDA)
-GPU_TYPED_TEST_P(CudaForallAtomicRefMathFunctionalTest, cuda_ForallAtomicRefMathFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
-}
-
-REGISTER_TYPED_TEST_SUITE_P( CudaForallAtomicRefMathFunctionalTest,
-                             cuda_ForallAtomicRefMathFunctionalTest
-                           );
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-GPU_TYPED_TEST_P(HipForallAtomicRefMathFunctionalTest, hip_ForallAtomicRefMathFunctionalTest)
-{
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
-}
-
-REGISTER_TYPED_TEST_SUITE_P( HipForallAtomicRefMathFunctionalTest,
-                             hip_ForallAtomicRefMathFunctionalTest
-                           );
-#endif
 
 #endif  //__TEST_FORALL_ATOMIC_REF_MATH_HPP__
