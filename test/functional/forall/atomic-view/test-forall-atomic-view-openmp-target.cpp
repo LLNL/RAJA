@@ -15,16 +15,16 @@
 
 #include "../test-forall-atomic-utils.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-using CudaAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 CudaForallExecPols,
-                                                                 //AtomicCudaExecs,
-                                                                 AtomicCudaPols,
-                                                                 CudaResourceList,
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OmpTargetAtomicForallViewTypes = Test< camp::cartesian_product<
+                                                                 OpenMPTargetForallExecPols,
+                                                                 //AtomicOmpTargetExecs,
+                                                                 AtomicOmpPols,
+                                                                 OpenMPTargetResourceList,
                                                                  AtomicDataTypeList >
                                       >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
-                                CudaForallAtomicViewFunctionalTest,
-                                CudaAtomicForallViewTypes );
+INSTANTIATE_TYPED_TEST_SUITE_P( OmpTargetTest,
+                                SeqForallAtomicViewFunctionalTest,
+                                OmpTargetAtomicForallViewTypes );
 #endif

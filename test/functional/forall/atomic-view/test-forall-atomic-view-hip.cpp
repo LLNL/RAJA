@@ -11,14 +11,17 @@
 
 #include "tests/test-forall-atomic-view.hpp"
 
+#include "../test-forall-execpol.hpp"
+
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 using HipAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 AtomicHipExecs,
+                                                                HipForallExecPols,
+                                                                 //AtomicHipExecs,
                                                                  AtomicHipPols,
                                                                  HipResourceList,
-                                                                 AtomicTypeList >
+                                                                 AtomicDataTypeList >
                                       >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,

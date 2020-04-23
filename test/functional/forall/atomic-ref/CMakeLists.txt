@@ -24,9 +24,17 @@ if(RAJA_ENABLE_OPENMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
+  raja_add_test(
+    NAME test-forall-atomic-ref-math-openmp-target
+    SOURCES test-forall-atomic-ref-math-openmp-target.cpp)
+
+  raja_add_test(
+    NAME test-forall-atomic-ref-other-openmp-target
+    SOURCES test-forall-atomic-ref-other-openmp-target.cpp)
 endif()
 
 if(RAJA_ENABLE_TBB)
+  # reserved for future compatability
 endif()
 
 if(RAJA_ENABLE_CUDA)

@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
@@ -19,14 +11,17 @@
 
 #include "tests/test-forall-atomic-ref-other.hpp"
 
+#include "../test-forall-execpol.hpp"
+
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 using HipAtomicForallRefOtherTypes = Test< camp::cartesian_product<
-                                                                  AtomicHipExecs,
+                                                                  HipForallExecPols,
+                                                                  //AtomicHipExecs,
                                                                   AtomicHipPols,
                                                                   HipResourceList,
-                                                                  AtomicTypeList >
+                                                                  AtomicDataTypeList >
                                         >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,

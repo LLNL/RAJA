@@ -15,14 +15,16 @@
 
 #include "../test-forall-atomic-utils.hpp"
 
-using SeqAtomicForallRefMathTypes = Test< camp::cartesian_product<
-                                                                  SequentialForallExecPols,
-                                                                  //AtomicSeqExecs,
-                                                                  AtomicSeqPols,
-                                                                  HostResourceList,
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OmpTargetAtomicForallRefMathTypes = Test< camp::cartesian_product<
+                                                                  OpenMPTargetForallExecPols,
+                                                                  //AtomicOmpTargetExecs,
+                                                                  AtomicOmpPols,
+                                                                  OpenMPTargetResourceList,
                                                                   AtomicDataTypeList >
                                         >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( OmpTargetTest,
                                 SeqForallAtomicRefMathFunctionalTest,
-                                SeqAtomicForallRefMathTypes );
+                                OmpTargetAtomicForallRefMathTypes );
+#endif

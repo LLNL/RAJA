@@ -18,7 +18,7 @@ using OmpAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                  AtomicOmpExecs,
                                                                  AtomicOmpPols,
                                                                  HostResourceList,
-                                                                 AtomicTypeList >
+                                                                 AtomicDataTypeList >
                                       >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTest,

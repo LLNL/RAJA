@@ -12,7 +12,10 @@
 
 #include "test-forall-utils.hpp"
 
-using AtomicSeqExecs = camp::list< RAJA::seq_exec >;
+using AtomicSeqExecs = camp::list< RAJA::seq_exec,
+                                   RAJA::loop_exec
+                                   //RAJA::simd_exec  // fails for atomic-view with clang9
+                                 >;
 
 using AtomicSeqPols = camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
@@ -28,6 +31,7 @@ using AtomicOmpExecs = camp::list<
                                    RAJA::omp_for_nowait_exec,
                                    RAJA::omp_parallel_for_exec,
 #endif
+                                   //RAJA::omp_parallel_exec<RAJA::seq_exec>, // fails for atomic-basic and atomic-ref-math
                                    RAJA::omp_for_exec
                                  >;
 
@@ -41,8 +45,6 @@ using AtomicOmpPols = camp::list<
 #endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_CUDA)
-using AtomicCudaExecs = camp::list< RAJA::cuda_exec<256> >;
-
 using AtomicCudaPols = camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
                                    RAJA::auto_atomic,
@@ -52,8 +54,6 @@ using AtomicCudaPols = camp::list<
 #endif  // RAJA_ENABLE_CUDA
 
 #if defined(RAJA_ENABLE_HIP)
-using AtomicHipExecs = camp::list< RAJA::hip_exec<256> >;
-
 using AtomicHipPols = camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
                                    RAJA::auto_atomic,
@@ -65,7 +65,7 @@ using AtomicHipPols = camp::list<
 //
 // Atomic index types for segments
 //
-using AtomicTypeList = camp::list<
+using AtomicDataTypeList = camp::list<
                                   RAJA::Index_type,
                                   int,
 #if defined(RAJA_TEST_EXHAUSTIVE)

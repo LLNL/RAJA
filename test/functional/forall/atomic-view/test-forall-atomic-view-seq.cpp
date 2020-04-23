@@ -17,7 +17,7 @@ using SeqAtomicForallViewTypes = Test< camp::cartesian_product<
                                                                  AtomicSeqExecs,
                                                                  AtomicSeqPols,
                                                                  HostResourceList,
-                                                                 AtomicTypeList >
+                                                                 AtomicDataTypeList >
                                       >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
