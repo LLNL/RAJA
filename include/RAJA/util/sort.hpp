@@ -628,7 +628,7 @@ intro_sort(Iter begin,
     and using O(N*lg(N)) comparisons and O(N) memory
 */
 template <typename Iter,
-          typename Compare = operators::less_equal<detail::IterVal<Iter>>>
+          typename Compare = operators::less<detail::IterVal<Iter>>>
 RAJA_HOST_DEVICE RAJA_INLINE
 concepts::enable_if<type_traits::is_iterator<Iter>>
 merge_sort(Iter begin,
