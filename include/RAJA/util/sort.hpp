@@ -506,7 +506,10 @@ merge_sort(Iter begin,
       for ( int start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
       {
         int finish = minlam( start + midpoint * 2, len );
-        RAJA_ASSERT( finish >= (midpoint + start) );  // sanity check
+        if ( finish > len )
+        {
+          RAJA_ABORT_OR_THROW( "merge_sort invalid finish point" );  // sanity check
+        }
 
         if ( start + midpoint >= len )
         {
@@ -534,7 +537,10 @@ merge_sort(Iter begin,
   //}
 #else
   // TODO: implement for device code
-  RAJA_ASSERT( begin == end || comp(*begin, *begin) );
+  if ( begin == end || comp( *begin, *begin ) )
+  {
+    RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
+  }
 #endif
 }
 
