@@ -13,7 +13,7 @@
 #include <type_traits>
 
 ///
-/// forone_pol<forone_policy>( RAJA_TEST_DEVICE_LAMBDA(){ /* code to test */ } );
+/// forone_pol<forone_policy>( [=] RAJA_HOST_DEVICE(){ /* code to test */ } );
 ///
 template < typename forone_policy, typename L >
 inline void forone_pol(L&& run);
@@ -46,8 +46,6 @@ inline void forone_pol(forone_seq, L&& run)
 }
 
 #if defined(RAJA_ENABLE_CUDA)
-
-#define RAJA_TEST_DEVICE_LAMBDA [=] __device__
 
 // cuda forone policy
 struct forone_cuda { };
@@ -82,8 +80,6 @@ inline void forone_pol(forone_cuda, L&& run)
 }
 
 #elif defined(RAJA_ENABLE_HIP)
-
-#define RAJA_TEST_DEVICE_LAMBDA [=] __device__
 
 // hip forone policy
 struct forone_hip  { };
