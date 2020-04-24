@@ -31,6 +31,30 @@
 namespace RAJA
 {
 
+template < bool is_val, typename ... Ts >
+struct zip_tuple;
+
+template < camp::idx_t I, bool is_val, typename ... Ts >
+struct tuple_element<I, zip_tuple<is_val, Ts...>>
+  : camp::tuple_element<I, typename zip_tuple<is_val, Ts...>::value_type>
+{ };
+
+// get function declarations for zip_tuple
+// the reference type returned by get depends on the reference type
+// of the zip_tuple that get is called on
+template < camp::idx_t I, bool is_val, typename ... Ts >
+RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>         &
+get(zip_tuple<is_val, Ts...>      & z)
+{ return           z .template get<I>(); }
+template < camp::idx_t I, bool is_val, typename ... Ts >
+RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>    const&
+get(zip_tuple<is_val, Ts...> const& z)
+{ return           z .template get<I>(); }
+template < camp::idx_t I, bool is_val, typename ... Ts >
+RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>>::type &&
+get(zip_tuple<is_val, Ts...>     && z)
+{ return std::move(z).template get<I>(); }
+
 namespace detail
 {
 
@@ -138,7 +162,7 @@ template < typename Tuple, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple&& t, F&& f, camp::idx_seq<Is...>)
 {
-  camp::sink(std::forward<F>(f)(std::forward<Tuple>(t).template get<Is>())...);
+  camp::sink(std::forward<F>(f)(RAJA::get<Is>(std::forward<Tuple>(t)))...);
 }
 
 /*!
@@ -148,7 +172,7 @@ template < typename Tuple0, typename Tuple1, typename F, camp::idx_t... Is >
 RAJA_HOST_DEVICE inline
 void zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
 {
-  camp::sink(std::forward<F>(f)(std::forward<Tuple0>(t0).template get<Is>(), std::forward<Tuple1>(t1).template get<Is>())...);
+  camp::sink(std::forward<F>(f)(RAJA::get<Is>(std::forward<Tuple0>(t0)), RAJA::get<Is>(std::forward<Tuple1>(t1)))...);
 }
 
 /*!
@@ -173,6 +197,7 @@ void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
   zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1), std::forward<F>(f), typename camp::decay<Tuple0>::IdxSeq{});
 }
 
+} // end namespace detail
 
 /*!
     \brief Tuple used by ZipIterator for storing multiple references and values.
@@ -243,26 +268,26 @@ struct zip_tuple
   // the reference type returned by get depends on the reference type
   // of the zip_tuple that get is called on
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE camp::tuple_element_t<I, value_type> & get() &
+  RAJA_HOST_DEVICE RAJA_INLINE RAJA::tuple_element_t<I, value_type> & get() &
   { return RAJA::get<I>(m_tuple); }
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE camp::tuple_element_t<I, value_type> const& get() const&
+  RAJA_HOST_DEVICE RAJA_INLINE RAJA::tuple_element_t<I, value_type> const& get() const&
   { return RAJA::get<I>(m_tuple); }
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<camp::tuple_element_t<I, value_type>>::type && get() &&
+  RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, value_type>>::type && get() &&
   { return std::move(RAJA::get<I>(m_tuple)); }
 
   // safe_swap that calls swap on each pair in the tuple
   RAJA_HOST_DEVICE friend RAJA_INLINE void safe_swap(zip_tuple& lhs, zip_tuple& rhs)
   {
-    zip_for_each(lhs, rhs, detail::Swap{});
+    detail::zip_for_each(lhs, rhs, detail::Swap{});
   }
 
   // safe_swap for swapping zip_tuples with opposite is_val
   // calls swap on each pair in the tuple
   RAJA_HOST_DEVICE friend RAJA_INLINE void safe_swap(zip_tuple& lhs, opp_tuple& rhs)
   {
-    zip_for_each(lhs, rhs, detail::Swap{});
+    detail::zip_for_each(lhs, rhs, detail::Swap{});
   }
 
   // allow printing of zip_tuples by printing value_type
@@ -274,7 +299,7 @@ struct zip_tuple
 private:
   // move if is_val is true, otherwise copy in move constructor
   // this allows values to be moved, and references to stay lvalue references
-  using IsValMover = typename std::conditional<is_val, Move, PassThrough>::type;
+  using IsValMover = typename std::conditional<is_val, detail::Move, detail::PassThrough>::type;
 
   value_type m_tuple;
 
@@ -286,46 +311,46 @@ private:
   // copy and move constructor helpers
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &      o, camp::idx_seq<Is...>)
-    : zip_tuple(             o .template get<Is>()...) { }
+    : zip_tuple(RAJA::get<Is>(             o )...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple const& o, camp::idx_seq<Is...>)
-    : zip_tuple(             o .template get<Is>()...) { }
+    : zip_tuple(RAJA::get<Is>(             o )...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple &&     o, camp::idx_seq<Is...>)
-    : zip_tuple(IsValMover{}(o).template get<Is>()...) { } // move if is_val, pass-through otherwise
+    : zip_tuple(RAJA::get<Is>(IsValMover{}(o))...) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operator helpers
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple &      o, camp::idx_seq<Is...>)
-  { if (this != &o) { camp::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() = RAJA::get<Is>(          o )...); } return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple const& o, camp::idx_seq<Is...>)
-  { if (this != &o) { camp::sink(get<Is>() =           o .template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() = RAJA::get<Is>(          o )...); } return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple &&     o, camp::idx_seq<Is...>)
-  { if (this != &o) { camp::sink(get<Is>() = std::move(o).template get<Is>()...); } return *this; }
+  { if (this != &o) { camp::sink(get<Is>() = RAJA::get<Is>(std::move(o))...); } return *this; }
 
   // copy and move constructor helpers from opp_tuple type zip_tuples
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple &      o, camp::idx_seq<Is...>)
-    : zip_tuple(             o .template get<Is>()...) { }
+    : zip_tuple(RAJA::get<Is>(             o )...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple const& o, camp::idx_seq<Is...>)
-    : zip_tuple(             o .template get<Is>()...) { }
+    : zip_tuple(RAJA::get<Is>(             o )...) { }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple &&     o, camp::idx_seq<Is...>)
-    : zip_tuple(IsValMover{}(o).template get<Is>()...) { } // move if is_val, pass-through otherwise
+    : zip_tuple(RAJA::get<Is>(IsValMover{}(o))...) { } // move if is_val, pass-through otherwise
 
   // copy and move assignment operator helpers from opp_tuple type zip_tuples
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple &      o, camp::idx_seq<Is...>)
-  { camp::sink(get<Is>() =           o .template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() = RAJA::get<Is>(          o )...); return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple const& o, camp::idx_seq<Is...>)
-  { camp::sink(get<Is>() =           o .template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() = RAJA::get<Is>(          o )...); return *this; }
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple &&     o, camp::idx_seq<Is...>)
-  { camp::sink(get<Is>() = std::move(o).template get<Is>()...); return *this; }
+  { camp::sink(get<Is>() = RAJA::get<Is>(std::move(o))...); return *this; }
 
 };
 
@@ -336,8 +361,6 @@ using zip_ref = zip_tuple<false, Ts...>;
 // alias zip_val to zip_tuple suitable for storing values (is_val)
 template < typename ... Ts >
 using zip_val = zip_tuple<true, Ts...>;
-
-}  // end namespace detail
 
 }  // end namespace RAJA
 

@@ -36,7 +36,7 @@ namespace RAJA
     \brief ZipIterator class for simultaneously iterating over
     multiple iterators. This is not a standards compliant iterator.
 */
-template < typename... Iters >
+template < typename ... Iters >
 struct ZipIterator
 {
   static_assert(concepts::all_of<type_traits::is_random_access_iterator<Iters>...>::value,
@@ -44,11 +44,11 @@ struct ZipIterator
   static_assert(sizeof...(Iters) > 1,
       "ZipIterator must contain one or more iterators");
 
-  using value_type = detail::zip_val<typename std::iterator_traits<Iters>::value_type...>;
+  using value_type = zip_val<typename std::iterator_traits<Iters>::value_type...>;
   using difference_type = std::ptrdiff_t;
   using pointer = void;
-  using reference = detail::zip_ref<typename std::iterator_traits<Iters>::reference...>;
-  using creference = detail::zip_ref<const typename std::iterator_traits<Iters>::reference...>;
+  using reference = zip_ref<typename std::iterator_traits<Iters>::reference...>;
+  using creference = zip_ref<const typename std::iterator_traits<Iters>::reference...>;
   using iterator_category = std::random_access_iterator_tag;
 
   RAJA_HOST_DEVICE inline ZipIterator()
@@ -88,27 +88,27 @@ struct ZipIterator
 
   RAJA_HOST_DEVICE inline bool operator==(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() == rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) == RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator!=(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() != rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) != RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator>(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() > rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) >  RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator<(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() < rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) <  RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator>=(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() >= rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) >= RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator<=(const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() <= rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) <= RAJA::get<0>(rhs.m_iterators);
   }
 
   RAJA_HOST_DEVICE inline ZipIterator& operator++()
@@ -150,7 +150,7 @@ struct ZipIterator
   RAJA_HOST_DEVICE inline difference_type operator-(
       const ZipIterator& rhs) const
   {
-    return m_iterators.template get<0>() - rhs.m_iterators.template get<0>();
+    return RAJA::get<0>(m_iterators) - RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline ZipIterator operator+(
       const difference_type& rhs) const
@@ -195,12 +195,12 @@ struct ZipIterator
   }
 
 private:
-  detail::zip_val<camp::decay<Iters>...> m_iterators;
+  zip_val<camp::decay<Iters>...> m_iterators;
 
   template < camp::idx_t ... Is >
   RAJA_HOST_DEVICE inline reference deref_helper(camp::idx_seq<Is...>) const
   {
-    return reference(*m_iterators.template get<Is>()...);
+    return reference(*RAJA::get<Is>(m_iterators)...);
   }
 };
 
@@ -230,8 +230,7 @@ struct CompareFirst
 
   RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs)
   {
-    // TODO: make get<I>(zip_tupe) not conflict with camp::get<I>(camp::tuple)
-    return comp(lhs.template get<0>(), rhs.template get<0>());
+    return comp(RAJA::get<0>(lhs), RAJA::get<0>(rhs));
   }
 
 private:
