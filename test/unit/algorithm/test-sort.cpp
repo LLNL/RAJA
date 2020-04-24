@@ -112,6 +112,50 @@ GPU_TEST(Sort, basic_CUDA_StableSort)
   testSorter(PolicyStableSortPairs<RAJA::cuda_exec<256>>{"cuda"});
 }
 
+GPU_TEST(Sort, basic_CUDA_device_insertion_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  testSorter(InsertionSortGPU<forone_cuda>{}, MaxN);
+  testSorter(InsertionSortPairsGPU<forone_cuda>{}, MaxN);
+}
+
+GPU_TEST(Sort, basic_CUDA_device_shell_Sort)
+{
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  testSorter(ShellSortGPU<forone_cuda>{}, MaxN);
+  testSorter(ShellSortPairsGPU<forone_cuda>{}, MaxN);
+}
+
+GPU_TEST(Sort, basic_CUDA_device_heap_Sort)
+{
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  testSorter(HeapSortGPU<forone_cuda>{}, MaxN);
+  testSorter(HeapSortPairsGPU<forone_cuda>{}, MaxN);
+}
+
+#if 0
+GPU_TEST(Sort, basic_CUDA_device_intro_Sort)
+{
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  // intro_sort is implemented via recursion, so the device may
+  // run out of stack space or perform poorly due to local memory usage
+  // or fail to link with hip
+  testSorter(IntroSortGPU<forone_cuda>{}, MaxN);
+  testSorter(IntroSortPairsGPU<forone_cuda>{}, MaxN);
+}
+#endif
+
+#if 0
+GPU_TEST(Sort, basic_CUDA_device_merge_Sort)
+{
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  // merge_sort is not currently supported in device code due
+  // to memory requirements
+  testSorter(MergeSortGPU<forone_cuda>{}, MaxN);
+  testSorter(MergeSortPairsGPU<forone_cuda>{}, MaxN);
+}
+#endif
+
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -128,51 +172,47 @@ GPU_TEST(Sort, basic_HIP_StableSort)
   testSorter(PolicyStableSortPairs<RAJA::hip_exec<256>>{"hip"});
 }
 
-#endif
-
-#if defined(RAJA_TEST_ENABLE_GPU)
-
-GPU_TEST(Sort, basic_device_insertion_Sort)
+GPU_TEST(Sort, basic_HIP_device_insertion_Sort)
 {
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
-  testSorter(InsertionSortGPU{}, MaxN);
-  testSorter(InsertionSortPairsGPU{}, MaxN);
+  testSorter(InsertionSortGPU<forone_hip>{}, MaxN);
+  testSorter(InsertionSortPairsGPU<forone_hip>{}, MaxN);
 }
 
-GPU_TEST(Sort, basic_device_shell_Sort)
+GPU_TEST(Sort, basic_HIP_device_shell_Sort)
 {
   RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(ShellSortGPU{}, MaxN);
-  testSorter(ShellSortPairsGPU{}, MaxN);
+  testSorter(ShellSortGPU<forone_hip>{}, MaxN);
+  testSorter(ShellSortPairsGPU<forone_hip>{}, MaxN);
 }
 
-GPU_TEST(Sort, basic_device_heap_Sort)
+GPU_TEST(Sort, basic_HIP_device_heap_Sort)
 {
   RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(HeapSortGPU{}, MaxN);
-  testSorter(HeapSortPairsGPU{}, MaxN);
+  testSorter(HeapSortGPU<forone_hip>{}, MaxN);
+  testSorter(HeapSortPairsGPU<forone_hip>{}, MaxN);
 }
 
 #if 0
-GPU_TEST(Sort, basic_device_intro_Sort)
+GPU_TEST(Sort, basic_HIP_device_intro_Sort)
 {
   RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
   // intro_sort is implemented via recursion, so the device may
   // run out of stack space or perform poorly due to local memory usage
   // or fail to link with hip
-  testSorter(IntroSortGPU{}, MaxN);
-  testSorter(IntroSortPairsGPU{}, MaxN);
+  testSorter(IntroSortGPU<forone_hip>{}, MaxN);
+  testSorter(IntroSortPairsGPU<forone_hip>{}, MaxN);
 }
 #endif
 
 #if 0
-GPU_TEST(Sort, basic_device_merge_Sort)
+GPU_TEST(Sort, basic_HIP_device_merge_Sort)
 {
   RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
   // merge_sort is not currently supported in device code due
   // to memory requirements
-  testSorter(MergeSortGPU{}, MaxN);
-  testSorter(MergeSortPairsGPU{}, MaxN);
+  testSorter(MergeSortGPU<forone_hip>{}, MaxN);
+  testSorter(MergeSortPairsGPU<forone_hip>{}, MaxN);
 }
 #endif
 

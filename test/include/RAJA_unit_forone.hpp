@@ -13,16 +13,52 @@
 #include <type_traits>
 
 ///
-/// Header file of macro for-one CUDA unit tests.
-/// Use as:
-/// forone<<<1,1>>>( [=] __device__ () {} );
+/// forone_gpu<forone_policy>( RAJA_TEST_DEVICE_LAMBDA(){ /* code to test */ } );
 ///
+template < typename forone_policy, typename L >
+inline void forone_gpu(L&& run);
+
+// sequential forone policy
+struct forone_seq  { };
+
+// struct with specializations containing information about forone policies
+template < typename forone_policy >
+struct forone_policy_info;
+
+// alias for equivalent RAJA exec policy to given forone policy
+template < typename forone_policy >
+using forone_equivalent_exec_policy = typename forone_policy_info<forone_policy>::type;
+
+
+// forone_seq policy information
+template < >
+struct forone_policy_info<forone_seq>
+{
+  using type = RAJA::loop_exec;
+  static const char* name() { return "forone_seq"; }
+};
+
+// forone_seq implementation
+template < typename L >
+inline void forone_gpu(forone_seq, L&& run)
+{
+  std::forward<L>(run)();
+}
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#define RAJA_TEST_ENABLE_GPU
-using forone_equivalent_exec_policy = RAJA::cuda_exec<1>;
 #define RAJA_TEST_DEVICE_LAMBDA [=] __device__
+
+// cuda forone policy
+struct forone_cuda { };
+
+// forone_cuda policy information
+template < >
+struct forone_policy_info<forone_cuda>
+{
+  using type = RAJA::cuda_exec<1>;
+  static const char* name() { return "forone_cuda"; }
+};
 
 template <typename L>
 __global__ void forone (L run)
@@ -31,46 +67,56 @@ __global__ void forone (L run)
 }
 
 template <typename L>
-__global__ void forone_cuda(L run)
+__global__ void forone_cuda_global(L run)
 {
   run();
 }
 
-#elif defined(RAJA_ENABLE_HIP)
-
-#define RAJA_TEST_ENABLE_GPU
-using forone_equivalent_exec_policy = RAJA::hip_exec<1>;
-#define RAJA_TEST_DEVICE_LAMBDA [=] __device__
-
-template <typename L>
-__global__ void forone_hip(L run)
+// forone_cuda implementation
+template < typename L >
+inline void forone_gpu(forone_cuda, L&& run)
 {
-  run();
-}
-
-#endif
-
-
-///
-/// Header file of macro for-one gpu (cuda or hip) unit tests.
-/// Use as:
-/// forone<<<1,1>>>( [=] __device__ () {} );
-///
-template <typename L>
-inline void forone_gpu(L&& run)
-{
-#if defined(RAJA_ENABLE_CUDA)
-   forone_cuda<<<1,1>>>(std::forward<L>(run));
+   forone_cuda_global<<<1,1>>>(std::forward<L>(run));
    cudaErrchk(cudaGetLastError());
    cudaErrchk(cudaDeviceSynchronize());
+}
+
 #elif defined(RAJA_ENABLE_HIP)
-   hipLaunchKernelGGL(forone_hip<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
+
+#define RAJA_TEST_DEVICE_LAMBDA [=] __device__
+
+// hip forone policy
+struct forone_hip  { };
+
+// forone_hip policy information
+template < >
+struct forone_policy_info<forone_hip>
+{
+  using type = RAJA::hip_exec<1>;
+  static const char* name() { return "forone_hip"; }
+};
+
+template <typename L>
+__global__ void forone_hip_global(L run)
+{
+  run();
+}
+
+// forone_hip implementation
+template < typename L >
+inline void forone_gpu(forone_hip, L&& run)
+{
+   hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
    hipErrchk(hipGetLastError());
    hipErrchk(hipDeviceSynchronize());
-#else
-   static_assert(std::is_same<L, void>::value,
-                 "Not compiled with a GPU");
+}
+
 #endif
+
+template < typename forone_policy, typename L >
+void forone_gpu(L&& run)
+{
+  forone_gpu(forone_policy{}, std::forward<L>(run));
 }
 
 #endif // RAJA_unit_forone_HPP
