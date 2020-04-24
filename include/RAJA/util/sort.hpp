@@ -411,12 +411,12 @@ merge_like_std( Iter1 first1,
 {
   using ::RAJA::safe_iter_swap;
 
-  if ( first1 == last2 )  // should never need to do this
+  if ( first1 == last2 - 1 )  // should never need to do this
   {
     return;
   }
 
-  if ( (last2 - first1) == 1 ) // only 2 elements, simple swap
+  if ( (last2 - first1) == 2 ) // only 2 elements, simple swap
   {
     if ( !comp(*d_first, *(d_first+1)) )
     {
@@ -425,29 +425,29 @@ merge_like_std( Iter1 first1,
     return;
   }
 
-  while ( first1 <= last1 || first2 <= last2 )
+  while ( first1 < last1 || first2 < last2 )
   {
-    if ( first1 > last1 ) // first half done
+    if ( first1 >= last1 ) // first half done
     {
       *d_first = *first2;
       ++first2;
     }
-    else if ( first2 > last2 )  // second half done
+    else if ( first2 >= last2 )  // second half done
     {
       *d_first = *first1;
       ++first1;
     }
     else  // neither half done
     {
-      if ( comp( *first1, *first2 ) )
-      {
-        *d_first = *first1;
-        ++first1;
-      }
-      else
+      if ( comp( *first2, *first1 ) )
       {
         *d_first = *first2;
         ++first2;
+      }
+      else
+      {
+        *d_first = *first1;
+        ++first1;
       }
     }
 
@@ -505,15 +505,18 @@ merge_sort(Iter begin,
     {
       for ( int start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
       {
-        int finish = minlam( start + midpoint * 2 - 1, len - 1 );
-        RAJA_ASSERT( finish >= (midpoint + start) );  // sanity check
+        int finish = minlam( start + midpoint * 2, len );
+        if ( finish > len )
+        {
+          RAJA_ABORT_OR_THROW( "merge_sort invalid finish point" );  // sanity check
+        }
 
-        if ( start + midpoint > len - 1 )
+        if ( start + midpoint >= len )
         {
           break;  // skip merge if no second half exists
         }
 
-        detail::merge_like_std( copyarr + start, copyarr + start + midpoint - 1, copyarr + start + midpoint, copyarr + finish, begin + start, comp );
+        detail::merge_like_std( copyarr + start, copyarr + start + midpoint, copyarr + start + midpoint, copyarr + finish, begin + start, comp );
       }
 
       // update copy
@@ -534,7 +537,10 @@ merge_sort(Iter begin,
   //}
 #else
   // TODO: implement for device code
-  RAJA_ASSERT( begin == end || comp(*begin, *begin) );
+  if ( begin == end || comp( *begin, *begin ) )
+  {
+    RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
+  }
 #endif
 }
 
