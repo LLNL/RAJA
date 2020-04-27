@@ -6,15 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util insertion_sort on the cpu
+/// Source file containing tests for RAJA util insertion sort with
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
-TEST(Sort, insertion_Sort_cpu)
-{
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(InsertionSort{}, MaxN);
-  testSorter(InsertionSortPairs{}, MaxN);
-}
+using CpuInsertionSortTypes = Test< camp::cartesian_product<
+                                                             CpuInsertionSortSorters,
+                                                             HostResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListSmall >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+                                SortUnitTest,
+                                CpuInsertionSortTypes );
 

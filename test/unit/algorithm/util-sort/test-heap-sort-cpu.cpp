@@ -6,14 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util shell_sort on the cpu
+/// Source file containing tests for RAJA util heap sort with
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
-TEST(Sort, shell_Sort_cpu)
-{
-  testSorter(ShellSort{});
-  testSorter(ShellSortPairs{});
-}
+using CpuHeapSortTypes = Test< camp::cartesian_product<
+                                                             CpuHeapSortSorters,
+                                                             HostResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListDefault >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+                                SortUnitTest,
+                                CpuHeapSortTypes );
 

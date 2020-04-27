@@ -6,14 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util intro_sort on the cpu
+/// Source file containing tests for RAJA util intro sort with
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
-TEST(Sort, intro_Sort_cpu)
-{
-  testSorter(IntroSort{});
-  testSorter(IntroSortPairs{});
-}
+using CpuIntroSortTypes = Test< camp::cartesian_product<
+                                                             CpuIntroSortSorters,
+                                                             HostResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListDefault >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+                                SortUnitTest,
+                                CpuIntroSortTypes );
 

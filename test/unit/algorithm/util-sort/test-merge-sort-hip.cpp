@@ -9,16 +9,20 @@
 /// Source file containing tests for RAJA util merge_sort for hip gpus
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 
-GPU_TEST(Sort, merge_Sort_hip)
-{
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(MergeSortGPU<forone_hip>{}, MaxN);
-  testSorter(MergeSortPairsGPU<forone_hip>{}, MaxN);
-}
+using HipMergeSortTypes = Test< camp::cartesian_product<
+                                                             HipMergeSortSorters,
+                                                             HipResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListSmall >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,
+                                SortUnitTest,
+                                HipMergeSortTypes );
 
 #endif
 

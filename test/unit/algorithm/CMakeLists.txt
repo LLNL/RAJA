@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(sort)
-add_subdirectory(stable-sort)
+add_subdirectory(pol-sort)
+add_subdirectory(pol-stable-sort)
 add_subdirectory(util-sort)
 

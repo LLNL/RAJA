@@ -9,16 +9,20 @@
 /// Source file containing tests for RAJA util insertion_sort for cuda gpus
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
-GPU_TEST(Sort, insertion_Sort_cuda)
-{
-  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
-  testSorter(InsertionSortGPU<forone_cuda>{}, MaxN);
-  testSorter(InsertionSortPairsGPU<forone_cuda>{}, MaxN);
-}
+using CudaInsertionSortTypes = Test< camp::cartesian_product<
+                                                             CudaInsertionSortSorters,
+                                                             CudaResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListTiny >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
+                                SortUnitTest,
+                                CudaInsertionSortTypes );
 
 #endif
 

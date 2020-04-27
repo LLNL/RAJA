@@ -6,14 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util merge_sort on the cpu
+/// Source file containing tests for RAJA util merge sort with
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
-TEST(Sort, merge_Sort_cpu)
-{
-  testSorter(MergeSort{});
-  testSorter(MergeSortPairs{});
-}
+using CpuMergeSortTypes = Test< camp::cartesian_product<
+                                                             CpuMergeSortSorters,
+                                                             HostResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListDefault >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+                                SortUnitTest,
+                                CpuMergeSortTypes );
 

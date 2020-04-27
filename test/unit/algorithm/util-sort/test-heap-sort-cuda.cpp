@@ -9,16 +9,20 @@
 /// Source file containing tests for RAJA util heap_sort for cuda gpus
 ///
 
-#include "../test-sort.hpp"
+#include "test-util-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
-GPU_TEST(Sort, heap_Sort_cuda)
-{
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(HeapSortGPU<forone_cuda>{}, MaxN);
-  testSorter(HeapSortPairsGPU<forone_cuda>{}, MaxN);
-}
+using CudaHeapSortTypes = Test< camp::cartesian_product<
+                                                             CudaHeapSortSorters,
+                                                             CudaResourceList,
+                                                             SortKeyTypeList,
+                                                             SortMaxNListSmall >
+                         >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
+                                SortUnitTest,
+                                CudaHeapSortTypes );
 
 #endif
 
