@@ -6,17 +6,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable_sort with hip policies
+/// Source file containing tests for RAJA stable_sort with tbb policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_TBB)
 
-TEST(Sort, StableSort_hip)
+TEST(Sort, StableSort_tbb)
 {
-  testSorter(PolicyStableSort<RAJA::hip_exec<128>>{"hip"});
-  testSorter(PolicyStableSortPairs<RAJA::hip_exec<128>>{"hip"});
+  testSorter(PolicyStableSort<RAJA::tbb_for_exec>{"tbb"});
+  testSorter(PolicyStableSortPairs<RAJA::tbb_for_exec>{"tbb"});
 }
 
 #endif

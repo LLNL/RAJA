@@ -6,20 +6,14 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with sequential policies
+/// Source file containing tests for RAJA util shell_sort on the cpu
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-TEST(Sort, Sort_loop)
+TEST(Sort, shell_Sort_cpu)
 {
-  testSorter(PolicySort<RAJA::loop_exec>{"loop"});
-  testSorter(PolicySortPairs<RAJA::loop_exec>{"loop"});
-}
-
-TEST(Sort, Sort_seq)
-{
-  testSorter(PolicySort<RAJA::seq_exec>{"seq"});
-  testSorter(PolicySortPairs<RAJA::seq_exec>{"seq"});
+  testSorter(ShellSort{});
+  testSorter(ShellSortPairs{});
 }
 

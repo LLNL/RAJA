@@ -6,18 +6,14 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable_sort with tbb policies
+/// Source file containing tests for RAJA util intro_sort on the cpu
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_TBB)
-
-TEST(Sort, StableSort_tbb)
+TEST(Sort, intro_Sort_cpu)
 {
-  testSorter(PolicyStableSort<RAJA::tbb_for_exec>{"tbb"});
-  testSorter(PolicyStableSortPairs<RAJA::tbb_for_exec>{"tbb"});
+  testSorter(IntroSort{});
+  testSorter(IntroSortPairs{});
 }
-
-#endif
 

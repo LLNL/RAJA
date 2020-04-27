@@ -6,15 +6,18 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util insertion_sort on the cpu
+/// Source file containing tests for RAJA stable_sort with hip policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-TEST(Sort, insertion_Sort_cpu)
+#if defined(RAJA_ENABLE_HIP)
+
+TEST(Sort, StableSort_hip)
 {
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(InsertionSort{}, MaxN);
-  testSorter(InsertionSortPairs{}, MaxN);
+  testSorter(PolicyStableSort<RAJA::hip_exec<128>>{"hip"});
+  testSorter(PolicyStableSortPairs<RAJA::hip_exec<128>>{"hip"});
 }
+
+#endif
 

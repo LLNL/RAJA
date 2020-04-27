@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA util shell_sort for cuda gpus
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 

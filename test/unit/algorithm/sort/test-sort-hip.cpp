@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA sort with hip policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 

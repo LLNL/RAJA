@@ -6,17 +6,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable_sort with cuda policies
+/// Source file containing tests for RAJA sort with tbb policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_TBB)
 
-TEST(Sort, StableSort_cuda)
+TEST(Sort, Sort_tbb)
 {
-  testSorter(PolicyStableSort<RAJA::cuda_exec<128>>{"cuda"});
-  testSorter(PolicyStableSortPairs<RAJA::cuda_exec<128>>{"cuda"});
+  testSorter(PolicySort<RAJA::tbb_for_exec>{"tbb"});
+  testSorter(PolicySortPairs<RAJA::tbb_for_exec>{"tbb"});
 }
 
 #endif

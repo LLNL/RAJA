@@ -6,14 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util shell_sort on the cpu
+/// Source file containing tests for RAJA util intro_sort for hip gpus
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-TEST(Sort, shell_Sort_cpu)
+#if defined(RAJA_ENABLE_HIP)
+
+GPU_TEST(Sort, intro_Sort_hip)
 {
-  testSorter(ShellSort{});
-  testSorter(ShellSortPairs{});
+  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
+  testSorter(IntroSortGPU<forone_hip>{}, MaxN);
+  testSorter(IntroSortPairsGPU<forone_hip>{}, MaxN);
 }
+
+#endif
 

@@ -6,18 +6,14 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with cuda policies
+/// Source file containing tests for RAJA util merge_sort on the cpu
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-
-TEST(Sort, Sort_cuda)
+TEST(Sort, merge_Sort_cpu)
 {
-  testSorter(PolicySort<RAJA::cuda_exec<128>>{"cuda"});
-  testSorter(PolicySortPairs<RAJA::cuda_exec<128>>{"cuda"});
+  testSorter(MergeSort{});
+  testSorter(MergeSortPairs{});
 }
-
-#endif
 

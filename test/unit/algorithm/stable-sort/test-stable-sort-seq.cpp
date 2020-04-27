@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA stable_sort with sequential policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
 TEST(Sort, StableSort_loop)
 {

@@ -6,18 +6,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util insertion_sort for cuda gpus
+/// Source file containing tests for RAJA stable_sort with openmp policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_OPENMP)
 
-GPU_TEST(Sort, insertion_Sort_cuda)
+TEST(Sort, StableSort_openmp)
 {
-  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
-  testSorter(InsertionSortGPU<forone_cuda>{}, MaxN);
-  testSorter(InsertionSortPairsGPU<forone_cuda>{}, MaxN);
+  testSorter(PolicyStableSort<RAJA::omp_parallel_for_exec>{"omp"});
+  testSorter(PolicyStableSortPairs<RAJA::omp_parallel_for_exec>{"omp"});
 }
 
 #endif

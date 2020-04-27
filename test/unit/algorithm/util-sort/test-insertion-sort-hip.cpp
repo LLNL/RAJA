@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA util insertion_sort for hip gpus
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 

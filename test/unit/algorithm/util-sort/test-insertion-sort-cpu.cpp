@@ -6,19 +6,15 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util heap_sort for cuda gpus
+/// Source file containing tests for RAJA util insertion_sort on the cpu
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-
-GPU_TEST(Sort, heap_Sort_cuda)
+TEST(Sort, insertion_Sort_cpu)
 {
   RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(HeapSortGPU<forone_cuda>{}, MaxN);
-  testSorter(HeapSortPairsGPU<forone_cuda>{}, MaxN);
+  testSorter(InsertionSort{}, MaxN);
+  testSorter(InsertionSortPairs{}, MaxN);
 }
-
-#endif
 

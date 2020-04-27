@@ -6,18 +6,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util merge_sort for hip gpus
+/// Source file containing tests for RAJA sort with openmp policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_OPENMP)
 
-GPU_TEST(Sort, merge_Sort_hip)
+TEST(Sort, Sort_openmp)
 {
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(MergeSortGPU<forone_hip>{}, MaxN);
-  testSorter(MergeSortPairsGPU<forone_hip>{}, MaxN);
+  testSorter(PolicySort<RAJA::omp_parallel_for_exec>{"omp"});
+  testSorter(PolicySortPairs<RAJA::omp_parallel_for_exec>{"omp"});
 }
 
 #endif

@@ -6,17 +6,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable_sort with openmp policies
+/// Source file containing tests for RAJA stable_sort with cuda policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_CUDA)
 
-TEST(Sort, StableSort_openmp)
+TEST(Sort, StableSort_cuda)
 {
-  testSorter(PolicyStableSort<RAJA::omp_parallel_for_exec>{"omp"});
-  testSorter(PolicyStableSortPairs<RAJA::omp_parallel_for_exec>{"omp"});
+  testSorter(PolicyStableSort<RAJA::cuda_exec<128>>{"cuda"});
+  testSorter(PolicyStableSortPairs<RAJA::cuda_exec<128>>{"cuda"});
 }
 
 #endif

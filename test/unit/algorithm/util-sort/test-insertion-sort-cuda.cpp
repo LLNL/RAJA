@@ -6,17 +6,18 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with tbb policies
+/// Source file containing tests for RAJA util insertion_sort for cuda gpus
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_TBB)
+#if defined(RAJA_ENABLE_CUDA)
 
-TEST(Sort, Sort_tbb)
+GPU_TEST(Sort, insertion_Sort_cuda)
 {
-  testSorter(PolicySort<RAJA::tbb_for_exec>{"tbb"});
-  testSorter(PolicySortPairs<RAJA::tbb_for_exec>{"tbb"});
+  RAJA::Index_type MaxN = 100; // limit MaxN to decrease runtime
+  testSorter(InsertionSortGPU<forone_cuda>{}, MaxN);
+  testSorter(InsertionSortPairsGPU<forone_cuda>{}, MaxN);
 }
 
 #endif

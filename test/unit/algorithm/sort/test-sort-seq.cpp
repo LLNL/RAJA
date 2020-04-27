@@ -6,19 +6,20 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA util intro_sort for hip gpus
+/// Source file containing tests for RAJA sort with sequential policies
 ///
 
-#include "test-sort.hpp"
+#include "../test-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
-
-GPU_TEST(Sort, intro_Sort_hip)
+TEST(Sort, Sort_loop)
 {
-  RAJA::Index_type MaxN = 1000; // limit MaxN to decrease runtime
-  testSorter(IntroSortGPU<forone_hip>{}, MaxN);
-  testSorter(IntroSortPairsGPU<forone_hip>{}, MaxN);
+  testSorter(PolicySort<RAJA::loop_exec>{"loop"});
+  testSorter(PolicySortPairs<RAJA::loop_exec>{"loop"});
 }
 
-#endif
+TEST(Sort, Sort_seq)
+{
+  testSorter(PolicySort<RAJA::seq_exec>{"seq"});
+  testSorter(PolicySortPairs<RAJA::seq_exec>{"seq"});
+}
 
