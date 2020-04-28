@@ -11,7 +11,7 @@
 
 #include "test-util-sort.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) && 0
 
 using CudaIntroSortTypes = Test< camp::cartesian_product<
                                                              CudaIntroSortSorters,

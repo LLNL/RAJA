@@ -11,7 +11,7 @@
 
 #include "test-util-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_HIP) && 0
 
 using HipIntroSortTypes = Test< camp::cartesian_product<
                                                              HipIntroSortSorters,
