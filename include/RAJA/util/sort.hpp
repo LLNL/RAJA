@@ -321,6 +321,22 @@ heap_sort(Iter begin,
 }
 
 /*!
+    \brief max recursion depth for intro sort when compiling device code.
+*/
+struct intro_sort_device_max_depth
+{
+  static constexpr unsigned get() { return 4; }
+};
+
+/*!
+    \brief cutoff for intro sort to use insertion sort on small ranges.
+*/
+struct intro_sort_insertion_sort_cutoff
+{
+  static constexpr size_t get() { return 16; }
+};
+
+/*!
     \brief unstable intro sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(lg(N)) memory
 */
@@ -332,17 +348,14 @@ intro_sort(Iter begin,
            Compare comp,
            unsigned depth)
 {
-#if !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
-  // use of recursion makes this fail for large enough input
-  // sizes in device code
-  // disabled on device for now, consider removing device annotation
-
   using RAJA::safe_iter_swap;
+  using diff_type = ::RAJA::detail::IterDiff<Iter>;
 
-  auto N = end - begin;
+  diff_type N = end - begin;
 
   // cutoff to use insertion sort
-  static constexpr camp::decay<decltype(N)> insertion_sort_cutoff = 16;
+  constexpr diff_type insertion_sort_cutoff =
+      static_cast<diff_type>(intro_sort_insertion_sort_cutoff::get());
 
   if (N < 2) {
 
@@ -396,11 +409,6 @@ intro_sort(Iter begin,
     detail::intro_sort(begin, pivot, comp, depth-1);
     detail::intro_sort(RAJA::next(pivot), end, comp, depth-1);
   }
-#else
-  // TODO: implement for device code
-  RAJA_UNUSED_VAR(begin, end, comp, depth);
-  RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
-#endif
 }
 
 /*!
@@ -629,8 +637,15 @@ intro_sort(Iter begin,
 
   if (N > 1) {
 
-    // sset max depth to 2*lg(N)
+    // set max depth to 2*lg(N)
     unsigned max_depth = 2*detail::ulog2(N);
+
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
+    // limit max_depth statically in device code to allow compiler to remove recursion
+    if (max_depth > detail::intro_sort_device_max_depth::get()) {
+      max_depth = detail::intro_sort_device_max_depth::get();
+    }
+#endif
 
     detail::intro_sort(begin, end, comp, max_depth);
   }

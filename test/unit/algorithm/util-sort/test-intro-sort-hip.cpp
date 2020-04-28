@@ -11,8 +11,7 @@
 
 #include "test-util-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP) && 0
-// intro sort is not supported in device code
+#if defined(RAJA_ENABLE_HIP)
 
 using HipIntroSortTypes = Test< camp::cartesian_product<
                                                              HipIntroSortSorters,
