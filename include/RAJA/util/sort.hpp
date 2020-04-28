@@ -398,6 +398,7 @@ intro_sort(Iter begin,
   }
 #else
   // TODO: implement for device code
+  RAJA_UNUSED_VAR(begin, end, comp, depth);
   RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
 #endif
 }
@@ -545,6 +546,7 @@ merge_sort(Iter begin,
   //}
 #else
   // TODO: implement for device code
+  RAJA_UNUSED_VAR(begin, end, comp);
   RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
 #endif
 }

@@ -167,6 +167,7 @@ unstable_pairs(const ExecPolicy&,
                ValIter vals_begin,
                Compare comp)
 {
+  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
   static_assert(!type_traits::is_tbb_policy<ExecPolicy>::value,
       "Unimplemented");
 }
@@ -182,6 +183,7 @@ stable_pairs(const ExecPolicy&,
              ValIter vals_begin,
              Compare comp)
 {
+  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
   static_assert(!type_traits::is_tbb_policy<ExecPolicy>::value,
       "Unimplemented");
 }
