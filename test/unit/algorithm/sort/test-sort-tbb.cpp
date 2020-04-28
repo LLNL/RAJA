@@ -6,23 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with hip policies
+/// Source file containing tests for RAJA sort with tbb policies
 ///
 
-#include "test-pol-sort.hpp"
+#include "test-sort.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_TBB) && 0
 
-using HipSortTypes = Test< camp::cartesian_product<
-                                                    HipSortSorters,
-                                                    HipResourceList,
+using TbbSortTypes = Test< camp::cartesian_product<
+                                                    TbbSortSorters,
+                                                    HostResourceList,
                                                     SortKeyTypeList,
                                                     SortMaxNListDefault >
                          >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( TbbTest,
                                 SortUnitTest,
-                                HipSortTypes );
+                                TbbSortTypes );
 
 #endif
 

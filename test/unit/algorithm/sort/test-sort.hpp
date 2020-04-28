@@ -20,7 +20,7 @@
 #ifndef __TEST_POL_SORT_SORT_HPP__
 #define __TEST_POL_SORT_SORT_HPP__
 
-#include "../test-sort.hpp"
+#include "../test-sort-utils.hpp"
 
 template < typename policy >
 struct PolicySort

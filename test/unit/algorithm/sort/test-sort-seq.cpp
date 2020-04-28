@@ -6,23 +6,19 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with tbb policies
+/// Source file containing tests for RAJA sort with sequential policies
 ///
 
-#include "test-pol-sort.hpp"
+#include "test-sort.hpp"
 
-#if defined(RAJA_ENABLE_TBB) && 0
-
-using TbbSortTypes = Test< camp::cartesian_product<
-                                                    TbbSortSorters,
+using SeqSortTypes = Test< camp::cartesian_product<
+                                                    SeqSortSorters,
                                                     HostResourceList,
                                                     SortKeyTypeList,
                                                     SortMaxNListDefault >
                          >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( TbbTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
                                 SortUnitTest,
-                                TbbSortTypes );
-
-#endif
+                                SeqSortTypes );
 

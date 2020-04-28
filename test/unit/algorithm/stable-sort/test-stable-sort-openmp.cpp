@@ -6,19 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable sort with sequential policies
+/// Source file containing tests for RAJA stable sort with openmp policies
 ///
 
-#include "test-pol-stable-sort.hpp"
+#include "test-stable-sort.hpp"
 
-using SeqStableSortTypes = Test< camp::cartesian_product<
-                                                          SeqStableSortSorters,
+#if defined(RAJA_ENABLE_OPENMP) && 0
+
+using OpenmpStableSortTypes = Test< camp::cartesian_product<
+                                                          OpenmpStableSortSorters,
                                                           HostResourceList,
                                                           SortKeyTypeList,
                                                           SortMaxNListDefault >
                                >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( OpenmpTest,
                                 SortUnitTest,
-                                SeqStableSortTypes );
+                                OpenmpStableSortTypes );
+
+#endif
 

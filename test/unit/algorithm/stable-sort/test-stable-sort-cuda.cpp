@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA stable sort with cuda policies
 ///
 
-#include "test-pol-stable-sort.hpp"
+#include "test-stable-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 

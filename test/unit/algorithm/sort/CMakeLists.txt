@@ -6,13 +6,13 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-pol-stable-sort-seq
-  SOURCES test-pol-stable-sort-seq.cpp)
+  NAME test-sort-seq
+  SOURCES test-sort-seq.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME test-pol-stable-sort-openmp
-    SOURCES test-pol-stable-sort-openmp.cpp)
+    NAME test-sort-openmp
+    SOURCES test-sort-openmp.cpp)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
@@ -21,19 +21,19 @@ endif()
 
 if(RAJA_ENABLE_TBB)
   raja_add_test(
-    NAME test-pol-stable-sort-tbb
-    SOURCES test-pol-stable-sort-tbb.cpp)
+    NAME test-sort-tbb
+    SOURCES test-sort-tbb.cpp)
 endif()
 
 if(RAJA_ENABLE_CUDA)
   raja_add_test(
-    NAME test-pol-stable-sort-cuda
-    SOURCES test-pol-stable-sort-cuda.cpp)
+    NAME test-sort-cuda
+    SOURCES test-sort-cuda.cpp)
 endif()
 
 if(RAJA_ENABLE_HIP)
   raja_add_test(
-    NAME test-pol-stable-sort-hip
-    SOURCES test-pol-stable-sort-hip.cpp)
+    NAME test-sort-hip
+    SOURCES test-sort-hip.cpp)
 endif()
 

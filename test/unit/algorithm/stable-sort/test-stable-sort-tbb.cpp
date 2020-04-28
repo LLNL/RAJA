@@ -6,23 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA stable sort with openmp policies
+/// Source file containing tests for RAJA stable sort with tbb policies
 ///
 
-#include "test-pol-stable-sort.hpp"
+#include "test-stable-sort.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP) && 0
+#if defined(RAJA_ENABLE_TBB) && 0
 
-using OpenmpStableSortTypes = Test< camp::cartesian_product<
-                                                          OpenmpStableSortSorters,
+using TbbStableSortTypes = Test< camp::cartesian_product<
+                                                          TbbStableSortSorters,
                                                           HostResourceList,
                                                           SortKeyTypeList,
                                                           SortMaxNListDefault >
                                >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( OpenmpTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( TbbTest,
                                 SortUnitTest,
-                                OpenmpStableSortTypes );
+                                TbbStableSortTypes );
 
 #endif
 

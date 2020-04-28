@@ -20,7 +20,7 @@
 #ifndef __TEST_UTIL_SORT_HPP__
 #define __TEST_UTIL_SORT_HPP__
 
-#include "../test-sort.hpp"
+#include "../test-sort-utils.hpp"
 
 
 using PolicySynchronizeCPU = PolicySynchronize<RAJA::loop_exec>;

@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA sort with openmp policies
 ///
 
-#include "test-pol-sort.hpp"
+#include "test-sort.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP) && 0
 

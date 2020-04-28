@@ -6,19 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA sort with sequential policies
+/// Source file containing tests for RAJA sort with hip policies
 ///
 
-#include "test-pol-sort.hpp"
+#include "test-sort.hpp"
 
-using SeqSortTypes = Test< camp::cartesian_product<
-                                                    SeqSortSorters,
-                                                    HostResourceList,
+#if defined(RAJA_ENABLE_HIP)
+
+using HipSortTypes = Test< camp::cartesian_product<
+                                                    HipSortSorters,
+                                                    HipResourceList,
                                                     SortKeyTypeList,
                                                     SortMaxNListDefault >
                          >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
+INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,
                                 SortUnitTest,
-                                SeqSortTypes );
+                                HipSortTypes );
+
+#endif
 
