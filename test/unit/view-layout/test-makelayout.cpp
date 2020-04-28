@@ -115,7 +115,7 @@ TEST(LayoutUnitTest, 3D_KJI_ProjJ)
   ASSERT_EQ(0, layout(0, 0, 0));
 
   ASSERT_EQ(1, layout(1, 0, 0));
-  ASSERT_EQ(3, layout(3, 0, 0));
+  ASSERT_EQ(2, layout(2, 0, 0));
 
   // J should be projected out
   ASSERT_EQ(0, layout(0, 1, 0));
@@ -169,7 +169,7 @@ TEST(LayoutUnitTest, 2D_StrideOne)
 
   // Check that we get the same layout
   for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 15; ++j) {
+    for (int j = 0; j < 5; ++j) {
 
       ASSERT_EQ(layout(i, j), layout_s1(i, j));
     }

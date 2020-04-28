@@ -6,10 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-cuda-scan
-  SOURCES test-scan.cpp)
-
-raja_add_test(
   NAME test-cuda-reduce-sum
   SOURCES test-reduce-sum.cpp)
 
@@ -32,14 +28,6 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-reduce-max
   SOURCES test-reduce-max.cpp)
-
-raja_add_test(
-  NAME test-cuda-forall
-  SOURCES test-forall.cpp)
-
-raja_add_test(
-  NAME test-cuda-forall-view
-  SOURCES test-forall-view.cpp)
 
 raja_add_test(
   NAME test-cuda-synchronize

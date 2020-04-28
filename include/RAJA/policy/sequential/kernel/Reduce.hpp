@@ -31,9 +31,10 @@ namespace internal
 //
 template <template <typename...> class ReduceOperator,
           typename ParamId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>> {
+    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>, Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -41,7 +42,7 @@ struct StatementExecutor<
     // since a sequential reduction is a NOP, and the single thread always
     // has the reduced value, this is just a passthrough to the enclosed
     // statements
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+    execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
   }
 };
 

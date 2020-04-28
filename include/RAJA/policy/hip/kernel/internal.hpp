@@ -37,8 +37,6 @@
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 
 namespace RAJA
 {
@@ -369,18 +367,18 @@ struct HipStatementListExecutorHelper<num_stmts, num_stmts, StmtList> {
 };
 
 
-template <typename Data, typename Policy>
+template <typename Data, typename Policy, typename Types>
 struct HipStatementExecutor;
 
-template <typename Data, typename StmtList>
+template <typename Data, typename StmtList, typename Types>
 struct HipStatementListExecutor;
 
 
-template <typename Data, typename... Stmts>
-struct HipStatementListExecutor<Data, StatementList<Stmts...>> {
+template <typename Data, typename... Stmts, typename Types>
+struct HipStatementListExecutor<Data, StatementList<Stmts...>, Types> {
 
   using enclosed_stmts_t =
-      camp::list<HipStatementExecutor<Data, Stmts>...>;
+      camp::list<HipStatementExecutor<Data, Stmts, Types>...>;
 
   static constexpr size_t num_stmts = sizeof...(Stmts);
 
@@ -406,10 +404,11 @@ struct HipStatementListExecutor<Data, StatementList<Stmts...>> {
 };
 
 
-template <typename StmtList, typename Data>
+template <typename StmtList, typename Data, typename Types>
 using hip_statement_list_executor_t = HipStatementListExecutor<
     Data,
-    StmtList>;
+    StmtList,
+    Types>;
 
 
 

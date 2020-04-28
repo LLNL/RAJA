@@ -17,19 +17,19 @@ template<typename T>
 class ListSegmentUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
+                                 int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                 unsigned int,
                                  char,
                                  unsigned char,
                                  short,
                                  unsigned short,
-                                 int,
-                                 unsigned int,
                                  long,
                                  unsigned long,
                                  long int,
                                  unsigned long int,
-                                 unsigned long long,
-                                 double,
-                                 float>;
+#endif
+                                 unsigned long long>;
 
 TYPED_TEST_SUITE(ListSegmentUnitTest, MyTypes);
 
@@ -99,8 +99,8 @@ TYPED_TEST(ListSegmentUnitTest, Iterators)
   std::vector<TypeParam> idx1{5,3,1,2};
   RAJA::TypedListSegment<TypeParam> list( idx1 );
 
-  ASSERT_EQ(5, *list.begin());
-  ASSERT_EQ(2, *(list.end()-1));
+  ASSERT_EQ(TypeParam(5), *list.begin());
+  ASSERT_EQ(TypeParam(2), *(list.end()-1));
 
   ASSERT_EQ(4, list.size());
 }

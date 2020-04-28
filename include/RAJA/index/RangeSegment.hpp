@@ -93,16 +93,8 @@ struct TypedRangeSegment {
    */
   using StripStorageT = strip_index_type_t<StorageT>;
   RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
-#if defined RAJA_ENABLE_CUDA || defined(RAJA_ENABLE_HIP)
       : m_begin(iterator(begin)), 
-        m_end(iterator(end))
-#else
-      : m_begin( begin > end ? 
-	  iterator((StripStorageT)RAJA_ABORT_OR_THROW("RangeSegment : Ensure that begin <= end.")) : 
-	  iterator(begin)
-	), 
-        m_end(iterator(end))
-#endif
+        m_end(begin > end ? m_begin : iterator(end))
   {
   }
 
@@ -296,6 +288,13 @@ struct TypedRangeStrideSegment {
 //                (stride > 0 ? value_type{1} : value_type{-1})) /
 //               static_cast<value_type>(stride))
   {
+    // clamp range when the end is unreachable from the beginning without
+    // wrapping
+    if (stride < 0 && end > begin) {
+      m_end = m_begin;
+    } else if (stride > 0 && end < begin) {
+      m_end = m_begin;
+    }
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
     m_size = m_size < DiffT{0} ? DiffT{0} : m_size;

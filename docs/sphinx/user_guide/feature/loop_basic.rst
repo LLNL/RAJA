@@ -175,7 +175,9 @@ enables non-perfectly nested loops.
 RAJA offers two types of lambda statements. The first as illustratated
 above, requires that each lambda expression passed to a ``RAJA::kernel`` method
 **must take an index argument for each iteration space in the tuple**.
-However, any subset of the arguments may actually be used in each lambda expression.
+With this type of lambda statement, the entire iteration space must be active in a
+containing loop construct.  A compile time ``static_assert`` will be triggered if
+any of the arguments are undefined.
 
 The second type of lambda statement, an extension of the first, takes additional
 template parameters which are used to specify lambda arguments. This results in
@@ -187,13 +189,13 @@ The kernel policy list with lambda arguments may be written as::
       RAJA::KernelPolicy< RAJA::statement::For<N, exec_policyN, 
                             ...
                               RAJA::statement::For<0, exec_policy0,
-                                RAJA::statement::Lambda<0, RAJA::statement::Segs<N,...,0>>
+                                RAJA::statement::Lambda<0, RAJA::Segs<N,...,0>>
                               >
                             ...
                           > 
                         >;
 
-The template parameter ``RAJA::statement::Segs`` is used to identify elements from the
+The template parameter ``RAJA::Segs`` is used to identify elements from the
 segment tuple to be used as arguments for a lambda. RAJA offers other statements
 such as ``Offsets``, and ``Params`` to identify offsets and parameters in segments and 
 param tuples respectively to be used as lambda argumentsx. See :ref:`matrixmultiply-label`
@@ -205,7 +207,8 @@ and :ref:`matrixtransposelocalarray-label` for detailed  examples.
           kernel loop body **must match** the contents of the 
           *iteration space tuple* in number, order, and type. Not all index 
           arguments must be used in each lambda, but they **all must appear** 
-          for the RAJA kernel to be well-formed. In particular, your code will 
+          for the RAJA kernel and **all must be in active loops** to be 
+          well-formed. In particular, your code will 
           not compile if this is not done correctly. If an argument is unused
           in a lambda expression, you may include its type and omit its name
           in the argument list to avoid compiler warnings just as one would do

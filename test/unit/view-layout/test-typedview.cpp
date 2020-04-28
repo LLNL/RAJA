@@ -23,32 +23,38 @@ template<typename T>
 class TypedIntegralViewUnitTest : public ::testing::Test {};
 
 using allTypes = ::testing::Types<RAJA::Index_type,
+                                  int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                  unsigned int,
                                   char,
                                   unsigned char,
                                   short,
                                   unsigned short,
-                                  int,
-                                  unsigned int,
                                   long,
                                   unsigned long,
                                   long int,
                                   unsigned long int,
                                   long long,
-                                  unsigned long long, float , double>;
+                                  unsigned long long, 
+                                  float , 
+#endif
+                                  double>;
 
 using IntegralTypes = ::testing::Types<RAJA::Index_type,
-                                  char,
-                                  unsigned char,
-                                  short,
-                                  unsigned short,
-                                  int,
-                                  unsigned int,
-                                  long,
-                                  unsigned long,
-                                  long int,
-                                  unsigned long int,
-                                  long long,
-                                  unsigned long long>;
+                                       int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                       unsigned int,
+                                       char,
+                                       unsigned char,
+                                       short,
+                                       unsigned short,
+                                       long,
+                                       unsigned long,
+                                       long int,
+                                       unsigned long int,
+                                       long long,
+#endif
+                                       unsigned long long>;
 
 TYPED_TEST_SUITE(TypedViewUnitTest, allTypes);
 TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, allTypes);
@@ -201,7 +207,7 @@ TYPED_TEST(OffsetLayoutViewUnitTest, View)
   RAJA::View<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++) {
-    data[i] = i;
+    data[i] = static_cast<TypeParam>(i);
   }
 
   ASSERT_EQ(data[0], view(1));
@@ -227,7 +233,7 @@ TYPED_TEST(TypedViewUnitTest, Shift1D)
   RAJA::TypedView<TypeParam, RAJA::Layout<DIM>,TX> C(a,N);
 
   for(int i=0; i<N; ++i) {
-    A(i) = i + 1;
+    A(i) = static_cast<TypeParam>(i + 1);
   }
 
   RAJA::View<TypeParam, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N}});
@@ -285,7 +291,7 @@ TYPED_TEST(TypedViewUnitTest, Shift2D)
 
   for(int y=0; y<N; ++y) {
     for(int x=0; x<N; ++x) {
-      A(y,x) = x + N*y;
+      A(y,x) = static_cast<TypeParam>(x + N*y);
     }
   }
 
