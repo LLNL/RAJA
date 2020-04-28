@@ -332,6 +332,11 @@ intro_sort(Iter begin,
            Compare comp,
            unsigned depth)
 {
+#if !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+  // use of recursion makes this fail for large enough input
+  // sizes in device code
+  // disabled on device for now, consider removing device annotation
+
   using RAJA::safe_iter_swap;
 
   auto N = end - begin;
@@ -391,7 +396,10 @@ intro_sort(Iter begin,
     detail::intro_sort(begin, pivot, comp, depth-1);
     detail::intro_sort(RAJA::next(pivot), end, comp, depth-1);
   }
-
+#else
+  // TODO: implement for device code
+  RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
+#endif
 }
 
 /*!
@@ -537,10 +545,7 @@ merge_sort(Iter begin,
   //}
 #else
   // TODO: implement for device code
-  if ( begin == end || comp( *begin, *begin ) )
-  {
-    RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
-  }
+  RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
 #endif
 }
 
