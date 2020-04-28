@@ -92,33 +92,26 @@ struct SortData<sort_interface_tag, K, V>
 {
   K* orig_keys = nullptr;
   K* sorted_keys = nullptr;
+  camp::resources::Resource m_res;
 
   template < typename RandomGenerator >
-  SortData(size_t N, RandomGenerator gen_random)
+  SortData(size_t N, camp::resources::Resource res, RandomGenerator gen_random)
+    : m_res(std::move(res))
   {
     if (N > 0) {
-#if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaMallocManaged((void **)&orig_keys, sizeof(K) * N));
-      cudaErrchk(cudaMallocManaged((void **)&sorted_keys, sizeof(K) * N));
-#else
-      orig_keys   = new K[N];
-      sorted_keys = new K[N];
-#endif
+      orig_keys = m_res.template allocate<K>(N);
+      sorted_keys = m_res.template allocate<K>(N);
     }
-    cudaErrchk(cudaDeviceSynchronize());
 
     for (size_t i = 0; i < N; i++) {
       orig_keys[i] = gen_random();
     }
   }
 
-  void copy_data(size_t N) const
+  void copy_data(size_t N)
   {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMemcpy(sorted_keys, orig_keys, N*sizeof(K), cudaMemcpyDefault));
-#else
-    memcpy(sorted_keys, orig_keys, N*sizeof(K));
-#endif
+    if ( N == 0 ) return;
+    m_res.memcpy(sorted_keys, orig_keys, N*sizeof(K));
   }
 
   SortData(SortData const&) = delete;
@@ -127,13 +120,8 @@ struct SortData<sort_interface_tag, K, V>
   ~SortData()
   {
     if (orig_keys != nullptr) {
-#if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree(orig_keys));
-      cudaErrchk(cudaFree(sorted_keys));
-#else
-      delete[] orig_keys;
-      delete[] sorted_keys;
-#endif
+      m_res.deallocate(orig_keys);
+      m_res.deallocate(sorted_keys);
     }
   }
 };
@@ -148,33 +136,24 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
   V* sorted_vals = nullptr;
 
   template < typename RandomGenerator >
-  SortData(size_t N, RandomGenerator gen_random)
-    : base(N, gen_random)
+  SortData(size_t N, camp::resources::Resource res, RandomGenerator gen_random)
+    : base(N, std::move(res), gen_random)
   {
     if (N > 0) {
-#if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaMallocManaged((void **)&orig_vals, sizeof(V) * N));
-      cudaErrchk(cudaMallocManaged((void **)&sorted_vals, sizeof(V) * N));
-#else
-      orig_vals   = new V[N];
-      sorted_vals = new V[N];
-#endif
+      orig_vals = this->m_res.template allocate<V>(N);
+      sorted_vals = this->m_res.template allocate<V>(N);
     }
-    cudaErrchk(cudaDeviceSynchronize());
 
     for (size_t i = 0; i < N; i++) {
       orig_vals[i] = gen_random();
     }
   }
 
-  void copy_data(size_t N) const
+  void copy_data(size_t N)
   {
     base::copy_data(N);
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMemcpy(sorted_vals, orig_vals, N*sizeof(V), cudaMemcpyDefault));
-#else
-    memcpy(sorted_vals, orig_vals, N*sizeof(V));
-#endif
+    if ( N == 0 ) return;
+    this->m_res.memcpy(sorted_vals, orig_vals, N*sizeof(V));
   }
 
   SortData(SortData const&) = delete;
@@ -183,13 +162,8 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
   ~SortData()
   {
     if (orig_vals != nullptr) {
-#if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree(orig_vals));
-      cudaErrchk(cudaFree(sorted_vals));
-#else
-      delete[] orig_vals;
-      delete[] sorted_vals;
-#endif
+      this->m_res.deallocate(orig_vals);
+      this->m_res.deallocate(sorted_vals);
     }
   }
 };
@@ -198,7 +172,7 @@ struct SortData<sort_pairs_interface_tag, K, V> : SortData<sort_interface_tag, K
 template <typename T,
           typename Compare,
           typename Sorter>
-void doSort(SortData<sort_interface_tag, T> const& data,
+void doSort(SortData<sort_interface_tag, T> & data,
             RAJA::Index_type N,
             Compare,
             Sorter sorter, sort_interface_tag, sort_default_interface_tag)
@@ -211,7 +185,7 @@ void doSort(SortData<sort_interface_tag, T> const& data,
 template <typename T,
           typename Compare,
           typename Sorter>
-void doSort(SortData<sort_interface_tag, T> const& data,
+void doSort(SortData<sort_interface_tag, T> & data,
             RAJA::Index_type N,
             Compare comp,
             Sorter sorter, sort_interface_tag, sort_comp_interface_tag)
@@ -225,7 +199,7 @@ template <typename K,
           typename V,
           typename Compare,
           typename Sorter>
-void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
+void doSort(SortData<sort_pairs_interface_tag, K, V> & data,
             RAJA::Index_type N,
             Compare,
             Sorter sorter, sort_pairs_interface_tag, sort_default_interface_tag)
@@ -239,7 +213,7 @@ template <typename K,
           typename V,
           typename Compare,
           typename Sorter>
-void doSort(SortData<sort_pairs_interface_tag, K, V> const& data,
+void doSort(SortData<sort_pairs_interface_tag, K, V> & data,
             RAJA::Index_type N,
             Compare comp,
             Sorter sorter, sort_pairs_interface_tag, sort_comp_interface_tag)
@@ -257,7 +231,7 @@ template <typename T,
 ::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
-    SortData<sort_interface_tag, T> const& data,
+    SortData<sort_interface_tag, T> & data,
     RAJA::Index_type N,
     Compare comp,
     TestSorter test_sorter, unstable_sort_tag, sort_interface_tag si, CompareInterface ci)
@@ -318,7 +292,7 @@ template <typename T,
 ::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
-    SortData<sort_interface_tag, T> const& data,
+    SortData<sort_interface_tag, T> & data,
     RAJA::Index_type N,
     Compare comp,
     TestSorter test_sorter, stable_sort_tag, sort_interface_tag si, CompareInterface ci)
@@ -380,7 +354,7 @@ template <typename K,
 ::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
-    SortData<sort_pairs_interface_tag, K, V> const& data,
+    SortData<sort_pairs_interface_tag, K, V> & data,
     RAJA::Index_type N,
     Compare comp,
     TestSorter test_sorter, unstable_sort_tag, sort_pairs_interface_tag si, CompareInterface ci)
@@ -444,7 +418,7 @@ template <typename K,
 ::testing::AssertionResult testSort(
     const char* test_name,
     const unsigned seed,
-    SortData<sort_pairs_interface_tag, K, V> const& data,
+    SortData<sort_pairs_interface_tag, K, V> & data,
     RAJA::Index_type N,
     Compare comp,
     TestSorter test_sorter, stable_sort_tag, sort_pairs_interface_tag si, CompareInterface ci)
@@ -502,7 +476,7 @@ template <typename K,
 
 template <typename K,
           typename Sorter>
-void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
+void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, camp::resources::Resource res)
 {
   using stability_category = typename Sorter::sort_category ;
   using pairs_category     = typename Sorter::sort_interface ;
@@ -513,7 +487,7 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
   RAJA::Index_type N = std::uniform_int_distribution<RAJA::Index_type>((MaxN+1)/2, MaxN)(rng);
   std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
 
-  SortData<pairs_category, K> data(N, [&](){ return dist(rng); });
+  SortData<pairs_category, K> data(N, res, [&](){ return dist(rng); });
 
   ASSERT_TRUE(testSort("default", seed, data, N, RAJA::operators::less<K>{},
       sorter, stability_category{}, pairs_category{}, no_comparator{}));
@@ -570,12 +544,12 @@ TYPED_TEST_P(SortUnitTest, UnitSort)
 
   unsigned seed = get_random_seed();
   RAJA::Index_type MaxN = MaxNType::value;
-
   Sorter sorter{};
+  camp::resources::Resource res{ResType()};
 
-  testSorterInterfaces<KeyType>(seed, 0, sorter);
+  testSorterInterfaces<KeyType>(seed, 0, sorter, res);
   for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
-    testSorterInterfaces<KeyType>(seed, n, sorter);
+    testSorterInterfaces<KeyType>(seed, n, sorter, res);
   }
 }
 
