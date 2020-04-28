@@ -224,8 +224,7 @@ unstable_pairs(const ExecPolicy&,
                Compare comp)
 {
   RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  static_assert(!type_traits::is_openmp_policy<ExecPolicy>::value,
-      "Unimplemented");
+  RAJA_ABORT_OR_THROW("Unimplemented");
 }
 
 /*!
@@ -240,8 +239,7 @@ stable_pairs(const ExecPolicy&,
              Compare comp)
 {
   RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  static_assert(!type_traits::is_openmp_policy<ExecPolicy>::value,
-      "Unimplemented");
+  RAJA_ABORT_OR_THROW("Unimplemented");
 }
 
 }  // namespace sort

@@ -11,7 +11,7 @@
 
 #include "test-stable-sort.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP) && 0
+#if defined(RAJA_ENABLE_OPENMP)
 
 using OpenmpStableSortTypes = Test< camp::cartesian_product<
                                                           OpenmpStableSortSorters,

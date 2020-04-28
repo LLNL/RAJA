@@ -11,7 +11,7 @@
 
 #include "test-stable-sort.hpp"
 
-#if defined(RAJA_ENABLE_TBB) && 0
+#if defined(RAJA_ENABLE_TBB)
 
 using TbbStableSortTypes = Test< camp::cartesian_product<
                                                           TbbStableSortSorters,

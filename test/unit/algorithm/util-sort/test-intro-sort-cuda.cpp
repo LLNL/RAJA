@@ -12,6 +12,7 @@
 #include "test-util-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA) && 0
+// intro sort is not supported in device code
 
 using CudaIntroSortTypes = Test< camp::cartesian_product<
                                                              CudaIntroSortSorters,
