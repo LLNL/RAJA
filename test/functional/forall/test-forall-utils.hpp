@@ -10,17 +10,7 @@
 
 #include "camp/resource.hpp"
 #include "gtest/gtest.h"
-
-//
-// Unroll types for gtest testing::Types
-//
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<camp::list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
+#include "test-utils.hpp"
 
 
 //
@@ -37,24 +27,6 @@ using IdxTypeList = camp::list<RAJA::Index_type,
                                long long,
 #endif
                                unsigned long long>;
-
-
-//
-// Memory resource types for beck-end execution
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
 
 
 //

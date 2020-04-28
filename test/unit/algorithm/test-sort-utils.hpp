@@ -24,6 +24,7 @@
 #include "RAJA_gtest.hpp"
 #include "type_helper.hpp"
 #include "RAJA_unit_forone.hpp"
+#include "test-utils.hpp"
 
 #include <string>
 #include <list>
@@ -580,39 +581,9 @@ TYPED_TEST_P(SortUnitTest, UnitSort)
 
 REGISTER_TYPED_TEST_SUITE_P(SortUnitTest, UnitSort);
 
-//
-// Unroll types for gtest testing::Types
-// TODO: dereplicate with forall lists
-//
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<camp::list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
 
 //
-// Memory resource types for beck-end execution
-// TODO: dereplicate with forall lists
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
-
-
-//
-// Key type for sort tests
+// Key types for sort tests
 //
 using SortKeyTypeList =
   camp::list<
