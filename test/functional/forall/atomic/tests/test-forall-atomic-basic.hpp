@@ -15,6 +15,8 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
+#include "../../test-forall-atomic-utils.hpp"
+
 TYPED_TEST_SUITE_P(ForallAtomicBasicFunctionalTest);
 
 template <typename T>
@@ -25,10 +27,11 @@ class ForallAtomicBasicFunctionalTest : public ::testing::Test
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
+          typename SegmentType,
           typename T>
 void testAtomicFunctionBasic( RAJA::Index_type seglimit )
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, seglimit);
+  SegmentType seg = RSMultiplexer<RAJA::Index_type, SegmentType>().makeseg(seglimit);
 
   // initialize an array
   const int len = 10;
@@ -100,8 +103,9 @@ TYPED_TEST_P(ForallAtomicBasicFunctionalTest, AtomicBasicFunctionalForall)
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicFunctionBasic<AExec, APol, ResType, DType>( 10000 );
+  using SType   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
+  testAtomicFunctionBasic<AExec, APol, ResType, SType, DType>( 10000 );
 }
 
 REGISTER_TYPED_TEST_SUITE_P( ForallAtomicBasicFunctionalTest,

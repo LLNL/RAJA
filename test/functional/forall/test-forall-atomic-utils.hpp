@@ -12,6 +12,8 @@
 
 #include "test-forall-utils.hpp"
 
+#include <numeric>
+
 using SequentialForallAtomicExecPols =
   camp::list<
               RAJA::seq_exec,
@@ -85,5 +87,74 @@ using AtomicDataTypeList =
 #endif
               double
            >;
+
+
+// range segment multiplexer
+template< typename Index, typename SegType >
+struct RSMultiplexer {};
+
+template< typename Index >
+struct RSMultiplexer < Index, RAJA::TypedRangeSegment<Index> >
+{
+  RAJA::TypedRangeSegment<Index>
+  makeseg( Index N )
+  {
+    return RAJA::TypedRangeSegment<Index>( 0, N );
+  }
+};
+
+template< typename Index >
+struct RSMultiplexer < Index, RAJA::TypedRangeStrideSegment<Index> >
+{
+  RAJA::TypedRangeStrideSegment<Index>
+  makeseg( Index N )
+  {
+    return RAJA::TypedRangeStrideSegment<Index>( 0, N, 1 );
+  }
+};
+
+template< typename Index >
+struct RSMultiplexer < Index, RAJA::TypedListSegment<Index> >
+{
+  RAJA::TypedListSegment<Index>
+  makeseg( Index N )
+  {
+    std::vector<Index> temp(N);
+    std::iota( std::begin(temp), std::end(temp), 0 );
+    return RAJA::TypedListSegment<Index>( &temp[0], static_cast<size_t>(temp.size()) );
+  }
+};
+
+template< typename Index >
+struct RSMultiplexer < Index, RAJA::TypedIndexSet<RAJA::TypedListSegment<Index>, RAJA::TypedRangeSegment<Index>, RAJA::TypedRangeStrideSegment<Index>> >
+{
+  RAJA::TypedIndexSet<RAJA::TypedListSegment<Index>, RAJA::TypedRangeSegment<Index>, RAJA::TypedRangeStrideSegment<Index>>
+  makeseg( Index N )
+  {
+    RAJA::Index_type chunk = N/3;
+    RAJA::TypedIndexSet<RAJA::TypedListSegment<Index>, RAJA::TypedRangeSegment<Index>, RAJA::TypedRangeStrideSegment<Index>> Iset;
+
+    // create ListSegment for first 1/3rd
+    std::vector<Index> temp(chunk);
+    std::iota( std::begin(temp), std::begin(temp) + chunk, 0 );
+    Iset.push_back( RAJA::TypedListSegment<Index>( &temp[0], static_cast<size_t>(temp.size()) ) );
+
+    // create RangeSegment for second 1/3rd
+    Iset.push_back( RAJA::TypedRangeSegment<Index>( chunk, 2*chunk ) );
+
+    // create RangeStrideSegment for last 1/3rd
+    Iset.push_back( RAJA::TypedRangeStrideSegment<Index>( 2*chunk, N, 1 ) );
+
+    return Iset;
+  }
+};
+
+using AtomicSegmentList = 
+  camp::list<
+              RAJA::TypedRangeSegment<RAJA::Index_type>,
+              RAJA::TypedRangeStrideSegment<RAJA::Index_type>,
+              RAJA::TypedListSegment<RAJA::Index_type>
+              //RAJA::TypedIndexSet<RAJA::TypedListSegment<RAJA::Index_type>, RAJA::TypedRangeSegment<RAJA::Index_type>, RAJA::TypedRangeStrideSegment<RAJA::Index_type>>
+            >;
 
 #endif  // __TEST_FORALL_ATOMIC_UTILS_HPP__
