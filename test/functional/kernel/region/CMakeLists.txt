@@ -5,8 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(forall)
+raja_add_test(
+  NAME test-kernel-region-seq
+  SOURCES test-kernel-region-seq.cpp)
 
-add_subdirectory(kernel)
-
-add_subdirectory(scan)
+if(RAJA_ENABLE_OPENMP)
+  raja_add_test(
+    NAME test-kernel-region-openmp
+    SOURCES test-kernel-region-openmp.cpp)
+endif()
