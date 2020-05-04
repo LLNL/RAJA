@@ -13,7 +13,7 @@
 #include "../../test-forall-utils.hpp"
 
 #include <numeric>
-#include <numeric>
+#include <vector>
 
 TYPED_TEST_SUITE_P(ForallRegionTest);
 template <typename T>
@@ -85,7 +85,7 @@ TYPED_TEST_P(ForallRegionTest, RegionSegmentForall)
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(0, 25);
-  ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(1, 53);
+  ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(1, 153);
   ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(3, 2556);
 }
 
