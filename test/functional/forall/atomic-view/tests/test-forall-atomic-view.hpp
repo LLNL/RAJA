@@ -14,6 +14,7 @@
 
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
+#include "camp/resource.hpp"
 
 TYPED_TEST_SUITE_P(ForallAtomicViewFunctionalTest);
 
@@ -33,9 +34,11 @@ void testAtomicViewBasic( RAJA::Index_type N )
 
   camp::resources::Resource src_res{WORKINGRES()};
   camp::resources::Resource dest_res{WORKINGRES()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
   T * source = src_res.allocate<T>(N);
   T * dest = dest_res.allocate<T>(N/2);
+  T * check_array = host_res.allocate<T>(N/2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -65,6 +68,8 @@ void testAtomicViewBasic( RAJA::Index_type N )
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
+  dest_res.memcpy( check_array, dest, sizeof(T) * N/2 );
+
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -74,11 +79,12 @@ void testAtomicViewBasic( RAJA::Index_type N )
 #endif
 
   for (RAJA::Index_type i = 0; i < N / 2; ++i) {
-    EXPECT_EQ((T)2, dest[i]);
+    EXPECT_EQ((T)2, check_array[i]);
   }
 
   src_res.deallocate( source );
   dest_res.deallocate( dest );
+  host_res.deallocate( check_array );
 }
 
 TYPED_TEST_P(ForallAtomicViewFunctionalTest, AtomicViewFunctionalForall)
