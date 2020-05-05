@@ -1355,7 +1355,7 @@ TEST(Kernel, CollapseSeq)
   delete[] x;
 }
 
-
+#if defined(RAJA_ENABLE_OPENMP)
 TEST(Kernel, Collapse2)
 {
   int N = 16;
