@@ -25,7 +25,7 @@ template< typename Index >
 struct RSMultiplexer < Index, RAJA::TypedRangeSegment<Index> >
 {
   RAJA::TypedRangeSegment<Index>
-  makeseg( Index N, camp::resources::Resource work_res )
+  makeseg( Index N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
   {
     return RAJA::TypedRangeSegment<Index>( 0, N );
   }
@@ -35,7 +35,7 @@ template< typename Index >
 struct RSMultiplexer < Index, RAJA::TypedRangeStrideSegment<Index> >
 {
   RAJA::TypedRangeStrideSegment<Index>
-  makeseg( Index N, camp::resources::Resource work_res )
+  makeseg( Index N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
   {
     return RAJA::TypedRangeStrideSegment<Index>( 0, N, 1 );
   }
