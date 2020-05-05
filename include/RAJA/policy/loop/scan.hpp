@@ -115,7 +115,7 @@ concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>> exclusive(
     BinFn f,
     T v)
 {
-  decltype(*begin) agg = v;
+  typename std::remove_const< decltype(*begin) >::type agg = v;
   OutIter o = out;
   *o++ = v;
 
