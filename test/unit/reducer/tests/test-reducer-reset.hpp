@@ -73,7 +73,7 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
 {
   #if defined(RAJA_ENABLE_CUDA)
   // Use device to activate any value for each reducer.
-  forone<<<1,1>>>( [=] __host__ __device__ () {
+  forone_pol<forone_cuda>( [=] __host__ __device__ () {
                     Tuple temploc(0,0);
                     reduce_sum += initVal;
                     reduce_min.min(0);

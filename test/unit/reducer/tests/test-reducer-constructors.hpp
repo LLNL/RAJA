@@ -80,7 +80,6 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename ResourceType >
 typename  std::enable_if< // Host policy sets value.
-            //!std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
             std::is_same<ResourceType, camp::resources::Host>::value
             #if defined(RAJA_ENABLE_TARGET_OPENMP)
             || std::is_same<ReducePolicy, camp::resources::Omp>::value
@@ -103,7 +102,7 @@ typename  std::enable_if< // Cuda policy sets value.
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
   #if defined(RAJA_ENABLE_CUDA)
-  forone<<<1,1>>>( [=] __device__ () {
+  forone_pol<forone_cuda>( [=] __device__ () {
                         theVal[0] = initVal[0];
                  });
   cudaErrchk(cudaDeviceSynchronize());
