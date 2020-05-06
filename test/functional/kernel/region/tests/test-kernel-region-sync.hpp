@@ -5,14 +5,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_REGION_HPP__
-#define __TEST_KERNEL_REGION_HPP__
+#ifndef __TEST_KERNEL_REGION_SYNC_HPP__
+#define __TEST_KERNEL_REGION_SYNC_HPP__
 
 #include "test-kernel-region-utils.hpp"
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
+void KernelRegionSyncFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource host_res{camp::resources::Host()};
   camp::resources::Resource work_res{WORKING_RES()};
@@ -37,12 +40,17 @@ void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 
   host_res.memset( check_array, 0, sizeof(INDEX_TYPE) * N );
 
+  std::vector<INDEX_TYPE> idx_array(N);
+  std::iota(idx_array.begin(), idx_array.end(), first);
+  std::reverse(idx_array.begin(), idx_array.end());
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], N,
+                                          work_res);
 
   RAJA::TypedRangeSegment<INDEX_TYPE> rseg(first, last);
 
   RAJA::kernel<EXEC_POLICY>(
 
-    RAJA::make_tuple(rseg),
+    RAJA::make_tuple(rseg, lseg),
 
     [=] (INDEX_TYPE i) {
       work_array1[i - first] = 50;
@@ -71,18 +79,18 @@ void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
                         check_array);
 }
 
-TYPED_TEST_P(KernelRegionFunctionalTest, RegionBasicKernel)
+TYPED_TEST_P(KernelRegionFunctionalTest, RegionSyncKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
+  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
+  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
+  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelRegionFunctionalTest,
-                            RegionBasicKernel);
+                            RegionSyncKernel);
 
-#endif  // __TEST_KERNEL_REGION_HPP__
+#endif  // __TEST_KERNEL_REGION_SYNC_HPP__

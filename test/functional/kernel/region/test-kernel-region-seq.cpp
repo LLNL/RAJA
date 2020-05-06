@@ -50,5 +50,5 @@ using SequentialKernelRegionTypes =
                                 SequentialKernelRegionExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               KernelRegionTest,
+                               KernelRegionFunctionalTest,
                                SequentialKernelRegionTypes);
