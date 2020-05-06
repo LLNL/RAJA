@@ -19,11 +19,7 @@
 #include "RAJA/internal/MemUtils_CPU.hpp"
 #include "camp/resource.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
-#endif
-
-#include <tuple>
 
 template <typename T>
 class ReducerBasicConstructorUnitTest : public ::testing::Test
@@ -78,7 +74,8 @@ TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
 
 template  < typename ReducePolicy,
             typename NumericType,
-            typename ResourceType >
+            typename ResourceType,
+            typename ForOnePol >
 typename  std::enable_if< // Host policy sets value.
             std::is_same<ResourceType, camp::resources::Host>::value
             #if defined(RAJA_ENABLE_TARGET_OPENMP)
@@ -92,26 +89,30 @@ exec_dispatcher( NumericType * theVal, NumericType * initVal )
 
 template  < typename ReducePolicy,
             typename NumericType,
-            typename ResourceType >
-typename  std::enable_if< // Cuda policy sets value.
+            typename ResourceType,
+            typename ForOnePol >
+typename  std::enable_if< // GPU policy sets value.
             !std::is_same<ResourceType, camp::resources::Host>::value
             #if defined(RAJA_ENABLE_CUDA)
             && std::is_same<ResourceType, camp::resources::Cuda>::value
             #endif
+            #if defined(RAJA_ENABLE_HIP)
+            && std::is_same<ResourceType, camp::resources::Hip>::value
+            #endif
           >::type
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
-  #if defined(RAJA_ENABLE_CUDA)
-  forone_pol<forone_cuda>( [=] __device__ () {
+  #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+  forone_pol<ForOnePol>( [=] __device__ () {
                         theVal[0] = initVal[0];
                  });
-  cudaErrchk(cudaDeviceSynchronize());
   #endif
 }
 
 template <typename ReducePolicy,
           typename NumericType,
-          typename WORKING_RES>
+          typename WORKING_RES,
+          typename ForOnePol>
 void testInitReducerConstructor()
 {
   camp::resources::Resource work_res{WORKING_RES()};
@@ -130,6 +131,10 @@ void testInitReducerConstructor()
   cudaErrchk(cudaDeviceSynchronize());
   #endif
 
+  #if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+  #endif
+
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal[0]);
   RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal[0]);
   RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal[0]);
@@ -143,7 +148,8 @@ void testInitReducerConstructor()
   // move a value onto device and assign
   exec_dispatcher < ReducePolicy,
                     NumericType,
-                    WORKING_RES
+                    WORKING_RES,
+                    ForOnePol
                   >
                   ( theVal, initVal );
 
@@ -174,8 +180,9 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
   using ReduceType = typename camp::at<TypeParam, camp::num<0>>::type;
   using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testInitReducerConstructor< ReduceType, NumericType, ResourceType >();
+  testInitReducerConstructor< ReduceType, NumericType, ResourceType, ForOneType >();
 }
 
 

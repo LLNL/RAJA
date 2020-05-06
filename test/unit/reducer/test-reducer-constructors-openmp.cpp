@@ -24,7 +24,8 @@ using OpenMPBasicReducerConstructorTypes = Test< camp::cartesian_product<
 using OpenMPInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         OpenMPReducerPolicyList,
                                                         DataTypeList,
-                                                        HostResourceList
+                                                        HostResourceList,
+                                                        SequentialForoneList
                                                      >
                             >::Types;
 

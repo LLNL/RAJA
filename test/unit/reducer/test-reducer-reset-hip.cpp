@@ -13,16 +13,17 @@
 
 #include "test-reducer-utils.hpp"
 
-using SequentialReducerResetTypes = Test< camp::cartesian_product<
-                                                        SequentialReducerPolicyList,
+#if defined(RAJA_ENABLE_HIP)
+using HipReducerResetTypes = Test< camp::cartesian_product<
+                                                        HipReducerPolicyList,
                                                         DataTypeList,
-                                                        HostResourceList,
-                                                        SequentialForoneList
+                                                        HipResourceList,
+                                                        HipForoneList
                                                       >
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(SequentialResetTest,
+INSTANTIATE_TYPED_TEST_CASE_P(HipResetTest,
                               ReducerResetUnitTest,
-                              SequentialReducerResetTypes);
-
+                              HipReducerResetTypes);
+#endif

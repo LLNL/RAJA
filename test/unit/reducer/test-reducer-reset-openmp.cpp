@@ -17,7 +17,8 @@
 using OpenMPReducerResetTypes = Test< camp::cartesian_product<
                                                         OpenMPReducerPolicyList,
                                                         DataTypeList,
-                                                        HostResourceList
+                                                        HostResourceList,
+                                                        SequentialForoneList
                                                       >
                              >::Types;
 

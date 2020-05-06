@@ -17,7 +17,8 @@
 using TbbReducerResetTypes = Test< camp::cartesian_product<
                                                         TbbReducerPolicyList,
                                                         DataTypeList,
-                                                        HostResourceList
+                                                        HostResourceList,
+                                                        TbbForoneList
                                                       >
                              >::Types;
 

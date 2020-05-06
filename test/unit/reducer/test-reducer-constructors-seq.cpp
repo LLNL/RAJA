@@ -23,7 +23,8 @@ using SequentialBasicReducerConstructorTypes = Test< camp::cartesian_product<
 using SequentialInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         SequentialReducerPolicyList,
                                                         DataTypeList,
-                                                        HostResourceList
+                                                        HostResourceList,
+                                                        SequentialForoneList
                                                      >
                             >::Types;
 

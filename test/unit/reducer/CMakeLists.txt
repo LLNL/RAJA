@@ -48,3 +48,13 @@ raja_add_test(
   NAME test-reducer-reset-cuda
   SOURCES test-reducer-reset-cuda.cpp)
 endif()
+
+if(RAJA_ENABLE_HIP)
+raja_add_test(
+  NAME test-reducer-constructors-hip
+  SOURCES test-reducer-constructors-hip.cpp)
+
+raja_add_test(
+  NAME test-reducer-reset-hip
+  SOURCES test-reducer-reset-hip.cpp)
+endif()

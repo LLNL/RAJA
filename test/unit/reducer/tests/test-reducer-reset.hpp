@@ -18,9 +18,7 @@
 #include "RAJA_gtest.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA_unit_forone.hpp"
-#endif
 
 #include "camp/resource.hpp"
 
@@ -28,7 +26,8 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
             typename Tuple,
-            typename ResourceType
+            typename ResourceType,
+            typename ForOnePol
           >
 typename  std::enable_if< // Empty function for non-device policy.
             std::is_same<ResourceType, camp::resources::Host>::value
@@ -53,12 +52,16 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
             typename Tuple,
-            typename ResourceType
+            typename ResourceType,
+            typename ForOnePol
           >
-typename  std::enable_if<
+typename  std::enable_if< // GPU policy execution.
             !std::is_same<ResourceType, camp::resources::Host>::value
             #if defined(RAJA_ENABLE_CUDA)
             && std::is_same<ResourceType, camp::resources::Cuda>::value
+            #endif
+            #if defined(RAJA_ENABLE_HIP)
+            && std::is_same<ResourceType, camp::resources::Hip>::value
             #endif
           >::type
 exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
@@ -71,9 +74,9 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                   NumericType initVal
                )
 {
-  #if defined(RAJA_ENABLE_CUDA)
+  #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   // Use device to activate any value for each reducer.
-  forone_pol<forone_cuda>( [=] __host__ __device__ () {
+  forone_pol<ForOnePol>( [=] __host__ __device__ () {
                     Tuple temploc(0,0);
                     reduce_sum += initVal;
                     reduce_min.min(0);
@@ -83,7 +86,6 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                     reduce_minloctup.minloc(0,temploc);
                     reduce_maxloctup.maxloc(0,temploc);
                  });
-  cudaErrchk(cudaDeviceSynchronize());
   #endif
 }
 
@@ -96,7 +98,8 @@ TYPED_TEST_SUITE_P(ReducerResetUnitTest);
 
 template <  typename ReducePolicy,
             typename NumericType,
-            typename WORKING_RES  >
+            typename WORKING_RES,
+            typename ForOnePol  >
 void testReducerReset()
 {
   camp::resources::Resource work_res{WORKING_RES()};
@@ -115,6 +118,10 @@ void testReducerReset()
   cudaErrchk(cudaDeviceSynchronize());
   #endif
 
+  #if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+  #endif
+
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal[0]);
   RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal[0]);
   RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal[0]);
@@ -130,7 +137,8 @@ void testReducerReset()
                     NumericType,
                     RAJA::Index_type,
                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>,
-                    WORKING_RES
+                    WORKING_RES,
+                    ForOnePol
                   >
                  (  reduce_sum,
                     reduce_min,
@@ -185,7 +193,8 @@ TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
   using ReduceType = typename camp::at<TypeParam, camp::num<0>>::type;
   using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
-  testReducerReset< ReduceType, NumericType, ResourceType >();
+  using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
+  testReducerReset< ReduceType, NumericType, ResourceType, ForOneType >();
 }
 
 REGISTER_TYPED_TEST_CASE_P(ReducerResetUnitTest,
