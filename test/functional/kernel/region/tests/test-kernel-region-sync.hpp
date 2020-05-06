@@ -40,6 +40,13 @@ void KernelRegionSyncFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 
   host_res.memset( check_array, 0, sizeof(INDEX_TYPE) * N );
 
+  //
+  // Create a list segment with indices in reverse order from range
+  // segment below. In the test kernel below, the first and third
+  // lambda expressions are run in loops using the range segment. The
+  // second lambda is run in a loop using the list segment. This makes
+  // it so that parallel threads must be synchronized between the loops.
+  //
   std::vector<INDEX_TYPE> idx_array(N);
   std::iota(idx_array.begin(), idx_array.end(), first);
   std::reverse(idx_array.begin(), idx_array.end());
