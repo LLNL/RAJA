@@ -13,26 +13,27 @@
 
 #include "test-reducer-utils.hpp"
 
-using HostBasicReducerConstructorTypes = Test< camp::cartesian_product<
-                                                        HostReducerPolicyList,
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPBasicReducerConstructorTypes = Test< camp::cartesian_product<
+                                                        OpenMPReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList
                                                       >
                              >::Types;
 
-using HostInitReducerConstructorTypes = Test< camp::cartesian_product<
-                                                        HostReducerPolicyList,
+using OpenMPInitReducerConstructorTypes = Test< camp::cartesian_product<
+                                                        OpenMPReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList
                                                      >
                             >::Types;
 
-INSTANTIATE_TYPED_TEST_CASE_P(HostBasicTest,
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMPBasicTest,
                               ReducerBasicConstructorUnitTest,
-                              HostBasicReducerConstructorTypes);
+                              OpenMPBasicReducerConstructorTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(HostInitTest,
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMPInitTest,
                               ReducerInitConstructorUnitTest,
-                              HostInitReducerConstructorTypes);
-
+                              OpenMPInitReducerConstructorTypes);
+#endif
 

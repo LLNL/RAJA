@@ -32,21 +32,25 @@ using DataTypeList = camp::list<
                                  double
                                >;
 
-using HostReducerPolicyList =
+using SequentialReducerPolicyList =
     camp::list<
                 RAJA::seq_reduce
+              >;
 
 #if defined(RAJA_ENABLE_TBB)
-                ,
+using TbbReducerPolicyList =
+    camp::list<
                 RAJA::tbb_reduce
+              >;
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-                ,
+using OpenMPReducerPolicyList =
+    camp::list<
                 RAJA::omp_reduce,
                 RAJA::omp_reduce_ordered
-#endif
               >;
+#endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetReducerPolicyList = camp::list< RAJA::omp_target_reduce >;

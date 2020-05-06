@@ -6,21 +6,31 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-reducer-constructors-host
-  SOURCES test-reducer-constructors-host.cpp)
+  NAME test-reducer-constructors-seq
+  SOURCES test-reducer-constructors-seq.cpp)
 
 raja_add_test(
-  NAME test-reducer-reset-host
-  SOURCES test-reducer-reset-host.cpp)
+  NAME test-reducer-reset-seq
+  SOURCES test-reducer-reset-seq.cpp)
 
-if(RAJA_ENABLE_CUDA)
+if(RAJA_ENABLE_TBB)
 raja_add_test(
-  NAME test-reducer-constructors-cuda
-  SOURCES test-reducer-constructors-cuda.cpp)
+  NAME test-reducer-constructors-tbb
+  SOURCES test-reducer-constructors-tbb.cpp)
 
 raja_add_test(
-  NAME test-reducer-reset-cuda
-  SOURCES test-reducer-reset-cuda.cpp)
+  NAME test-reducer-reset-tbb
+  SOURCES test-reducer-reset-tbb.cpp)
+endif()
+
+if(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-reducer-constructors-openmp
+  SOURCES test-reducer-constructors-openmp.cpp)
+
+raja_add_test(
+  NAME test-reducer-reset-openmp
+  SOURCES test-reducer-reset-openmp.cpp)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
@@ -31,4 +41,14 @@ raja_add_test(
 raja_add_test(
   NAME test-reducer-reset-openmp-target
   SOURCES test-reducer-reset-openmp-target.cpp)
+endif()
+
+if(RAJA_ENABLE_CUDA)
+raja_add_test(
+  NAME test-reducer-constructors-cuda
+  SOURCES test-reducer-constructors-cuda.cpp)
+
+raja_add_test(
+  NAME test-reducer-reset-cuda
+  SOURCES test-reducer-reset-cuda.cpp)
 endif()

@@ -13,15 +13,15 @@
 
 #include "test-reducer-utils.hpp"
 
-using HostReducerResetTypes = Test< camp::cartesian_product<
-                                                        HostReducerPolicyList,
+using SequentialReducerResetTypes = Test< camp::cartesian_product<
+                                                        SequentialReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList
                                                       >
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(HostResetTest,
+INSTANTIATE_TYPED_TEST_CASE_P(SequentialResetTest,
                               ReducerResetUnitTest,
-                              HostReducerResetTypes);
+                              SequentialReducerResetTypes);
 
