@@ -27,10 +27,14 @@
 template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
-            typename Tuple
+            typename Tuple,
+            typename ResourceType
           >
 typename  std::enable_if< // Empty function for non-device policy.
-            !std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+            std::is_same<ResourceType, camp::resources::Host>::value
+            #if defined(RAJA_ENABLE_TARGET_OPENMP)
+            || std::is_same<ReducePolicy, camp::resources::Omp>::value
+            #endif
           >::type
 exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & RAJA_UNUSED_ARG(reduce_sum),
                   RAJA::ReduceMin<ReducePolicy, NumericType> & RAJA_UNUSED_ARG(reduce_min),
@@ -48,10 +52,14 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & RAJA_UNUSED_ARG(r
 template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
-            typename Tuple
+            typename Tuple,
+            typename ResourceType
           >
 typename  std::enable_if<
-            std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+            !std::is_same<ResourceType, camp::resources::Host>::value
+            #if defined(RAJA_ENABLE_CUDA)
+            && std::is_same<ResourceType, camp::resources::Cuda>::value
+            #endif
           >::type
 exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                   RAJA::ReduceMin<ReducePolicy, NumericType> & reduce_min,
@@ -121,7 +129,8 @@ void testReducerReset()
   exec_dispatcher < ReducePolicy,
                     NumericType,
                     RAJA::Index_type,
-                    RAJA::tuple<RAJA::Index_type, RAJA::Index_type>
+                    RAJA::tuple<RAJA::Index_type, RAJA::Index_type>,
+                    WORKING_RES
                   >
                  (  reduce_sum,
                     reduce_min,

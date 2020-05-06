@@ -29,7 +29,7 @@ struct Test<camp::list<T...>> {
 using DataTypeList = camp::list<
                                  int,
                                  float,
-                                 double,
+                                 double
                                >;
 
 using HostReducerPolicyList =

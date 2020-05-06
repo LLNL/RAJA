@@ -77,9 +77,14 @@ TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
 }
 
 template  < typename ReducePolicy,
-            typename NumericType >
+            typename NumericType,
+            typename ResourceType >
 typename  std::enable_if< // Host policy sets value.
-            !std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+            //!std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+            std::is_same<ResourceType, camp::resources::Host>::value
+            #if defined(RAJA_ENABLE_TARGET_OPENMP)
+            || std::is_same<ReducePolicy, camp::resources::Omp>::value
+            #endif
           >::type
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
@@ -87,9 +92,13 @@ exec_dispatcher( NumericType * theVal, NumericType * initVal )
 }
 
 template  < typename ReducePolicy,
-            typename NumericType >
+            typename NumericType,
+            typename ResourceType >
 typename  std::enable_if< // Cuda policy sets value.
-            std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+            !std::is_same<ResourceType, camp::resources::Host>::value
+            #if defined(RAJA_ENABLE_CUDA)
+            && std::is_same<ResourceType, camp::resources::Cuda>::value
+            #endif
           >::type
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
@@ -134,7 +143,8 @@ void testInitReducerConstructor()
 
   // move a value onto device and assign
   exec_dispatcher < ReducePolicy,
-                    NumericType
+                    NumericType,
+                    WORKING_RES
                   >
                   ( theVal, initVal );
 

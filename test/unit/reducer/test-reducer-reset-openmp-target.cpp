@@ -13,6 +13,7 @@
 
 #include "test-reducer-utils.hpp"
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetReducerResetTypes = Test< camp::cartesian_product<
                                                         OpenMPTargetReducerPolicyList,
                                                         DataTypeList,
@@ -24,4 +25,4 @@ using OpenMPTargetReducerResetTypes = Test< camp::cartesian_product<
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMPTargetResetTest,
                               ReducerResetUnitTest,
                               OpenMPTargetReducerResetTypes);
-
+#endif
