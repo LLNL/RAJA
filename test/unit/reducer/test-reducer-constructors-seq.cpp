@@ -24,7 +24,8 @@ using SequentialInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         SequentialReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList,
-                                                        SequentialForoneList
+                                                        SequentialForoneList,
+                                                        HostPlatformList
                                                      >
                             >::Types;
 

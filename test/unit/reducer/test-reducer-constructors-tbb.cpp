@@ -25,7 +25,8 @@ using TbbInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         TbbReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList,
-                                                        SequentialForoneList
+                                                        SequentialForoneList,
+                                                        HostPlatformList
                                                      >
                             >::Types;
 

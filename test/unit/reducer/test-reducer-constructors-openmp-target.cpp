@@ -18,7 +18,8 @@ using OpenMPTargetInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         OpenMPTargetReducerPolicyList,
                                                         DataTypeList,
                                                         OpenMPTargetResourceList,
-                                                        SequentialForoneList
+                                                        SequentialForoneList,
+                                                        HostPlatformList
                                                      >
                             >::Types;
 

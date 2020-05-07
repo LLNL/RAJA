@@ -18,7 +18,8 @@ using HipInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                         HipReducerPolicyList,
                                                         DataTypeList,
                                                         HipResourceList,
-                                                        HipForoneList
+                                                        HipForoneList,
+                                                        DevicePlatformList
                                                      >
                             >::Types;
 

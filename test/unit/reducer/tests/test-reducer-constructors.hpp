@@ -20,6 +20,7 @@
 #include "camp/resource.hpp"
 
 #include "RAJA_unit_forone.hpp"
+#include "../test-reducer-utils.hpp"
 
 template <typename T>
 class ReducerBasicConstructorUnitTest : public ::testing::Test
@@ -74,45 +75,37 @@ TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
 
 template  < typename ReducePolicy,
             typename NumericType,
-            typename ResourceType,
+            typename Platform,
             typename ForOnePol >
 typename  std::enable_if< // Host policy sets value.
-            std::is_same<ResourceType, camp::resources::Host>::value
-            #if defined(RAJA_ENABLE_TARGET_OPENMP)
-            || std::is_same<ReducePolicy, camp::resources::Omp>::value
-            #endif
+            std::is_same<Platform, RunOnHost>::value
           >::type
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
   theVal[0] = initVal[0];
 }
 
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template  < typename ReducePolicy,
             typename NumericType,
-            typename ResourceType,
+            typename Platform,
             typename ForOnePol >
 typename  std::enable_if< // GPU policy sets value.
-            !std::is_same<ResourceType, camp::resources::Host>::value
-            #if defined(RAJA_ENABLE_CUDA)
-            && std::is_same<ResourceType, camp::resources::Cuda>::value
-            #endif
-            #if defined(RAJA_ENABLE_HIP)
-            && std::is_same<ResourceType, camp::resources::Hip>::value
-            #endif
+            std::is_same<Platform, RunOnDevice>::value
           >::type
 exec_dispatcher( NumericType * theVal, NumericType * initVal )
 {
-  #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   forone_pol<ForOnePol>( [=] __device__ () {
                         theVal[0] = initVal[0];
                  });
-  #endif
 }
+#endif
 
 template <typename ReducePolicy,
           typename NumericType,
           typename WORKING_RES,
-          typename ForOnePol>
+          typename ForOnePol,
+          typename Platform>
 void testInitReducerConstructor()
 {
   camp::resources::Resource work_res{WORKING_RES()};
@@ -148,7 +141,7 @@ void testInitReducerConstructor()
   // move a value onto device and assign
   exec_dispatcher < ReducePolicy,
                     NumericType,
-                    WORKING_RES,
+                    Platform,
                     ForOnePol
                   >
                   ( theVal, initVal );
@@ -181,8 +174,9 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
   using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
   using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using PlatformType = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  testInitReducerConstructor< ReduceType, NumericType, ResourceType, ForOneType >();
+  testInitReducerConstructor< ReduceType, NumericType, ResourceType, ForOneType, PlatformType >();
 }
 
 
