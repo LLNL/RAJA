@@ -20,6 +20,7 @@ using HipAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                  HipForallExecPols,
                                                                  HipAtomicPols,
                                                                  HipResourceList,
+                                                                 AtomicSegmentList,
                                                                  AtomicDataTypeList >
                                       >::Types;
 
