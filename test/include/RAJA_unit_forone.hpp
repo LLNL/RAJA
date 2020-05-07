@@ -59,12 +59,6 @@ struct forone_policy_info<forone_cuda>
 };
 
 template <typename L>
-__global__ void forone (L run)
-{
-  run();
-}
-
-template <typename L>
 __global__ void forone_cuda_global(L run)
 {
   run();
