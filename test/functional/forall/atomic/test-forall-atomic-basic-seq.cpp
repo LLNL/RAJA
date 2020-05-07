@@ -19,6 +19,7 @@ using SeqAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                  SequentialForallAtomicExecPols,
                                                                  SequentialAtomicPols,
                                                                  HostResourceList,
+                                                                 AtomicSegmentList,
                                                                  AtomicDataTypeList >
                                       >::Types;
 
