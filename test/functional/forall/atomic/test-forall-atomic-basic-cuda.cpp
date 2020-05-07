@@ -20,6 +20,7 @@ using CudaAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                   CudaForallExecPols,
                                                                   CudaAtomicPols,
                                                                   CudaResourceList,
+                                                                  AtomicSegmentList,
                                                                   AtomicDataTypeList >
                                        >::Types;
 
