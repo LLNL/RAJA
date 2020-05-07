@@ -86,4 +86,12 @@ using AtomicDataTypeList =
               double
            >;
 
+
+using AtomicSegmentList = 
+  camp::list<
+              RAJA::TypedRangeSegment<RAJA::Index_type>,
+              RAJA::TypedRangeStrideSegment<RAJA::Index_type>,
+              RAJA::TypedListSegment<RAJA::Index_type>
+            >;
+
 #endif  // __TEST_FORALL_ATOMIC_UTILS_HPP__
