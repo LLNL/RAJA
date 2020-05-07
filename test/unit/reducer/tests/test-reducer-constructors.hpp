@@ -80,9 +80,9 @@ template  < typename ReducePolicy,
 typename  std::enable_if< // Host policy sets value.
             std::is_same<Platform, RunOnHost>::value
           >::type
-exec_dispatcher( NumericType * theVal, NumericType * initVal )
+exec_dispatcher( NumericType * RAJA_UNUSED_ARG(initVal) )
 {
-  theVal[0] = initVal[0];
+  // Do nothing for host policies.
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
@@ -90,13 +90,14 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename Platform,
             typename ForOnePol >
-typename  std::enable_if< // GPU policy sets value.
+typename  std::enable_if< // GPU policy fiddles with value.
             std::is_same<Platform, RunOnDevice>::value
           >::type
-exec_dispatcher( NumericType * theVal, NumericType * initVal )
+exec_dispatcher( NumericType * initVal )
 {
   forone_pol<ForOnePol>( [=] __device__ () {
-                        theVal[0] = initVal[0];
+                        initVal[0] += 1;
+                        initVal[0] -= 1;
                  });
 }
 #endif
@@ -138,13 +139,16 @@ void testInitReducerConstructor()
   RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal[0], LocTup);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal[0], LocTup);
 
-  // move a value onto device and assign
+  // move a value onto device and fiddle
   exec_dispatcher < ReducePolicy,
                     NumericType,
                     Platform,
                     ForOnePol
                   >
-                  ( theVal, initVal );
+                  ( initVal );
+
+  // actual host assignment
+  theVal[0] = initVal[0];
 
   ASSERT_EQ((NumericType)(theVal[0]), (NumericType)(initVal[0]));
 
