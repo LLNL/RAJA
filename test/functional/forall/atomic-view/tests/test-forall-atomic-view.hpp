@@ -32,12 +32,11 @@ void testAtomicViewBasic( RAJA::Index_type N )
   RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
   RAJA::TypedRangeSegment<RAJA::Index_type> seg_half(0, N / 2);
 
-  camp::resources::Resource src_res{WORKINGRES()};
-  camp::resources::Resource dest_res{WORKINGRES()};
+  camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T * source = src_res.allocate<T>(N);
-  T * dest = dest_res.allocate<T>(N/2);
+  T * source = work_res.allocate<T>(N);
+  T * dest = work_res.allocate<T>(N/2);
   T * check_array = host_res.allocate<T>(N/2);
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -68,7 +67,7 @@ void testAtomicViewBasic( RAJA::Index_type N )
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
-  dest_res.memcpy( check_array, dest, sizeof(T) * N/2 );
+  work_res.memcpy( check_array, dest, sizeof(T) * N/2 );
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -82,8 +81,8 @@ void testAtomicViewBasic( RAJA::Index_type N )
     EXPECT_EQ((T)2, check_array[i]);
   }
 
-  src_res.deallocate( source );
-  dest_res.deallocate( dest );
+  work_res.deallocate( source );
+  work_res.deallocate( dest );
   host_res.deallocate( check_array );
 }
 
