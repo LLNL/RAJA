@@ -18,8 +18,7 @@ using CudaReducerResetTypes = Test< camp::cartesian_product<
                                                         CudaReducerPolicyList,
                                                         DataTypeList,
                                                         CudaResourceList,
-                                                        CudaForoneList,
-                                                        DevicePlatformList
+                                                        CudaForoneList
                                                       >
                              >::Types;
 

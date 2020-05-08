@@ -27,11 +27,10 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
             typename Tuple,
-            typename Platform,
             typename ForOnePol
           >
 typename  std::enable_if< // Empty function for non-device policy.
-            std::is_same<Platform, RunOnHost>::value
+            std::is_base_of<RunOnHost, ForOnePol>::value
           >::type
 exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & RAJA_UNUSED_ARG(reduce_sum),
                   RAJA::ReduceMin<ReducePolicy, NumericType> & RAJA_UNUSED_ARG(reduce_min),
@@ -51,11 +50,10 @@ template  < typename ReducePolicy,
             typename NumericType,
             typename Indexer,
             typename Tuple,
-            typename Platform,
             typename ForOnePol
           >
 typename  std::enable_if< // GPU policy execution.
-            std::is_same<Platform, RunOnDevice>::value
+            std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
 exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                   RAJA::ReduceMin<ReducePolicy, NumericType> & reduce_min,
@@ -92,8 +90,7 @@ TYPED_TEST_SUITE_P(ReducerResetUnitTest);
 template <  typename ReducePolicy,
             typename NumericType,
             typename WORKING_RES,
-            typename ForOnePol,
-            typename Platform  >
+            typename ForOnePol  >
 void testReducerReset()
 {
   camp::resources::Resource work_res{WORKING_RES()};
@@ -131,7 +128,6 @@ void testReducerReset()
                     NumericType,
                     RAJA::Index_type,
                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>,
-                    Platform,
                     ForOnePol
                   >
                  (  reduce_sum,
@@ -188,8 +184,7 @@ TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
   using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
   using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using PlatformType = typename camp::at<TypeParam, camp::num<4>>::type;
-  testReducerReset< ReduceType, NumericType, ResourceType, ForOneType, PlatformType >();
+  testReducerReset< ReduceType, NumericType, ResourceType, ForOneType >();
 }
 
 REGISTER_TYPED_TEST_CASE_P(ReducerResetUnitTest,

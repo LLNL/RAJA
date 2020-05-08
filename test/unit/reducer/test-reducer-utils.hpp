@@ -97,19 +97,4 @@ using CudaForoneList = camp::list<forone_cuda>;
 using HipForoneList = camp::list<forone_hip>;
 #endif
 
-//
-// Use for indicating Platform in exec_dispatcher
-//
-struct RunOnHost {};
-
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-struct RunOnDevice {};
-#endif
-
-using HostPlatformList = camp::list<RunOnHost>;
-
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-using DevicePlatformList = camp::list<RunOnDevice>;
-#endif
-
 #endif  // __TEST_REDUCER_UTILS_HPP__

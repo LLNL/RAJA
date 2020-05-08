@@ -18,8 +18,7 @@ using HipReducerResetTypes = Test< camp::cartesian_product<
                                                         HipReducerPolicyList,
                                                         DataTypeList,
                                                         HipResourceList,
-                                                        HipForoneList,
-                                                        DevicePlatformList
+                                                        HipForoneList
                                                       >
                              >::Types;
 

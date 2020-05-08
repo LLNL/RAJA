@@ -18,8 +18,14 @@
 template < typename forone_policy, typename L >
 inline void forone_pol(L&& run);
 
+// base classes to represent host or device in exec_dispatcher
+struct RunOnHost {}; 
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+struct RunOnDevice {};
+#endif
+
 // sequential forone policy
-struct forone_seq  { };
+struct forone_seq : public RunOnHost  { };
 
 // struct with specializations containing information about forone policies
 template < typename forone_policy >
@@ -48,7 +54,7 @@ inline void forone_pol(forone_seq, L&& run)
 #if defined(RAJA_ENABLE_CUDA)
 
 // cuda forone policy
-struct forone_cuda { };
+struct forone_cuda : public RunOnDevice { };
 
 // forone_cuda policy information
 template < >
@@ -76,7 +82,7 @@ inline void forone_pol(forone_cuda, L&& run)
 #elif defined(RAJA_ENABLE_HIP)
 
 // hip forone policy
-struct forone_hip  { };
+struct forone_hip : public RunOnDevice { };
 
 // forone_hip policy information
 template < >

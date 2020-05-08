@@ -17,8 +17,7 @@ using SequentialReducerResetTypes = Test< camp::cartesian_product<
                                                         SequentialReducerPolicyList,
                                                         DataTypeList,
                                                         HostResourceList,
-                                                        SequentialForoneList,
-                                                        HostPlatformList
+                                                        SequentialForoneList
                                                       >
                              >::Types;
 
