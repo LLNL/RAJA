@@ -5,14 +5,4 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(indexset)
-add_subdirectory(indexset-view)
-
-add_subdirectory(segment)
-add_subdirectory(segment-view)
-
-add_subdirectory(atomic)
-add_subdirectory(atomic-view)
-add_subdirectory(atomic-ref)
-
 add_subdirectory(region)

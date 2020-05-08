@@ -20,6 +20,7 @@ using OmpTargetAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                        OpenMPTargetForallExecPols,
                                                                        OpenMPAtomicPols,
                                                                        OpenMPTargetResourceList,
+                                                                       AtomicSegmentList,
                                                                        AtomicDataTypeList >
                                             >::Types;
 
