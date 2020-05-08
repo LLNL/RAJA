@@ -23,15 +23,44 @@
 #include "../test-sort-utils.hpp"
 
 
-using PolicySynchronizeCPU = PolicySynchronize<RAJA::loop_exec>;
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template < typename forone_policy >
-using PolicySynchronizeGPU = PolicySynchronize<forone_equivalent_exec_policy<forone_policy>>;
-#endif
+using ForoneSynchronize = PolicySynchronize<forone_equivalent_exec_policy<forone_policy>>;
 
 
-struct InsertionSort
-  : PolicySynchronizeCPU
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct InsertionSort;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct InsertionSortPairs;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct ShellSort;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct ShellSortPairs;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct HeapSort;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct HeapSortPairs;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct IntroSort;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct IntroSortPairs;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct MergeSort;
+
+template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+struct MergeSortPairs;
+
+
+template < typename forone_policy >
+struct InsertionSort<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -48,8 +77,9 @@ struct InsertionSort
   }
 };
 
-struct InsertionSortPairs
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct InsertionSortPairs<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -79,8 +109,9 @@ struct InsertionSortPairs
   }
 };
 
-struct ShellSort
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct ShellSort<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -97,8 +128,9 @@ struct ShellSort
   }
 };
 
-struct ShellSortPairs
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct ShellSortPairs<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -128,8 +160,9 @@ struct ShellSortPairs
   }
 };
 
-struct HeapSort
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct HeapSort<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -146,8 +179,9 @@ struct HeapSort
   }
 };
 
-struct HeapSortPairs
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct HeapSortPairs<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -177,8 +211,9 @@ struct HeapSortPairs
   }
 };
 
-struct IntroSort
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct IntroSort<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -195,8 +230,9 @@ struct IntroSort
   }
 };
 
-struct IntroSortPairs
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct IntroSortPairs<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -226,8 +262,9 @@ struct IntroSortPairs
   }
 };
 
-struct MergeSort
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct MergeSort<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -244,8 +281,9 @@ struct MergeSort
   }
 };
 
-struct MergeSortPairs
-  : PolicySynchronizeCPU
+template < typename forone_policy >
+struct MergeSortPairs<forone_policy, RunOnHost>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -278,15 +316,15 @@ struct MergeSortPairs
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 
 template < typename forone_policy >
-struct InsertionSortGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct InsertionSort<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
 
   std::string m_name;
 
-  InsertionSortGPU()
+  InsertionSort()
     : m_name(std::string("RAJA::insertion_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
   { }
 
@@ -313,15 +351,15 @@ struct InsertionSortGPU
 };
 
 template < typename forone_policy >
-struct InsertionSortPairsGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct InsertionSortPairs<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
   std::string m_name;
 
-  InsertionSortPairsGPU()
+  InsertionSortPairs()
     : m_name(std::string("RAJA::insertion_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
   { }
 
@@ -355,15 +393,15 @@ struct InsertionSortPairsGPU
 };
 
 template < typename forone_policy >
-struct ShellSortGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct ShellSort<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
 
   std::string m_name;
 
-  ShellSortGPU()
+  ShellSort()
     : m_name(std::string("RAJA::shell_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
   { }
 
@@ -390,15 +428,15 @@ struct ShellSortGPU
 };
 
 template < typename forone_policy >
-struct ShellSortPairsGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct ShellSortPairs<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
   std::string m_name;
 
-  ShellSortPairsGPU()
+  ShellSortPairs()
     : m_name(std::string("RAJA::shell_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
   { }
 
@@ -432,15 +470,15 @@ struct ShellSortPairsGPU
 };
 
 template < typename forone_policy >
-struct HeapSortGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct HeapSort<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
 
   std::string m_name;
 
-  HeapSortGPU()
+  HeapSort()
     : m_name(std::string("RAJA::heap_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
   { }
 
@@ -467,15 +505,15 @@ struct HeapSortGPU
 };
 
 template < typename forone_policy >
-struct HeapSortPairsGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct HeapSortPairs<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
   std::string m_name;
 
-  HeapSortPairsGPU()
+  HeapSortPairs()
     : m_name(std::string("RAJA::heap_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
   { }
 
@@ -509,15 +547,15 @@ struct HeapSortPairsGPU
 };
 
 template < typename forone_policy >
-struct IntroSortGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct IntroSort<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
 
   std::string m_name;
 
-  IntroSortGPU()
+  IntroSort()
     : m_name(std::string("RAJA::intro_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
   { }
 
@@ -544,15 +582,15 @@ struct IntroSortGPU
 };
 
 template < typename forone_policy >
-struct IntroSortPairsGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct IntroSortPairs<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
   std::string m_name;
 
-  IntroSortPairsGPU()
+  IntroSortPairs()
     : m_name(std::string("RAJA::intro_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
   { }
 
@@ -586,15 +624,15 @@ struct IntroSortPairsGPU
 };
 
 template < typename forone_policy >
-struct MergeSortGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct MergeSort<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
 
   std::string m_name;
 
-  MergeSortGPU()
+  MergeSort()
     : m_name(std::string("RAJA::merge_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
   { }
 
@@ -621,15 +659,15 @@ struct MergeSortGPU
 };
 
 template < typename forone_policy >
-struct MergeSortPairsGPU
-  : PolicySynchronizeGPU<forone_policy>
+struct MergeSortPairs<forone_policy, RunOnDevice>
+  : ForoneSynchronize<forone_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
 
   std::string m_name;
 
-  MergeSortPairsGPU()
+  MergeSortPairs()
     : m_name(std::string("RAJA::merge_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
   { }
 
@@ -667,64 +705,64 @@ struct MergeSortPairsGPU
 
 using CpuInsertionSortSorters =
   camp::list<
-              InsertionSort,
-              InsertionSortPairs
+              InsertionSort<forone_seq>,
+              InsertionSortPairs<forone_seq>
             >;
 
 using CpuShellSortSorters =
   camp::list<
-              ShellSort,
-              ShellSortPairs
+              ShellSort<forone_seq>,
+              ShellSortPairs<forone_seq>
             >;
 
 using CpuHeapSortSorters =
   camp::list<
-              HeapSort,
-              HeapSortPairs
+              HeapSort<forone_seq>,
+              HeapSortPairs<forone_seq>
             >;
 
 using CpuIntroSortSorters =
   camp::list<
-              IntroSort,
-              IntroSortPairs
+              IntroSort<forone_seq>,
+              IntroSortPairs<forone_seq>
             >;
 
 using CpuMergeSortSorters =
   camp::list<
-              MergeSort,
-              MergeSortPairs
+              MergeSort<forone_seq>,
+              MergeSortPairs<forone_seq>
             >;
 
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaInsertionSortSorters =
   camp::list<
-              InsertionSortGPU<forone_cuda>,
-              InsertionSortPairsGPU<forone_cuda>
+              InsertionSort<forone_cuda>,
+              InsertionSortPairs<forone_cuda>
             >;
 
 using CudaShellSortSorters =
   camp::list<
-              ShellSortGPU<forone_cuda>,
-              ShellSortPairsGPU<forone_cuda>
+              ShellSort<forone_cuda>,
+              ShellSortPairs<forone_cuda>
             >;
 
 using CudaHeapSortSorters =
   camp::list<
-              HeapSortGPU<forone_cuda>,
-              HeapSortPairsGPU<forone_cuda>
+              HeapSort<forone_cuda>,
+              HeapSortPairs<forone_cuda>
             >;
 
 using CudaIntroSortSorters =
   camp::list<
-              IntroSortGPU<forone_cuda>,
-              IntroSortPairsGPU<forone_cuda>
+              IntroSort<forone_cuda>,
+              IntroSortPairs<forone_cuda>
             >;
 
 using CudaMergeSortSorters =
   camp::list<
-              MergeSortGPU<forone_cuda>,
-              MergeSortPairsGPU<forone_cuda>
+              MergeSort<forone_cuda>,
+              MergeSortPairs<forone_cuda>
             >;
 
 #endif
@@ -733,32 +771,32 @@ using CudaMergeSortSorters =
 
 using HipInsertionSortSorters =
   camp::list<
-              InsertionSortGPU<forone_hip>,
-              InsertionSortPairsGPU<forone_hip>
+              InsertionSort<forone_hip>,
+              InsertionSortPairs<forone_hip>
             >;
 
 using HipShellSortSorters =
   camp::list<
-              ShellSortGPU<forone_hip>,
-              ShellSortPairsGPU<forone_hip>
+              ShellSort<forone_hip>,
+              ShellSortPairs<forone_hip>
             >;
 
 using HipHeapSortSorters =
   camp::list<
-              HeapSortGPU<forone_hip>,
-              HeapSortPairsGPU<forone_hip>
+              HeapSort<forone_hip>,
+              HeapSortPairs<forone_hip>
             >;
 
 using HipIntroSortSorters =
   camp::list<
-              IntroSortGPU<forone_hip>,
-              IntroSortPairsGPU<forone_hip>
+              IntroSort<forone_hip>,
+              IntroSortPairs<forone_hip>
             >;
 
 using HipMergeSortSorters =
   camp::list<
-              MergeSortGPU<forone_hip>,
-              MergeSortPairsGPU<forone_hip>
+              MergeSort<forone_hip>,
+              MergeSortPairs<forone_hip>
             >;
 
 #endif

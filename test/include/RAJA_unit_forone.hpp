@@ -18,6 +18,12 @@
 template < typename forone_policy, typename L >
 inline void forone_pol(L&& run);
 
+// base classes to represent host or device in exec_dispatcher
+struct RunOnHost {};
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+struct RunOnDevice {};
+#endif
+
 // sequential forone policy
 struct forone_seq  { };
 
@@ -29,12 +35,17 @@ struct forone_policy_info;
 template < typename forone_policy >
 using forone_equivalent_exec_policy = typename forone_policy_info<forone_policy>::type;
 
+// alias for platform of given forone policy
+template < typename forone_policy >
+using forone_platform = typename forone_policy_info<forone_policy>::platform;
+
 
 // forone_seq policy information
 template < >
 struct forone_policy_info<forone_seq>
 {
   using type = RAJA::loop_exec;
+  using platform = RunOnHost;
   static const char* name() { return "forone_seq"; }
 };
 
@@ -55,6 +66,7 @@ template < >
 struct forone_policy_info<forone_cuda>
 {
   using type = RAJA::cuda_exec<1>;
+  using platform = RunOnDevice;
   static const char* name() { return "forone_cuda"; }
 };
 
@@ -89,6 +101,7 @@ template < >
 struct forone_policy_info<forone_hip>
 {
   using type = RAJA::hip_exec<1>;
+  using platform = RunOnDevice;
   static const char* name() { return "forone_hip"; }
 };
 
