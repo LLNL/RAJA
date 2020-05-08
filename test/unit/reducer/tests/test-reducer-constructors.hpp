@@ -93,7 +93,7 @@ typename  std::enable_if< // GPU policy fiddles with value.
           >::type
 exec_dispatcher( NumericType * initVal )
 {
-  forone_pol<ForOnePol>( [=] __device__ () {
+  forone<ForOnePol>( [=] __device__ () {
                         initVal[0] += 1;
                         initVal[0] -= 1;
                  });

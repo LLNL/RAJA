@@ -66,7 +66,7 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                )
 {
   // Use device to activate any value for each reducer.
-  forone_pol<ForOnePol>( [=] __host__ __device__ () {
+  forone<ForOnePol>( [=] __host__ __device__ () {
                     Tuple temploc(0,0);
                     reduce_sum += initVal;
                     reduce_min.min(0);
@@ -76,7 +76,7 @@ exec_dispatcher(  RAJA::ReduceSum<ReducePolicy, NumericType> & reduce_sum,
                     reduce_minloctup.minloc(0,temploc);
                     reduce_maxloctup.maxloc(0,temploc);
                  });
-  // Relying on implicit device synchronization in forone_pol.
+  // Relying on implicit device synchronization in forone.
 }
 #endif
 

@@ -13,10 +13,10 @@
 #include <type_traits>
 
 ///
-/// forone_pol<forone_policy>( [=] RAJA_HOST_DEVICE(){ /* code to test */ } );
+/// forone<forone_policy>( [=] RAJA_HOST_DEVICE(){ /* code to test */ } );
 ///
 template < typename forone_policy, typename L >
-inline void forone_pol(L&& run);
+inline void forone(L&& run);
 
 // base classes to represent host or device in exec_dispatcher
 struct RunOnHost {}; 
@@ -46,7 +46,7 @@ struct forone_policy_info<forone_seq>
 
 // forone_seq implementation
 template < typename L >
-inline void forone_pol(forone_seq, L&& run)
+inline void forone(forone_seq, L&& run)
 {
   std::forward<L>(run)();
 }
@@ -72,7 +72,7 @@ __global__ void forone_cuda_global(L run)
 
 // forone_cuda implementation
 template < typename L >
-inline void forone_pol(forone_cuda, L&& run)
+inline void forone(forone_cuda, L&& run)
 {
    forone_cuda_global<<<1,1>>>(std::forward<L>(run));
    cudaErrchk(cudaGetLastError());
@@ -100,7 +100,7 @@ __global__ void forone_hip_global(L run)
 
 // forone_hip implementation
 template < typename L >
-inline void forone_pol(forone_hip, L&& run)
+inline void forone(forone_hip, L&& run)
 {
    hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
    hipErrchk(hipGetLastError());
@@ -110,9 +110,9 @@ inline void forone_pol(forone_hip, L&& run)
 #endif
 
 template < typename forone_policy, typename L >
-void forone_pol(L&& run)
+void forone(L&& run)
 {
-  forone_pol(forone_policy{}, std::forward<L>(run));
+  forone(forone_policy{}, std::forward<L>(run));
 }
 
 #endif // RAJA_unit_forone_HPP
