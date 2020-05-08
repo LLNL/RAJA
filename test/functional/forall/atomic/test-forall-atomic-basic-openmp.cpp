@@ -18,6 +18,7 @@ using OmpAtomicForallBasicTypes = Test< camp::cartesian_product<
                                                                  OpenMPForallAtomicExecPols,
                                                                  OpenMPAtomicPols,
                                                                  HostResourceList,
+                                                                 AtomicSegmentList,
                                                                  AtomicDataTypeList >
                                       >::Types;
 

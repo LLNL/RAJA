@@ -81,7 +81,7 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
   RAJA_EXTRACT_BED_IT(iter);
 
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to : body)
+    firstprivate(body,begin_it)
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     Body ib = body;
     ib(begin_it[i]);

@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_SCAN_HPP__
-#define __TEST_SCAN_HPP__
+#ifndef __TEST_SCAN_UTILS_HPP__
+#define __TEST_SCAN_UTILS_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
@@ -68,4 +68,4 @@ void deallocScanTestData(camp::resources::Resource& work_res,
 
 TYPED_TEST_SUITE_P(ScanFunctionalTest);
 
-#endif //__TEST_SCAN_HPP__
+#endif //__TEST_SCAN_UTILS_HPP__

@@ -9,6 +9,8 @@
 #define __TEST_FORALL_UTILS_HPP__
 
 #include "camp/resource.hpp"
+#include "camp/list.hpp"
+
 #include "gtest/gtest.h"
 #include "test-utils.hpp"
 

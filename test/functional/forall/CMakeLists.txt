@@ -14,3 +14,5 @@ add_subdirectory(segment-view)
 add_subdirectory(atomic)
 add_subdirectory(atomic-view)
 add_subdirectory(atomic-ref)
+
+add_subdirectory(region)

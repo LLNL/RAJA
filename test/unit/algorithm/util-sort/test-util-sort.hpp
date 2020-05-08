@@ -336,7 +336,7 @@ struct InsertionSort<forone_policy, RunOnDevice>
   template < typename Iter >
   void operator()(Iter begin, Iter end)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::insertion_sort(begin, end);
     });
   }
@@ -344,7 +344,7 @@ struct InsertionSort<forone_policy, RunOnDevice>
   template < typename Iter, typename Compare >
   void operator()(Iter begin, Iter end, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::insertion_sort(begin, end, comp);
     });
   }
@@ -371,7 +371,7 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -383,7 +383,7 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter, typename Compare >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -413,7 +413,7 @@ struct ShellSort<forone_policy, RunOnDevice>
   template < typename Iter >
   void operator()(Iter begin, Iter end)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::shell_sort(begin, end);
     });
   }
@@ -421,7 +421,7 @@ struct ShellSort<forone_policy, RunOnDevice>
   template < typename Iter, typename Compare >
   void operator()(Iter begin, Iter end, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::shell_sort(begin, end, comp);
     });
   }
@@ -448,7 +448,7 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -460,7 +460,7 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter, typename Compare >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -490,7 +490,7 @@ struct HeapSort<forone_policy, RunOnDevice>
   template < typename Iter >
   void operator()(Iter begin, Iter end)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::heap_sort(begin, end);
     });
   }
@@ -498,7 +498,7 @@ struct HeapSort<forone_policy, RunOnDevice>
   template < typename Iter, typename Compare >
   void operator()(Iter begin, Iter end, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::heap_sort(begin, end, comp);
     });
   }
@@ -525,7 +525,7 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -537,7 +537,7 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter, typename Compare >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -567,7 +567,7 @@ struct IntroSort<forone_policy, RunOnDevice>
   template < typename Iter >
   void operator()(Iter begin, Iter end)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::intro_sort(begin, end);
     });
   }
@@ -575,7 +575,7 @@ struct IntroSort<forone_policy, RunOnDevice>
   template < typename Iter, typename Compare >
   void operator()(Iter begin, Iter end, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::intro_sort(begin, end, comp);
     });
   }
@@ -602,7 +602,7 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -614,7 +614,7 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter, typename Compare >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -644,7 +644,7 @@ struct MergeSort<forone_policy, RunOnDevice>
   template < typename Iter >
   void operator()(Iter begin, Iter end)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::merge_sort(begin, end);
     });
   }
@@ -652,7 +652,7 @@ struct MergeSort<forone_policy, RunOnDevice>
   template < typename Iter, typename Compare >
   void operator()(Iter begin, Iter end, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       RAJA::merge_sort(begin, end, comp);
     });
   }
@@ -679,7 +679,7 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
@@ -691,7 +691,7 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
   template < typename KeyIter, typename ValIter, typename Compare >
   void operator()(KeyIter keys_begin, KeyIter keys_end, ValIter vals_begin, Compare comp)
   {
-    forone_pol<forone_policy>( [=] RAJA_DEVICE() {
+    forone<forone_policy>( [=] RAJA_DEVICE() {
       auto begin = RAJA::zip(keys_begin, vals_begin);
       auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
       using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
