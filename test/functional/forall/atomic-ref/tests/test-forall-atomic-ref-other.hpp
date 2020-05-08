@@ -1,27 +1,20 @@
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
 /// Source file containing basic functional tests for non-arithmetic atomic operations using forall
 ///
 
+#ifndef __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
+#define __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
+
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
 #include <type_traits>
-#include "RAJA_value_params.hpp"
 
 template < typename T >
 RAJA_INLINE
@@ -88,9 +81,12 @@ typename std::enable_if<sizeof(T) == 16, T>::type np2m1(T val)
   return val;
 }
 
+// Assist return type conditional overloading of testAtomicRefOtherOp
+struct int_op {}; // represents underlying op type = integral
+
 template < typename T, typename AtomicPolicy >
-struct AndEqOtherOp {
-  AndEqOtherOp(T* count, RAJA::RangeSegment seg)
+struct AndEqOtherOp : int_op {
+  AndEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
   { count[0] = np2m1((T)seg.size()); }
@@ -102,8 +98,8 @@ struct AndEqOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct FetchAndOtherOp {
-  FetchAndOtherOp(T* count, RAJA::RangeSegment seg)
+struct FetchAndOtherOp : int_op {
+  FetchAndOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = max; }
@@ -115,8 +111,8 @@ struct FetchAndOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct OrEqOtherOp {
-  OrEqOtherOp(T* count, RAJA::RangeSegment seg)
+struct OrEqOtherOp : int_op {
+  OrEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   { count[0] = T(0); }
@@ -128,8 +124,8 @@ struct OrEqOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct FetchOrOtherOp {
-  FetchOrOtherOp(T* count, RAJA::RangeSegment seg)
+struct FetchOrOtherOp : int_op {
+  FetchOrOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   { count[0] = T(0); }
@@ -141,8 +137,8 @@ struct FetchOrOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct XorEqOtherOp {
-  XorEqOtherOp(T* count, RAJA::RangeSegment seg)
+struct XorEqOtherOp : int_op {
+  XorEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = T(0);
@@ -157,8 +153,8 @@ struct XorEqOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct FetchXorOtherOp {
-  FetchXorOtherOp(T* count, RAJA::RangeSegment seg)
+struct FetchXorOtherOp : int_op {
+  FetchXorOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   { count[0] = T(0);
@@ -172,9 +168,12 @@ struct FetchXorOtherOp {
   T min, max, final_min, final_max;
 };
 
+// Assist return type conditional overloading of testAtomicRefOtherOp
+struct all_op {}; // these op types can accept integral or float
+
 template < typename T, typename AtomicPolicy >
-struct LoadOtherOp {
-  LoadOtherOp(T* count, RAJA::RangeSegment seg)
+struct LoadOtherOp : all_op {
+  LoadOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)seg.size()), max(min),
     final_min(min), final_max(min)
   { count[0] = min; }
@@ -186,8 +185,8 @@ struct LoadOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct OperatorTOtherOp {
-  OperatorTOtherOp(T* count, RAJA::RangeSegment RAJA_UNUSED_ARG(seg))
+struct OperatorTOtherOp : all_op {
+  OperatorTOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> RAJA_UNUSED_ARG(seg))
     : other(count), min(T(0)), max(min),
     final_min(min), final_max(min)
   { count[0] = min; }
@@ -199,8 +198,8 @@ struct OperatorTOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct StoreOtherOp {
-  StoreOtherOp(T* count, RAJA::RangeSegment seg)
+struct StoreOtherOp : all_op {
+  StoreOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)seg.size(); }
@@ -212,8 +211,8 @@ struct StoreOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct AssignOtherOp {
-  AssignOtherOp(T* count, RAJA::RangeSegment seg)
+struct AssignOtherOp : all_op {
+  AssignOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)seg.size(); }
@@ -225,8 +224,8 @@ struct AssignOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct CASOtherOp {
-  CASOtherOp(T* count, RAJA::RangeSegment seg)
+struct CASOtherOp : all_op {
+  CASOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -244,8 +243,8 @@ struct CASOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct CompareExchangeWeakOtherOp {
-  CompareExchangeWeakOtherOp(T* count, RAJA::RangeSegment seg)
+struct CompareExchangeWeakOtherOp : all_op {
+  CompareExchangeWeakOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -261,8 +260,8 @@ struct CompareExchangeWeakOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct CompareExchangeStrongOtherOp {
-  CompareExchangeStrongOtherOp(T* count, RAJA::RangeSegment seg)
+struct CompareExchangeStrongOtherOp : all_op {
+  CompareExchangeStrongOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   { count[0] = (T)0; }
@@ -278,8 +277,8 @@ struct CompareExchangeStrongOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct MaxEqOtherOp {
-  MaxEqOtherOp(T* count, RAJA::RangeSegment seg)
+struct MaxEqOtherOp : all_op {
+  MaxEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
   { count[0] = (T)0; }
@@ -291,8 +290,8 @@ struct MaxEqOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct FetchMaxOtherOp {
-  FetchMaxOtherOp(T* count, RAJA::RangeSegment seg)
+struct FetchMaxOtherOp : all_op {
+  FetchMaxOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
   { count[0] = (T)0; }
@@ -304,8 +303,8 @@ struct FetchMaxOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct MinEqOtherOp {
-  MinEqOtherOp(T* count, RAJA::RangeSegment seg)
+struct MinEqOtherOp : all_op {
+  MinEqOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(min)
   { count[0] = (T)seg.size(); }
@@ -317,8 +316,8 @@ struct MinEqOtherOp {
 };
 
 template < typename T, typename AtomicPolicy >
-struct FetchMinOtherOp {
-  FetchMinOtherOp(T* count, RAJA::RangeSegment seg)
+struct FetchMinOtherOp : all_op {
+  FetchMinOtherOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : other(count), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
   { count[0] = (T)seg.size(); }
@@ -329,12 +328,28 @@ struct FetchMinOtherOp {
   T min, max, final_min, final_max;
 };
 
+template  < typename ExecPolicy,
+            typename AtomicPolicy,
+            typename T,
+            template <typename, typename> class OtherOp>
+// No test when underlying op type is int, and index type is float
+typename std::enable_if<
+            (std::is_floating_point<T>::value && std::is_base_of<int_op,OtherOp<T,AtomicPolicy>>::value)
+         >::type
+testAtomicRefOtherOp(RAJA::TypedRangeSegment<RAJA::Index_type> RAJA_UNUSED_ARG(seg), T* RAJA_UNUSED_ARG(count), T* RAJA_UNUSED_ARG(list))
+{
+}
 
-template <typename ExecPolicy,
-         typename AtomicPolicy,
-         typename T,
-  template <typename, typename> class OtherOp>
-void testAtomicRefOther(RAJA::RangeSegment seg, T* count, T* list)
+template  < typename ExecPolicy,
+            typename AtomicPolicy,
+            typename T,
+            template <typename, typename> class OtherOp>
+// Run test if T is integral and operation is int_op, or for any all_op
+typename std::enable_if<
+            (std::is_integral<T>::value && std::is_base_of<int_op,OtherOp<T,AtomicPolicy>>::value)
+            || (std::is_base_of<all_op,OtherOp<T,AtomicPolicy>>::value)
+         >::type
+testAtomicRefOtherOp(RAJA::TypedRangeSegment<RAJA::Index_type> seg, T* count, T* list)
 {
   OtherOp<T, AtomicPolicy> otherop(count, seg);
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
@@ -347,6 +362,9 @@ void testAtomicRefOther(RAJA::RangeSegment seg, T* count, T* list)
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+#endif
   EXPECT_LE(otherop.final_min, count[0]);
   EXPECT_GE(otherop.final_max, count[0]);
   for (RAJA::Index_type i = 0; i < seg.size(); i++) {
@@ -357,106 +375,73 @@ void testAtomicRefOther(RAJA::RangeSegment seg, T* count, T* list)
 
 
 
-template <typename ExecPolicy,
-         typename AtomicPolicy,
-         typename T,
-  RAJA::Index_type N>
-void testAtomicRefIntegral()
+TYPED_TEST_SUITE_P(ForallAtomicRefOtherFunctionalTest);
+
+template <typename T>
+class ForallAtomicRefOtherFunctionalTest : public ::testing::Test
 {
-  RAJA::RangeSegment seg(0, N);
+};
 
-  // initialize an array
-#if defined(RAJA_ENABLE_CUDA)
-  T *count = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
-  T *list;
-  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
-  bool *hit;
-  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
-  cudaErrchk(cudaDeviceSynchronize());
-#else
-  T *count  = new T[1];
-  T *list   = new T[N];
-  bool *hit = new bool[N];
-#endif
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, LoadOtherOp     >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, OperatorTOtherOp>(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, StoreOtherOp    >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, AssignOtherOp   >(seg, count, list);
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CASOtherOp                  >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeWeakOtherOp  >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeStrongOtherOp>(seg, count, list);
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, MaxEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchMaxOtherOp>(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, MinEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchMinOtherOp>(seg, count, list);
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, AndEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchAndOtherOp>(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, OrEqOtherOp    >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchOrOtherOp >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, XorEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchXorOtherOp>(seg, count, list);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(hit));
-  cudaErrchk(cudaFree(list));
-  cudaErrchk(cudaFree(count));
-#else
-  delete[] hit;
-  delete[] list;
-  delete[] count;
-#endif
-}
 
 template <typename ExecPolicy,
-         typename AtomicPolicy,
-         typename T,
-  RAJA::Index_type N>
-void testAtomicRefFloating()
+          typename AtomicPolicy,
+          typename WORKINGRES,
+          typename T>
+void testAtomicFunctionRefOther( RAJA::Index_type N )
 {
-  RAJA::RangeSegment seg(0, N);
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
 
-  // initialize an array
+  camp::resources::Resource count_res{WORKINGRES()};
+  camp::resources::Resource list_res{WORKINGRES()};
+
+  T * count   = count_res.allocate<T>(1);
+  T * list    = list_res.allocate<T>(N);
+
 #if defined(RAJA_ENABLE_CUDA)
-  T *count = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
-  T *list;
-  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
-  bool *hit;
-  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
   cudaErrchk(cudaDeviceSynchronize());
-#else
-  T *count  = new T[1];
-  T *list   = new T[N];
-  bool *hit = new bool[N];
 #endif
 
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, LoadOtherOp     >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, OperatorTOtherOp>(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, StoreOtherOp    >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, AssignOtherOp   >(seg, count, list);
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CASOtherOp                  >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeWeakOtherOp  >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, CompareExchangeStrongOtherOp>(seg, count, list);
-
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, MaxEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchMaxOtherOp>(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, MinEqOtherOp   >(seg, count, list);
-  testAtomicRefOther<ExecPolicy, AtomicPolicy, T, FetchMinOtherOp>(seg, count, list);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(hit));
-  cudaErrchk(cudaFree(list));
-  cudaErrchk(cudaFree(count));
-#else
-  delete[] hit;
-  delete[] list;
-  delete[] count;
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
 #endif
+
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, LoadOtherOp     >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, OperatorTOtherOp>(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, StoreOtherOp    >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, AssignOtherOp   >(seg, count, list);
+
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, CASOtherOp                  >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, CompareExchangeWeakOtherOp  >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, CompareExchangeStrongOtherOp>(seg, count, list);
+
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, MaxEqOtherOp   >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, FetchMaxOtherOp>(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, MinEqOtherOp   >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, FetchMinOtherOp>(seg, count, list);
+
+  // Note: These integral tests require return type conditional overloading of testAtomicRefOtherOp
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, AndEqOtherOp   >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, FetchAndOtherOp>(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, OrEqOtherOp    >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, FetchOrOtherOp >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, XorEqOtherOp   >(seg, count, list);
+  testAtomicRefOtherOp<ExecPolicy, AtomicPolicy, T, FetchXorOtherOp>(seg, count, list);
+
+  count_res.deallocate( count );
+  list_res.deallocate( list );
 }
 
+TYPED_TEST_P(ForallAtomicRefOtherFunctionalTest, AtomicRefOtherFunctionalForall)
+{
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+  testAtomicFunctionRefOther<AExec, APol, ResType, DType>( 10000 );
+}
+
+REGISTER_TYPED_TEST_SUITE_P( ForallAtomicRefOtherFunctionalTest,
+                             AtomicRefOtherFunctionalForall
+                           );
+
+#endif  //__TEST_FORALL_ATOMIC_REF_OTHER_HPP__

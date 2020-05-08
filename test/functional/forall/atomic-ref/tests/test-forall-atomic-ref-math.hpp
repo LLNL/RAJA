@@ -1,95 +1,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
 /// Source file containing basic functional tests for arithmetic atomic operations using forall
 ///
 
+#ifndef __TEST_FORALL_ATOMIC_REF_MATH_HPP__
+#define __TEST_FORALL_ATOMIC_REF_MATH_HPP__
+
 #include <RAJA/RAJA.hpp>
 #include "RAJA_gtest.hpp"
-#include <type_traits>
-#include "RAJA_value_params.hpp"
-
-template < typename T >
-RAJA_INLINE
-RAJA_HOST_DEVICE
-typename std::enable_if<sizeof(T) == 1, T>::type np2m1(T val)
-{
-  val |= val >> 1  ;
-  val |= val >> 2  ;
-  val |= val >> 4  ;
-  return val;
-}
-
-template < typename T >
-RAJA_INLINE
-RAJA_HOST_DEVICE
-typename std::enable_if<sizeof(T) == 2, T>::type np2m1(T val)
-{
-  val |= val >> 1  ;
-  val |= val >> 2  ;
-  val |= val >> 4  ;
-  val |= val >> 8  ;
-  return val;
-}
-
-template < typename T >
-RAJA_INLINE
-RAJA_HOST_DEVICE
-typename std::enable_if<sizeof(T) == 4, T>::type np2m1(T val)
-{
-  val |= val >> 1  ;
-  val |= val >> 2  ;
-  val |= val >> 4  ;
-  val |= val >> 8  ;
-  val |= val >> 16 ;
-  return val;
-}
-
-template < typename T >
-RAJA_INLINE
-RAJA_HOST_DEVICE
-typename std::enable_if<sizeof(T) == 8, T>::type np2m1(T val)
-{
-  val |= val >> 1  ;
-  val |= val >> 2  ;
-  val |= val >> 4  ;
-  val |= val >> 8  ;
-  val |= val >> 16 ;
-  val |= val >> 32 ;
-  return val;
-}
-
-template < typename T >
-RAJA_INLINE
-RAJA_HOST_DEVICE
-typename std::enable_if<sizeof(T) == 16, T>::type np2m1(T val)
-{
-  val |= val >> 1  ;
-  val |= val >> 2  ;
-  val |= val >> 4  ;
-  val |= val >> 8  ;
-  val |= val >> 16 ;
-  val |= val >> 32 ;
-  val |= val >> 64 ;
-  return val;
-}
 
 template < typename T, typename AtomicPolicy >
 struct PreIncCountOp {
-  PreIncCountOp(T* count, RAJA::RangeSegment seg)
+  PreIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -102,7 +30,7 @@ struct PreIncCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PostIncCountOp {
-  PostIncCountOp(T* count, RAJA::RangeSegment seg)
+  PostIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -115,7 +43,7 @@ struct PostIncCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct AddEqCountOp {
-  AddEqCountOp(T* count, RAJA::RangeSegment seg)
+  AddEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -128,7 +56,7 @@ struct AddEqCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct FetchAddCountOp {
-  FetchAddCountOp(T* count, RAJA::RangeSegment seg)
+  FetchAddCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
@@ -141,7 +69,7 @@ struct FetchAddCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PreDecCountOp {
-  PreDecCountOp(T* count, RAJA::RangeSegment seg)
+  PreDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -154,7 +82,7 @@ struct PreDecCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct PostDecCountOp {
-  PostDecCountOp(T* count, RAJA::RangeSegment seg)
+  PostDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -167,7 +95,7 @@ struct PostDecCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct SubEqCountOp {
-  SubEqCountOp(T* count, RAJA::RangeSegment seg)
+  SubEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -180,7 +108,7 @@ struct SubEqCountOp {
 
 template < typename T, typename AtomicPolicy >
 struct FetchSubCountOp {
-  FetchSubCountOp(T* count, RAJA::RangeSegment seg)
+  FetchSubCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
@@ -195,7 +123,7 @@ template <typename ExecPolicy,
          typename AtomicPolicy,
          typename T,
   template <typename, typename> class CountOp>
-void testAtomicRefCount(RAJA::RangeSegment seg,
+void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
     T* count, T* list, bool* hit)
 {
   CountOp<T, AtomicPolicy> countop(count, seg);
@@ -211,6 +139,10 @@ void testAtomicRefCount(RAJA::RangeSegment seg,
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+#endif
+
   EXPECT_EQ(countop.final, count[0]);
   for (RAJA::Index_type i = 0; i < seg.size(); i++) {
     EXPECT_LE(countop.min, list[i]);
@@ -220,27 +152,35 @@ void testAtomicRefCount(RAJA::RangeSegment seg,
 }
 
 
-template <typename ExecPolicy,
-         typename AtomicPolicy,
-         typename T,
-  RAJA::Index_type N>
-void testAtomicRefIntegral()
-{
-  RAJA::RangeSegment seg(0, N);
+TYPED_TEST_SUITE_P(ForallAtomicRefMathFunctionalTest);
 
-  // initialize an array
+template <typename T>
+class ForallAtomicRefMathFunctionalTest : public ::testing::Test
+{
+};
+
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename WORKINGRES,
+          typename T>
+void testAtomicFunctionRefMath( RAJA::Index_type N )
+{
+  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
+
+  camp::resources::Resource count_res{WORKINGRES()};
+  camp::resources::Resource list_res{WORKINGRES()};
+  camp::resources::Resource hit_res{WORKINGRES()};
+
+  T * count   = count_res.allocate<T>(1);
+  T * list    = list_res.allocate<T>(N);
+  bool * hit  = hit_res.allocate<bool>(N);
+
 #if defined(RAJA_ENABLE_CUDA)
-  T *count = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
-  T *list;
-  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
-  bool *hit;
-  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
   cudaErrchk(cudaDeviceSynchronize());
-#else
-  T *count  = new T[1];
-  T *list   = new T[N];
-  bool *hit = new bool[N];
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
 #endif
 
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreIncCountOp  >(seg, count, list, hit);
@@ -253,61 +193,22 @@ void testAtomicRefIntegral()
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, SubEqCountOp   >(seg, count, list, hit);
   testAtomicRefCount<ExecPolicy, AtomicPolicy, T, FetchSubCountOp>(seg, count, list, hit);
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(hit));
-  cudaErrchk(cudaFree(list));
-  cudaErrchk(cudaFree(count));
-#else
-  delete[] hit;
-  delete[] list;
-  delete[] count;
-#endif
+  count_res.deallocate( count );
+  list_res.deallocate( list );
+  hit_res.deallocate( hit );
 }
 
-
-
-template <typename ExecPolicy,
-         typename AtomicPolicy,
-         typename T,
-  RAJA::Index_type N>
-void testAtomicRefFloating()
+TYPED_TEST_P(ForallAtomicRefMathFunctionalTest, AtomicRefMathFunctionalForall)
 {
-  RAJA::RangeSegment seg(0, N);
-
-  // initialize an array
-#if defined(RAJA_ENABLE_CUDA)
-  T *count = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&count, sizeof(T) * 1));
-  T *list;
-  cudaErrchk(cudaMallocManaged((void **)&list, sizeof(T) * N));
-  bool *hit;
-  cudaErrchk(cudaMallocManaged((void **)&hit, sizeof(bool) * N));
-  cudaErrchk(cudaDeviceSynchronize());
-#else
-  T *count  = new T[1];
-  T *list   = new T[N];
-  bool *hit = new bool[N];
-#endif
-
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreIncCountOp  >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostIncCountOp >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, AddEqCountOp   >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, FetchAddCountOp>(seg, count, list, hit);
-
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreDecCountOp  >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostDecCountOp >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, SubEqCountOp   >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, FetchSubCountOp>(seg, count, list, hit);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(hit));
-  cudaErrchk(cudaFree(list));
-  cudaErrchk(cudaFree(count));
-#else
-  delete[] hit;
-  delete[] list;
-  delete[] count;
-#endif
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+  testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
 }
 
+REGISTER_TYPED_TEST_SUITE_P( ForallAtomicRefMathFunctionalTest,
+                             AtomicRefMathFunctionalForall
+                           );
 
+#endif  //__TEST_FORALL_ATOMIC_REF_MATH_HPP__
