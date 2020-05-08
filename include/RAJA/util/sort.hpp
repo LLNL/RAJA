@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include <iterator>
+#include <memory>
 
 #include "RAJA/pattern/detail/algorithm.hpp"
 
@@ -486,14 +487,17 @@ merge_sort(Iter begin,
            Compare comp)
 {
 #if !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using value_type = RAJA::detail::IterVal<Iter>;
+
   // iterative mergesort (bottom up) for future parallelism
 
   // min helper
-  auto minlam = [] (int a, int b) {return (a < b) ? a : b;};
+  auto minlam = [] (diff_type a, diff_type b) {return (a < b) ? a : b;};
 
   // insertion sort for sizes <= 16
-  auto len = end - begin;
-  static constexpr camp::decay<decltype(len)> insertion_sort_cutoff = 16;
+  diff_type len = end - begin;
+  static constexpr diff_type insertion_sort_cutoff = 16;
   if ( len <= insertion_sort_cutoff && len > 0 )
   {
     detail::insertion_sort( begin, end, comp );
@@ -501,28 +505,42 @@ merge_sort(Iter begin,
   else
   {
     // insertion sort on 16-element chunks, then merge
-    for ( int start = 0; start < len; start += insertion_sort_cutoff )
+    for ( diff_type start = 0; start < len; start += insertion_sort_cutoff )
     {
-      int lastchunk = minlam( insertion_sort_cutoff, len - start );
+      diff_type lastchunk = minlam( insertion_sort_cutoff, len - start );
       detail::insertion_sort( begin + start, begin + start + lastchunk, comp );
     }
 
-    // merge
+    // merge using extra storage
 
-    // copy input
-    using itertype = RAJA::detail::IterVal<Iter>;
-    itertype * copyarr = RAJA::allocate_aligned_type<itertype>( RAJA::DATA_ALIGN, len * sizeof(itertype) );
-    for ( int cc = 0; cc < len; ++cc )
-    {
-      copyarr[cc] = *(begin + cc);
+    // Manage the lifetime of the buffer and objects constructed in the buffer
+    using buf_deleter_type = FreeAlignedType<value_type, diff_type>;
+    buf_deleter_type buf_deleter;
+
+    std::unique_ptr<value_type, buf_deleter_type&> copy_buf(
+        RAJA::allocate_aligned_type<value_type>( RAJA::DATA_ALIGN, len * sizeof(value_type) ),
+        buf_deleter);
+
+    value_type* copyarr = copy_buf.get();
+
+    // check memory allocation worked
+    if (copyarr == nullptr) {
+      RAJA_ABORT_OR_THROW( "merge_sort temporary memory allocation failed" );
     }
 
-    //for ( int midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
-    for ( int midpoint = 16; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    // move construct input into buffer storage
+    // use buf_deleter.size as index to keep track of objects constructed
+    for ( diff_type& cc = buf_deleter.size; cc < len; ++cc )
     {
-      for ( int start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
+      new(&copyarr[cc]) value_type(std::move(begin[cc]));
+    }
+
+    //for ( diff_type midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    for ( diff_type midpoint = 16; midpoint < len; midpoint *= 2 )  // O(log n) loop
+    {
+      for ( diff_type start = 0; start < len; start += midpoint * 2 )  // O(n) merging loop (can be parallelized)
       {
-        int finish = minlam( start + midpoint * 2, len );
+        diff_type finish = minlam( start + midpoint * 2, len );
         if ( finish > len )
         {
           RAJA_ABORT_OR_THROW( "merge_sort invalid finish point" );  // sanity check
@@ -537,13 +555,11 @@ merge_sort(Iter begin,
       }
 
       // update copy
-      for ( int cc = 0; cc < len; ++cc )
+      for ( diff_type cc = 0; cc < len; ++cc )
       {
         copyarr[cc] = *(begin + cc);
       }
     }
-
-    RAJA::free_aligned( copyarr );
   }
   //else
   //{
