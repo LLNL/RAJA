@@ -447,24 +447,24 @@ merge_like_std( Iter1 first1,
   {
     if ( first1 >= last1 ) // first half done
     {
-      *d_first = *first2;
+      *d_first = std::move(*first2);
       ++first2;
     }
     else if ( first2 >= last2 )  // second half done
     {
-      *d_first = *first1;
+      *d_first = std::move(*first1);
       ++first1;
     }
     else  // neither half done
     {
       if ( comp( *first2, *first1 ) )
       {
-        *d_first = *first2;
+        *d_first = std::move(*first2);
         ++first2;
       }
       else
       {
-        *d_first = *first1;
+        *d_first = std::move(*first1);
         ++first1;
       }
     }
@@ -557,7 +557,7 @@ merge_sort(Iter begin,
       // update copy
       for ( diff_type cc = 0; cc < len; ++cc )
       {
-        copyarr[cc] = *(begin + cc);
+        copyarr[cc] = std::move(*(begin + cc));
       }
     }
   }
