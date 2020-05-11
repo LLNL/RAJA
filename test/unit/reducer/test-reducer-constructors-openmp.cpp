@@ -29,12 +29,12 @@ using OpenMPInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                      >
                             >::Types;
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMPBasicTest,
-                              ReducerBasicConstructorUnitTest,
-                              OpenMPBasicReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPBasicTest,
+                               ReducerBasicConstructorUnitTest,
+                               OpenMPBasicReducerConstructorTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMPInitTest,
-                              ReducerInitConstructorUnitTest,
-                              OpenMPInitReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPInitTest,
+                               ReducerInitConstructorUnitTest,
+                               OpenMPInitReducerConstructorTypes);
 #endif
 

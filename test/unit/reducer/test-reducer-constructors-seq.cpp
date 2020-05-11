@@ -28,12 +28,12 @@ using SequentialInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                      >
                             >::Types;
 
-INSTANTIATE_TYPED_TEST_CASE_P(SequentialBasicTest,
-                              ReducerBasicConstructorUnitTest,
-                              SequentialBasicReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
+                               ReducerBasicConstructorUnitTest,
+                               SequentialBasicReducerConstructorTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(SequentialInitTest,
-                              ReducerInitConstructorUnitTest,
-                              SequentialInitReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(SequentialInitTest,
+                               ReducerInitConstructorUnitTest,
+                               SequentialInitReducerConstructorTypes);
 
 

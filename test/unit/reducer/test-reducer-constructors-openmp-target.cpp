@@ -22,8 +22,8 @@ using OpenMPTargetInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                      >
                             >::Types;
 
-INSTANTIATE_TYPED_TEST_CASE_P(OpenMPTargetInitTest,
-                              ReducerInitConstructorUnitTest,
-                              OpenMPTargetInitReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetInitTest,
+                               ReducerInitConstructorUnitTest,
+                               OpenMPTargetInitReducerConstructorTypes);
 #endif
 

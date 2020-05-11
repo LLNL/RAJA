@@ -23,7 +23,7 @@ using TbbReducerResetTypes = Test< camp::cartesian_product<
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(TbbResetTest,
-                              ReducerResetUnitTest,
-                              TbbReducerResetTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TbbResetTest,
+                               ReducerResetUnitTest,
+                               TbbReducerResetTypes);
 #endif
