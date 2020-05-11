@@ -187,7 +187,7 @@ TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
   testReducerReset< ReduceType, NumericType, ResourceType, ForOneType >();
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReducerResetUnitTest,
+REGISTER_TYPED_TEST_SUITE_P(ReducerResetUnitTest,
                            BasicReset);
 
 #endif  //__TEST_REDUCER_RESET__
