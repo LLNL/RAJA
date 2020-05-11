@@ -7,7 +7,7 @@
 
 #include "tests/test-forall-reduce-sanity.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_HIP)
 
 #include "../test-forall-execpol.hpp"
 #include "../test-reducepol.hpp"
