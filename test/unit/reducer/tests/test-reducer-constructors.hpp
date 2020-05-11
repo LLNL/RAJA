@@ -179,9 +179,9 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(ReducerBasicConstructorUnitTest,
+REGISTER_TYPED_TEST_SUITE_P(ReducerBasicConstructorUnitTest,
                            BasicReducerConstructor);
 
-REGISTER_TYPED_TEST_CASE_P(ReducerInitConstructorUnitTest,
+REGISTER_TYPED_TEST_SUITE_P(ReducerInitConstructorUnitTest,
                            InitReducerConstructor);
 #endif  //__TEST_REDUCER_CONSTRUCTOR__
