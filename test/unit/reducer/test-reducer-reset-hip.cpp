@@ -23,7 +23,7 @@ using HipReducerResetTypes = Test< camp::cartesian_product<
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(HipResetTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(HipResetTest,
                               ReducerResetUnitTest,
                               HipReducerResetTypes);
 #endif
