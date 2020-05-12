@@ -32,8 +32,10 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
                                     &check_array,
                                     &test_array);
 
+  const int modval = 100;
+
   for (RAJA::Index_type i = 0; i < last; ++i) {
-    test_array[i] = static_cast<DATA_TYPE>( rand() % 100 );
+    test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
 
   DATA_TYPE ref_sum = 0;
@@ -45,12 +47,15 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 
 
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-    sum += working_array[idx];
+    sum  += working_array[idx];
+    sum2 += working_array[idx];
   });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
+  ASSERT_EQ(static_cast<DATA_TYPE>(sum2.get()), ref_sum + 2);
 
   sum.reset(0);
 
@@ -66,9 +71,9 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,
-                                       working_array,
-                                       check_array,
-                                       test_array);
+                                      working_array,
+                                      check_array,
+                                      test_array);
 }
 
 

@@ -26,19 +26,19 @@ using ReduceSanityDataTypeList = camp::list<int,
                                             float,
                                             double>;
 
-#include "test-forall-reducesum-sanity.hpp"
+#include "test-forall-reduce-sanity-sum.hpp"
+#include "test-forall-reduce-sanity-min.hpp"
+#include "test-forall-reduce-sanity-max.hpp"
 #if 0
-#include "test-forall-reducemin-sanity.hpp"
-#include "test-forall-reducemax-sanity.hpp"
 #include "test-forall-reduceminloc-sanity.hpp"
 #include "test-forall-reducemaxloc-sanity.hpp"
 #endif
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceSanityTest,
-                            ReduceSumSanityForall);
-#if 0
+                            ReduceSumSanityForall,
                             ReduceMinSanityForall,
-                            ReduceMaxSanityForall,
+                            ReduceMaxSanityForall);
+#if 0
                             ReduceMinLocSanityForall,
                             ReduceMaxLocSanityForall);
 #endif
