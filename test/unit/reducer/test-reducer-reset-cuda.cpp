@@ -23,7 +23,7 @@ using CudaReducerResetTypes = Test< camp::cartesian_product<
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(CudaResetTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(CudaResetTest,
                               ReducerResetUnitTest,
                               CudaReducerResetTypes);
 #endif

@@ -29,11 +29,11 @@ using TbbInitReducerConstructorTypes = Test< camp::cartesian_product<
                                                      >
                             >::Types;
 
-INSTANTIATE_TYPED_TEST_CASE_P(TbbBasicTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(TbbBasicTest,
                               ReducerBasicConstructorUnitTest,
                               TbbBasicReducerConstructorTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(TbbInitTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(TbbInitTest,
                               ReducerInitConstructorUnitTest,
                               TbbInitReducerConstructorTypes);
 #endif

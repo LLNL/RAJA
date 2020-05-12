@@ -22,7 +22,7 @@ using SequentialReducerResetTypes = Test< camp::cartesian_product<
                              >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(SequentialResetTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(SequentialResetTest,
                               ReducerResetUnitTest,
                               SequentialReducerResetTypes);
 
