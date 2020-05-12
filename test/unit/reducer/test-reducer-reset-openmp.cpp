@@ -14,13 +14,11 @@
 #include "test-reducer-utils.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPReducerResetTypes = Test< camp::cartesian_product<
-                                                        OpenMPReducerPolicyList,
-                                                        DataTypeList,
-                                                        HostResourceList,
-                                                        SequentialForoneList
-                                                      >
-                             >::Types;
+using OpenMPReducerResetTypes = 
+  Test< camp::cartesian_product< OpenMPReducerPolicyList,
+                                 DataTypeList,
+                                 HostResourceList,
+                                 SequentialForoneList > >::Types;
 
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPResetTest,

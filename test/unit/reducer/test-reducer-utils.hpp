@@ -40,7 +40,7 @@ using SequentialReducerPolicyList =
               >;
 
 #if defined(RAJA_ENABLE_TBB)
-using TbbReducerPolicyList =
+using TBBReducerPolicyList =
     camp::list<
                 RAJA::tbb_reduce
               >;
