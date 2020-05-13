@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_REDUCEMIN_SANITY_HPP__
-#define __TEST_FORALL_REDUCEMIN_SANITY_HPP__
+#ifndef __TEST_FORALL_REDUCEMINLOC_SANITY_HPP__
+#define __TEST_FORALL_REDUCEMINLOC_SANITY_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -15,9 +15,11 @@
 #include <cstdlib>
 #include <numeric>
 
+#include <iostream>
+
 template <typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
@@ -34,42 +36,53 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 
   const int modval = 100;
   const DATA_TYPE min_init = modval+1;
+  const RAJA::Index_type minloc_init = -1;
+  const RAJA::Index_type minloc_idx = (last - first) * 2/3 + first;
   const DATA_TYPE small_min = -modval;
+  const RAJA::Index_type small_minloc = minloc_init;
 
   for (RAJA::Index_type i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
+  test_array[minloc_idx] = static_cast<DATA_TYPE>(small_min);
 
   DATA_TYPE ref_min = min_init;
+  RAJA::Index_type ref_minloc = minloc_init;
   for (RAJA::Index_type i = first; i < last; ++i) {
-    ref_min = RAJA_MIN(test_array[i], ref_min); 
+    if ( test_array[i] < ref_min ) {
+       ref_min = test_array[i];
+       ref_minloc = i;
+    } 
   }
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
 
-  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> mininit(small_min);
-  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min(min_init);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> mininit(small_min, minloc_init);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> min(min_init, minloc_init);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-    mininit.min( working_array[idx] );
-    min.min( working_array[idx] );
+    mininit.minloc( working_array[idx], idx );
+    min.minloc( working_array[idx], idx );
   });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
+  ASSERT_EQ(static_cast<RAJA::Index_type>(mininit.getLoc()), small_minloc);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
+  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
 
-  min.reset(min_init);
+  min.reset(min_init, minloc_init);
 
   const int nloops = 2;
 
   for (int j = nloops; j > 0; --j) {
     RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-      min.min( working_array[idx] * j);
+      min.minloc( working_array[idx] * j, idx);
     });
   }
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * nloops);
+  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,
@@ -79,19 +92,19 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 }
 
 
-TYPED_TEST_P(ForallReduceSanityTest, ReduceMinSanityForall)
+TYPED_TEST_P(ForallReduceSanityTest, ReduceMinLocSanityForall)
 {
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallReduceMinSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMinSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMinSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
-#endif  // __TEST_FORALL_REDUCEMIN_SANITY_HPP__
+#endif  // __TEST_FORALL_REDUCEMINLOC_SANITY_HPP__

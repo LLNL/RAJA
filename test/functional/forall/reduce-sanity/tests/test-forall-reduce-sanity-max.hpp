@@ -86,9 +86,11 @@ TYPED_TEST_P(ForallReduceSanityTest, ReduceMaxSanityForall)
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 587);
+                            EXEC_POLICY, REDUCE_POLICY>(0, 28);
   ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
                             EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
+                            EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
 #endif  // __TEST_FORALL_REDUCEMAX_SANITY_HPP__
