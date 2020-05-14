@@ -24,19 +24,28 @@ struct Test<camp::list<T...>> {
   using Types = ::testing::Types<T...>;
 };
 
+//
+// Strongly typed indexes
+//
+RAJA_INDEX_VALUE(IndexType, "IndexType");
+RAJA_INDEX_VALUE_T(StrongInt, int, "StrongIntType");
+RAJA_INDEX_VALUE_T(StrongULL, unsigned long long , "StrongULLType");
 
 //
 // Index types for segments
 //
 using IdxTypeList = camp::list<RAJA::Index_type,
                                int,
+                               IndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
+//                               StrongInt,
                                unsigned int,
                                short,
                                unsigned short,
                                long int,
                                unsigned long,
                                long long,
+//                               StrongULL,
 #endif
                                unsigned long long>;
 
@@ -72,10 +81,10 @@ void allocateForallTestData(T N,
 {
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  *work_array = work_res.allocate<T>(N);
+  *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
 
-  *check_array = host_res.allocate<T>(N);
-  *test_array = host_res.allocate<T>(N);
+  *check_array = host_res.allocate<T>(RAJA::stripIndexType(N));
+  *test_array = host_res.allocate<T>(RAJA::stripIndexType(N));
 }
 
 template<typename T>
