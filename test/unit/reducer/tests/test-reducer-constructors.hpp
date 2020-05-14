@@ -180,8 +180,9 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
 
 
 REGISTER_TYPED_TEST_SUITE_P(ReducerBasicConstructorUnitTest,
-                           BasicReducerConstructor);
+                            BasicReducerConstructor);
 
 REGISTER_TYPED_TEST_SUITE_P(ReducerInitConstructorUnitTest,
-                           InitReducerConstructor);
+                            InitReducerConstructor);
+
 #endif  //__TEST_REDUCER_CONSTRUCTOR__

@@ -188,6 +188,6 @@ TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ReducerResetUnitTest,
-                           BasicReset);
+                            BasicReset);
 
 #endif  //__TEST_REDUCER_RESET__

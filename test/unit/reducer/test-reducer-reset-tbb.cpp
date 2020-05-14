@@ -14,16 +14,14 @@
 #include "test-reducer-utils.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
-using TbbReducerResetTypes = Test< camp::cartesian_product<
-                                                        TbbReducerPolicyList,
-                                                        DataTypeList,
-                                                        HostResourceList,
-                                                        SequentialForoneList
-                                                      >
-                             >::Types;
+using TBBReducerResetTypes = 
+  Test< camp::cartesian_product< TBBReducerPolicyList,
+                                 DataTypeList,
+                                 HostResourceList,
+                                 SequentialForoneList > >::Types;
 
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TbbResetTest,
-                              ReducerResetUnitTest,
-                              TbbReducerResetTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(TBBResetTest,
+                               ReducerResetUnitTest,
+                               TBBReducerResetTypes);
 #endif
