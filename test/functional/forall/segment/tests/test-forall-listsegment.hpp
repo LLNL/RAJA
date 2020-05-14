@@ -51,7 +51,9 @@ void ForallListSegmentTest(INDEX_TYPE N)
                                      &check_array,
                                      &test_array);
 
-  memset( RAJA::stripIndexType(test_array), 0, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N) );  
+  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+    test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
+  }
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
