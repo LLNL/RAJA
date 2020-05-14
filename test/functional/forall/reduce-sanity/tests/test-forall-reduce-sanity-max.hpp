@@ -59,18 +59,24 @@ void ForallReduceMaxSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
 
 #if !defined(RAJA_ENABLE_TARGET_OPENMP)
+  //
+  // Note: RAJA OpenMP target reductions do not currently support reset
+  //
   max.reset(max_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
 #endif
 
-  const int nloops = 2;
-
-  for (int j = nloops; j > 0; --j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-      max.max( working_array[idx] / j);
-    });
-  }
-
-  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
+  DATA_TYPE factor = 2;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    max.max( working_array[idx] * factor);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
+   
+  factor = 3;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    max.max( working_array[idx] * factor);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,

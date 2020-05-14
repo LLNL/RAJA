@@ -72,18 +72,26 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
 
 #if !defined(RAJA_ENABLE_TARGET_OPENMP)
+  //
+  // Note: RAJA OpenMP target reductions do not currently support reset
+  //
   min.reset(min_init, minloc_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
+  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), minloc_init);
 #endif
 
-  const int nloops = 2;
+  DATA_TYPE factor = 2;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    min.minloc( working_array[idx] * factor, idx);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
+  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
 
-  for (int j = nloops; j > 0; --j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-      min.minloc( working_array[idx] * j, idx);
-    });
-  }
-
-  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * nloops);
+  factor = 3;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+    min.minloc( working_array[idx] * factor, idx);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
   ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
    
 
