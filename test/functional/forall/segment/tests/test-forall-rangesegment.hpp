@@ -8,8 +8,7 @@
 #ifndef __TEST_FORALL_RANGESEGMENT_HPP__
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
-//#include "test-forall-segment.hpp"
-//#include "RAJA_gtest.hpp"
+#include "test-forall-segment.hpp"
 
 #include <numeric>
 
@@ -51,13 +50,13 @@ void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
-  typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
+  typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
-  typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
+  typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
   ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
@@ -75,7 +74,7 @@ TYPED_TEST_P(ForallSegmentTest, RangeSegmentForall)
   ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(5));
   ForallRangeSegmentTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(255));
 
-  //runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
+  runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
 #endif  // __TEST_FORALL_RANGESEGMENT_HPP__

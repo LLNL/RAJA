@@ -8,8 +8,7 @@
 #ifndef __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 #define __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 
-//#include "test-forall-segment.hpp"
-#include "RAJA_gtest.hpp"
+#include "test-forall-segment.hpp"
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
@@ -57,22 +56,22 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last,
 }
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typename EXEC_POLICY,
-  typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
+  typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeStrideTests()
 {
 }
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typename EXEC_POLICY,
-  typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
+  typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeStrideTests()
 {
-  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-10, -1, 2);
-  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 2);
-  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 3);
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-10), INDEX_TYPE(-1), DIFF_TYPE(2));
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0), DIFF_TYPE(2));
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5), DIFF_TYPE(3));
 
 // Test negative strides
-  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, -1, -1);
-  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, 0, -2);
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(10), INDEX_TYPE(-1), DIFF_TYPE(-1));
+  ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(10), INDEX_TYPE(0), DIFF_TYPE(-2));
 }
 
 
@@ -95,7 +94,7 @@ TYPED_TEST_P(ForallSegmentTest, RangeStrideSegmentForall)
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(-2));
   ForallRangeStrideSegmentTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(-2));
 
-  //runNegativeStrideTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>();
+  runNegativeStrideTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
 #endif  // __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
