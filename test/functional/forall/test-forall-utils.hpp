@@ -8,6 +8,8 @@
 #ifndef __TEST_FORALL_UTILS_HPP__
 #define __TEST_FORALL_UTILS_HPP__
 
+#include "RAJA/RAJA.hpp"
+
 #include "camp/resource.hpp"
 #include "camp/list.hpp"
 

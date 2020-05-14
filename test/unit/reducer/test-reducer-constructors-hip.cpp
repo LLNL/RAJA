@@ -14,15 +14,14 @@
 #include "test-reducer-utils.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
-using HipInitReducerConstructorTypes = Test< camp::cartesian_product<
-                                                        HipReducerPolicyList,
-                                                        DataTypeList,
-                                                        HipResourceList,
-                                                        HipForoneList                                                     >
-                            >::Types;
+using HipInitReducerConstructorTypes = 
+  Test< camp::cartesian_product< HipReducerPolicyList,
+                                 DataTypeList,
+                                 HipResourceList,
+                                 HipForoneList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HipInitTest,
-                              ReducerInitConstructorUnitTest,
-                              HipInitReducerConstructorTypes);
+                               ReducerInitConstructorUnitTest,
+                               HipInitReducerConstructorTypes);
 #endif
 
