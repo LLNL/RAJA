@@ -27,27 +27,41 @@ struct Test<camp::list<T...>> {
 //
 // Strongly typed indexes
 //
-RAJA_INDEX_VALUE(IndexType, "IndexType");
+RAJA_INDEX_VALUE(StrongIndexType, "StrongIndexType");
 RAJA_INDEX_VALUE_T(StrongInt, int, "StrongIntType");
 RAJA_INDEX_VALUE_T(StrongULL, unsigned long long , "StrongULLType");
 
 //
-// Index types for segments
+// Index types list
 //
 using IdxTypeList = camp::list<RAJA::Index_type,
                                int,
-                               IndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-//                               StrongInt,
                                unsigned int,
                                short,
                                unsigned short,
                                long int,
                                unsigned long,
                                long long,
-//                               StrongULL,
 #endif
                                unsigned long long>;
+//
+// Index types w/ Strong types list
+//
+using StrongIdxTypeList = camp::list<RAJA::Index_type,
+                                     int,
+                                     StrongIndexType,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                     StrongInt,
+                                     unsigned int,
+                                     short,
+                                     unsigned short,
+                                     long int,
+                                     unsigned long,
+                                     long long,
+#endif
+                                     StrongULL,
+                                     unsigned long long>;
 
 
 //

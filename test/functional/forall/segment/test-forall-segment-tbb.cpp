@@ -13,7 +13,7 @@
 
 // Cartesian product of types for TBB tests
 using TBBForallSegmentTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 HostResourceList, 
                                 TBBForallExecPols> >::Types;
 
