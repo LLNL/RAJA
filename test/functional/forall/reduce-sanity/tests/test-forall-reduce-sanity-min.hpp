@@ -59,7 +59,9 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
 
+#if !defined(RAJA_ENABLE_TARGET_OPENMP)
   min.reset(min_init);
+#endif
 
   const int nloops = 2;
 

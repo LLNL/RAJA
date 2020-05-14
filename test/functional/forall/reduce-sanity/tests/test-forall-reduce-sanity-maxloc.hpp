@@ -71,7 +71,9 @@ void ForallReduceMaxLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
   ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
 
+#if !defined(RAJA_ENABLE_TARGET_OPENMP)
   max.reset(max_init, maxloc_init);
+#endif
 
   const int nloops = 2;
 

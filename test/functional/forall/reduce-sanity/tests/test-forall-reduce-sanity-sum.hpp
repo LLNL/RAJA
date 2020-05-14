@@ -57,7 +57,9 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
   ASSERT_EQ(static_cast<DATA_TYPE>(sum2.get()), ref_sum + 2);
 
+#if !defined(RAJA_ENABLE_TARGET_OPENMP)
   sum.reset(0);
+#endif
 
   const int nloops = 2;
 
@@ -67,7 +69,11 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
     });
   }
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), nloops * ref_sum + ref_sum);
+#else
   ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), nloops * ref_sum);
+#endif
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,

@@ -15,7 +15,7 @@
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallReduceSanityTypes =
   Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                HostResourceList, 
+                                OpenMPTargetResourceList, 
                                 OpenMPTargetForallExecPols,
                                 OpenMPTargetReducePols>>::Types;
 

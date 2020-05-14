@@ -15,7 +15,7 @@
 // Cartesian product of types for HIP tests
 using HipForallReduceSanityTypes =
   Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                HostResourceList, 
+                                HipResourceList, 
                                 HipForallExecPols,
                                 HipReducePols>>::Types;
 

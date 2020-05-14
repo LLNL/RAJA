@@ -71,7 +71,9 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
   ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
 
+#if !defined(RAJA_ENABLE_TARGET_OPENMP)
   min.reset(min_init, minloc_init);
+#endif
 
   const int nloops = 2;
 
