@@ -11,7 +11,7 @@
 
 // Cartesian product of types for Sequential tests
 using SequentialForallSegmentTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 HostResourceList, 
                                 SequentialForallExecPols>>::Types;
 

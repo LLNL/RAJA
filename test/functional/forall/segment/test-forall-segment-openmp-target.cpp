@@ -13,7 +13,7 @@
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallSegmentTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 OpenMPTargetResourceList, 
                                 OpenMPTargetForallExecPols> >::Types;
 

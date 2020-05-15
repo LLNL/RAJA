@@ -13,7 +13,7 @@
 
 // Cartesian product of types for Hip tests
 using HipForallSegmentTypes = 
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 HipResourceList, 
                                 HipForallExecPols> >::Types;
 
