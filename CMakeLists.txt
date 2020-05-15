@@ -68,6 +68,7 @@ option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supporte
 option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
+option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 

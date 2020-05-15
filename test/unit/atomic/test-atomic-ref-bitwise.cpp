@@ -75,13 +75,13 @@ using basic_types =
                       std::tuple<unsigned int, RAJA::seq_atomic>,
                       std::tuple<unsigned long long int, RAJA::builtin_atomic>,
                       std::tuple<unsigned long long int, RAJA::seq_atomic>
-                      #if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
                       ,
                       std::tuple<int, RAJA::omp_atomic>,
                       std::tuple<unsigned int, RAJA::omp_atomic>,
                       std::tuple<unsigned long long int, RAJA::omp_atomic>
-                      #endif
-                      #if defined(RAJA_ENABLE_CUDA)
+#endif
+#if defined(RAJA_ENABLE_CUDA)
                       ,
                       std::tuple<int, RAJA::auto_atomic>,
                       std::tuple<int, RAJA::cuda_atomic>,
@@ -89,7 +89,7 @@ using basic_types =
                       std::tuple<unsigned int, RAJA::cuda_atomic>,
                       std::tuple<unsigned long long int, RAJA::auto_atomic>,
                       std::tuple<unsigned long long int, RAJA::cuda_atomic>
-                      #endif
+#endif
                     >;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( BasicBitwiseUnitTest,
@@ -124,33 +124,33 @@ GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test and/or
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result[0], (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
 
   // test xor
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );

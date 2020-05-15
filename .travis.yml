@@ -29,7 +29,7 @@ matrix:
     env:
     - COMPILER=g++
     - IMG=gcc8
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DRAJA_ENABLE_BOUNDS_CHECK=ON"
   - compiler: clang9
     env:
     - COMPILER=clang++-9
@@ -44,7 +44,7 @@ matrix:
     env:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
-    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On"
   - compiler: nvcc9
     env:
     - COMPILER=g++

@@ -26,10 +26,12 @@ TYPED_TEST_SUITE_P(FloatLimitsUnitTest);
 
 TYPED_TEST_P(FloatLimitsUnitTest, FloatLimits)
 {
+#if !defined(RAJA_ENABLE_TARGET_OPENMP)
   ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(),
             -std::numeric_limits<TypeParam>::max());
   ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(),
             std::numeric_limits<TypeParam>::max());
+#endif
 }
 
 REGISTER_TYPED_TEST_SUITE_P(FloatLimitsUnitTest, FloatLimits);

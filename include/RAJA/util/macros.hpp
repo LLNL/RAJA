@@ -122,9 +122,15 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
   (((dividend) + (divisor)-1) / (divisor))
 
 
-inline int RAJA_ABORT_OR_THROW(const char *str)
+RAJA_HOST_DEVICE
+inline void RAJA_ABORT_OR_THROW(const char *str)
 {
+#if defined(__CUDA_ARCH__)
+  asm ("trap;");
 
+#elif defined(__HIPCC__)
+  abort();
+#else 
 #ifdef RAJA_COMPILER_MSVC
   char *value;
   size_t len;
@@ -143,6 +149,7 @@ inline int RAJA_ABORT_OR_THROW(const char *str)
   } else {
     throw std::runtime_error(str);
   }
+#endif
 }
 
 //! Macros for marking deprecated features in RAJA

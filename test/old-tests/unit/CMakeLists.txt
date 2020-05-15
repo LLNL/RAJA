@@ -18,10 +18,6 @@ raja_add_test(
   SOURCES test-multipolicy.cpp)
 
 raja_add_test(
-  NAME test-region
-  SOURCES test-region.cpp)
-
-raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
 
