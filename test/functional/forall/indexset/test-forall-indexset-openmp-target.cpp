@@ -14,7 +14,7 @@
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallIndexSetTypes =
   Test< camp::cartesian_product<IdxTypeList, 
-                                HostResourceList, 
+                                OpenMPTargetResourceList, 
                                 OpenMPTargetForallIndexSetExecPols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,

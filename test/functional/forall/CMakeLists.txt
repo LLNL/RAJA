@@ -10,3 +10,11 @@ add_subdirectory(indexset-view)
 
 add_subdirectory(segment)
 add_subdirectory(segment-view)
+
+add_subdirectory(atomic)
+add_subdirectory(atomic-view)
+add_subdirectory(atomic-ref)
+
+add_subdirectory(reduce-sanity)
+
+add_subdirectory(region)

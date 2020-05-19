@@ -91,28 +91,28 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test store method with op()
-  forone<<<1,1>>>( [=] __device__ () {test1.store( (T)19 );} );
+  forone<forone_cuda>( [=] __device__ () {test1.store( (T)19 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)19 );
 
   // test assignment operator
-  forone<<<1,1>>>( [=] __device__ () {test1 = (T)23;} );
+  forone<forone_cuda>( [=] __device__ () {test1 = (T)23;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)23 );
 
   // test load method
-  forone<<<1,1>>>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
+  forone<forone_cuda>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)29 );
   ASSERT_EQ( test1, (T)29 );
 
   // test T()
-  forone<<<1,1>>>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
+  forone<forone_cuda>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)47 );
   ASSERT_EQ( test1, (T)47 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 = (T)31);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 = (T)31);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)31 );
   ASSERT_EQ( test1, (T)31 );

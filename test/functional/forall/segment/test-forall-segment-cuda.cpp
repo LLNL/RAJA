@@ -13,7 +13,7 @@
 
 // Cartesian product of types for Cuda tests
 using CudaForallSegmentTypes = 
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 CudaResourceList, 
                                 CudaForallExecPols> >::Types;
 
