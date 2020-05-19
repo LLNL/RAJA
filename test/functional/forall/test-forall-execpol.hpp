@@ -50,4 +50,9 @@ using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclForallExecPols = camp::list< RAJA::sycl_exec<128>,
+                                       RAJA::sycl_exec<256>  >;
+#endif
+
 #endif  // __TEST_FORALL_EXECPOL_HPP__

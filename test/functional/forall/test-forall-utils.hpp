@@ -60,6 +60,9 @@ using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
 using HipResourceList = camp::list<camp::resources::Hip>;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclResourceList = camp::list<camp::resources::Sycl>;
+#endif
 
 //
 // Memory allocation/deallocation  methods for test execution
