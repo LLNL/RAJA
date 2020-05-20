@@ -90,6 +90,7 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
+  T identity;
   T *device;
   T *host;
 
@@ -100,8 +101,8 @@ struct Reduce_Data
    *
    *  allocates data on the host and device and initializes values to default
    */
-  Reduce_Data(T /*defaultValue*/, T identityValue, Offload_Info &info)
-      : value(identityValue),
+  Reduce_Data(T initValue, T identityValue, Offload_Info &info)
+     : value(initValue), identity(identityValue),
         device{reinterpret_cast<T *>(
             omp_target_alloc(omp::MaxNumTeams * sizeof(T), info.deviceID))},
         host{new T[omp::MaxNumTeams]}
@@ -117,6 +118,13 @@ struct Reduce_Data
     std::fill_n(host, omp::MaxNumTeams, identityValue);
     hostToDevice(info);
   }
+
+  void reset(T initValue, T identityValue = T())
+  {
+    value = initValue;
+    identity = identity;
+  }
+
 
   //! default copy constructor for POD
   Reduce_Data(const Reduce_Data &) = default;
@@ -183,6 +191,13 @@ struct TargetReduce
         initVal(init_val),
         finalVal(Reducer::identity())
   {
+  }
+
+  void reset(T in_val, T identity_ = Reducer::identity())
+  {
+    operator T();
+    initVal = in_val;
+    finalVal = identity_;
   }
 
 #ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
@@ -263,6 +278,15 @@ struct TargetReduceLoc
         initLoc(init_loc),
         finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
+  }
+
+  void reset(T in_val, T identity_ = Reducer::identity)
+  {
+    operator T();
+    initVal = in_val;
+    initLoc = reduce::detail::DefaultLoc<IndexType>().value();
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
+    finalVal = identity_;
   }
 
   //! apply reduction on device upon destruction
