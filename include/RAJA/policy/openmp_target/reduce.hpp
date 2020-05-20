@@ -196,6 +196,7 @@ struct TargetReduce
     operator T();
     initVal = in_val;
     finalVal = identity_;
+    val.reset(identity_);
   }
 
 #ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
@@ -286,6 +287,8 @@ struct TargetReduceLoc
     initLoc = reduce::detail::DefaultLoc<IndexType>().value();
     finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
     finalVal = identity_;
+    val.reset(identity_);
+    loc.reset(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()));
   }
 
   //! apply reduction on device upon destruction
