@@ -90,7 +90,6 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
-  T identity;
   T *device;
   T *host;
 
@@ -102,7 +101,7 @@ struct Reduce_Data
    *  allocates data on the host and device and initializes values to default
    */
   Reduce_Data(T initValue, T identityValue, Offload_Info &info)
-     : value(initValue), identity(identityValue),
+     : value(initValue),
         device{reinterpret_cast<T *>(
             omp_target_alloc(omp::MaxNumTeams * sizeof(T), info.deviceID))},
         host{new T[omp::MaxNumTeams]}
@@ -119,10 +118,9 @@ struct Reduce_Data
     hostToDevice(info);
   }
 
-  void reset(T initValue, T identityValue = T())
+  void reset(T initValue)
   {
     value = initValue;
-    identity = identity;
   }
 
 
@@ -185,11 +183,11 @@ struct TargetReduce
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
-  explicit TargetReduce(T init_val)
+  explicit TargetReduce(T init_val, T identity_ = Reducer::identity())
       : info(),
-        val(Reducer::identity(), Reducer::identity(), info),
+        val(identity_, identity_, info),
         initVal(init_val),
-        finalVal(Reducer::identity())
+        finalVal(identity_)
   {
   }
 
@@ -269,12 +267,13 @@ struct TargetReduceLoc
 {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val, IndexType init_loc)
+  explicit TargetReduceLoc(T init_val, IndexType init_loc,
+                           T identity_ = Reducer::identity)
       : info(),
-        val(Reducer::identity, Reducer::identity, info),
+        val(identity_, identity_, info),
         loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
         initVal(init_val),
-        finalVal(Reducer::identity),
+        finalVal(identity_),
         initLoc(init_loc),
         finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
