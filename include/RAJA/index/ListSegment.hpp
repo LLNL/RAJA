@@ -46,7 +46,6 @@
 #if defined(RAJA_ENABLE_SYCL)
 #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
 #include <CL/sycl.hpp>
-using namespace cl;
 #endif
 
 namespace RAJA
@@ -101,8 +100,8 @@ class TypedListSegment
 #elif defined(RAJA_ENABLE_HIP)
     hipErrchk(hipHostFree(m_data));
 #elif defined(RAJA_ENABLE_SYCL)
-    ::sycl::queue q = sycl::detail::getQueue();
-    ::sycl::free(m_data, q);
+    cl::sycl::queue q = sycl::detail::getQueue();
+    cl::sycl::free(m_data, q);
 #endif
   }
 
@@ -118,8 +117,8 @@ class TypedListSegment
                             m_size * sizeof(value_type),
                             hipHostMallocMapped));
 #elif defined(RAJA_ENABLE_SYCL)
-    ::sycl::queue q = sycl::detail::getQueue();
-    m_data = (value_type *) ::sycl::malloc_shared(m_size * sizeof(value_type), q);
+    cl::sycl::queue q = sycl::detail::getQueue();
+    m_data = (value_type *) cl::sycl::malloc_shared(m_size * sizeof(value_type), q);
 #endif
   }
 
@@ -151,7 +150,7 @@ class TypedListSegment
   template <typename Container>
   void copy(Container&& src, BlockCopy)
   {
-    ::sycl::queue q = sycl::detail::getQueue();
+    cl::sycl::queue q = sycl::detail::getQueue();
     q.memcpy(m_data, &(*src.begin()), m_size * sizeof(T));
   }
 #endif
