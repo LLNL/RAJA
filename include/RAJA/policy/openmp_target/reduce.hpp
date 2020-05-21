@@ -183,20 +183,20 @@ struct TargetReduce
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
-  explicit TargetReduce(T init_val, T identity_ = Reducer::identity())
+  explicit TargetReduce(T init_val_, T identity_ = Reducer::identity())
       : info(),
         val(identity_, identity_, info),
-        initVal(init_val),
+        initVal(init_val_),
         finalVal(identity_)
   {
   }
 
-  void reset(T in_val, T identity_ = Reducer::identity())
+  void reset(T init_val_, T identity_ = Reducer::identity())
   {
     operator T();
-    initVal = in_val;
-    finalVal = identity_;
     val.reset(identity_);
+    initVal = init_val_;
+    finalVal = identity_;
   }
 
 #ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
@@ -268,27 +268,27 @@ struct TargetReduceLoc
 {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val, IndexType init_loc,
+  explicit TargetReduceLoc(T init_val_, IndexType init_loc,
                            T identity_ = Reducer::identity)
       : info(),
         val(identity_, identity_, info),
         loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
-        initVal(init_val),
+        initVal(init_val_),
         finalVal(identity_),
         initLoc(init_loc),
         finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
   }
 
-  void reset(T in_val, T identity_ = Reducer::identity)
+  void reset(T init_val_, T identity_ = Reducer::identity)
   {
     operator T();
-    initVal = in_val;
-    initLoc = reduce::detail::DefaultLoc<IndexType>().value();
-    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
-    finalVal = identity_;
     val.reset(identity_);
     loc.reset(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()));
+    initVal = init_val_;
+    finalVal = identity_;
+    initLoc = reduce::detail::DefaultLoc<IndexType>().value();
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
   }
 
   //! apply reduction on device upon destruction
