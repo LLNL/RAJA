@@ -14,9 +14,9 @@
 ## For details about use and distribution, please read RAJAPerf/LICENSE.
 ##
 
-BUILD_SUFFIX=dpcpp_public
+BUILD_SUFFIX=sycl
 : ${BUILD_TYPE:=RelWithDebInfo}
-RAJA_HOSTCONFIG=../host-configs/alcf-builds/dpcpp.cmake
+RAJA_HOSTCONFIG=../host-configs/alcf-builds/sycl.cmake
 
 rm -rf build_${BUILD_SUFFIX}_${USER} >/dev/null
 mkdir build_${BUILD_SUFFIX}_${USER} && cd build_${BUILD_SUFFIX}_${USER}
@@ -33,8 +33,8 @@ cmake \
   -DENABLE_NO_LIBS=On \
   -DENABLE_SYCL=On \
   -DCMAKE_LINKER=clang++ \
-  -DENABLE_TESTS=Off \
-  -DENABLE_EXAMPLES=Off \
+  -DENABLE_TESTS=On \
+  -DENABLE_EXAMPLES=On \
   "$@" \
   ..
 

@@ -41,9 +41,6 @@
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
 #endif
-#if defined(RAJA_ENABLE_SYCL)
-const int SYCL_BLOCK_SIZE = 256;
-#endif
 
 //
 // Functions for checking and printing arrays
@@ -208,42 +205,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
-#endif
-
-//----------------------------------------------------------------------------//
-// RAJA::sycl policy runs the loop as a SYCL kernel on a GPU device.
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_SYCL)
-
-  std::memset(c, 0, N * sizeof(int));
-
-  std::cout << "\n Running RAJA SYCL vector addition...\n";
-
-  cl::sycl::queue q(::sycl::default_selector{});
-  int* a_d = (int*) cl::sycl::malloc_device(N * sizeof(int), q);
-  int* b_d = (int*) cl::sycl::malloc_device(N * sizeof(int), q);
-  int* c_d = (int*) cl::sycl::malloc_device(N * sizeof(int), q);
-
-  auto e1 = q.memcpy(a_d, a, N * sizeof(int));
-  auto e2 = q.memcpy(b_d, b, N * sizeof(int));
-  auto e4 = q.memset(c_d, 0, N * sizeof(int));
-  e1.wait();
-  e2.wait();
-
-  using EXEC_POL5 = RAJA::sycl_exec<SYCL_BLOCK_SIZE>;
-
-  RAJA::forall< EXEC_POL5 >(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) {
-    c_d[i] = a_d[i] + b_d[i];
-  });
-
-  auto e3 = q.memcpy(c, c_d, N * sizeof(int));
-  e3.wait();
-  cl::sycl::free(a_d, q);
-  cl::sycl::free(b_d, q);
-  cl::sycl::free(c_d, q);
-
-  checkResult(c, c_ref, N);
 #endif
 
 //----------------------------------------------------------------------------//

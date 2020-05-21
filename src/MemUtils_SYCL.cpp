@@ -52,6 +52,9 @@ syclInfo tl_status;
 std::unordered_map<cl::sycl::queue, bool> g_stream_info_map{
     {cl::sycl::queue(), true}};
 
+cl::sycl::queue getQueue() {
+  return g_status.stream;
+}
 
 }  // namespace detail
 

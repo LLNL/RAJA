@@ -20,10 +20,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-v -O3 -fsycl -fsycl-unnamed-lambda" CACHE STRING "
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO " -O3 -g -fsycl -fsycl-unnamed-lambda" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG " -O0 -g -fsycl -fsycl-unnamed-lambda" CACHE STRING "")
 set(CMAKE_CXX_LINK_FLAGS "-fsycl"  CACHE STRING "")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fsycl -std=c++11" CACHE STRING "")
-#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -fsycl -std=c++11" CACHE STRING "")
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fsycl -std=c++11" CACHE STRING "")
-#set(CMAKE_CXX_LINK_FLAGS "-fsycl -lsycl -lOpenCL" CACHE STRING "")
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
