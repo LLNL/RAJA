@@ -280,11 +280,14 @@ struct TargetReduceLoc
   {
   }
 
-  void reset(T init_val_, T identity_ = Reducer::identity)
+  void reset(T init_val_,
+             IndexType init_local_ =
+             IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()),
+             T identity_ = Reducer::identity)
   {
     operator T();
     val.reset(identity_);
-    loc.reset(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()));
+    loc.reset(init_local_);
     initVal = init_val_;
     finalVal = identity_;
     initLoc = reduce::detail::DefaultLoc<IndexType>().value();
