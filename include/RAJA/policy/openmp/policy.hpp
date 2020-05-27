@@ -88,7 +88,7 @@ struct omp_for_nowait_schedule : make_policy_pattern_launch_platform_t<Policy::o
                                                               omp::For,
                                                               omp::NoWait,
                                                               Schedule> {
-    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>,
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>::value,
         "Schedule must be one of:\nRuntime|Auto|{Default,}{Static,Dynamic,Guided}");
 };
 
@@ -100,7 +100,7 @@ struct omp_for_schedule : make_policy_pattern_launch_platform_t<Policy::openmp,
                                                               Platform::host,
                                                               omp::For,
                                                               Schedule> {
-    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>,
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>::value,
         "Schedule must be one of:\nRuntime|Auto|{Default,}{Static,Dynamic,Guided}");
 };
 
@@ -108,7 +108,7 @@ struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
 
-struct omp_for_nowait_exec : 
+struct omp_for_nowait_exec
     : make_policy_pattern_launch_platform_t<Policy::openmp,
                                             Pattern::forall,
                                             Launch::undefined,
