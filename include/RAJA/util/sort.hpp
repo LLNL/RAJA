@@ -535,6 +535,7 @@ merge_sort(Iter begin,
       new(&copyarr[cc]) value_type(std::move(begin[cc]));
     }
 
+    bool copyvalid = true;
     //for ( diff_type midpoint = 1; midpoint < len; midpoint *= 2 )  // O(log n) loop
     for ( diff_type midpoint = 16; midpoint < len; midpoint *= 2 )  // O(log n) loop
     {
@@ -548,16 +549,37 @@ merge_sort(Iter begin,
 
         if ( start + midpoint >= len )
         {
+          // copy sorted remainder over
+          if ( copyvalid )
+          {
+            std::move( copyarr + start, copyarr + finish, begin + start );
+          }
+          else
+          {
+            std::move( begin + start, begin + finish, copyarr + start );
+          }
           break;  // skip merge if no second half exists
         }
 
-        detail::merge_like_std( copyarr + start, copyarr + start + midpoint, copyarr + start + midpoint, copyarr + finish, begin + start, comp );
+        if ( copyvalid )  // switch arrays per level of merging to avoid copying back to copyarr
+        {
+          detail::merge_like_std( copyarr + start, copyarr + start + midpoint, copyarr + start + midpoint, copyarr + finish, begin + start, comp );
+        }
+        else
+        {
+          detail::merge_like_std( begin + start, begin + start + midpoint, begin + start + midpoint, begin + finish, copyarr + start, comp );
+        }
       }
 
-      // update copy
+      copyvalid = !copyvalid; // switch arrays per level of merging to avoid copying back to copyarr
+    }
+
+    // update copy if necessary
+    if ( copyvalid )
+    {
       for ( diff_type cc = 0; cc < len; ++cc )
       {
-        copyarr[cc] = std::move(*(begin + cc));
+        *(begin + cc) = std::move(copyarr[cc]);
       }
     }
   }
