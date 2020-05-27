@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-scan-exclusive.hpp"
+#include "tests/test-scan-exclusive.hpp"
 
-// Sequential policy types to test
-using SequentialExecTypes = camp::list< RAJA::seq_exec, 
-                                        RAJA::loop_exec >;
+#include "../forall/test-forall-utils.hpp"
+#include "../forall/test-forall-execpol.hpp"
 
 using SequentialExclusiveScanTypes = 
-  Test<cartesian_product< SequentialExecTypes, ListHostRes, OpTypes >>::Types;
+  Test<camp::cartesian_product< SequentialForallExecPols, 
+                                HostResourceList, 
+                                ScanOpTypes >>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, 
                                ScanFunctionalTest, 
