@@ -30,6 +30,11 @@ namespace policy
 namespace omp
 {
 
+namespace internal
+{
+    struct Schedule {};
+}
+
 struct Parallel {
 };
 
@@ -43,9 +48,22 @@ struct NoWait {
 };
 
 template <unsigned int ChunkSize>
-struct Static : std::integral_constant<unsigned int, ChunkSize> {
+struct Static : std::integral_constant<unsigned int, ChunkSize>, ::RAJA::policy::omp::internal::Schedule {
 };
 
+template <unsigned int ChunkSize>
+struct Dynamic : std::integral_constant<unsigned int, ChunkSize>, ::RAJA::policy::omp::internal::Schedule {
+};
+
+template <unsigned int ChunkSize>
+struct Guided : std::integral_constant<unsigned int, ChunkSize>, ::RAJA::policy::omp::internal::Schedule {
+};
+
+struct Auto : ::RAJA::policy::omp::internal::Schedule {
+};
+
+struct Runtime : ::RAJA::policy::omp::internal::Schedule {
+};
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -62,11 +80,35 @@ struct omp_parallel_region
                                             Platform::host> {
 };
 
+template <typename Schedule>
+struct omp_for_nowait_schedule : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host,
+                                                              omp::For,
+                                                              omp::NoWait,
+                                                              Schedule> {
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>,
+        "Schedule must be one of:\nRuntime|Auto|{Default,}{Static,Dynamic,Guided}");
+};
+
+
+template <typename Schedule>
+struct omp_for_schedule : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host,
+                                                              omp::For,
+                                                              Schedule> {
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Schedule>,
+        "Schedule must be one of:\nRuntime|Auto|{Default,}{Static,Dynamic,Guided}");
+};
+
 struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
 
-struct omp_for_nowait_exec
+struct omp_for_nowait_exec : 
     : make_policy_pattern_launch_platform_t<Policy::openmp,
                                             Pattern::forall,
                                             Launch::undefined,
@@ -76,12 +118,7 @@ struct omp_for_nowait_exec
 };
 
 template <unsigned int N>
-struct omp_for_static : make_policy_pattern_launch_platform_t<Policy::openmp,
-                                                              Pattern::forall,
-                                                              Launch::undefined,
-                                                              Platform::host,
-                                                              omp::For,
-                                                              omp::Static<N>> {
+struct omp_for_static : omp_for_schedule<omp::Static<N>> {
 };
 
 
