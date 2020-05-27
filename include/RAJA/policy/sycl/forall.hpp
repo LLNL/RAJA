@@ -132,6 +132,10 @@ RAJA_INLINE void forall_impl(sycl_exec<BlockSize, Async>,
     });
 
     if (!Async) { q.wait(); }
+
+    cl::sycl::free(idx, q);
+    cl::sycl::free(lbody, q);
+
   }
 }
 
