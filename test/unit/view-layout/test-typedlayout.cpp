@@ -12,15 +12,17 @@ template<typename T>
 class TypedLayoutUnitTest : public ::testing::Test {};
 
 using MyTypes = ::testing::Types<RAJA::Index_type,
+                                 int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                 unsigned int,
                                  short,
                                  unsigned short,
-                                 int,
-                                 unsigned int,
                                  long,
                                  unsigned long,
                                  long int,
                                  unsigned long int,
                                  long long,
+#endif
                                  unsigned long long>;
 
 
@@ -72,29 +74,27 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
   ASSERT_EQ(TypeParam(0), layout(0, 0));
 
   ASSERT_EQ(TypeParam(5), layout(1, 0));
-  ASSERT_EQ(TypeParam(15), layout(3, 0));
+  ASSERT_EQ(TypeParam(14), layout(2, 4));
 
   ASSERT_EQ(TypeParam(1), layout(0, 1));
-  ASSERT_EQ(TypeParam(5), layout(0, 5));
+  ASSERT_EQ(TypeParam(4), layout(0, 4));
 
-  // Check that we get the identity (mod 15)
-  TypeParam pK = 0;
-  for (int k = 0; k < 20; ++k) {
+  // Check that we get the identity
+  for (int k = 0; k < 15; ++k) {
 
     // inverse map
     TypeParam i, j;
-    layout.toIndices(pK, i, j);
+    layout.toIndices(k, i, j);
 
     // forward map
     TypeParam k2 = layout(i, j);
 
     // check ident
-    ASSERT_EQ(pK % 15, k2);
+    ASSERT_EQ(k, k2);
 
     // check with a and b
     ASSERT_EQ(k2, layout_a(i, j));
     ASSERT_EQ(k2, layout_b(i, j));
-    pK++;
   }
 
 }

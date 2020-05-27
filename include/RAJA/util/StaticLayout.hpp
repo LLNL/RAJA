@@ -32,22 +32,6 @@
 #include "RAJA/util/Permutations.hpp"
 
 
-// Note: this can be removed once https://github.com/LLNL/camp/pull/24 is
-// incorporated into camp
-namespace camp
-{
-template <idx_t N, typename T, T Idx0, T... IdxRest>
-struct seq_at<N, camp::int_seq<T, Idx0, IdxRest...>> {
-  static constexpr T value =
-      seq_at<N - 1, camp::int_seq<T, IdxRest...>>::value;
-};
-
-template <typename T, T Idx0, T... IdxRest>
-struct seq_at<0, camp::int_seq<T, Idx0, IdxRest...>> {
-  static constexpr T value = Idx0;
-};
-}
-
 namespace RAJA
 {
 

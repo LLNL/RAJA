@@ -7,14 +7,11 @@
 
 #include "tests/test-forall-segment.hpp"
 
-// Sequential execution policy types
-using SequentialForallExecPols = camp::list< RAJA::seq_exec,
-                                             RAJA::loop_exec,
-                                             RAJA::simd_exec >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallSegmentTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 HostResourceList, 
                                 SequentialForallExecPols>>::Types;
 

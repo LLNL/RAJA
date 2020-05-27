@@ -26,8 +26,8 @@ void ForallListSegmentTest(INDEX_TYPE N)
 
   srand ( time(NULL) );
 
-  for (INDEX_TYPE i = 0; i < N; ++i) {
-    INDEX_TYPE randval = rand() % N;
+  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
+    INDEX_TYPE randval = INDEX_TYPE(rand() % RAJA::stripIndexType(N));
     if ( i < randval ) {
       idx_array.push_back(i);
     }     
@@ -51,23 +51,25 @@ void ForallListSegmentTest(INDEX_TYPE N)
                                      &check_array,
                                      &test_array);
 
-  memset( test_array, 0, sizeof(INDEX_TYPE) * N );  
+  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+    test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
+  }
 
-  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
-  std::for_each( std::begin(idx_array), std::end(idx_array), 
-                 [=](INDEX_TYPE& idx ) { test_array[idx] = idx; }
-               );
+  for (size_t i = 0; i < idxlen; ++i) {
+    test_array[ RAJA::stripIndexType(idx_array[i]) ] = idx_array[i];
+  }
 
   RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[idx] = idx;
-  });
+    working_array[RAJA::stripIndexType(idx)] = idx;
+  }); 
 
-  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   // 
-  for (INDEX_TYPE i = 0; i < N; i++) {
-    ASSERT_EQ(test_array[i], check_array[i]);
+  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
@@ -83,11 +85,11 @@ TYPED_TEST_P(ForallSegmentTest, ListSegmentForall)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(13));
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(2047));
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000);
+  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(32000));
 
 }
 

@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(atomic)
-
 add_subdirectory(forall)
+
+add_subdirectory(kernel)
+
+add_subdirectory(scan)

@@ -9,17 +9,11 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-// TBB execution policy types
-using TBBForallExecPols = camp::list< RAJA::tbb_for_exec,
-                                      RAJA::tbb_for_static< >,
-                                      RAJA::tbb_for_static< 2 >,
-                                      RAJA::tbb_for_static< 4 >,
-                                      RAJA::tbb_for_static< 8 >,
-                                      RAJA::tbb_for_dynamic >;
+#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for TBB tests
 using TBBForallSegmentTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
+  Test< camp::cartesian_product<StrongIdxTypeList,
                                 HostResourceList, 
                                 TBBForallExecPols> >::Types;
 
