@@ -577,10 +577,7 @@ merge_sort(Iter begin,
     // update copy if necessary
     if ( copyvalid )
     {
-      for ( diff_type cc = 0; cc < len; ++cc )
-      {
-        *(begin + cc) = std::move(copyarr[cc]);
-      }
+      std::move( copyarr, copyarr + len, begin );
     }
   }
   //else
