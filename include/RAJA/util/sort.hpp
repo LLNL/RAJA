@@ -413,6 +413,83 @@ intro_sort(Iter begin,
 }
 
 /*!
+    \brief merge a range with midpoint using comparison function
+    with local range/2 copy
+*/
+template <typename Iter, typename Compare>
+void
+RAJA_INLINE RAJA_HOST_DEVICE
+inplace_merge(  Iter first,
+                Iter middle,
+                Iter last,
+                Compare comp  )
+{
+  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using value_type = RAJA::detail::IterVal<Iter>;
+
+  // min helper
+  auto minlam = [] (diff_type a, diff_type b) {return (a < b) ? a : b;};
+
+  diff_type len = last - first;
+  diff_type copylen = middle - first;
+
+  if ( comp(*middle, *(middle-1)) && comp(*(middle+1), *middle) )
+  {
+    // everything already in order, done
+    return;
+  }
+
+  // Manage the lifetime of the buffer and objects constructed in the buffer
+  using buf_deleter_type = FreeAlignedType<value_type, diff_type>;
+  buf_deleter_type buf_deleter;
+
+  std::unique_ptr<value_type, buf_deleter_type&> copy_buf(
+      RAJA::allocate_aligned_type<value_type>( RAJA::DATA_ALIGN, copylen * sizeof(value_type) ),
+      buf_deleter);
+
+  value_type* copyarr = copy_buf.get();
+
+  // check memory allocation worked
+  if (copyarr == nullptr) {
+    RAJA_ABORT_OR_THROW( "merge_sort temporary memory allocation failed" );
+  }
+
+  // move construct input into buffer storage
+  // use buf_deleter.size as index to keep track of objects constructed
+  for ( diff_type& cc = buf_deleter.size; cc < copylen; ++cc )
+  {
+    new(&copyarr[cc]) value_type(std::move(first[cc]));
+  }
+
+  // merge
+  for ( int cur = 0; cur < copylen; )
+  {
+    if ( middle >= last ) // moved all second half, put copy into remainder
+    {
+      std::move( copyarr+cur, copyarr+copylen, first );
+      break;
+    }
+    else if ( first == middle ) // moved all first half, done
+    {
+      break;
+    }
+
+    if ( comp(*middle, copyarr[cur]) )
+    {
+      *first = std::move(*middle);
+      ++middle;
+    }
+    else
+    {
+      *first = std::move(copyarr[cur]);
+      ++cur;
+    }
+    ++first;
+  }
+  return;
+}
+
+/*!
     \brief merge given two ranges using comparison function
     while copies are outside, somewhat follows STL API
 */

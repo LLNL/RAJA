@@ -81,7 +81,8 @@ inline void sort_task(Sorter sorter,
 
 #pragma omp taskwait
 
-    std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
+    //std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
+    RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
   }
 }
 
@@ -125,7 +126,8 @@ inline void sort_parallel_region(Sorter sorter,
     if (thread_id % end_offset == 0) {
 
       // this thread merges ranges [i_begin, i_middle) and [i_middle, i_end)
-      std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
+      //std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
+      RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end, comp);
     }
   }
 }
@@ -223,8 +225,10 @@ unstable_pairs(const ExecPolicy&,
                ValIter vals_begin,
                Compare comp)
 {
-  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  RAJA_ABORT_OR_THROW("Unimplemented");
+  auto begin  = RAJA::zip(keys_begin, vals_begin);
+  auto end    = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::openmp::sort(detail::UnstableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 /*!
@@ -238,8 +242,10 @@ stable_pairs(const ExecPolicy&,
              ValIter vals_begin,
              Compare comp)
 {
-  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  RAJA_ABORT_OR_THROW("Unimplemented");
+  auto begin  = RAJA::zip(keys_begin, vals_begin);
+  auto end    = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::openmp::sort(detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 }  // namespace sort
