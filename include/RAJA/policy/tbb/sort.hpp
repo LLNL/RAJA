@@ -93,7 +93,8 @@ struct TbbSortTask : tbb::task
       spawn_and_wait_for_all(sort_tank_front);
 
       // and merge the results
-      std::inplace_merge(begin, middle, end, comp);
+      RAJA::detail::inplace_merge(begin, middle, end, comp);
+      //std::inplace_merge(begin, middle, end, comp);
     }
 
     return nullptr;
@@ -167,8 +168,10 @@ unstable_pairs(const ExecPolicy&,
                ValIter vals_begin,
                Compare comp)
 {
-  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  RAJA_ABORT_OR_THROW("Unimplemented");
+  auto begin  = RAJA::zip(keys_begin, vals_begin);
+  auto end    = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::tbb_sort(detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 /*!
@@ -182,8 +185,10 @@ stable_pairs(const ExecPolicy&,
              ValIter vals_begin,
              Compare comp)
 {
-  RAJA_UNUSED_VAR(keys_begin, keys_end, vals_begin, comp);
-  RAJA_ABORT_OR_THROW("Unimplemented");
+  auto begin  = RAJA::zip(keys_begin, vals_begin);
+  auto end    = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::tbb_sort(detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 }  // namespace sort
