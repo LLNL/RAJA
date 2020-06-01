@@ -48,7 +48,7 @@ unstable(const ExecPolicy&,
          Iter end,
          Compare comp)
 {
-  unstable(::RAJA::loop_exec{}, begin, end, comp);
+  RAJA::impl::sort::unstable(::RAJA::loop_exec{}, begin, end, comp);
 }
 
 /*!
@@ -61,7 +61,7 @@ stable(const ExecPolicy&,
             Iter end,
             Compare comp)
 {
-  stable(::RAJA::loop_exec{}, begin, end, comp);
+  RAJA::impl::sort::stable(::RAJA::loop_exec{}, begin, end, comp);
 }
 
 /*!
@@ -75,7 +75,7 @@ unstable_pairs(const ExecPolicy&,
                ValIter vals_begin,
                Compare comp)
 {
-  unstable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
+  RAJA::impl::sort::unstable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
 }
 
 /*!
@@ -89,7 +89,7 @@ stable_pairs(const ExecPolicy&,
              ValIter vals_begin,
              Compare comp)
 {
-  stable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
+  RAJA::impl::sort::stable_pairs(::RAJA::loop_exec{}, keys_begin, keys_end, vals_begin, comp);
 }
 
 }  // namespace sort

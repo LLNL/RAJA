@@ -430,7 +430,6 @@ inplace_merge(  Iter first,
   // min helper
   auto minlam = [] (diff_type a, diff_type b) {return (a < b) ? a : b;};
 
-  diff_type len = last - first;
   diff_type copylen = middle - first;
 
   if ( comp(*middle, *(middle-1)) && comp(*(middle+1), *middle) )
