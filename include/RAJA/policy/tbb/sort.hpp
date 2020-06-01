@@ -171,7 +171,7 @@ unstable_pairs(const ExecPolicy&,
   auto begin  = RAJA::zip(keys_begin, vals_begin);
   auto end    = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::tbb_sort(detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
+  detail::tbb_sort(detail::UnstableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 }
 
 /*!
