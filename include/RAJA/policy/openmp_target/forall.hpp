@@ -47,8 +47,10 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Omp omp_res;
-  if (&res) omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
+  char *omp_ptr;
+
+  RAJA::resources::Omp omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
+  omp_res.get_ptr_dev(omp_ptr);
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
@@ -98,8 +100,10 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                Iterable&& iter,
                                                Func&& loop_body)
 {
-  RAJA::resources::Omp omp_res;
-  if (&res) omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
+  char *omp_ptr;
+
+  RAJA::resources::Omp omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
+  omp_res.get_ptr_dev(omp_ptr);
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
@@ -107,7 +111,8 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
   RAJA_EXTRACT_BED_IT(iter);
 
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    firstprivate(body,begin_it)
+    firstprivate(body,begin_it) \
+    depend(inout : omp_ptr)
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     Body ib = body;
     ib(begin_it[i]);
