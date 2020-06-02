@@ -437,7 +437,7 @@ inplace_merge(  Iter first,
     RAJA_ABORT_OR_THROW( "invalid inplace_merge range, check first/middle/last indices" );
   }
 
-  if ( comp(*(middle+1), *middle) )
+  if ( !comp(*middle, *(middle-1)) )
   {
     // everything already in order, done
     return;
