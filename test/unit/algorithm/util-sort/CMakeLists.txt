@@ -42,9 +42,9 @@ if(RAJA_ENABLE_CUDA)
     NAME test-intro-sort-cuda
     SOURCES test-intro-sort-cuda.cpp)
 
-  raja_add_test(
-    NAME test-merge-sort-cuda
-    SOURCES test-merge-sort-cuda.cpp)
+#  raja_add_test(
+#    NAME test-merge-sort-cuda
+#    SOURCES test-merge-sort-cuda.cpp)
 endif()
 
 if(RAJA_ENABLE_HIP)

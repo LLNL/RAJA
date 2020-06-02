@@ -418,7 +418,7 @@ intro_sort(Iter begin,
 */
 template <typename Iter, typename Compare>
 void
-RAJA_INLINE RAJA_HOST_DEVICE
+RAJA_INLINE 
 inplace_merge(  Iter first,
                 Iter middle,
                 Iter last,
@@ -495,7 +495,7 @@ inplace_merge(  Iter first,
 template <typename Iter1, typename Iter2, typename OutIter, typename Compare>
 //constexpr OutIter // <-- std:: return value
 void
-RAJA_INLINE RAJA_HOST_DEVICE
+RAJA_INLINE 
 merge_like_std( Iter1 first1,
                 Iter1 last1,
                 Iter2 first2,
@@ -556,7 +556,7 @@ merge_like_std( Iter1 first1,
     and using O(N*lg(N)) comparisons and O(N) memory
 */
 template <typename Iter, typename Compare>
-RAJA_INLINE RAJA_HOST_DEVICE
+RAJA_INLINE 
 void
 merge_sort(Iter begin,
            Iter end,
@@ -666,7 +666,7 @@ merge_sort(Iter begin,
 #else
   // TODO: implement for device code
   RAJA_UNUSED_VAR(begin, end, comp);
-  RAJA_ABORT_OR_THROW( "Attempting to merge_sort empty array" );
+  RAJA_ABORT_OR_THROW( "merge_sort on CUDA device unsupported" );
 #endif
 }
 
@@ -768,7 +768,7 @@ intro_sort(Iter begin,
 */
 template <typename Iter,
           typename Compare = operators::less<detail::IterVal<Iter>>>
-RAJA_HOST_DEVICE RAJA_INLINE
+RAJA_INLINE
 concepts::enable_if<type_traits::is_iterator<Iter>>
 merge_sort(Iter begin,
            Iter end,

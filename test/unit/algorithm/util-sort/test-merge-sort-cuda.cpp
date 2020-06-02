@@ -12,7 +12,8 @@
 #include "test-util-sort.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-
+/*
+// Reserved for future development.
 using CudaMergeSortTypes = Test< camp::cartesian_product<
                                                              CudaMergeSortSorters,
                                                              CudaResourceList,
@@ -23,6 +24,6 @@ using CudaMergeSortTypes = Test< camp::cartesian_product<
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
                                 SortUnitTest,
                                 CudaMergeSortTypes );
-
+*/
 #endif
 
