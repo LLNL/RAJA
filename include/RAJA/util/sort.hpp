@@ -432,7 +432,12 @@ inplace_merge(  Iter first,
 
   diff_type copylen = middle - first;
 
-  if ( comp(*middle, *(middle-1)) && comp(*(middle+1), *middle) )
+  if ( first == middle || middle == last )
+  {
+    RAJA_ABORT_OR_THROW( "invalid inplace_merge range, check first/middle/last indices" );
+  }
+
+  if ( comp(*(middle+1), *middle) )
   {
     // everything already in order, done
     return;
@@ -450,7 +455,7 @@ inplace_merge(  Iter first,
 
   // check memory allocation worked
   if (copyarr == nullptr) {
-    RAJA_ABORT_OR_THROW( "merge_sort temporary memory allocation failed" );
+    RAJA_ABORT_OR_THROW( "inplace_merge temporary memory allocation failed" );
   }
 
   // move construct input into buffer storage
@@ -461,14 +466,14 @@ inplace_merge(  Iter first,
   }
 
   // merge
-  for ( int cur = 0; cur < copylen; )
+  for ( diff_type cur = 0; cur < copylen; )
   {
     if ( middle >= last ) // moved all second half, put copy into remainder
     {
       std::move( copyarr+cur, copyarr+copylen, first );
       break;
     }
-    else if ( first == middle ) // moved all first half, done
+    else if ( first == middle ) // everything prior to middle is sorted, done
     {
       break;
     }
@@ -663,10 +668,6 @@ merge_sort(Iter begin,
       // PRO - Can use on GPU, O(1) storage required.
       // CON - Shifting would cause slowdown O(n^2 log n).
   //}
-#else
-  // TODO: implement for device code
-  RAJA_UNUSED_VAR(begin, end, comp);
-  RAJA_ABORT_OR_THROW( "merge_sort on CUDA device unsupported" );
 #endif
 }
 
