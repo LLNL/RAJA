@@ -32,7 +32,6 @@ namespace omp
 ///
 
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
-// RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
 RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>& exec,
                              Iterable&& iter,
                              Func&& loop_body)
@@ -41,7 +40,6 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
   forall_impl(res, exec, iter, loop_body);
 }
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
-// RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
 RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
                                                const omp_target_parallel_for_exec<ThreadsPerTeam>&,
                                                Iterable&& iter,
