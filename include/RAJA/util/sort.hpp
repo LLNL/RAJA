@@ -434,7 +434,8 @@ inplace_merge(  Iter first,
 
   if ( first == middle || middle == last )
   {
-    RAJA_ABORT_OR_THROW( "invalid inplace_merge range, check first/middle/last indices" );
+    // at least one side empty, already sorted
+    return;
   }
 
   if ( !comp(*middle, *(middle-1)) )
