@@ -59,13 +59,8 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
 
-#if !defined(RAJA_ENABLE_TARGET_OPENMP)
-  //
-  // Note: RAJA OpenMP target reductions do not currently support reset
-  //
   min.reset(min_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
-#endif
 
   DATA_TYPE factor = 3; 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {

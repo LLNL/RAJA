@@ -495,7 +495,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLocGenericIndex2)
 
   RAJA::ReduceMinLoc<ReducePolicy, double, Index> minloc_reducer;
 
-  minloc_reducer.reset({1024.0, Index(0)});
+  minloc_reducer.reset(1024.0, Index(0));
 
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) {
@@ -549,7 +549,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLocGenericIndex2)
 
   RAJA::ReduceMaxLoc<ReducePolicy, double, Index> maxloc_reducer;
 
-  maxloc_reducer.reset({0.0, Index()});
+  maxloc_reducer.reset(0.0, Index());
 
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) {

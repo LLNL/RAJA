@@ -71,14 +71,9 @@ void ForallReduceMaxLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
   ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
 
-#if !defined(RAJA_ENABLE_TARGET_OPENMP)
-  //
-  // Note: RAJA OpenMP target reductions do not currently support reset
-  //
   max.reset(max_init, maxloc_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
   ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), maxloc_init);
-#endif
 
   DATA_TYPE factor = 2;
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
