@@ -126,9 +126,11 @@ RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
 #if defined(__CUDA_ARCH__)
+  printf( "%s\n", str );
   asm ("trap;");
 
 #elif defined(__HIPCC__)
+  printf( "%s\n", str );
   abort();
 #else 
 #ifdef RAJA_COMPILER_MSVC
