@@ -13,15 +13,15 @@
 
 #include "test-reducer-utils.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
-using HipReducerResetTypes = 
-  Test< camp::cartesian_product< HipReducerPolicyList,
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetReducerResetTypes = 
+  Test< camp::cartesian_product< OpenMPTargetReducerPolicyList,
                                  DataTypeList,
-                                 HipResourceList,
-                                 HipForoneList > >::Types;
+                                 OpenMPTargetResourceList,
+                                 SequentialForoneList > >::Types;
 
 
-INSTANTIATE_TYPED_TEST_SUITE_P(HipResetTest,
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetResetTest,
                                ReducerResetUnitTest,
-                               HipReducerResetTypes);
+                               OpenMPTargetReducerResetTypes);
 #endif

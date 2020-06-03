@@ -17,7 +17,9 @@ using SequentialForallExecPols = camp::list< RAJA::seq_exec,
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
-  camp::list< RAJA::omp_parallel_exec<RAJA::seq_exec>,
+  camp::list< // This policy works for the tests, but commenting it out
+              // since its usage is questionable
+              // RAJA::omp_parallel_exec<RAJA::seq_exec>,
               RAJA::omp_for_nowait_exec,
               RAJA::omp_for_exec,
               RAJA::omp_parallel_for_exec >;

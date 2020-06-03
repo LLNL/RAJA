@@ -14,16 +14,14 @@
 #include "test-reducer-utils.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducerResetTypes = Test< camp::cartesian_product<
-                                                        CudaReducerPolicyList,
-                                                        DataTypeList,
-                                                        CudaResourceList,
-                                                        CudaForoneList
-                                                      >
-                             >::Types;
+using CudaReducerResetTypes = 
+  Test< camp::cartesian_product< CudaReducerPolicyList,
+                                 DataTypeList,
+                                 CudaResourceList,
+                                 CudaForoneList > >::Types;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(CudaResetTest,
-                              ReducerResetUnitTest,
-                              CudaReducerResetTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(CudaResetTest,
+                               ReducerResetUnitTest,
+                               CudaReducerResetTypes);
 #endif

@@ -5,19 +5,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "tests/test-forall-reduce-sanity.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
 
 #include "../test-forall-execpol.hpp"
+#include "../test-reducepol.hpp"
 
 // Cartesian product of types for TBB tests
-using TBBForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
+using TBBForallReduceSanityTypes =
+  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
                                 HostResourceList, 
-                                TBBForallExecPols> >::Types;
+                                TBBForallExecPols,
+                                TBBReducePols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
-                               ForallSegmentTest,
-                               TBBForallSegmentTypes);
+                               ForallReduceSanityTest,
+                               TBBForallReduceSanityTypes);
+
 #endif
