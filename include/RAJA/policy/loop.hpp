@@ -25,5 +25,7 @@
 #include "RAJA/policy/loop/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/policy/loop/WorkGroup.hpp"
+
 
 #endif  // closing endif for header file include guard

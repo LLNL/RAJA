@@ -53,6 +53,11 @@ struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
 using loop_segit = loop_exec;
 
 ///
+/// WorkGroup execution policies
+///
+using loop_work = seq_exec;
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
@@ -68,6 +73,7 @@ using loop_reduce = seq_reduce;
 using policy::loop::loop_exec;
 using policy::loop::loop_reduce;
 using policy::loop::loop_segit;
+using policy::loop::loop_work;
 
 }  // namespace RAJA
 

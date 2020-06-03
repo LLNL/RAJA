@@ -88,6 +88,11 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
 //
 
 ///
+/// WorkGroup execution policies
+///
+struct cuda_work { };
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction reduction policies
@@ -182,6 +187,8 @@ using policy::cuda::cuda_exec;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+
+using policy::cuda::cuda_work;
 
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
