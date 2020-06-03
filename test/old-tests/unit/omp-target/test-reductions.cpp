@@ -16,59 +16,6 @@
 
 #include <tuple>
 
-template <typename T>
-class ReductionConstructorTestTargetOMP : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP);
-
-TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
-{
-  using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
-  using NumericType = typename std::tuple_element<1, TypeParam>::type;
-
-  NumericType initVal = 5;
-
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
-
-  RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal, LocTup);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal, LocTup);
-
-  ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(initVal));
-  ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(initVal));
-  ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(initVal));
-  ASSERT_EQ((NumericType)reduce_minloc.get(), (NumericType)(initVal));
-  ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)1);
-  ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(initVal));
-  ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
-
-  ASSERT_EQ((NumericType)reduce_minloctup.get(), (NumericType)(initVal));
-  ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(initVal));
-  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
-  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())), (RAJA::Index_type)1);
-  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
-  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())), (RAJA::Index_type)1);
-}
-
-REGISTER_TYPED_TEST_SUITE_P(ReductionConstructorTestTargetOMP,
-                            ReductionConstructor);
-
-using constructor_types =
-    ::testing::Types<std::tuple<RAJA::omp_target_reduce, int>,
-                     std::tuple<RAJA::omp_target_reduce, float>,
-                     std::tuple<RAJA::omp_target_reduce, double>>;
-
-
-INSTANTIATE_TYPED_TEST_SUITE_P(ReduceBasicTestsTargetOMP,
-                              ReductionConstructorTestTargetOMP,
-                              constructor_types);
-
 template <typename TUPLE>
 class ReductionCorrectnessTestTargetOMP : public ::testing::Test
 {

@@ -5,20 +5,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "tests/test-forall-reduce-sanity.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "../test-forall-execpol.hpp"
+#include "../test-reducepol.hpp"
 
-// Cartesian product of types for Cuda tests
-using CudaForallSegmentTypes = 
-  Test< camp::cartesian_product<StrongIdxTypeList,
+// Cartesian product of types for CUDA tests
+using CudaForallReduceSanityTypes =
+  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
                                 CudaResourceList, 
-                                CudaForallExecPols> >::Types;
+                                CudaForallExecPols,
+                                CudaReducePols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
-                               ForallSegmentTest,
-                               CudaForallSegmentTypes);
+                               ForallReduceSanityTest,
+                               CudaForallReduceSanityTypes);
 
 #endif

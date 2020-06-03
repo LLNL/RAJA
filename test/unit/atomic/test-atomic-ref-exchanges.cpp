@@ -142,19 +142,19 @@ GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test exchange method
-  forone<<<1,1>>>( [=] __device__ () {swapper[0] = test1.exchange( swapper[0] );} );
+  forone<forone_cuda>( [=] __device__ () {swapper[0] = test1.exchange( swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)91 );
   ASSERT_EQ( swapper[0], (T)0 );
 
   // test CAS method
-  forone<<<1,1>>>( [=] __device__ () {swapper[0] = test1.CAS( (T)91, swapper[0] );} );
+  forone<forone_cuda>( [=] __device__ () {swapper[0] = test1.CAS( (T)91, swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( swapper[0], (T)91 );
 
   // test strong exchange method
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.compare_exchange_strong( testval[0], testval[0] );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_strong( testval[0], testval[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], false );
   ASSERT_EQ( test1, (T)0 );
@@ -162,7 +162,7 @@ GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
   ASSERT_EQ( testval[0], (T)0 );
 
   // test weak exchange method (same as strong exchange)
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.compare_exchange_weak( testval[0], swapper[0] );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_weak( testval[0], swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], true );
   ASSERT_EQ( test1, (T)91 );

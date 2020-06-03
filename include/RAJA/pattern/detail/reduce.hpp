@@ -337,12 +337,14 @@ class BaseReduceMinLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -352,6 +354,12 @@ public:
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value
@@ -422,12 +430,14 @@ class BaseReduceMaxLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -437,6 +447,12 @@ public:
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value

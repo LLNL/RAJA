@@ -5,19 +5,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "tests/test-forall-reduce-sanity.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #include "../test-forall-execpol.hpp"
+#include "../test-reducepol.hpp"
 
 // Cartesian product of types for OpenMP target tests
-using OpenMPTargetForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
+using OpenMPTargetForallReduceSanityTypes =
+  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
                                 OpenMPTargetResourceList, 
-                                OpenMPTargetForallExecPols> >::Types;
+                                OpenMPTargetForallExecPols,
+                                OpenMPTargetReducePols>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTarget,
-                               ForallSegmentTest,
-                               OpenMPTargetForallSegmentTypes);
+                               ForallReduceSanityTest,
+                               OpenMPTargetForallReduceSanityTypes);
+
 #endif
