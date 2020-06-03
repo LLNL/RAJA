@@ -427,9 +427,6 @@ inplace_merge(  Iter first,
   using diff_type = RAJA::detail::IterDiff<Iter>;
   using value_type = RAJA::detail::IterVal<Iter>;
 
-  // min helper
-  auto minlam = [] (diff_type a, diff_type b) {return (a < b) ? a : b;};
-
   diff_type copylen = middle - first;
 
   if ( first == middle || middle == last )
