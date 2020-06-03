@@ -565,7 +565,6 @@ merge_sort(Iter begin,
            Iter end,
            Compare comp)
 {
-#if !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
   using diff_type = RAJA::detail::IterDiff<Iter>;
   using value_type = RAJA::detail::IterVal<Iter>;
 
@@ -666,7 +665,6 @@ merge_sort(Iter begin,
       // PRO - Can use on GPU, O(1) storage required.
       // CON - Shifting would cause slowdown O(n^2 log n).
   //}
-#endif
 }
 
 }  // namespace detail
