@@ -65,6 +65,13 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      StrongULL,
                                      unsigned long long>;
 
+//
+// Data types for forall reduction tests
+//
+using ReductionDataTypeList = camp::list<int,
+                                         float,
+                                         double>;
+
 
 //
 // Memory resource types for beck-end execution

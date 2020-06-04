@@ -10,14 +10,14 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "test-forall-reduce-sanity.hpp"
-
 #include <cstdlib>
 #include <numeric>
 
+#include "../../test-forall-utils.hpp"
+
 template <typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceSumSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
@@ -77,19 +77,28 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 }
 
 
-TYPED_TEST_P(ForallReduceSanityTest, ReduceSumSanityForall)
+TYPED_TEST_SUITE_P(ForallReduceSumSanityTest);
+template <typename T>
+class ForallReduceSumSanityTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallReduceSumSanityTest, ReduceSumSanityForall)
 {
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallReduceSumSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceSumSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceSumSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
+
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceSumSanityTest,
+                            ReduceSumSanityForall);
 
 #endif  // __TEST_FORALL_REDUCESUM_SANITY_HPP__

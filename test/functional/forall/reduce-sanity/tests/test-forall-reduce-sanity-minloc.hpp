@@ -10,16 +10,15 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "test-forall-reduce-sanity.hpp"
-
 #include <cstdlib>
 #include <numeric>
-
 #include <iostream>
+
+#include "../../test-forall-utils.hpp"
 
 template <typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMinLocSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
@@ -96,20 +95,28 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
                                       test_array);
 }
 
+TYPED_TEST_SUITE_P(ForallReduceMinLocSanityTest);
+template <typename T>
+class ForallReduceMinLocSanityTest : public ::testing::Test
+{
+};
 
-TYPED_TEST_P(ForallReduceSanityTest, ReduceMinLocSanityForall)
+TYPED_TEST_P(ForallReduceMinLocSanityTest, ReduceMinLocSanityForall)
 {
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
-                               EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
-                               EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMinLocSanityTest<DATA_TYPE, WORKING_RES, 
-                               EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceMinLocSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                   EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceMinLocSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                   EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMinLocSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                   EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
+
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceMinLocSanityTest,
+                            ReduceMinLocSanityForall);
 
 #endif  // __TEST_FORALL_REDUCEMINLOC_SANITY_HPP__

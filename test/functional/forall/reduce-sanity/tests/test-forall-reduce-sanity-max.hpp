@@ -10,14 +10,14 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "test-forall-reduce-sanity.hpp"
-
 #include <cstdlib>
 #include <numeric>
 
+#include "../../test-forall-utils.hpp"
+
 template <typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMaxSanityTest(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMaxSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
@@ -80,20 +80,28 @@ void ForallReduceMaxSanityTest(RAJA::Index_type first, RAJA::Index_type last)
                                       test_array);
 }
 
+TYPED_TEST_SUITE_P(ForallReduceMaxSanityTest);
+template <typename T>
+class ForallReduceMaxSanityTest : public ::testing::Test
+{
+};
 
-TYPED_TEST_P(ForallReduceSanityTest, ReduceMaxSanityForall)
+TYPED_TEST_P(ForallReduceMaxSanityTest, ReduceMaxSanityForall)
 {
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMaxSanityTest<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceMaxSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceMaxSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMaxSanityTestImpl<DATA_TYPE, WORKING_RES, 
+                                EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
+
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxSanityTest,
+                            ReduceMaxSanityForall);
 
 #endif  // __TEST_FORALL_REDUCEMAX_SANITY_HPP__
