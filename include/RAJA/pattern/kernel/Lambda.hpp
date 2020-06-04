@@ -120,7 +120,7 @@ namespace statement
  */
 template <camp::idx_t BodyIdx, typename... Args >
 struct Lambda : internal::Statement<camp::nil> {
-  const static camp::idx_t loop_body_index = BodyIdx;
+  static const camp::idx_t loop_body_index = BodyIdx;
 };
 
 }  // end namespace statement

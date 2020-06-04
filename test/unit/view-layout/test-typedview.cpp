@@ -23,32 +23,38 @@ template<typename T>
 class TypedIntegralViewUnitTest : public ::testing::Test {};
 
 using allTypes = ::testing::Types<RAJA::Index_type,
+                                  int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                  unsigned int,
                                   char,
                                   unsigned char,
                                   short,
                                   unsigned short,
-                                  int,
-                                  unsigned int,
                                   long,
                                   unsigned long,
                                   long int,
                                   unsigned long int,
                                   long long,
-                                  unsigned long long, float , double>;
+                                  unsigned long long, 
+                                  float , 
+#endif
+                                  double>;
 
 using IntegralTypes = ::testing::Types<RAJA::Index_type,
-                                  char,
-                                  unsigned char,
-                                  short,
-                                  unsigned short,
-                                  int,
-                                  unsigned int,
-                                  long,
-                                  unsigned long,
-                                  long int,
-                                  unsigned long int,
-                                  long long,
-                                  unsigned long long>;
+                                       int,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+                                       unsigned int,
+                                       char,
+                                       unsigned char,
+                                       short,
+                                       unsigned short,
+                                       long,
+                                       unsigned long,
+                                       long int,
+                                       unsigned long int,
+                                       long long,
+#endif
+                                       unsigned long long>;
 
 TYPED_TEST_SUITE(TypedViewUnitTest, allTypes);
 TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, allTypes);
