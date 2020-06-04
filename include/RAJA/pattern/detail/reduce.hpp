@@ -128,9 +128,9 @@ public:
   ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
 
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
-      : val{val}, loc{loc}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_)
+      : val{val_}, loc{loc_}
   {
   }
 
@@ -315,7 +315,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -384,7 +384,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
