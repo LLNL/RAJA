@@ -99,7 +99,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n in keys...\n";
   printArray(in, N);
-  std::cout << "\n in (key, value)s...\n";
+  std::cout << "\n in (key, value) pairs...\n";
   printArray(in, in_vals, N);
   std::cout << "\n";
 
