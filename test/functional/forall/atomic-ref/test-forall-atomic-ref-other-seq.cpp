@@ -11,16 +11,15 @@
 
 #include "tests/test-forall-atomic-ref-other.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 #include "../test-forall-atomic-utils.hpp"
 
-using SeqAtomicForallRefOtherTypes = Test< camp::cartesian_product<
-                                                                  SequentialForallAtomicExecPols,
-                                                                  SequentialAtomicPols,
-                                                                  HostResourceList,
-                                                                  AtomicDataTypeList>
-                                        >::Types;
+using SeqAtomicForallRefOtherTypes = 
+  Test< camp::cartesian_product< SequentialForallAtomicExecPols,
+                                 SequentialAtomicPols,
+                                 HostResourceList,
+                                 AtomicDataTypeList> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
                                 ForallAtomicRefOtherFunctionalTest,

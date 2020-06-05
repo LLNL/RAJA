@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_INDEXSET_EXECPOL_HPP__
-#define __TEST_FORALL_INDEXSET_EXECPOL_HPP__
+#ifndef RAJA_test_indexset_execpol_HPP
+#define RAJA_test_indexset_execpol_HPP
 
 #include "RAJA/RAJA.hpp"
 
@@ -65,4 +65,4 @@ using HipForallIndexSetExecPols =
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<256>> >;
 #endif
 
-#endif  // __TEST_FORALL_INDEXSET_EXECPOL_HPP__
+#endif  // RAJA_test_indexset_execpol_HPP

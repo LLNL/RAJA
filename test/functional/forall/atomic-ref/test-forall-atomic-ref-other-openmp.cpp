@@ -11,17 +11,16 @@
 
 #include "tests/test-forall-atomic-ref-other.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OmpAtomicForallRefOtherTypes = Test< camp::cartesian_product<
-                                                                  OpenMPForallExecPols,
-                                                                  OpenMPAtomicPols,
-                                                                  HostResourceList,
-                                                                  AtomicDataTypeList >
-                                        >::Types;
+using OmpAtomicForallRefOtherTypes = 
+  Test< camp::cartesian_product< OpenMPForallExecPols,
+                                 OpenMPAtomicPols,
+                                 HostResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTest,
                                 ForallAtomicRefOtherFunctionalTest,

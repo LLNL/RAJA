@@ -7,7 +7,7 @@
 
 #include "tests/test-forall-segment-view.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallSegmentTypes =

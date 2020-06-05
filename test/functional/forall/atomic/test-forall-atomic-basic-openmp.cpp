@@ -14,13 +14,12 @@
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OmpAtomicForallBasicTypes = Test< camp::cartesian_product<
-                                                                 OpenMPForallAtomicExecPols,
-                                                                 OpenMPAtomicPols,
-                                                                 HostResourceList,
-                                                                 AtomicSegmentList,
-                                                                 AtomicDataTypeList >
-                                      >::Types;
+using OmpAtomicForallBasicTypes = 
+  Test< camp::cartesian_product< OpenMPForallAtomicExecPols,
+                                 OpenMPAtomicPols,
+                                 HostResourceList,
+                                 AtomicSegmentList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTest,
                                 ForallAtomicBasicFunctionalTest,

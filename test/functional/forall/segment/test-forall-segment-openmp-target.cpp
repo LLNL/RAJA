@@ -9,7 +9,7 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallSegmentTypes =

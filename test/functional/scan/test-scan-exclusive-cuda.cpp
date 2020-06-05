@@ -10,7 +10,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 using CudaExclusiveScanTypes = 
   Test<camp::cartesian_product< CudaForallExecPols, 

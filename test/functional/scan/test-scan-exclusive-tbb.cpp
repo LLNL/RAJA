@@ -11,7 +11,7 @@
 #if defined(RAJA_ENABLE_TBB)
 
 #include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 using TBBExclusiveScanTypes = 
   Test<camp::cartesian_product< TBBForallExecPols, 

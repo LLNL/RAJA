@@ -13,12 +13,11 @@
 
 #include "../test-forall-atomic-utils.hpp"
 
-using SeqAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 SequentialForallAtomicExecPols,
-                                                                 SequentialAtomicPols,
-                                                                 HostResourceList,
-                                                                 AtomicDataTypeList >
-                                      >::Types;
+using SeqAtomicForallViewTypes = 
+  Test< camp::cartesian_product< SequentialForallAtomicExecPols,
+                                 SequentialAtomicPols,
+                                 HostResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
                                 ForallAtomicViewFunctionalTest,

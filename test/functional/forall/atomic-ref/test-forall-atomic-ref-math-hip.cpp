@@ -11,17 +11,16 @@
 
 #include "tests/test-forall-atomic-ref-math.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
-using HipAtomicForallRefMathTypes = Test< camp::cartesian_product<
-                                                                  HipForallExecPols,
-                                                                  HipAtomicPols,
-                                                                  HipResourceList,
-                                                                  AtomicDataTypeList >
-                                        >::Types;
+using HipAtomicForallRefMathTypes = 
+  Test< camp::cartesian_product< HipForallExecPols,
+                                 HipAtomicPols,
+                                 HipResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( HipTest,
                                 ForallAtomicRefMathFunctionalTest,

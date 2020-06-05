@@ -5,10 +5,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_EXECPOL_HPP__
-#define __TEST_FORALL_EXECPOL_HPP__
+//
+// Execution policy lists used throughout forall tests
+//
+
+#ifndef RAJA_test_forall_execpol_HPP
+#define RAJA_test_forall_execpol_HPP
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/list.hpp"
 
 // Sequential execution policy types
 using SequentialForallExecPols = camp::list< RAJA::seq_exec,
@@ -50,4 +56,4 @@ using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
 #endif
 
-#endif  // __TEST_FORALL_EXECPOL_HPP__
+#endif  // RAJA_test_forall_execpol_HPP

@@ -9,7 +9,7 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-#include "../test-forall-indexset-execpol.hpp"
+#include "RAJA_test-indexset-execpol.hpp"
 
 // Cartesian product of types for TBB tests
 using TBBForallIndexSetTypes =

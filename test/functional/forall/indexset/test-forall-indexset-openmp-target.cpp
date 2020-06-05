@@ -9,7 +9,7 @@
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-#include "../test-forall-indexset-execpol.hpp"
+#include "RAJA_test-indexset-execpol.hpp"
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallIndexSetTypes =

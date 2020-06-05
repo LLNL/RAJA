@@ -9,8 +9,8 @@
 
 #if defined(RAJA_ENABLE_HIP)
 
-#include "../test-forall-execpol.hpp"
-#include "../test-reducepol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-reducepol.hpp"
 
 // Cartesian product of types for HIP tests
 using HipForallReduceSanityTypes =

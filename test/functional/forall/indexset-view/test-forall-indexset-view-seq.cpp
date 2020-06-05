@@ -7,7 +7,7 @@
 
 #include "tests/test-forall-indexset-view.hpp"
 
-#include "../test-forall-indexset-execpol.hpp"
+#include "RAJA_test-indexset-execpol.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallIndexSetTypes =

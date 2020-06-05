@@ -9,8 +9,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-#include "../test-forall-execpol.hpp"
-#include "../test-reducepol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-reducepol.hpp"
 
 // Cartesian product of types for OpenMP tests
 using OpenMPForallReduceSanityTypes =

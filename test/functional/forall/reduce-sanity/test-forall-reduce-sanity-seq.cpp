@@ -7,7 +7,7 @@
 
 #include "tests/test-forall-reduce-sanity.hpp"
 
-#include "../test-reducepol.hpp"
+#include "RAJA_test-reducepol.hpp"
 
 // Sequential execution policy types
 using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,

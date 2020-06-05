@@ -10,7 +10,7 @@
 #if defined(RAJA_ENABLE_OPENMP)
 
 #include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 using OpenMPExclusiveScanTypes = 
   Test< camp::cartesian_product< OpenMPForallExecPols,

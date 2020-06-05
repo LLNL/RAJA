@@ -7,7 +7,7 @@
 
 #include "tests/test-forall-region.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 using SequentialRegionPols = camp::list< RAJA::seq_region >;
 

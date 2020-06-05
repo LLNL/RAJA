@@ -8,7 +8,7 @@
 #include "tests/test-scan-inclusive.hpp"
 
 #include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 using SequentialInclusiveScanTypes = 
   Test<camp::cartesian_product< SequentialForallExecPols,

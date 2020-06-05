@@ -11,17 +11,16 @@
 
 #include "tests/test-forall-atomic-view.hpp"
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 #include "../test-forall-atomic-utils.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 CudaForallExecPols,
-                                                                 CudaAtomicPols,
-                                                                 CudaResourceList,
-                                                                 AtomicDataTypeList >
-                                      >::Types;
+using CudaAtomicForallViewTypes = 
+  Test< camp::cartesian_product< CudaForallExecPols,
+                                 CudaAtomicPols,
+                                 CudaResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
                                 ForallAtomicViewFunctionalTest,

@@ -9,7 +9,7 @@
 
 #if defined(RAJA_ENABLE_HIP)
 
-#include "../test-forall-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 // Cartesian product of types for Hip tests
 using HipForallSegmentTypes = 

@@ -5,10 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+//
+// Header defining "for one" unit test utility so that constructs can be
+// tested outside of standard RAJA kernel launch utilities (forall, kernel).
+//
+
 #ifndef RAJA_unit_forone_HPP
 #define RAJA_unit_forone_HPP
 
-#include <RAJA/RAJA.hpp>
+#include "RAJA/RAJA.hpp"
 
 #include <type_traits>
 
