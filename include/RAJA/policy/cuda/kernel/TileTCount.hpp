@@ -75,13 +75,14 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
-    int chunk_size = TPol::chunk_size;
+    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_type chunk_size = TPol::chunk_size;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
+    diff_type len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0, t = 0; i < len; i += chunk_size, ++t) {
+    for (diff_type i = 0, t = 0; i < len; i += chunk_size, ++t) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -145,9 +146,10 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    int t = get_cuda_dim<BlockDim>(blockIdx);
-    int i = t * chunk_size;
+    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_type len = segment.end() - segment.begin();
+    diff_type t = get_cuda_dim<BlockDim>(blockIdx);
+    diff_type i = t * chunk_size;
 
     // Iterate through grid stride of chunks
     if (i < len) {
@@ -218,16 +220,17 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    int t0 = get_cuda_dim<BlockDim>(blockIdx);
-    int i0 = t0 * chunk_size;
+    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_type len = segment.end() - segment.begin();
+    diff_type t0 = get_cuda_dim<BlockDim>(blockIdx);
+    diff_type i0 = t0 * chunk_size;
 
     // Get our stride from the dimension
-    int t_stride = get_cuda_dim<BlockDim>(gridDim);
-    int i_stride = t_stride * chunk_size;
+    diff_type t_stride = get_cuda_dim<BlockDim>(gridDim);
+    diff_type i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (int i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
+    for (diff_type i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -294,16 +297,17 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    int t = get_cuda_dim<ThreadDim>(threadIdx);
-    int i = t * chunk_size;
+    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_type len = segment.end() - segment.begin();
+    diff_type t = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_type i = t * chunk_size;
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
     bool have_work = i < len;
 
     // Assign our new tiled segment
-    int slice_size = have_work ? chunk_size : 0;
+    diff_type slice_size = have_work ? chunk_size : 0;
     segment = orig_segment.slice(i, slice_size);
     data.template assign_param<ParamId>(t);
 
@@ -367,24 +371,25 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment_length<ArgumentId>(data);
-    int t0 = get_cuda_dim<ThreadDim>(threadIdx);
-    int i0 = t0 * chunk_size;
+    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_type len = segment_length<ArgumentId>(data);
+    diff_type t0 = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_type i0 = t0 * chunk_size;
 
     // Get our stride from the dimension
-    int t_stride = get_cuda_dim<ThreadDim>(blockDim);
-    int i_stride = t_stride * chunk_size;
+    diff_type t_stride = get_cuda_dim<ThreadDim>(blockDim);
+    diff_type i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for(int ii = 0, t = t0; ii < len; ii += i_stride, t += t_stride) {
-      int i = ii + i0;
+    for(diff_type ii = 0, t = t0; ii < len; ii += i_stride, t += t_stride) {
+      diff_type i = ii + i0;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
       bool have_work = i < len;
 
       // Assign our new tiled segment
-      int slice_size = have_work ? chunk_size : 0;
+      diff_type slice_size = have_work ? chunk_size : 0;
       segment = orig_segment.slice(i, slice_size);
       data.template assign_param<ParamId>(t);
 
