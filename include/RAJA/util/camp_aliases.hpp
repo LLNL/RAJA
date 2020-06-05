@@ -65,23 +65,27 @@ using tuple_element_t = typename tuple_element<I, Tuple>::type;
 // of the zip_tuple that get is called on
 template < camp::idx_t I, typename ... Ts >
 // RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, tuple<Ts...>>             &
-RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...>      & >()))
-get(tuple<Ts...>      &  t)
+// RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...>      & >()))
+RAJA_HOST_DEVICE RAJA_INLINE auto get(tuple<Ts...>      &  t)
+  -> decltype(camp::get<I>(t))
 { return camp::get<I>(          t ); }
 template < camp::idx_t I, typename ... Ts >
 // RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, tuple<Ts...>>        const&
-RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...> const& >()))
-get(tuple<Ts...> const&  t)
+// RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...> const& >()))
+RAJA_HOST_DEVICE RAJA_INLINE auto get(tuple<Ts...> const&  t)
+  -> decltype(camp::get<I>(t))
 { return camp::get<I>(          t ); }
 template < camp::idx_t I, typename ... Ts >
 // RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, tuple<Ts...>>>::type      &&
-RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...>      &&>()))
-get(tuple<Ts...>      && t)
+// RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...>      &&>()))
+RAJA_HOST_DEVICE RAJA_INLINE auto get(tuple<Ts...>      && t)
+  -> decltype(camp::get<I>(std::move(t)))
 { return camp::get<I>(std::move(t)); }
 template < camp::idx_t I, typename ... Ts >
 // RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, tuple<Ts...>>>::type const&&
-RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...> const&&>()))
-get(tuple<Ts...> const&& t)
+// RAJA_HOST_DEVICE RAJA_INLINE decltype(camp::get<I>(camp::val<tuple<Ts...> const&&>()))
+RAJA_HOST_DEVICE RAJA_INLINE auto get(tuple<Ts...> const&& t)
+  -> decltype(camp::get<I>(std::move(t)))
 { return camp::get<I>(std::move(t)); }
 
 }  // end namespace RAJA
