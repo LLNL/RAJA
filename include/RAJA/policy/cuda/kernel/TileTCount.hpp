@@ -327,26 +327,30 @@ template <typename Data,
           camp::idx_t chunk_size,
           int ThreadDim,
           int MinThreads,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_thread_xyz_loop<ThreadDim, MinThreads>,
-                        EnclosedStmts ...> >
+                        EnclosedStmts ...>,
+                        Types>
   : public CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_thread_xyz_loop<ThreadDim, MinThreads>,
-                    EnclosedStmts ...> > {
+                    EnclosedStmts ...>,
+                    Types> {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
-                          RAJA::statement::tile_fixed<chunk_size>,
+                          RAJA::tile_fixed<chunk_size>,
                           cuda_thread_xyz_loop<ThreadDim, MinThreads>,
-                          EnclosedStmts ...> >;
+                          EnclosedStmts ...>,
+                          Types>;
 
   using typename Base::enclosed_stmts_t;
 
