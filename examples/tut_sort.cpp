@@ -250,7 +250,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_cuda_less_start
-  RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(in, in + N,
+  RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(out, out + N,
                                        RAJA::operators::less<int>{});
   // _sort_stable_cuda_less_end
 
@@ -318,6 +318,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
   memoryManager::deallocate(in);
   memoryManager::deallocate(out);
+
+  memoryManager::deallocate(in_vals);
+  memoryManager::deallocate(out_vals);
 
   std::cout << "\n DONE!...\n";
 
