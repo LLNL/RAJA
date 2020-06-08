@@ -64,8 +64,8 @@ if(RAJA_ENABLE_HIP)
     NAME test-intro-sort-hip
     SOURCES test-intro-sort-hip.cpp)
 
-  raja_add_test(
-    NAME test-merge-sort-hip
-    SOURCES test-merge-sort-hip.cpp)
+#  raja_add_test(
+#    NAME test-merge-sort-hip
+#    SOURCES test-merge-sort-hip.cpp)
 endif()
 
