@@ -279,7 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N, d_out_vals
+  RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N, d_out_vals,
                                        RAJA::operators::less<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
