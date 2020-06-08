@@ -32,7 +32,8 @@
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)
+#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) || \
+    (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__))
 #define RAJA_DEVICE_CODE
 #endif
 
