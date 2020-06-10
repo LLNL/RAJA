@@ -55,7 +55,7 @@ using loop_segit = loop_exec;
 ///
 /// WorkGroup execution policies
 ///
-using loop_work = seq_exec;
+using loop_work = loop_exec;
 
 ///
 ///////////////////////////////////////////////////////////////////////
