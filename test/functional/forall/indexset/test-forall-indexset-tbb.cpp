@@ -5,11 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset.hpp"
+#include "test-forall-indexset.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
-
-#include "RAJA_test-indexset-execpol.hpp"
 
 // Cartesian product of types for TBB tests
 using TBBForallIndexSetTypes =

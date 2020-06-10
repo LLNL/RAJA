@@ -10,8 +10,8 @@
 // tested outside of standard RAJA kernel launch utilities (forall, kernel).
 //
 
-#ifndef RAJA_unit_forone_HPP
-#define RAJA_unit_forone_HPP
+#ifndef __RAJA_test_forone_HPP__
+#define __RAJA_test_forone_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -120,4 +120,4 @@ void forone(L&& run)
   forone(forone_policy{}, std::forward<L>(run));
 }
 
-#endif // RAJA_unit_forone_HPP
+#endif // RAJA_test_forone_HPP__

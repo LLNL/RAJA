@@ -15,7 +15,7 @@
 #include "test-atomic-ref.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_test-forone.hpp"
 #endif
 
 // Basic Accessors

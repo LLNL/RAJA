@@ -5,11 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment.hpp"
+#include "test-forall-segment.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
-
-#include "RAJA_test-forall-execpol.hpp"
 
 // Cartesian product of types for TBB tests
 using TBBForallSegmentTypes =

@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset.hpp"
-
-#include "RAJA_test-indexset-execpol.hpp"
+#include "test-forall-indexset.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallIndexSetTypes =

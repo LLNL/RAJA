@@ -5,12 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-scan-exclusive.hpp"
+#include "test-scan.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-
-#include "../forall/test-forall-utils.hpp"
-#include "RAJA_test-forall-execpol.hpp"
 
 using CudaExclusiveScanTypes = 
   Test<camp::cartesian_product< CudaForallExecPols, 

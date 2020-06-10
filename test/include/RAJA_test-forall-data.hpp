@@ -9,8 +9,8 @@
 // Utility routines for allocating/deallocating arrays in for forall tests. 
 //
 
-#ifndef RAJA_test_forall_data_HPP
-#define RAJA_test_forall_data_HPP
+#ifndef __RAJA_test_forall_data_HPP__
+#define __RAJA_test_forall_data_HPP__
 
 #include "camp/resource.hpp"
 
@@ -43,4 +43,4 @@ void deallocateForallTestData(camp::resources::Resource& work_res,
   host_res.deallocate(test_array);
 }
 
-#endif // RAJA_test_forall_data_HPP
+#endif // __RAJA_test_forall_data_HPP__

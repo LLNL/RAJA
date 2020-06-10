@@ -19,7 +19,6 @@
 #include "RAJA/internal/MemUtils_CPU.hpp"
 #include "camp/resource.hpp"
 
-#include "RAJA_unit_forone.hpp"
 #include "../test-reducer-utils.hpp"
 
 template <typename T>

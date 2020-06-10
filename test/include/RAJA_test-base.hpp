@@ -9,8 +9,8 @@
 // Fundamental includes and structs used throughout RAJA tests.
 //
 
-#ifndef RAJA_test_base_HPP
-#define RAJA_test_base_HPP
+#ifndef __RAJA_test_base_HPP__
+#define __RAJA_test_base_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -28,4 +28,4 @@ struct Test<camp::list<T...>> {
 };
 
 
-#endif // RAJA_test_base_HPP
+#endif // __RAJA_test_base_HPP__

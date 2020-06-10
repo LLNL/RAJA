@@ -10,8 +10,6 @@
 
 #include <numeric>
 
-#include "test-scan-utils.hpp"
-
 template <typename OP>
 ::testing::AssertionResult check_inclusive(
   const typename OP::result_type* actual,

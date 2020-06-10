@@ -9,8 +9,8 @@
 // Reduction policies used for reduction tests
 //
 
-#ifndef RAJA_test_reducepol_HPP
-#define RAJA_test_reducepol_HPP
+#ifndef __RAJA_test_reducepol_HPP__
+#define __RAJA_test_reducepol_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -44,4 +44,4 @@ using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 using HipReducePols = camp::list< RAJA::hip_reduce >;
 #endif
 
-#endif  // RAJA_test_reducepol_HPP
+#endif  // __RAJA_test_reducepol_HPP__

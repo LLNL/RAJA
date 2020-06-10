@@ -12,8 +12,8 @@
 // For more comprehensive type testing define the macro RAJA_TEST_EXHAUSTIVE.
 //
 
-#ifndef RAJA_test_index_HPP
-#define RAJA_test_index_HPP
+#ifndef __RAJA_test_index_HPP__
+#define __RAJA_test_index_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -58,4 +58,4 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      StrongULL,
                                      unsigned long long>;
 
-#endif // RAJA_test_index_HPP
+#endif // __RAJA_test_index_HPP__

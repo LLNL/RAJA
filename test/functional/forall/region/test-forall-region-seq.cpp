@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-region.hpp"
-
-#include "RAJA_test-forall-execpol.hpp"
+#include "test-forall-region.hpp"
 
 using SequentialRegionPols = camp::list< RAJA::seq_region >;
 

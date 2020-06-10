@@ -9,8 +9,8 @@
 // Camp header includes and helpers used throughout RAJA tests.
 //
 
-#ifndef RAJA_test_camp_HPP
-#define RAJA_test_camp_HPP
+#ifndef __RAJA_test_camp_HPP__
+#define __RAJA_test_camp_HPP__
 
 #include "camp/resource.hpp"
 #include "camp/list.hpp"
@@ -32,4 +32,4 @@ using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
 using HipResourceList = camp::list<camp::resources::Hip>;
 #endif
 
-#endif // RAJA_test_camp_HPP
+#endif // __RAJA_test_camp_HPP__

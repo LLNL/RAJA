@@ -9,8 +9,8 @@
 // Execution policy lists used throughout forall tests
 //
 
-#ifndef RAJA_test_forall_execpol_HPP
-#define RAJA_test_forall_execpol_HPP
+#ifndef __RAJA_test_forall_execpol_HPP__
+#define __RAJA_test_forall_execpol_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -20,6 +20,9 @@
 using SequentialForallExecPols = camp::list< RAJA::seq_exec,
                                              RAJA::loop_exec,
                                              RAJA::simd_exec >;
+
+using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
+                                                   RAJA::loop_exec >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
@@ -56,4 +59,4 @@ using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
 #endif
 
-#endif  // RAJA_test_forall_execpol_HPP
+#endif  // __RAJA_test_forall_execpol_HPP__

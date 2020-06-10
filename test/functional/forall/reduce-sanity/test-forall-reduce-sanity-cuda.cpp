@@ -5,12 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-reduce-sanity.hpp"
+#include "test-forall-reduce-sanity.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-
-#include "RAJA_test-forall-execpol.hpp"
-#include "RAJA_test-reducepol.hpp"
 
 // Cartesian product of types for CUDA tests
 using CudaForallReduceSanityTypes =

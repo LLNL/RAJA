@@ -11,7 +11,7 @@
 #include "camp/resource.hpp"
 #include "gtest/gtest.h"
 
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_test-forone.hpp"
 
 //
 // Unroll types for gtest testing::Types

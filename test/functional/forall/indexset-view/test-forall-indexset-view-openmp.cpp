@@ -5,11 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-indexset-view.hpp"
+#include "test-forall-indexset-view.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-
-#include "RAJA_test-indexset-execpol.hpp"
 
 // Cartesian product of types for OpenMP tests
 using OpenMPForallIndexSetTypes =
