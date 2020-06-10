@@ -141,13 +141,13 @@ template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
           typename INDEX_T,
-          typename ... Xargs,
+          typename ... Args,
           typename ALLOCATOR_T>
 struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
                                 ORDER_POLICY_T,
                                 STORAGE_POLICY_T>,
                 INDEX_T,
-                xargs<Xargs...>,
+                xargs<Args...>,
                 ALLOCATOR_T>
 {
   using exec_policy = EXEC_POLICY_T;
@@ -155,16 +155,144 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using storage_policy = STORAGE_POLICY_T;
   using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
   using index_type = INDEX_T;
-  using xarg_type = xargs<Xargs...>;
+  using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
   WorkPool(Allocator aloc)
     : m_aloc(std::forward<Allocator>(aloc))
   { }
 
+  inline WorkGroup<policy, index_type, xarg_type, Allocator> instantiate();
+
 private:
   Allocator m_aloc;
 };
+
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename STORAGE_POLICY_T,
+          typename INDEX_T,
+          typename ... Args,
+          typename ALLOCATOR_T>
+struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                                 ORDER_POLICY_T,
+                                 STORAGE_POLICY_T>,
+                 INDEX_T,
+                 xargs<Args...>,
+                 ALLOCATOR_T>
+{
+  using exec_policy = EXEC_POLICY_T;
+  using order_policy = ORDER_POLICY_T;
+  using storage_policy = STORAGE_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using index_type = INDEX_T;
+  using xarg_type = xargs<Args...>;
+  using Allocator = ALLOCATOR_T;
+
+  inline WorkSite<policy, index_type, xarg_type, Allocator> run(Args...);
+
+private:
+  friend WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
+                                  ORDER_POLICY_T,
+                                  STORAGE_POLICY_T>,
+                   INDEX_T,
+                   xargs<Args...>,
+                   ALLOCATOR_T>;
+
+  WorkGroup()
+  { }
+};
+
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename STORAGE_POLICY_T,
+          typename INDEX_T,
+          typename ... Args,
+          typename ALLOCATOR_T>
+struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
+                                ORDER_POLICY_T,
+                                STORAGE_POLICY_T>,
+                INDEX_T,
+                xargs<Args...>,
+                ALLOCATOR_T>
+{
+  using exec_policy = EXEC_POLICY_T;
+  using order_policy = ORDER_POLICY_T;
+  using storage_policy = STORAGE_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using index_type = INDEX_T;
+  using xarg_type = xargs<Args...>;
+  using Allocator = ALLOCATOR_T;
+
+private:
+  friend WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                                   ORDER_POLICY_T,
+                                   STORAGE_POLICY_T>,
+                    INDEX_T,
+                    xargs<Args...>,
+                    ALLOCATOR_T>;
+
+  WorkSite()
+  { }
+};
+
+
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename STORAGE_POLICY_T,
+          typename INDEX_T,
+          typename ... Args,
+          typename ALLOCATOR_T>
+inline
+WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                          ORDER_POLICY_T,
+                          STORAGE_POLICY_T>,
+          INDEX_T,
+          xargs<Args...>,
+          ALLOCATOR_T>
+WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
+                         ORDER_POLICY_T,
+                         STORAGE_POLICY_T>,
+         INDEX_T,
+         xargs<Args...>,
+         ALLOCATOR_T>::instantiate()
+{
+  return WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                                   ORDER_POLICY_T,
+                                   STORAGE_POLICY_T>,
+                   INDEX_T,
+                   xargs<Args...>,
+                   ALLOCATOR_T>{};
+}
+
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename STORAGE_POLICY_T,
+          typename INDEX_T,
+          typename ... Args,
+          typename ALLOCATOR_T>
+inline
+WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
+                         ORDER_POLICY_T,
+                         STORAGE_POLICY_T>,
+         INDEX_T,
+         xargs<Args...>,
+         ALLOCATOR_T>
+WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                          ORDER_POLICY_T,
+                          STORAGE_POLICY_T>,
+          INDEX_T,
+          xargs<Args...>,
+          ALLOCATOR_T>::run(Args... args)
+{
+  RAJA_UNUSED_VAR(std::forward<Args>(args)...);
+  return WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
+                                   ORDER_POLICY_T,
+                                   STORAGE_POLICY_T>,
+                   INDEX_T,
+                   xargs<Args...>,
+                   ALLOCATOR_T>{};
+}
 
 }  // namespace RAJA
 

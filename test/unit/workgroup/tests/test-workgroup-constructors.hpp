@@ -32,10 +32,10 @@ template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
           typename IndexType,
-          typename Xargs,
-          typename Allocator
+          typename Allocator,
+          typename ... Xargs
           >
-void testWorkGroupConstructor()
+void testWorkGroupConstructor(RAJA::xargs<Xargs...>)
 {
   bool success = true;
 
@@ -43,10 +43,28 @@ void testWorkGroupConstructor()
     RAJA::WorkPool<
                     RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                     IndexType,
-                    Xargs,
+                    RAJA::xargs<Xargs...>,
                     Allocator
                   >
         pool(Allocator{});
+
+    RAJA::WorkGroup<
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    IndexType,
+                    RAJA::xargs<Xargs...>,
+                    Allocator
+                  >
+        group = pool.instantiate();
+
+    RAJA::WorkSite<
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    IndexType,
+                    RAJA::xargs<Xargs...>,
+                    Allocator
+                  >
+        site = group.run(Xargs{}...);
+
+    RAJA_UNUSED_VAR(site);
   }
 
   ASSERT_TRUE(success);
@@ -61,7 +79,7 @@ TYPED_TEST_P(WorkGroupBasicConstructorUnitTest, BasicWorkGroupConstructor)
   using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupConstructor< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Xargs, Allocator >();
+  testWorkGroupConstructor< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
 }
 
 
