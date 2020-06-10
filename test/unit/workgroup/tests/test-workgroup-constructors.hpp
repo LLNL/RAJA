@@ -16,8 +16,6 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
-#include "RAJA/internal/MemUtils_CPU.hpp"
-#include "camp/resource.hpp"
 
 #include "../test-workgroup-utils.hpp"
 
