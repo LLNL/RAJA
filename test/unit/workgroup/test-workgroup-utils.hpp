@@ -11,6 +11,8 @@
 #include "camp/resource.hpp"
 #include "gtest/gtest.h"
 
+#include "RAJA_unit_forone.hpp"
+
 //
 // Unroll types for gtest testing::Types
 //
@@ -22,6 +24,7 @@ struct Test<camp::list<T...>> {
   using Types = ::testing::Types<T...>;
 };
 
+namespace detail {
 
 template < typename Resource >
 struct ResourceAllocator
@@ -37,6 +40,8 @@ struct ResourceAllocator
   private:
   Resource res;
 };
+
+} // namespace detail
 
 //
 // Data types
@@ -118,18 +123,50 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 //
 // Memory resource types for beck-end execution
 //
-using HostAllocatorList = camp::list<ResourceAllocator<camp::resources::Host>>;
+using HostAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Host>>;
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAllocatorList = camp::list<ResourceAllocator<camp::resources::Cuda>>;
+using CudaAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Cuda>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipAllocatorList = camp::list<ResourceAllocator<camp::resources::Hip>>;
+using HipAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Hip>>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetAllocatorList = camp::list<ResourceAllocator<camp::resources::Omp>>;
+using OpenMPTargetAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Omp>>;
+#endif
+
+
+//
+// Memory resource types for beck-end execution
+//
+using HostResourceList = camp::list<camp::resources::Host>;
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaResourceList = camp::list<camp::resources::Cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipResourceList = camp::list<camp::resources::Hip>;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
+#endif
+
+
+//
+// Forone unit test policies
+//
+using SequentialForoneList = camp::list<forone_seq>;
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaForoneList = camp::list<forone_cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipForoneList = camp::list<forone_hip>;
 #endif
 
 #endif  // __TEST_WORKGROUP_UTILS_HPP__

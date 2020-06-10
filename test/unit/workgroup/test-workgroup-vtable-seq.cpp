@@ -6,23 +6,22 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA workgroup constructors and initialization.
+/// Source file containing tests for RAJA workgroup vtable.
 ///
 
-#include "tests/test-workgroup-constructors.hpp"
+#include "tests/test-workgroup-vtable.hpp"
 
 #include "test-workgroup-utils.hpp"
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetBasicWorkGroupConstructorTypes =
-  Test< camp::cartesian_product< OpenMPTargetExecPolicyList,
+using SequentialBasicWorkGroupVtableTypes =
+  Test< camp::cartesian_product< SequentialExecPolicyList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
-                                 OpenMPTargetAllocatorList,
+                                 HostResourceList,
                                  SequentialForoneList > >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetBasicTest,
-                               WorkGroupBasicConstructorUnitTest,
-                               OpenMPTargetBasicWorkGroupConstructorTypes);
-#endif
+INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
+                               WorkGroupBasicVtableUnitTest,
+                               SequentialBasicWorkGroupVtableTypes);
+
 

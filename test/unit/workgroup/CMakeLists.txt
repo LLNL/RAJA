@@ -38,3 +38,38 @@ raja_add_test(
   NAME test-workgroup-constructors-hip
   SOURCES test-workgroup-constructors-hip.cpp)
 endif()
+
+
+raja_add_test(
+  NAME test-workgroup-vtable-seq
+  SOURCES test-workgroup-vtable-seq.cpp)
+
+if(RAJA_ENABLE_TBB)
+raja_add_test(
+  NAME test-workgroup-vtable-tbb
+  SOURCES test-workgroup-vtable-tbb.cpp)
+endif()
+
+if(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-workgroup-vtable-openmp
+  SOURCES test-workgroup-vtable-openmp.cpp)
+endif()
+
+if(RAJA_ENABLE_TARGET_OPENMP)
+raja_add_test(
+  NAME test-workgroup-vtable-openmp-target
+  SOURCES test-workgroup-vtable-openmp-target.cpp)
+endif()
+
+if(RAJA_ENABLE_CUDA)
+raja_add_test(
+  NAME test-workgroup-vtable-cuda
+  SOURCES test-workgroup-vtable-cuda.cpp)
+endif()
+
+if(RAJA_ENABLE_HIP)
+raja_add_test(
+  NAME test-workgroup-vtable-hip
+  SOURCES test-workgroup-vtable-hip.cpp)
+endif()
