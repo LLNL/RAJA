@@ -19,7 +19,7 @@ template < typename forone_policy, typename L >
 inline void forone(L&& run);
 
 // base classes to represent host or device in exec_dispatcher
-struct RunOnHost {}; 
+struct RunOnHost {};
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 struct RunOnDevice {};
 #endif
@@ -51,6 +51,29 @@ inline void forone(forone_seq, L&& run)
   std::forward<L>(run)();
 }
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+// cuda forone policy
+struct forone_openmp_target : public RunOnHost { };
+
+// forone_openmp_target policy information
+template < >
+struct forone_policy_info<forone_openmp_target>
+{
+  using type = RAJA::omp_target_parallel_for_exec<1>
+  static const char* name() { return "forone_openmp_target"; }
+};
+
+// forone_openmp_target implementation
+template < typename L >
+inline void forone(forone_openmp_target, L&& run)
+{
+#pragma omp target
+  run();
+}
+
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 
 // cuda forone policy
@@ -79,7 +102,9 @@ inline void forone(forone_cuda, L&& run)
    cudaErrchk(cudaDeviceSynchronize());
 }
 
-#elif defined(RAJA_ENABLE_HIP)
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
 
 // hip forone policy
 struct forone_hip : public RunOnDevice { };
