@@ -25,31 +25,29 @@
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
-// #include "RAJA/pattern/detail/WorkGroup.hpp"
+#include "RAJA/pattern/detail/WorkGroup.hpp"
 #include "RAJA/pattern/WorkGroup.hpp"
 
 #include "RAJA/policy/loop/policy.hpp"
-
-#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
 
 namespace detail
 {
-// template <typename T, typename Reduce>
-// class ReduceSeq
-//     : public reduce::detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>
-// {
-//   using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>;
 
-// public:
-//   //! prohibit compiler-generated default ctor
-//   ReduceSeq() = delete;
-
-//   using Base::Base;
-// };
-
+/*!
+ * Populate and return a Vtable object
+ */
+template < typename T, typename ... CallArgs >
+Vtable<CallArgs...> get_Vtable_impl(loop_work const&)
+{
+  return Vtable<CallArgs...>{
+        &Vtable_move_construct<T, CallArgs...>,
+        &Vtable_call<T, CallArgs...>,
+        &Vtable_destroy<T, CallArgs...>
+      };
+}
 
 }  // namespace detail
 
