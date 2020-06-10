@@ -161,6 +161,10 @@ using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
 //
 using SequentialForoneList = camp::list<forone_seq>;
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenmpTargetForoneList = camp::list<forone_openmp_target>;
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 using CudaForoneList = camp::list<forone_cuda>;
 #endif

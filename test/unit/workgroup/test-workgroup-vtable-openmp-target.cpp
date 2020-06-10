@@ -18,7 +18,8 @@ using OpenMPTargetBasicWorkGroupVtableTypes =
   Test< camp::cartesian_product< OpenMPTargetExecPolicyList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
-                                 OpenMPTargetResourceList > >::Types;
+                                 OpenMPTargetResourceList,
+                                 OpenmpTargetForoneList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetBasicTest,
                                WorkGroupBasicVtableUnitTest,
