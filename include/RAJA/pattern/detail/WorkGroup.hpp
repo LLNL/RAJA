@@ -74,11 +74,9 @@ struct Vtable {
 /*!
  * Populate and return a Vtable object appropriate for the given policy
  */
-template < typename Policy, typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable()
-{
-  return get_Vtable_impl(Policy{});
-}
+// template < typename Policy, typename T, typename ... CallArgs >
+// inline Vtable<CallArgs...> get_Vtable(Policy const&);
+
 
 }  // namespace detail
 

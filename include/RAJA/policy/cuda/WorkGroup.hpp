@@ -89,7 +89,7 @@ inline void(*)(void*, CallArgs...) get_cached_Vtable_cuda_device_call()
 * call operator is a device function
 */
 template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable_impl(cuda_work const&)
+inline Vtable<CallArgs...> get_Vtable(cuda_work const&)
 {
   return Vtable<CallArgs...>{
         &Vtable_move_construct<T, CallArgs...>,

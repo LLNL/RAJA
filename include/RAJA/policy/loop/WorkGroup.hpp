@@ -40,7 +40,7 @@ namespace detail
  * Populate and return a Vtable object
  */
 template < typename T, typename ... CallArgs >
-Vtable<CallArgs...> get_Vtable_impl(loop_work const&)
+inline Vtable<CallArgs...> get_Vtable(loop_work const&)
 {
   return Vtable<CallArgs...>{
         &Vtable_move_construct<T, CallArgs...>,

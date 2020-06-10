@@ -41,9 +41,9 @@ namespace detail
 * Populate and return a Vtable object
 */
 template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable_impl(tbb_work const&)
+inline Vtable<CallArgs...> get_Vtable(tbb_work const&)
 {
-  return get_Vtable_impl(loop_work{});
+  return get_Vtable<T, CallArgs...>(loop_work{});
 }
 
 }  // namespace detail
