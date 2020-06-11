@@ -237,6 +237,9 @@ struct Teams
   const int Z{Nx};
   template<int N>
   using PrivateMem = PrivateMemory<N, Nx, Ny,Nz>;
+
+  RAJA_HOST_DEVICE
+  static void TeamSync() { TEAM_SYNC; }
 };
 
 
@@ -312,18 +315,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     Team_t myTeam;
     Team_t::PrivateMem<1> p_a;
-
-    TEAM_SHARED double shared_a[10];
+    TEAM_SHARED double s_a[5]; 
     
     TEAM_LOOP_1D(myTeam.X,
     {
       p_a(0, teamIdx) = teamIdx.tx;
+      s_a[teamIdx.tx] = 1; 
     });
+
+    Team_t::TeamSync();
 
     TEAM_LOOP_1D(myTeam.X,
     {
      printf("pa_[%d] = %f \n", teamIdx.tx, p_a(0, teamIdx));
     });
+
+    TEAM_LOOP_1D(1,
+    {
+     double sum(0); 
+     for(int i=0; i<5; ++i) {
+       sum += s_a[i]; 
+     }
+
+     printf("Shared memory sum %f  \n", sum);
+   });
 
   });
 
