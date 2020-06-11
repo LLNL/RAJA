@@ -38,6 +38,8 @@ namespace RAJA
 namespace detail
 {
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
 template < typename T, typename ... CallArgs >
 __device__ void Vtable_hip_device_call(void* obj, CallArgs... args)
 {
@@ -102,6 +104,8 @@ inline Vtable<CallArgs...> get_Vtable(hip_work const&)
         &Vtable_destroy<T, CallArgs...>
       };
 }
+
+#endif
 
 }  // namespace detail
 

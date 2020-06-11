@@ -68,7 +68,7 @@ raja_add_test(
   SOURCES test-workgroup-vtable-cuda.cpp)
 endif()
 
-if(RAJA_ENABLE_HIP)
+if(RAJA_ENABLE_HIP AND DEFINED RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 raja_add_test(
   NAME test-workgroup-vtable-hip
   SOURCES test-workgroup-vtable-hip.cpp)
