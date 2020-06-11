@@ -90,12 +90,12 @@ struct VtableTestCallable
     ptr[i] = val;
   }
 
-  bool move_constructed = false;
-  bool moved_from = false;
-
 private:
   IndexType* ptr;
   IndexType  val;
+public:
+  bool move_constructed = false;
+  bool moved_from = false;
 };
 
 template < typename ExecPolicy,
