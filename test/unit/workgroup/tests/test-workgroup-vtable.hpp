@@ -67,11 +67,31 @@ struct VtableTestCallable
     , val(_val)
   { }
 
+  VtableTestCallable(VtableTestCallable const&) = delete;
+  VtableTestCallable& operator=(VtableTestCallable const&) = delete;
+
+  VtableTestCallable(VtableTestCallable&& o)
+    : ptr(o.ptr)
+    , val(o.val)
+    , move_constructed(true)
+  {
+    o.moved_from = true;
+  }
+  VtableTestCallable& operator=(VtableTestCallable&& o)
+  {
+    ptr = o.ptr;
+    val = o.val;
+    o.moved_from = true;
+  }
+
   RAJA_HOST_DEVICE void operator()(IndexType i, Args... args)
   {
     RAJA_UNUSED_VAR(args...);
     ptr[i] = val;
   }
+
+  bool move_constructed = false;
+  bool moved_from = false;
 
 private:
   IndexType* ptr;
@@ -108,7 +128,16 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
 
   TestCallable obj(testVal, initVal[1]);
 
+  ASSERT_FALSE(obj.move_constructed);
+  ASSERT_FALSE(obj.moved_from);
+
   vtable.move_construct(new_obj, &obj);
+
+  ASSERT_FALSE(obj.move_constructed);
+  ASSERT_TRUE(obj.moved_from);
+
+  ASSERT_TRUE(new_obj->move_constructed);
+  ASSERT_FALSE(new_obj->moved_from);
 
   // move a value onto device and fiddle
   call_dispatcher<ForOnePol, void*, IndexType, Args...>(
