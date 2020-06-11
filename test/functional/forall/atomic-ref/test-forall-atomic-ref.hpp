@@ -10,7 +10,7 @@
 
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index.hpp"
+#include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-atomic-types.hpp"
 #include "RAJA_test-atomicpol.hpp"
