@@ -49,9 +49,9 @@ void Vtable_omp_target_call(void* obj, CallArgs... args)
 
 // TODO: make thread safe
 template < typename T, typename ... CallArgs >
-inline void(*)(void*, CallArgs...) get_Vtable_omp_target_call()
+inline Vtable_call_sig<CallArgs...> get_Vtable_omp_target_call()
 {
-  void(*ptr)(void*, CallArgs...) = nullptr;
+  Vtable_call_sig<CallArgs...> ptr = nullptr;
 
   #pragma omp target map(tofrom : ptr)
   {
@@ -62,9 +62,9 @@ inline void(*)(void*, CallArgs...) get_Vtable_omp_target_call()
 }
 
 template < typename T, typename ... CallArgs >
-inline void(*)(void*, CallArgs...) get_cached_Vtable_omp_target_call()
+inline Vtable_call_sig<CallArgs...> get_cached_Vtable_omp_target_call()
 {
-  static void(*ptr)(void*, CallArgs...) = get_Vtable_omp_target_call();
+  static Vtable_call_sig<CallArgs...> ptr = get_Vtable_omp_target_call();
   return ptr;
 }
 
