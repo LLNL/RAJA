@@ -311,18 +311,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   {
     
     Team_t myTeam;
-    Team_t::PrivateMem<10> p_a;
+    Team_t::PrivateMem<1> p_a;
 
     TEAM_SHARED double shared_a[10];
     
     TEAM_LOOP_1D(myTeam.X,
     {
-      p_a(teamIdx.tx, teamIdx) = teamIdx.tx;
+      p_a(0, teamIdx) = teamIdx.tx;
     });
 
     TEAM_LOOP_1D(myTeam.X,
     {
-     printf("pa_[%d] = %f \n", teamIdx.tx, p_a(teamIdx.tx, teamIdx));
+     printf("pa_[%d] = %f \n", teamIdx.tx, p_a(0, teamIdx));
     });
 
   });
