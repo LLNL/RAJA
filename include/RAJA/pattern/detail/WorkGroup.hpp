@@ -70,6 +70,12 @@ struct Vtable {
   destroy_sig destroy;
 };
 
+template < typename ... CallArgs >
+using Vtable_move_sig = typename Vtable<CallArgs...>::move_sig;
+template < typename ... CallArgs >
+using Vtable_call_sig = typename Vtable<CallArgs...>::call_sig;
+template < typename ... CallArgs >
+using Vtable_destroy_sig = typename Vtable<CallArgs...>::destroy_sig;
 
 /*!
  * Populate and return a Vtable object appropriate for the given policy

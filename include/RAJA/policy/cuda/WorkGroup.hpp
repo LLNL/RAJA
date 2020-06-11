@@ -44,15 +44,16 @@ __device__ void Vtable_cuda_device_call(void* obj, CallArgs... args)
 }
 
 template < typename T, typename ... CallArgs >
-__global__ void get_device_Vtable_cuda_device_call(void(**ptr)(void*, CallArgs...))
+__global__ void get_device_Vtable_cuda_device_call(
+    Vtable_call_sig<CallArgs...>* ptrptr)
 {
-  *ptr = &Vtable_cuda_device_call<T, CallArgs>;
+  *ptrptr = &Vtable_cuda_device_call<T, CallArgs...>;
 }
 
 inline void* get_Vtable_cuda_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
-  cudaErrchk(cudaMallocHost(&ptrptr, sizeof(void(*)())));
+  cudaErrchk(cudaMallocHost(&ptrptr, sizeof(Vtable_call_sig<>)));
   return ptrptr;
 }
 
@@ -64,23 +65,23 @@ inline void* get_cached_Vtable_cuda_device_call_ptrptr()
 
 // TODO: make thread safe
 template < typename T, typename ... CallArgs >
-inline void(*)(void*, CallArgs...) get_Vtable_cuda_device_call()
+inline Vtable_call_sig<CallArgs...> get_Vtable_cuda_device_call()
 {
-  void(**ptrptr)(void*, CallArgs...) =
-      static_cast<void(**)(void*, CallArgs...)>(
+  Vtable_call_sig<CallArgs...>* ptrptr =
+      static_cast<Vtable_call_sig<CallArgs...>*>(
         get_cached_Vtable_cuda_device_call_ptrptr());
   get_device_Vtable_cuda_device_call<T, CallArgs...><<<1,1>>>(ptrptr);
   cudaErrchk(cudaGetLastError());
   cudaErrchk(cudaDeviceSynchronize());
 
-  void(*ptr)(void*, CallArgs...) = *ptrptr;
-  return ptr;
+  return *ptrptr;
 }
 
 template < typename T, typename ... CallArgs >
-inline void(*)(void*, CallArgs...) get_cached_Vtable_cuda_device_call()
+inline Vtable_call_sig<CallArgs...> get_cached_Vtable_cuda_device_call()
 {
-  static void(*ptr)(void*, CallArgs...) = get_Vtable_cuda_device_call();
+  static Vtable_call_sig<CallArgs...> ptr =
+      get_Vtable_cuda_device_call<T, CallArgs...>();
   return ptr;
 }
 
@@ -93,7 +94,7 @@ inline Vtable<CallArgs...> get_Vtable(cuda_work const&)
 {
   return Vtable<CallArgs...>{
         &Vtable_move_construct<T, CallArgs...>,
-        get_cached_Vtable_cuda_device_call(),
+        get_cached_Vtable_cuda_device_call<T, CallArgs...>(),
         &Vtable_destroy<T, CallArgs...>
       };
 }
