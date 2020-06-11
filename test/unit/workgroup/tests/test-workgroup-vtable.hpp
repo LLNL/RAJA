@@ -34,11 +34,11 @@ template  < typename ForOnePol,
 typename  std::enable_if<
             std::is_base_of<RunOnHost, ForOnePol>::value
           >::type
-call_dispatcher( void* obj, void(*call_function)(void*, CallArgs...),
+call_dispatcher( void(*call_function)(CallArgs...),
                  CallArgs... callArgs )
 {
   forone<ForOnePol>( [=] () {
-    call_function(obj, callArgs...);
+    call_function(callArgs...);
   });
 }
 
@@ -48,11 +48,12 @@ template  < typename ForOnePol,
 typename  std::enable_if<
             std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-call_dispatcher( void* obj, void(*call_function)(void*, CallArgs...),
+call_dispatcher( void(*call_function)(CallArgs...),
                  CallArgs... callArgs )
 {
-  forone<ForOnePol>( [=] __device__ () {
-    call_function(obj, callArgs...);
+  RAJA::tuple<CallArgs...> callArgs_device_lambda_workaround(callArgs...);
+  forone<ForOnePol>( [=] RAJA_DEVICE () {
+    camp::invoke(callArgs_device_lambda_workaround, call_function);
   });
 }
 #endif
@@ -110,8 +111,8 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   vtable.move_construct(new_obj, &obj);
 
   // move a value onto device and fiddle
-  call_dispatcher<ForOnePol, IndexType, Args...>(
-      new_obj, vtable.call, (IndexType)1, Args{}...);
+  call_dispatcher<ForOnePol, void*, IndexType, Args...>(
+      vtable.call, new_obj, (IndexType)1, Args{}...);
 
   vtable.destroy(new_obj);
 
