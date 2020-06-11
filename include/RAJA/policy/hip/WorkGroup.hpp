@@ -72,7 +72,8 @@ inline Vtable_call_sig<CallArgs...> get_Vtable_hip_device_call()
   Vtable_call_sig<CallArgs...>* ptrptr =
       static_cast<Vtable_call_sig<CallArgs...>*>(
         get_cached_Vtable_hip_device_call_ptrptr());
-  hipLaunchKernelGGL(get_device_Vtable_hip_device_call<T, CallArgs...>,
+  auto func = get_device_Vtable_hip_device_call<T, CallArgs...>;
+  hipLaunchKernelGGL(func,
       dim3(1), dim3(1), 0, 0, ptrptr);
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
