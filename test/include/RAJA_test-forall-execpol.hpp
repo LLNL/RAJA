@@ -21,7 +21,15 @@ using SequentialForallExecPols = camp::list< RAJA::seq_exec,
                                              RAJA::loop_exec,
                                              RAJA::simd_exec >;
 
+//
+// Sequential execution policy types for reduction and atomic tests.
+//
+// Note: RAJA::simd_exec does not work with these.
+//
 using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
+                                                   RAJA::loop_exec >;
+
+using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec, 
                                                    RAJA::loop_exec >;
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -29,9 +37,20 @@ using OpenMPForallExecPols =
   camp::list< // This policy works for the tests, but commenting it out
               // since its usage is questionable
               // RAJA::omp_parallel_exec<RAJA::seq_exec>,
+              RAJA::omp_parallel_for_exec, 
               RAJA::omp_for_nowait_exec,
-              RAJA::omp_for_exec,
-              RAJA::omp_parallel_for_exec >;
+              RAJA::omp_for_exec >;
+
+using OpenMPForallAtomicExecPols =
+  camp::list< // This policy works for the tests, but commenting it out
+              // since its usage is questionable
+              // RAJA::omp_parallel_exec<RAJA::seq_exec>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::omp_parallel_for_exec, 
+              RAJA::omp_for_nowait_exec,
+#endif
+              RAJA::omp_for_exec >;
+
 #endif
 
 #if defined(RAJA_ENABLE_TBB)

@@ -5,15 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing basic functional tests for atomic operations with forall.
-///
-
-#include "tests/test-forall-atomic-basic.hpp"
-
-#include "RAJA_test-forall-execpol.hpp"
-
-#include "../test-forall-atomic-utils.hpp"
+#include "test-forall-atomic-basic.hpp"
 
 using SeqAtomicForallBasicTypes = 
   Test< camp::cartesian_product< SequentialForallAtomicExecPols,

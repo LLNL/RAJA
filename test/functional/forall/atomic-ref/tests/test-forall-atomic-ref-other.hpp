@@ -12,8 +12,8 @@
 #ifndef __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
 #define __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
 
-#include <RAJA/RAJA.hpp>
-#include "RAJA_gtest.hpp"
+#include "RAJA_test-forall-data.hpp"
+
 #include <type_traits>
 
 template < typename T >
@@ -374,15 +374,6 @@ testAtomicRefOtherOp(RAJA::TypedRangeSegment<RAJA::Index_type> seg, T* count, T*
 }
 
 
-
-TYPED_TEST_SUITE_P(ForallAtomicRefOtherFunctionalTest);
-
-template <typename T>
-class ForallAtomicRefOtherFunctionalTest : public ::testing::Test
-{
-};
-
-
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
@@ -437,11 +428,8 @@ TYPED_TEST_P(ForallAtomicRefOtherFunctionalTest, AtomicRefOtherFunctionalForall)
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+
   testAtomicFunctionRefOther<AExec, APol, ResType, DType>( 10000 );
 }
-
-REGISTER_TYPED_TEST_SUITE_P( ForallAtomicRefOtherFunctionalTest,
-                             AtomicRefOtherFunctionalForall
-                           );
 
 #endif  //__TEST_FORALL_ATOMIC_REF_OTHER_HPP__

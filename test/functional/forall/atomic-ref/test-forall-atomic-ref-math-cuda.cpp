@@ -5,15 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for arithmetic atomic operations
-///
-
-#include "tests/test-forall-atomic-ref-math.hpp"
-
-#include "RAJA_test-forall-execpol.hpp"
-
-#include "../test-forall-atomic-utils.hpp"
+#include "test-forall-atomic-ref.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicForallRefMathTypes = 
