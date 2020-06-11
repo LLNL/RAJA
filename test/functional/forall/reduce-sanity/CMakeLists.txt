@@ -9,6 +9,10 @@ raja_add_test(
   NAME test-forall-reduce-sanity-seq
   SOURCES test-forall-reduce-sanity-seq.cpp)
 
+raja_add_test(
+  NAME test-forall-reduce-sanity-bit-seq
+  SOURCES test-forall-reduce-sanity-bit-seq.cpp)
+
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
     NAME test-forall-reduce-sanity-openmp
