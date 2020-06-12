@@ -218,6 +218,26 @@ private:
   T* m_cap   = nullptr;
 };
 
+
+/*!
+ * A struct that gives a generic way to layout memory for different loops
+ */
+template < size_t size, typename ... CallArgs >
+struct WorkStruct
+{
+  Vtable<CallArgs...>* vtable;
+  Vtable_call_sig<CallArgs...> call;
+  std::aligned_storage<size, alignof(std::max_align_t)> obj;
+};
+
+/*!
+ * Generic struct used to layout memory for structs of unknown size
+ * Note that the size of this struct may be smaller than the true size
+ * but the layout, the start of the items should be correct
+ */
+template < typename ... CallArgs >
+using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), CallArgs...>;
+
 }  // namespace detail
 
 }  // namespace RAJA
