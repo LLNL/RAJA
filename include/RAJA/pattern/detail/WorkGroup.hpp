@@ -238,6 +238,99 @@ struct WorkStruct
 template < typename ... CallArgs >
 using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), CallArgs...>;
 
+/*!
+ * A storage container for work groups
+ */
+template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename ... CallArgs >
+struct WorkStorage;
+
+template < typename ALLOCATOR_T, typename ... CallArgs >
+struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
+{
+  using storage_policy = RAJA::array_of_pointers;
+  using Allocator = ALLOCATOR_T;
+
+  using value_type = GenericWorkStruct<CallArgs...>;
+  using const_iterator = const value_type*;
+  using view_type = RAJA::Span<const_iterator, size_t>;
+
+  WorkStorage(Allocator aloc)
+    : m_vec(std::forward<Allocator>(aloc))
+  { }
+
+  WorkStorage(WorkStorage const&) = delete;
+  WorkStorage& operator=(WorkStorage const&) = delete;
+
+  WorkStorage(WorkStorage&&) = default;
+  WorkStorage& operator=(WorkStorage&&) = default;
+
+  void reserve(size_t num_loops, size_t loop_storage_size)
+  {
+    RAJA_UNUSED_VAR(loop_storage_size);
+    m_vec.reserve(num_loops);
+  }
+
+  // number of loops stored
+  size_t size() const
+  {
+    return m_vec.size();
+  }
+
+  const_iterator begin() const
+  {
+    return m_vec.begin();
+  }
+
+  const_iterator end() const
+  {
+    return m_vec.end();
+  }
+
+  view_type get_view() const
+  {
+    return view_type(begin(), end());
+  }
+
+  template < typename loop_in >
+  void add(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  {
+    m_vec.emplace_back(
+        create_value(vtable, std::forward<loop_in>(loop)));
+  }
+
+  ~WorkStorage()
+  {
+    for (size_t count = m_vec.size(); count > 0; --count) {
+      destroy_value(m_vec.pop_back());
+    }
+  }
+
+private:
+  SimpleVector<value_type*, Allocator> m_vec;
+
+  template < typename loop_in >
+  value_type* create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  {
+    using loop_type = camp::decay<loop_in>;
+
+    value_type* value_ptr = static_cast<value_type*>(
+        m_vec.get_allocator().allocate(
+          sizeof(WorkStruct<sizeof(loop_type), CallArgs...>)));
+
+    value_ptr->vtable = vtable;
+    value_ptr->call = vtable->call;
+    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+
+    return value_ptr;
+  }
+
+  void destroy_value(value_type* value_ptr)
+  {
+    value_ptr->vtable->destroy(&value_ptr->obj);
+    m_vec.get_allocator().deallocate(value_ptr);
+  }
+};
+
 }  // namespace detail
 
 }  // namespace RAJA
