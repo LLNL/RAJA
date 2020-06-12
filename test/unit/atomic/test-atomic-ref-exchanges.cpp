@@ -9,7 +9,8 @@
 /// Source file containing tests for atomic exchange and swap methods
 ///
 
-#include <RAJA/RAJA.hpp>
+#include "RAJA/RAJA.hpp"
+
 #include "RAJA_gtest.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)

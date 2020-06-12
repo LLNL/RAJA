@@ -12,14 +12,9 @@
 #ifndef __TEST_REDUCER_CONSTRUCTOR__
 #define __TEST_REDUCER_CONSTRUCTOR__
 
-#include "gtest/gtest.h"
-
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
-#include "camp/resource.hpp"
 
-#include "../test-reducer-utils.hpp"
+#include "../test-reducer.hpp"
 
 template <typename T>
 class ReducerBasicConstructorUnitTest : public ::testing::Test

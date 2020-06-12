@@ -8,50 +8,27 @@
 #ifndef __TEST_REDUCER_UTILS_HPP__
 #define __TEST_REDUCER_UTILS_HPP__
 
-#include "camp/resource.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
 
 #include "RAJA_test-forone.hpp"
 
 //
-// Unroll types for gtest testing::Types
-//
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<camp::list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
-
-
-//
 // Data types
 //
-using DataTypeList = camp::list<
-                                 int,
+using DataTypeList = camp::list< int,
                                  float,
-                                 double
-                               >;
+                                 double >;
 
-using SequentialReducerPolicyList =
-    camp::list<
-                RAJA::seq_reduce
-              >;
+using SequentialReducerPolicyList = camp::list< RAJA::seq_reduce >;
 
 #if defined(RAJA_ENABLE_TBB)
-using TBBReducerPolicyList =
-    camp::list<
-                RAJA::tbb_reduce
-              >;
+using TBBReducerPolicyList = camp::list< RAJA::tbb_reduce >;
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPReducerPolicyList =
-    camp::list<
-                RAJA::omp_reduce,
-                RAJA::omp_reduce_ordered
-              >;
+using OpenMPReducerPolicyList = camp::list< RAJA::omp_reduce,
+                                            RAJA::omp_reduce_ordered >;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
@@ -66,23 +43,6 @@ using CudaReducerPolicyList = camp::list< RAJA::cuda_reduce >;
 using HipReducerPolicyList = camp::list< RAJA::hip_reduce >;
 #endif
 
-
-//
-// Memory resource types for beck-end execution
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
 
 //
 // Forone unit test policies
