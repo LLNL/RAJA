@@ -627,6 +627,309 @@ private:
   }
 };
 
+template < typename ALLOCATOR_T, typename ... CallArgs >
+struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs...>
+{
+  using storage_policy = RAJA::constant_stride_array_of_objects;
+  using Allocator = ALLOCATOR_T;
+
+  using value_type = GenericWorkStruct<CallArgs...>;
+
+  struct const_iterator
+  {
+    using value_type = const typename WorkStorage::value_type;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category = std::random_access_iterator_tag;
+
+    const_iterator(const char* array_pos, size_t stride)
+      : m_array_pos(array_pos)
+      , m_stride(stride)
+    { }
+
+    reference operator*() const
+    {
+      return *static_cast<const value_type*>(static_cast<const void*>(
+          m_array_pos));
+    }
+
+    reference operator[](difference_type i) const
+    {
+      const_iterator copy = *this;
+      copy += i;
+      return *copy;
+    }
+
+    const_iterator& operator++()
+    {
+      m_array_pos += m_stride;
+      return *this;
+    }
+
+    const_iterator operator++(int)
+    {
+      const_iterator copy = *this;
+      ++(*this);
+      return copy;
+    }
+
+    const_iterator& operator--()
+    {
+      m_array_pos -= m_stride;
+      return *this;
+    }
+
+    const_iterator operator--(int)
+    {
+      const_iterator copy = *this;
+      --(*this);
+      return copy;
+    }
+
+    const_iterator& operator+=(difference_type n)
+    {
+      m_array_pos += n * m_stride;
+      return *this;
+    }
+
+    const_iterator& operator-=(difference_type n)
+    {
+      m_array_pos -= n * m_stride;
+      return *this;
+    }
+
+    friend inline const_iterator operator+(
+        const_iterator const& iter, difference_type n)
+    {
+      const_iterator copy = iter;
+      copy += n;
+      return copy;
+    }
+
+    friend inline const_iterator operator+(
+        difference_type n, const_iterator const& iter)
+    {
+      const_iterator copy = iter;
+      copy += n;
+      return copy;
+    }
+
+    friend inline const_iterator operator-(
+        const_iterator const& iter, difference_type n)
+    {
+      const_iterator copy = iter;
+      copy -= n;
+      return copy;
+    }
+
+    friend inline difference_type operator-(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return rhs_iter.m_array_pos - lhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator==(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_array_pos == rhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator<(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_array_pos < rhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator<=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_array_pos <= rhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator>(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_array_pos > rhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator>=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_array_pos >= rhs_iter.m_array_pos;
+    }
+
+  private:
+    const char* m_array_pos;
+    size_t m_stride;
+  };
+
+  using view_type = RAJA::Span<const_iterator, size_t>;
+
+  WorkStorage(Allocator aloc)
+    : m_aloc(std::forward<Allocator>(aloc))
+  { }
+
+  WorkStorage(WorkStorage const&) = delete;
+  WorkStorage& operator=(WorkStorage const&) = delete;
+
+  WorkStorage(WorkStorage&& o)
+    : m_aloc(o.m_aloc)
+    , m_stride(o.m_stride)
+    , m_array_begin(o.m_array_begin)
+    , m_array_end(o.m_array_end)
+    , m_array_cap(o.m_array_cap)
+  {
+    // do not reset stride, leave it for reuse
+    o.m_array_begin = nullptr;
+    o.m_array_end   = nullptr;
+    o.m_array_cap   = nullptr;
+  }
+
+  WorkStorage& operator=(WorkStorage&& o)
+  {
+    m_aloc        = o.m_aloc       ;
+    m_stride      = o.m_stride     ;
+    m_array_begin = o.m_array_begin;
+    m_array_end   = o.m_array_end  ;
+    m_array_cap   = o.m_array_cap  ;
+
+    // do not reset stride, leave it for reuse
+    o.m_array_begin = nullptr;
+    o.m_array_end   = nullptr;
+    o.m_array_cap   = nullptr;
+  }
+
+  void reserve(size_t num_loops, size_t loop_storage_size)
+  {
+    RAJA_UNUSED_VAR(num_loops);
+    array_reserve(loop_storage_size, m_stride);
+  }
+
+  // number of loops stored
+  size_t size() const
+  {
+    return array_size() / m_stride;
+  }
+
+  const_iterator begin() const
+  {
+    return const_iterator(m_array_begin, m_stride);
+  }
+
+  const_iterator end() const
+  {
+    return const_iterator(m_array_end,   m_stride);
+  }
+
+  view_type get_view() const
+  {
+    return view_type(begin(), end());
+  }
+
+  template < typename loop_in >
+  void add(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  {
+    create_value(vtable, std::forward<loop_in>(loop));
+  }
+
+  ~WorkStorage()
+  {
+    for (size_t value_offset = array_size(); value_offset > 0; value_offset -= m_stride) {
+      destroy_value(value_offset - m_stride);
+    }
+    if (m_array_begin != nullptr) {
+      m_aloc.deallocate(m_array_begin);
+    }
+  }
+
+private:
+  Allocator m_aloc;
+  size_t m_stride     = 0;
+  char* m_array_begin = nullptr;
+  char* m_array_end   = nullptr;
+  char* m_array_cap   = nullptr;
+
+  size_t array_size() const
+  {
+    return m_array_end - m_array_begin;
+  }
+
+  size_t array_capacity() const
+  {
+    return m_array_cap - m_array_begin;
+  }
+
+  size_t array_extra() const
+  {
+    return m_array_cap - m_array_end;
+  }
+
+  void array_reserve(size_t loop_storage_size, size_t new_stride)
+  {
+    if (loop_storage_size > array_capacity() || new_stride > m_stride) {
+      char* new_array_begin = static_cast<char*>(
+          m_aloc.allocate(loop_storage_size));
+      char* new_array_end   = new_array_begin + size() * new_stride;
+      char* new_array_cap   = new_array_begin + loop_storage_size;
+
+      for (size_t i = 0; i < size(); ++i) {
+        size_t old_offset = i * m_stride;
+        size_t new_offset = i * new_stride;
+
+        value_type* old_value_ptr = m_array_begin + old_offset;
+        value_type* new_value_ptr = new_array_begin + new_offset;
+
+        new_value_ptr->vtable = old_value_ptr->vtable;
+        new_value_ptr->call = old_value_ptr->call;
+        new_value_ptr->vtable->move_construct(
+            &new_value_ptr->obj, &old_value_ptr->obj);
+        new_value_ptr->vtable->destroy(&old_value_ptr->obj);
+      }
+
+      m_aloc.deallocate(m_array_begin);
+
+      m_stride      = new_stride     ;
+      m_array_begin = new_array_begin;
+      m_array_end   = new_array_end  ;
+      m_array_cap   = new_array_cap  ;
+    }
+  }
+
+  template < typename loop_in >
+  void create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  {
+    using loop_type = camp::decay<loop_in>;
+    const size_t value_size = sizeof(WorkStruct<sizeof(loop_type), CallArgs...>);
+
+    if (value_size > array_extra() && value_size <= m_stride) {
+      array_reserve(std::max(array_size() + value_size, 2*array_capacity()),
+                    m_stride);
+    } else if (value_size > m_stride) {
+      array_reserve((size()+1)*value_size,
+                    value_size);
+    }
+
+    size_t value_offset = array_size();
+    m_array_end += m_stride;
+    value_type* value_ptr =
+        static_cast<value_type*>(static_cast<void*>(
+          m_array_begin + value_offset));
+
+    value_ptr->vtable = vtable;
+    value_ptr->call = vtable->call;
+    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+  }
+
+  void destroy_value(size_t value_offset)
+  {
+    value_type* value_ptr =
+        static_cast<value_type*>(static_cast<void*>(
+          m_array_begin + value_offset));
+    value_ptr->vtable->destroy(&value_ptr->obj);
+  }
+};
+
 }  // namespace detail
 
 }  // namespace RAJA
