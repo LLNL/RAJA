@@ -78,7 +78,8 @@ inline Vtable<CallArgs...> get_Vtable(cuda_work const&)
   return Vtable<CallArgs...>{
         &Vtable_move_construct<T, CallArgs...>,
         get_cached_Vtable_omp_target_call(),
-        &Vtable_destroy<T, CallArgs...>
+        &Vtable_destroy<T, CallArgs...>,
+        sizeof(T)
       };
 }
 

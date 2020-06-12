@@ -68,6 +68,7 @@ struct Vtable {
   move_sig move_construct;
   call_sig call;
   destroy_sig destroy;
+  size_t size;
 };
 
 template < typename ... CallArgs >

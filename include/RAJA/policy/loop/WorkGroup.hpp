@@ -45,7 +45,8 @@ inline Vtable<CallArgs...> get_Vtable(loop_work const&)
   return Vtable<CallArgs...>{
         &Vtable_move_construct<T, CallArgs...>,
         &Vtable_call<T, CallArgs...>,
-        &Vtable_destroy<T, CallArgs...>
+        &Vtable_destroy<T, CallArgs...>,
+        sizeof(T)
       };
 }
 
