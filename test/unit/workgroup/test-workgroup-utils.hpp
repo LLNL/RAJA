@@ -33,11 +33,11 @@ struct ResourceAllocator
   {
     return res.template allocate<char>(size);
   }
-  void deallcoate(void* ptr)
+  void deallocate(void* ptr)
   {
     res.deallocate(ptr);
   }
-  private:
+private:
   Resource res;
 };
 
