@@ -156,13 +156,22 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using Allocator = ALLOCATOR_T;
 
   WorkPool(Allocator aloc)
-    : m_aloc(std::forward<Allocator>(aloc))
+    : m_storage(std::forward<Allocator>(aloc))
   { }
+
+  WorkPool(WorkPool const&) = delete;
+  WorkPool& operator=(WorkPool const&) = delete;
+
+  WorkPool(WorkPool&&) = default;
+  WorkPool& operator=(WorkPool&&) = default;
 
   inline WorkGroup<policy, index_type, xarg_type, Allocator> instantiate();
 
 private:
-  Allocator m_aloc;
+  using storage_type = detail::WorkStorage<storage_policy,
+                                           Allocator,
+                                           index_type, Args...>;
+  storage_type m_storage;
 };
 
 template <typename EXEC_POLICY_T,
@@ -186,6 +195,12 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
+  WorkGroup(WorkGroup const&) = delete;
+  WorkGroup& operator=(WorkGroup const&) = delete;
+
+  WorkGroup(WorkGroup&&) = default;
+  WorkGroup& operator=(WorkGroup&&) = default;
+
   inline WorkSite<policy, index_type, xarg_type, Allocator> run(Args...);
 
 private:
@@ -196,7 +211,14 @@ private:
                    xargs<Args...>,
                    ALLOCATOR_T>;
 
-  WorkGroup()
+  using storage_type = detail::WorkStorage<storage_policy,
+                                           Allocator,
+                                           index_type, Args...>;
+
+  storage_type m_storage;
+
+  WorkGroup(storage_type&& storage)
+    : m_storage(std::move(storage))
   { }
 };
 
@@ -220,6 +242,12 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
+
+  WorkSite(WorkSite const&) = delete;
+  WorkSite& operator=(WorkSite const&) = delete;
+
+  WorkSite(WorkSite&&) = default;
+  WorkSite& operator=(WorkSite&&) = default;
 
 private:
   friend WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
@@ -259,7 +287,7 @@ WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
                                    STORAGE_POLICY_T>,
                    INDEX_T,
                    xargs<Args...>,
-                   ALLOCATOR_T>{};
+                   ALLOCATOR_T>{std::move(m_storage)};
 }
 
 template <typename EXEC_POLICY_T,
