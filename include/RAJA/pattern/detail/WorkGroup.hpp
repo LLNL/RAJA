@@ -81,8 +81,8 @@ using Vtable_destroy_sig = typename Vtable<CallArgs...>::destroy_sig;
 /*!
  * Populate and return a Vtable object appropriate for the given policy
  */
-// template < typename Policy, typename T, typename ... CallArgs >
-// inline Vtable<CallArgs...> get_Vtable(Policy const&);
+// template < typename T, typename ... CallArgs >
+// inline Vtable<CallArgs...> get_Vtable(work_policy const&);
 
 
 }  // namespace detail
