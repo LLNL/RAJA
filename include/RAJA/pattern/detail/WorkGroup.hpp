@@ -25,6 +25,9 @@
 
 #include "RAJA/policy/WorkGroup.hpp"
 
+#include <type_traits>
+#include <cstddef>
+
 namespace RAJA
 {
 
@@ -231,12 +234,65 @@ struct WorkStruct
 };
 
 /*!
- * Generic struct used to layout memory for structs of unknown size
- * Note that the size of this struct may be smaller than the true size
- * but the layout, the start of the items should be correct
+ * Generic struct used to layout memory for structs of unknown size.
+ * Assumptions for any size (checked in WorkStruct_construct):
+ *   offsetof(GenericWorkStruct<>, obj) == offsetof(WorkStruct<size>, obj)
+ *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
 template < typename ... CallArgs >
 using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), CallArgs...>;
+
+
+template < typename loop_in, typename ... CallArgs >
+RAJA_INLINE
+void WorkStruct_construct(void* ptr,
+                          Vtable<CallArgs...>* vtable, loop_in&& loop)
+{
+  using loop_type = camp::decay<loop_in>;
+  using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
+  using value_type = GenericWorkStruct<CallArgs...>;
+
+  static_assert(std::is_standard_layout<true_value_type>::value,
+      "WorkStruct must be a standard layout type");
+  static_assert(std::is_standard_layout<value_type>::value,
+      "GenericWorkStruct must be a standard layout type");
+  static_assert(offsetof(value_type, obj) == offsetof(true_value_type, obj),
+      "WorkStruct and GenericWorkStruct must have obj at the same offset");
+  static_assert(sizeof(value_type) <= sizeof(true_value_type),
+      "WorkStruct must not be smaller than GenericWorkStruct");
+
+  value_type* value_ptr = static_cast<value_type*>(ptr);
+
+  value_ptr->vtable = vtable;
+  value_ptr->call = vtable->call;
+  new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+}
+
+template < typename ... CallArgs >
+RAJA_INLINE
+void WorkStruct_move_destroy(GenericWorkStruct<CallArgs...>* value_dst,
+                             GenericWorkStruct<CallArgs...>* value_src)
+{
+  value_dst->vtable = value_src->vtable;
+  value_dst->call = value_src->call;
+  value_dst->vtable->move_construct(&value_dst->obj, &value_src->obj);
+  value_dst->vtable->destroy(&value_src->obj);
+}
+
+template < typename ... CallArgs >
+RAJA_INLINE
+void WorkStruct_destroy(GenericWorkStruct<CallArgs...>* value_ptr)
+{
+  value_ptr->vtable->destroy(&value_ptr->obj);
+}
+
+template < typename ... CallArgs >
+RAJA_HOST_DEVICE RAJA_INLINE
+void WorkStruct_call(GenericWorkStruct<CallArgs...>* value_ptr,
+                     CallArgs... args)
+{
+  value_ptr->call(&value_ptr->obj, std::forward<CallArgs>(args)...);
+}
 
 /*!
  * A storage container for work groups
@@ -286,16 +342,15 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
     return m_vec.end();
   }
 
-  view_type get_view() const
+  size_t storage_size() const
   {
-    return view_type(begin(), end());
+    return 0;
   }
 
   template < typename loop_in >
-  void add(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
-    m_vec.emplace_back(
-        create_value(vtable, std::forward<loop_in>(loop)));
+    m_vec.emplace_back(create_value(vtable, std::forward<loop_in>(loop)));
   }
 
   ~WorkStorage()
@@ -312,21 +367,19 @@ private:
   value_type* create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
     using loop_type = camp::decay<loop_in>;
+    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
 
     value_type* value_ptr = static_cast<value_type*>(
-        m_vec.get_allocator().allocate(
-          sizeof(WorkStruct<sizeof(loop_type), CallArgs...>)));
+        m_vec.get_allocator().allocate(sizeof(true_value_type)));
 
-    value_ptr->vtable = vtable;
-    value_ptr->call = vtable->call;
-    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
 
     return value_ptr;
   }
 
   void destroy_value(value_type* value_ptr)
   {
-    value_ptr->vtable->destroy(&value_ptr->obj);
+    WorkStruct_destroy(value_ptr);
     m_vec.get_allocator().deallocate(value_ptr);
   }
 };
@@ -523,13 +576,14 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
     return const_iterator(m_array_begin, m_offsets.end());
   }
 
-  view_type get_view() const
+  // amount of storage used to store loops
+  size_t storage_size() const
   {
-    return view_type(begin(), end());
+    return m_array_end - m_array_begin;
   }
 
   template < typename loop_in >
-  void add(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
     m_offsets.emplace_back(
         create_value(vtable, std::forward<loop_in>(loop)));
@@ -551,40 +605,30 @@ private:
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
 
-  size_t array_size() const
-  {
-    return m_array_end - m_array_begin;
-  }
-
-  size_t array_capacity() const
+  size_t storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
-  size_t array_extra() const
+  size_t storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
   void array_reserve(size_t loop_storage_size)
   {
-    if (loop_storage_size > array_capacity()) {
+    if (loop_storage_size > storage_capacity()) {
+
       char* new_array_begin = static_cast<char*>(
           m_offsets.get_allocator().allocate(loop_storage_size));
-      char* new_array_end   = new_array_begin + array_size();
+      char* new_array_end   = new_array_begin + storage_size();
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
+      const_iterator old_iter = begin();
+      const_iterator new_iter(new_array_begin, m_offsets.begin());
+
       for (size_t i = 0; i < size(); ++i) {
-        size_t offset = m_offsets[i];
-
-        value_type* old_value_ptr = m_array_begin + offset;
-        value_type* new_value_ptr = new_array_begin + offset;
-
-        new_value_ptr->vtable = old_value_ptr->vtable;
-        new_value_ptr->call = old_value_ptr->call;
-        new_value_ptr->vtable->move_construct(
-            &new_value_ptr->obj, &old_value_ptr->obj);
-        new_value_ptr->vtable->destroy(&old_value_ptr->obj);
+        WorkStruct_move_destroy(&new_iter[i], &old_iter[i]);
       }
 
       m_offsets.get_allocator().deallocate(m_array_begin);
@@ -599,21 +643,20 @@ private:
   size_t create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
     using loop_type = camp::decay<loop_in>;
-    const size_t value_size = sizeof(WorkStruct<sizeof(loop_type), CallArgs...>);
+    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
+    const size_t value_size = sizeof(true_value_type);
 
-    if (value_size > array_extra()) {
-      array_reserve(std::max(array_size() + value_size, 2*array_capacity()));
+    if (value_size > storage_unused()) {
+      array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()));
     }
 
-    size_t value_offset = array_size();
-    m_array_end += value_size;
+    size_t value_offset = storage_size();
     value_type* value_ptr =
         static_cast<value_type*>(static_cast<void*>(
           m_array_begin + value_offset));
+    m_array_end += value_size;
 
-    value_ptr->vtable = vtable;
-    value_ptr->call = vtable->call;
-    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
 
     return value_offset;
   }
@@ -623,7 +666,7 @@ private:
     value_type* value_ptr =
         static_cast<value_type*>(static_cast<void*>(
           m_array_begin + value_offset));
-    value_ptr->vtable->destroy(&value_ptr->obj);
+    WorkStruct_destroy(value_ptr);
   }
 };
 
@@ -726,7 +769,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
     friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
-      return rhs_iter.m_array_pos - lhs_iter.m_array_pos;
+      return (rhs_iter.m_array_pos - lhs_iter.m_array_pos) / lhs_iter.m_stride;
     }
 
     friend inline bool operator==(
@@ -809,7 +852,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
   // number of loops stored
   size_t size() const
   {
-    return array_size() / m_stride;
+    return storage_size() / m_stride;
   }
 
   const_iterator begin() const
@@ -822,20 +865,21 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
     return const_iterator(m_array_end,   m_stride);
   }
 
-  view_type get_view() const
+  // amount of storage used to store loops
+  size_t storage_size() const
   {
-    return view_type(begin(), end());
+    return m_array_end - m_array_begin;
   }
 
   template < typename loop_in >
-  void add(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
     create_value(vtable, std::forward<loop_in>(loop));
   }
 
   ~WorkStorage()
   {
-    for (size_t value_offset = array_size(); value_offset > 0; value_offset -= m_stride) {
+    for (size_t value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
       destroy_value(value_offset - m_stride);
     }
     if (m_array_begin != nullptr) {
@@ -850,41 +894,30 @@ private:
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
 
-  size_t array_size() const
-  {
-    return m_array_end - m_array_begin;
-  }
-
-  size_t array_capacity() const
+  size_t storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
-  size_t array_extra() const
+  size_t storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
   void array_reserve(size_t loop_storage_size, size_t new_stride)
   {
-    if (loop_storage_size > array_capacity() || new_stride > m_stride) {
+    if (loop_storage_size > storage_capacity() || new_stride > m_stride) {
+
       char* new_array_begin = static_cast<char*>(
           m_aloc.allocate(loop_storage_size));
       char* new_array_end   = new_array_begin + size() * new_stride;
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
+      const_iterator old_iter = begin();
+      const_iterator new_iter(new_array_begin, new_stride);
+
       for (size_t i = 0; i < size(); ++i) {
-        size_t old_offset = i * m_stride;
-        size_t new_offset = i * new_stride;
-
-        value_type* old_value_ptr = m_array_begin + old_offset;
-        value_type* new_value_ptr = new_array_begin + new_offset;
-
-        new_value_ptr->vtable = old_value_ptr->vtable;
-        new_value_ptr->call = old_value_ptr->call;
-        new_value_ptr->vtable->move_construct(
-            &new_value_ptr->obj, &old_value_ptr->obj);
-        new_value_ptr->vtable->destroy(&old_value_ptr->obj);
+        WorkStruct_move_destroy(&new_iter[i], &old_iter[i]);
       }
 
       m_aloc.deallocate(m_array_begin);
@@ -900,25 +933,22 @@ private:
   void create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
   {
     using loop_type = camp::decay<loop_in>;
-    const size_t value_size = sizeof(WorkStruct<sizeof(loop_type), CallArgs...>);
+    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
+    const size_t value_size = sizeof(true_value_type);
 
-    if (value_size > array_extra() && value_size <= m_stride) {
-      array_reserve(std::max(array_size() + value_size, 2*array_capacity()),
+    if (value_size > storage_unused() && value_size <= m_stride) {
+      array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()),
                     m_stride);
     } else if (value_size > m_stride) {
       array_reserve((size()+1)*value_size,
                     value_size);
     }
 
-    size_t value_offset = array_size();
-    m_array_end += m_stride;
     value_type* value_ptr =
-        static_cast<value_type*>(static_cast<void*>(
-          m_array_begin + value_offset));
+        static_cast<value_type*>(static_cast<void*>(m_array_end));
+    m_array_end += m_stride;
 
-    value_ptr->vtable = vtable;
-    value_ptr->call = vtable->call;
-    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
   }
 
   void destroy_value(size_t value_offset)
@@ -926,7 +956,7 @@ private:
     value_type* value_ptr =
         static_cast<value_type*>(static_cast<void*>(
           m_array_begin + value_offset));
-    value_ptr->vtable->destroy(&value_ptr->obj);
+    WorkStruct_destroy(value_ptr);
   }
 };
 
