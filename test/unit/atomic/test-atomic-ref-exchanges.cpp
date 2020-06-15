@@ -14,7 +14,7 @@
 #include "RAJA_gtest.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_test-forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 #endif
 
 // Basic Exchange

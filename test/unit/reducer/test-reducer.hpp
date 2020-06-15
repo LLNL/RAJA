@@ -11,7 +11,7 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
 
-#include "RAJA_test-forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 
 //
 // Data types
