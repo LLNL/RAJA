@@ -191,7 +191,7 @@ class ReduceSum;
  * \verbatim
 
    Real_ptr data = ...;
-   ReduceMax<reduce_policy, Real_type> my_bits(init_val);
+   ReduceBitOr<reduce_policy, Real_type> my_bits(init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_bits |= data[i];
@@ -205,6 +205,33 @@ class ReduceSum;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceBitOr;
+ 
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Bitwise AND reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   ReduceBitAnd<reduce_policy, Real_type> my_bits(init_val);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_bits &= data[i];
+   }
+
+   Real_type finbits = my_bits.get();
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename REDUCE_POLICY_T, typename T>
+class ReduceBitAnd;
 } //namespace RAJA
+
 
 #endif  // closing endif for header file include guard
