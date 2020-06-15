@@ -106,35 +106,26 @@ RAJA_INLINE void forall_impl(sycl_exec<BlockSize, Async>,
 
     cl::sycl::queue q = ::RAJA::sycl::detail::getQueue();
 
-    // Non-trivially copyable
-    Iterator* idx = (Iterator*) cl::sycl::malloc_device(sizeof(Iterator), q);
-    auto e = q.memcpy(idx, &begin, sizeof(Iterator));
-    e.wait();
-
-    LOOP_BODY* lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), q);
-    auto e2 = q.memcpy(lbody, &loop_body, sizeof(LOOP_BODY));
-    e2.wait();
+    cl::sycl::buffer<Iterator> d_idx {std::move(&begin), 1};
+    cl::sycl::buffer<LOOP_BODY> d_lbody {std::move(&loop_body), 1};
 
     q.submit([&](cl::sycl::handler& h) {
+
+      auto idx = d_idx.template get_access<cl::sycl::access::mode::read>(h);
+      auto body = d_lbody.template get_access<cl::sycl::access::mode::read>(h);
+
       h.parallel_for( cl::sycl::nd_range<1>{gridSize, blockSize},
                       [=] (cl::sycl::nd_item<1> it) {
-
-        using RAJA::internal::thread_privatize;
-        auto privatizer = thread_privatize(*lbody);
-        auto& body = privatizer.get_priv();
 
         size_t ii = it.get_global_id(0);
 
         if (ii < len) {
-          body((*idx)[ii]);
+          (body[0])((idx[0])[ii]);
         }
       });
     });
 
     if (!Async) { q.wait(); }
-
-    cl::sycl::free(idx, q);
-    cl::sycl::free(lbody, q);
 
   }
 }
