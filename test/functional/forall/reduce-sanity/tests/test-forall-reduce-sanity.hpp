@@ -35,6 +35,7 @@ using ReduceSanityDataTypeListBit = camp::list<int>;
 
 #include "test-forall-reduce-sanity-sum.hpp"
 #include "test-forall-reduce-sanity-bitor.hpp"
+#include "test-forall-reduce-sanity-bitand.hpp"
 #include "test-forall-reduce-sanity-min.hpp"
 #include "test-forall-reduce-sanity-max.hpp"
 #include "test-forall-reduce-sanity-minloc.hpp"
@@ -48,6 +49,7 @@ REGISTER_TYPED_TEST_SUITE_P(ForallReduceSanityTest,
                             ReduceMaxLocSanityForall);
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceSanityTestBit,
-                            ReduceBitOrSanityForall);
+                            ReduceBitOrSanityForall,
+                            ReduceBitAndSanityForall);
 
 #endif  // __TEST_FORALL_REDUCE_SANITY_HPP__
