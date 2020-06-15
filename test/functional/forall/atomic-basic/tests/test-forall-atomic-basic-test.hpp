@@ -9,12 +9,11 @@
 /// Header file containing basic functional tests for atomic operations with forall.
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_BASIC_HPP__
-#define __TEST_FORALL_ATOMIC_BASIC_HPP__
+#ifndef __TEST_FORALL_ATOMIC_BASIC_TEST_HPP__
+#define __TEST_FORALL_ATOMIC_BASIC_TEST_HPP__
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
-#include "../../test-forall-utils.hpp"
+#include "RAJA_test-forall-data.hpp"
+
 #include <numeric>
 
 // range segment multiplexer
@@ -54,13 +53,6 @@ struct RSMultiplexer < Index, RAJA::TypedListSegment<Index> >
 };
 // end range segment multiplexer
 
-
-TYPED_TEST_SUITE_P(ForallAtomicBasicFunctionalTest);
-
-template <typename T>
-class ForallAtomicBasicFunctionalTest : public ::testing::Test
-{
-};
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
@@ -159,11 +151,8 @@ TYPED_TEST_P(ForallAtomicBasicFunctionalTest, AtomicBasicFunctionalForall)
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using SType   = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
+
   testAtomicFunctionBasic<AExec, APol, ResType, SType, DType>( 10000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( ForallAtomicBasicFunctionalTest,
-                             AtomicBasicFunctionalForall
-                           );
-
-#endif  //__TEST_FORALL_ATOMIC_BASIC_HPP__
+#endif  //__TEST_FORALL_ATOMIC_BASIC_TEST_HPP__

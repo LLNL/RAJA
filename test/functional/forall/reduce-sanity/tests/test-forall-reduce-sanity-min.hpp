@@ -8,10 +8,6 @@
 #ifndef __TEST_FORALL_REDUCEMIN_SANITY_HPP__
 #define __TEST_FORALL_REDUCEMIN_SANITY_HPP__
 
-#include "RAJA/RAJA.hpp"
-
-#include "test-forall-reduce-sanity.hpp"
-
 #include <cstdlib>
 #include <numeric>
 

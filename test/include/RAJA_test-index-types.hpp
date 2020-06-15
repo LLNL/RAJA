@@ -5,26 +5,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_UTILS_HPP__
-#define __TEST_FORALL_UTILS_HPP__
+//
+// Types and type lists for loop indexing used throughout RAJA tests.
+//
+// Note that in the type lists, a subset of types is used by default.
+// For more comprehensive type testing define the macro RAJA_TEST_EXHAUSTIVE.
+//
+
+#ifndef __RAJA_test_index_types_HPP__
+#define __RAJA_test_index_types_HPP__
 
 #include "RAJA/RAJA.hpp"
 
-#include "camp/resource.hpp"
 #include "camp/list.hpp"
-
-#include "gtest/gtest.h"
-
-//
-// Unroll types for gtest testing::Types
-//
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<camp::list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
 
 //
 // Strongly typed indexes
@@ -65,56 +58,4 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      StrongULL,
                                      unsigned long long>;
 
-
-//
-// Memory resource types for beck-end execution
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
-
-
-//
-// Memory allocation/deallocation  methods for test execution
-//
-
-template<typename T>
-void allocateForallTestData(T N,
-                            camp::resources::Resource& work_res,
-                            T** work_array,
-                            T** check_array,
-                            T** test_array)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
-
-  *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
-
-  *check_array = host_res.allocate<T>(RAJA::stripIndexType(N));
-  *test_array = host_res.allocate<T>(RAJA::stripIndexType(N));
-}
-
-template<typename T>
-void deallocateForallTestData(camp::resources::Resource& work_res,
-                              T* work_array,
-                              T* check_array,
-                              T* test_array)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
-
-  work_res.deallocate(work_array);
-
-  host_res.deallocate(check_array);
-  host_res.deallocate(test_array);
-}
-
-#endif  // __TEST_FORALL_UTILS_HPP__
+#endif // __RAJA_test_index_types_HPP__

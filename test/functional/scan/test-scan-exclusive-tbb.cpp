@@ -6,12 +6,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-scan-exclusive.hpp"
+#include "test-scan.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
-
-#include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
 
 using TBBExclusiveScanTypes = 
   Test<camp::cartesian_product< TBBForallExecPols, 

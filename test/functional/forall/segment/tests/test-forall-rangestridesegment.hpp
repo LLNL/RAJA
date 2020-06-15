@@ -8,8 +8,6 @@
 #ifndef __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 #define __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 
-#include "test-forall-segment.hpp"
-
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last, 

@@ -5,14 +5,18 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_INDEXSET_UTILS_HPP__
-#define __TEST_FORALL_INDEXSET_UTILS_HPP__
+//
+// Methods to construct index sets for RAJA tests.
+//
+
+#ifndef __TEST_FORALL_INDEXSET_BUILD_HPP__
+#define __TEST_FORALL_INDEXSET_BUILD_HPP__
 
 #include "RAJA/RAJA.hpp"
 
-#include <random>
+#include "camp/resource.hpp"
 
-#include "test-forall-utils.hpp"
+#include <random>
 
 //
 // Utility routine to construct index set with mix of Range, RangeStride, 
@@ -114,4 +118,4 @@ void buildIndexSet(
   last_idx = lseg_vec[lseg_len - 1];
 }
 
-#endif  // __TEST_FORALL_INDEXSET_UTILS_HPP__
+#endif  // __TEST_FORALL_INDEXSET_BUILD_HPP__

@@ -9,29 +9,16 @@
 /// Source file containing unit tests for ListSegment
 ///
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+
+#include "RAJA_unit-test-types.hpp"
+
 #include <vector>
 
 template<typename T>
 class ListSegmentUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<RAJA::Index_type,
-                                 int,
-#if defined(RAJA_TEST_EXHAUSTIVE)
-                                 unsigned int,
-                                 char,
-                                 unsigned char,
-                                 short,
-                                 unsigned short,
-                                 long,
-                                 unsigned long,
-                                 long int,
-                                 unsigned long int,
-#endif
-                                 unsigned long long>;
-
-TYPED_TEST_SUITE(ListSegmentUnitTest, MyTypes);
+TYPED_TEST_SUITE(ListSegmentUnitTest, UnitIndexTypes);
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)
