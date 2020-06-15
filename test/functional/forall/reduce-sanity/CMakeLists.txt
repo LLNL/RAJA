@@ -35,6 +35,10 @@ if(RAJA_ENABLE_CUDA)
   raja_add_test(
     NAME test-forall-reduce-sanity-cuda
     SOURCES test-forall-reduce-sanity-cuda.cpp)
+
+  raja_add_test(
+    NAME test-forall-reduce-sanity-bit-cuda
+    SOURCES test-forall-reduce-sanity-bit-cuda.cpp)
 endif()
  
 if(RAJA_ENABLE_HIP)
