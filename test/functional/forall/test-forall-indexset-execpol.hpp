@@ -65,4 +65,10 @@ using HipForallIndexSetExecPols =
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<256>> >;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclForallIndexSetExecPols =
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<128>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<256>> >;
+#endif
+
 #endif  // __TEST_FORALL_INDEXSET_EXECPOL_HPP__

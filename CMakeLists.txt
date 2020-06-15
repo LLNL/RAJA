@@ -162,6 +162,7 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
+  src/MemUtils_SYCL.cpp
   src/PluginStrategy.cpp)
 
 set (raja_depends)
@@ -219,6 +220,12 @@ if (ENABLE_HIP)
       set(ENABLE_EXTERNAL_ROCPRIM Off)
      endif()
   endif ()
+endif ()
+
+if (ENABLE_SYCL)
+  set (raja_depends
+    ${raja_depends}
+    sycl)
 endif ()
 
 if (ENABLE_CHAI)

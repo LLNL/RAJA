@@ -38,3 +38,9 @@ if(RAJA_ENABLE_HIP)
     NAME test-forall-segment-hip
     SOURCES test-forall-segment-hip.cpp)
 endif()
+
+if(RAJA_ENABLE_SYCL)
+  raja_add_test(
+    NAME test-forall-segment-sycl
+    SOURCES test-forall-segment-sycl.cpp)
+endif()

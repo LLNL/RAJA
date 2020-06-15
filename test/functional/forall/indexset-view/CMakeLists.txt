@@ -38,3 +38,9 @@ if(RAJA_ENABLE_HIP)
     NAME test-forall-indexset-view-hip
     SOURCES test-forall-indexset-view-hip.cpp)
 endif()
+
+if(RAJA_ENABLE_SYCL)
+  raja_add_test(
+    NAME test-forall-indexset-view-sycl
+    SOURCES test-forall-indexset-view-sycl.cpp)
+endif()
