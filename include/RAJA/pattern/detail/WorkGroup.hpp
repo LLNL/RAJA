@@ -561,6 +561,11 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
           m_array_begin + *m_offset_iter);
     }
 
+    pointer operator->() const
+    {
+      return &(*(*this));
+    }
+
     reference operator[](difference_type i) const
     {
       const_iterator copy = *this;
@@ -633,13 +638,19 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
     friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
-      return rhs_iter.m_offset_iter - lhs_iter.m_offset_iter;
+      return lhs_iter.m_offset_iter - rhs_iter.m_offset_iter;
     }
 
     friend inline bool operator==(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter == rhs_iter.m_offset_iter;
+    }
+
+    friend inline bool operator!=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return !(lhs_iter == rhs_iter);
     }
 
     friend inline bool operator<(
@@ -671,7 +682,6 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
     const size_t* m_offset_iter;
   };
 
-  using view_type = RAJA::Span<const_iterator, size_t>;
 
   WorkStorage(Allocator aloc)
     : m_offsets(std::forward<Allocator>(aloc))
@@ -846,6 +856,11 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
       return *reinterpret_cast<const value_type*>(m_array_pos);
     }
 
+    pointer operator->() const
+    {
+      return &(*(*this));
+    }
+
     reference operator[](difference_type i) const
     {
       const_iterator copy = *this;
@@ -918,13 +933,19 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
     friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
-      return (rhs_iter.m_array_pos - lhs_iter.m_array_pos) / lhs_iter.m_stride;
+      return (lhs_iter.m_array_pos - rhs_iter.m_array_pos) / lhs_iter.m_stride;
     }
 
     friend inline bool operator==(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos == rhs_iter.m_array_pos;
+    }
+
+    friend inline bool operator!=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return !(lhs_iter == rhs_iter);
     }
 
     friend inline bool operator<(
@@ -956,7 +977,6 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
     size_t m_stride;
   };
 
-  using view_type = RAJA::Span<const_iterator, size_t>;
 
   WorkStorage(Allocator aloc)
     : m_aloc(std::forward<Allocator>(aloc))
