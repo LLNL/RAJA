@@ -127,40 +127,4 @@ using HipAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::H
 using OpenMPTargetAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Omp>>;
 #endif
 
-
-//
-// Memory resource types for beck-end execution
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
-
-
-//
-// Forone unit test policies
-//
-using SequentialForoneList = camp::list<forone_seq>;
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenmpTargetForoneList = camp::list<forone_openmp_target>;
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForoneList = camp::list<forone_cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForoneList = camp::list<forone_hip>;
-#endif
-
 #endif  // __TEST_WORKGROUP_UTILS_HPP__

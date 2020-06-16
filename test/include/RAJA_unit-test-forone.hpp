@@ -145,4 +145,22 @@ void forone(L&& run)
   forone(forone_policy{}, std::forward<L>(run));
 }
 
+
+//
+// Forone unit test policies
+//
+using SequentialForoneList = camp::list<forone_seq>;
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenmpTargetForoneList = camp::list<forone_openmp_target>;
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaForoneList = camp::list<forone_cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipForoneList = camp::list<forone_hip>;
+#endif
+
 #endif // RAJA_test_forone_HPP__
