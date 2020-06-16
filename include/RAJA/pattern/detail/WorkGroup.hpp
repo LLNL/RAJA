@@ -230,7 +230,7 @@ struct WorkStruct
 {
   Vtable<CallArgs...>* vtable;
   Vtable_call_sig<CallArgs...> call;
-  std::aligned_storage<size, alignof(std::max_align_t)> obj;
+  typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
 };
 
 /*!
@@ -252,6 +252,8 @@ void WorkStruct_construct(void* ptr,
   using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
   using value_type = GenericWorkStruct<CallArgs...>;
 
+  static_assert(sizeof(loop_type) <= sizeof(true_value_type::obj),
+      "loop_type must fit in WorkStruct::obj");
   static_assert(std::is_standard_layout<true_value_type>::value,
       "WorkStruct must be a standard layout type");
   static_assert(std::is_standard_layout<value_type>::value,
