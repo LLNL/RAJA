@@ -308,8 +308,143 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
   using Allocator = ALLOCATOR_T;
 
   using value_type = GenericWorkStruct<CallArgs...>;
-  using const_iterator = const value_type*;
-  using view_type = RAJA::Span<const_iterator, size_t>;
+
+  struct const_iterator
+  {
+    using value_type = const typename WorkStorage::value_type;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category = std::random_access_iterator_tag;
+
+    const_iterator(value_type* const* ptrptr)
+      : m_ptrptr(ptrptr)
+    { }
+
+    reference operator*() const
+    {
+      return **m_ptrptr;
+    }
+
+    pointer operator->() const
+    {
+      return &(*(*this));
+    }
+
+    reference operator[](difference_type i) const
+    {
+      const_iterator copy = *this;
+      copy += i;
+      return *copy;
+    }
+
+    const_iterator& operator++()
+    {
+      ++m_ptrptr;
+      return *this;
+    }
+
+    const_iterator operator++(int)
+    {
+      const_iterator copy = *this;
+      ++(*this);
+      return copy;
+    }
+
+    const_iterator& operator--()
+    {
+      --m_ptrptr;
+      return *this;
+    }
+
+    const_iterator operator--(int)
+    {
+      const_iterator copy = *this;
+      --(*this);
+      return copy;
+    }
+
+    const_iterator& operator+=(difference_type n)
+    {
+      m_ptrptr += n;
+      return *this;
+    }
+
+    const_iterator& operator-=(difference_type n)
+    {
+      m_ptrptr -= n;
+      return *this;
+    }
+
+    friend inline const_iterator operator+(
+        const_iterator const& iter, difference_type n)
+    {
+      const_iterator copy = iter;
+      copy += n;
+      return copy;
+    }
+
+    friend inline const_iterator operator+(
+        difference_type n, const_iterator const& iter)
+    {
+      const_iterator copy = iter;
+      copy += n;
+      return copy;
+    }
+
+    friend inline const_iterator operator-(
+        const_iterator const& iter, difference_type n)
+    {
+      const_iterator copy = iter;
+      copy -= n;
+      return copy;
+    }
+
+    friend inline difference_type operator-(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr - rhs_iter.m_ptrptr;
+    }
+
+    friend inline bool operator==(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr == rhs_iter.m_ptrptr;
+    }
+
+    friend inline bool operator!=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return !(lhs_iter == rhs_iter);
+    }
+
+    friend inline bool operator<(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr < rhs_iter.m_ptrptr;
+    }
+
+    friend inline bool operator<=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr <= rhs_iter.m_ptrptr;
+    }
+
+    friend inline bool operator>(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr > rhs_iter.m_ptrptr;
+    }
+
+    friend inline bool operator>=(
+        const_iterator const& lhs_iter, const_iterator const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr >= rhs_iter.m_ptrptr;
+    }
+
+  private:
+    value_type* const* m_ptrptr;
+  };
 
   WorkStorage(Allocator aloc)
     : m_vec(std::forward<Allocator>(aloc))
@@ -318,8 +453,20 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
   WorkStorage(WorkStorage const&) = delete;
   WorkStorage& operator=(WorkStorage const&) = delete;
 
-  WorkStorage(WorkStorage&&) = default;
-  WorkStorage& operator=(WorkStorage&&) = default;
+  WorkStorage(WorkStorage&& o)
+    : m_vec(std::move(o.m_vec))
+    , m_storage_size(o.m_storage_size)
+  {
+    o.m_storage_size = 0;
+  }
+
+  WorkStorage& operator=(WorkStorage&& o)
+  {
+    m_vec = std::move(o.m_vec);
+    m_storage_size = o.m_storage_size;
+
+    o.m_storage_size = 0;
+  }
 
   void reserve(size_t num_loops, size_t loop_storage_size)
   {
@@ -335,12 +482,12 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
 
   const_iterator begin() const
   {
-    return m_vec.begin();
+    return const_iterator(m_vec.begin());
   }
 
   const_iterator end() const
   {
-    return m_vec.end();
+    return const_iterator(m_vec.end());
   }
 
   size_t storage_size() const
