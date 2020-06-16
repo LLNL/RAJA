@@ -409,8 +409,8 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
 
     reference operator*() const
     {
-      return *static_cast<const value_type*>(static_cast<const void*>(
-          m_array_begin + *m_offset_iter));
+      return *reinterpret_cast<const value_type*>(
+          m_array_begin + *m_offset_iter);
     }
 
     reference operator[](difference_type i) const
@@ -654,8 +654,7 @@ private:
 
     size_t value_offset = storage_size();
     value_type* value_ptr =
-        static_cast<value_type*>(static_cast<void*>(
-          m_array_begin + value_offset));
+        reinterpret_cast<value_type*>(m_array_begin + value_offset);
     m_array_end += value_size;
 
     WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
@@ -666,8 +665,7 @@ private:
   void destroy_value(size_t value_offset)
   {
     value_type* value_ptr =
-        static_cast<value_type*>(static_cast<void*>(
-          m_array_begin + value_offset));
+        reinterpret_cast<value_type*>(m_array_begin + value_offset);
     WorkStruct_destroy(value_ptr);
   }
 };
@@ -695,8 +693,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs
 
     reference operator*() const
     {
-      return *static_cast<const value_type*>(static_cast<const void*>(
-          m_array_pos));
+      return *reinterpret_cast<const value_type*>(m_array_pos);
     }
 
     reference operator[](difference_type i) const
@@ -946,8 +943,7 @@ private:
                     value_size);
     }
 
-    value_type* value_ptr =
-        static_cast<value_type*>(static_cast<void*>(m_array_end));
+    value_type* value_ptr = reinterpret_cast<value_type*>(m_array_end);
     m_array_end += m_stride;
 
     WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
@@ -956,8 +952,7 @@ private:
   void destroy_value(size_t value_offset)
   {
     value_type* value_ptr =
-        static_cast<value_type*>(static_cast<void*>(
-          m_array_begin + value_offset));
+        reinterpret_cast<value_type*>(m_array_begin + value_offset);
     WorkStruct_destroy(value_ptr);
   }
 };
