@@ -60,7 +60,6 @@ void Vtable_destroy(void* obj)
  * A vtable abstraction
  *
  * Provides function pointers for basic functions.
- *
  */
 template < typename ... CallArgs >
 struct Vtable {
@@ -263,7 +262,7 @@ void WorkStruct_construct(void* ptr,
   static_assert(sizeof(value_type) <= sizeof(true_value_type),
       "WorkStruct must not be smaller than GenericWorkStruct");
 
-  value_type* value_ptr = static_cast<value_type*>(ptr);
+  true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
   value_ptr->vtable = vtable;
   value_ptr->call = vtable->call;
