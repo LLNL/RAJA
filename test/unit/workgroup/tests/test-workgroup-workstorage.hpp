@@ -14,7 +14,8 @@
 
 #include "../test-workgroup.hpp"
 
-#include <vector>
+#include <random>
+#include <array>
 #include <cstddef>
 
 
@@ -311,7 +312,8 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageInsertC
 template <typename StoragePolicy,
           typename Allocator
           >
-void testWorkGroupWorkStorageMultiple()
+void testWorkGroupWorkStorageMultiple(
+    const size_t num0, const size_t num1, const size_t num2)
 {
   bool success = true;
 
@@ -323,12 +325,20 @@ void testWorkGroupWorkStorageMultiple()
   using WorkStruct_type = typename WorkStorage_type::value_type;
   using Vtable_type = typename WorkStorage_type::vtable_type;
 
+  using type0 = double;
+  using type1 = std::array<double, 6>;
+  using type2 = std::array<double, 14>;
+
+  using callable0 = TestCallable<type0>;
+  using callable1 = TestCallable<type1>;
+  using callable2 = TestCallable<type2>;
+
   Vtable_type vtable0 = RAJA::detail::get_Vtable<
-      TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable0, void*, bool*, bool*>(RAJA::seq_work{});
   Vtable_type vtable1 = RAJA::detail::get_Vtable<
-      TestCallable<float>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable1, void*, bool*, bool*>(RAJA::seq_work{});
   Vtable_type vtable2 = RAJA::detail::get_Vtable<
-      TestCallable<std::vector<int>>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable2, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -336,231 +346,108 @@ void testWorkGroupWorkStorageMultiple()
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    TestCallable<double> c01(0.12345);
-    TestCallable<double> c02(0.23451);
-    TestCallable<double> c03(0.34512);
-    TestCallable<double> c04(0.45123);
-    TestCallable<double> c05(0.51234);
+    std::vector<callable0> vec0;
+    vec0.reserve(num0);
+    for (size_t i = 0; i < num0; ++i) {
+      vec0.emplace_back((type0)-i);
+      ASSERT_FALSE(vec0[i].move_constructed);
+      ASSERT_FALSE(vec0[i].moved_from);
+      container.insert(&vtable0, std::move(vec0[i]));
+      ASSERT_FALSE(vec0[i].move_constructed);
+      ASSERT_TRUE (vec0[i].moved_from);
+    }
 
-    TestCallable<float> c11(1.1234f);
-    TestCallable<float> c12(1.2341f);
-    TestCallable<float> c13(1.3412f);
-    TestCallable<float> c14(1.4123f);
+    std::vector<callable1> vec1;
+    vec1.reserve(num1);
+    for (size_t i = 0; i < num1; ++i) {
+      vec1.emplace_back(type1{
+          100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i});
+      ASSERT_FALSE(vec1[i].move_constructed);
+      ASSERT_FALSE(vec1[i].moved_from);
+      container.insert(&vtable1, std::move(vec1[i]));
+      ASSERT_FALSE(vec1[i].move_constructed);
+      ASSERT_TRUE (vec1[i].moved_from);
+    }
 
-    TestCallable<std::vector<int>> c21({2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
+    std::vector<callable2> vec2;
+    vec2.reserve(num2);
+    for (size_t i = 0; i < num2; ++i) {
+      vec2.emplace_back(type2{
+          1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
+          1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
+          1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i});
+      ASSERT_FALSE(vec2[i].move_constructed);
+      ASSERT_FALSE(vec2[i].moved_from);
+      container.insert(&vtable2, std::move(vec2[i]));
+      ASSERT_FALSE(vec2[i].move_constructed);
+      ASSERT_TRUE (vec2[i].moved_from);
+    }
 
-    ASSERT_FALSE(c01.move_constructed);
-    ASSERT_FALSE(c01.moved_from);
-    ASSERT_FALSE(c02.move_constructed);
-    ASSERT_FALSE(c02.moved_from);
-    ASSERT_FALSE(c03.move_constructed);
-    ASSERT_FALSE(c03.moved_from);
-    ASSERT_FALSE(c04.move_constructed);
-    ASSERT_FALSE(c04.moved_from);
-    ASSERT_FALSE(c05.move_constructed);
-    ASSERT_FALSE(c05.moved_from);
-
-    ASSERT_FALSE(c11.move_constructed);
-    ASSERT_FALSE(c11.moved_from);
-    ASSERT_FALSE(c12.move_constructed);
-    ASSERT_FALSE(c12.moved_from);
-    ASSERT_FALSE(c13.move_constructed);
-    ASSERT_FALSE(c13.moved_from);
-    ASSERT_FALSE(c14.move_constructed);
-    ASSERT_FALSE(c14.moved_from);
-
-    ASSERT_FALSE(c21.move_constructed);
-    ASSERT_FALSE(c21.moved_from);
-
-    container.insert(&vtable0, std::move(c01));
-    container.insert(&vtable0, std::move(c02));
-    container.insert(&vtable0, std::move(c03));
-    container.insert(&vtable0, std::move(c04));
-    container.insert(&vtable0, std::move(c05));
-
-    container.insert(&vtable1, std::move(c11));
-    container.insert(&vtable1, std::move(c12));
-    container.insert(&vtable1, std::move(c13));
-    container.insert(&vtable1, std::move(c14));
-
-    container.insert(&vtable2, std::move(c21));
-
-    ASSERT_FALSE(c01.move_constructed);
-    ASSERT_TRUE(c01.moved_from);
-    ASSERT_FALSE(c02.move_constructed);
-    ASSERT_TRUE(c02.moved_from);
-    ASSERT_FALSE(c03.move_constructed);
-    ASSERT_TRUE(c03.moved_from);
-    ASSERT_FALSE(c04.move_constructed);
-    ASSERT_TRUE(c04.moved_from);
-    ASSERT_FALSE(c05.move_constructed);
-    ASSERT_TRUE(c05.moved_from);
-
-    ASSERT_FALSE(c11.move_constructed);
-    ASSERT_TRUE(c11.moved_from);
-    ASSERT_FALSE(c12.move_constructed);
-    ASSERT_TRUE(c12.moved_from);
-    ASSERT_FALSE(c13.move_constructed);
-    ASSERT_TRUE(c13.moved_from);
-    ASSERT_FALSE(c14.move_constructed);
-    ASSERT_TRUE(c14.moved_from);
-
-    ASSERT_FALSE(c21.move_constructed);
-    ASSERT_TRUE(c21.moved_from);
-
-    ASSERT_EQ(container.size(), (size_t)10);
+    ASSERT_EQ(container.size(), num0+num1+num2);
     ASSERT_GE(container.storage_size(),
-        5*sizeof(TestCallable<double>) +
-        4*sizeof(TestCallable<float>) +
-        4*sizeof(TestCallable<std::vector<int>>));
+        num0*sizeof(callable0) +
+        num1*sizeof(callable1) +
+        num2*sizeof(callable2));
 
     WorkStorage_type container2(std::move(container));
 
-    ASSERT_EQ(container.size(), (size_t)(0));
+    ASSERT_EQ(container.size(), (size_t)0);
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    ASSERT_EQ(container2.size(), (size_t)10);
+    ASSERT_EQ(container2.size(), num0+num1+num2);
     ASSERT_GE(container2.storage_size(),
-        5*sizeof(TestCallable<double>) +
-        4*sizeof(TestCallable<float>) +
-        4*sizeof(TestCallable<std::vector<int>>));
+        num0*sizeof(callable0) +
+        num1*sizeof(callable1) +
+        num2*sizeof(callable2));
 
     {
       auto iter = container2.begin();
 
-      {
-        double val = -1;
+      for (size_t i = 0; i < num0; ++i) {
+        type0 val = 1;
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        ASSERT_EQ(val, 0.12345);
+        type0 expected = -i;
+        ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
+
+        ++iter;
       }
 
-      ++iter;
-
-      {
-        double val = -1;
+      for (size_t i = 0; i < num1; ++i) {
+        type1 val{-1.0, -1.0, -1.0, -1.0, -1.0, -1.0};
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        ASSERT_EQ(val, 0.23451);
+        type1 expected{100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i};
+        ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
+
+        ++iter;
       }
 
-      ++iter;
-
-      {
-        double val = -1;
+      for (size_t i = 0; i < num2; ++i) {
+        type2 val{-1l, -1l, -1l, -1l, -1l,
+                  -1l, -1l, -1l, -1l, -1l,
+                  -1l, -1l, -1l, -1l};
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        ASSERT_EQ(val, 0.34512);
+        type2 expected{1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
+                       1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
+                       1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i};
+        ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
+
+        ++iter;
       }
-
-      ++iter;
-
-      {
-        double val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 0.45123);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-      {
-        double val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 0.51234);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-
-      {
-        float val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 1.1234f);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-      {
-        float val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 1.2341f);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-      {
-        float val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 1.3412f);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-      {
-        float val = -1;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        ASSERT_EQ(val, 1.4123f);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
-
-
-      {
-        std::vector<int> val;
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        for (int i = 2; i < 12; ++i) {
-          ASSERT_EQ(val[i-2], i);
-        }
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-      }
-
-      ++iter;
 
       ASSERT_EQ(iter, container2.end());
     }
@@ -574,7 +461,11 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageMultipl
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
 
-  testWorkGroupWorkStorageMultiple< StoragePolicy, Allocator >();
+  std::mt19937 rng(std::random_device{}());
+  std::uniform_int_distribution<size_t> dist(0, 128);
+
+  testWorkGroupWorkStorageMultiple< StoragePolicy, Allocator >(
+      dist(rng), dist(rng), dist(rng));
 }
 
 
