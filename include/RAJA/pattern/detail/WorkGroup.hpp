@@ -43,9 +43,9 @@ void Vtable_move_construct(void* dest, void* src)
 }
 
 template < typename T, typename ... CallArgs >
-void Vtable_call(void* obj, CallArgs... args)
+void Vtable_call(const void* obj, CallArgs... args)
 {
-  T* obj_as_T = static_cast<T*>(obj);
+  const T* obj_as_T = static_cast<const T*>(obj);
   (*obj_as_T)(std::forward<CallArgs>(args)...);
 }
 
@@ -65,7 +65,7 @@ void Vtable_destroy(void* obj)
 template < typename ... CallArgs >
 struct Vtable {
   using move_sig = void(*)(void* /*dest*/, void* /*src*/);
-  using call_sig = void(*)(void* /*obj*/, CallArgs... /*args*/);
+  using call_sig = void(*)(const void* /*obj*/, CallArgs... /*args*/);
   using destroy_sig = void(*)(void* /*obj*/);
 
   move_sig move_construct;
@@ -290,7 +290,7 @@ void WorkStruct_destroy(GenericWorkStruct<CallArgs...>* value_ptr)
 
 template < typename ... CallArgs >
 RAJA_HOST_DEVICE RAJA_INLINE
-void WorkStruct_call(GenericWorkStruct<CallArgs...>* value_ptr,
+void WorkStruct_call(const GenericWorkStruct<CallArgs...>* value_ptr,
                      CallArgs... args)
 {
   value_ptr->call(&value_ptr->obj, std::forward<CallArgs>(args)...);

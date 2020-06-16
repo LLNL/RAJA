@@ -41,9 +41,9 @@ namespace detail
 #if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 template < typename T, typename ... CallArgs >
-__device__ void Vtable_hip_device_call(void* obj, CallArgs... args)
+__device__ void Vtable_hip_device_call(const void* obj, CallArgs... args)
 {
-    T* obj_as_T = static_cast<T*>(obj);
+    const T* obj_as_T = static_cast<const T*>(obj);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
 }
 

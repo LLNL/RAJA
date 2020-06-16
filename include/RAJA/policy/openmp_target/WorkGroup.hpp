@@ -39,9 +39,9 @@ namespace detail
 #pragma omp declare target
 
 template < typename T, typename ... CallArgs >
-void Vtable_omp_target_call(void* obj, CallArgs... args)
+void Vtable_omp_target_call(const void* obj, CallArgs... args)
 {
-  T* obj_as_T = static_cast<T*>(obj);
+  const T* obj_as_T = static_cast<const T*>(obj);
   (*obj_as_T)(std::forward<CallArgs>(args)...);
 }
 
