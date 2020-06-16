@@ -82,6 +82,7 @@ struct VtableTestCallable
     ptr = o.ptr;
     val = o.val;
     o.moved_from = true;
+    return *this;
   }
 
   RAJA_HOST_DEVICE void operator()(IndexType i, Args... args) const
