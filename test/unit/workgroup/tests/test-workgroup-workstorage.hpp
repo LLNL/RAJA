@@ -73,23 +73,19 @@ void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      void*, bool*, bool*
+                                                    >;
+
   {
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container(Allocator{});
+    WorkStorage_type container(Allocator{});
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container2(std::move(container));
+    WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -117,16 +113,18 @@ void testWorkGroupWorkStorageInsert()
 {
   bool success = true;
 
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable =
-      RAJA::detail::get_Vtable<TestCallable<short>, void*, bool*, bool*>(RAJA::seq_work{});
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      void*, bool*, bool*
+                                                    >;
+  using Vtable_type = typename WorkStorage_type::vtable_type;
+
+  Vtable_type vtable = RAJA::detail::get_Vtable<
+      TestCallable<short>, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container(Allocator{});
+    WorkStorage_type container(Allocator{});
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -136,12 +134,7 @@ void testWorkGroupWorkStorageInsert()
     ASSERT_EQ(container.size(), (size_t)1);
     ASSERT_TRUE(container.storage_size() >= sizeof(TestCallable<short>));
 
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container2(std::move(container));
+    WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -169,16 +162,18 @@ void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable =
-      RAJA::detail::get_Vtable<TestCallable<int>, void*, bool*, bool*>(RAJA::seq_work{});
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      void*, bool*, bool*
+                                                    >;
+  using Vtable_type = typename WorkStorage_type::vtable_type;
+
+  Vtable_type vtable = RAJA::detail::get_Vtable<
+      TestCallable<int>, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container(Allocator{});
+    WorkStorage_type container(Allocator{});
 
     ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)0);
     ASSERT_FALSE(container.begin() < container.end());
@@ -236,16 +231,19 @@ void testWorkGroupWorkStorageInsertCall()
 {
   bool success = true;
 
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable =
-      RAJA::detail::get_Vtable<TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      void*, bool*, bool*
+                                                    >;
+  using WorkStruct_type = typename WorkStorage_type::value_type;
+  using Vtable_type = typename WorkStorage_type::vtable_type;
+
+  Vtable_type vtable = RAJA::detail::get_Vtable<
+      TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container(Allocator{});
+    WorkStorage_type container(Allocator{});
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -269,19 +267,14 @@ void testWorkGroupWorkStorageInsertCall()
       double val = -1;
       bool move_constructed = false;
       bool moved_from = true;
-      RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+      WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
       ASSERT_EQ(val, 1.23456789);
       ASSERT_TRUE(move_constructed);
       ASSERT_FALSE(moved_from);
     }
 
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container2(std::move(container));
+    WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -295,7 +288,7 @@ void testWorkGroupWorkStorageInsertCall()
       double val = -1;
       bool move_constructed = false;
       bool moved_from = true;
-      RAJA::detail::WorkStruct_call(&(*iter2), (void*)&val, &move_constructed, &moved_from);
+      WorkStruct_type::call(&(*iter2), (void*)&val, &move_constructed, &moved_from);
 
       ASSERT_EQ(val, 1.23456789);
       ASSERT_TRUE(move_constructed);
@@ -322,20 +315,23 @@ void testWorkGroupWorkStorageMultiple()
 {
   bool success = true;
 
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable0 =
-      RAJA::detail::get_Vtable<TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable1 =
-      RAJA::detail::get_Vtable<TestCallable<float>, void*, bool*, bool*>(RAJA::seq_work{});
-  RAJA::detail::Vtable<void*, bool*, bool*> vtable2 =
-      RAJA::detail::get_Vtable<TestCallable<std::vector<int>>, void*, bool*, bool*>(RAJA::seq_work{});
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      void*, bool*, bool*
+                                                    >;
+  using WorkStruct_type = typename WorkStorage_type::value_type;
+  using Vtable_type = typename WorkStorage_type::vtable_type;
+
+  Vtable_type vtable0 = RAJA::detail::get_Vtable<
+      TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
+  Vtable_type vtable1 = RAJA::detail::get_Vtable<
+      TestCallable<float>, void*, bool*, bool*>(RAJA::seq_work{});
+  Vtable_type vtable2 = RAJA::detail::get_Vtable<
+      TestCallable<std::vector<int>>, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container(Allocator{});
+    WorkStorage_type container(Allocator{});
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -418,12 +414,7 @@ void testWorkGroupWorkStorageMultiple()
         4*sizeof(TestCallable<float>) +
         4*sizeof(TestCallable<std::vector<int>>));
 
-    RAJA::detail::WorkStorage<
-                    StoragePolicy,
-                    Allocator,
-                    void*, bool*, bool*
-                  >
-        container2(std::move(container));
+    WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
@@ -441,7 +432,7 @@ void testWorkGroupWorkStorageMultiple()
         double val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 0.12345);
         ASSERT_TRUE(move_constructed);
@@ -454,7 +445,7 @@ void testWorkGroupWorkStorageMultiple()
         double val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 0.23451);
         ASSERT_TRUE(move_constructed);
@@ -467,7 +458,7 @@ void testWorkGroupWorkStorageMultiple()
         double val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 0.34512);
         ASSERT_TRUE(move_constructed);
@@ -480,7 +471,7 @@ void testWorkGroupWorkStorageMultiple()
         double val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 0.45123);
         ASSERT_TRUE(move_constructed);
@@ -493,7 +484,7 @@ void testWorkGroupWorkStorageMultiple()
         double val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 0.51234);
         ASSERT_TRUE(move_constructed);
@@ -507,7 +498,7 @@ void testWorkGroupWorkStorageMultiple()
         float val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 1.1234f);
         ASSERT_TRUE(move_constructed);
@@ -520,7 +511,7 @@ void testWorkGroupWorkStorageMultiple()
         float val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 1.2341f);
         ASSERT_TRUE(move_constructed);
@@ -533,7 +524,7 @@ void testWorkGroupWorkStorageMultiple()
         float val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 1.3412f);
         ASSERT_TRUE(move_constructed);
@@ -546,7 +537,7 @@ void testWorkGroupWorkStorageMultiple()
         float val = -1;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         ASSERT_EQ(val, 1.4123f);
         ASSERT_TRUE(move_constructed);
@@ -560,7 +551,7 @@ void testWorkGroupWorkStorageMultiple()
         std::vector<int> val;
         bool move_constructed = false;
         bool moved_from = true;
-        RAJA::detail::WorkStruct_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
         for (int i = 2; i < 12; ++i) {
           ASSERT_EQ(val[i-2], i);

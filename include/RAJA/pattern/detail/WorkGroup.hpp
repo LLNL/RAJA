@@ -225,75 +225,75 @@ private:
  * A struct that gives a generic way to layout memory for different loops
  */
 template < size_t size, typename ... CallArgs >
-struct WorkStruct
-{
-  Vtable<CallArgs...>* vtable;
-  Vtable_call_sig<CallArgs...> call;
-  typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
-};
+struct WorkStruct;
 
 /*!
  * Generic struct used to layout memory for structs of unknown size.
- * Assumptions for any size (checked in WorkStruct_construct):
+ * Assumptions for any size (checked in construct):
  *   offsetof(GenericWorkStruct<>, obj) == offsetof(WorkStruct<size>, obj)
  *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
 template < typename ... CallArgs >
 using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), CallArgs...>;
 
-
-template < typename loop_in, typename ... CallArgs >
-RAJA_INLINE
-void WorkStruct_construct(void* ptr,
-                          Vtable<CallArgs...>* vtable, loop_in&& loop)
+template < size_t size, typename ... CallArgs >
+struct WorkStruct
 {
-  using loop_type = camp::decay<loop_in>;
-  using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
-  using value_type = GenericWorkStruct<CallArgs...>;
+  using vtable_type = Vtable<CallArgs...>;
 
-  static_assert(sizeof(loop_type) <= sizeof(true_value_type::obj),
-      "loop_type must fit in WorkStruct::obj");
-  static_assert(std::is_standard_layout<true_value_type>::value,
-      "WorkStruct must be a standard layout type");
-  static_assert(std::is_standard_layout<value_type>::value,
-      "GenericWorkStruct must be a standard layout type");
-  static_assert(offsetof(value_type, obj) == offsetof(true_value_type, obj),
-      "WorkStruct and GenericWorkStruct must have obj at the same offset");
-  static_assert(sizeof(value_type) <= sizeof(true_value_type),
-      "WorkStruct must not be smaller than GenericWorkStruct");
+  template < typename loop_in >
+  static RAJA_INLINE
+  void construct(void* ptr, vtable_type* vtable, loop_in&& loop)
+  {
+    using loop_type = camp::decay<loop_in>;
+    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
+    using value_type = GenericWorkStruct<CallArgs...>;
 
-  true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
+    static_assert(sizeof(loop_type) <= sizeof(true_value_type::obj),
+        "loop_type must fit in WorkStruct::obj");
+    static_assert(std::is_standard_layout<true_value_type>::value,
+        "WorkStruct must be a standard layout type");
+    static_assert(std::is_standard_layout<value_type>::value,
+        "GenericWorkStruct must be a standard layout type");
+    static_assert(offsetof(value_type, obj) == offsetof(true_value_type, obj),
+        "WorkStruct and GenericWorkStruct must have obj at the same offset");
+    static_assert(sizeof(value_type) <= sizeof(true_value_type),
+        "WorkStruct must not be smaller than GenericWorkStruct");
 
-  value_ptr->vtable = vtable;
-  value_ptr->call = vtable->call;
-  new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
-}
+    true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
-template < typename ... CallArgs >
-RAJA_INLINE
-void WorkStruct_move_destroy(GenericWorkStruct<CallArgs...>* value_dst,
-                             GenericWorkStruct<CallArgs...>* value_src)
-{
-  value_dst->vtable = value_src->vtable;
-  value_dst->call = value_src->call;
-  value_dst->vtable->move_construct(&value_dst->obj, &value_src->obj);
-  value_dst->vtable->destroy(&value_src->obj);
-}
+    value_ptr->vtable = vtable;
+    value_ptr->call_function_ptr = vtable->call;
+    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+  }
 
-template < typename ... CallArgs >
-RAJA_INLINE
-void WorkStruct_destroy(GenericWorkStruct<CallArgs...>* value_ptr)
-{
-  value_ptr->vtable->destroy(&value_ptr->obj);
-}
+  static RAJA_INLINE
+  void move_destroy(WorkStruct* value_dst,
+                    WorkStruct* value_src)
+  {
+    value_dst->vtable = value_src->vtable;
+    value_dst->call_function_ptr = value_src->call_function_ptr;
+    value_dst->vtable->move_construct(&value_dst->obj, &value_src->obj);
+    value_dst->vtable->destroy(&value_src->obj);
+  }
 
-template < typename ... CallArgs >
-RAJA_HOST_DEVICE RAJA_INLINE
-void WorkStruct_call(const GenericWorkStruct<CallArgs...>* value_ptr,
-                     CallArgs... args)
-{
-  value_ptr->call(&value_ptr->obj, std::forward<CallArgs>(args)...);
-}
+  static RAJA_INLINE
+  void destroy(WorkStruct* value_ptr)
+  {
+    value_ptr->vtable->destroy(&value_ptr->obj);
+  }
+
+  static RAJA_HOST_DEVICE RAJA_INLINE
+  void call(const WorkStruct* value_ptr, CallArgs... args)
+  {
+    value_ptr->call_function_ptr(&value_ptr->obj, std::forward<CallArgs>(args)...);
+  }
+
+  vtable_type* vtable;
+  Vtable_call_sig<CallArgs...> call_function_ptr;
+  typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
+};
+
 
 /*!
  * A storage container for work groups
@@ -308,6 +308,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
   using Allocator = ALLOCATOR_T;
 
   using value_type = GenericWorkStruct<CallArgs...>;
+  using vtable_type = typename value_type::vtable_type;
 
   struct const_iterator
   {
@@ -522,14 +523,14 @@ private:
         m_vec.get_allocator().allocate(sizeof(true_value_type)));
     m_storage_size += sizeof(true_value_type);
 
-    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
 
     return value_ptr;
   }
 
   void destroy_value(value_type* value_ptr)
   {
-    WorkStruct_destroy(value_ptr);
+    value_type::destroy(value_ptr);
     m_vec.get_allocator().deallocate(value_ptr);
   }
 };
@@ -541,6 +542,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
   using Allocator = ALLOCATOR_T;
 
   using value_type = GenericWorkStruct<CallArgs...>;
+  using vtable_type = typename value_type::vtable_type;
 
   struct const_iterator
   {
@@ -790,7 +792,7 @@ private:
         value_type* new_value = reinterpret_cast<value_type*>(
             new_array_begin + m_offsets.begin()[i]);
 
-        WorkStruct_move_destroy(new_value, old_value);
+        value_type::move_destroy(new_value, old_value);
       }
 
       m_offsets.get_allocator().deallocate(m_array_begin);
@@ -817,7 +819,7 @@ private:
         reinterpret_cast<value_type*>(m_array_begin + value_offset);
     m_array_end += value_size;
 
-    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
 
     return value_offset;
   }
@@ -826,7 +828,7 @@ private:
   {
     value_type* value_ptr =
         reinterpret_cast<value_type*>(m_array_begin + value_offset);
-    WorkStruct_destroy(value_ptr);
+    value_type::destroy(value_ptr);
   }
 };
 
@@ -839,6 +841,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
   using Allocator = ALLOCATOR_T;
 
   using value_type = GenericWorkStruct<CallArgs...>;
+  using vtable_type = typename value_type::vtable_type;
 
   struct const_iterator
   {
@@ -1090,7 +1093,7 @@ private:
         value_type* new_value = reinterpret_cast<value_type*>(
             new_array_begin + i * new_stride);
 
-        WorkStruct_move_destroy(new_value, old_value);
+        value_type::move_destroy(new_value, old_value);
       }
 
       m_aloc.deallocate(m_array_begin);
@@ -1120,14 +1123,14 @@ private:
     value_type* value_ptr = reinterpret_cast<value_type*>(m_array_end);
     m_array_end += m_stride;
 
-    WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
   }
 
   void destroy_value(size_t value_offset)
   {
     value_type* value_ptr =
         reinterpret_cast<value_type*>(m_array_begin + value_offset);
-    WorkStruct_destroy(value_ptr);
+    value_type::destroy(value_ptr);
   }
 };
 
