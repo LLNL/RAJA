@@ -831,7 +831,9 @@ private:
 };
 
 template < typename ALLOCATOR_T, typename ... CallArgs >
-struct WorkStorage<RAJA::constant_stride_array_of_objects, ALLOCATOR_T, CallArgs...>
+struct WorkStorage<RAJA::constant_stride_array_of_objects,
+                   ALLOCATOR_T,
+                   CallArgs...>
 {
   using storage_policy = RAJA::constant_stride_array_of_objects;
   using Allocator = ALLOCATOR_T;
