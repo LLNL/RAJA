@@ -1060,7 +1060,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
 
 private:
   Allocator m_aloc;
-  size_t m_stride     = 0;
+  size_t m_stride     = 1; // can't be 0 because size divides stride
   char* m_array_begin = nullptr;
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
