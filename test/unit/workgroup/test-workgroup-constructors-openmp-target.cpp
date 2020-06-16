@@ -16,10 +16,11 @@
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetBasicWorkGroupConstructorTypes =
   Test< camp::cartesian_product< OpenMPTargetExecPolicyList,
+                                 OpenMPTargetOrderPolicyList,
+                                 OpenMPTargetStoragePolicyList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
-                                 OpenMPTargetAllocatorList,
-                                 SequentialForoneList > >::Types;
+                                 OpenMPTargetAllocatorList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetBasicTest,
                                WorkGroupBasicConstructorUnitTest,
