@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment-view.hpp"
-
-#include "../test-forall-execpol.hpp"
+#include "test-forall-segment-view.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallSegmentTypes =

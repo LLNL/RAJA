@@ -10,8 +10,6 @@
 
 #include <numeric>
 
-#include "test-scan-utils.hpp"
-
 template <typename OP, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
                                            const T* original,

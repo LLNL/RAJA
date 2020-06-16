@@ -11,8 +11,6 @@
 
 #include "tests/test-reducer-reset.hpp"
 
-#include "test-reducer-utils.hpp"
-
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPReducerResetTypes = 
   Test< camp::cartesian_product< OpenMPReducerPolicyList,

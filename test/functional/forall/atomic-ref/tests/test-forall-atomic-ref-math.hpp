@@ -12,8 +12,7 @@
 #ifndef __TEST_FORALL_ATOMIC_REF_MATH_HPP__
 #define __TEST_FORALL_ATOMIC_REF_MATH_HPP__
 
-#include <RAJA/RAJA.hpp>
-#include "RAJA_gtest.hpp"
+#include "RAJA_test-forall-data.hpp"
 
 template < typename T, typename AtomicPolicy >
 struct PreIncCountOp {
@@ -152,13 +151,6 @@ void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
 }
 
 
-TYPED_TEST_SUITE_P(ForallAtomicRefMathFunctionalTest);
-
-template <typename T>
-class ForallAtomicRefMathFunctionalTest : public ::testing::Test
-{
-};
-
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
@@ -204,11 +196,8 @@ TYPED_TEST_P(ForallAtomicRefMathFunctionalTest, AtomicRefMathFunctionalForall)
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+
   testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
 }
-
-REGISTER_TYPED_TEST_SUITE_P( ForallAtomicRefMathFunctionalTest,
-                             AtomicRefMathFunctionalForall
-                           );
 
 #endif  //__TEST_FORALL_ATOMIC_REF_MATH_HPP__

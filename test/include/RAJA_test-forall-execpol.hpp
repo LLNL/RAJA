@@ -5,24 +5,52 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_EXECPOL_HPP__
-#define __TEST_FORALL_EXECPOL_HPP__
+//
+// Execution policy lists used throughout forall tests
+//
+
+#ifndef __RAJA_test_forall_execpol_HPP__
+#define __RAJA_test_forall_execpol_HPP__
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/list.hpp"
 
 // Sequential execution policy types
 using SequentialForallExecPols = camp::list< RAJA::seq_exec,
                                              RAJA::loop_exec,
                                              RAJA::simd_exec >;
 
+//
+// Sequential execution policy types for reduction and atomic tests.
+//
+// Note: RAJA::simd_exec does not work with these.
+//
+using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
+                                                   RAJA::loop_exec >;
+
+using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec, 
+                                                   RAJA::loop_exec >;
+
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
   camp::list< // This policy works for the tests, but commenting it out
               // since its usage is questionable
               // RAJA::omp_parallel_exec<RAJA::seq_exec>,
+              RAJA::omp_parallel_for_exec, 
               RAJA::omp_for_nowait_exec,
-              RAJA::omp_for_exec,
-              RAJA::omp_parallel_for_exec >;
+              RAJA::omp_for_exec >;
+
+using OpenMPForallAtomicExecPols =
+  camp::list< // This policy works for the tests, but commenting it out
+              // since its usage is questionable
+              // RAJA::omp_parallel_exec<RAJA::seq_exec>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::omp_parallel_for_exec, 
+              RAJA::omp_for_nowait_exec,
+#endif
+              RAJA::omp_for_exec >;
+
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
@@ -50,4 +78,4 @@ using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
 #endif
 
-#endif  // __TEST_FORALL_EXECPOL_HPP__
+#endif  // __RAJA_test_forall_execpol_HPP__

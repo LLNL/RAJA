@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-kernel-region-sync.hpp"
+#include "test-kernel-region.hpp"
 
-#include "../../forall/test-forall-utils.hpp"
+#if defined(RAJA_ENABLE_OPENMP)
 
 using OpenMPKernelRegionSyncExecPols = 
   camp::list< 
@@ -66,5 +66,7 @@ using OpenMPKernelRegionSyncTypes =
                                 OpenMPKernelRegionSyncExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
-                               KernelRegionFunctionalTest,
+                               KernelRegionSyncTest,
                                OpenMPKernelRegionSyncTypes);
+
+#endif
