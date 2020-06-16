@@ -73,3 +73,8 @@ raja_add_test(
   NAME test-workgroup-vtable-hip
   SOURCES test-workgroup-vtable-hip.cpp)
 endif()
+
+
+raja_add_test(
+  NAME test-workgroup-workstorage
+  SOURCES test-workgroup-workstorage.cpp)
