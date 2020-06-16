@@ -625,11 +625,13 @@ private:
       char* new_array_end   = new_array_begin + storage_size();
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
-      const_iterator old_iter = begin();
-      const_iterator new_iter(new_array_begin, m_offsets.begin());
-
       for (size_t i = 0; i < size(); ++i) {
-        WorkStruct_move_destroy(&new_iter[i], &old_iter[i]);
+        value_type* old_value = reinterpret_cast<value_type*>(
+            m_array_begin + m_offsets.begin()[i]);
+        value_type* new_value = reinterpret_cast<value_type*>(
+            new_array_begin + m_offsets.begin()[i]);
+
+        WorkStruct_move_destroy(new_value, old_value);
       }
 
       m_offsets.get_allocator().deallocate(m_array_begin);
@@ -911,11 +913,13 @@ private:
       char* new_array_end   = new_array_begin + size() * new_stride;
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
-      const_iterator old_iter = begin();
-      const_iterator new_iter(new_array_begin, new_stride);
-
       for (size_t i = 0; i < size(); ++i) {
-        WorkStruct_move_destroy(&new_iter[i], &old_iter[i]);
+        value_type* old_value = reinterpret_cast<value_type*>(
+            m_array_begin + i * m_stride);
+        value_type* new_value = reinterpret_cast<value_type*>(
+            new_array_begin + i * new_stride);
+
+        WorkStruct_move_destroy(new_value, old_value);
       }
 
       m_aloc.deallocate(m_array_begin);
