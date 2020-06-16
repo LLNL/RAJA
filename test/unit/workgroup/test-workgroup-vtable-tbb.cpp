@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-vtable.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 #if defined(RAJA_ENABLE_TBB)
 using TBBBasicWorkGroupVtableTypes =
   Test< camp::cartesian_product< TBBExecPolicyList,
@@ -25,4 +23,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(TBBBasicTest,
                                WorkGroupBasicVtableUnitTest,
                                TBBBasicWorkGroupVtableTypes);
 #endif
-

@@ -12,14 +12,19 @@
 #ifndef __TEST_WORKGROUP_WORKSTORAGE__
 #define __TEST_WORKGROUP_WORKSTORAGE__
 
-#include "gtest/gtest.h"
+#include "../test-workgroup.hpp"
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
-
-#include "../test-workgroup-utils.hpp"
 #include <vector>
 #include <cstddef>
+
+
+template <typename T>
+class WorkGroupBasicWorkStorageUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageUnitTest);
+
 
 template < typename T >
 struct TestCallable
@@ -59,14 +64,6 @@ public:
   bool move_constructed = false;
   bool moved_from = false;
 };
-
-
-template <typename T>
-class WorkGroupBasicWorkStorageUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageUnitTest);
 
 
 template <typename StoragePolicy,
@@ -596,4 +593,5 @@ REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageUnitTest,
                             BasicWorkGroupWorkStorageIterator,
                             BasicWorkGroupWorkStorageInsertCall,
                             BasicWorkGroupWorkStorageMultiple);
+
 #endif  //__TEST_WORKGROUP_WORKSTORAGE__

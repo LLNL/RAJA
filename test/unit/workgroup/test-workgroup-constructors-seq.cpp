@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-constructors.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 using SequentialBasicWorkGroupConstructorTypes =
   Test< camp::cartesian_product< SequentialExecPolicyList,
                                  SequentialOrderPolicyList,
@@ -24,5 +22,3 @@ using SequentialBasicWorkGroupConstructorTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
                                WorkGroupBasicConstructorUnitTest,
                                SequentialBasicWorkGroupConstructorTypes);
-
-

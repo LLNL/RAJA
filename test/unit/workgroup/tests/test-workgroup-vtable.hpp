@@ -12,15 +12,8 @@
 #ifndef __TEST_WORKGROUP_VTABLE__
 #define __TEST_WORKGROUP_VTABLE__
 
-#include "gtest/gtest.h"
+#include "../test-workgroup.hpp"
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
-#include "RAJA/internal/MemUtils_CPU.hpp"
-#include "camp/resource.hpp"
-
-#include "RAJA_unit_forone.hpp"
-#include "../test-workgroup-utils.hpp"
 
 template <typename T>
 class WorkGroupBasicVtableUnitTest : public ::testing::Test
@@ -28,6 +21,7 @@ class WorkGroupBasicVtableUnitTest : public ::testing::Test
 };
 
 TYPED_TEST_SUITE_P(WorkGroupBasicVtableUnitTest);
+
 
 template  < typename ForOnePol,
             typename ... CallArgs >
@@ -171,4 +165,5 @@ TYPED_TEST_P(WorkGroupBasicVtableUnitTest, BasicWorkGroupVtable)
 
 REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicVtableUnitTest,
                             BasicWorkGroupVtable);
+
 #endif  //__TEST_WORKGROUP_VTABLE__

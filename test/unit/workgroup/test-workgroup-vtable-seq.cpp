@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-vtable.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 using SequentialBasicWorkGroupVtableTypes =
   Test< camp::cartesian_product< SequentialExecPolicyList,
                                  IndexTypeTypeList,
@@ -23,5 +21,3 @@ using SequentialBasicWorkGroupVtableTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
                                WorkGroupBasicVtableUnitTest,
                                SequentialBasicWorkGroupVtableTypes);
-
-

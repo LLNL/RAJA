@@ -12,12 +12,8 @@
 #ifndef __TEST_WORKGROUP_CONSTRUCTOR__
 #define __TEST_WORKGROUP_CONSTRUCTOR__
 
-#include "gtest/gtest.h"
+#include "../test-workgroup.hpp"
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
-
-#include "../test-workgroup-utils.hpp"
 
 template <typename T>
 class WorkGroupBasicConstructorUnitTest : public ::testing::Test
@@ -25,6 +21,7 @@ class WorkGroupBasicConstructorUnitTest : public ::testing::Test
 };
 
 TYPED_TEST_SUITE_P(WorkGroupBasicConstructorUnitTest);
+
 
 template <typename ExecPolicy,
           typename OrderPolicy,
@@ -83,4 +80,5 @@ TYPED_TEST_P(WorkGroupBasicConstructorUnitTest, BasicWorkGroupConstructor)
 
 REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicConstructorUnitTest,
                             BasicWorkGroupConstructor);
+
 #endif  //__TEST_WORKGROUP_CONSTRUCTOR__

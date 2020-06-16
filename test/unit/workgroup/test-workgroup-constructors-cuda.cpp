@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-constructors.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaBasicWorkGroupConstructorTypes =
   Test< camp::cartesian_product< CudaExecPolicyList,
@@ -26,4 +24,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CudaBasicTest,
                                WorkGroupBasicConstructorUnitTest,
                                CudaBasicWorkGroupConstructorTypes);
 #endif
-

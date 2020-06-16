@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-workstorage.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 using BasicWorkGroupWorkStorageTypes =
   Test< camp::cartesian_product< SequentialStoragePolicyList,
                                  HostAllocatorList > >::Types;
@@ -20,5 +18,3 @@ using BasicWorkGroupWorkStorageTypes =
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
                                WorkGroupBasicWorkStorageUnitTest,
                                BasicWorkGroupWorkStorageTypes);
-
-

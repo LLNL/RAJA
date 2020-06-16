@@ -11,8 +11,6 @@
 
 #include "tests/test-workgroup-vtable.hpp"
 
-#include "test-workgroup-utils.hpp"
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetBasicWorkGroupVtableTypes =
   Test< camp::cartesian_product< OpenMPTargetExecPolicyList,
@@ -25,4 +23,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetBasicTest,
                                WorkGroupBasicVtableUnitTest,
                                OpenMPTargetBasicWorkGroupVtableTypes);
 #endif
-

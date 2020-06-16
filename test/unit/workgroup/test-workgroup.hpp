@@ -8,21 +8,11 @@
 #ifndef __TEST_WORKGROUP_UTILS_HPP__
 #define __TEST_WORKGROUP_UTILS_HPP__
 
-#include "camp/resource.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
 
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 
-//
-// Unroll types for gtest testing::Types
-//
-template <class T>
-struct Test;
-
-template <class... T>
-struct Test<camp::list<T...>> {
-  using Types = ::testing::Types<T...>;
-};
 
 namespace detail {
 
