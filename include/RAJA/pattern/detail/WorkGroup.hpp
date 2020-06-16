@@ -492,7 +492,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
 
   size_t storage_size() const
   {
-    return 0;
+    return m_storage_size;
   }
 
   template < typename loop_in >
@@ -510,6 +510,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
 
 private:
   SimpleVector<value_type*, Allocator> m_vec;
+  size_t m_storage_size = 0;
 
   template < typename loop_in >
   value_type* create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
@@ -519,6 +520,7 @@ private:
 
     value_type* value_ptr = static_cast<value_type*>(
         m_vec.get_allocator().allocate(sizeof(true_value_type)));
+    m_storage_size += sizeof(true_value_type);
 
     WorkStruct_construct(value_ptr, vtable, std::forward<loop_in>(loop));
 
