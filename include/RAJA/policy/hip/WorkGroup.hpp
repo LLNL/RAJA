@@ -24,11 +24,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
+#include "RAJA/policy/hip/policy.hpp"
 
 #include "RAJA/pattern/detail/WorkGroup.hpp"
-#include "RAJA/pattern/WorkGroup.hpp"
 
-#include "RAJA/policy/hip/policy.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -107,6 +106,51 @@ inline Vtable<CallArgs...> get_Vtable(hip_work const&)
 }
 
 #endif
+
+
+/*!
+ * Runs work in a storage container in order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::hip_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallOrdered<
+        RAJA::hip_exec_async<256>,
+        RAJA::hip_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
+
+/*!
+ * Runs work in a storage container in reverse order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::hip_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallReverse<
+        RAJA::hip_exec_async<256>,
+        RAJA::hip_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
 
 }  // namespace detail
 

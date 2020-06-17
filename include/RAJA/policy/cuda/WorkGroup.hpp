@@ -24,11 +24,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 #include "RAJA/pattern/detail/WorkGroup.hpp"
-#include "RAJA/pattern/WorkGroup.hpp"
 
-#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {
@@ -99,6 +98,51 @@ inline Vtable<CallArgs...> get_Vtable(cuda_work const&)
         sizeof(T)
       };
 }
+
+
+/*!
+ * Runs work in a storage container in order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::cuda_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallOrdered<
+        RAJA::cuda_exec_async<256>,
+        RAJA::cuda_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
+
+/*!
+ * Runs work in a storage container in reverse order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::cuda_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallReverse<
+        RAJA::cuda_exec_async<256>,
+        RAJA::cuda_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
 
 }  // namespace detail
 

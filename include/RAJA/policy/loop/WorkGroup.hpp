@@ -23,12 +23,10 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 #include "RAJA/pattern/detail/WorkGroup.hpp"
-#include "RAJA/pattern/WorkGroup.hpp"
 
-#include "RAJA/policy/loop/policy.hpp"
 
 namespace RAJA
 {
@@ -49,6 +47,51 @@ inline Vtable<CallArgs...> get_Vtable(loop_work const&)
         sizeof(T)
       };
 }
+
+
+/*!
+ * Runs work in a storage container in order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::loop_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallOrdered<
+        RAJA::loop_exec,
+        RAJA::loop_work,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
+
+/*!
+ * Runs work in a storage container in reverse order
+ * and returns any per run resources
+ */
+template <typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::loop_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+    : WorkRunnerForallReverse<
+        RAJA::loop_exec,
+        RAJA::loop_work,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>
+{ };
 
 }  // namespace detail
 
