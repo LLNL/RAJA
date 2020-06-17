@@ -78,3 +78,38 @@ endif()
 raja_add_test(
   NAME test-workgroup-workstorage
   SOURCES test-workgroup-workstorage.cpp)
+
+
+raja_add_test(
+  NAME test-workgroup-enqueue-seq
+  SOURCES test-workgroup-enqueue-seq.cpp)
+
+if(RAJA_ENABLE_TBB)
+raja_add_test(
+  NAME test-workgroup-enqueue-tbb
+  SOURCES test-workgroup-enqueue-tbb.cpp)
+endif()
+
+if(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-workgroup-enqueue-openmp
+  SOURCES test-workgroup-enqueue-openmp.cpp)
+endif()
+
+if(RAJA_ENABLE_TARGET_OPENMP)
+raja_add_test(
+  NAME test-workgroup-enqueue-openmp-target
+  SOURCES test-workgroup-enqueue-openmp-target.cpp)
+endif()
+
+if(RAJA_ENABLE_CUDA)
+raja_add_test(
+  NAME test-workgroup-enqueue-cuda
+  SOURCES test-workgroup-enqueue-cuda.cpp)
+endif()
+
+if(RAJA_ENABLE_HIP)
+raja_add_test(
+  NAME test-workgroup-enqueue-hip
+  SOURCES test-workgroup-enqueue-hip.cpp)
+endif()
