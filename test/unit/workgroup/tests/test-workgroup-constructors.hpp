@@ -43,6 +43,9 @@ void testWorkGroupConstructor(RAJA::xargs<Xargs...>)
                   >
         pool(Allocator{});
 
+    ASSERT_EQ(pool.num_loops(), (size_t)0);
+    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
+
     RAJA::WorkGroup<
                     RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                     IndexType,
@@ -50,6 +53,9 @@ void testWorkGroupConstructor(RAJA::xargs<Xargs...>)
                     Allocator
                   >
         group = pool.instantiate();
+
+    ASSERT_EQ(pool.num_loops(), (size_t)0);
+    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
     RAJA::WorkSite<
                     RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,

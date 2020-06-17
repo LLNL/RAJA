@@ -169,6 +169,16 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   WorkPool(WorkPool&&) = default;
   WorkPool& operator=(WorkPool&&) = default;
 
+  size_t num_loops() const
+  {
+    return m_storage.size();
+  }
+
+  size_t storage_bytes() const
+  {
+    return m_storage.storage_size();
+  }
+
   void reserve(size_t num_loops, size_t storage_bytes)
   {
     m_storage.reserve(num_loops, storage_bytes);
