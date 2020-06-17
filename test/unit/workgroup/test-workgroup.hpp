@@ -55,7 +55,8 @@ using SequentialExecPolicyList =
 using SequentialOrderPolicyList =
     camp::list<
                 RAJA::ordered,
-                RAJA::unordered
+                RAJA::reverse_ordered,
+                //, RAJA::unordered
               >;
 using SequentialStoragePolicyList =
     camp::list<

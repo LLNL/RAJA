@@ -24,6 +24,8 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/WorkGroup.hpp"
+#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/pattern/forall.hpp"
 
 #include <type_traits>
 #include <cstddef>
@@ -1131,6 +1133,189 @@ private:
     value_type* value_ptr =
         reinterpret_cast<value_type*>(m_array_begin + value_offset);
     value_type::destroy(value_ptr);
+  }
+};
+
+
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner;
+
+
+template <typename LoopBody, typename ... Args>
+struct HoldBodyArgs_base
+{
+  template < typename body_in >
+  HoldBodyArgs_base(body_in&& body, Args... args)
+    : m_body(std::forward<body_in>(body))
+    , m_arg_tuple(std::forward<Args>(args)...)
+  { }
+
+private:
+  LoopBody m_body;
+  camp::tuple<Args...> m_arg_tuple;
+};
+
+template <typename LoopBody, typename index_type, typename ... Args>
+struct HoldBodyArgs_host : HoldBodyArgs_base<LoopBody, Args...>
+{
+  using base = HoldBodyArgs_base<LoopBody, Args...>;
+  using base::base;
+
+  RAJA_INLINE void operator()(index_type i) const
+  {
+    invoke(i, camp::make_idx_seq_t<sizeof...(Args)>{});
+  }
+
+  template < camp::idx_t ... Is >
+  RAJA_INLINE void invoke(index_type i, camp::idx_seq<Is...>) const
+  {
+    this->m_body(i, get<Is>(this->m_arg_tuple)...);
+  }
+};
+
+template <typename LoopBody, typename index_type, typename ... Args>
+struct HoldBodyArgs_device : HoldBodyArgs_base<LoopBody, Args...>
+{
+  using base = HoldBodyArgs_base<LoopBody, Args...>;
+  using base::base;
+
+  RAJA_DEVICE RAJA_INLINE void operator()(index_type i) const
+  {
+    invoke(i, camp::make_idx_seq_t<sizeof...(Args)>{});
+  }
+
+  template < camp::idx_t ... Is >
+  RAJA_DEVICE RAJA_INLINE void invoke(index_type i, camp::idx_seq<Is...>) const
+  {
+    this->m_body(i, get<Is>(this->m_arg_tuple)...);
+  }
+};
+
+/*!
+ * A body and segment holder for storing loops that will be executed as foralls
+ */
+template <typename ExecutionPolicy, typename Segment_type, typename LoopBody,
+          typename index_type, typename ... Args>
+struct HoldForall
+{
+  using HoldBodyArgs = typename std::conditional<
+      !type_traits::is_device_exec_policy<ExecutionPolicy>::value,
+      HoldBodyArgs_host<LoopBody, index_type, Args...>,
+      HoldBodyArgs_device<LoopBody, index_type, Args...> >::type;
+
+  template < typename segment_in, typename body_in >
+  HoldForall(segment_in&& segment, body_in&& body)
+    : m_segment(std::forward<segment_in>(segment))
+    , m_body(std::forward<body_in>(body))
+  { }
+
+  RAJA_INLINE void operator()(Args... args) const
+  {
+    // TODO:: decide when to run hooks, may bypass this and use impl directly
+    RAJA::forall<ExecutionPolicy>(
+        m_segment,
+        HoldBodyArgs{m_body, std::forward<Args>(args)...});
+  }
+
+private:
+  Segment_type m_segment;
+  LoopBody m_body;
+};
+
+
+/*!
+ * Runs work in a storage container in order using forall
+ */
+template <typename FORALL_EXEC_POLICY,
+          typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunnerForallOrdered
+{
+  using exec_policy = EXEC_POLICY_T;
+  using order_policy = ORDER_POLICY_T;
+  using Allocator = ALLOCATOR_T;
+  using index_type = INDEX_T;
+
+  using forall_exec_policy = FORALL_EXEC_POLICY;
+
+  // The type  that will hold hte segment and loop body in work storage
+  template < typename segment_type, typename loop_type >
+  using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
+                                 index_type, Args...>;
+
+  // The policy indicating where the call function is invoked
+  // in this case the values are called on the host in a loop
+  using vtable_exec_policy = RAJA::loop_work;
+
+  // no extra storage required here
+  using per_run_storage = int;
+
+  template < typename WorkContainer >
+  per_run_storage run(WorkContainer const& storage, Args... args) const
+  {
+    using value_type = typename WorkContainer::value_type;
+
+    per_run_storage run_storage;
+
+    auto end = storage.end();
+    for (auto iter = storage.begin(); iter != end; ++iter) {
+      value_type::call(*iter, args...);
+    }
+
+    return run_storage;
+  }
+};
+
+/*!
+ * Runs work in a storage container in reverse order using forall
+ */
+template <typename FORALL_EXEC_POLICY,
+          typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunnerForallReverse
+{
+  using exec_policy = EXEC_POLICY_T;
+  using order_policy = ORDER_POLICY_T;
+  using Allocator = ALLOCATOR_T;
+  using index_type = INDEX_T;
+
+  using forall_exec_policy = FORALL_EXEC_POLICY;
+
+  // The type  that will hold hte segment and loop body in work storage
+  template < typename segment_type, typename loop_type >
+  using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
+                                 index_type, Args...>;
+
+  // The policy indicating where the call function is invoked
+  // in this case the values are called on the host in a loop
+  using vtable_exec_policy = RAJA::loop_work;
+
+  // no extra storage required here
+  using per_run_storage = int;
+
+  template < typename WorkContainer >
+  per_run_storage run(WorkContainer const& storage, Args... args) const
+  {
+    using value_type = typename WorkContainer::value_type;
+
+    per_run_storage run_storage;
+
+    auto begin = storage.begin();
+    for (auto iter = storage.end(); iter != begin; --iter) {
+      value_type::call(*(iter-1), args...);
+    }
+
+    return run_storage;
   }
 };
 
