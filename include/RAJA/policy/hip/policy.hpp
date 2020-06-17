@@ -155,11 +155,13 @@ struct hip_thread_masked_loop {};
 
 //
 // Operations in the included files are parametrized using the following
-// values for HIP warp size and max block size.
+// values for HIP warp size and max block size. Note that we cannot use __HIPCC__
+// or __CUDACC__ here, because these values need to be defined when the compiler makes
+// passes targeting both the cpu and gpu
 //
-#if defined(__HIPCC__)
+#if defined(RAJA_ENABLE_HIP)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(__CUDACC__)
+#elif defined(RAJA_ENABLE_CUDA)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
 
