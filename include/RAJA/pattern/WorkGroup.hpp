@@ -20,7 +20,8 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/pattern/detail/WorkGroup.hpp"
+#include "RAJA/pattern/WorkGroup/WorkStorage.hpp"
+#include "RAJA/pattern/WorkGroup/WorkRunner.hpp"
 
 namespace RAJA
 {
