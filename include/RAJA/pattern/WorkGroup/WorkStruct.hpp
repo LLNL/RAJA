@@ -72,7 +72,7 @@ struct WorkStruct
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->vtable = vtable;
-    value_ptr->call_function_ptr = vtable->call;
+    value_ptr->call_function_ptr = vtable->call_function_ptr;
     new(&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
@@ -82,14 +82,14 @@ struct WorkStruct
   {
     value_dst->vtable = value_src->vtable;
     value_dst->call_function_ptr = value_src->call_function_ptr;
-    value_dst->vtable->move_construct(&value_dst->obj, &value_src->obj);
-    value_dst->vtable->destroy(&value_src->obj);
+    value_dst->vtable->move_construct_function_ptr(&value_dst->obj, &value_src->obj);
+    value_dst->vtable->destroy_function_ptr(&value_src->obj);
   }
 
   static RAJA_INLINE
   void destroy(WorkStruct* value_ptr)
   {
-    value_ptr->vtable->destroy(&value_ptr->obj);
+    value_ptr->vtable->destroy_function_ptr(&value_ptr->obj);
   }
 
   static RAJA_HOST_DEVICE RAJA_INLINE
@@ -99,7 +99,7 @@ struct WorkStruct
   }
 
   vtable_type* vtable;
-  Vtable_call_sig<CallArgs...> call_function_ptr;
+  typename vtable_type::call_sig call_function_ptr;
   typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
 };
 

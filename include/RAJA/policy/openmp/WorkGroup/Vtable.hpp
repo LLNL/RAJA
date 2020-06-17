@@ -34,10 +34,10 @@ namespace detail
 /*!
 * Populate and return a Vtable object
 */
-template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable(omp_work const&)
+template < typename T, typename Vtable_T >
+inline Vtable_T get_Vtable(omp_work const&)
 {
-  return get_Vtable<T, CallArgs...>(loop_work{});
+  return get_Vtable<T, Vtable_T>(loop_work{});
 }
 
 }  // namespace detail

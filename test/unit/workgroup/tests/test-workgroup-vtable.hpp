@@ -118,15 +118,16 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   testVal[2] = (IndexType)5;
 
 
-  RAJA::detail::Vtable<IndexType, Args...> vtable =
-      RAJA::detail::get_Vtable<TestCallable, IndexType, Args...>(ExecPolicy{});
+  using Vtable_type = RAJA::detail::Vtable<IndexType, Args...>;
+  Vtable_type vtable =
+      RAJA::detail::get_Vtable<TestCallable, Vtable_type>(ExecPolicy{});
 
   TestCallable obj(testVal, initVal[1]);
 
   ASSERT_FALSE(obj.move_constructed);
   ASSERT_FALSE(obj.moved_from);
 
-  vtable.move_construct(new_obj, &obj);
+  vtable.move_construct_function_ptr(new_obj, &obj);
 
   ASSERT_FALSE(obj.move_constructed);
   ASSERT_TRUE(obj.moved_from);
@@ -136,9 +137,9 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
 
   // move a value onto device and fiddle
   call_dispatcher<ForOnePol, const void*, IndexType, Args...>(
-      vtable.call, new_obj, (IndexType)1, Args{}...);
+      vtable.call_function_ptr, new_obj, (IndexType)1, Args{}...);
 
-  vtable.destroy(new_obj);
+  vtable.destroy_function_ptr(new_obj);
 
 
   ASSERT_EQ(testVal[0], initVal[0]);

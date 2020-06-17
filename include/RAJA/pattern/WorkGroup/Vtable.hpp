@@ -30,28 +30,6 @@ namespace RAJA
 namespace detail
 {
 
-template < typename T, typename ... CallArgs >
-void Vtable_move_construct(void* dest, void* src)
-{
-  T* dest_as_T = static_cast<T*>(dest);
-  T* src_as_T = static_cast<T*>(src);
-  new(dest_as_T) T(std::move(*src_as_T));
-}
-
-template < typename T, typename ... CallArgs >
-void Vtable_call(const void* obj, CallArgs... args)
-{
-  const T* obj_as_T = static_cast<const T*>(obj);
-  (*obj_as_T)(std::forward<CallArgs>(args)...);
-}
-
-template < typename T, typename ... CallArgs >
-void Vtable_destroy(void* obj)
-{
-  T* obj_as_T = static_cast<T*>(obj);
-  (*obj_as_T).~T();
-}
-
 /*!
  * A vtable abstraction
  *
@@ -63,24 +41,47 @@ struct Vtable {
   using call_sig = void(*)(const void* /*obj*/, CallArgs... /*args*/);
   using destroy_sig = void(*)(void* /*obj*/);
 
-  move_sig move_construct;
-  call_sig call;
-  destroy_sig destroy;
+  template < typename T >
+  static void move_construct(void* dest, void* src)
+  {
+    T* dest_as_T = static_cast<T*>(dest);
+    T* src_as_T = static_cast<T*>(src);
+    new(dest_as_T) T(std::move(*src_as_T));
+  }
+
+  template < typename T >
+  static void host_call(const void* obj, CallArgs... args)
+  {
+    const T* obj_as_T = static_cast<const T*>(obj);
+    (*obj_as_T)(std::forward<CallArgs>(args)...);
+  }
+
+  template < typename T >
+  static RAJA_DEVICE void device_call(const void* obj, CallArgs... args)
+  {
+    const T* obj_as_T = static_cast<const T*>(obj);
+    (*obj_as_T)(std::forward<CallArgs>(args)...);
+  }
+
+  template < typename T >
+  static void destroy(void* obj)
+  {
+    T* obj_as_T = static_cast<T*>(obj);
+    (*obj_as_T).~T();
+  }
+
+  move_sig move_construct_function_ptr;
+  call_sig call_function_ptr;
+  destroy_sig destroy_function_ptr;
   size_t size;
 };
 
-template < typename ... CallArgs >
-using Vtable_move_sig = typename Vtable<CallArgs...>::move_sig;
-template < typename ... CallArgs >
-using Vtable_call_sig = typename Vtable<CallArgs...>::call_sig;
-template < typename ... CallArgs >
-using Vtable_destroy_sig = typename Vtable<CallArgs...>::destroy_sig;
-
 /*!
  * Populate and return a Vtable object appropriate for the given policy
+ * such a function overload is in each policy/WorkGroup/Vtable.hpp
  */
-// template < typename T, typename ... CallArgs >
-// inline Vtable<CallArgs...> get_Vtable(work_policy const&);
+// template < typename T, typename Vtable_T >
+// inline Vtable_T get_Vtable(work_policy const&);
 
 }  // namespace detail
 

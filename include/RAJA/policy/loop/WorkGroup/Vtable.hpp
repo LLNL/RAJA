@@ -34,13 +34,13 @@ namespace detail
 /*!
  * Populate and return a Vtable object
  */
-template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable(loop_work const&)
+template < typename T, typename Vtable_T >
+inline Vtable_T get_Vtable(loop_work const&)
 {
-  return Vtable<CallArgs...>{
-        &Vtable_move_construct<T, CallArgs...>,
-        &Vtable_call<T, CallArgs...>,
-        &Vtable_destroy<T, CallArgs...>,
+  return Vtable_T{
+        &Vtable_T::template move_construct<T>,
+        &Vtable_T::template host_call<T>,
+        &Vtable_T::template destroy<T>,
         sizeof(T)
       };
 }

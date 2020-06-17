@@ -33,18 +33,11 @@ namespace detail
 
 #if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
-template < typename T, typename ... CallArgs >
-__device__ void Vtable_hip_device_call(const void* obj, CallArgs... args)
+template < typename T, typename Vtable_T >
+__global__ void get_Vtable_hip_device_call_global(
+    typename Vtable_T::call_sig* ptrptr)
 {
-    const T* obj_as_T = static_cast<const T*>(obj);
-    (*obj_as_T)(std::forward<CallArgs>(args)...);
-}
-
-template < typename T, typename ... CallArgs >
-__global__ void get_device_Vtable_hip_device_call(
-    Vtable_call_sig<CallArgs...>* ptrptr)
-{
-  *ptrptr = &Vtable_hip_device_call<T, CallArgs...>;
+  *ptrptr = &Vtable_T::template device_call<T>;
 }
 
 inline void* get_Vtable_hip_device_call_ptrptr()
@@ -61,13 +54,13 @@ inline void* get_cached_Vtable_hip_device_call_ptrptr()
 }
 
 // TODO: make thread safe
-template < typename T, typename ... CallArgs >
-inline Vtable_call_sig<CallArgs...> get_Vtable_hip_device_call()
+template < typename T, typename Vtable_T >
+inline typename Vtable_T::call_sig get_Vtable_hip_device_call()
 {
-  Vtable_call_sig<CallArgs...>* ptrptr =
-      static_cast<Vtable_call_sig<CallArgs...>*>(
+  typename Vtable_T::call_sig* ptrptr =
+      static_cast<typename Vtable_T::call_sig*>(
         get_cached_Vtable_hip_device_call_ptrptr());
-  auto func = get_device_Vtable_hip_device_call<T, CallArgs...>;
+  auto func = get_Vtable_hip_device_call_global<T, Vtable_T>;
   hipLaunchKernelGGL(func,
       dim3(1), dim3(1), 0, 0, ptrptr);
   hipErrchk(hipGetLastError());
@@ -76,11 +69,11 @@ inline Vtable_call_sig<CallArgs...> get_Vtable_hip_device_call()
   return *ptrptr;
 }
 
-template < typename T, typename ... CallArgs >
-inline Vtable_call_sig<CallArgs...> get_cached_Vtable_hip_device_call()
+template < typename T, typename Vtable_T >
+inline typename Vtable_T::call_sig get_cached_Vtable_hip_device_call()
 {
-  static Vtable_call_sig<CallArgs...> ptr =
-      get_Vtable_hip_device_call<T, CallArgs...>();
+  static typename Vtable_T::call_sig ptr =
+      get_Vtable_hip_device_call<T, Vtable_T>();
   return ptr;
 }
 
@@ -88,13 +81,13 @@ inline Vtable_call_sig<CallArgs...> get_cached_Vtable_hip_device_call()
 * Populate and return a Vtable object where the
 * call operator is a device function
 */
-template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable(hip_work const&)
+template < typename T, typename Vtable_T >
+inline Vtable_T get_Vtable(hip_work const&)
 {
-  return Vtable<CallArgs...>{
-        &Vtable_move_construct<T, CallArgs...>,
-        get_cached_Vtable_hip_device_call<T, CallArgs...>(),
-        &Vtable_destroy<T, CallArgs...>,
+  return Vtable_T{
+        &Vtable_T::move_construct<T>,
+        get_cached_Vtable_hip_device_call<T, Vtable_T>(),
+        &Vtable_T::destroy<T>,
         sizeof(T)
       };
 }

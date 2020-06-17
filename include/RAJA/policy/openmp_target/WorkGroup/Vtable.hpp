@@ -31,35 +31,25 @@ namespace RAJA
 namespace detail
 {
 
-#pragma omp declare target
-
-template < typename T, typename ... CallArgs >
-void Vtable_omp_target_call(const void* obj, CallArgs... args)
-{
-  const T* obj_as_T = static_cast<const T*>(obj);
-  (*obj_as_T)(std::forward<CallArgs>(args)...);
-}
-
-#pragma omp end declare target
-
 // TODO: make thread safe
-template < typename T, typename ... CallArgs >
-inline Vtable_call_sig<CallArgs...> get_Vtable_omp_target_call()
+template < typename T, typename Vtable_T >
+inline typename Vtable_T::call_sig get_Vtable_omp_target_call()
 {
-  Vtable_call_sig<CallArgs...> ptr = nullptr;
+  typename Vtable_T::call_sig ptr = nullptr;
 
   #pragma omp target map(tofrom : ptr)
   {
-    ptr = &Vtable_omp_target_call<T, CallArgs>;
+    ptr = &Vtable_T::template host_call<T>;
   }
 
   return ptr;
 }
 
-template < typename T, typename ... CallArgs >
-inline Vtable_call_sig<CallArgs...> get_cached_Vtable_omp_target_call()
+template < typename T, typename Vtable_T >
+inline typename Vtable_T::call_sig get_cached_Vtable_omp_target_call()
 {
-  static Vtable_call_sig<CallArgs...> ptr = get_Vtable_omp_target_call();
+  static typename Vtable_T::call_sig ptr =
+      get_Vtable_omp_target_call<T, Vtable_T>();
   return ptr;
 }
 
@@ -67,13 +57,13 @@ inline Vtable_call_sig<CallArgs...> get_cached_Vtable_omp_target_call()
 * Populate and return a Vtable object where the
 * call operator is a device function
 */
-template < typename T, typename ... CallArgs >
-inline Vtable<CallArgs...> get_Vtable(omp_target_work const&)
+template < typename T, typename Vtable_T >
+inline Vtable_T get_Vtable(omp_target_work const&)
 {
-  return Vtable<CallArgs...>{
-        &Vtable_move_construct<T, CallArgs...>,
-        get_cached_Vtable_omp_target_call(),
-        &Vtable_destroy<T, CallArgs...>,
+  return Vtable_T{
+        &Vtable_T::move_construct<T>,
+        get_cached_Vtable_omp_target_call<T, Vtable_T>(),
+        &Vtable_T::destroy<T>,
         sizeof(T)
       };
 }
