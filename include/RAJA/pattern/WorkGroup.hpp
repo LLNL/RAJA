@@ -156,6 +156,7 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using Allocator = ALLOCATOR_T;
 
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
+  using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
   WorkPool(Allocator aloc)
     : m_storage(std::forward<Allocator>(aloc))
@@ -198,6 +199,9 @@ private:
   using workrunner_type =
       detail::WorkRunner<exec_policy, order_policy, Allocator, index_type, Args...>;
 
+  friend workgroup_type;
+  friend worksite_type;
+
   storage_type m_storage;
   size_t m_max_num_loops = 0;
   size_t m_max_storage_bytes = 0;
@@ -226,6 +230,7 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
+  using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
   WorkGroup(WorkGroup const&) = delete;
@@ -243,11 +248,11 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
 private:
-  using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using storage_type = typename workpool_type::storage_type;
   using workrunner_type = typename workpool_type::workrunner_type;
 
   friend workpool_type;
+  friend worksite_type;
 
   storage_type m_storage;
   workrunner_type m_runner;
@@ -279,6 +284,9 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
+  using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
+  using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
+
   WorkSite(WorkSite const&) = delete;
   WorkSite& operator=(WorkSite const&) = delete;
 
@@ -292,10 +300,10 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
 private:
-  using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
   using workrunner_type = typename workgroup_type::workrunner_type;
   using per_run_storage = typename workrunner_type::per_run_storage;
 
+  friend workpool_type;
   friend workgroup_type;
 
   per_run_storage m_run_storage;
