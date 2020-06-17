@@ -75,6 +75,17 @@ using CudaForallReduceSanityTypes =
                                 CudaReducePols>>::Types;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+//
+// Cartesian product of types for HIP tests
+//
+using HipForallReduceSanityTypes =
+  Test< camp::cartesian_product<ReduceSanityDataTypeList,
+                                HipResourceList,
+                                HipForallExecPols,
+                                HipReducePols>>::Types;
+#endif
+
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 //
 // Cartesian product of types for OpenMP Target tests
