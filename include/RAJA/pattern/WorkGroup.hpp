@@ -155,6 +155,8 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
+  using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
+
   WorkPool(Allocator aloc)
     : m_storage(std::forward<Allocator>(aloc))
   { }
@@ -165,13 +167,54 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   WorkPool(WorkPool&&) = default;
   WorkPool& operator=(WorkPool&&) = default;
 
-  inline WorkGroup<policy, index_type, xarg_type, Allocator> instantiate();
+  void reserve(size_t num_loops, size_t storage_bytes)
+  {
+    m_storage.reserve(num_loops, storage_bytes);
+  }
+
+  template < typename segment_T, typename loop_T >
+  inline void enqueue(segment_T&& seg, loop_T&& loop)
+  {
+    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
+
+    static vtable_type s_vtable =
+        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
+
+    if (m_storage.begin() == m_storage.end()) {
+      // perform auto-reserve on reuse
+      reserve(m_max_num_loops, m_max_storage_bytes);
+    }
+
+    m_storage.insert(
+        &s_vtable,
+        holder{
+          std::forward<segment_T>(seg), std::forward<loop_T>(loop)});
+  }
+
+  inline workgroup_type instantiate();
+
+  ~WorkPool()
+  {
+    // storage is about to be destroyed
+    // but it was never used so no synchronization necessary
+  }
 
 private:
-  using storage_type = detail::WorkStorage<storage_policy,
-                                           Allocator,
-                                           index_type, Args...>;
+  using storage_type =
+      detail::WorkStorage<storage_policy, Allocator, index_type, Args...>;
+  using value_type  = typename storage_type::value_type;
+  using vtable_type = typename storage_type::vtable_type;
+
+  using runner_type =
+      detail::WorkRunner<exec_policy, order_policy, Allocator, index_type, Args...>;
+  template < typename segment_type, typename loop_type >
+  using holder_type = typename runner_type::
+      template loop_wrapper<segment_type, loop_type>;
+  using vtable_exec_policy = typename runner_type::vtable_exec_policy;
+
   storage_type m_storage;
+  size_t m_max_num_loops = 0;
+  size_t m_max_storage_bytes = 0;
 };
 
 template <typename EXEC_POLICY_T,
@@ -195,30 +238,36 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
+  using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
+
   WorkGroup(WorkGroup const&) = delete;
   WorkGroup& operator=(WorkGroup const&) = delete;
 
   WorkGroup(WorkGroup&&) = default;
   WorkGroup& operator=(WorkGroup&&) = default;
 
-  inline WorkSite<policy, index_type, xarg_type, Allocator> run(Args...);
+  inline worksite_type run(Args...);
+
+  ~WorkGroup()
+  {
+    // storage is about to be destroyed
+    // TODO: synchronize
+  }
 
 private:
-  friend WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
-                                  ORDER_POLICY_T,
-                                  STORAGE_POLICY_T>,
-                   INDEX_T,
-                   xargs<Args...>,
-                   ALLOCATOR_T>;
+  using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
+  using storage_type = typename workpool_type::storage_type;
+  using workrunner_type = WorkRunner<exec_policy, order_policy, Allocator,
+                                     index_type, Args...>;
 
-  using storage_type = detail::WorkStorage<storage_policy,
-                                           Allocator,
-                                           index_type, Args...>;
+  friend workpool_type;
 
   storage_type m_storage;
+  workrunner_type m_runner;
 
   WorkGroup(storage_type&& storage)
     : m_storage(std::move(storage))
+    , m_runner()
   { }
 };
 
@@ -249,15 +298,24 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
 
-private:
-  friend WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
-                                   ORDER_POLICY_T,
-                                   STORAGE_POLICY_T>,
-                    INDEX_T,
-                    xargs<Args...>,
-                    ALLOCATOR_T>;
+  ~WorkSite()
+  {
+    // resources is about to be released
+    // TODO: synchronize
+  }
 
-  WorkSite()
+private:
+  using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
+  using workrunner_type = WorkRunner<exec_policy, order_policy, Allocator,
+                                     index_type, Args...>;
+  using per_run_storage = typename workrunner_type::per_run_storage;
+
+  friend workgroup_type;
+
+  per_run_storage m_run_storage;
+
+  WorkSite(per_run_storage&& run_storage)
+    : m_run_storage(std::move(run_storage))
   { }
 };
 
@@ -269,25 +327,23 @@ template <typename EXEC_POLICY_T,
           typename ... Args,
           typename ALLOCATOR_T>
 inline
-WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
-                          ORDER_POLICY_T,
-                          STORAGE_POLICY_T>,
-          INDEX_T,
-          xargs<Args...>,
-          ALLOCATOR_T>
-WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
-                         ORDER_POLICY_T,
-                         STORAGE_POLICY_T>,
-         INDEX_T,
-         xargs<Args...>,
-         ALLOCATOR_T>::instantiate()
+typename WorkPool<
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    INDEX_T,
+    xargs<Args...>,
+    ALLOCATOR_T>::workgroup_type
+WorkPool<
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    INDEX_T,
+    xargs<Args...>,
+    ALLOCATOR_T>::instantiate()
 {
-  return WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
-                                   ORDER_POLICY_T,
-                                   STORAGE_POLICY_T>,
-                   INDEX_T,
-                   xargs<Args...>,
-                   ALLOCATOR_T>{std::move(m_storage)};
+  // update max sizes to auto-reserve on reuse
+  m_max_num_loops = std::max(m_storage.size(), m_max_num_loops);
+  m_max_storage_bytes = std::max(m_storage.storage_size(), m_max_storage_bytes);
+
+  // move storage into workgroup
+  return workgroup_type{std::move(m_storage)};
 }
 
 template <typename EXEC_POLICY_T,
@@ -297,26 +353,19 @@ template <typename EXEC_POLICY_T,
           typename ... Args,
           typename ALLOCATOR_T>
 inline
-WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
-                         ORDER_POLICY_T,
-                         STORAGE_POLICY_T>,
-         INDEX_T,
-         xargs<Args...>,
-         ALLOCATOR_T>
-WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
-                          ORDER_POLICY_T,
-                          STORAGE_POLICY_T>,
-          INDEX_T,
-          xargs<Args...>,
-          ALLOCATOR_T>::run(Args... args)
+typename WorkGroup<
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    INDEX_T,
+    xargs<Args...>,
+    ALLOCATOR_T>::worksite_type
+WorkGroup<
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    INDEX_T,
+    xargs<Args...>,
+    ALLOCATOR_T>::run(Args... args)
 {
-  RAJA_UNUSED_VAR(std::forward<Args>(args)...);
-  return WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
-                                   ORDER_POLICY_T,
-                                   STORAGE_POLICY_T>,
-                   INDEX_T,
-                   xargs<Args...>,
-                   ALLOCATOR_T>{};
+  // move any per run storage into worksite
+  return worksite_type{m_runner.run(m_storage, std::forward<Args>(args)...)};
 }
 
 }  // namespace RAJA
