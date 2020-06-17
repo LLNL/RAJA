@@ -121,8 +121,10 @@ void testWorkGroupWorkStorageInsert()
                                                     >;
   using Vtable_type = typename WorkStorage_type::vtable_type;
 
+  using callable = TestCallable<short>;
+
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      TestCallable<short>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -130,10 +132,10 @@ void testWorkGroupWorkStorageInsert()
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    container.insert(&vtable, TestCallable<short>{0});
+    container.template emplace<callable>(&vtable, callable{0});
 
     ASSERT_EQ(container.size(), (size_t)1);
-    ASSERT_TRUE(container.storage_size() >= sizeof(TestCallable<short>));
+    ASSERT_TRUE(container.storage_size() >= sizeof(callable));
 
     WorkStorage_type container2(std::move(container));
 
@@ -141,7 +143,7 @@ void testWorkGroupWorkStorageInsert()
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
     ASSERT_EQ(container2.size(), (size_t)1);
-    ASSERT_TRUE(container2.storage_size() >= sizeof(TestCallable<short>));
+    ASSERT_TRUE(container2.storage_size() >= sizeof(callable));
   }
 
   ASSERT_TRUE(success);
@@ -170,8 +172,10 @@ void testWorkGroupWorkStorageIterator()
                                                     >;
   using Vtable_type = typename WorkStorage_type::vtable_type;
 
+  using callable = TestCallable<int>;
+
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      TestCallable<int>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -184,7 +188,7 @@ void testWorkGroupWorkStorageIterator()
     ASSERT_TRUE(container.begin() <= container.end());
     ASSERT_TRUE(container.begin() >= container.end());
 
-    container.insert(&vtable, TestCallable<int>{-1});
+    container.template emplace<callable>(&vtable, callable{-1});
 
     ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());
@@ -240,8 +244,10 @@ void testWorkGroupWorkStorageInsertCall()
   using WorkStruct_type = typename WorkStorage_type::value_type;
   using Vtable_type = typename WorkStorage_type::vtable_type;
 
+  using callable = TestCallable<double>;
+
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      TestCallable<double>, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, void*, bool*, bool*>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -249,18 +255,18 @@ void testWorkGroupWorkStorageInsertCall()
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    TestCallable<double> c(1.23456789);
+    callable c(1.23456789);
 
     ASSERT_FALSE(c.move_constructed);
     ASSERT_FALSE(c.moved_from);
 
-    container.insert(&vtable, std::move(c));
+    container.template emplace<callable>(&vtable, std::move(c));
 
     ASSERT_FALSE(c.move_constructed);
     ASSERT_TRUE(c.moved_from);
 
     ASSERT_EQ(container.size(), (size_t)1);
-    ASSERT_TRUE(container.storage_size() >= sizeof(TestCallable<double>));
+    ASSERT_TRUE(container.storage_size() >= sizeof(callable));
 
     {
       auto iter = container.begin();
@@ -281,7 +287,7 @@ void testWorkGroupWorkStorageInsertCall()
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
     ASSERT_EQ(container2.size(), (size_t)1);
-    ASSERT_TRUE(container2.storage_size() >= sizeof(TestCallable<double>));
+    ASSERT_TRUE(container2.storage_size() >= sizeof(callable));
 
     {
       auto iter2 = container2.begin();
@@ -352,7 +358,7 @@ void testWorkGroupWorkStorageMultiple(
       vec0.emplace_back((type0)-i);
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_FALSE(vec0[i].moved_from);
-      container.insert(&vtable0, std::move(vec0[i]));
+      container.template emplace<callable0>(&vtable0, std::move(vec0[i]));
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_TRUE (vec0[i].moved_from);
     }
@@ -364,7 +370,7 @@ void testWorkGroupWorkStorageMultiple(
           100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i});
       ASSERT_FALSE(vec1[i].move_constructed);
       ASSERT_FALSE(vec1[i].moved_from);
-      container.insert(&vtable1, std::move(vec1[i]));
+      container.template emplace<callable1>(&vtable1, std::move(vec1[i]));
       ASSERT_FALSE(vec1[i].move_constructed);
       ASSERT_TRUE (vec1[i].moved_from);
     }
@@ -378,7 +384,7 @@ void testWorkGroupWorkStorageMultiple(
           1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i});
       ASSERT_FALSE(vec2[i].move_constructed);
       ASSERT_FALSE(vec2[i].moved_from);
-      container.insert(&vtable2, std::move(vec2[i]));
+      container.template emplace<callable2>(&vtable2, std::move(vec2[i]));
       ASSERT_FALSE(vec2[i].move_constructed);
       ASSERT_TRUE (vec2[i].moved_from);
     }
