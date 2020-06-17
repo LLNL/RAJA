@@ -34,7 +34,7 @@ namespace detail
 /*!
  * A struct that gives a generic way to layout memory for different loops
  */
-template < size_t size, typename ... CallArgs >
+template < size_t size, typename Vtable_T >
 struct WorkStruct;
 
 /*!
@@ -43,11 +43,11 @@ struct WorkStruct;
  *   offsetof(GenericWorkStruct<>, obj) == offsetof(WorkStruct<size>, obj)
  *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
-template < typename ... CallArgs >
-using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), CallArgs...>;
+template < typename Vtable_T >
+using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), Vtable_T>;
 
 template < size_t size, typename ... CallArgs >
-struct WorkStruct
+struct WorkStruct<size, Vtable<CallArgs...>>
 {
   using vtable_type = Vtable<CallArgs...>;
 
@@ -55,8 +55,8 @@ struct WorkStruct
   static RAJA_INLINE
   void construct(void* ptr, vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
-    using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
-    using value_type = GenericWorkStruct<CallArgs...>;
+    using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+    using value_type = GenericWorkStruct<vtable_type>;
 
     static_assert(sizeof(holder) <= sizeof(true_value_type::obj),
         "holder must fit in WorkStruct::obj");

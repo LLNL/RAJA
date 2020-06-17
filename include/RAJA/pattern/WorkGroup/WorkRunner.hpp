@@ -27,6 +27,7 @@
 
 #include "RAJA/pattern/forall.hpp"
 
+#include "RAJA/pattern/WorkGroup/Vtable.hpp"
 #include "RAJA/policy/WorkGroup.hpp"
 
 
@@ -156,6 +157,7 @@ struct WorkRunnerForallOrdered
   using index_type = INDEX_T;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
+  using vtable_type = Vtable<Args...>;
 
   WorkRunnerForallOrdered() = default;
 
@@ -180,10 +182,9 @@ struct WorkRunnerForallOrdered
   inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
   {
     using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
-    using vtable_type = typename WorkContainer::vtable_type;
 
     static vtable_type s_vtable =
-        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
+        get_Vtable<holder, vtable_type>(vtable_exec_policy{});
 
     storage.template emplace<holder>(&s_vtable,
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
@@ -197,7 +198,7 @@ struct WorkRunnerForallOrdered
   {
     using value_type = typename WorkContainer::value_type;
 
-    per_run_storage run_storage;
+    per_run_storage run_storage{};
 
     auto end = storage.end();
     for (auto iter = storage.begin(); iter != end; ++iter) {
@@ -225,6 +226,7 @@ struct WorkRunnerForallReverse
   using index_type = INDEX_T;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
+  using vtable_type = Vtable<Args...>;
 
   WorkRunnerForallReverse() = default;
 
@@ -249,10 +251,9 @@ struct WorkRunnerForallReverse
   inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
   {
     using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
-    using vtable_type = typename WorkContainer::vtable_type;
 
     static vtable_type s_vtable =
-        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
+        get_Vtable<holder, vtable_type>(vtable_exec_policy{});
 
     storage.template emplace<holder>(&s_vtable,
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
@@ -266,7 +267,7 @@ struct WorkRunnerForallReverse
   {
     using value_type = typename WorkContainer::value_type;
 
-    per_run_storage run_storage;
+    per_run_storage run_storage{};
 
     auto begin = storage.begin();
     for (auto iter = storage.end(); iter != begin; --iter) {

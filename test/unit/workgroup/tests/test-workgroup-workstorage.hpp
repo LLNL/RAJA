@@ -74,10 +74,11 @@ void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
+  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      void*, bool*, bool*
+                                                      Vtable_type
                                                     >;
 
   {
@@ -114,17 +115,17 @@ void testWorkGroupWorkStorageInsert()
 {
   bool success = true;
 
+  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      void*, bool*, bool*
+                                                      Vtable_type
                                                     >;
-  using Vtable_type = typename WorkStorage_type::vtable_type;
 
   using callable = TestCallable<short>;
 
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      callable, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, Vtable_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -165,17 +166,17 @@ void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
+  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      void*, bool*, bool*
+                                                      Vtable_type
                                                     >;
-  using Vtable_type = typename WorkStorage_type::vtable_type;
 
   using callable = TestCallable<int>;
 
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      callable, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, Vtable_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -236,18 +237,18 @@ void testWorkGroupWorkStorageInsertCall()
 {
   bool success = true;
 
+  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      void*, bool*, bool*
+                                                      Vtable_type
                                                     >;
   using WorkStruct_type = typename WorkStorage_type::value_type;
-  using Vtable_type = typename WorkStorage_type::vtable_type;
 
   using callable = TestCallable<double>;
 
   Vtable_type vtable = RAJA::detail::get_Vtable<
-      callable, void*, bool*, bool*>(RAJA::seq_work{});
+      callable, Vtable_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -323,13 +324,13 @@ void testWorkGroupWorkStorageMultiple(
 {
   bool success = true;
 
+  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      void*, bool*, bool*
+                                                      Vtable_type
                                                     >;
   using WorkStruct_type = typename WorkStorage_type::value_type;
-  using Vtable_type = typename WorkStorage_type::vtable_type;
 
   using type0 = double;
   using type1 = std::array<double, 6>;
@@ -340,11 +341,11 @@ void testWorkGroupWorkStorageMultiple(
   using callable2 = TestCallable<type2>;
 
   Vtable_type vtable0 = RAJA::detail::get_Vtable<
-      callable0, void*, bool*, bool*>(RAJA::seq_work{});
+      callable0, Vtable_type>(RAJA::seq_work{});
   Vtable_type vtable1 = RAJA::detail::get_Vtable<
-      callable1, void*, bool*, bool*>(RAJA::seq_work{});
+      callable1, Vtable_type>(RAJA::seq_work{});
   Vtable_type vtable2 = RAJA::detail::get_Vtable<
-      callable2, void*, bool*, bool*>(RAJA::seq_work{});
+      callable2, Vtable_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});

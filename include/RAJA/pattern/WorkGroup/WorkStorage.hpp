@@ -39,19 +39,19 @@ namespace detail
 /*!
  * A storage container for work groups
  */
-template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename ... CallArgs >
+template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename Vtable_T >
 struct WorkStorage;
 
-template < typename ALLOCATOR_T, typename ... CallArgs >
-struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
+template < typename ALLOCATOR_T, typename Vtable_T >
+struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
 {
   using storage_policy = RAJA::array_of_pointers;
   using Allocator = ALLOCATOR_T;
+  using vtable_type = Vtable_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
-  using value_type = GenericWorkStruct<CallArgs...>;
-  using vtable_type = typename value_type::vtable_type;
+  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using value_type = GenericWorkStruct<vtable_type>;
 
   struct const_iterator
   {
@@ -240,7 +240,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     m_vec.emplace_back(create_value<holder>(
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
@@ -258,7 +258,7 @@ private:
   size_t m_storage_size = 0;
 
   template < typename holder, typename ... holder_ctor_args >
-  value_type* create_value(Vtable<CallArgs...>* vtable,
+  value_type* create_value(vtable_type* vtable,
                            holder_ctor_args&&... ctor_args)
   {
     value_type* value_ptr = static_cast<value_type*>(
@@ -278,16 +278,16 @@ private:
   }
 };
 
-template < typename ALLOCATOR_T, typename ... CallArgs >
-struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
+template < typename ALLOCATOR_T, typename Vtable_T >
+struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
 {
   using storage_policy = RAJA::ragged_array_of_objects;
   using Allocator = ALLOCATOR_T;
+  using vtable_type = Vtable_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
-  using value_type = GenericWorkStruct<CallArgs...>;
-  using vtable_type = typename value_type::vtable_type;
+  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using value_type = GenericWorkStruct<vtable_type>;
 
   struct const_iterator
   {
@@ -490,7 +490,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     m_offsets.emplace_back(create_value<holder>(
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
@@ -549,7 +549,7 @@ private:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  size_t create_value(Vtable<CallArgs...>* vtable,
+  size_t create_value(vtable_type* vtable,
                       holder_ctor_args&&... ctor_args)
   {
     const size_t value_size = sizeof(true_value_type<holder>);
@@ -577,18 +577,18 @@ private:
   }
 };
 
-template < typename ALLOCATOR_T, typename ... CallArgs >
+template < typename ALLOCATOR_T, typename Vtable_T >
 struct WorkStorage<RAJA::constant_stride_array_of_objects,
                    ALLOCATOR_T,
-                   CallArgs...>
+                   Vtable_T>
 {
   using storage_policy = RAJA::constant_stride_array_of_objects;
   using Allocator = ALLOCATOR_T;
+  using vtable_type = Vtable_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
-  using value_type = GenericWorkStruct<CallArgs...>;
-  using vtable_type = typename value_type::vtable_type;
+  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using value_type = GenericWorkStruct<vtable_type>;
 
   struct const_iterator
   {
@@ -793,7 +793,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
@@ -853,7 +853,7 @@ private:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void create_value(Vtable<CallArgs...>* vtable,
+  void create_value(vtable_type* vtable,
                     holder_ctor_args&&... ctor_args)
   {
     const size_t value_size = sizeof(true_value_type<holder>);
