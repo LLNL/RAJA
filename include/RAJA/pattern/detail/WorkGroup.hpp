@@ -243,16 +243,15 @@ struct WorkStruct
 {
   using vtable_type = Vtable<CallArgs...>;
 
-  template < typename loop_in >
+  template < typename holder, typename ... holder_ctor_args >
   static RAJA_INLINE
-  void construct(void* ptr, vtable_type* vtable, loop_in&& loop)
+  void construct(void* ptr, vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
-    using loop_type = camp::decay<loop_in>;
-    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
+    using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
     using value_type = GenericWorkStruct<CallArgs...>;
 
-    static_assert(sizeof(loop_type) <= sizeof(true_value_type::obj),
-        "loop_type must fit in WorkStruct::obj");
+    static_assert(sizeof(holder) <= sizeof(true_value_type::obj),
+        "holder must fit in WorkStruct::obj");
     static_assert(std::is_standard_layout<true_value_type>::value,
         "WorkStruct must be a standard layout type");
     static_assert(std::is_standard_layout<value_type>::value,
@@ -266,7 +265,7 @@ struct WorkStruct
 
     value_ptr->vtable = vtable;
     value_ptr->call_function_ptr = vtable->call;
-    new(&value_ptr->obj) loop_type(std::forward<loop_in>(loop));
+    new(&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
   static RAJA_INLINE
@@ -309,6 +308,8 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
   using storage_policy = RAJA::array_of_pointers;
   using Allocator = ALLOCATOR_T;
 
+  template < typename holder >
+  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
   using value_type = GenericWorkStruct<CallArgs...>;
   using vtable_type = typename value_type::vtable_type;
 
@@ -498,10 +499,11 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, CallArgs...>
     return m_storage_size;
   }
 
-  template < typename loop_in >
-  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
   {
-    m_vec.emplace_back(create_value(vtable, std::forward<loop_in>(loop)));
+    m_vec.emplace_back(create_value<holder>(
+        vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
   ~WorkStorage()
@@ -515,17 +517,16 @@ private:
   SimpleVector<value_type*, Allocator> m_vec;
   size_t m_storage_size = 0;
 
-  template < typename loop_in >
-  value_type* create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  value_type* create_value(Vtable<CallArgs...>* vtable,
+                           holder_ctor_args&&... ctor_args)
   {
-    using loop_type = camp::decay<loop_in>;
-    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
-
     value_type* value_ptr = static_cast<value_type*>(
-        m_vec.get_allocator().allocate(sizeof(true_value_type)));
-    m_storage_size += sizeof(true_value_type);
+        m_vec.get_allocator().allocate(sizeof(true_value_type<holder>)));
+    m_storage_size += sizeof(true_value_type<holder>);
 
-    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::template construct<holder>(
+        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
 
     return value_ptr;
   }
@@ -543,6 +544,8 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
   using storage_policy = RAJA::ragged_array_of_objects;
   using Allocator = ALLOCATOR_T;
 
+  template < typename holder >
+  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
   using value_type = GenericWorkStruct<CallArgs...>;
   using vtable_type = typename value_type::vtable_type;
 
@@ -746,11 +749,11 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, CallArgs...>
     return m_array_end - m_array_begin;
   }
 
-  template < typename loop_in >
-  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
   {
-    m_offsets.emplace_back(
-        create_value(vtable, std::forward<loop_in>(loop)));
+    m_offsets.emplace_back(create_value<holder>(
+        vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
   ~WorkStorage()
@@ -805,12 +808,11 @@ private:
     }
   }
 
-  template < typename loop_in >
-  size_t create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  size_t create_value(Vtable<CallArgs...>* vtable,
+                      holder_ctor_args&&... ctor_args)
   {
-    using loop_type = camp::decay<loop_in>;
-    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
-    const size_t value_size = sizeof(true_value_type);
+    const size_t value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused()) {
       array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()));
@@ -821,7 +823,8 @@ private:
         reinterpret_cast<value_type*>(m_array_begin + value_offset);
     m_array_end += value_size;
 
-    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::template construct<holder>(
+        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
 
     return value_offset;
   }
@@ -842,6 +845,8 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
   using storage_policy = RAJA::constant_stride_array_of_objects;
   using Allocator = ALLOCATOR_T;
 
+  template < typename holder >
+  using true_value_type = WorkStruct<sizeof(holder), CallArgs...>;
   using value_type = GenericWorkStruct<CallArgs...>;
   using vtable_type = typename value_type::vtable_type;
 
@@ -1047,10 +1052,10 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
     return m_array_end - m_array_begin;
   }
 
-  template < typename loop_in >
-  void insert(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  void emplace(Vtable<CallArgs...>* vtable, holder_ctor_args&&... ctor_args)
   {
-    create_value(vtable, std::forward<loop_in>(loop));
+    create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
   ~WorkStorage()
@@ -1107,12 +1112,11 @@ private:
     }
   }
 
-  template < typename loop_in >
-  void create_value(Vtable<CallArgs...>* vtable, loop_in&& loop)
+  template < typename holder, typename ... holder_ctor_args >
+  void create_value(Vtable<CallArgs...>* vtable,
+                    holder_ctor_args&&... ctor_args)
   {
-    using loop_type = camp::decay<loop_in>;
-    using true_value_type = WorkStruct<sizeof(loop_type), CallArgs...>;
-    const size_t value_size = sizeof(true_value_type);
+    const size_t value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused() && value_size <= m_stride) {
       array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()),
@@ -1125,7 +1129,8 @@ private:
     value_type* value_ptr = reinterpret_cast<value_type*>(m_array_end);
     m_array_end += m_stride;
 
-    value_type::construct(value_ptr, vtable, std::forward<loop_in>(loop));
+    value_type::template construct<holder>(
+        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
   void destroy_value(size_t value_offset)
@@ -1245,6 +1250,14 @@ struct WorkRunnerForallOrdered
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
 
+  WorkRunnerForallOrdered() = default;
+
+  WorkRunnerForallOrdered(WorkRunnerForallOrdered const&) = delete;
+  WorkRunnerForallOrdered& operator=(WorkRunnerForallOrdered const&) = delete;
+
+  WorkRunnerForallOrdered(WorkRunnerForallOrdered &&) = default;
+  WorkRunnerForallOrdered& operator=(WorkRunnerForallOrdered &&) = default;
+
   // The type  that will hold hte segment and loop body in work storage
   template < typename segment_type, typename loop_type >
   using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
@@ -1253,6 +1266,21 @@ struct WorkRunnerForallOrdered
   // The policy indicating where the call function is invoked
   // in this case the values are called on the host in a loop
   using vtable_exec_policy = RAJA::loop_work;
+
+  // runner interfaces with storage to enqueue so the runner can get
+  // information from the segment and loop at enqueue time
+  template < typename WorkContainer, typename segment_T, typename loop_T >
+  inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
+  {
+    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
+    using vtable_type = typename WorkContainer::vtable_type;
+
+    static vtable_type s_vtable =
+        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
+
+    storage.template emplace<holder>(&s_vtable,
+        std::forward<segment_T>(seg), std::forward<loop_T>(loop));
+  }
 
   // no extra storage required here
   using per_run_storage = int;
@@ -1291,6 +1319,14 @@ struct WorkRunnerForallReverse
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
 
+  WorkRunnerForallReverse() = default;
+
+  WorkRunnerForallReverse(WorkRunnerForallReverse const&) = delete;
+  WorkRunnerForallReverse& operator=(WorkRunnerForallReverse const&) = delete;
+
+  WorkRunnerForallReverse(WorkRunnerForallReverse &&) = default;
+  WorkRunnerForallReverse& operator=(WorkRunnerForallReverse &&) = default;
+
   // The type  that will hold hte segment and loop body in work storage
   template < typename segment_type, typename loop_type >
   using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
@@ -1299,6 +1335,21 @@ struct WorkRunnerForallReverse
   // The policy indicating where the call function is invoked
   // in this case the values are called on the host in a loop
   using vtable_exec_policy = RAJA::loop_work;
+
+  // runner interfaces with storage to enqueue so the runner can get
+  // information from the segment and loop at enqueue time
+  template < typename WorkContainer, typename segment_T, typename loop_T >
+  inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
+  {
+    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
+    using vtable_type = typename WorkContainer::vtable_type;
+
+    static vtable_type s_vtable =
+        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
+
+    storage.template emplace<holder>(&s_vtable,
+        std::forward<segment_T>(seg), std::forward<loop_T>(loop));
+  }
 
   // no extra storage required here
   using per_run_storage = int;

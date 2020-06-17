@@ -175,20 +175,13 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   template < typename segment_T, typename loop_T >
   inline void enqueue(segment_T&& seg, loop_T&& loop)
   {
-    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
-
-    static vtable_type s_vtable =
-        get_Vtable<holder, index_type, Args...>(vtable_exec_policy{});
-
     if (m_storage.begin() == m_storage.end()) {
       // perform auto-reserve on reuse
       reserve(m_max_num_loops, m_max_storage_bytes);
     }
 
-    m_storage.insert(
-        &s_vtable,
-        holder{
-          std::forward<segment_T>(seg), std::forward<loop_T>(loop)});
+    m_runner.enqueue(
+        m_storage, std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 
   inline workgroup_type instantiate();
@@ -202,19 +195,14 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
 private:
   using storage_type =
       detail::WorkStorage<storage_policy, Allocator, index_type, Args...>;
-  using value_type  = typename storage_type::value_type;
-  using vtable_type = typename storage_type::vtable_type;
-
-  using runner_type =
+  using workrunner_type =
       detail::WorkRunner<exec_policy, order_policy, Allocator, index_type, Args...>;
-  template < typename segment_type, typename loop_type >
-  using holder_type = typename runner_type::
-      template loop_wrapper<segment_type, loop_type>;
-  using vtable_exec_policy = typename runner_type::vtable_exec_policy;
 
   storage_type m_storage;
   size_t m_max_num_loops = 0;
   size_t m_max_storage_bytes = 0;
+
+  workrunner_type m_runner;
 };
 
 template <typename EXEC_POLICY_T,
@@ -257,17 +245,16 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
 private:
   using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using storage_type = typename workpool_type::storage_type;
-  using workrunner_type = WorkRunner<exec_policy, order_policy, Allocator,
-                                     index_type, Args...>;
+  using workrunner_type = typename workpool_type::workrunner_type;
 
   friend workpool_type;
 
   storage_type m_storage;
   workrunner_type m_runner;
 
-  WorkGroup(storage_type&& storage)
+  WorkGroup(storage_type&& storage, workrunner_type&& runner)
     : m_storage(std::move(storage))
-    , m_runner()
+    , m_runner(std::move(runner))
   { }
 };
 
@@ -306,8 +293,7 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
 
 private:
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
-  using workrunner_type = WorkRunner<exec_policy, order_policy, Allocator,
-                                     index_type, Args...>;
+  using workrunner_type = typename workgroup_type::workrunner_type;
   using per_run_storage = typename workrunner_type::per_run_storage;
 
   friend workgroup_type;
@@ -343,7 +329,7 @@ WorkPool<
   m_max_storage_bytes = std::max(m_storage.storage_size(), m_max_storage_bytes);
 
   // move storage into workgroup
-  return workgroup_type{std::move(m_storage)};
+  return workgroup_type{std::move(m_storage), std::move(m_runner)};
 }
 
 template <typename EXEC_POLICY_T,
