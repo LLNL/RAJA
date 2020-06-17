@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA Vtable and WorkRunner constructs.
+ * \brief   Header file containing RAJA workgroup Vtable.
  *
  ******************************************************************************
  */
@@ -15,10 +15,33 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_sequential_WorkGroup_HPP
-#define RAJA_sequential_WorkGroup_HPP
+#ifndef RAJA_sequential_WorkGroup_Vtable_HPP
+#define RAJA_sequential_WorkGroup_Vtable_HPP
 
-#include "RAJA/policy/sequential/WorkGroup/Vtable.hpp"
-#include "RAJA/policy/sequential/WorkGroup/WorkRunner.hpp"
+#include "RAJA/config.hpp"
+
+#include "RAJA/policy/sequential/policy.hpp"
+
+#include "RAJA/policy/loop/WorkGroup/Vtable.hpp"
+
+
+namespace RAJA
+{
+
+namespace detail
+{
+
+/*!
+* Populate and return a Vtable object
+*/
+template < typename T, typename ... CallArgs >
+inline Vtable<CallArgs...> get_Vtable(seq_work const&)
+{
+  return get_Vtable<T, CallArgs...>(loop_work{});
+}
+
+}  // namespace detail
+
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard
