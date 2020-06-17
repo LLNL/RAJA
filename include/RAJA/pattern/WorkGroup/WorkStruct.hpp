@@ -82,8 +82,7 @@ struct WorkStruct<size, Vtable<CallArgs...>>
   {
     value_dst->vtable = value_src->vtable;
     value_dst->call_function_ptr = value_src->call_function_ptr;
-    value_dst->vtable->move_construct_function_ptr(&value_dst->obj, &value_src->obj);
-    value_dst->vtable->destroy_function_ptr(&value_src->obj);
+    value_dst->vtable->move_construct_destroy_function_ptr(&value_dst->obj, &value_src->obj);
   }
 
   static RAJA_INLINE

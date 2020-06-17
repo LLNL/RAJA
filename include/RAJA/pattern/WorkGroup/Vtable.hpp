@@ -42,11 +42,12 @@ struct Vtable {
   using destroy_sig = void(*)(void* /*obj*/);
 
   template < typename T >
-  static void move_construct(void* dest, void* src)
+  static void move_construct_destroy(void* dest, void* src)
   {
     T* dest_as_T = static_cast<T*>(dest);
     T* src_as_T = static_cast<T*>(src);
     new(dest_as_T) T(std::move(*src_as_T));
+    (*src_as_T).~T();
   }
 
   template < typename T >
@@ -70,7 +71,7 @@ struct Vtable {
     (*obj_as_T).~T();
   }
 
-  move_sig move_construct_function_ptr;
+  move_sig move_construct_destroy_function_ptr;
   call_sig call_function_ptr;
   destroy_sig destroy_function_ptr;
   size_t size;

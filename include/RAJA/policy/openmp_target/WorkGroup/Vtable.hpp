@@ -61,7 +61,7 @@ template < typename T, typename Vtable_T >
 inline Vtable_T get_Vtable(omp_target_work const&)
 {
   return Vtable_T{
-        &Vtable_T::move_construct<T>,
+        &Vtable_T::move_construct_destroy<T>,
         get_cached_Vtable_omp_target_call<T, Vtable_T>(),
         &Vtable_T::destroy<T>,
         sizeof(T)
