@@ -9,15 +9,8 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-// Cartesian product of types for CUDA tests
-using CudaForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                CudaResourceList, 
-                                CudaForallExecPols,
-                                CudaReducePols>>::Types;
-
 INSTANTIATE_TYPED_TEST_SUITE_P(Cuda,
-                               ForallReduceSanityTest,
+                               ForallReduceSumSanityTest,
                                CudaForallReduceSanityTypes);
 
 #endif

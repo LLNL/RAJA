@@ -9,15 +9,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-// Cartesian product of types for OpenMP tests
-using OpenMPForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                HostResourceList, 
-                                OpenMPForallExecPols,
-                                OpenMPReducePols>>::Types;
-
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
-                               ForallReduceSanityTest,
+                               ForallReduceMinLocSanityTest,
                                OpenMPForallReduceSanityTypes);
 
 #endif

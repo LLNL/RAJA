@@ -9,15 +9,8 @@
 
 #if defined(RAJA_ENABLE_TBB)
 
-// Cartesian product of types for TBB tests
-using TBBForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                HostResourceList, 
-                                TBBForallExecPols,
-                                TBBReducePols>>::Types;
-
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB,
-                               ForallReduceSanityTest,
+                               ForallReduceMaxLocSanityTest,
                                TBBForallReduceSanityTypes);
 
 #endif

@@ -7,13 +7,6 @@
 
 #include "test-forall-reduce-sanity.hpp"
 
-// Cartesian product of types for Sequential tests
-using SequentialForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReduceSanityDataTypeList, 
-                                HostResourceList, 
-                                SequentialForallReduceExecPols,
-                                SequentialReducePols>>::Types;
-
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               ForallReduceSanityTest,
+                               ForallReduceMaxLocSanityTest,
                                SequentialForallReduceSanityTypes);
