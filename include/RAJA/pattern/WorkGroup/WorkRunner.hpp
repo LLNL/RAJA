@@ -49,7 +49,7 @@ struct HoldBodyArgs_base
     , m_arg_tuple(std::forward<Args>(args)...)
   { }
 
-private:
+protected:
   LoopBody m_body;
   camp::tuple<Args...> m_arg_tuple;
 };
