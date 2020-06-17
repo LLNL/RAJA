@@ -36,7 +36,7 @@ namespace workgroup
 {
 
 struct ordered { };
-struct unordered { };
+struct reverse_ordered { };
 
 struct array_of_pointers { };
 struct ragged_array_of_objects { };
@@ -51,7 +51,7 @@ struct WorkGroupPolicy { };
 }  // end namespace policy
 
 using policy::workgroup::ordered;
-using policy::workgroup::unordered;
+using policy::workgroup::reverse_ordered;
 
 using policy::workgroup::array_of_pointers;
 using policy::workgroup::ragged_array_of_objects;
