@@ -88,6 +88,10 @@ template <typename PolicyType, RAJA::Policy P_>
 struct policy_is : camp::num<policy_of<camp::decay<PolicyType>>::value == P_> {
 };
 
+template <typename PolicyType, RAJA::Policy ... Ps_>
+struct policy_any_of : camp::num<camp::concepts::any_of<policy_is<PolicyType, Ps_>...>::value> {
+};
+
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
     : camp::num<pattern_of<camp::decay<PolicyType>>::value == P_> {
@@ -176,6 +180,11 @@ struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
 };
 template <typename Pol>
 struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
+};
+
+template <typename Pol>
+struct is_device_exec_policy
+    : RAJA::policy_any_of<Pol, RAJA::Policy::cuda, RAJA::Policy::hip> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,
