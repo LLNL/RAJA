@@ -93,7 +93,6 @@ RAJA_INLINE void forall_impl(sycl_exec<BlockSize, Async>,
   Iterator begin = std::begin(iter);
   Iterator end = std::end(iter);
   IndexType len = std::distance(begin, end);
-  IndexType offset = *begin;
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
