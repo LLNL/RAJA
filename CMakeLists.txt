@@ -201,25 +201,25 @@ endif ()
 if (ENABLE_HIP)
   set (raja_depends
     ${raja_depends}
-    hip)
+    hip_runtime)
 endif ()
 
-if (ENABLE_HIP)
-  if(ENABLE_EXTERNAL_ROCPRIM)
-    find_package(ROCPRIM)
-    if (ROCPRIM_FOUND)
-      blt_register_library(
-        NAME rocPRIM
-        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
-      set(raja_depends
-          ${raja_depends}
-          rocPRIM)
-    else()
-      message(WARNING "External rocPRIM not found.")
-      set(ENABLE_EXTERNAL_ROCPRIM Off)
-     endif()
-  endif ()
-endif ()
+#if (ENABLE_HIP)
+#  if(ENABLE_EXTERNAL_ROCPRIM)
+#    find_package(ROCPRIM)
+#    if (ROCPRIM_FOUND)
+#      blt_register_library(
+#        NAME rocPRIM
+#        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
+#      set(raja_depends
+#          ${raja_depends}
+#          rocPRIM)
+#    else()
+#      message(WARNING "External rocPRIM not found.")
+#      set(ENABLE_EXTERNAL_ROCPRIM Off)
+#     endif()
+#  endif ()
+#endif ()
 
 if (ENABLE_CHAI)
   set (raja_depends
