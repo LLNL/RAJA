@@ -50,7 +50,13 @@ using XargsTypeList = camp::list<
 
 using SequentialExecPolicyList =
     camp::list<
+                RAJA::loop_work,
                 RAJA::seq_work
+              >;
+using SequentialOrderedPolicyList =
+    camp::list<
+                RAJA::ordered,
+                RAJA::reverse_ordered
               >;
 using SequentialOrderPolicyList =
     camp::list<
@@ -70,7 +76,8 @@ using TBBExecPolicyList =
     camp::list<
                 RAJA::tbb_work
               >;
-using TBBOrderPolicyList = SequentialOrderPolicyList;
+using TBBOrderedPolicyList = SequentialOrderedPolicyList;
+using TBBOrderPolicyList   = SequentialOrderPolicyList;
 using TBBStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -79,7 +86,8 @@ using OpenMPExecPolicyList =
     camp::list<
                 RAJA::omp_work
               >;
-using OpenMPOrderPolicyList = SequentialOrderPolicyList;
+using OpenMPOrderedPolicyList = SequentialOrderedPolicyList;
+using OpenMPOrderPolicyList   = SequentialOrderPolicyList;
 using OpenMPStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -88,7 +96,8 @@ using OpenMPTargetExecPolicyList =
     camp::list<
                 RAJA::omp_target_work
               >;
-using OpenMPTargetOrderPolicyList = SequentialOrderPolicyList;
+using OpenMPTargetOrderedPolicyList = SequentialOrderedPolicyList;
+using OpenMPTargetOrderPolicyList   = SequentialOrderPolicyList;
 using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -97,7 +106,8 @@ using CudaExecPolicyList =
     camp::list<
                 RAJA::cuda_work
               >;
-using CudaOrderPolicyList = SequentialOrderPolicyList;
+using CudaOrderedPolicyList = SequentialOrderedPolicyList;
+using CudaOrderPolicyList   = SequentialOrderPolicyList;
 using CudaStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -106,7 +116,8 @@ using HipExecPolicyList =
     camp::list<
                 RAJA::hip_work
               >;
-using HipOrderPolicyList = SequentialOrderPolicyList;
+using HipOrderedPolicyList = SequentialOrderedPolicyList;
+using HipOrderPolicyList   = SequentialOrderPolicyList;
 using HipStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
