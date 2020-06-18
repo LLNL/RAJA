@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_custom_target(raja-docs)
+add_custom_target(docs)
 
 if (SPHINX_FOUND)
   add_subdirectory(sphinx/user_guide)
