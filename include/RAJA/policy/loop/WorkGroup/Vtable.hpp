@@ -35,14 +35,15 @@ namespace detail
  * Populate and return a Vtable object
  */
 template < typename T, typename Vtable_T >
-inline Vtable_T get_Vtable(loop_work const&)
+inline const Vtable_T* get_Vtable(loop_work const&)
 {
-  return Vtable_T{
+  static Vtable_T vtable{
         &Vtable_T::template move_construct_destroy<T>,
         &Vtable_T::template host_call<T>,
         &Vtable_T::template destroy<T>,
         sizeof(T)
       };
+  return &vtable;
 }
 
 }  // namespace detail

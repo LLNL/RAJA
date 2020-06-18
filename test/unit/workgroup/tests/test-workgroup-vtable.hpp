@@ -120,7 +120,7 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   camp::resources::Resource host_res{camp::resources::Host()};
 
   using Vtable_type = RAJA::detail::Vtable<IndexType, Args...>;
-  Vtable_type vtable =
+  const Vtable_type* vtable =
       RAJA::detail::get_Vtable<TestCallable, Vtable_type>(ExecPolicy{});
 
   TestCallable* old_obj = host_res.allocate<TestCallable>(1);
@@ -155,7 +155,7 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   ASSERT_FALSE(old_obj->move_constructed);
   ASSERT_FALSE(old_obj->moved_from);
 
-  vtable.move_construct_destroy_function_ptr(new_obj, old_obj);
+  vtable->move_construct_destroy_function_ptr(new_obj, old_obj);
 
   ASSERT_EQ(testDtor[0], chckDtor[0]);
   ASSERT_EQ(testDtor[1], chckDtor[1]);
@@ -171,13 +171,13 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
 
   // move a value onto device and fiddle
   call_dispatcher<ForOnePol, const void*, IndexType, Args...>(
-      vtable.call_function_ptr, new_obj, (IndexType)1, Args{}...);
+      vtable->call_function_ptr, new_obj, (IndexType)1, Args{}...);
 
   ASSERT_EQ(testCall[0], chckCall[0]);
   ASSERT_EQ(testCall[1], chckCall[1]);
   ASSERT_EQ(testCall[2], chckCall[2]);
 
-  vtable.destroy_function_ptr(new_obj);
+  vtable->destroy_function_ptr(new_obj);
 
   ASSERT_EQ(testDtor[0], chckDtor[0]);
   ASSERT_EQ(testDtor[1], chckDtor[1]);

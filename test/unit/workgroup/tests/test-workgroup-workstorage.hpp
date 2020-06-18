@@ -124,7 +124,7 @@ void testWorkGroupWorkStorageInsert()
 
   using callable = TestCallable<short>;
 
-  Vtable_type vtable = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable = RAJA::detail::get_Vtable<
       callable, Vtable_type>(RAJA::seq_work{});
 
   {
@@ -133,7 +133,7 @@ void testWorkGroupWorkStorageInsert()
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    container.template emplace<callable>(&vtable, callable{0});
+    container.template emplace<callable>(vtable, callable{0});
 
     ASSERT_EQ(container.size(), (size_t)1);
     ASSERT_TRUE(container.storage_size() >= sizeof(callable));
@@ -175,7 +175,7 @@ void testWorkGroupWorkStorageIterator()
 
   using callable = TestCallable<int>;
 
-  Vtable_type vtable = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable = RAJA::detail::get_Vtable<
       callable, Vtable_type>(RAJA::seq_work{});
 
   {
@@ -189,7 +189,7 @@ void testWorkGroupWorkStorageIterator()
     ASSERT_TRUE(container.begin() <= container.end());
     ASSERT_TRUE(container.begin() >= container.end());
 
-    container.template emplace<callable>(&vtable, callable{-1});
+    container.template emplace<callable>(vtable, callable{-1});
 
     ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());
@@ -247,7 +247,7 @@ void testWorkGroupWorkStorageInsertCall()
 
   using callable = TestCallable<double>;
 
-  Vtable_type vtable = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable = RAJA::detail::get_Vtable<
       callable, Vtable_type>(RAJA::seq_work{});
 
   {
@@ -261,7 +261,7 @@ void testWorkGroupWorkStorageInsertCall()
     ASSERT_FALSE(c.move_constructed);
     ASSERT_FALSE(c.moved_from);
 
-    container.template emplace<callable>(&vtable, std::move(c));
+    container.template emplace<callable>(vtable, std::move(c));
 
     ASSERT_FALSE(c.move_constructed);
     ASSERT_TRUE(c.moved_from);
@@ -340,11 +340,11 @@ void testWorkGroupWorkStorageMultiple(
   using callable1 = TestCallable<type1>;
   using callable2 = TestCallable<type2>;
 
-  Vtable_type vtable0 = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable0 = RAJA::detail::get_Vtable<
       callable0, Vtable_type>(RAJA::seq_work{});
-  Vtable_type vtable1 = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable1 = RAJA::detail::get_Vtable<
       callable1, Vtable_type>(RAJA::seq_work{});
-  Vtable_type vtable2 = RAJA::detail::get_Vtable<
+  const Vtable_type* vtable2 = RAJA::detail::get_Vtable<
       callable2, Vtable_type>(RAJA::seq_work{});
 
   {
@@ -359,7 +359,7 @@ void testWorkGroupWorkStorageMultiple(
       vec0.emplace_back(-(type0)i);
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_FALSE(vec0[i].moved_from);
-      container.template emplace<callable0>(&vtable0, std::move(vec0[i]));
+      container.template emplace<callable0>(vtable0, std::move(vec0[i]));
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_TRUE (vec0[i].moved_from);
     }
@@ -371,7 +371,7 @@ void testWorkGroupWorkStorageMultiple(
           { 100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i }));
       ASSERT_FALSE(vec1[i].move_constructed);
       ASSERT_FALSE(vec1[i].moved_from);
-      container.template emplace<callable1>(&vtable1, std::move(vec1[i]));
+      container.template emplace<callable1>(vtable1, std::move(vec1[i]));
       ASSERT_FALSE(vec1[i].move_constructed);
       ASSERT_TRUE (vec1[i].moved_from);
     }
@@ -385,7 +385,7 @@ void testWorkGroupWorkStorageMultiple(
             1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i }));
       ASSERT_FALSE(vec2[i].move_constructed);
       ASSERT_FALSE(vec2[i].moved_from);
-      container.template emplace<callable2>(&vtable2, std::move(vec2[i]));
+      container.template emplace<callable2>(vtable2, std::move(vec2[i]));
       ASSERT_FALSE(vec2[i].move_constructed);
       ASSERT_TRUE (vec2[i].moved_from);
     }

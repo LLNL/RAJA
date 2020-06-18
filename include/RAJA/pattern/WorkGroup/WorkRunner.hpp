@@ -188,10 +188,8 @@ struct WorkRunnerForallOrdered_base
   {
     using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
 
-    static vtable_type s_vtable =
-        get_Vtable<holder, vtable_type>(vtable_exec_policy{});
-
-    storage.template emplace<holder>(&s_vtable,
+    storage.template emplace<holder>(
+        get_Vtable<holder, vtable_type>(vtable_exec_policy{}),
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 

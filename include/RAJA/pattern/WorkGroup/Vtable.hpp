@@ -78,11 +78,11 @@ struct Vtable {
 };
 
 /*!
- * Populate and return a Vtable object appropriate for the given policy
- * such a function overload is in each policy/WorkGroup/Vtable.hpp
+ * Populate and return a pointer to a Vtable object for the given policy.
+ * NOTE: there is a function overload is in each policy/WorkGroup/Vtable.hpp
  */
 // template < typename T, typename Vtable_T >
-// inline Vtable_T get_Vtable(work_policy const&);
+// inline const Vtable_T* get_Vtable(work_policy const&);
 
 }  // namespace detail
 

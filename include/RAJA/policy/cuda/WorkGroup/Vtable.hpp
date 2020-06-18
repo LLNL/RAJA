@@ -101,14 +101,15 @@ inline typename Vtable_T::call_sig get_cached_Vtable_cuda_device_call()
 * call operator is a device function
 */
 template < typename T, typename Vtable_T >
-inline Vtable_T get_Vtable(cuda_work const&)
+inline const Vtable_T* get_Vtable(cuda_work const&)
 {
-  return Vtable_T{
+  static Vtable_T vtable{
         &Vtable_T::template move_construct_destroy<T>,
         get_cached_Vtable_cuda_device_call<T, Vtable_T>(),
         &Vtable_T::template destroy<T>,
         sizeof(T)
       };
+  return &vtable;
 }
 
 }  // namespace detail

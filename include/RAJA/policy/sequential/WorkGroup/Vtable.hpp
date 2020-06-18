@@ -35,7 +35,7 @@ namespace detail
 * Populate and return a Vtable object
 */
 template < typename T, typename Vtable_T >
-inline Vtable_T get_Vtable(seq_work const&)
+inline const Vtable_T* get_Vtable(seq_work const&)
 {
   return get_Vtable<T, Vtable_T>(loop_work{});
 }
