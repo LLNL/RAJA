@@ -70,6 +70,10 @@ raja_add_executable(
   SOURCES raja-teams.cpp)
 
 raja_add_executable(
+  NAME raja-launch
+  SOURCES raja-launch.cpp)
+
+raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 
