@@ -240,7 +240,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     m_vec.emplace_back(create_value<holder>(
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
@@ -258,7 +258,7 @@ private:
   size_t m_storage_size = 0;
 
   template < typename holder, typename ... holder_ctor_args >
-  value_type* create_value(vtable_type* vtable,
+  value_type* create_value(const vtable_type* vtable,
                            holder_ctor_args&&... ctor_args)
   {
     value_type* value_ptr = static_cast<value_type*>(
@@ -490,7 +490,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     m_offsets.emplace_back(create_value<holder>(
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
@@ -549,7 +549,7 @@ private:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  size_t create_value(vtable_type* vtable,
+  size_t create_value(const vtable_type* vtable,
                       holder_ctor_args&&... ctor_args)
   {
     const size_t value_size = sizeof(true_value_type<holder>);
@@ -793,7 +793,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
@@ -853,7 +853,7 @@ private:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void create_value(vtable_type* vtable,
+  void create_value(const vtable_type* vtable,
                     holder_ctor_args&&... ctor_args)
   {
     const size_t value_size = sizeof(true_value_type<holder>);

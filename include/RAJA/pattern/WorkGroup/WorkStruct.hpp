@@ -53,7 +53,7 @@ struct WorkStruct<size, Vtable<CallArgs...>>
 
   template < typename holder, typename ... holder_ctor_args >
   static RAJA_INLINE
-  void construct(void* ptr, vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void construct(void* ptr, const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
     using value_type = GenericWorkStruct<vtable_type>;
@@ -97,7 +97,7 @@ struct WorkStruct<size, Vtable<CallArgs...>>
     value_ptr->call_function_ptr(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
 
-  vtable_type* vtable;
+  const vtable_type* vtable;
   typename vtable_type::call_sig call_function_ptr;
   typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
 };
