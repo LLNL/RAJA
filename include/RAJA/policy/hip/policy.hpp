@@ -159,9 +159,9 @@ struct hip_thread_masked_loop {};
 // or __CUDACC__ here, because these values need to be defined when the compiler makes
 // passes targeting both the cpu and gpu
 //
-#if defined(RAJA_ENABLE_HIP)
+#if defined(__HIP_PLATFORM_HCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(RAJA_ENABLE_CUDA)
+#elif defined(__HIP_PLATFORM_NVCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
 
