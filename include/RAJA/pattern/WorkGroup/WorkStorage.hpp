@@ -65,62 +65,62 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
       : m_ptrptr(ptrptr)
     { }
 
-    reference operator*() const
+    RAJA_HOST_DEVICE reference operator*() const
     {
       return **m_ptrptr;
     }
 
-    pointer operator->() const
+    RAJA_HOST_DEVICE pointer operator->() const
     {
       return &(*(*this));
     }
 
-    reference operator[](difference_type i) const
+    RAJA_HOST_DEVICE reference operator[](difference_type i) const
     {
       const_iterator copy = *this;
       copy += i;
       return *copy;
     }
 
-    const_iterator& operator++()
+    RAJA_HOST_DEVICE const_iterator& operator++()
     {
       ++m_ptrptr;
       return *this;
     }
 
-    const_iterator operator++(int)
+    RAJA_HOST_DEVICE const_iterator operator++(int)
     {
       const_iterator copy = *this;
       ++(*this);
       return copy;
     }
 
-    const_iterator& operator--()
+    RAJA_HOST_DEVICE const_iterator& operator--()
     {
       --m_ptrptr;
       return *this;
     }
 
-    const_iterator operator--(int)
+    RAJA_HOST_DEVICE const_iterator operator--(int)
     {
       const_iterator copy = *this;
       --(*this);
       return copy;
     }
 
-    const_iterator& operator+=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator+=(difference_type n)
     {
       m_ptrptr += n;
       return *this;
     }
 
-    const_iterator& operator-=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator-=(difference_type n)
     {
       m_ptrptr -= n;
       return *this;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -128,7 +128,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         difference_type n, const_iterator const& iter)
     {
       const_iterator copy = iter;
@@ -136,7 +136,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline const_iterator operator-(
+    RAJA_HOST_DEVICE friend inline const_iterator operator-(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -144,43 +144,43 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline difference_type operator-(
+    RAJA_HOST_DEVICE friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr - rhs_iter.m_ptrptr;
     }
 
-    friend inline bool operator==(
+    RAJA_HOST_DEVICE friend inline bool operator==(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr == rhs_iter.m_ptrptr;
     }
 
-    friend inline bool operator!=(
+    RAJA_HOST_DEVICE friend inline bool operator!=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return !(lhs_iter == rhs_iter);
     }
 
-    friend inline bool operator<(
+    RAJA_HOST_DEVICE friend inline bool operator<(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr < rhs_iter.m_ptrptr;
     }
 
-    friend inline bool operator<=(
+    RAJA_HOST_DEVICE friend inline bool operator<=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr <= rhs_iter.m_ptrptr;
     }
 
-    friend inline bool operator>(
+    RAJA_HOST_DEVICE friend inline bool operator>(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr > rhs_iter.m_ptrptr;
     }
 
-    friend inline bool operator>=(
+    RAJA_HOST_DEVICE friend inline bool operator>=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_ptrptr >= rhs_iter.m_ptrptr;
@@ -302,63 +302,63 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
       , m_offset_iter(offset_iter)
     { }
 
-    reference operator*() const
+    RAJA_HOST_DEVICE reference operator*() const
     {
       return *reinterpret_cast<const value_type*>(
           m_array_begin + *m_offset_iter);
     }
 
-    pointer operator->() const
+    RAJA_HOST_DEVICE pointer operator->() const
     {
       return &(*(*this));
     }
 
-    reference operator[](difference_type i) const
+    RAJA_HOST_DEVICE reference operator[](difference_type i) const
     {
       const_iterator copy = *this;
       copy += i;
       return *copy;
     }
 
-    const_iterator& operator++()
+    RAJA_HOST_DEVICE const_iterator& operator++()
     {
       ++m_offset_iter;
       return *this;
     }
 
-    const_iterator operator++(int)
+    RAJA_HOST_DEVICE const_iterator operator++(int)
     {
       const_iterator copy = *this;
       ++(*this);
       return copy;
     }
 
-    const_iterator& operator--()
+    RAJA_HOST_DEVICE const_iterator& operator--()
     {
       --m_offset_iter;
       return *this;
     }
 
-    const_iterator operator--(int)
+    RAJA_HOST_DEVICE const_iterator operator--(int)
     {
       const_iterator copy = *this;
       --(*this);
       return copy;
     }
 
-    const_iterator& operator+=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator+=(difference_type n)
     {
       m_offset_iter += n;
       return *this;
     }
 
-    const_iterator& operator-=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator-=(difference_type n)
     {
       m_offset_iter -= n;
       return *this;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -366,7 +366,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         difference_type n, const_iterator const& iter)
     {
       const_iterator copy = iter;
@@ -374,7 +374,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline const_iterator operator-(
+    RAJA_HOST_DEVICE friend inline const_iterator operator-(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -382,43 +382,43 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
       return copy;
     }
 
-    friend inline difference_type operator-(
+    RAJA_HOST_DEVICE friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter - rhs_iter.m_offset_iter;
     }
 
-    friend inline bool operator==(
+    RAJA_HOST_DEVICE friend inline bool operator==(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter == rhs_iter.m_offset_iter;
     }
 
-    friend inline bool operator!=(
+    RAJA_HOST_DEVICE friend inline bool operator!=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return !(lhs_iter == rhs_iter);
     }
 
-    friend inline bool operator<(
+    RAJA_HOST_DEVICE friend inline bool operator<(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter < rhs_iter.m_offset_iter;
     }
 
-    friend inline bool operator<=(
+    RAJA_HOST_DEVICE friend inline bool operator<=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter <= rhs_iter.m_offset_iter;
     }
 
-    friend inline bool operator>(
+    RAJA_HOST_DEVICE friend inline bool operator>(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter > rhs_iter.m_offset_iter;
     }
 
-    friend inline bool operator>=(
+    RAJA_HOST_DEVICE friend inline bool operator>=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_offset_iter >= rhs_iter.m_offset_iter;
@@ -603,62 +603,62 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
       , m_stride(stride)
     { }
 
-    reference operator*() const
+    RAJA_HOST_DEVICE reference operator*() const
     {
       return *reinterpret_cast<const value_type*>(m_array_pos);
     }
 
-    pointer operator->() const
+    RAJA_HOST_DEVICE pointer operator->() const
     {
       return &(*(*this));
     }
 
-    reference operator[](difference_type i) const
+    RAJA_HOST_DEVICE reference operator[](difference_type i) const
     {
       const_iterator copy = *this;
       copy += i;
       return *copy;
     }
 
-    const_iterator& operator++()
+    RAJA_HOST_DEVICE const_iterator& operator++()
     {
       m_array_pos += m_stride;
       return *this;
     }
 
-    const_iterator operator++(int)
+    RAJA_HOST_DEVICE const_iterator operator++(int)
     {
       const_iterator copy = *this;
       ++(*this);
       return copy;
     }
 
-    const_iterator& operator--()
+    RAJA_HOST_DEVICE const_iterator& operator--()
     {
       m_array_pos -= m_stride;
       return *this;
     }
 
-    const_iterator operator--(int)
+    RAJA_HOST_DEVICE const_iterator operator--(int)
     {
       const_iterator copy = *this;
       --(*this);
       return copy;
     }
 
-    const_iterator& operator+=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator+=(difference_type n)
     {
       m_array_pos += n * m_stride;
       return *this;
     }
 
-    const_iterator& operator-=(difference_type n)
+    RAJA_HOST_DEVICE const_iterator& operator-=(difference_type n)
     {
       m_array_pos -= n * m_stride;
       return *this;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -666,7 +666,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
       return copy;
     }
 
-    friend inline const_iterator operator+(
+    RAJA_HOST_DEVICE friend inline const_iterator operator+(
         difference_type n, const_iterator const& iter)
     {
       const_iterator copy = iter;
@@ -674,7 +674,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
       return copy;
     }
 
-    friend inline const_iterator operator-(
+    RAJA_HOST_DEVICE friend inline const_iterator operator-(
         const_iterator const& iter, difference_type n)
     {
       const_iterator copy = iter;
@@ -682,43 +682,43 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
       return copy;
     }
 
-    friend inline difference_type operator-(
+    RAJA_HOST_DEVICE friend inline difference_type operator-(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return (lhs_iter.m_array_pos - rhs_iter.m_array_pos) / lhs_iter.m_stride;
     }
 
-    friend inline bool operator==(
+    RAJA_HOST_DEVICE friend inline bool operator==(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos == rhs_iter.m_array_pos;
     }
 
-    friend inline bool operator!=(
+    RAJA_HOST_DEVICE friend inline bool operator!=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return !(lhs_iter == rhs_iter);
     }
 
-    friend inline bool operator<(
+    RAJA_HOST_DEVICE friend inline bool operator<(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos < rhs_iter.m_array_pos;
     }
 
-    friend inline bool operator<=(
+    RAJA_HOST_DEVICE friend inline bool operator<=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos <= rhs_iter.m_array_pos;
     }
 
-    friend inline bool operator>(
+    RAJA_HOST_DEVICE friend inline bool operator>(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos > rhs_iter.m_array_pos;
     }
 
-    friend inline bool operator>=(
+    RAJA_HOST_DEVICE friend inline bool operator>=(
         const_iterator const& lhs_iter, const_iterator const& rhs_iter)
     {
       return lhs_iter.m_array_pos >= rhs_iter.m_array_pos;
