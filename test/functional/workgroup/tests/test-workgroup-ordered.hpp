@@ -58,7 +58,7 @@ void testWorkGroupOrdered(IndexType begin, IndexType end)
   working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
 
   for (IndexType i = begin; i < end; ++i) {
-    test_array[ i ] = i + IndexType(5);
+    test_array[ i ] = IndexType(i) + IndexType(5);
   }
 
   RAJA::WorkPool<
@@ -71,7 +71,11 @@ void testWorkGroupOrdered(IndexType begin, IndexType end)
 
   pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
       [=] RAJA_HOST_DEVICE (IndexType i) {
-    working_array[i] += i + IndexType(5);
+    working_array[i] += i;
+  });
+  pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      [=] RAJA_HOST_DEVICE (IndexType i) {
+    working_array[i] += IndexType(5);
   });
 
   auto group = pool.instantiate();
@@ -202,21 +206,21 @@ void testWorkGroupOrderedMultiple(
   for (IndexType j = IndexType(0); j < num1; j++) {
     type1* test_ptr1 = test_array1 + N * j;
     for (IndexType i = begin; i < end; ++i) {
-      test_ptr1[ i ] = i + type1(5);
+      test_ptr1[ i ] = type1(i) + type1(5);
     }
   }
 
   for (IndexType j = IndexType(0); j < num2; j++) {
     type2* test_ptr2 = test_array2 + N * j;
     for (IndexType i = begin; i < end; ++i) {
-      test_ptr2[ i ] = i + type2(7);
+      test_ptr2[ i ] = type2(i) + type2(7);
     }
   }
 
   for (IndexType j = IndexType(0); j < num3; j++) {
     type3* test_ptr3 = test_array3 + N * j;
     for (IndexType i = begin; i < end; ++i) {
-      test_ptr3[ i ] = i + type3(11);
+      test_ptr3[ i ] = type3(i) + type3(11);
     }
   }
 
@@ -233,7 +237,11 @@ void testWorkGroupOrderedMultiple(
     type1* working_ptr1 = working_array1 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr1[i] += i + type1(5);
+      working_ptr1[i] += type1(i);
+    });
+    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+        [=] RAJA_HOST_DEVICE (IndexType i) {
+      working_ptr1[i] += type1(5);
     });
   }
 
@@ -241,7 +249,11 @@ void testWorkGroupOrderedMultiple(
     type2* working_ptr2 = working_array2 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr2[i] += i + type2(7);
+      working_ptr2[i] += type2(i);
+    });
+    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+        [=] RAJA_HOST_DEVICE (IndexType i) {
+      working_ptr2[i] += type2(7);
     });
   }
 
@@ -249,7 +261,11 @@ void testWorkGroupOrderedMultiple(
     type3* working_ptr3 = working_array3 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr3[i] += i + type3(11);
+      working_ptr3[i] += type3(i);
+    });
+    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+        [=] RAJA_HOST_DEVICE (IndexType i) {
+      working_ptr3[i] += type3(11);
     });
   }
 
