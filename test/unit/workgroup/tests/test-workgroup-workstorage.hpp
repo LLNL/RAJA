@@ -425,13 +425,14 @@ void testWorkGroupWorkStorageMultiple(
       }
 
       for (size_t i = 0; i < num1; ++i) {
-        type1 val({ -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 });
+        type1 val = type1(
+            { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 });
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type1 expected({
-            100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i });
+        type1 expected = type1(
+            { 100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i });
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
@@ -440,16 +441,18 @@ void testWorkGroupWorkStorageMultiple(
       }
 
       for (size_t i = 0; i < num2; ++i) {
-        type2 val({ -1l, -1l, -1l, -1l, -1l,
-                    -1l, -1l, -1l, -1l, -1l,
-                    -1l, -1l, -1l, -1l });
+        type2 val = type2(
+            { -1l, -1l, -1l, -1l, -1l,
+              -1l, -1l, -1l, -1l, -1l,
+              -1l, -1l, -1l, -1l });
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type2 expected({ 1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
-                         1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
-                         1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i });
+        type2 expected = type2(
+            { 1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
+              1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
+              1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i });
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
