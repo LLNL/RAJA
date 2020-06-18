@@ -62,7 +62,6 @@ using SequentialOrderPolicyList =
     camp::list<
                 RAJA::ordered,
                 RAJA::reverse_ordered
-                //, RAJA::unordered
               >;
 using SequentialStoragePolicyList =
     camp::list<
@@ -107,7 +106,13 @@ using CudaExecPolicyList =
                 RAJA::cuda_work
               >;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
-using CudaOrderPolicyList   = SequentialOrderPolicyList;
+using CudaOrderPolicyList   =
+    camp::list<
+                RAJA::ordered,
+                RAJA::reverse_ordered,
+                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average<256>,
+                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average<1024>
+              >;
 using CudaStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
