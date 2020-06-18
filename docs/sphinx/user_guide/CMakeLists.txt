@@ -23,5 +23,5 @@ add_custom_target(raja-userguide-sphinx
 install(DIRECTORY "${SPHINX_HTML_DIR}"
         DESTINATION "docs/user_guide/sphinx/" OPTIONAL)
 
-add_dependencies(docs
+add_dependencies(raja-docs
   raja-userguide-sphinx)
