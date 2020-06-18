@@ -12,7 +12,7 @@
 #ifndef __TEST_WORKGROUP_CONSTRUCTOR__
 #define __TEST_WORKGROUP_CONSTRUCTOR__
 
-#include "../test-workgroup.hpp"
+#include "RAJA_test-workgroup.hpp"
 
 
 template <typename T>

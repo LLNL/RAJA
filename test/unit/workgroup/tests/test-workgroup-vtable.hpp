@@ -12,7 +12,7 @@
 #ifndef __TEST_WORKGROUP_VTABLE__
 #define __TEST_WORKGROUP_VTABLE__
 
-#include "../test-workgroup.hpp"
+#include "RAJA_test-workgroup.hpp"
 
 
 template <typename T>

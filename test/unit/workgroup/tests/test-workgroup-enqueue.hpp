@@ -12,7 +12,7 @@
 #ifndef __TEST_WORKGROUP_ENQUEUE__
 #define __TEST_WORKGROUP_ENQUEUE__
 
-#include "../test-workgroup.hpp"
+#include "RAJA_test-workgroup.hpp"
 
 #include <random>
 
