@@ -43,7 +43,11 @@ namespace detail
 template <typename LoopBody, typename ... Args>
 struct HoldBodyArgs_base
 {
-  template < typename body_in >
+  // NOTE: This constructor is disabled when body_in is not LoopBody
+  // to avoid it conflicting with the copy and move constructors
+  template < typename body_in,
+      typename = typename std::enable_if<
+        std::is_same<LoopBody, camp::decay<body_in>>::value>::type >
   HoldBodyArgs_base(body_in&& body, Args... args)
     : m_body(std::forward<body_in>(body))
     , m_arg_tuple(std::forward<Args>(args)...)
