@@ -140,8 +140,9 @@ template <typename EXEC_POLICY_T,
           typename ... Args>
 struct WorkRunner;
 
+
 /*!
- * Runs work in a storage container in order using forall
+ * Base class describing storage for ordered runners using forall
  */
 template <typename FORALL_EXEC_POLICY,
           typename EXEC_POLICY_T,
@@ -149,7 +150,7 @@ template <typename FORALL_EXEC_POLICY,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
-struct WorkRunnerForallOrdered
+struct WorkRunnerForallOrdered_base
 {
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
@@ -159,15 +160,15 @@ struct WorkRunnerForallOrdered
   using forall_exec_policy = FORALL_EXEC_POLICY;
   using vtable_type = Vtable<Args...>;
 
-  WorkRunnerForallOrdered() = default;
+  WorkRunnerForallOrdered_base() = default;
 
-  WorkRunnerForallOrdered(WorkRunnerForallOrdered const&) = delete;
-  WorkRunnerForallOrdered& operator=(WorkRunnerForallOrdered const&) = delete;
+  WorkRunnerForallOrdered_base(WorkRunnerForallOrdered_base const&) = delete;
+  WorkRunnerForallOrdered_base& operator=(WorkRunnerForallOrdered_base const&) = delete;
 
-  WorkRunnerForallOrdered(WorkRunnerForallOrdered &&) = default;
-  WorkRunnerForallOrdered& operator=(WorkRunnerForallOrdered &&) = default;
+  WorkRunnerForallOrdered_base(WorkRunnerForallOrdered_base &&) = default;
+  WorkRunnerForallOrdered_base& operator=(WorkRunnerForallOrdered_base &&) = default;
 
-  // The type  that will hold hte segment and loop body in work storage
+  // The type  that will hold the segment and loop body in work storage
   template < typename segment_type, typename loop_type >
   using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
                                  index_type, Args...>;
@@ -192,13 +193,41 @@ struct WorkRunnerForallOrdered
 
   // no extra storage required here
   using per_run_storage = int;
+};
+
+/*!
+ * Runs work in a storage container in order using forall
+ */
+template <typename FORALL_EXEC_POLICY,
+          typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunnerForallOrdered
+    : WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>
+{
+  using base = WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
+  using base::base;
 
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, Args... args) const
+  typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
-    per_run_storage run_storage{};
+    typename base::per_run_storage run_storage{};
 
     auto end = storage.end();
     for (auto iter = storage.begin(); iter != end; ++iter) {
@@ -219,55 +248,29 @@ template <typename FORALL_EXEC_POLICY,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunnerForallReverse
+    : WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>
 {
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
-  using Allocator = ALLOCATOR_T;
-  using index_type = INDEX_T;
-
-  using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<Args...>;
-
-  WorkRunnerForallReverse() = default;
-
-  WorkRunnerForallReverse(WorkRunnerForallReverse const&) = delete;
-  WorkRunnerForallReverse& operator=(WorkRunnerForallReverse const&) = delete;
-
-  WorkRunnerForallReverse(WorkRunnerForallReverse &&) = default;
-  WorkRunnerForallReverse& operator=(WorkRunnerForallReverse &&) = default;
-
-  // The type  that will hold hte segment and loop body in work storage
-  template < typename segment_type, typename loop_type >
-  using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
-                                 index_type, Args...>;
-
-  // The policy indicating where the call function is invoked
-  // in this case the values are called on the host in a loop
-  using vtable_exec_policy = RAJA::loop_work;
-
-  // runner interfaces with storage to enqueue so the runner can get
-  // information from the segment and loop at enqueue time
-  template < typename WorkContainer, typename segment_T, typename loop_T >
-  inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
-  {
-    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
-
-    static vtable_type s_vtable =
-        get_Vtable<holder, vtable_type>(vtable_exec_policy{});
-
-    storage.template emplace<holder>(&s_vtable,
-        std::forward<segment_T>(seg), std::forward<loop_T>(loop));
-  }
-
-  // no extra storage required here
-  using per_run_storage = int;
+  using base = WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
+  using base::base;
 
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, Args... args) const
+  typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
-    per_run_storage run_storage{};
+    typename base::per_run_storage run_storage{};
 
     auto begin = storage.begin();
     for (auto iter = storage.end(); iter != begin; --iter) {
