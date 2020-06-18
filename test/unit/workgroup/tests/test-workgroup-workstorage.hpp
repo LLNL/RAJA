@@ -356,7 +356,7 @@ void testWorkGroupWorkStorageMultiple(
     std::vector<callable0> vec0;
     vec0.reserve(num0);
     for (size_t i = 0; i < num0; ++i) {
-      vec0.emplace_back((type0)-i);
+      vec0.emplace_back(-(type0)i);
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_FALSE(vec0[i].moved_from);
       container.template emplace<callable0>(&vtable0, std::move(vec0[i]));
@@ -416,7 +416,7 @@ void testWorkGroupWorkStorageMultiple(
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type0 expected = -i;
+        type0 expected = -(type0)i;
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
