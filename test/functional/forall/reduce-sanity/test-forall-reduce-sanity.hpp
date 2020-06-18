@@ -80,7 +80,7 @@ using CudaForallReduceSanityTypes =
 // Cartesian product of types for HIP tests
 //
 using HipForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReduceSanityDataTypeList,
+  Test< camp::cartesian_product<ReductionDataTypeList,
                                 HipResourceList,
                                 HipForallExecPols,
                                 HipReducePols>>::Types;
