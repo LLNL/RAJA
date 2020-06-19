@@ -35,18 +35,19 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <typename ALLOCATOR_T,
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::hip_work,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallOrdered<
-        RAJA::hip_exec_async<256>,
-        RAJA::hip_work,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
@@ -57,18 +58,19 @@ struct WorkRunner<
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <typename ALLOCATOR_T,
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::hip_work,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallReverse<
-        RAJA::hip_exec_async<256>,
-        RAJA::hip_work,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,

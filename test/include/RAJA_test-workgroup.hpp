@@ -103,15 +103,15 @@ using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_CUDA)
 using CudaExecPolicyList =
     camp::list<
-                RAJA::cuda_work
+                RAJA::cuda_work<256>,
+                RAJA::cuda_work<1024>
               >;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
 using CudaOrderPolicyList   =
     camp::list<
                 RAJA::ordered,
                 RAJA::reverse_ordered,
-                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average<256>,
-                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average<1024>
+                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average
               >;
 using CudaStoragePolicyList = SequentialStoragePolicyList;
 #endif
@@ -119,7 +119,8 @@ using CudaStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_HIP)
 using HipExecPolicyList =
     camp::list<
-                RAJA::hip_work
+                RAJA::hip_work<256>,
+                RAJA::hip_work<1024>
               >;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
 using HipOrderPolicyList   = SequentialOrderPolicyList;

@@ -867,8 +867,8 @@ int main(int argc, char **argv)
     using forall_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
-                                 RAJA::cuda_work,
-                                 RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average_async<CUDA_WORKGROUP_BLOCK_SIZE>,
+                                 RAJA::cuda_work_async<CUDA_WORKGROUP_BLOCK_SIZE>,
+                                 RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
                                  RAJA::constant_stride_array_of_objects >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
@@ -1163,8 +1163,8 @@ int main(int argc, char **argv)
     using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
-                                 RAJA::hip_work,
-                                 RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average_async<HIP_WORKGROUP_BLOCK_SIZE>,
+                                 RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
+                                 RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
                                  RAJA::constant_stride_array_of_objects >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,

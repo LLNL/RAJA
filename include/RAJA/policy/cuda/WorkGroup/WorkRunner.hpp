@@ -35,18 +35,19 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <typename ALLOCATOR_T,
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::cuda_work,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallOrdered<
-        RAJA::cuda_exec_async<256>,
-        RAJA::cuda_work,
+        RAJA::cuda_exec_async<BLOCK_SIZE>,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
@@ -57,18 +58,19 @@ struct WorkRunner<
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <typename ALLOCATOR_T,
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::cuda_work,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallReverse<
-        RAJA::cuda_exec_async<256>,
-        RAJA::cuda_work,
+        RAJA::cuda_exec_async<BLOCK_SIZE>,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
@@ -135,14 +137,14 @@ template <size_t BLOCK_SIZE, bool Async,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::cuda_work,
-        RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average<BLOCK_SIZE, Async>,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
+        RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
-  using exec_policy = RAJA::cuda_work;
-  using order_policy = RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average<BLOCK_SIZE, Async>;
+  using exec_policy = RAJA::cuda_work<BLOCK_SIZE, Async>;
+  using order_policy = RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
 

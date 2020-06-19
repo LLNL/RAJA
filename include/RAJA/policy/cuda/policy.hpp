@@ -90,9 +90,9 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
 ///
 /// WorkGroup execution policies
 ///
-struct cuda_work { };
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_work = cuda_exec<BLOCK_SIZE, Async>;
 
-template < size_t BLOCK_SIZE, bool Async = false >
 struct unordered_cuda_loop_y_block_iter_x_threadblock_average { };
 
 ///
@@ -193,11 +193,10 @@ using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
 using policy::cuda::cuda_work;
 
-using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
-
 template <size_t BLOCK_SIZE>
-using unordered_cuda_loop_y_block_iter_x_threadblock_average_async =
-    policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average<BLOCK_SIZE, true>;
+using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
+
+using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;

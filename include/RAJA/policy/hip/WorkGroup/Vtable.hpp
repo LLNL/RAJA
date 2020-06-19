@@ -81,8 +81,8 @@ inline typename Vtable_T::call_sig get_cached_Vtable_hip_device_call()
 * Populate and return a Vtable object where the
 * call operator is a device function
 */
-template < typename T, typename Vtable_T >
-inline const Vtable_T* get_Vtable(hip_work const&)
+template < typename T, typename Vtable_T, size_t BLOCK_SIZE, bool Async >
+inline const Vtable_T* get_Vtable(hip_work<BLOCK_SIZE, Async> const&)
 {
   static Vtable_T vtable{
         &Vtable_T::move_construct_destroy<T>,
