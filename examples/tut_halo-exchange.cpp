@@ -1164,7 +1164,11 @@ int main(int argc, char **argv)
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+#else
+                                 RAJA::ordered,
+#endif
                                  RAJA::constant_stride_array_of_objects >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
