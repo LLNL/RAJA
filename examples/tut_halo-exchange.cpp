@@ -90,7 +90,7 @@ struct pinned_allocator
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaMallocHost((void **)&ptr, size));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipMallocHost((void **)&ptr, size));
+    hipErrchk(hipHostMalloc((void **)&ptr, size));
 #endif
     return ptr;
   }
@@ -100,7 +100,7 @@ struct pinned_allocator
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFreeHost(ptr));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipFreeHost(ptr));
+    hipErrchk(hipHostFree(ptr));
 #endif
   }
 };
