@@ -76,7 +76,8 @@ struct memory_manager_allocator
 
   void deallocate(void* ptr)
   {
-    memoryManager::deallocate(ptr);
+    char* ptrc = static_cast<char*>(ptr);
+    memoryManager::deallocate(ptrc);
   }
 };
 
