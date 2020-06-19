@@ -124,13 +124,15 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
       RAJA::detail::get_Vtable<TestCallable, Vtable_type>(ExecPolicy{});
 
   TestCallable* old_obj = host_res.allocate<TestCallable>(1);
-  TestCallable* new_obj = work_res.allocate<TestCallable>(1);
+  TestCallable* new_obj = host_res.allocate<TestCallable>(1);
+  TestCallable* wrk_obj = work_res.allocate<TestCallable>(1);
 
   IndexType* chckCall = host_res.allocate<IndexType>(3);
-  IndexType* testCall = work_res.allocate<IndexType>(3);
+  IndexType* testCall = host_res.allocate<IndexType>(3);
+  IndexType* workCall = work_res.allocate<IndexType>(3);
 
   IndexType* chckDtor = host_res.allocate<IndexType>(3);
-  IndexType* testDtor = work_res.allocate<IndexType>(3);
+  IndexType* testDtor = host_res.allocate<IndexType>(3);
 
 
   chckCall[0] = (IndexType)5;
@@ -141,6 +143,13 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   testCall[1] = (IndexType)5;
   testCall[2] = (IndexType)5;
 
+  work_res.memcpy(workCall, testCall, sizeof(IndexType) * 3);
+
+  testCall[0] = (IndexType)0;
+  testCall[1] = (IndexType)0;
+  testCall[2] = (IndexType)0;
+
+
   chckDtor[0] = (IndexType)15;
   chckDtor[1] = (IndexType)17;
   chckDtor[2] = (IndexType)15;
@@ -150,12 +159,16 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   testDtor[2] = (IndexType)15;
 
 
-  new(old_obj) TestCallable(testCall, chckCall[1], testDtor+1, chckDtor[1]);
+  new(old_obj) TestCallable(workCall, chckCall[1], testDtor+1, chckDtor[1]);
 
   ASSERT_FALSE(old_obj->move_constructed);
   ASSERT_FALSE(old_obj->moved_from);
 
+
   vtable->move_construct_destroy_function_ptr(new_obj, old_obj);
+
+  ASSERT_TRUE(new_obj->move_constructed);
+  ASSERT_FALSE(new_obj->moved_from);
 
   ASSERT_EQ(testDtor[0], chckDtor[0]);
   ASSERT_EQ(testDtor[1], chckDtor[1]);
@@ -165,17 +178,19 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   testDtor[1] = (IndexType)15;
   testDtor[2] = (IndexType)15;
 
-  ASSERT_TRUE(new_obj->move_constructed);
-  ASSERT_FALSE(new_obj->moved_from);
 
+  work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
   // move a value onto device and fiddle
   call_dispatcher<ForOnePol, const void*, IndexType, Args...>(
-      vtable->call_function_ptr, new_obj, (IndexType)1, Args{}...);
+      vtable->call_function_ptr, wrk_obj, (IndexType)1, Args{}...);
+
+  work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
 
   ASSERT_EQ(testCall[0], chckCall[0]);
   ASSERT_EQ(testCall[1], chckCall[1]);
   ASSERT_EQ(testCall[2], chckCall[2]);
+
 
   vtable->destroy_function_ptr(new_obj);
 
@@ -185,11 +200,13 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
 
 
   host_res.deallocate( old_obj );
-  work_res.deallocate( new_obj );
+  host_res.deallocate( new_obj );
+  work_res.deallocate( wrk_obj );
   host_res.deallocate( chckCall );
-  work_res.deallocate( testCall );
+  host_res.deallocate( testCall );
+  work_res.deallocate( workCall );
   host_res.deallocate( chckDtor );
-  work_res.deallocate( testDtor );
+  host_res.deallocate( testDtor );
 }
 
 TYPED_TEST_P(WorkGroupBasicVtableUnitTest, BasicWorkGroupVtable)
