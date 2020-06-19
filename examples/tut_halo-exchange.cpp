@@ -1031,7 +1031,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
 
-    using forall_policy = RAJA::hip_exec_async<CUDA_BLOCK_SIZE>;
+    using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -1160,7 +1160,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
 
-    using forall_policy = RAJA::hip_exec_async<CUDA_BLOCK_SIZE>;
+    using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::hip_work,
