@@ -64,6 +64,14 @@ using xargs = camp::list<Args...>;
  *
  * \brief  WorkPool class template.
  *
+ * The WorkPool object is the first member of the workgroup constructs. It
+ * takes loops via enqueue and stores the loops so the loops can be run later.
+ * The WorkPool creates a WorkGroup object with the enqueued collection of
+ * loops via instantiate. The WorkPool can then be reused to enqueue more loops.
+ * The WorkPool attempts to optimize storage usage by remembering the max number
+ * of loops and the max storage size previously used and automatically reserving
+ * that amount when it is reused.
+ *
  * Usage example:
  *
  * \verbatim
@@ -93,6 +101,13 @@ struct WorkPool;
  *
  * \brief  WorkGroup class template. Owns loops from an instantiated WorkPool.
  *
+ * The WorkGroup object is the second member of the workgroup constructs. It
+ * is created by a WorkPool and stores a collection of loops so they can be
+ * run. When the WorkGroup is run it creates a WorkSite object with any per run
+ * data. Because the WorkGroup owns a collection of loops it must not be
+ * destroyed before that collection of loops has finished running. The
+ * WorkGroup can be used to run its collection of loops multiple times.
+ *
  * Usage example:
  *
  * \verbatim
@@ -114,7 +129,14 @@ struct WorkGroup;
 /*!
  ******************************************************************************
  *
- * \brief  WorkSite class template. Owns per run objects from a single run of a WorkGroup.
+ * \brief  WorkSite class template. Owns per run objects from a single run of
+ *         a WorkGroup.
+ *
+ * The WorkSite object is the third member of the workgroup constructs. It is
+ * created by a WorkGroup when calling run and stores any data needed for that
+ * run of that WorkGroup. Because the WorkSite owns data used for the running
+ * of a collection of loops it must not be destroyed before that collection
+ * of loops has finished running.
  *
  * Usage example:
  *
