@@ -172,6 +172,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+  std::cout << "General wrap::Forall\n";
 
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
@@ -187,12 +188,35 @@ forall(RAJA::resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBod
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+  std::cout << "General Resource wrap::Forall\n";
 
   return forall_impl(r,
+  //forall_impl(
                      std::forward<ExecutionPolicy>(p),
                      std::forward<Container>(c),
                      body);
+  //return r.get_event();
 }
+template <typename ExecutionPolicy, typename Container, typename LoopBody>
+RAJA_INLINE concepts::enable_if_t<
+    RAJA::resources::Event,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall_Iset(RAJA::resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+{
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+  std::cout << "IndexSet Resource wrap::Forall\n";
+
+  //return forall_impl(r,
+  forall_impl(
+                     std::forward<ExecutionPolicy>(p),
+                     std::forward<Container>(c),
+                     body);
+  return r.get_event();
+}
+
 
 /*!
  ******************************************************************************
@@ -264,8 +288,27 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
 {
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
+  std::cout << "IndexSet Forall\n";
 
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
+    iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
+  });
+}
+template <typename SegmentIterPolicy,
+          typename SegmentExecPolicy,
+          typename LoopBody,
+          typename... SegmentTypes>
+RAJA::resources::Event forall(RAJA::resources::Resource &r,
+                              ExecPolicy<SegmentIterPolicy,
+                              SegmentExecPolicy>,
+                              const TypedIndexSet<SegmentTypes...>& iset,
+                              LoopBody loop_body)
+{
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+  std::cout << "IndexSet Resource Forall\n";
+
+  return wrap::forall_Iset(r, SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
   });
 }

@@ -61,7 +61,7 @@ void ForallListSegmentTest(INDEX_TYPE N)
     test_array[ RAJA::stripIndexType(idx_array[i]) ] = idx_array[i];
   }
 
-  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  camp::resources::Event e = RAJA::forall<EXEC_POLICY>(working_res, lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx)] = idx;
   }); 
 

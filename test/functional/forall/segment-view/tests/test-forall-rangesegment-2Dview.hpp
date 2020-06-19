@@ -39,7 +39,7 @@ void ForallRangeSegment2DViewTest(INDEX_TYPE N)
   
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     const INDEX_TYPE row = idx / N;
     const INDEX_TYPE col = idx % N;
     work_view(row, col) = row * N + col;
@@ -94,7 +94,7 @@ void ForallRangeSegment2DOffsetViewTest(INDEX_TYPE N)
   
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     const INDEX_TYPE row = idx / N;
     const INDEX_TYPE col = idx % N;
     work_view(row, col) = idx;  

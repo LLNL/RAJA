@@ -11,6 +11,7 @@
 #include "test-forall-segment.hpp"
 
 #include <numeric>
+#include <iostream>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
@@ -33,7 +34,7 @@ void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
 
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
   });
 

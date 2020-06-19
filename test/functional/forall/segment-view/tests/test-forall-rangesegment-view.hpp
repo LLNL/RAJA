@@ -38,7 +38,7 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::Layout<1> layout(N);
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     work_view( idx - rbegin ) = idx;
   }); 
 
@@ -84,7 +84,7 @@ void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last,
                       RAJA::make_offset_layout<1, INDEX_TYPE>({{f_offset}},
                                                               {{l_offset}}));
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     work_view( idx ) = idx;
   });
 

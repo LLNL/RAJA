@@ -352,6 +352,22 @@ public:
     Index_type offset = getSegmentOffsets()[segid];
     body(*data[offset], std::forward<ARGS>(args)...);
   }
+  RAJA_SUPPRESS_HD_WARN
+  template <typename BODY, typename... ARGS>
+  RAJA_HOST_DEVICE void segmentCall(camp::resources::Resource &r,
+                                    size_t segid,
+                                    BODY &&body,
+                                    ARGS &&... args) const
+  {
+    if (getSegmentTypes()[segid] != T0_TypeId) {
+      PARENT::segmentCall(segid,
+                          std::forward<BODY>(body),
+                          std::forward<ARGS>(args)...);
+      return;
+    }
+    Index_type offset = getSegmentOffsets()[segid];
+    body(*data[offset], std::forward<ARGS>(r, args)...);
+  }
 
 protected:
   //! Internal logic to add a new segment -- catch invalid type insertion

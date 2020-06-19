@@ -175,6 +175,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  std::cout<<"cuda forall_impl basic\n";
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
@@ -258,6 +259,7 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                              const TypedIndexSet<SegmentTypes...>& iset,
                              LoopBody&& loop_body)
 {
+  std::cout<<"Cuda forall_impl policy: segit\n";
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     iset.segmentCall(isi,
@@ -267,6 +269,28 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
   }  // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize();
+}
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE RAJA::resources::Event forall_impl(camp::resources::Resource &r,
+                                               ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                                               const TypedIndexSet<SegmentTypes...>& iset,
+                                               LoopBody&& loop_body)
+{
+  std::cout<<"Cuda forall_impl policy: RESOURCE segit\n";
+  int num_seg = iset.getNumSegments();
+  for (int isi = 0; isi < num_seg; ++isi) {
+    iset.segmentCall(r,
+                     isi,
+                     detail::CallForall(),
+                     cuda_exec<BlockSize, true>(),
+                     loop_body);
+  }  // iterate over segments of index set
+
+  if (!Async) RAJA::cuda::synchronize();
+  return r.get_event();
 }
 
 }  // namespace cuda
