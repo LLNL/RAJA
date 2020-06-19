@@ -112,7 +112,9 @@ struct SimpleVector
         m_begin[i].~T();
       }
 
-      m_aloc.deallocate(m_begin);
+      if (m_begin != nullptr) {
+        m_aloc.deallocate(m_begin);
+      }
 
       m_begin = new_begin;
       m_end   = new_end  ;
@@ -143,7 +145,9 @@ struct SimpleVector
       m_begin[i].~T();
     }
 
-    m_aloc.deallocate(m_begin);
+    if (m_begin != nullptr) {
+      m_aloc.deallocate(m_begin);
+    }
 
     m_begin = nullptr;
     m_end   = nullptr;

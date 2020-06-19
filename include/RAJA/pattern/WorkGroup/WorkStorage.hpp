@@ -540,7 +540,9 @@ private:
         value_type::move_destroy(new_value, old_value);
       }
 
-      m_offsets.get_allocator().deallocate(m_array_begin);
+      if (m_array_begin != nullptr) {
+        m_offsets.get_allocator().deallocate(m_array_begin);
+      }
 
       m_array_begin = new_array_begin;
       m_array_end   = new_array_end  ;
@@ -843,7 +845,9 @@ private:
         value_type::move_destroy(new_value, old_value);
       }
 
-      m_aloc.deallocate(m_array_begin);
+      if (m_array_begin != nullptr) {
+        m_aloc.deallocate(m_array_begin);
+      }
 
       m_stride      = new_stride     ;
       m_array_begin = new_array_begin;
