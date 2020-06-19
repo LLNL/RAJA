@@ -329,7 +329,7 @@ struct WorkRunner<
   }
 
 private:
-  mutable index_type m_total_iterations = 0;
+  index_type m_total_iterations = 0;
 };
 
 
