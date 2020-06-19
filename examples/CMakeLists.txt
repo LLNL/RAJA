@@ -36,7 +36,7 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
-  
+
 raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
@@ -62,6 +62,10 @@ raja_add_executable(
   SOURCES tut_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
+  NAME tut_halo-exchange
+  SOURCES tut_halo-exchange.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 
@@ -76,7 +80,7 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
-  
+
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
