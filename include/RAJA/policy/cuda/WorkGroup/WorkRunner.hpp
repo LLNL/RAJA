@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 #include "RAJA/pattern/WorkGroup/WorkRunner.hpp"
 
@@ -52,7 +53,35 @@ struct WorkRunner<
         ALLOCATOR_T,
         INDEX_T,
         Args...>
-{ };
+{
+  using base = WorkRunnerForallOrdered<
+        RAJA::cuda_exec_async<BLOCK_SIZE>,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
+        RAJA::ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>;
+  using base::base;
+  using IndexType = INDEX_T;
+  using per_run_storage = typename base::per_run_storage;
+
+  template < typename WorkContainer >
+  per_run_storage run(WorkContainer const& storage, Args... args) const
+  {
+    per_run_storage run_storage =
+        base::run(storage, std::forward<Args>(args)...);
+
+    IndexType num_loops = std::distance(std::begin(storage), std::end(storage));
+
+    // Only synchronize if we had something to iterate over
+    if (num_loops > 0 && BLOCK_SIZE > 0) {
+      cudaStream_t stream = 0; // TODO: coordinate with base to use same stream
+      if (!Async) { RAJA::cuda::synchronize(stream); }
+    }
+
+    return run_storage;
+  }
+};
 
 /*!
  * Runs work in a storage container in reverse order
@@ -75,7 +104,35 @@ struct WorkRunner<
         ALLOCATOR_T,
         INDEX_T,
         Args...>
-{ };
+{
+  using base = WorkRunnerForallReverse<
+        RAJA::cuda_exec_async<BLOCK_SIZE>,
+        RAJA::cuda_work<BLOCK_SIZE, Async>,
+        RAJA::reverse_ordered,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>;
+  using base::base;
+  using IndexType = INDEX_T;
+  using per_run_storage = typename base::per_run_storage;
+
+  template < typename WorkContainer >
+  per_run_storage run(WorkContainer const& storage, Args... args) const
+  {
+    per_run_storage run_storage =
+        base::run(storage, std::forward<Args>(args)...);
+
+    IndexType num_loops = std::distance(std::begin(storage), std::end(storage));
+
+    // Only synchronize if we had something to iterate over
+    if (num_loops > 0 && BLOCK_SIZE > 0) {
+      cudaStream_t stream = 0; // TODO: coordinate with base to use same stream
+      if (!Async) { RAJA::cuda::synchronize(stream); }
+    }
+
+    return run_storage;
+  }
+};
 
 
 /*!
