@@ -5,36 +5,71 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-segment-seq
-  SOURCES test-forall-segment-seq.cpp)
+#
+# Function that generates test file and build target for each
+# segment type and each backend
+#
+function( buildforallsegmenttest segtype backend )
+  configure_file( test-forall-segment.cpp.in 
+                  test-forall-${segtype}-${backend}.cpp )
+  raja_add_test( NAME test-forall-${segtype}-${backend}
+                 SOURCES test-forall-${segtype}-${backend}.cpp )
+
+  target_include_directories(test-forall-${segtype}-${backend}.exe PRIVATE 
+                             ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endfunction()
+
+#
+# Variable holding segment types
+#
+set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
+
+
+#
+# Generate tests for each enabled RAJA back-end
+#
+set( BACKEND Sequential )
+foreach( SEGTYPE ${SEGTYPES} )
+  buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+endforeach()
+unset( BACKEND )
 
 if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-openmp
-    SOURCES test-forall-segment-openmp.cpp)
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-openmp-target
-    SOURCES test-forall-segment-openmp-target.cpp)
+  set( BACKEND OpenMP )
+  foreach( SEGTYPE ${SEGTYPES} )
+    buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+  endforeach()
+  unset( BACKEND )
 endif()
 
 if(RAJA_ENABLE_TBB)
-  raja_add_test(
-    NAME test-forall-segment-tbb
-    SOURCES test-forall-segment-tbb.cpp)
+  set( BACKEND TBB )
+  foreach( SEGTYPE ${SEGTYPES} )
+    buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+  endforeach()
+  unset( BACKEND )
 endif()
 
 if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-segment-cuda
-    SOURCES test-forall-segment-cuda.cpp)
+  set( BACKEND Cuda )
+  foreach( SEGTYPE ${SEGTYPES} )
+    buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+  endforeach()
+  unset( BACKEND )
 endif()
 
 if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-segment-hip
-    SOURCES test-forall-segment-hip.cpp)
+  set( BACKEND Hip )
+  foreach( SEGTYPE ${SEGTYPES} )
+    buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+  endforeach()
+  unset( BACKEND )
+endif()
+
+if(RAJA_ENABLE_TARGET_OPENMP)
+  set( BACKEND OpenMPTarget )
+  foreach( SEGTYPE ${SEGTYPES} )
+    buildforallsegmenttest( ${SEGTYPE} ${BACKEND} )
+  endforeach()
+  unset( BACKEND )
 endif()

@@ -1,0 +1,75 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+
+
+//
+// headers for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-forall-rangesegment.hpp"
+#include "test-forall-rangestridesegment.hpp"
+#include "test-forall-listsegment.hpp"
+
+
+//
+// Cartesian products of types for supported back-ends
+//
+
+using SequentialForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                HostResourceList,
+                                SequentialForallExecPols>>::Types;
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                HostResourceList,
+                                OpenMPForallExecPols> >::Types;
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                HostResourceList,
+                                TBBForallExecPols> >::Types;
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                CudaResourceList,
+                                CudaForallExecPols> >::Types;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                HipResourceList,
+                                HipForallExecPols> >::Types;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetForallSegmentTypes =
+  Test< camp::cartesian_product<StrongIdxTypeList,
+                                OpenMPTargetResourceList,
+                                OpenMPTargetForallExecPols> >::Types;
+#endif
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               Forall@SEGTYPE@Test,
+                               @BACKEND@ForallSegmentTypes);

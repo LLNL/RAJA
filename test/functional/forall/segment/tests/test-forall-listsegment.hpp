@@ -16,7 +16,7 @@
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallListSegmentTest(INDEX_TYPE N)
+void ForallListSegmentTestImpl(INDEX_TYPE N)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -77,18 +77,26 @@ void ForallListSegmentTest(INDEX_TYPE N)
 }
 
 
-TYPED_TEST_P(ForallSegmentTest, ListSegmentForall)
+TYPED_TEST_SUITE_P(ForallListSegmentTest);
+template <typename T>
+class ForallListSegmentTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallListSegmentTest, ListSegmentForall)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(13));
+  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(13));
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(2047));
+  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(2047));
 
-  ForallListSegmentTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(32000));
-
+  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(32000));
 }
+
+REGISTER_TYPED_TEST_SUITE_P(ForallListSegmentTest,
+                            ListSegmentForall);
 
 #endif  // __TEST_FORALL_LISTSEGMENT_HPP__
