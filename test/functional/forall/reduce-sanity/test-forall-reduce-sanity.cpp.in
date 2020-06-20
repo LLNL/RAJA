@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_REDUCE_SANITY_HPP__
-#define __TEST_FORALL_REDUCE_SANITY_HPP__
-
+//
+// test/include headers
+//
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
@@ -16,6 +16,18 @@
 #include "RAJA_test-forall-execpol.hpp"
 #include "RAJA_test-reducepol.hpp"
 
+
+//
+// headers for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests
+//
+#include "test-forall-reduce-sanity-sum.hpp"
+#include "test-forall-reduce-sanity-min.hpp"
+#include "test-forall-reduce-sanity-max.hpp"
+#include "test-forall-reduce-sanity-minloc.hpp"
+#include "test-forall-reduce-sanity-maxloc.hpp"
+
 //
 // Data types for reduction sanity tests
 //
@@ -23,51 +35,34 @@ using ReductionDataTypeList = camp::list< int,
                                           float,
                                           double >;
 
-#include "tests/test-forall-reduce-sanity-sum.hpp"
-#include "tests/test-forall-reduce-sanity-min.hpp"
-#include "tests/test-forall-reduce-sanity-max.hpp"
-#include "tests/test-forall-reduce-sanity-minloc.hpp"
-#include "tests/test-forall-reduce-sanity-maxloc.hpp"
-
 
 //
-// Cartesian product of types for Sequential tests
+// Cartesian products of types for supported back-ends
 //
 
 using SequentialForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList, 
-                                HostResourceList, 
+  Test< camp::cartesian_product<ReductionDataTypeList,
+                                HostResourceList,
                                 SequentialForallReduceExecPols,
                                 SequentialReducePols>>::Types;
 
 #if defined(RAJA_ENABLE_OPENMP)
-//
-// Cartesian product of types for OpenMP tests
-//
-
 using OpenMPForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList, 
-                                HostResourceList, 
+  Test< camp::cartesian_product<ReductionDataTypeList,
+                                HostResourceList,
                                 OpenMPForallExecPols,
                                 OpenMPReducePols>>::Types;
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
-//
-// Cartesian product of types for OpenMP tests
-//
-
 using TBBForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList, 
-                                HostResourceList, 
+  Test< camp::cartesian_product<ReductionDataTypeList,
+                                HostResourceList,
                                 TBBForallExecPols,
-                                TBBReducePols>>::Types; 
+                                TBBReducePols>>::Types;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-//
-// Cartesian product of types for CUDA tests
-//
 using CudaForallReduceSanityTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
                                 CudaResourceList,
@@ -76,9 +71,6 @@ using CudaForallReduceSanityTypes =
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-//
-// Cartesian product of types for HIP tests
-//
 using HipForallReduceSanityTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
                                 HipResourceList,
@@ -87,10 +79,6 @@ using HipForallReduceSanityTypes =
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-//
-// Cartesian product of types for OpenMP Target tests
-//
-
 using OpenMPTargetForallReduceSanityTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
                                 OpenMPTargetResourceList,
@@ -98,4 +86,6 @@ using OpenMPTargetForallReduceSanityTypes =
                                 OpenMPTargetReducePols>>::Types;
 #endif
 
-#endif  // __TEST_FORALL_REDUCE_SANITY_HPP__
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               Forall@REDUCETYPE@SanityTest,
+                               @BACKEND@ForallReduceSanityTypes);
