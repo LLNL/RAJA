@@ -74,6 +74,10 @@ raja_add_executable(
   SOURCES raja-launch.cpp)
 
 raja_add_executable(
+  NAME raja-launch-mat-mat
+  SOURCES raja-launch-mat-mat.cpp)
+
+raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 

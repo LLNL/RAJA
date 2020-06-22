@@ -15,8 +15,8 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  RAJA Teams Example
- *
+ *  RAJA Teams Example: 
+ *  Matrix-matrix multiplication with shared memory
  */
 
 /*
@@ -24,10 +24,6 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 #define CUDA_BLOCK_SIZE 16
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-#define HIP_BLOCK_SIZE 16
 #endif
 
 //
@@ -47,24 +43,61 @@ const int DIM = 2;
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
 */
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA)
 __global__ void matMultKernel(int N, double* C, double* A, double* B)
 {
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
+  // Block row and column
+  const int by = blockIdx.y;
+  const int bx = blockIdx.x;
 
-  if ( row < N && col < N ) {
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += A(row, k) * B(k, col);
-    }
+   // Each thread computes one element of Csub
+  // by accumulating results into Cvalue
+  double Cvalue(0.0);
 
-    C(row, col) = dot;
+  // Thread row and column within local Csub
+  const int ty = threadIdx.y; //local row
+  const int tx = threadIdx.x; //local column
+
+  const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
+  const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+
+  // Shared memory used to store Asub and Bsub respectively
+  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+
+  // Loop over all the sub-matrices of A and B that are
+  // required to compute Csub
+  // Multiply each pair of sub-matrices together
+  // and accumulate the results
+  for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
+
+    // Load Asub and Bsub from device memory to shared memory
+    // Each thread loads one element of each sub-matrix
+    As[ty][tx] = A[row*N + m*CUDA_BLOCK_SIZE + tx];
+    Bs[ty][tx] = B[(m*CUDA_BLOCK_SIZE + ty)*N + col];
+
+    // Synchronize to make sure the sub-matrices are loaded
+    // before starting the computation
+    __syncthreads();
+
+    // Multiply Asub and Bsub together
+    for (int e = 0; e < CUDA_BLOCK_SIZE; ++e)
+      Cvalue += As[ty][e] * Bs[e][tx];
+
+    // Synchronize to make sure that the preceding
+    // computation is done before loading two new
+    // sub-matrices of A and B in the next iteration
+    __syncthreads();
   }
+
+  // Write Csub to device memory
+  // Each thread writes one element
+  C[col + N*row] = Cvalue;
+
 }
 #endif
 
-struct TeamIdx{int tx, ty, tz;};
+struct TeamIdx{int x, y, z;};
 
 //
 // Functions for checking results
@@ -87,18 +120,20 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 bool use_device = true;
 
-#define RAJA_FORALL_TEAMS(i, use_device, N, TEAMS, ...)  \
+#define RAJA_FORALL_TEAMS(bx, by, use_device, Nx, Ny, TEAMS, ...) \
    RAJA_ForallWrap_Teams(                     \
-      N,                                      \
+      Nx,                                     \
+      Ny,                                     \
       use_device,                             \
-      [=] RAJA_DEVICE (int i) { __VA_ARGS__ }, \
-      [=](int i) { __VA_ARGS__ },              \
+      [=] RAJA_DEVICE (int bx, int by) { __VA_ARGS__ }, \
+      [=](int bx, int by) { __VA_ARGS__ },    \
       TEAMS.X,                                 \
       TEAMS.Y,                                 \
       TEAMS.Z)
 
 template <typename DBODY, typename HBODY>
-inline void RAJA_ForallWrap_Teams(const int N,
+inline void RAJA_ForallWrap_Teams(int Nx,
+                                  int Ny,
                                    bool device,
                                    DBODY &&d_body,
                                    HBODY &&h_body,
@@ -106,30 +141,37 @@ inline void RAJA_ForallWrap_Teams(const int N,
                                    const int Y,
                                    const int Z)
 {
+  using RAJA::statement::For;
+  using RAJA::statement::Lambda;
+  using RAJA::Segs;
 
   if(device)
   {
-    
-    using RAJA::statement::For;
-    using RAJA::statement::Lambda;
-    using RAJA::Segs;
-    
     RAJA::kernel<RAJA::KernelPolicy<
       RAJA::statement::CudaKernelAsync<
         For<0, RAJA::cuda_block_x_direct,
-        For<1, RAJA::cuda_thread_x_direct,
-        For<2, RAJA::cuda_thread_y_direct,
-         For<3, RAJA::cuda_thread_z_direct,
-         Lambda<0, Segs<0>>>>>>>>>
+        For<1, RAJA::cuda_block_y_direct,
+        For<2, RAJA::cuda_thread_x_direct,
+        For<3, RAJA::cuda_thread_y_direct,
+         For<4, RAJA::cuda_thread_z_direct,
+             Lambda<0, Segs<0, 1>>>>>>>>>>
     (RAJA::make_tuple
-     (RAJA::RangeSegment(0,N),
+     (RAJA::RangeSegment(0,Nx),
+      RAJA::RangeSegment(0,Ny),
       RAJA::RangeSegment(0,X),
       RAJA::RangeSegment(0,Y),
       RAJA::RangeSegment(0,Z)),
      d_body);
   }else
   {
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), h_body);
+    //RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), h_body);
+    RAJA::kernel<RAJA::KernelPolicy<
+      For<0, RAJA::loop_exec,
+        For<1, RAJA::loop_exec, 
+          Lambda<0, Segs<0, 1>>>>>>
+      (RAJA::make_tuple(RAJA::RangeSegment(0, Nx),
+                        RAJA::RangeSegment(0, Ny)), 
+       h_body);
   }
 
 }
@@ -216,12 +258,12 @@ struct PrivateMemory
 #endif
 
   RAJA_HOST_DEVICE
-  double &operator()(int i, TeamIdx teamIdx) 
+  double &operator()(int i, TeamIdx teamIdx)
   {
-#if defined(__CUDA_ARCH__)  
+#if defined(__CUDA_ARCH__)
     return Array[i];
 #else
-    int offset = N*teamIdx.tx + N*XDIM*teamIdx.ty + N*XDIM*YDIM*teamIdx.tz;
+    int offset = N*teamIdx.x + N*XDIM*teamIdx.y + N*XDIM*YDIM*teamIdx.z;
     return Array[i + offset];
 #endif
   }
@@ -233,8 +275,8 @@ template<int Nx, int Ny, int Nz>
 struct Teams
 {
   const int X{Nx};
-  const int Y{Nx};
-  const int Z{Nx};
+  const int Y{Ny};
+  const int Z{Nz};
   template<int N>
   using PrivateMem = PrivateMemory<N, Nx, Ny,Nz>;
 
@@ -252,8 +294,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Define num rows/cols in matrix
 //
-  const int N = 1000;
-//const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE;
+  const int NBlocks = 4;
+  const int N = CUDA_BLOCK_SIZE*NBlocks;
 
 //
 // Allocate and initialize matrix data.
@@ -297,52 +339,73 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   bool use_device[2]={true, false};
 
 
-  int Nteams = 2; 
-  using Team_t = Teams<5,1,1>;
+  const int NxTeams = NBlocks;
+  const int NyTeams = NBlocks;
+  using Team_t = Teams<CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE,1>;
 
   //Loop through GPU and CPU kernels
-  for(int j=0; j<2; ++j) { 
+  for(int j=0; j<2; ++j) {
 
     if(use_device[j]) {
-      printf("RAJA Teams running on GPU  \n");
+      printf("\n (GPU) RAJA Teams matrix multiplication... \n");
     }else{
-      printf("RAJA Teams running on CPU  \n");
+      printf("\n (CPU) RAJA Teams matrix multiplication... \n");
     }
 
-  printf("Displaying team member exclusive values \n");
-  RAJA_FORALL_TEAMS(i, use_device[j], Nteams, Team_t{},
+  RAJA_FORALL_TEAMS(bx, by, use_device[j],
+                    NxTeams, NyTeams, Team_t{},
   {
+    //Thread/Team member private memory 
+    Team_t myTeam; 
+    Team_t::PrivateMem<1> cValue; 
+
+    //Team Shared memory
+    TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
+    TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
     
-    Team_t myTeam;
-    Team_t::PrivateMem<1> p_a;
-    TEAM_SHARED double s_a[5]; 
+    TEAM_LOOP_2D(myTeam.X, myTeam.Y,{
+        cValue(0, teamIdx) = 0.0; 
+    }); 
+
+    //Slide accross matrix 
+    for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
+
+      TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
+
+          const int tx = teamIdx.x; 
+          const int ty = teamIdx.y;
+          const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
+          const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+          
+          As[ty][tx] = A[row*N + m*CUDA_BLOCK_SIZE + tx];
+          Bs[ty][tx] = B[(m*CUDA_BLOCK_SIZE + ty)*N + col];          
+        }); 
+
+      TEAM_SYNC; 
+      
+      TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
+          for(int e=0; e<CUDA_BLOCK_SIZE; ++e){
+            cValue(0, teamIdx) += As[ty][e] * Bs[e][tx]; 
+          }
+        }); 
+      
+      TEAM_SYNC; 
+
+    }//slide across matrix 
+
+    TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
+        
+        const int tx = teamIdx.x; 
+        const int ty = teamIdx.y;
+        const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
+        const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+        C[col + N*row] = cValue(0, teamIdx);
+      });
     
-    TEAM_LOOP_1D(myTeam.X,
-    {
-      p_a(0, teamIdx) = teamIdx.tx;
-      s_a[teamIdx.tx] = 1; 
-    });
-
-    Team_t::TeamSync();
-
-    TEAM_LOOP_1D(myTeam.X,
-    {
-     printf("pa_[%d] = %f \n", teamIdx.tx, p_a(0, teamIdx));
-    });
-
-    TEAM_LOOP_1D(1,
-    {
-     double sum(0); 
-     for(int i=0; i<5; ++i) {
-       sum += s_a[i]; 
-     }
-
-     printf("Shared memory sum %f  \n", sum);
-   });
-
   });
 
    cudaDeviceSynchronize();
+   checkResult<double>(C, N);
   }
 
 //----------------------------------------------------------------------------//
@@ -371,139 +434,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif // if RAJA_ENABLE_CUDA
 
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_HIP)
-
-  std::cout << "\n Running HIP mat-mult with multiple lambdas (RAJA-POL8)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  using EXEC_POL8 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
-          RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-            RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
-            RAJA::statement::For<2, RAJA::seq_exec,
-                RAJA::statement::Lambda<1> // dot += ...
-            >,
-            RAJA::statement::Lambda<2,
-              RAJA::Segs<0,1>,
-              RAJA::Params<0>>   // set C = ...
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL8>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += d_Aview(row, k) * d_Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       d_Cview(row, col) = dot;
-    }
-
-  );
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-
-  //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  using EXEC_POL9b =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
-            RAJA::statement::For<1, RAJA::hip_thread_y_loop, // row
-              RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
-                RAJA::statement::For<2, RAJA::seq_exec,
-                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
-                >,
-                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
-              >
-            >
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL9b>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += d_Aview(row, k) * d_Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       d_Cview(row, col) = dot;
-    }
-
-  );
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running HIP tiled mat-mult (no RAJA)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  // Define thread block dimensions
-  dim3 blockdim(HIP_BLOCK_SIZE, HIP_BLOCK_SIZE);
-  // Define grid dimensions to match the RAJA version above
-  dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
-               RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
-
-//printf("griddim = (%d,%d), blockdim = (%d,%d)\n", (int)griddim.x, (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
-
-  // Launch HIP kernel defined near the top of this file.
-  hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
-
-  hipDeviceSynchronize();
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-  memoryManager::deallocate_gpu(d_A);
-  memoryManager::deallocate_gpu(d_B);
-  memoryManager::deallocate_gpu(d_C);
-#endif // if RAJA_ENABLE_HIP
 
 //----------------------------------------------------------------------------//
 
