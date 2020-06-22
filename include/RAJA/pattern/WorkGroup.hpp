@@ -54,6 +54,21 @@ namespace RAJA
 template < typename ... Args >
 using xargs = camp::list<Args...>;
 
+namespace detail {
+
+template < typename T >
+struct is_xargs {
+  static constexpr bool value = false;
+};
+
+template < typename ... Args >
+struct is_xargs<xargs<Args...>> {
+  static constexpr bool value = true;
+};
+
+}
+
+
 //
 // Forward declarations for WorkPool and WorkGroup templates.
 // Actual classes appear in forall_*.hxx header files.
@@ -97,6 +112,8 @@ template <typename WORKGROUP_POLICY_T,
 struct WorkPool {
   static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkPool: WORKGROUP_POLICY_T must be a workgroup policy");
+  static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
+      "WorkPool: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
 };
 
 /*!
@@ -130,6 +147,8 @@ template <typename WORKGROUP_POLICY_T,
 struct WorkGroup {
   static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkGroup: WORKGROUP_POLICY_T must be a workgroup policy");
+  static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
+      "WorkGroup: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
 };
 
 /*!
@@ -163,6 +182,8 @@ template <typename WORKGROUP_POLICY_T,
 struct WorkSite {
   static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkSite: WORKGROUP_POLICY_T must be a workgroup policy");
+  static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
+      "WorkSite: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
 };
 
 
