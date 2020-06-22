@@ -5,71 +5,50 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-workgroup-ordered-seq
-  SOURCES test-workgroup-ordered-seq.cpp)
+#
+# Function that generates test file and build target for each
+# sub-test and backend
+#
+function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+  foreach( BACKEND ${BACKENDS} )
+    foreach( SUBTESTNAME ${SUBTESTNAMES} )
+      configure_file( test-workgroup-${TESTNAME}.cpp.in
+                      test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+      raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
+                     SOURCES test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+
+      target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endforeach()
+  endforeach()
+endfunction()
+
+
+set(BACKENDS Sequential)
 
 if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-workgroup-ordered-tbb
-  SOURCES test-workgroup-ordered-tbb.cpp)
+  list(APPEND BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-workgroup-ordered-openmp
-  SOURCES test-workgroup-ordered-openmp.cpp)
+  list(APPEND BACKENDS OpenMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-raja_add_test(
-  NAME test-workgroup-ordered-openmp-target
-  SOURCES test-workgroup-ordered-openmp-target.cpp)
+  list(APPEND BACKENDS OpenMPTarget)
 endif()
 
 if(RAJA_ENABLE_CUDA)
-raja_add_test(
-  NAME test-workgroup-ordered-cuda
-  SOURCES test-workgroup-ordered-cuda.cpp)
+  list(APPEND BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
-raja_add_test(
-  NAME test-workgroup-ordered-hip
-  SOURCES test-workgroup-ordered-hip.cpp)
+  list(APPEND BACKENDS Hip)
 endif()
 
 
-raja_add_test(
-  NAME test-workgroup-unordered-seq
-  SOURCES test-workgroup-unordered-seq.cpp)
+set(Ordered_SUBTESTS Single Multiple)
+buildunitworkgrouptest(Ordered "${Ordered_SUBTESTS}" "${BACKENDS}")
 
-if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-workgroup-unordered-tbb
-  SOURCES test-workgroup-unordered-tbb.cpp)
-endif()
-
-if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-workgroup-unordered-openmp
-  SOURCES test-workgroup-unordered-openmp.cpp)
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-raja_add_test(
-  NAME test-workgroup-unordered-openmp-target
-  SOURCES test-workgroup-unordered-openmp-target.cpp)
-endif()
-
-if(RAJA_ENABLE_CUDA)
-raja_add_test(
-  NAME test-workgroup-unordered-cuda
-  SOURCES test-workgroup-unordered-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-raja_add_test(
-  NAME test-workgroup-unordered-hip
-  SOURCES test-workgroup-unordered-hip.cpp)
-endif()
+set(Unordered_SUBTESTS Single Multiple)
+buildunitworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${BACKENDS}")

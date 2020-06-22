@@ -133,6 +133,16 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 //
 using HostAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Host>>;
 
+using SequentialAllocatorList = HostAllocatorList;
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBAllocatorList = HostAllocatorList;
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPAllocatorList = HostAllocatorList;
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Cuda>>;
 #endif

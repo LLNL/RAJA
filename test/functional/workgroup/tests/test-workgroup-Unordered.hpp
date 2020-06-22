@@ -6,11 +6,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Header file containing tests for RAJA workgroup ordered runs.
+/// Header file containing tests for RAJA workgroup unordered runs.
 ///
 
-#ifndef __TEST_WORKGROUP_ORDERED__
-#define __TEST_WORKGROUP_ORDERED__
+#ifndef __TEST_WORKGROUP_UNORDERED__
+#define __TEST_WORKGROUP_UNORDERED__
 
 #include "RAJA_test-workgroup.hpp"
 #include "RAJA_test-forall-data.hpp"
@@ -19,11 +19,18 @@
 
 
 template <typename T>
-class WorkGroupBasicOrderedFunctionalTest : public ::testing::Test
+class WorkGroupBasicUnorderedSingleFunctionalTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedFunctionalTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicUnorderedSingleFunctionalTest);
+
+template <typename T>
+class WorkGroupBasicUnorderedMultipleFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicUnorderedMultipleFunctionalTest);
 
 
 template <typename ExecPolicy,
@@ -33,7 +40,7 @@ template <typename ExecPolicy,
           typename Allocator,
           typename WORKING_RES
           >
-void testWorkGroupOrdered(IndexType begin, IndexType end)
+void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 {
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
@@ -71,11 +78,7 @@ void testWorkGroupOrdered(IndexType begin, IndexType end)
 
   pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
       [=] RAJA_HOST_DEVICE (IndexType i) {
-    working_array[i] += i;
-  });
-  pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-      [=] RAJA_HOST_DEVICE (IndexType i) {
-    working_array[i] += IndexType(5);
+    working_array[i] += i + IndexType(5);
   });
 
   auto group = pool.instantiate();
@@ -95,7 +98,7 @@ void testWorkGroupOrdered(IndexType begin, IndexType end)
                                       test_array);
 }
 
-TYPED_TEST_P(WorkGroupBasicOrderedFunctionalTest, BasicWorkGroupOrdered)
+TYPED_TEST_P(WorkGroupBasicUnorderedSingleFunctionalTest, BasicWorkGroupUnorderedSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -116,9 +119,9 @@ TYPED_TEST_P(WorkGroupBasicOrderedFunctionalTest, BasicWorkGroupOrdered)
   IndexType b3 = dist_type(e2, IndexType(1023))(rng);
   IndexType e3 = dist_type(b3, IndexType(1024))(rng);
 
-  testWorkGroupOrdered< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
-  testWorkGroupOrdered< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
-  testWorkGroupOrdered< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
+  testWorkGroupUnorderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
+  testWorkGroupUnorderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
+  testWorkGroupUnorderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
 }
 
 
@@ -129,7 +132,7 @@ template <typename ExecPolicy,
           typename Allocator,
           typename WORKING_RES
           >
-void testWorkGroupOrderedMultiple(
+void testWorkGroupUnorderedMultiple(
     IndexType begin, IndexType end,
     IndexType num1, IndexType num2, IndexType num3)
 {
@@ -237,11 +240,7 @@ void testWorkGroupOrderedMultiple(
     type1* working_ptr1 = working_array1 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr1[i] += type1(i);
-    });
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr1[i] += type1(5);
+      working_ptr1[i] += type1(i) + type1(5);
     });
   }
 
@@ -249,11 +248,7 @@ void testWorkGroupOrderedMultiple(
     type2* working_ptr2 = working_array2 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr2[i] += type2(i);
-    });
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr2[i] += type2(7);
+      working_ptr2[i] += type2(i) + type2(7);
     });
   }
 
@@ -261,11 +256,7 @@ void testWorkGroupOrderedMultiple(
     type3* working_ptr3 = working_array3 + N * j;
     pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr3[i] += type3(i);
-    });
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr3[i] += type3(11);
+      working_ptr3[i] += type3(i) + type3(11);
     });
   }
 
@@ -322,7 +313,7 @@ void testWorkGroupOrderedMultiple(
                                   test_array3);
 }
 
-TYPED_TEST_P(WorkGroupBasicOrderedFunctionalTest, BasicWorkGroupOrderedMultiple)
+TYPED_TEST_P(WorkGroupBasicUnorderedMultipleFunctionalTest, BasicWorkGroupUnorderedMultiple)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -341,13 +332,8 @@ TYPED_TEST_P(WorkGroupBasicOrderedFunctionalTest, BasicWorkGroupOrderedMultiple)
   IndexType num2 = dist_type(IndexType(0), IndexType(32))(rng);
   IndexType num3 = dist_type(IndexType(0), IndexType(32))(rng);
 
-  testWorkGroupOrderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
+  testWorkGroupUnorderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
       begin, end, num1, num2, num3);
 }
 
-
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicOrderedFunctionalTest,
-                            BasicWorkGroupOrdered,
-                            BasicWorkGroupOrderedMultiple);
-
-#endif  //__TEST_WORKGROUP_ORDERED__
+#endif  //__TEST_WORKGROUP_UNORDERED__

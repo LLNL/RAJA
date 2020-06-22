@@ -16,11 +16,11 @@
 
 
 template <typename T>
-class WorkGroupBasicConstructorUnitTest : public ::testing::Test
+class WorkGroupBasicConstructorSingleUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicConstructorUnitTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicConstructorSingleUnitTest);
 
 
 template <typename ExecPolicy,
@@ -30,7 +30,7 @@ template <typename ExecPolicy,
           typename Allocator,
           typename ... Xargs
           >
-void testWorkGroupConstructor(RAJA::xargs<Xargs...>)
+void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
 {
   bool success = true;
 
@@ -71,7 +71,7 @@ void testWorkGroupConstructor(RAJA::xargs<Xargs...>)
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicConstructorUnitTest, BasicWorkGroupConstructor)
+TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest, BasicWorkGroupConstructorSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -80,11 +80,7 @@ TYPED_TEST_P(WorkGroupBasicConstructorUnitTest, BasicWorkGroupConstructor)
   using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupConstructor< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
+  testWorkGroupConstructorSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
 }
-
-
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicConstructorUnitTest,
-                            BasicWorkGroupConstructor);
 
 #endif  //__TEST_WORKGROUP_CONSTRUCTOR__

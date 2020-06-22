@@ -20,11 +20,39 @@
 
 
 template <typename T>
-class WorkGroupBasicWorkStorageUnitTest : public ::testing::Test
+class WorkGroupBasicWorkStorageConstructorUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageUnitTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageInsertUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageInsertCallUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertCallUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageMultipleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageMultipleUnitTest);
 
 
 template < typename T >
@@ -99,7 +127,7 @@ void testWorkGroupWorkStorageConstructor()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageConstructor)
+TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkStorageConstructor)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -150,7 +178,7 @@ void testWorkGroupWorkStorageInsert()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageInsert)
+TYPED_TEST_P(WorkGroupBasicWorkStorageInsertUnitTest, BasicWorkGroupWorkStorageInsert)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -221,7 +249,7 @@ void testWorkGroupWorkStorageIterator()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageIterator)
+TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -307,7 +335,7 @@ void testWorkGroupWorkStorageInsertCall()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageInsertCall)
+TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStorageInsertCall)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -467,7 +495,7 @@ void testWorkGroupWorkStorageMultiple(
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageMultiple)
+TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorageMultiple)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -478,13 +506,5 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageUnitTest, BasicWorkGroupWorkStorageMultipl
   testWorkGroupWorkStorageMultiple< StoragePolicy, Allocator >(
       dist(rng), dist(rng), dist(rng));
 }
-
-
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageUnitTest,
-                            BasicWorkGroupWorkStorageConstructor,
-                            BasicWorkGroupWorkStorageInsert,
-                            BasicWorkGroupWorkStorageIterator,
-                            BasicWorkGroupWorkStorageInsertCall,
-                            BasicWorkGroupWorkStorageMultiple);
 
 #endif  //__TEST_WORKGROUP_WORKSTORAGE__

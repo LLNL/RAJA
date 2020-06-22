@@ -151,12 +151,20 @@ void forone(L&& run)
 //
 using SequentialForoneList = camp::list<forone_seq>;
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenmpTargetForoneList = camp::list<forone_openmp_target>;
+#if defined(RAJA_ENABLE_TBB)
+using TBBForoneList = SequentialForoneList;
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPForoneList = SequentialForoneList;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaForoneList = camp::list<forone_cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetForoneList = camp::list<forone_openmp_target>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)

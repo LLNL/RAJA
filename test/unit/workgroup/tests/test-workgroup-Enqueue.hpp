@@ -18,11 +18,32 @@
 
 
 template <typename T>
-class WorkGroupBasicEnqueueUnitTest : public ::testing::Test
+class WorkGroupBasicEnqueueSingleUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueUnitTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueSingleUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueInstantiateUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueInstantiateUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueReuseUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueReuseUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
 
 
 template < typename IndexType,
@@ -74,7 +95,7 @@ template <typename ExecPolicy,
           typename Allocator,
           typename ... Args
           >
-void testWorkGroupEnqueue(RAJA::xargs<Args...>)
+void testWorkGroupEnqueueSingle(RAJA::xargs<Args...>)
 {
   IndexType success = (IndexType)1;
 
@@ -111,7 +132,7 @@ void testWorkGroupEnqueue(RAJA::xargs<Args...>)
   ASSERT_EQ(success, (IndexType)1);
 }
 
-TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueue)
+TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -120,7 +141,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueue)
   using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupEnqueue< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
+  testWorkGroupEnqueueSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
 }
 
 
@@ -181,7 +202,7 @@ void testWorkGroupEnqueueInstantiate(RAJA::xargs<Args...>)
   ASSERT_EQ(success, (IndexType)1);
 }
 
-TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueueInstantiate)
+TYPED_TEST_P(WorkGroupBasicEnqueueInstantiateUnitTest, BasicWorkGroupEnqueueInstantiate)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -254,7 +275,7 @@ void testWorkGroupEnqueueReuse(RAJA::xargs<Args...>, size_t rep)
   ASSERT_EQ(success, (IndexType)1);
 }
 
-TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueueReuse)
+TYPED_TEST_P(WorkGroupBasicEnqueueReuseUnitTest, BasicWorkGroupEnqueueReuse)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -330,7 +351,7 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, size_t rep, size_t num)
   ASSERT_EQ(success, (IndexType)1);
 }
 
-TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueueMultiple)
+TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultiple)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -344,12 +365,5 @@ TYPED_TEST_P(WorkGroupBasicEnqueueUnitTest, BasicWorkGroupEnqueueMultiple)
 
   testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, dist(rng), dist(rng));
 }
-
-
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueUnitTest,
-                            BasicWorkGroupEnqueue,
-                            BasicWorkGroupEnqueueInstantiate,
-                            BasicWorkGroupEnqueueReuse,
-                            BasicWorkGroupEnqueueMultiple);
 
 #endif  //__TEST_WORKGROUP_ENQUEUE__

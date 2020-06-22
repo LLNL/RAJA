@@ -16,11 +16,11 @@
 
 
 template <typename T>
-class WorkGroupBasicVtableUnitTest : public ::testing::Test
+class WorkGroupBasicVtableSingleUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicVtableUnitTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicVtableSingleUnitTest);
 
 
 template  < typename ForOnePol,
@@ -112,7 +112,7 @@ template < typename ExecPolicy,
            typename WORKING_RES,
            typename ForOnePol,
            typename ... Args >
-void testWorkGroupVtable(RAJA::xargs<Args...>)
+void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
 {
   using TestCallable = VtableTestCallable<IndexType, Args...>;
 
@@ -209,7 +209,7 @@ void testWorkGroupVtable(RAJA::xargs<Args...>)
   host_res.deallocate( testDtor );
 }
 
-TYPED_TEST_P(WorkGroupBasicVtableUnitTest, BasicWorkGroupVtable)
+TYPED_TEST_P(WorkGroupBasicVtableSingleUnitTest, BasicWorkGroupVtableSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using IndexType = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -217,12 +217,8 @@ TYPED_TEST_P(WorkGroupBasicVtableUnitTest, BasicWorkGroupVtable)
   using ResourceType = typename camp::at<TypeParam, camp::num<3>>::type;
   using ForOneType = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  testWorkGroupVtable< ExecPolicy, IndexType, ResourceType, ForOneType >(
+  testWorkGroupVtableSingle< ExecPolicy, IndexType, ResourceType, ForOneType >(
       Args{});
 }
-
-
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicVtableUnitTest,
-                            BasicWorkGroupVtable);
 
 #endif  //__TEST_WORKGROUP_VTABLE__

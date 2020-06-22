@@ -1,0 +1,23 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA workgroup workstorage.
+///
+
+#include "test-workgroup-@TESTNAME@.hpp"
+
+using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
+  Test< camp::cartesian_product< @BACKEND@StoragePolicyList,
+                                 @BACKEND@AllocatorList > >::Types;
+
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
+                            BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
+                               WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types);

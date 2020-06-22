@@ -5,111 +5,65 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-workgroup-constructors-seq
-  SOURCES test-workgroup-constructors-seq.cpp)
+#
+# Function that generates test file and build target for each
+# sub-test and backend
+#
+function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+  foreach( BACKEND ${BACKENDS} )
+    foreach( SUBTESTNAME ${SUBTESTNAMES} )
+      configure_file( test-workgroup-${TESTNAME}.cpp.in
+                      test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+      raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
+                     SOURCES test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+
+      target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endforeach()
+  endforeach()
+endfunction()
+
+
+set(BACKENDS Sequential)
+set(Vtable_BACKENDS Sequential)
+set(WorkStorage_BACKENDS Sequential)
 
 if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-workgroup-constructors-tbb
-  SOURCES test-workgroup-constructors-tbb.cpp)
+  list(APPEND BACKENDS TBB)
+  list(APPEND Vtable_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-workgroup-constructors-openmp
-  SOURCES test-workgroup-constructors-openmp.cpp)
+  list(APPEND BACKENDS OpenMP)
+  list(APPEND Vtable_BACKENDS OpenMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-raja_add_test(
-  NAME test-workgroup-constructors-openmp-target
-  SOURCES test-workgroup-constructors-openmp-target.cpp)
+  list(APPEND BACKENDS OpenMPTarget)
+  list(APPEND Vtable_BACKENDS OpenMPTarget)
 endif()
 
 if(RAJA_ENABLE_CUDA)
-raja_add_test(
-  NAME test-workgroup-constructors-cuda
-  SOURCES test-workgroup-constructors-cuda.cpp)
+  list(APPEND BACKENDS Cuda)
+  list(APPEND Vtable_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
-raja_add_test(
-  NAME test-workgroup-constructors-hip
-  SOURCES test-workgroup-constructors-hip.cpp)
+  list(APPEND BACKENDS Hip)
+  if(DEFINED RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+    list(APPEND Vtable_BACKENDS Hip)
+  endif()
 endif()
 
 
-raja_add_test(
-  NAME test-workgroup-vtable-seq
-  SOURCES test-workgroup-vtable-seq.cpp)
+set(Constructor_SUBTESTS Single)
+buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
 
-if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-workgroup-vtable-tbb
-  SOURCES test-workgroup-vtable-tbb.cpp)
-endif()
+set(Vtable_SUBTESTS Single)
+buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}")
 
-if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-workgroup-vtable-openmp
-  SOURCES test-workgroup-vtable-openmp.cpp)
-endif()
+set(Enqueue_SUBTESTS Single Instantiate Reuse Multiple)
+buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-raja_add_test(
-  NAME test-workgroup-vtable-openmp-target
-  SOURCES test-workgroup-vtable-openmp-target.cpp)
-endif()
-
-if(RAJA_ENABLE_CUDA)
-raja_add_test(
-  NAME test-workgroup-vtable-cuda
-  SOURCES test-workgroup-vtable-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP AND DEFINED RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
-raja_add_test(
-  NAME test-workgroup-vtable-hip
-  SOURCES test-workgroup-vtable-hip.cpp)
-endif()
-
-
-raja_add_test(
-  NAME test-workgroup-workstorage
-  SOURCES test-workgroup-workstorage.cpp)
-
-
-raja_add_test(
-  NAME test-workgroup-enqueue-seq
-  SOURCES test-workgroup-enqueue-seq.cpp)
-
-if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-workgroup-enqueue-tbb
-  SOURCES test-workgroup-enqueue-tbb.cpp)
-endif()
-
-if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-workgroup-enqueue-openmp
-  SOURCES test-workgroup-enqueue-openmp.cpp)
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-raja_add_test(
-  NAME test-workgroup-enqueue-openmp-target
-  SOURCES test-workgroup-enqueue-openmp-target.cpp)
-endif()
-
-if(RAJA_ENABLE_CUDA)
-raja_add_test(
-  NAME test-workgroup-enqueue-cuda
-  SOURCES test-workgroup-enqueue-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-raja_add_test(
-  NAME test-workgroup-enqueue-hip
-  SOURCES test-workgroup-enqueue-hip.cpp)
-endif()
+set(WorkStorage_SUBTESTS Constructor Insert Iterator InsertCall Multiple)
+buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
