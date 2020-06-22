@@ -65,6 +65,12 @@ struct WorkGroupPolicy
                        policy_of<EXEC_POLICY_T>::value,
                        Pattern::workgroup,
                        platform_of<EXEC_POLICY_T>::value> {
+  static_assert(RAJA::pattern_is<EXEC_POLICY_T, RAJA::Pattern::workgroup_exec>::value,
+      "WorkGroupPolicy: EXEC_POLICY_T must be a workgroup exec policy");
+  static_assert(RAJA::pattern_is<ORDER_POLICY_T, RAJA::Pattern::workgroup_order>::value,
+      "WorkGroupPolicy: ORDER_POLICY_T must be a workgroup order policy");
+  static_assert(RAJA::pattern_is<STORAGE_POLICY_T, RAJA::Pattern::workgroup_storage>::value,
+      "WorkGroupPolicy: STORAGE_POLICY_T must be a workgroup storage policy");
 };
 
 }  // end namespace workgroup

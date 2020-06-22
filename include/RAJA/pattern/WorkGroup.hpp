@@ -94,7 +94,10 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkPool;
+struct WorkPool {
+  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+      "WorkPool: WORKGROUP_POLICY_T must be a workgroup policy");
+};
 
 /*!
  ******************************************************************************
@@ -124,7 +127,10 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkGroup;
+struct WorkGroup {
+  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+      "WorkGroup: WORKGROUP_POLICY_T must be a workgroup policy");
+};
 
 /*!
  ******************************************************************************
@@ -154,7 +160,10 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkSite;
+struct WorkSite {
+  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+      "WorkSite: WORKGROUP_POLICY_T must be a workgroup policy");
+};
 
 
 template <typename EXEC_POLICY_T,
