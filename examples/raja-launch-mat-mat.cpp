@@ -559,14 +559,14 @@ int main(){
               TEAM_SHARED double Bs[NThreads][NThreads];
               TEAM_SHARED double Cs[NThreads][NThreads];
               
-              //Team Parallel loop
+              //Team parallel loop
               RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
                   RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
                       Cs[ty][tx] = 0.0; 
                     });
                 });
 
-              //Slide Across matrix
+              //Slide across matrix
               for (int m = 0; m < (N / NThreads); ++m) {
 
                 RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
