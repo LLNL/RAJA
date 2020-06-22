@@ -31,29 +31,6 @@ namespace RAJA
 namespace detail
 {
 
-// template < typename T, typename ... CallArgs >
-// __device__ void Vtable_cuda_device_call(const void* obj, CallArgs... args)
-// {
-//     const T* obj_as_T = static_cast<const T*>(obj);
-//     (*obj_as_T)(std::forward<CallArgs>(args)...);
-// }
-
-// template < typename T, typename Vtable_T, camp::idx_t ... Is >
-// __device__ typename Vtable_T::call_sig
-// get_Vtable_cuda_device_call_device(camp::idx_seq<Is...>)
-// {
-//   return &Vtable_cuda_device_call<T,
-//       camp::tuple_element_t<Is, Vtable_T::args_tuple_type>...>;
-// }
-
-// template < typename T, typename Vtable_T >
-// __global__ void get_Vtable_cuda_device_call_global(
-//     typename Vtable_T::call_sig* ptrptr)
-// {
-//   *ptrptr = get_Vtable_cuda_device_call_device<T, Vtable_T>(
-//       camp::make_idx_seq_t<Vtable_T::num_args>{});
-// }
-
 template < typename T, typename Vtable_T >
 __global__ void get_Vtable_cuda_device_call_global(
     typename Vtable_T::call_sig* ptrptr)
