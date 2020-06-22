@@ -16,7 +16,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=/usr/bin/gcc-8 \
   -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 \
-  -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
+  -C ../host-configs/ubuntu-builds/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCMAKE_CUDA_COMPILER=/usr/bin/nvcc \

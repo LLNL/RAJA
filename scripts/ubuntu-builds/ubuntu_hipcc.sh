@@ -21,5 +21,5 @@ export HCC_AMDGPU_TARGET=gfx900
 
 cmake \
   -DCMAKE_BUILD_TYPE=Debug \
-  -C ../host-configs/lc-builds/toss3/hip.cmake \
+  -C ../host-configs/ubuntu-builds/hip.cmake \
   ..
