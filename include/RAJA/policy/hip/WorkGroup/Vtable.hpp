@@ -43,7 +43,7 @@ __global__ void get_Vtable_hip_device_call_global(
 inline void* get_Vtable_hip_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
-  hipErrchk(hipHostMalloc(&ptrptr, sizeof(Vtable_call_sig<>)));
+  hipErrchk(hipHostMalloc(&ptrptr, sizeof(typename Vtable<>::call_sig)));
   return ptrptr;
 }
 
@@ -85,9 +85,9 @@ template < typename T, typename Vtable_T, size_t BLOCK_SIZE, bool Async >
 inline const Vtable_T* get_Vtable(hip_work<BLOCK_SIZE, Async> const&)
 {
   static Vtable_T vtable{
-        &Vtable_T::move_construct_destroy<T>,
+        &Vtable_T::template move_construct_destroy<T>,
         get_cached_Vtable_hip_device_call<T, Vtable_T>(),
-        &Vtable_T::destroy<T>,
+        &Vtable_T::template destroy<T>,
         sizeof(T)
       };
   return &vtable;
