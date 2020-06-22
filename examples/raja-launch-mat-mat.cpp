@@ -567,7 +567,7 @@ int main(){
                 });
 
               //Slide Across matrix
-              for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
+              for (int m = 0; m < (N / NThreads); ++m) {
 
                 RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
                     RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {

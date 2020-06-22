@@ -243,18 +243,18 @@ inline void RAJA_ForallWrap_Teams(int Nx,
 
 
 //Sketch of member private memory
-template<size_t N, size_t XDIM,
-         size_t YDIM, size_t ZDIM>
+template<size_t N, size_t XDIM_,
+         size_t YDIM_, size_t ZDIM_>
 struct PrivateMemory
 {
-  const int X{XDIM};
-  const int Y{YDIM};
-  const int Z{ZDIM};
+  const int XDim{XDIM_};
+  const int YDim{YDIM_};
+  const int ZDim{ZDIM_};
 
 #if defined(__CUDA_ARCH__)
   double Array[N];
 #else
-  double Array[N*XDIM*YDIM*ZDIM];
+  double Array[N*XDIM_*YDIM_*ZDIM_];
 #endif
 
   RAJA_HOST_DEVICE
@@ -263,7 +263,7 @@ struct PrivateMemory
 #if defined(__CUDA_ARCH__)
     return Array[i];
 #else
-    int offset = N*teamIdx.x + N*XDIM*teamIdx.y + N*XDIM*YDIM*teamIdx.z;
+    int offset = N*teamIdx.x + N*XDim*teamIdx.y + N*XDim*YDim*teamIdx.z;
     return Array[i + offset];
 #endif
   }
@@ -340,8 +340,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   const int NxTeams = NBlocks;
-  const int NyTeams = NBlocks;
-  using Team_t = Teams<CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE,1>;
+  const int NThreads = CUDA_BLOCK_SIZE; 
+  using Team_t = Teams<NThreads,NThreads,1>;
 
   //Loop through GPU and CPU kernels
   for(int j=0; j<2; ++j) {
@@ -353,38 +353,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   RAJA_FORALL_TEAMS(bx, by, use_device[j],
-                    NxTeams, NyTeams, Team_t{},
+                    NBlocks, NBlocks, Team_t{},
   {
     //Thread/Team member private memory 
     Team_t myTeam; 
     Team_t::PrivateMem<1> cValue; 
 
     //Team Shared memory
-    TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
-    TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
+    TEAM_SHARED double As[NThreads][NThreads];
+    TEAM_SHARED double Bs[NThreads][NThreads];
     
-    TEAM_LOOP_2D(myTeam.X, myTeam.Y,{
+    TEAM_LOOP_2D(NThreads, NThreads,{
         cValue(0, teamIdx) = 0.0; 
     }); 
 
     //Slide accross matrix 
-    for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
+    for (int m = 0; m < (N / NThreads); ++m) {
 
-      TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
+      TEAM_LOOP_2D(NThreads, NThreads, {
 
           const int tx = teamIdx.x; 
           const int ty = teamIdx.y;
-          const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
-          const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+          const int row = by * NThreads + ty;  // Matrix row index
+          const int col = bx * NThreads + tx;  // Matrix column index
           
-          As[ty][tx] = A[row*N + m*CUDA_BLOCK_SIZE + tx];
-          Bs[ty][tx] = B[(m*CUDA_BLOCK_SIZE + ty)*N + col];          
+          As[ty][tx] = A[row*N + m*NThreads + tx];
+          Bs[ty][tx] = B[(m*NThreads + ty)*N + col];          
         }); 
 
       TEAM_SYNC; 
       
-      TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
-          for(int e=0; e<CUDA_BLOCK_SIZE; ++e){
+      TEAM_LOOP_2D(NThreads, NThreads, {
+          for(int e=0; e<NThreads; ++e){
             cValue(0, teamIdx) += As[ty][e] * Bs[e][tx]; 
           }
         }); 
@@ -393,12 +393,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     }//slide across matrix 
 
-    TEAM_LOOP_2D(myTeam.X, myTeam.Y, {
+    TEAM_LOOP_2D(NThreads, NThreads, {
         
         const int tx = teamIdx.x; 
         const int ty = teamIdx.y;
-        const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
-        const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+        const int row = by * NThreads + ty;  // Matrix row index
+        const int col = bx * NThreads + tx;  // Matrix column index
         C[col + N*row] = cValue(0, teamIdx);
       });
     
