@@ -37,55 +37,17 @@ using ReductionDataTypeList = camp::list< int,
 
 
 //
-// Cartesian products of types for supported back-ends
+// Cartesian product of types used in parammeterized tests
 //
-
-using SequentialForallReduceSanityTypes =
+using @BACKEND@ForallReduceSanityTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
-                                HostResourceList,
-                                SequentialForallReduceExecPols,
-                                SequentialReducePols>>::Types;
+                                @RESOURCE@ResourceList,
+                                @BACKEND@ForallReduceExecPols,
+                                @BACKEND@ReducePols>>::Types;
 
-#if defined(RAJA_ENABLE_OPENMP)
-using OpenMPForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
-                                HostResourceList,
-                                OpenMPForallExecPols,
-                                OpenMPReducePols>>::Types;
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
-                                HostResourceList,
-                                TBBForallExecPols,
-                                TBBReducePols>>::Types;
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
-                                CudaResourceList,
-                                CudaForallExecPols,
-                                CudaReducePols>>::Types;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
-                                HipResourceList,
-                                HipForallExecPols,
-                                HipReducePols>>::Types;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetForallReduceSanityTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
-                                OpenMPTargetResourceList,
-                                OpenMPTargetForallExecPols,
-                                OpenMPTargetReducePols>>::Types;
-#endif
-
+//
+// Instantiate parameterized test
+//
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
                                Forall@REDUCETYPE@SanityTest,
                                @BACKEND@ForallReduceSanityTypes);

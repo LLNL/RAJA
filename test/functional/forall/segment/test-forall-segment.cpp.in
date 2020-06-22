@@ -17,7 +17,7 @@
 
 
 //
-// headers for tests in ./tests directory
+// Headers for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
@@ -27,49 +27,16 @@
 
 
 //
-// Cartesian products of types for supported back-ends
+// Cartesian product of types used in parameterized tests
 //
-
-using SequentialForallSegmentTypes =
+using @BACKEND@ForallSegmentTypes =
   Test< camp::cartesian_product<StrongIdxTypeList,
-                                HostResourceList,
-                                SequentialForallExecPols>>::Types;
+                                @RESOURCE@ResourceList,
+                                @BACKEND@ForallExecPols>>::Types;
 
-#if defined(RAJA_ENABLE_OPENMP)
-using OpenMPForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
-                                HostResourceList,
-                                OpenMPForallExecPols> >::Types;
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
-                                HostResourceList,
-                                TBBForallExecPols> >::Types;
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
-                                CudaResourceList,
-                                CudaForallExecPols> >::Types;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
-                                HipResourceList,
-                                HipForallExecPols> >::Types;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetForallSegmentTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
-                                OpenMPTargetResourceList,
-                                OpenMPTargetForallExecPols> >::Types;
-#endif
-
+//
+// Instantiate parameterized test
+//
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
                                Forall@SEGTYPE@Test,
                                @BACKEND@ForallSegmentTypes);
