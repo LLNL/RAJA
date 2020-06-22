@@ -498,15 +498,8 @@ int main(){
 
   //N is number of blocks in each matrix
   const int NBlocks = 4;
+  const int NThreads = CUDA_BLOCK_SIZE;
   const int N = CUDA_BLOCK_SIZE*NBlocks;
-
-  //Number of teams in x,y direction
-  const int Nx = NBlocks;
-  const int Ny = NBlocks;
-
-  //Members in a team
-  const int NTx = CUDA_BLOCK_SIZE;
-  const int NTy = CUDA_BLOCK_SIZE;
 
 //
 // Allocate and initialize matrix data.
@@ -550,25 +543,25 @@ int main(){
     RAJA::launch(
       select_cpu_or_gpu,
       camp::make_tuple(
-        RAJA::Resources<RAJA::HOST>(RAJA::Threads(Nx, Ny)),
-        RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(Nx, Ny), RAJA::Threads(NTx, NTy)) ),
+        RAJA::Resources<RAJA::HOST>(RAJA::Threads(NBlocks, NBlocks)),
+        RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(NBlocks, NBlocks), RAJA::Threads(NThreads, NThreads)) ),
       [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
 
       //
       //Loop over teams
       //
-      RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, Ny), [=] (int by) {
-          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, Nx), [=] (int bx) {
+      RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, NBlocks), [&] (int by) {
+          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, NBlocks), [&] (int bx) {
 
               
-              TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
-              TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE]; 
-              TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+              TEAM_SHARED double As[NThreads][NThreads];
+              TEAM_SHARED double Bs[NThreads][NThreads];
+              TEAM_SHARED double Cs[NThreads][NThreads];
               
               //Team Parallel loop
-              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NTy), [&] (int ty) {
-                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NTx), [&] (int tx) {
+              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
+                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
                       Cs[ty][tx] = 0.0; 
                     });
                 });
@@ -576,24 +569,24 @@ int main(){
               //Slide Across matrix
               for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
 
-                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NTy), [&] (int ty) {
-                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NTx), [&] (int tx) {
+                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
+                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
 
-                        const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
-                        const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+                        const int row = by * NThreads + ty;  // Matrix row index
+                        const int col = bx * NThreads + tx;  // Matrix column index
                         
-                        As[ty][tx] = A[row*N + m*CUDA_BLOCK_SIZE + tx];
-                        Bs[ty][tx] = B[(m*CUDA_BLOCK_SIZE + ty)*N + col];
+                        As[ty][tx] = A[row*N + m*NThreads + tx];
+                        Bs[ty][tx] = B[(m*NThreads + ty)*N + col];
 
                       }); 
                   }); 
 
                 TEAM_SYNC();
                 
-                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NTy), [&] (int ty) {
-                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NTx), [&] (int tx) {
+                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
+                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
                         
-                        for(int e=0; e<CUDA_BLOCK_SIZE; ++e){
+                        for(int e=0; e<NThreads; ++e){
                           Cs[ty][tx] += As[ty][e] * Bs[e][tx];  
                         }
 
@@ -603,11 +596,11 @@ int main(){
               }//slide across matrix 
 
               
-              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NTy), [&] (int ty) {
-                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NTx), [&] (int tx) {
+              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
+                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
 
-                      const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
-                      const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+                      const int row = by * NThreads + ty;  // Matrix row index
+                      const int col = bx * NThreads + tx;  // Matrix column index
                       C[col + N*row] = Cs[ty][tx];
                     });
                 });
