@@ -31,7 +31,7 @@
 //
 using @BACKEND@ForallSegmentTypes =
   Test< camp::cartesian_product<StrongIdxTypeList,
-                                @RESOURCE@ResourceList,
+                                @BACKEND@ResourceList,
                                 @BACKEND@ForallExecPols>>::Types;
 
 //

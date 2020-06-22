@@ -41,7 +41,7 @@ using ReductionDataTypeList = camp::list< int,
 //
 using @BACKEND@ForallReduceSanityTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
-                                @RESOURCE@ResourceList,
+                                @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;
 
