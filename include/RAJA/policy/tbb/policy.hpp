@@ -68,7 +68,11 @@ using tbb_segit = tbb_for_exec;
 ///
 /// WorkGroup execution policies
 ///
-struct tbb_work { };
+struct tbb_work : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host> {
+};
 
 
 ///

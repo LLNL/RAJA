@@ -122,7 +122,11 @@ struct omp_taskgraph_interval_segit
 ///
 /// WorkGroup execution policies
 ///
-struct omp_work { };
+struct omp_work : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host> {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////

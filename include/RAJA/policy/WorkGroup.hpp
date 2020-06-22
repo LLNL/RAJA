@@ -35,17 +35,37 @@ namespace policy
 namespace workgroup
 {
 
-struct ordered { };
-struct reverse_ordered { };
+struct ordered
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_order> {
+};
+struct reverse_ordered
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_order> {
+};
 
-struct array_of_pointers { };
-struct ragged_array_of_objects { };
-struct constant_stride_array_of_objects { };
+struct array_of_pointers
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_storage> {
+};
+struct ragged_array_of_objects
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_storage> {
+};
+struct constant_stride_array_of_objects
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_storage> {
+};
 
 template < typename EXEC_POLICY_T,
            typename ORDER_POLICY_T,
            typename STORAGE_POLICY_T >
-struct WorkGroupPolicy { };
+struct WorkGroupPolicy
+    : public RAJA::make_policy_pattern_platform_t<
+                       policy_of<EXEC_POLICY_T>::value,
+                       Pattern::workgroup,
+                       platform_of<EXEC_POLICY_T>::value> {
+};
 
 }  // end namespace workgroup
 }  // end namespace policy

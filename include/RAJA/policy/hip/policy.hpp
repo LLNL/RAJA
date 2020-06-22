@@ -86,7 +86,13 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
 /// WorkGroup execution policies
 ///
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_work = hip_exec<BLOCK_SIZE, Async>;
+struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::workgroup_exec,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::hip> {
+};
+
 
 ///
 ///////////////////////////////////////////////////////////////////////

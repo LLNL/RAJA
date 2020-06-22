@@ -59,7 +59,11 @@ using seq_segit = seq_exec;
 ///
 /// WorkGroup execution policies
 ///
-using seq_work = seq_exec;
+struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host> {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////

@@ -60,7 +60,12 @@ struct omp_target_reduce
 ///
 /// WorkGroup execution policies
 ///
-struct omp_target_work { };
+struct omp_target_work
+    : make_policy_pattern_launch_platform_t<Policy::target_openmp,
+                                            Pattern::workgroup_exec,
+                                            Launch::sync,
+                                            Platform::omp_target> {
+};
 
 
 }  // closing brace for omp namespace

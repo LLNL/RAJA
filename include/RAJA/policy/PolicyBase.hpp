@@ -44,7 +44,11 @@ enum class Pattern {
   region,
   reduce,
   taskgraph,
-  synchronize
+  synchronize,
+  workgroup,
+  workgroup_exec,
+  workgroup_order,
+  workgroup_storage
 };
 
 enum class Launch { undefined, sync, async };
@@ -132,9 +136,19 @@ template <Policy Policy_,
 using make_policy_pattern_launch_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
 
-template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
+template <Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
+
+template <Policy Policy_,
+          Pattern Pattern_,
+          Platform Platform_,
+          typename... Args>
+using make_policy_pattern_platform_t =
+    PolicyBaseT<Policy_, Pattern_, Launch::undefined, Platform_, Args...>;
 
 namespace concepts
 {

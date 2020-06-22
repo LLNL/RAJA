@@ -55,7 +55,11 @@ using loop_segit = loop_exec;
 ///
 /// WorkGroup execution policies
 ///
-using loop_work = loop_exec;
+struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
+                                                         Pattern::workgroup_exec,
+                                                         Launch::sync,
+                                                         Platform::host> {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
