@@ -3,6 +3,7 @@
 *.a
 *.exe
 *.gch
+/*.sublime-*
 /build/
 /build_*/
 /build-*/
