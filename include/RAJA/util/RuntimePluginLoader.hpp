@@ -19,7 +19,6 @@ public:
     char *env = ::getenv("RAJA_PLUGINS");
     if (nullptr == env)
     {
-      perror("[PluginLoader]: Could not find environment variable RAJA_PLUGINS");
       return;
     }
     loadDirectory(env);
