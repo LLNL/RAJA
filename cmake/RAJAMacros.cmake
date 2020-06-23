@@ -69,6 +69,8 @@ macro(raja_add_test)
     NAME ${arg_NAME}
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
+
+  add_dependencies(raja_tests ${arg_NAME})
 endmacro(raja_add_test)
 
 macro(raja_add_reproducer)

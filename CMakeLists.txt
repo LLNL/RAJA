@@ -288,6 +288,7 @@ install(FILES
   DESTINATION "include/RAJA/")
 
 if(ENABLE_TESTS)
+  add_custom_target(raja_tests)
   add_subdirectory(test)
 endif()
 
