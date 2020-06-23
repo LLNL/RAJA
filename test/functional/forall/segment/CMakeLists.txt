@@ -6,62 +6,24 @@
 ###############################################################################
 
 #
-# Function that generates test file and build target for each
-# segment type and each backend
-
-function( buildforallsegmenttest SEGTYPES )
-  foreach( SEGTYPE ${SEGTYPES} )
-    configure_file( test-forall-segment.cpp.in 
-                    test-forall-${SEGTYPE}-${BACKEND}.cpp )
-    raja_add_test( NAME test-forall-${SEGTYPE}-${BACKEND}
-                   SOURCES test-forall-${SEGTYPE}-${BACKEND}.cpp )
-
-    target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe PRIVATE 
-                               ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-  endforeach()
-endfunction()
-
-
-#
-# Variable holding segment types
+# List of segment types for generating test files.
 #
 set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
 
 
 #
-# Generate tests for each enabled RAJA back-end
+# Generate tests for each enabled RAJA back-end. 
+# 
+# Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
 #
+foreach( BACKEND ${FORALL_BACKENDS} )
+  foreach( SEGTYPE ${SEGTYPES} )
+    configure_file( test-forall-segment.cpp.in
+                    test-forall-${SEGTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-${SEGTYPE}-${BACKEND}
+                   SOURCES test-forall-${SEGTYPE}-${BACKEND}.cpp )
 
-set( BACKEND Sequential )
-  buildforallsegmenttest( "${SEGTYPES}" )
-unset( BACKEND )
-
-if(RAJA_ENABLE_OPENMP)
-  set( BACKEND OpenMP )
-    buildforallsegmenttest( "${SEGTYPES}" )
-  unset( BACKEND )
-endif()
-
-if(RAJA_ENABLE_TBB)
-  set( BACKEND TBB )
-    buildforallsegmenttest( "${SEGTYPES}" )
-  unset( BACKEND )
-endif()
-
-if(RAJA_ENABLE_CUDA)
-  set( BACKEND Cuda )
-    buildforallsegmenttest( "${SEGTYPES}" )
-  unset( BACKEND )
-endif()
-
-if(RAJA_ENABLE_HIP)
-  set( BACKEND Hip )
-    buildforallsegmenttest( "${SEGTYPES}" )
-  unset( BACKEND )
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-  set( BACKEND OpenMPTarget )
-    buildforallsegmenttest( "${SEGTYPES}" )
-  unset( BACKEND )
-endif()
+    target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe PRIVATE
+                               ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
+endforeach()

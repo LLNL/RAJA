@@ -17,13 +17,11 @@
 
 
 //
-// Headers for tests in ./tests directory
+// Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-rangesegment.hpp"
-#include "test-forall-rangestridesegment.hpp"
-#include "test-forall-listsegment.hpp"
+#include "test-forall-@SEGTYPE@.hpp"
 
 
 //
