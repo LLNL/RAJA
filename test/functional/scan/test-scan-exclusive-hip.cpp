@@ -5,12 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-scan-exclusive.hpp"
+#include "test-scan.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
-
-#include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
 
 using HipExclusiveScanTypes = 
   Test< camp::cartesian_product< HipForallExecPols,

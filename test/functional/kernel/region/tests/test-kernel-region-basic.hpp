@@ -5,11 +5,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_REGION_HPP__
-#define __TEST_KERNEL_REGION_HPP__
+#ifndef __TEST_KERNEL_REGION_BASIC_HPP__
+#define __TEST_KERNEL_REGION_BASIC_HPP__
 
-#include "test-kernel-region-utils.hpp"
-
+#include "test-kernel-region-data.hpp"
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
@@ -71,7 +70,7 @@ void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
                         check_array);
 }
 
-TYPED_TEST_P(KernelRegionFunctionalTest, RegionBasicKernel)
+TYPED_TEST_P(KernelRegionBasicTest, RegionBasicKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -82,7 +81,4 @@ TYPED_TEST_P(KernelRegionFunctionalTest, RegionBasicKernel)
   KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelRegionFunctionalTest,
-                            RegionBasicKernel);
-
-#endif  // __TEST_KERNEL_REGION_HPP__
+#endif  // __TEST_KERNEL_REGION_BASIC_HPP__
