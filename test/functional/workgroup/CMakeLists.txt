@@ -15,7 +15,7 @@ function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
       configure_file( test-workgroup-${TESTNAME}.cpp.in
                       test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
       raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
-                     SOURCES test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
 
       target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
