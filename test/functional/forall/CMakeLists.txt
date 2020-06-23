@@ -31,14 +31,14 @@ endif()
 add_subdirectory(indexset)
 add_subdirectory(indexset-view)
 
-dd_subdirectory(segment)
+add_subdirectory(segment)
 add_subdirectory(segment-view)
 
 add_subdirectory(atomic-basic)
 add_subdirectory(atomic-view)
 add_subdirectory(atomic-ref)
 
-add_subdirectory(reduce-sanity)
+add_subdirectory(reduce-basic)
 
 unset( FORALL_BACKENDS ) 
 

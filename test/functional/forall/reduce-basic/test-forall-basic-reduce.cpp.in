@@ -18,18 +18,14 @@
 
 
 //
-// headers for tests in ./tests directory
+// Header for tests in ./tests directory
 //
-// Note: CMake adds ./tests as an include dir for these tests
+// Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-reduce-sanity-sum.hpp"
-#include "test-forall-reduce-sanity-min.hpp"
-#include "test-forall-reduce-sanity-max.hpp"
-#include "test-forall-reduce-sanity-minloc.hpp"
-#include "test-forall-reduce-sanity-maxloc.hpp"
+#include "test-forall-basic-@REDUCETYPE@.hpp"
 
 //
-// Data types for reduction sanity tests
+// Data types for reduction basic tests
 //
 using ReductionDataTypeList = camp::list< int,
                                           float,
@@ -37,9 +33,9 @@ using ReductionDataTypeList = camp::list< int,
 
 
 //
-// Cartesian product of types used in parammeterized tests
+// Cartesian product of types used in parameterized tests
 //
-using @BACKEND@ForallReduceSanityTypes =
+using @BACKEND@ForallReduceBasicTypes =
   Test< camp::cartesian_product<ReductionDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
@@ -49,5 +45,5 @@ using @BACKEND@ForallReduceSanityTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Forall@REDUCETYPE@SanityTest,
-                               @BACKEND@ForallReduceSanityTypes);
+                               Forall@REDUCETYPE@BasicTest,
+                               @BACKEND@ForallReduceBasicTypes);

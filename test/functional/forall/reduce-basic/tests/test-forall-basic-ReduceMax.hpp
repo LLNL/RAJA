@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_REDUCESUM_SANITY_HPP__
-#define __TEST_FORALL_REDUCESUM_SANITY_HPP__
+#ifndef __TEST_FORALL_BASIC_REDUCEMAX_HPP__
+#define __TEST_FORALL_BASIC_REDUCEMAX_HPP__
 
 #include <cstdlib>
 #include <numeric>
 
 template <typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceSumSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMaxBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
@@ -29,41 +29,45 @@ void ForallReduceSumSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last
                                     &test_array);
 
   const int modval = 100;
+  const DATA_TYPE max_init = -1;
+  const DATA_TYPE big_max = modval + 1;
 
   for (RAJA::Index_type i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
 
-  DATA_TYPE ref_sum = 0;
+  DATA_TYPE ref_max = max_init;
   for (RAJA::Index_type i = first; i < last; ++i) {
-    ref_sum += test_array[i]; 
+    ref_max = RAJA_MAX(test_array[i], ref_max); 
   }
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
-
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
+  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> maxinit(big_max);
+  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max(max_init);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-    sum  += working_array[idx];
-    sum2 += working_array[idx];
+    maxinit.max( working_array[idx] );
+    max.max( working_array[idx] );
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum2.get()), ref_sum + 2);
+  ASSERT_EQ(static_cast<DATA_TYPE>(maxinit.get()), big_max);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
 
-  sum.reset(0);
+  max.reset(max_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
 
-  const int nloops = 2;
-
-  for (int j = 0; j < nloops; ++j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-      sum += working_array[idx];
-    });
-  }
-
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), nloops * ref_sum);
+  DATA_TYPE factor = 2;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    max.max( working_array[idx] * factor);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
+   
+  factor = 3;
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    max.max( working_array[idx] * factor);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,
@@ -72,29 +76,28 @@ void ForallReduceSumSanityTestImpl(RAJA::Index_type first, RAJA::Index_type last
                                       test_array);
 }
 
-
-TYPED_TEST_SUITE_P(ForallReduceSumSanityTest);
+TYPED_TEST_SUITE_P(ForallReduceMaxBasicTest);
 template <typename T>
-class ForallReduceSumSanityTest : public ::testing::Test
+class ForallReduceMaxBasicTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallReduceSumSanityTest, ReduceSumSanityForall)
+TYPED_TEST_P(ForallReduceMaxBasicTest, ReduceMaxBasicForall)
 {
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceSumSanityTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallReduceSumSanityTest,
-                            ReduceSumSanityForall);
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxBasicTest,
+                            ReduceMaxBasicForall);
 
-#endif  // __TEST_FORALL_REDUCESUM_SANITY_HPP__
+#endif  // __TEST_FORALL_BASIC_REDUCEMAX_HPP__

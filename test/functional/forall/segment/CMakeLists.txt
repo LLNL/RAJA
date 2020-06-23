@@ -23,7 +23,7 @@ foreach( BACKEND ${FORALL_BACKENDS} )
     raja_add_test( NAME test-forall-${SEGTYPE}-${BACKEND}
                    SOURCES test-forall-${SEGTYPE}-${BACKEND}.cpp )
 
-    target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe PRIVATE
-                               ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()
