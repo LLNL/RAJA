@@ -1,16 +1,17 @@
 #ifndef RAJA_Plugin_Init_HPP
 #define RAJA_Plugin_Init_HPP
 
+#include <string>
+#include <vector>
+
 namespace RAJA {
 namespace plugin {
 
-#include <string>
+std::vector<std::string> paths;
 
-static std::string path;
-
-void Init(const std::string& newpath)
-{
-    path = newpath;
+void init(const std::string& path)
+{   
+    paths.push_back(path);
 }
 
 } // end namespace plugin
