@@ -2,6 +2,7 @@
 #define RAJA_Runtime_Plugin_Loader_HPP
 
 #include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/util/PluginInit.hpp"
 
 #include <dlfcn.h>
 #include <dirent.h>
@@ -21,10 +22,42 @@ public:
       perror("[PluginLoader]: Could not find environment variable RAJA_PLUGINS");
       return;
     }
+    loadDirectory(env);
+  }
+
+  void preLaunch(RAJA::util::PluginContext p)
+  {
+    // Checking for new plugin directories to add.
+    if (!RAJA::plugin::paths.empty())
+    {
+      for (auto &path : RAJA::plugin::paths)
+      {
+        loadDirectory(path.c_str());
+      }
+      RAJA::plugin::paths.clear();
+    }
+
+    for (auto &plugin : plugins)
+    {
+      plugin->preLaunch(p);
+    }
+  }
+
+  void postLaunch(RAJA::util::PluginContext p)
+  {
+    for (auto &plugin : plugins)
+    {
+      plugin->postLaunch(p);
+    }
+  }
+
+private:
+  void loadDirectory(const char *env)
+  {
     std::string path(env);
-    // Opening plugin directory.
     DIR *dir;
     struct dirent *file;
+
     if ((dir = opendir(env)) != NULL)
     {
       while ((file = readdir(dir)) != NULL)
@@ -42,23 +75,6 @@ public:
     }
   }
 
-  void preLaunch(RAJA::util::PluginContext p)
-  {
-    for (auto &plugin : plugins)
-    {
-      plugin->preLaunch(p);
-    }
-  }
-
-  void postLaunch(RAJA::util::PluginContext p)
-  {
-    for (auto &plugin : plugins)
-    {
-      plugin->postLaunch(p);
-    }
-  }
-
-private:
   void loadPlugin(const std::string &path)
   {
     void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
