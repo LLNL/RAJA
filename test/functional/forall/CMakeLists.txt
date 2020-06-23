@@ -5,16 +5,16 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(indexset)
-add_subdirectory(indexset-view)
+raja_add_test_subdirectory(indexset)
+raja_add_test_subdirectory(indexset-view)
 
-add_subdirectory(segment)
-add_subdirectory(segment-view)
+raja_add_test_subdirectory(segment)
+raja_add_test_subdirectory(segment-view)
 
-add_subdirectory(atomic-basic)
-add_subdirectory(atomic-view)
-add_subdirectory(atomic-ref)
+raja_add_test_subdirectory(atomic-basic)
+raja_add_test_subdirectory(atomic-view)
+raja_add_test_subdirectory(atomic-ref)
 
-add_subdirectory(reduce-sanity)
+raja_add_test_subdirectory(reduce-sanity)
 
-add_subdirectory(region)
+raja_add_test_subdirectory(region)
