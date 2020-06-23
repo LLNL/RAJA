@@ -10,6 +10,7 @@
 
 #include "RAJA/util/PluginContext.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/util/RuntimePluginLoader.hpp"
 
 namespace RAJA {
 namespace util {
