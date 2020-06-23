@@ -3,6 +3,7 @@
 *.a
 *.exe
 *.gch
-build/
-build-*/
+/build/
+/build_*/
+/build-*/
 /Debug/
