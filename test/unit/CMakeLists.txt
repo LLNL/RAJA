@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(index)
-add_subdirectory(internal)
-add_subdirectory(util)
-add_subdirectory(reducer)
-add_subdirectory(atomic)
-add_subdirectory(view-layout)
+raja_add_test_subdirectory(index)
+raja_add_test_subdirectory(internal)
+raja_add_test_subdirectory(util)
+raja_add_test_subdirectory(reducer)
+raja_add_test_subdirectory(atomic)
+raja_add_test_subdirectory(view-layout)

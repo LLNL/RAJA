@@ -7,11 +7,11 @@
 
 include_directories(include)
 
-add_subdirectory(integration)
+raja_add_test_subdirectory(integration)
 
-add_subdirectory(functional)
+raja_add_test_subdirectory(functional)
 
-add_subdirectory(unit)
+raja_add_test_subdirectory(unit)
 
-add_subdirectory(old-tests)
+raja_add_test_subdirectory(old-tests)
 
