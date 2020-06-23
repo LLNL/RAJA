@@ -25,9 +25,7 @@ inline void forone(L&& run);
 
 // base classes to represent host or device in exec_dispatcher
 struct RunOnHost {};
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 struct RunOnDevice {};
-#endif
 
 // sequential forone policy
 struct forone_seq : public RunOnHost  { };

@@ -26,7 +26,7 @@ TYPED_TEST_SUITE_P(WorkGroupBasicVtableSingleUnitTest);
 template  < typename ForOnePol,
             typename ... CallArgs >
 typename  std::enable_if<
-            std::is_base_of<RunOnHost, ForOnePol>::value
+            !std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
 call_dispatcher( void(*call_function)(CallArgs...),
                  CallArgs... callArgs )
