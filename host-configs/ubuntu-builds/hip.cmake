@@ -11,7 +11,7 @@ set(ENABLE_HIP ON CACHE BOOL "")
 set(ENABLE_OPENMP OFF CACHE BOOL "")
 set(ENABLE_CUDA Off CACHE BOOL "")
 
-set(HIP_ROOT_DIR "/opt/rocm/hip" CACHE PATH "HIP ROOT directory path")
+set(HIP_ROOT_DIR "${ROCM_DIR}/hip" CACHE PATH "HIP ROOT directory path")
 
 set(CMAKE_CXX_COMPILER "/usr/bin/g++" CACHE PATH "")
 set(CMAKE_C_COMPILER "/usr/bin/gcc" CACHE PATH "")
@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-rpath=/opt/rocm/lib64" CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,-rpath=${ROCM_DIR}/lib64" CACHE STRING "")
 
 # set(HIP_COMMON_OPT_FLAGS  "--amdgpu-target=gfx900")
 set(HIP_COMMON_OPT_FLAGS )
