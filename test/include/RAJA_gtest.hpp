@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_gtest_HPP
-#define RAJA_gtest_HPP
+#ifndef __RAJA_gtest_HPP__
+#define __RAJA_gtest_HPP__
 
 #ifdef RAJA_COMPILER_MSVC
 // disable some warnings for MSVC that we can't control, because they're emitted

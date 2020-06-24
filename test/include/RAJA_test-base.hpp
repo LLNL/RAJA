@@ -5,10 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_UTILS_HPP__
-#define __TEST_UTILS_HPP__
+//
+// Fundamental includes and structs used throughout RAJA tests.
+//
 
-#include "camp/resource.hpp"
+#ifndef __RAJA_test_base_HPP__
+#define __RAJA_test_base_HPP__
+
+#include "RAJA/RAJA.hpp"
+
 #include "gtest/gtest.h"
 
 //
@@ -23,21 +28,4 @@ struct Test<camp::list<T...>> {
 };
 
 
-//
-// Memory resource types for beck-end execution
-//
-using HostResourceList = camp::list<camp::resources::Host>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaResourceList = camp::list<camp::resources::Cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipResourceList = camp::list<camp::resources::Hip>;
-#endif
-
-#endif  // __TEST_UTILS_HPP__
+#endif // __RAJA_test_base_HPP__

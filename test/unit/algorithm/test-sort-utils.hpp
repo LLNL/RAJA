@@ -20,11 +20,11 @@
 #ifndef __TEST_SORT_HPP__
 #define __TEST_SORT_HPP__
 
-#include <RAJA/RAJA.hpp>
-#include "RAJA_gtest.hpp"
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-forall-data.hpp"
 #include "type_helper.hpp"
-#include "RAJA_unit_forone.hpp"
-#include "test-utils.hpp"
+#include "RAJA_unit-test-forone.hpp"
 
 #include <string>
 #include <list>

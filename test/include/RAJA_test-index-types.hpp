@@ -5,16 +5,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_UTILS_HPP__
-#define __TEST_FORALL_UTILS_HPP__
+#ifndef __RAJA_test_index_types_HPP__
+#define __RAJA_test_index_types_HPP__
 
 #include "RAJA/RAJA.hpp"
 
-#include "camp/resource.hpp"
 #include "camp/list.hpp"
-
-#include "gtest/gtest.h"
-#include "test-utils.hpp"
 
 //
 // Strongly typed indexes
@@ -55,38 +51,4 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      StrongULL,
                                      unsigned long long>;
 
-
-//
-// Memory allocation/deallocation  methods for test execution
-//
-
-template<typename T>
-void allocateForallTestData(T N,
-                            camp::resources::Resource& work_res,
-                            T** work_array,
-                            T** check_array,
-                            T** test_array)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
-
-  *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
-
-  *check_array = host_res.allocate<T>(RAJA::stripIndexType(N));
-  *test_array = host_res.allocate<T>(RAJA::stripIndexType(N));
-}
-
-template<typename T>
-void deallocateForallTestData(camp::resources::Resource& work_res,
-                              T* work_array,
-                              T* check_array,
-                              T* test_array)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
-
-  work_res.deallocate(work_array);
-
-  host_res.deallocate(check_array);
-  host_res.deallocate(test_array);
-}
-
-#endif  // __TEST_FORALL_UTILS_HPP__
+#endif  // __RAJA_test_index_types_HPP__

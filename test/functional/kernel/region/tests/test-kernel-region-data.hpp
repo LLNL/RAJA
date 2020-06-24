@@ -5,19 +5,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_REGION_UTILS_HPP__
-#define __TEST_KERNEL_REGION_UTILS_HPP__
-
-#include "RAJA/RAJA.hpp"
+#ifndef __TEST_KERNEL_REGION_DATA_HPP__
+#define __TEST_KERNEL_REGION_DATA_HPP__
 
 #include "camp/resource.hpp"
-
-#include "gtest/gtest.h"
-
-template <typename T>
-class KernelRegionFunctionalTest : public ::testing::Test
-{
-};
 
 template <typename T>
 void allocRegionTestData(int N,
@@ -45,7 +36,5 @@ void deallocRegionTestData(camp::resources::Resource& work_res,
 
   host_res.deallocate(check);
 }
-
-TYPED_TEST_SUITE_P(KernelRegionFunctionalTest);
 
 #endif  // __TEST_KERNEL_REGION_UTILS_HPP__

@@ -166,10 +166,17 @@ struct LoopData {
 
 
 template <camp::idx_t ArgumentId, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
+using segment_diff_type =
     typename std::iterator_traits<
         typename camp::at_v<typename Data::segment_tuple_t::TList,
-                            ArgumentId>::iterator>::difference_type
+                            ArgumentId>::iterator>::difference_type;
+
+
+
+
+template <camp::idx_t ArgumentId, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
+  segment_diff_type<ArgumentId, Data>
 {
   return camp::get<ArgumentId>(data.segment_tuple).end() -
          camp::get<ArgumentId>(data.segment_tuple).begin();

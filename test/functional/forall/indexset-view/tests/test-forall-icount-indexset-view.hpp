@@ -8,7 +8,7 @@
 #ifndef __TEST_FORALL_ICOUNT_INDEXSET_VIEW__HPP__
 #define __TEST_FORALL_ICOUNT_INDEXSET_VIEW__HPP__
 
-#include "../../test-forall-indexset-utils.hpp"
+#include "RAJA_test-indexset-build.hpp"
 
 #include <cstdio>
 #include <algorithm>

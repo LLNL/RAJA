@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-kernel-region.hpp"
-
-#include "../../forall/test-forall-utils.hpp"
+#include "test-kernel-region.hpp"
 
 using SequentialKernelRegionExecPols = 
   camp::list< 
@@ -50,5 +48,5 @@ using SequentialKernelRegionTypes =
                                 SequentialKernelRegionExecPols> >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Sequential,
-                               KernelRegionFunctionalTest,
+                               KernelRegionBasicTest,
                                SequentialKernelRegionTypes);

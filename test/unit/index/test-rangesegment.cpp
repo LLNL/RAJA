@@ -9,29 +9,15 @@
 /// Source file containing unit tests for RangeSegment
 ///
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+
+#include "RAJA_unit-test-types.hpp"
 
 template<typename T>
 class RangeSegmentUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<RAJA::Index_type,
-                                 int, 
-#if defined(RAJA_TEST_EXHAUSTIVE)
-                                 unsigned int,
-                                 char, 
-                                 unsigned char,
-                                 short,
-                                 unsigned short,
-                                 long,
-                                 unsigned long,
-                                 long int,
-                                 unsigned long int,
-                                 long long,
-#endif
-                                 unsigned long long>;
+TYPED_TEST_SUITE(RangeSegmentUnitTest, UnitIndexTypes);
 
-TYPED_TEST_SUITE(RangeSegmentUnitTest, MyTypes);
 
 template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeSegConstructorsTest()

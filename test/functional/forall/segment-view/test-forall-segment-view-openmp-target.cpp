@@ -5,11 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-segment-view.hpp"
+#include "test-forall-segment-view.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-
-#include "../test-forall-execpol.hpp"
 
 // Cartesian product of types for OpenMP target tests
 using OpenMPTargetForallSegmentTypes =
