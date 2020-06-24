@@ -80,7 +80,22 @@ RAJA unstable sort operations look like the following:
  * ``RAJA::sort< exec_policy >(iter, iter + N)``
  * ``RAJA::sort< exec_policy >(iter, iter + N, comparator)``
 
-Note that this is essentially the same as :ref:`scan-label`.
+For example sorting the 'in' array filled with this sequence of values::
+
+   6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
+
+by performing a sequential unstable sort operation using the following code::
+
+.. literalinclude:: ../../../../examples/tut_sort.cpp
+   :start-after: _sort_seq_start
+   :end-before: _sort_seq_end
+   :language: C++
+
+fills the 'out' array with this sequence of values::
+
+   0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
+
+Note that the syntax is essentially the same as :ref:`scan-label`.
 Here, 'container' is a range of elements and 'iter' is a random access
 iterator to a range of elements. 'container' and 'iter' provide access to the
 input sequence and contain the output sequence at the end of sort. The first
