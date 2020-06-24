@@ -92,7 +92,7 @@ will be shown shortly.
 Stable Sorts
 ^^^^^^^^^^^^^^^^
 
-A sequential stable sort (plus) operation is performed by:
+A sequential stable sort (less) operation is performed by:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_seq_less_start
