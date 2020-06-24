@@ -131,8 +131,11 @@ struct icount_adapter {
 };
 
 struct CallForall {
+  template <typename T, typename ExecutionPolicy, typename LoopBody>
+  RAJA_INLINE void operator()(T const&, ExecutionPolicy, LoopBody) const;
+
   template <typename T, typename ExecPol, typename Body>
-  RAJA_INLINE void operator()(T const&, ExecPol, Body) const;
+  RAJA_INLINE camp::resources::Event operator()(T const&, ExecPol, Body, camp::resources::Resource&) ;
 };
 
 struct CallForallIcount {
@@ -308,9 +311,11 @@ RAJA::resources::Event forall(RAJA::resources::Resource &r,
   auto body = trigger_updates_before(loop_body);
   std::cout << "IndexSet Resource Forall\n";
 
-  return wrap::forall_Iset(r, SegmentIterPolicy(), iset, [=](int segID) {
-    iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
+  wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
+  //return wrap::forall_Iset(r, SegmentIterPolicy(), iset, [=](int segID) {
+    iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body, r);
   });
+  return r.get_event();
 }
 
 }  // end namespace wrap
@@ -559,11 +564,21 @@ namespace detail
 template <typename T, typename ExecutionPolicy, typename LoopBody>
 RAJA_INLINE void CallForall::operator()(T const& segment,
                                         ExecutionPolicy,
-                                        LoopBody body) const
+                                        LoopBody body) //const
 {
   // this is only called inside a region, use impl
   using policy::sequential::forall_impl;
   forall_impl(ExecutionPolicy(), segment, body);
+}
+template <typename T, typename ExecutionPolicy, typename LoopBody>
+RAJA_INLINE camp::resources::Event CallForall::operator()(T const& segment,
+                                        ExecutionPolicy,
+                                        LoopBody body,
+                                        camp::resources::Resource &r) //const
+{
+  // this is only called inside a region, use impl
+  using policy::sequential::forall_impl;
+  return forall_impl(r, ExecutionPolicy(), segment, body);
 }
 
 constexpr CallForallIcount::CallForallIcount(int s) : start(s) {}

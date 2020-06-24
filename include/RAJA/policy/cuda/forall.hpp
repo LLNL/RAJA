@@ -163,6 +163,7 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async> exec,
                              LoopBody&& loop_body)
 {
   static RAJA::resources::Resource cuda_res{RAJA::resources::Cuda::get_default()};
+  std::cout<<"cuda forall_impl basic : DEFAULT\n";
   forall_impl(cuda_res, exec, iter, loop_body);
 }
 
