@@ -153,6 +153,21 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+  std::cout << "\n Running sequential stable_sort (non-decreasing)...\n";
+
+  std::copy_n(in, N, out);
+
+  // _sort_stable_seq_greater_start
+  RAJA::stable_sort<RAJA::seq_exec>(out, out + N,
+                                    RAJA::operators::greater<int>{});
+  // _sort_stable_seq_greater_end
+
+  checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  printArray(out, N);
+  std::cout << "\n";
+
+//----------------------------------------------------------------------------//
+
   std::cout << "\n Running sequential sort_pairs (non-decreasing)...\n";
 
   std::copy_n(in, N, out);

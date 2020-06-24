@@ -118,7 +118,29 @@ Note that we pass the number of threads per CUDA thread block as the template
 argument to the CUDA execution policy as we do in other cases.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Sort Pairs and Other Comparators
+Other Comparators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using a different comparator allows sorting in a different order.
+Here is a sequential stable sort that uses the 'greater' operator:
+
+.. literalinclude:: ../../../../examples/tut_sort.cpp
+   :start-after: _sort_stable_seq_greater_start
+   :end-before: _sort_stable_seq_greater_end
+   :language: C++
+
+This generates the following sequence of values in non-increasing order in
+the output array::
+
+   9 9 8 8 7 7 6 6 5 5 4 4 3 3 2 2 1 1 0 0
+
+Note that the only operators provided by RAJA that are valid to use in sort
+because they form a strict weak ordering of elements for arithmetic types are
+less and greater. Also note that the the cuda sort backend only supports
+RAJA's operators less and greater.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sort Pairs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sort *Pairs* operations generate the same results as the sort operations
