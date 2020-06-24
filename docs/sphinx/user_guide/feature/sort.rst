@@ -42,18 +42,21 @@ Sort Operations
 -----------------
 
 In general, a sort operation takes a sequence of numbers 'x' and a binary
-comparison operator 'op' that forms a strict weak ordering of the elements in x
-as input and produces a sequence of numbers 'y' as output. The output sequence
+comparison operator 'op' that forms a strict weak ordering of elements in input
+sequence x and produces a sequence of numbers 'y' as output. The output sequence
 is a permutation of the input sequence where each pair of elements 'a' and 'b,'
-where a is before b in the output sequence, satisfies !(b op a).
+where a is before b in the output sequence, satisfies ~(b op a).
 Sorts are stable if they always preserve the order of equivalent elements,
-where equivalent elements satisfy !(a op b) && !(b op a).
+where equivalent elements satisfy ~(a op b) and !(b op a).
 
-A **stable sort** takes an input sequence
+A **stable sort** takes an input sequence where elements labeled a\ :sub:`i`
+for all i are equivalent elements and a\ :sub:`i` appears before a\ :sub:`j` if
+i < j
 
    x = { a\ :sub:`0`\, b\ :sub:`0`\, a\ :sub:`1`\, ... }
 
-and calculates the output sequence:
+and calculates the sorted output sequence that preserves the order of equivalent
+elements, so a\ :sub:`i` still appears before a\ :sub:`j` if i < j:
 
    y = { a\ :sub:`0`\, a\ :sub:`1`\, b\ :sub:`0`\, ... }
 
@@ -77,6 +80,7 @@ RAJA unstable sort operations look like the following:
  * ``RAJA::sort< exec_policy >(iter, iter + N)``
  * ``RAJA::sort< exec_policy >(iter, iter + N, comparator)``
 
+Note that this is essentially the same as :ref:`scan-label`.
 Here, 'container' is a range of elements and 'iter' is a random access
 iterator to a range of elements. 'container' and 'iter' provide access to the
 input sequence and contain the output sequence at the end of sort. The first
@@ -93,9 +97,10 @@ separately:
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter)``
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter, comparator)``
 
-Sort pairs generates the same output sequence of keys as sort and also reorders
-vals by permuting it the same as it did the keys; i.e. sorting the pairs based
-on their keys. The 'comparator' used in sort_pairs only compares keys.
+Sort pairs generates the same output sequence of 'keys' as sort and reorders
+'vals' by permuting them the same as it did the 'keys'; i.e. sorting
+the pairs based on their 'keys'. The 'comparator' used in sort_pairs only
+compares 'keys'.
 
 ---------------------
 RAJA Stable Sorts
@@ -124,8 +129,7 @@ RAJA provides two operators that can be used to produce different ordered sorts:
   * ``RAJA::operators::less<T>``
   * ``RAJA::operators::greater<T>``
 
-.. note:: * All RAJA comparison operators are in the namespace
-            ``RAJA::operators``.
+.. note:: * All RAJA comparison operators are in the namespace ``RAJA::operators``.
 
 -------------------
 Sort Policies
