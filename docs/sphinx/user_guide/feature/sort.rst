@@ -29,12 +29,8 @@ A few important notes:
 Also:
 
 .. note:: * For sorts using the CUDA back-end, RAJA uses the implementations
-            provided by the NVIDIA cub library, which is available in the
-            RAJA source repository as a Git submodule. The CMake variable
-            ``CUB_DIR`` will be automatically set to the location of the cub
-            library when CUDA is enabled; to use a different version of the
-            cub library, install it and set the ``CUB_DIR`` variable to the
-            desired location when running CMake.
+            provided by the NVIDIA cub library. For information please see
+            :ref:`build-external-tpl-label`.
           * The RAJA CUDA back-end implementation only supports sorting
             arithmetic types using RAJA operators less and greater.
 
