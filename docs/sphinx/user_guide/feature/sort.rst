@@ -86,7 +86,7 @@ For example sorting the 'in' array filled with this sequence of values::
 
 by performing a sequential unstable sort operation using the following code::
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../examples/tut_sort.cpp
    :start-after: _sort_seq_start
    :end-before: _sort_seq_end
    :language: C++
