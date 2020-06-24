@@ -9,9 +9,11 @@
 # Function that generates test file and build target for each
 # sub-test and backend
 #
-function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+macro( buildunitworkgrouptest my_TESTNAME SUBTESTNAMES BACKENDS )
+  set(TESTNAME ${my_TESTNAME})
   foreach( BACKEND ${BACKENDS} )
     foreach( SUBTESTNAME ${SUBTESTNAMES} )
+      message("  buildunitworkgrouptest: ${TESTNAME} ${BACKEND} ${SUBTESTNAME}")
       configure_file( test-workgroup-${TESTNAME}.cpp.in
                       test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
       raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
@@ -21,7 +23,8 @@ function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
-endfunction()
+  unset(TESTNAME)
+endmacro()
 
 
 set(BACKENDS Sequential)

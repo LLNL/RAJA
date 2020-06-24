@@ -9,7 +9,7 @@
 # Function that generates test file and build target for each
 # sub-test and backend
 #
-function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
   foreach( BACKEND ${BACKENDS} )
     foreach( SUBTESTNAME ${SUBTESTNAMES} )
       configure_file( test-workgroup-${TESTNAME}.cpp.in
@@ -21,7 +21,7 @@ function( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
-endfunction()
+endmacro()
 
 
 set(BACKENDS Sequential)
