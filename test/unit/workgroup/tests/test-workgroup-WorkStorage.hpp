@@ -364,6 +364,25 @@ void testWorkGroupWorkStorageMultiple(
   using type1 = std::array<double, 6>;
   using type2 = std::array<double, 14>;
 
+  auto make_type0 = [](size_t i) {
+    type0 obj(-(type0)i);
+    return obj;
+  };
+  auto make_type1 = [](size_t i) {
+    type1 obj{};
+    for (size_t j = 0; j < 6; ++j) {
+      obj[j] = 100.0 + 10.0 * j + i;
+    }
+    return obj;
+  };
+  auto make_type2 = [](size_t i) {
+    type2 obj{};
+    for (size_t j = 0; j < 14; ++j) {
+      obj[j] = 1000.0 + 10.0 * j + i;
+    }
+    return obj;
+  };
+
   using callable0 = TestCallable<type0>;
   using callable1 = TestCallable<type1>;
   using callable2 = TestCallable<type2>;
@@ -384,7 +403,7 @@ void testWorkGroupWorkStorageMultiple(
     std::vector<callable0> vec0;
     vec0.reserve(num0);
     for (size_t i = 0; i < num0; ++i) {
-      vec0.emplace_back(-(type0)i);
+      vec0.emplace_back(make_type0(i));
       ASSERT_FALSE(vec0[i].move_constructed);
       ASSERT_FALSE(vec0[i].moved_from);
       container.template emplace<callable0>(vtable0, std::move(vec0[i]));
@@ -395,8 +414,7 @@ void testWorkGroupWorkStorageMultiple(
     std::vector<callable1> vec1;
     vec1.reserve(num1);
     for (size_t i = 0; i < num1; ++i) {
-      vec1.emplace_back(type1(
-          { 100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i }));
+      vec1.emplace_back(make_type1(i));
       ASSERT_FALSE(vec1[i].move_constructed);
       ASSERT_FALSE(vec1[i].moved_from);
       container.template emplace<callable1>(vtable1, std::move(vec1[i]));
@@ -407,10 +425,7 @@ void testWorkGroupWorkStorageMultiple(
     std::vector<callable2> vec2;
     vec2.reserve(num2);
     for (size_t i = 0; i < num2; ++i) {
-      vec2.emplace_back(type2(
-          { 1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
-            1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
-            1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i }));
+      vec2.emplace_back(make_type2(i));
       ASSERT_FALSE(vec2[i].move_constructed);
       ASSERT_FALSE(vec2[i].moved_from);
       container.template emplace<callable2>(vtable2, std::move(vec2[i]));
@@ -439,12 +454,12 @@ void testWorkGroupWorkStorageMultiple(
       auto iter = container2.begin();
 
       for (size_t i = 0; i < num0; ++i) {
-        type0 val = 1;
+        type0 val{};
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type0 expected = -(type0)i;
+        type0 expected = make_type0(i);
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
@@ -453,14 +468,12 @@ void testWorkGroupWorkStorageMultiple(
       }
 
       for (size_t i = 0; i < num1; ++i) {
-        type1 val = type1(
-            { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 });
+        type1 val{};
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type1 expected = type1(
-            { 100.0+i, 110.0+i, 120.0+i, 130.0+i, 140.0+i, 150.0+i });
+        type1 expected = make_type1(i);
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
@@ -469,18 +482,12 @@ void testWorkGroupWorkStorageMultiple(
       }
 
       for (size_t i = 0; i < num2; ++i) {
-        type2 val = type2(
-            { -1l, -1l, -1l, -1l, -1l,
-              -1l, -1l, -1l, -1l, -1l,
-              -1l, -1l, -1l, -1l });
+        type2 val{};
         bool move_constructed = false;
         bool moved_from = true;
         WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
-        type2 expected = type2(
-            { 1000.0+i, 1010.0+i, 1020.0+i, 1030.0+i, 1040.0+i,
-              1050.0+i, 1060.0+i, 1070.0+i, 1080.0+i, 1090.0+i,
-              1100.0+i, 1110.0+i, 1120.0+i, 1130.0+i });
+        type2 expected = make_type2(i);
         ASSERT_EQ(val, expected);
         ASSERT_TRUE(move_constructed);
         ASSERT_FALSE(moved_from);
