@@ -113,6 +113,9 @@ Using RAJA stable sorts is essentially the same as unstable sorts:
  * ``RAJA::stable_sort< exec_policy >(iter, iter + N)``
  * ``RAJA::stable_sort< exec_policy >(iter, iter + N, comparator)``
 
+RAJA also provides stable sort pairs that operate on key, value pairs stored
+separately:
+
  * ``RAJA::stable_sort_pairs< exec_policy >(keys_container, vals_container)``
  * ``RAJA::stable_sort_pairs< exec_policy >(keys_container, vals_container, comparator)``
  * ``RAJA::stable_sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter)``
