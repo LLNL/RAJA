@@ -6,10 +6,15 @@
 ###############################################################################
 
 #
-# Function that generates test file and build target for each
+# macro that generates test file and build target for each
 # sub-test and backend
+# this must be a macro or the linker variable set by FindHIP won't be set in
+# the right scope and linking will fail with a weird error from
+# hipcc_cmake_linker_helper because it expects the path to hipcc as the first
+# argument
 #
-macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+macro( buildunitworkgrouptest my_TESTNAME SUBTESTNAMES BACKENDS )
+  set(TESTNAME ${my_TESTNAME})
   foreach( BACKEND ${BACKENDS} )
     foreach( SUBTESTNAME ${SUBTESTNAMES} )
       configure_file( test-workgroup-${TESTNAME}.cpp.in
@@ -21,6 +26,7 @@ macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
+  unset(TESTNAME)
 endmacro()
 
 
