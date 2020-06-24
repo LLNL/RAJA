@@ -21,7 +21,7 @@ foreach( BACKEND ${FORALL_BACKENDS} )
     configure_file( test-forall-segment.cpp.in
                     test-forall-${SEGTYPE}-${BACKEND}.cpp )
     raja_add_test( NAME test-forall-${SEGTYPE}-${BACKEND}
-                   SOURCES test-forall-${SEGTYPE}-${BACKEND}.cpp )
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${SEGTYPE}-${BACKEND}.cpp )
 
     target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)

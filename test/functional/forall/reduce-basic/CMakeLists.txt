@@ -21,7 +21,7 @@ foreach( BACKEND ${FORALL_BACKENDS} )
     configure_file( test-forall-basic-reduce.cpp.in
                     test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
     raja_add_test( NAME test-forall-basic-${REDUCETYPE}-${BACKEND}
-                   SOURCES test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
 
     target_include_directories(test-forall-basic-${REDUCETYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
