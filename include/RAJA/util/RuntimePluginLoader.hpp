@@ -2,103 +2,98 @@
 #define RAJA_Runtime_Plugin_Loader_HPP
 
 #include "RAJA/util/PluginStrategy.hpp"
-#include "RAJA/util/PluginInit.hpp"
 
 #include <dlfcn.h>
 #include <dirent.h>
 #include <vector>
 #include <memory>
 
-using Plugin = RAJA::util::PluginStrategy;
-
-class PluginLoader : public Plugin
+namespace RAJA
 {
-public:
-  PluginLoader()
+  namespace plugin
   {
-    char *env = ::getenv("RAJA_PLUGINS");
-    if (nullptr == env)
-    {
-      return;
-    }
-    loadDirectory(env);
-  }
+    using Plugin = RAJA::util::PluginStrategy;
 
-  void preLaunch(RAJA::util::PluginContext p)
-  {
-    // Checking for new plugin directories to add.
-    if (!RAJA::plugin::paths.empty())
+    static std::vector<std::unique_ptr<Plugin>> plugins;
+
+    // Initialize plugin from a shared object file specified by 'path'.
+    void initPlugin(const std::string &path)
     {
-      for (auto &path : RAJA::plugin::paths)
+      void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
+      if (!plugin)
       {
-        loadDirectory(path.c_str());
+        printf("[PluginLoader]: Error: dlopen failed: %s\n", dlerror());
       }
-      RAJA::plugin::paths.clear();
-    }
 
-    for (auto &plugin : plugins)
-    {
-      plugin->preLaunch(p);
-    }
-  }
+      Plugin *(*getPlugin)() =
+          (Plugin * (*)()) dlsym(plugin, "getPlugin");
 
-  void postLaunch(RAJA::util::PluginContext p)
-  {
-    for (auto &plugin : plugins)
-    {
-      plugin->postLaunch(p);
-    }
-  }
-
-private:
-  void loadDirectory(const char *env)
-  {
-    std::string path(env);
-    DIR *dir;
-    struct dirent *file;
-
-    if ((dir = opendir(env)) != NULL)
-    {
-      while ((file = readdir(dir)) != NULL)
+      if (getPlugin)
       {
-        if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+        plugins.push_back(std::unique_ptr<Plugin>(getPlugin()));
+      }
+      else
+      {
+        printf("Error: dlsym failed: %s\n", dlerror());
+      }
+    }
+
+    // Initialize all plugins in a directory specified by 'path'.
+    void initDirectory(const std::string &path)
+    {
+      DIR *dir;
+      struct dirent *file;
+
+      if ((dir = opendir(path.c_str())) != NULL)
+      {
+        while ((file = readdir(dir)) != NULL)
         {
-          loadPlugin(path + "/" + file->d_name);
+          if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+          {
+            initPlugin(path + "/" + file->d_name);
+          }
+        }
+        closedir(dir);
+      }
+      else
+      {
+        perror("[PluginLoader]: Could not open plugin directory");
+      }
+    }
+
+    class RuntimePluginLoader : public Plugin
+    {
+    public:
+      RuntimePluginLoader()
+      {
+        char *env = ::getenv("RAJA_PLUGINS");
+        if (nullptr == env)
+        {
+          return;
+        }
+        initDirectory(std::string (env));
+      }
+
+      void preLaunch(RAJA::util::PluginContext p)
+      {
+        for (auto &plugin : plugins)
+        {
+          plugin->preLaunch(p);
         }
       }
-      closedir(dir);
-    }
-    else
-    {
-      perror("[PluginLoader]: Could not open plugin directory");
-    }
-  }
 
-  void loadPlugin(const std::string &path)
-  {
-    void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
-    if (!plugin)
-    {
-      printf("[PluginLoader]: Error: dlopen failed: %s\n", dlerror());
-    }
+      void postLaunch(RAJA::util::PluginContext p)
+      {
+        for (auto &plugin : plugins)
+        {
+          plugin->postLaunch(p);
+        }
+      }
+    }; // end RuntimePluginLoader class
 
-    Plugin *(*getPlugin)() =
-        (Plugin * (*)()) dlsym(plugin, "getPlugin");
+    static RAJA::util::PluginRegistry::Add<RuntimePluginLoader> P("RuntimePluginLoader", "RuntimePluginLoader");
 
-    if (getPlugin)
-    {
-      plugins.push_back(std::unique_ptr<Plugin>(getPlugin()));
-    }
-    else
-    {
-      printf("Error: dlsym failed: %s\n", dlerror());
-    }
-  }
-
-private:
-  std::vector<std::unique_ptr<Plugin>> plugins;
-};
-
-static RAJA::util::PluginRegistry::Add<PluginLoader> P("RuntimePluginLoader", "RuntimePluginLoader");
+  } // end namespace plugin
+} // end namespace RAJA
 
 #endif
