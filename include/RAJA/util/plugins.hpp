@@ -52,7 +52,9 @@ callInitPlugins(PluginOptions p) noexcept
   }
 }
 
-void init_plugins(const std::string& path)
+inline
+void
+init_plugins(const std::string& path)
 {   
   callInitPlugins(make_options(path));
 }

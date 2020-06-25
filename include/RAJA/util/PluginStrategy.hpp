@@ -26,7 +26,7 @@ class PluginStrategy
 
     virtual void postLaunch(PluginContext p) = 0;
 
-    virtual void init(PluginOptions p) {};
+    virtual void init(PluginOptions RAJA_UNUSED_ARG(p)) {}
 };
 
 using PluginRegistry = Registry<PluginStrategy>;

@@ -9,11 +9,12 @@ raja_add_executable(
   NAME plugin-example
   SOURCES test-plugin.cpp counter-plugin.cpp)
 
+
 raja_add_executable(
   NAME plugin-example-dynamic
   SOURCES test-plugin-dynamic.cpp)
   
- add_library(timer_plugin SHARED timer-plugin.cpp)
+add_library(timer_plugin SHARED timer-plugin.cpp)
 
 target_include_directories(timer_plugin
   PUBLIC

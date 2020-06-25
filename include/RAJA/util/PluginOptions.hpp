@@ -13,7 +13,7 @@ struct PluginOptions
     std::string str;
 };
 
-PluginOptions make_options(const std::string& newstr)
+inline PluginOptions make_options(const std::string& newstr)
 {
     return PluginOptions{newstr};
 }
