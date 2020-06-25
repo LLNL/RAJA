@@ -9,11 +9,11 @@
 #define RAJA_PluginStrategy_HPP
 
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/Registry.hpp"
 
 namespace RAJA {
 namespace util {
-
 
 class PluginStrategy 
 {
@@ -25,6 +25,8 @@ class PluginStrategy
     virtual void preLaunch(PluginContext p) = 0;
 
     virtual void postLaunch(PluginContext p) = 0;
+
+    virtual void init(PluginOptions p) = 0;
 };
 
 using PluginRegistry = Registry<PluginStrategy>;
