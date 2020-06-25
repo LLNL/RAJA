@@ -22,8 +22,6 @@ public:
       printf("[TimerPlugin]: Elapsed time of device kernel was %f ms\n", elapsedMs);
   }
 
-  void init (RAJA::util::PluginOptions RAJA_UNUSED_ARG(p)){}
-
 private:
   std::chrono::steady_clock::time_point start_time;
   std::chrono::steady_clock::time_point end_time;
