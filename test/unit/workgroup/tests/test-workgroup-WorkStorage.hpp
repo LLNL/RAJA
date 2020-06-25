@@ -347,7 +347,7 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStor
 template < typename T, size_t N >
 struct TestArray
 {
-  T a[N];
+  T a[N]{};
   T& operator[](size_t i) { return a[i]; }
   T const& operator[](size_t i) const { return a[i]; }
   friend inline bool operator==(TestArray const& lhs, TestArray const& rhs)
