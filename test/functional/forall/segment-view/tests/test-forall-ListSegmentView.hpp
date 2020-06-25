@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_LISTSEGMENT_VIEW_HPP__
-#define __TEST_FORALL_LISTSEGMENT_VIEW_HPP__
+#ifndef __TEST_FORALL_LISTSEGMENTVIEW_HPP__
+#define __TEST_FORALL_LISTSEGMENTVIEW_HPP__
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,7 +16,7 @@
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallListSegmentViewTest(INDEX_TYPE N)
+void ForallListSegmentViewTestImpl(INDEX_TYPE N)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -78,7 +78,7 @@ void ForallListSegmentViewTest(INDEX_TYPE N)
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallListSegmentOffsetViewTest(INDEX_TYPE N, INDEX_TYPE offset)
+void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -141,19 +141,28 @@ void ForallListSegmentOffsetViewTest(INDEX_TYPE N, INDEX_TYPE offset)
                                        test_array);
 }
 
-TYPED_TEST_P(ForallSegmentViewTest, ListSegmentForallView)
+TYPED_TEST_SUITE_P(ForallListSegmentViewTest);
+template <typename T>
+class ForallListSegmentViewTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallListSegmentViewTest, ListSegmentForallView)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallListSegmentViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
-  ForallListSegmentViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047);
-  ForallListSegmentViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000);
+  ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
+  ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047);
+  ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000);
 
-  ForallListSegmentOffsetViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13, 1);
-  ForallListSegmentOffsetViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047, 2);
-  ForallListSegmentOffsetViewTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000, 3);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13, 1);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047, 2);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000, 3);
 }
 
-#endif  // __TEST_FORALL_LISTSEGMENT_VIEW_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallListSegmentViewTest,
+                            ListSegmentForallView);
+
+#endif  // __TEST_FORALL_LISTSEGMENTVIEW_HPP__

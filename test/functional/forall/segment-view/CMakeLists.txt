@@ -5,36 +5,25 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-segment-view-seq
-  SOURCES test-forall-segment-view-seq.cpp)
+#
+# List of segment types for generating test files.
+#
+set(SEGVIEWTYPES ListSegmentView RangeSegmentView RangeSegment2DView RangeStrideSegmentView)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-view-openmp
-    SOURCES test-forall-segment-view-openmp.cpp)
-endif()
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-view-openmp-target
-    SOURCES test-forall-segment-view-openmp-target.cpp)
-endif()
+#
+# Generate tests for each enabled RAJA back-end.
+#
+# Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( BACKEND ${FORALL_BACKENDS} )
+  foreach( SEGVIEWTYPE ${SEGVIEWTYPES} )
+    configure_file( test-forall-segment-view.cpp.in
+                    test-forall-${SEGVIEWTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-${SEGVIEWTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${SEGVIEWTYPE}-${BACKEND}.cpp )
 
-if(RAJA_ENABLE_TBB)
-  raja_add_test(
-    NAME test-forall-segment-view-tbb
-    SOURCES test-forall-segment-view-tbb.cpp)
-endif()
-
-if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-segment-view-cuda
-    SOURCES test-forall-segment-view-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-segment-view-hip
-    SOURCES test-forall-segment-view-hip.cpp)
-endif()
+    target_include_directories(test-forall-${SEGVIEWTYPE}-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
+endforeach()

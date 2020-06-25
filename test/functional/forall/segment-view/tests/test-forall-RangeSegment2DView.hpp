@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_RANGESEGMENT_2DVIEW_HPP__
-#define __TEST_FORALL_RANGESEGMENT_2DVIEW_HPP__
+#ifndef __TEST_FORALL_RANGESEGMENT2DVIEW_HPP__
+#define __TEST_FORALL_RANGESEGMENT2DVIEW_HPP__
 
 #include <iostream>
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegment2DViewTest(INDEX_TYPE N)
+void ForallRangeSegment2DViewTestImpl(INDEX_TYPE N)
 {
   INDEX_TYPE lentot = N * N;
   const int NDIMS = 2;
@@ -56,7 +56,7 @@ void ForallRangeSegment2DViewTest(INDEX_TYPE N)
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegment2DOffsetViewTest(INDEX_TYPE N)
+void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
 {
   const INDEX_TYPE leninterior = N * N;
   const INDEX_TYPE lentot = (N + 2) * (N + 2);
@@ -110,6 +110,12 @@ void ForallRangeSegment2DOffsetViewTest(INDEX_TYPE N)
                                        test_array);
 }
 
+TYPED_TEST_SUITE_P(ForallRangeSegment2DViewTest);
+template <typename T>
+class ForallRangeSegment2DViewTest : public ::testing::Test
+{
+};
+
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
 void runOffsetViewTests()
@@ -120,21 +126,24 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
 void runOffsetViewTests()
 {
-  ForallRangeSegment2DOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(4);
-  ForallRangeSegment2DOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(100);
+  ForallRangeSegment2DOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(4);
+  ForallRangeSegment2DOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(100);
 }
 
 
-TYPED_TEST_P(ForallSegmentViewTest, RangeSegmentForall2DView)
+TYPED_TEST_P(ForallRangeSegment2DViewTest, RangeSegmentForall2DView)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallRangeSegment2DViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(4);
-  ForallRangeSegment2DViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(100);
+  ForallRangeSegment2DViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(4);
+  ForallRangeSegment2DViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(100);
 
   runOffsetViewTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_RANGESEGMENT_2DVIEW_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallRangeSegment2DViewTest,
+                            RangeSegmentForall2DView);
+
+#endif  // __TEST_FORALL_RANGESEGMENT2DVIEW_HPP__

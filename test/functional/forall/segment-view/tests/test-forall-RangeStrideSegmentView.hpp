@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_RANGESTRIDESEGMENT_VIEW_HPP__
-#define __TEST_FORALL_RANGESTRIDESEGMENT_VIEW_HPP__
+#ifndef __TEST_FORALL_RANGESTRIDESEGMENTVIEW_HPP__
+#define __TEST_FORALL_RANGESTRIDESEGMENTVIEW_HPP__
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeStrideSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last, 
-                                      DIFF_TYPE stride)
+void ForallRangeStrideSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last, 
+                                          DIFF_TYPE stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(first, last, stride);
   INDEX_TYPE N = r1.size();
@@ -60,44 +60,52 @@ void ForallRangeStrideSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last,
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_unsigned<INDEX_TYPE>::value>::type* = nullptr>
-void runNegativeStrideViewTests()
+void runNegativeIndexViewTests()
 {
 }
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
-void runNegativeStrideViewTests()
+void runNegativeIndexViewTests()
 {
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-10, -1, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 3);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-10, -1, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 3);
 
-// Test negative strides
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, -1, -1);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, 0, -2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, -1, -1);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(10, 0, -2);
 }
 
 
-TYPED_TEST_P(ForallSegmentViewTest, RangeStrideSegmentForallView)
+TYPED_TEST_SUITE_P(ForallRangeStrideSegmentViewTest);
+template <typename T>
+class ForallRangeStrideSegmentViewTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallRangeStrideSegmentViewTest, RangeStrideSegmentForallView)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
   using DIFF_TYPE   = typename std::make_signed<INDEX_TYPE>::type;
 
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, 1);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, 1);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 21, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 21, 2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, 1);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, 1);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 21, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 21, 2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 2);
 
 // Test size zero segments
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, -2);
-  ForallRangeStrideSegmentViewTest<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, -2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(0, 20, -2);
+  ForallRangeStrideSegmentViewTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>(1, 20, -2);
 
-  runNegativeStrideViewTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>();
+  runNegativeIndexViewTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_RANGESTRIDESEGMENT_VIEW_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallRangeStrideSegmentViewTest,
+                            RangeStrideSegmentForallView);
+
+#endif  // __TEST_FORALL_RANGESTRIDESEGMENTVIEW_HPP__

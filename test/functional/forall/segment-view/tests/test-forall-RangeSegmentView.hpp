@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_RANGESEGMENT_VIEW_HPP__
-#define __TEST_FORALL_RANGESEGMENT_VIEW_HPP__
+#ifndef __TEST_FORALL_RANGESEGMENTVIEW_HPP__
+#define __TEST_FORALL_RANGESEGMENTVIEW_HPP__
 
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
+void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
@@ -53,8 +53,8 @@ void ForallRangeSegmentViewTest(INDEX_TYPE first, INDEX_TYPE last)
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallRangeSegmentOffsetViewTest(INDEX_TYPE first, INDEX_TYPE last, 
-                                      INDEX_TYPE offset)
+void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first, INDEX_TYPE last, 
+                                          INDEX_TYPE offset)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first+offset, last+offset);
   INDEX_TYPE N = r1.end() - r1.begin();
@@ -108,29 +108,38 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<INDEX_TYPE>::value>::type* = nullptr>
 void runNegativeViewTests()
 {
-  ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
-  ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
+  ForallRangeSegmentViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0);
+  ForallRangeSegmentViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5);
 
-  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 1);
-  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 2);
+  ForallRangeSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 0, 1);
+  ForallRangeSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(-5, 5, 2);
 }
 
 
-TYPED_TEST_P(ForallSegmentViewTest, RangeSegmentForallView)
+TYPED_TEST_SUITE_P(ForallRangeSegmentViewTest);
+template <typename T>
+class ForallRangeSegmentViewTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallRangeSegmentViewTest, RangeSegmentForallView)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
-  ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
-  ForallRangeSegmentViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
+  ForallRangeSegmentViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5);
+  ForallRangeSegmentViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5);
+  ForallRangeSegmentViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255);
 
-  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5, 1);
-  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5, 2);
-  ForallRangeSegmentOffsetViewTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 3);
+  ForallRangeSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 5, 1);
+  ForallRangeSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 5, 2);
+  ForallRangeSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 255, 3);
 
   runNegativeViewTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_RANGESEGMENT_VIEW_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallRangeSegmentViewTest,
+                            RangeSegmentForallView);
+
+#endif  // __TEST_FORALL_RANGESEGMENTVIEW_HPP__
