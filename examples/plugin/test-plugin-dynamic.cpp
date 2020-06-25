@@ -11,7 +11,7 @@
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   // Loading .so files as plugins in current directory.
-  RAJA::util::init_plugins("./");
+  RAJA::util::init_plugins("../lib");
   
   double *a = new double[10];
   for (int i = 0; i < 4; i++)
