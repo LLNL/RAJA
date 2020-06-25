@@ -52,9 +52,12 @@ callInitPlugins(PluginOptions p) noexcept
   }
 }
 
+void init_plugins(const std::string& path)
+{   
+  callInitPlugins(make_options(path));
+}
+
 } // closing brace for util namespace
 } // closing brace for RAJA namespace
-
-#include "RAJA/util/PluginInit.hpp"
 
 #endif
