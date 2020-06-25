@@ -73,7 +73,7 @@ void Forall_IcountISetViewTest()
   RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >
     work_view(working_array, layout);
 
-  RAJA::forall_Icount<EXEC_POLICY>(iset, 
+  RAJA::forall_Icount<EXEC_POLICY>(working_res, iset,
     [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {
     work_view( icount ) = idx;
   });
