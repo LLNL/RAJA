@@ -33,9 +33,7 @@ namespace RAJA
       std::vector<std::unique_ptr<Parent>> plugins;
 
     }; // end RuntimePluginLoader class
-
-    static RAJA::util::PluginRegistry::Add<RuntimePluginLoader> P("RuntimePluginLoader", "RuntimePluginLoader");
-
+    
   } // end namespace util
 } // end namespace RAJA
 

@@ -89,5 +89,8 @@ namespace RAJA
       }
     }
 
+    
   } // end namespace util
 } // end namespace RAJA
+
+static RAJA::util::PluginRegistry::Add<RAJA::util::RuntimePluginLoader> P("RuntimePluginLoader", "RuntimePluginLoader");

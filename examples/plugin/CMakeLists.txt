@@ -15,8 +15,4 @@ raja_add_executable(
   SOURCES test-plugin-dynamic.cpp)
   
 add_library(timer_plugin SHARED timer-plugin.cpp)
-
-target_include_directories(timer_plugin
-  PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+target_link_libraries(timer_plugin PRIVATE RAJA)
