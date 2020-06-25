@@ -282,8 +282,6 @@ and their default settings:
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      ENABLE_CHAI                     Enable/disable RAJA internal support for
-                                      `CHAI <https://github.com/LLNL/CHAI>`_ 
       ENABLE_FT                       Enable/disable RAJA experimental
                                       loop-level fault-tolerance mechanism
       RAJA_REPORT_FT                  Enable/disable a report of fault-

@@ -51,7 +51,6 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
 option(ENABLE_TBB "Build TBB support" Off)
-option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
@@ -219,12 +218,6 @@ if (ENABLE_HIP)
       set(ENABLE_EXTERNAL_ROCPRIM Off)
      endif()
   endif ()
-endif ()
-
-if (ENABLE_CHAI)
-  set (raja_depends
-    ${raja_depends}
-    chai)
 endif ()
 
 if (ENABLE_TBB)
