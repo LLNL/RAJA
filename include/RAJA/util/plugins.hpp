@@ -1,4 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
@@ -9,8 +10,10 @@
 #define RAJA_plugins_HPP
 
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 #include "RAJA/util/RuntimePluginLoader.hpp"
+#include "RAJA/util/PluginInit.hpp"
 
 namespace RAJA {
 namespace util {
@@ -36,6 +39,18 @@ callPostLaunchPlugins(PluginContext p) noexcept
       ++plugin)
   {
     (*plugin).get()->postLaunch(p);
+  }
+}
+
+inline
+void
+callInitPlugins(PluginOptions p) noexcept
+{
+  for (auto plugin = PluginRegistry::begin(); 
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->init(p);
   }
 }
 
