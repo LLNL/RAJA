@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_BASIC_INDEXSET_HPP__
-#define __TEST_FORALL_BASIC_INDEXSET_HPP__
+#ifndef __TEST_FORALL_INDEXSET_HPP__
+#define __TEST_FORALL_INDEXSET_HPP__
 
 #include <cstdio>
 #include <algorithm>
 #include <vector>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallISetTest()
+void ForallIndexSetTestImpl()
 {
 
   using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
@@ -83,13 +83,22 @@ void ForallISetTest()
 }
 
 
+TYPED_TEST_SUITE_P(ForallIndexSetTest);
+template <typename T>
+class ForallIndexSetTest : public ::testing::Test
+{
+};
+
 TYPED_TEST_P(ForallIndexSetTest, IndexSetForall)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallISetTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
+  ForallIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }
 
-#endif  // __TEST_FORALL_BASIC_INDEXSET_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallIndexSetTest,
+                            IndexSetForall);
+
+#endif  // __TEST_FORALL_INDEXSET_HPP__

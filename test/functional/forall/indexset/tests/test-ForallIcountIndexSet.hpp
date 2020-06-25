@@ -14,7 +14,7 @@
 
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void Forall_IcountISetTest()
+void ForallIcountIndexSetTestImpl()
 {
 
   using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
@@ -74,7 +74,6 @@ void Forall_IcountISetTest()
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
-  // 
   for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(test_array[i], check_array[i]);
   }
@@ -86,13 +85,22 @@ void Forall_IcountISetTest()
 }
 
 
-TYPED_TEST_P(ForallIndexSetTest, IndexSetForall_Icount)
+TYPED_TEST_SUITE_P(ForallIcountIndexSetTest);
+template <typename T>
+class ForallIcountIndexSetTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallIcountIndexSetTest, IndexSetForallIcount)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  Forall_IcountISetTest<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
+  ForallIcountIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }
+
+REGISTER_TYPED_TEST_SUITE_P(ForallIcountIndexSetTest,
+                            IndexSetForallIcount);
 
 #endif  // __TEST_FORALL_ICOUNT_INDEXSET_HPP__
