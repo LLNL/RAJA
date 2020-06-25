@@ -56,7 +56,7 @@ namespace RAJA
         void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (!plugin)
         {
-          printf("[PluginLoader]: Error: dlopen failed: %s\n", dlerror());
+          printf("[RuntimePluginLoader]: dlopen failed: %s\n", dlerror());
         }
 
         Plugin *(*getPlugin)() =
@@ -68,8 +68,13 @@ namespace RAJA
         }
         else
         {
-          printf("Error: dlsym failed: %s\n", dlerror());
+          printf("[RuntimePluginLoader]: lsym failed: %s\n", dlerror());
         }
+      }
+
+      bool isSharedObject(std::string filename)
+      {
+        return (filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
       }
 
       // Initialize all plugins in a directory specified by 'path'.
@@ -82,7 +87,7 @@ namespace RAJA
         {
           while ((file = readdir(dir)) != NULL)
           {
-            if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+            if (isSharedObject(std::string(file->d_name)))
             {
               initPlugin(path + "/" + file->d_name);
             }
@@ -91,7 +96,7 @@ namespace RAJA
         }
         else
         {
-          perror("[PluginLoader]: Could not open plugin directory");
+          perror("[RuntimePluginLoader]: Could not open plugin directory");
         }
       }
 
