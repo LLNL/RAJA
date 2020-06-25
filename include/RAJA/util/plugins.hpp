@@ -1,5 +1,4 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
@@ -13,7 +12,6 @@
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 #include "RAJA/util/RuntimePluginLoader.hpp"
-#include "RAJA/util/PluginInit.hpp"
 
 namespace RAJA {
 namespace util {
@@ -56,5 +54,7 @@ callInitPlugins(PluginOptions p) noexcept
 
 } // closing brace for util namespace
 } // closing brace for RAJA namespace
+
+#include "RAJA/util/PluginInit.hpp"
 
 #endif
