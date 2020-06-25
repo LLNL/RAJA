@@ -53,7 +53,6 @@ set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
 option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
@@ -175,26 +174,27 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 endif()
 
 if (ENABLE_CUDA)
-  set (raja_depends
-    ${raja_depends}
-    cuda)
-endif ()
+  if (NOT TARGET cub)
+    set(CUB_DIR "" CACHE PATH "Path to external CUB root source directory.")
 
-if (ENABLE_CUDA)
-  if(ENABLE_EXTERNAL_CUB)
-    find_package(CUB)
-    if (CUB_FOUND)
+    if (CUB_DIR)
+      message(STATUS "Using external CUB.")
+
+      find_package(CUB MODULE REQUIRED)
+
       blt_register_library(
         NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
-      set(raja_depends
-        ${raja_depends}
-        cub)
-    else()
-      message(WARNING "External CUB not found.")
-      set(ENABLE_EXTERNAL_CUB Off)
-    endif()
+        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
+    else ()
+      message (STATUS "Using RAJA CUB submodule.")
+
+      blt_register_library(
+        NAME cub
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>)
+    endif ()
   endif ()
+
+  list(APPEND raja_depends cub cuda)
 endif ()
 
 if (ENABLE_HIP)
@@ -256,14 +256,21 @@ target_include_directories(RAJA
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
   $<INSTALL_INTERFACE:include>)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-if(NOT ENABLE_EXTERNAL_CUB)
-  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
-endif()
+
+if (CUB_DIR)
+  install(DIRECTORY $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>
+          DESTINATION include
+          FILES_MATCHING PATTERN *.cuh)
+else ()
+  install(DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+          DESTINATION include
+          FILES_MATCHING PATTERN *.cuh)
+endif ()
+
 if(NOT ENABLE_EXTERNAL_ROCPRIM)
   install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
