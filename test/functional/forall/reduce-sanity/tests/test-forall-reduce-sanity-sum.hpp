@@ -49,7 +49,7 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     sum  += working_array[idx];
     sum2 += working_array[idx];
   });

@@ -51,7 +51,7 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> mininit(small_min);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min(min_init);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     mininit.min( working_array[idx] );
     min.min( working_array[idx] );
   });
@@ -63,13 +63,13 @@ void ForallReduceMinSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
 
   DATA_TYPE factor = 3; 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     min.min( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
   factor = 2;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
     min.min( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);

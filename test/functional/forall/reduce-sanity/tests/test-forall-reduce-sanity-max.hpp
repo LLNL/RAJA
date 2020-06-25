@@ -50,7 +50,7 @@ void ForallReduceMaxSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> maxinit(big_max);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max(max_init);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     maxinit.max( working_array[idx] );
     max.max( working_array[idx] );
   });
@@ -62,13 +62,13 @@ void ForallReduceMaxSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     max.max( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     max.max( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
