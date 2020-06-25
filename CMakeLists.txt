@@ -227,22 +227,16 @@ if (ENABLE_TBB)
 endif ()
 
 if (NOT TARGET camp)
-  set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
-camp source repository")
-  if (EXTERNAL_CAMP_SOURCE_DIR)
-    message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
-    add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
-                     ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
-  else (EXTERNAL_CAMP_SOURCE_DIR)
-    find_package(camp QUIET)
-    if (NOT camp_FOUND)
-      message(STATUS "Using RAJA CAMP submodule.")
-      add_subdirectory(tpl/camp)
-    else (NOT camp_FOUND)
-      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-    endif(NOT camp_FOUND)
-  endif (EXTERNAL_CAMP_SOURCE_DIR)
-endif (NOT TARGET camp)
+  set(camp_DIR "" CACHE PATH "Path to directory containing campConfig.cmake.")
+
+  if (camp_DIR)
+    message(STATUS "Using external CAMP.")
+    find_package(camp CONFIG REQUIRED)
+  else ()
+    message(STATUS "Using RAJA CAMP submodule.")
+    add_subdirectory(tpl/camp)
+  endif ()
+endif ()
 
 blt_add_library(
   NAME RAJA
