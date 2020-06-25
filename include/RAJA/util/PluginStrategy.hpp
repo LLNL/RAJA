@@ -26,7 +26,7 @@ class PluginStrategy
 
     virtual void postLaunch(PluginContext p) = 0;
 
-    virtual void init(PluginOptions p) = 0;
+    virtual void init(PluginOptions p) {};
 };
 
 using PluginRegistry = Registry<PluginStrategy>;
