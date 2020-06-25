@@ -343,6 +343,26 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStor
   testWorkGroupWorkStorageInsertCall< StoragePolicy, Allocator >();
 }
 
+// work around inconsistent std::array support over stl versions
+template < typename T, size_t N >
+struct TestArray
+{
+  T a[N];
+  T& operator[](size_t i) { return a[i]; }
+  T const& operator[](size_t i) const { return a[i]; }
+  friend inline bool operator==(TestArray const& lhs, TestArray const& rhs)
+  {
+    for (size_t i = 0; i < N; ++i) {
+      if (lhs[i] == rhs[i]) continue;
+      else return false;
+    }
+    return true;
+  }
+  friend inline bool operator!=(TestArray const& lhs, TestArray const& rhs)
+  {
+    return !(lhs == rhs);
+  }
+};
 
 template <typename StoragePolicy,
           typename Allocator
@@ -361,8 +381,8 @@ void testWorkGroupWorkStorageMultiple(
   using WorkStruct_type = typename WorkStorage_type::value_type;
 
   using type0 = double;
-  using type1 = std::array<double, 6>;
-  using type2 = std::array<double, 14>;
+  using type1 = TestArray<double, 6>;
+  using type2 = TestArray<double, 14>;
 
   auto make_type0 = [](size_t i) {
     type0 obj(-(type0)i);
