@@ -221,6 +221,12 @@ if (ENABLE_HIP)
   endif ()
 endif ()
 
+if (ENABLE_HIP)
+   set(HIP_ROOT_DIR "/opt/rocm-3.5.0/hip" CACHE PATH "")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hip-device-lib-path=/opt/rocm-3.5.0/lib  -I/opt/rocm-3.5.0/llvm/lib/clang/11.0.0 -x hip")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --hip-device-lib-path=/opt/rocm-3.5.0/lib -I/opt/rocm-3.5.0/llvm/lib/clang/11.0.0 -x hip")
+endif()
+
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
