@@ -127,7 +127,7 @@ N cores.
 .. note:: You may use externally-supplied versions of the camp and cub 
           libraries with RAJA if you wish. To do so, pass the following 
           options to CMake:
-            * External camp: -Dcamp_DIR=<camp config dir name>
+            * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
             * External cub: -DCUB_DIR=<cub dir name>
 
 ----------------
