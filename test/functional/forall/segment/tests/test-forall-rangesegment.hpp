@@ -11,7 +11,6 @@
 #include "test-forall-segment.hpp"
 
 #include <numeric>
-#include <iostream>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentTest(INDEX_TYPE first, INDEX_TYPE last)
