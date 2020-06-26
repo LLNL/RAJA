@@ -35,7 +35,7 @@ void ForallListSegmentTest(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   // Create list segment for tests
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
@@ -61,7 +61,7 @@ void ForallListSegmentTest(INDEX_TYPE N)
     test_array[ RAJA::stripIndexType(idx_array[i]) ] = idx_array[i];
   }
 
-  camp::resources::Event e = RAJA::forall<EXEC_POLICY>(working_res, lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx)] = idx;
   }); 
 

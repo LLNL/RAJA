@@ -18,7 +18,7 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last,
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
   INDEX_TYPE N = INDEX_TYPE(r1.size());
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   camp::resources::Resource host_res{camp::resources::Host()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
@@ -42,7 +42,7 @@ void ForallRangeStrideSegmentTest(INDEX_TYPE first, INDEX_TYPE last,
     idx += stride; 
   }
 
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
   });
 
