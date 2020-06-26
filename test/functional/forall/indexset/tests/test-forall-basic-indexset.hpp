@@ -67,7 +67,6 @@ void ForallISetTest()
     test_array[ is_indices[i] ] = is_indices[i];
   }
 
-  std::cout<< "Calling forall\n"; 
   RAJA::forall<EXEC_POLICY>(working_res, iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[idx] = idx;
   });
