@@ -25,7 +25,7 @@ template <typename INDEX_TYPE, typename WORKING_RES,
           typename REG_POLICY, typename EXEC_POLICY>
 void ForallBasicRegionTest(INDEX_TYPE first, INDEX_TYPE last)
 {
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   //
   // Set some local variables and create some segments for using in tests

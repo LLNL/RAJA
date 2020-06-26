@@ -21,7 +21,7 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
@@ -49,7 +49,7 @@ void ForallReduceSumSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
 
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     sum  += working_array[idx];
     sum2 += working_array[idx];
   });

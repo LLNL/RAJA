@@ -23,7 +23,7 @@ void ForallReduceMaxLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
@@ -61,7 +61,7 @@ void ForallReduceMaxLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> maxinit(big_max, maxloc_init);
   RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> max(max_init, maxloc_init);
 
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     maxinit.maxloc( working_array[idx], idx );
     max.maxloc( working_array[idx], idx );
   });
@@ -76,14 +76,14 @@ void ForallReduceMaxLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), maxloc_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     max.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
   ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
   
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
     max.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);

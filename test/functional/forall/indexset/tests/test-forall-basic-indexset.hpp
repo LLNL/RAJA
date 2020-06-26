@@ -25,7 +25,7 @@ void ForallISetTest()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   INDEX_TYPE last_idx = 0;
 
@@ -67,7 +67,7 @@ void ForallISetTest()
     test_array[ is_indices[i] ] = is_indices[i];
   }
 
-  RAJA::forall<EXEC_POLICY>(working_res, iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[idx] = idx;
   });
 

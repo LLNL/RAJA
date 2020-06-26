@@ -23,7 +23,7 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
@@ -61,7 +61,7 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> mininit(small_min, minloc_init);
   RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> min(min_init, minloc_init);
 
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     mininit.minloc( working_array[idx], idx );
     min.minloc( working_array[idx], idx );
   });
@@ -76,14 +76,14 @@ void ForallReduceMinLocSanityTest(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), minloc_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
     min.minloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
   ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
 
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
     min.minloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);

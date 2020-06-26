@@ -35,7 +35,7 @@ void ForallListSegmentViewTest(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
                                           working_res);
@@ -63,7 +63,7 @@ void ForallListSegmentViewTest(INDEX_TYPE N)
   RAJA::Layout<1> layout(N);
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(working_res, lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     work_view( idx ) = idx;
   });
 
