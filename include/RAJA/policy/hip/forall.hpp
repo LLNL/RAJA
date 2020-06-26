@@ -164,10 +164,10 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async> exec,
 }
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               hip_exec<BlockSize, Async>,
-                                               Iterable&& iter,
-                                               LoopBody&& loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    hip_exec<BlockSize, Async>,
+                                                    Iterable&& iter,
+                                                    LoopBody&& loop_body)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
@@ -229,7 +229,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     RAJA_FT_END;
   }
 
-  return hip_res.get_event();
+  return RAJA::resources::EventProxy(&res);
 }
 
 //

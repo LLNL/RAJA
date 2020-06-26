@@ -61,7 +61,7 @@ RAJA_INLINE void forall_impl(const seq_exec &exec, Iterable &&iter, Func &&body)
 } 
 
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res, const seq_exec &, Iterable &&iter, Func &&body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res, const seq_exec &, Iterable &&iter, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -71,7 +71,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res, c
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
-  return host_res.get_event();
+  return RAJA::resources::EventProxy(&res);
 }
 
 }  // namespace sequential

@@ -55,10 +55,10 @@ RAJA_INLINE void forall_impl(const simd_exec &exec,
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const simd_exec &,
-                                               Iterable &&iter,
-                                               Func &&loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    const simd_exec &,
+                                                    Iterable &&iter,
+                                                    Func &&loop_body)
 {
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
@@ -70,7 +70,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     loop_body(*(begin + i));
   }
 
-  return host_res.get_event();
+  return RAJA::resources::EventProxy(&res);
 }
 
 }  // namespace simd

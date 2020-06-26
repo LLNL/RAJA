@@ -40,10 +40,10 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
   forall_impl(res, exec, iter, loop_body);
 }
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const omp_target_parallel_for_exec<ThreadsPerTeam>&,
-                                               Iterable&& iter,
-                                               Func&& loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body)
 {
   char *omp_ptr;
 
@@ -81,7 +81,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     ib(begin_it[i]);
   }
 
-  return omp_res.get_event();
+  return RAJA::resources::EventProxy(&res);
 }
 
 template <typename Iterable, typename Func>
@@ -93,10 +93,10 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt& exec,
   forall_impl(res, exec, iter, loop_body);
 }
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const omp_target_parallel_for_exec_nt&,
-                                               Iterable&& iter,
-                                               Func&& loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    const omp_target_parallel_for_exec_nt&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body)
 {
   char *omp_ptr;
 
@@ -116,7 +116,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
     ib(begin_it[i]);
   }
 
-  return omp_res.get_event();
+  return RAJA::resources::EventProxy(&res);
 }
 
 }  // namespace omp

@@ -77,10 +77,10 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const tbb_for_dynamic& p,
-                                               Iterable&& iter,
-                                               Func&& loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    const tbb_for_dynamic& p,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body)
 {
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
@@ -98,7 +98,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
       body(b[i]);
   });
 
-  return host_res.get_event();
+  return RAJA::resources::ProxyEvent(&res);
 }
 ///
 /// TBB parallel for static policy implementation
@@ -130,10 +130,10 @@ RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>& p,
 }
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
-                                               const tbb_for_static<ChunkSize>&,
-                                               Iterable&& iter,
-                                               Func&& loop_body)
+RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+                                                    const tbb_for_static<ChunkSize>&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body)
 {
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
 
@@ -154,7 +154,7 @@ RAJA_INLINE RAJA::resources::Event forall_impl(RAJA::resources::Resource &res,
       },
       tbb_static_partitioner{});
 
-  return host_res.get_event();
+  return RAJA::resources::ProxyEvent(&res);
 }
 
 }  // namespace tbb
