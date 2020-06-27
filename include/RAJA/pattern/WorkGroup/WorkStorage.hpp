@@ -221,30 +221,23 @@ public:
 
   WorkStorage(allocator_type const& aloc)
     : m_vec(0, aloc)
-    , m_storage_size(0)
     , m_aloc(aloc)
   { }
 
   WorkStorage(WorkStorage const&) = delete;
   WorkStorage& operator=(WorkStorage const&) = delete;
 
-  WorkStorage(WorkStorage&& o)
-    : m_vec(std::move(o.m_vec))
-    , m_storage_size(o.m_storage_size)
-    , m_aloc(std::move(o.m_aloc))
+  WorkStorage(WorkStorage&& rhs)
+    : m_vec(std::move(rhs.m_vec))
+    , m_aloc(std::move(rhs.m_aloc))
+  { }
+
+  WorkStorage& operator=(WorkStorage&& rhs)
   {
-    o.m_storage_size = 0;
-  }
-
-  WorkStorage& operator=(WorkStorage&& o)
-  {
-    clear();
-
-    m_vec = std::move(o.m_vec);
-    m_storage_size = o.m_storage_size;
-    m_aloc = std::move(o.m_aloc);
-
-    o.m_storage_size = 0;
+    if (this != &rhs) {
+      move_assign_private(std::move(rhs), propagate_on_container_move_assignment{});
+    }
+    return *this;
   }
 
   void reserve(size_type num_loops, size_type loop_storage_size)
@@ -271,7 +264,11 @@ public:
 
   size_type storage_size() const
   {
-    return m_storage_size;
+    size_type storage_size_nbytes = 0;
+    for (size_t i = 0; i < m_vec.size(); ++i) {
+      storage_size_nbytes += m_vec[i].size;
+    }
+    return storage_size_nbytes;
   }
 
   template < typename holder, typename ... holder_ctor_args >
@@ -296,8 +293,27 @@ public:
 
 private:
   RAJAVec<pointer_and_size, typename allocator_traits_type::template rebind_alloc<pointer_and_size>> m_vec;
-  size_type m_storage_size = 0;
   allocator_type m_aloc;
+
+  void move_assign_private(WorkStorage&& rhs, std::true_type)
+  {
+    clear();
+    m_vec = std::move(rhs.m_vec);
+    m_aloc = std::move(rhs.m_aloc);
+  }
+
+  void move_assign_private(WorkStorage&& rhs, std::false_type)
+  {
+    clear();
+    if (m_aloc == rhs.m_aloc) {
+      m_vec = std::move(rhs.m_vec);
+    } else {
+      for (size_type i = 0; i < m_vec.size(); ++i) {
+        m_vec.emplace_back(move_destroy_value(std::move(rhs), rhs.m_vec[i]));
+      }
+      rhs.m_vec.clear();
+    }
+  }
 
   template < typename holder, typename ... holder_ctor_args >
   pointer_and_size create_value(const vtable_type* vtable,
@@ -307,7 +323,6 @@ private:
 
     pointer value_ptr = reinterpret_cast<pointer>(
         allocator_traits_type::allocate(m_aloc, value_size));
-    m_storage_size += value_size;
 
     value_type::template construct<holder>(
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
@@ -315,10 +330,25 @@ private:
     return pointer_and_size{value_ptr, value_size};
   }
 
+  pointer_and_size move_destroy_value(WorkStorage&& rhs,
+                                      pointer_and_size other_value_and_size)
+  {
+    pointer value_ptr = reinterpret_cast<pointer>(
+        allocator_traits_type::allocate(m_aloc, other_value_and_size.size));
+
+    value_type::move_destroy(value_ptr, other_value_and_size.ptr);
+
+    allocator_traits_type::deallocate(rhs.m_aloc,
+        reinterpret_cast<char*>(other_value_and_size.ptr), other_value_and_size.size);
+
+    return pointer_and_size{value_ptr, other_value_and_size.size};
+  }
+
   void destroy_value(pointer_and_size value_and_size_ptr)
   {
     value_type::destroy(value_and_size_ptr.ptr);
-    allocator_traits_type::deallocate(m_aloc, reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
+    allocator_traits_type::deallocate(m_aloc,
+        reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
   }
 };
 
@@ -499,31 +529,24 @@ public:
   WorkStorage(WorkStorage const&) = delete;
   WorkStorage& operator=(WorkStorage const&) = delete;
 
-  WorkStorage(WorkStorage&& o)
-    : m_offsets(std::move(o.m_offsets))
-    , m_array_begin(o.m_array_begin)
-    , m_array_end(o.m_array_end)
-    , m_array_cap(o.m_array_cap)
-    , m_aloc(std::move(o.m_aloc))
+  WorkStorage(WorkStorage&& rhs)
+    : m_offsets(std::move(rhs.m_offsets))
+    , m_array_begin(rhs.m_array_begin)
+    , m_array_end(rhs.m_array_end)
+    , m_array_cap(rhs.m_array_cap)
+    , m_aloc(std::move(rhs.m_aloc))
   {
-    o.m_array_begin = nullptr;
-    o.m_array_end = nullptr;
-    o.m_array_cap = nullptr;
+    rhs.m_array_begin = nullptr;
+    rhs.m_array_end = nullptr;
+    rhs.m_array_cap = nullptr;
   }
 
-  WorkStorage& operator=(WorkStorage&& o)
+  WorkStorage& operator=(WorkStorage&& rhs)
   {
-    clear();
-
-    m_offsets     = std::move(o.m_offsets);
-    m_array_begin = o.m_array_begin;
-    m_array_end   = o.m_array_end  ;
-    m_array_cap   = o.m_array_cap  ;
-    m_aloc        = std::move(o.m_aloc);
-
-    o.m_array_begin = nullptr;
-    o.m_array_end   = nullptr;
-    o.m_array_cap   = nullptr;
+    if (this != &rhs) {
+      move_assign_private(std::move(rhs), propagate_on_container_move_assignment{});
+    }
+    return *this;
   }
 
 
@@ -558,16 +581,16 @@ public:
   template < typename holder, typename ... holder_ctor_args >
   void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
-    m_offsets.emplace_back(create_value<holder>(
-        vtable, std::forward<holder_ctor_args>(ctor_args)...));
+    size_type value_offset = storage_size();
+    size_type value_size   = create_value<holder>(value_offset,
+        vtable, std::forward<holder_ctor_args>(ctor_args)...);
+    m_offsets.emplace_back(value_offset);
+    m_array_end += value_size;
   }
 
   void clear()
   {
-    while (!m_offsets.empty()) {
-      destroy_value(m_offsets.back());
-      m_offsets.pop_back();
-    }
+    array_clear();
     if (m_array_begin != nullptr) {
       allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
     }
@@ -584,6 +607,49 @@ private:
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
   allocator_type m_aloc;
+
+  void move_assign_private(WorkStorage&& rhs, std::true_type)
+  {
+    clear();
+
+    m_offsets     = std::move(rhs.m_offsets);
+    m_array_begin = rhs.m_array_begin;
+    m_array_end   = rhs.m_array_end  ;
+    m_array_cap   = rhs.m_array_cap  ;
+    m_aloc        = std::move(rhs.m_aloc);
+
+    rhs.m_array_begin = nullptr;
+    rhs.m_array_end   = nullptr;
+    rhs.m_array_cap   = nullptr;
+  }
+
+  void move_assign_private(WorkStorage&& rhs, std::false_type)
+  {
+    if (m_aloc == rhs.m_aloc) {
+      clear();
+
+      m_offsets     = std::move(rhs.m_offsets);
+      m_array_begin = rhs.m_array_begin;
+      m_array_end   = rhs.m_array_end  ;
+      m_array_cap   = rhs.m_array_cap  ;
+
+      rhs.m_array_begin = nullptr;
+      rhs.m_array_end   = nullptr;
+      rhs.m_array_cap   = nullptr;
+    } else {
+      array_clear();
+      array_reserve(rhs.storage_size());
+
+      for (size_type i = 0; i < rhs.size(); ++i) {
+        m_array_end = m_array_begin + rhs.m_offsets[i];
+        move_destroy_value(m_array_end, rhs.m_array_begin + rhs.m_offsets[i]);
+        m_offsets.emplace_back(rhs.m_offsets[i]);
+      }
+      m_array_end = m_array_begin + rhs.storage_size();
+      rhs.m_array_end = rhs.m_array_begin;
+      rhs.m_offsets.clear();
+    }
+  }
 
   size_type storage_capacity() const
   {
@@ -605,12 +671,8 @@ private:
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
       for (size_type i = 0; i < size(); ++i) {
-        pointer old_value = reinterpret_cast<pointer>(
-            m_array_begin + m_offsets[i]);
-        pointer new_value = reinterpret_cast<pointer>(
-            new_array_begin + m_offsets[i]);
-
-        value_type::move_destroy(new_value, old_value);
+        move_destroy_value(new_array_begin + m_offsets[i],
+                             m_array_begin + m_offsets[i]);
       }
 
       if (m_array_begin != nullptr) {
@@ -623,8 +685,18 @@ private:
     }
   }
 
+  void array_clear()
+  {
+    while (!m_offsets.empty()) {
+      destroy_value(m_offsets.back());
+      m_array_end = m_array_begin + m_offsets.back();
+      m_offsets.pop_back();
+    }
+  }
+
   template < typename holder, typename ... holder_ctor_args >
-  size_type create_value(const vtable_type* vtable,
+  size_type create_value(size_type value_offset,
+                         const vtable_type* vtable,
                          holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
@@ -633,15 +705,18 @@ private:
       array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()));
     }
 
-    size_type value_offset = storage_size();
-    pointer value_ptr =
-        reinterpret_cast<pointer>(m_array_begin + value_offset);
-    m_array_end += value_size;
+    pointer value_ptr = reinterpret_cast<pointer>(m_array_begin + value_offset);
 
     value_type::template construct<holder>(
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
 
-    return value_offset;
+    return value_size;
+  }
+
+  void move_destroy_value(char* value_ptr, char* other_value_ptr)
+  {
+    value_type::move_destroy(reinterpret_cast<pointer>(value_ptr),
+                             reinterpret_cast<pointer>(other_value_ptr));
   }
 
   void destroy_value(size_type value_offset)
@@ -829,33 +904,25 @@ public:
   WorkStorage(WorkStorage const&) = delete;
   WorkStorage& operator=(WorkStorage const&) = delete;
 
-  WorkStorage(WorkStorage&& o)
-    : m_aloc(std::move(o.m_aloc))
-    , m_stride(o.m_stride)
-    , m_array_begin(o.m_array_begin)
-    , m_array_end(o.m_array_end)
-    , m_array_cap(o.m_array_cap)
+  WorkStorage(WorkStorage&& rhs)
+    : m_aloc(std::move(rhs.m_aloc))
+    , m_stride(rhs.m_stride)
+    , m_array_begin(rhs.m_array_begin)
+    , m_array_end(rhs.m_array_end)
+    , m_array_cap(rhs.m_array_cap)
   {
     // do not reset stride, leave it for reuse
-    o.m_array_begin = nullptr;
-    o.m_array_end   = nullptr;
-    o.m_array_cap   = nullptr;
+    rhs.m_array_begin = nullptr;
+    rhs.m_array_end   = nullptr;
+    rhs.m_array_cap   = nullptr;
   }
 
-  WorkStorage& operator=(WorkStorage&& o)
+  WorkStorage& operator=(WorkStorage&& rhs)
   {
-    clear();
-
-    m_aloc        = std::move(o.m_aloc);
-    m_stride      = o.m_stride     ;
-    m_array_begin = o.m_array_begin;
-    m_array_end   = o.m_array_end  ;
-    m_array_cap   = o.m_array_cap  ;
-
-    // do not reset stride, leave it for reuse
-    o.m_array_begin = nullptr;
-    o.m_array_end   = nullptr;
-    o.m_array_cap   = nullptr;
+    if (this != &rhs) {
+      move_assign_private(std::move(rhs), propagate_on_container_move_assignment{});
+    }
+    return *this;
   }
 
   void reserve(size_type num_loops, size_type loop_storage_size)
@@ -877,7 +944,7 @@ public:
 
   const_iterator end() const
   {
-    return const_iterator(m_array_end,   m_stride);
+    return const_iterator(m_array_end, m_stride);
   }
 
   // amount of storage used to store loops
@@ -890,13 +957,12 @@ public:
   void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
     create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
+    m_array_end += m_stride;
   }
 
   void clear()
   {
-    for (size_type value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
-      destroy_value(value_offset - m_stride);
-    }
+    array_clear();
     if (m_array_begin != nullptr) {
       allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
     }
@@ -913,6 +979,49 @@ private:
   char* m_array_begin = nullptr;
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
+
+  void move_assign_private(WorkStorage&& rhs, std::true_type)
+  {
+    clear();
+
+    m_aloc        = std::move(rhs.m_aloc);
+    m_stride      = rhs.m_stride     ;
+    m_array_begin = rhs.m_array_begin;
+    m_array_end   = rhs.m_array_end  ;
+    m_array_cap   = rhs.m_array_cap  ;
+
+    // do not reset stride, leave it for reuse
+    rhs.m_array_begin = nullptr;
+    rhs.m_array_end   = nullptr;
+    rhs.m_array_cap   = nullptr;
+  }
+
+  void move_assign_private(WorkStorage&& rhs, std::false_type)
+  {
+    if (m_aloc == rhs.m_aloc) {
+      clear();
+
+      m_stride      = rhs.m_stride     ;
+      m_array_begin = rhs.m_array_begin;
+      m_array_end   = rhs.m_array_end  ;
+      m_array_cap   = rhs.m_array_cap  ;
+
+      // do not reset stride, leave it for reuse
+      rhs.m_array_begin = nullptr;
+      rhs.m_array_end   = nullptr;
+      rhs.m_array_cap   = nullptr;
+    } else {
+      array_clear();
+      m_stride = rhs.m_stride;
+      array_reserve(rhs.storage_size(), rhs.m_stride);
+
+      for (size_type i = 0; i < rhs.size(); ++i) {
+        move_destroy_value(m_array_end, rhs.m_array_begin + i * rhs.m_stride);
+        m_array_end += m_stride;
+      }
+      rhs.m_array_end = rhs.m_array_begin;
+    }
+  }
 
   size_type storage_capacity() const
   {
@@ -934,12 +1043,8 @@ private:
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
       for (size_type i = 0; i < size(); ++i) {
-        value_type* old_value = reinterpret_cast<value_type*>(
-            m_array_begin + i * m_stride);
-        value_type* new_value = reinterpret_cast<value_type*>(
-            new_array_begin + i * new_stride);
-
-        value_type::move_destroy(new_value, old_value);
+        move_destroy_value(new_array_begin + i * new_stride,
+                             m_array_begin + i *   m_stride);
       }
 
       if (m_array_begin != nullptr) {
@@ -950,6 +1055,14 @@ private:
       m_array_begin = new_array_begin;
       m_array_end   = new_array_end  ;
       m_array_cap   = new_array_cap  ;
+    }
+  }
+
+  void array_clear()
+  {
+    for (size_type value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
+      destroy_value(value_offset - m_stride);
+      m_array_end -= m_stride;
     }
   }
 
@@ -967,17 +1080,24 @@ private:
                     value_size);
     }
 
-    value_type* value_ptr = reinterpret_cast<value_type*>(m_array_end);
-    m_array_end += m_stride;
+    size_type value_offset = storage_size();
+    pointer value_ptr = reinterpret_cast<pointer>(m_array_begin + value_offset);
 
     value_type::template construct<holder>(
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
+  void move_destroy_value(char* value_ptr,
+                          char* other_value_ptr)
+  {
+    value_type::move_destroy(reinterpret_cast<pointer>(value_ptr),
+                             reinterpret_cast<pointer>(other_value_ptr));
+  }
+
   void destroy_value(size_type value_offset)
   {
-    value_type* value_ptr =
-        reinterpret_cast<value_type*>(m_array_begin + value_offset);
+    pointer value_ptr =
+        reinterpret_cast<pointer>(m_array_begin + value_offset);
     value_type::destroy(value_ptr);
   }
 };
