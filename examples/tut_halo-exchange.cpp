@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <new>
+#include <limits>
 #include <vector>
 
 #include "memoryManager.hpp"
@@ -67,36 +69,88 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists, std::vector<int>
 void destroy_pack_lists(std::vector<int*>& pack_index_lists);
 void destroy_unpack_lists(std::vector<int*>& unpack_index_lists);
 
+
+template < typename T >
 struct memory_manager_allocator
 {
-  void* allocate(size_t size)
+  using value_type = T;
+
+  memory_manager_allocator() = default;
+
+  template < typename U >
+  constexpr memory_manager_allocator(memory_manager_allocator<U> const&) noexcept
+  { }
+
+  /*[[nodiscard]]*/
+  value_type* allocate(size_t num)
   {
-    return memoryManager::allocate<char>(size);
+    if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
+      throw std::bad_alloc();
+    }
+
+    value_type *ptr = memoryManager::allocate<value_type>(num);
+
+    if (!ptr) {
+      throw std::bad_alloc();
+    }
+
+    return ptr;
   }
 
-  void deallocate(void* ptr)
+  void deallocate(value_type* ptr, size_t) noexcept
   {
-    char* ptrc = static_cast<char*>(ptr);
+    value_type* ptrc = static_cast<value_type*>(ptr);
     memoryManager::deallocate(ptrc);
   }
 };
 
+template <typename T, typename U, typename Resource>
+bool operator==(memory_manager_allocator<T> const&, memory_manager_allocator<U> const&)
+{
+  return true;
+}
+
+template <typename T, typename U, typename Resource>
+bool operator!=(memory_manager_allocator<T> const& lhs, memory_manager_allocator<U> const& rhs)
+{
+  return !(lhs == rhs);
+}
+
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 
+template < typename T >
 struct pinned_allocator
 {
-  void* allocate(size_t size)
+  using value_type = T;
+
+  pinned_allocator() = default;
+
+  template < typename U >
+  constexpr pinned_allocator(pinned_allocator<U> const&) noexcept
+  { }
+
+  /*[[nodiscard]]*/
+  value_type* allocate(size_t num)
   {
-    void *ptr;
+    if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
+      throw std::bad_alloc();
+    }
+
+    value_type *ptr = nullptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocHost((void **)&ptr, size));
+    cudaErrchk(cudaMallocHost((void **)&ptr, num*sizeof(value_type)));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostMalloc((void **)&ptr, size));
+    hipErrchk(hipHostMalloc((void **)&ptr, num*sizeof(value_type)));
 #endif
+
+    if (!ptr) {
+      throw std::bad_alloc();
+    }
+
     return ptr;
   }
 
-  void deallocate(void* ptr)
+  void deallocate(value_type* ptr, size_t) noexcept
   {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFreeHost(ptr));
@@ -105,6 +159,19 @@ struct pinned_allocator
 #endif
   }
 };
+
+template <typename T, typename U, typename Resource>
+bool operator==(pinned_allocator<T> const&, pinned_allocator<U> const&)
+{
+  return true;
+}
+
+template <typename T, typename U, typename Resource>
+bool operator!=(pinned_allocator<T> const& lhs, pinned_allocator<U> const& rhs)
+{
+  return !(lhs == rhs);
+}
+
 
 #endif
 
@@ -384,17 +451,17 @@ int main(int argc, char **argv)
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     memory_manager_allocator >;
+                                     memory_manager_allocator<char> >;
 
     using workgroup = RAJA::WorkGroup< workgroup_policy,
                                        int,
                                        RAJA::xargs<>,
-                                       memory_manager_allocator >;
+                                       memory_manager_allocator<char> >;
 
     using worksite = RAJA::WorkSite< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     memory_manager_allocator >;
+                                     memory_manager_allocator<char> >;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -406,8 +473,8 @@ int main(int argc, char **argv)
 
     }
 
-    workpool pool_pack  (memory_manager_allocator{});
-    workpool pool_unpack(memory_manager_allocator{});
+    workpool pool_pack  (memory_manager_allocator<char>{});
+    workpool pool_unpack(memory_manager_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
 
@@ -599,17 +666,17 @@ int main(int argc, char **argv)
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     memory_manager_allocator >;
+                                     memory_manager_allocator<char> >;
 
     using workgroup = RAJA::WorkGroup< workgroup_policy,
                                        int,
                                        RAJA::xargs<>,
-                                       memory_manager_allocator >;
+                                       memory_manager_allocator<char> >;
 
     using worksite = RAJA::WorkSite< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     memory_manager_allocator >;
+                                     memory_manager_allocator<char> >;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -621,8 +688,8 @@ int main(int argc, char **argv)
 
     }
 
-    workpool pool_pack  (memory_manager_allocator{});
-    workpool pool_unpack(memory_manager_allocator{});
+    workpool pool_pack  (memory_manager_allocator<char>{});
+    workpool pool_unpack(memory_manager_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
 
@@ -875,17 +942,17 @@ int main(int argc, char **argv)
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     pinned_allocator >;
+                                     pinned_allocator<char> >;
 
     using workgroup = RAJA::WorkGroup< workgroup_policy,
                                        int,
                                        RAJA::xargs<>,
-                                       pinned_allocator >;
+                                       pinned_allocator<char> >;
 
     using worksite = RAJA::WorkSite< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     pinned_allocator >;
+                                     pinned_allocator<char> >;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -897,8 +964,8 @@ int main(int argc, char **argv)
 
     }
 
-    workpool pool_pack  (pinned_allocator{});
-    workpool pool_unpack(pinned_allocator{});
+    workpool pool_pack  (pinned_allocator<char>{});
+    workpool pool_unpack(pinned_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
 
@@ -1175,17 +1242,17 @@ int main(int argc, char **argv)
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     pinned_allocator >;
+                                     pinned_allocator<char> >;
 
     using workgroup = RAJA::WorkGroup< workgroup_policy,
                                        int,
                                        RAJA::xargs<>,
-                                       pinned_allocator >;
+                                       pinned_allocator<char> >;
 
     using worksite = RAJA::WorkSite< workgroup_policy,
                                      int,
                                      RAJA::xargs<>,
-                                     pinned_allocator >;
+                                     pinned_allocator<char> >;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -1197,8 +1264,8 @@ int main(int argc, char **argv)
 
     }
 
-    workpool pool_pack  (pinned_allocator{});
-    workpool pool_unpack(pinned_allocator{});
+    workpool pool_pack  (pinned_allocator<char>{});
+    workpool pool_unpack(pinned_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
 

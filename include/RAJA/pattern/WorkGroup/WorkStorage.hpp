@@ -21,12 +21,15 @@
 #include "RAJA/config.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <utility>
+#include <type_traits>
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 
-#include "RAJA/pattern/WorkGroup/SimpleVector.hpp"
+#include "RAJA/internal/RAJAVec.hpp"
+
 #include "RAJA/pattern/WorkGroup/WorkStruct.hpp"
 
 
@@ -40,34 +43,60 @@ namespace detail
  * A storage container for work groups
  */
 template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename Vtable_T >
-struct WorkStorage;
+class WorkStorage;
 
 template < typename ALLOCATOR_T, typename Vtable_T >
-struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
+class WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
 {
+  using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
+  using propagate_on_container_copy_assignment =
+      typename allocator_traits_type::propagate_on_container_copy_assignment;
+  using propagate_on_container_move_assignment =
+      typename allocator_traits_type::propagate_on_container_move_assignment;
+  using propagate_on_container_swap            =
+      typename allocator_traits_type::propagate_on_container_swap;
+  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
+      "WorkStorage expects an allocator for 'char's.");
+public:
   using storage_policy = RAJA::array_of_pointers;
-  using Allocator = ALLOCATOR_T;
   using vtable_type = Vtable_T;
 
   template < typename holder >
   using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+
   using value_type = GenericWorkStruct<vtable_type>;
+  using allocator_type = ALLOCATOR_T;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
+
+private:
+  struct pointer_and_size
+  {
+    pointer ptr;
+    size_type size;
+  };
+
+public:
 
   struct const_iterator
   {
     using value_type = const typename WorkStorage::value_type;
-    using pointer = value_type*;
-    using reference = value_type&;
-    using difference_type = std::ptrdiff_t;
+    using pointer = typename WorkStorage::const_pointer;
+    using reference = typename WorkStorage::const_reference;
+    using difference_type = typename WorkStorage::difference_type;
     using iterator_category = std::random_access_iterator_tag;
 
-    const_iterator(value_type* const* ptrptr)
+    const_iterator(const pointer_and_size* ptrptr)
       : m_ptrptr(ptrptr)
     { }
 
     RAJA_HOST_DEVICE reference operator*() const
     {
-      return **m_ptrptr;
+      return *(m_ptrptr->ptr);
     }
 
     RAJA_HOST_DEVICE pointer operator->() const
@@ -187,11 +216,13 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
     }
 
   private:
-    value_type* const* m_ptrptr;
+    const pointer_and_size* m_ptrptr;
   };
 
-  WorkStorage(Allocator aloc)
-    : m_vec(std::forward<Allocator>(aloc))
+  WorkStorage(allocator_type const& aloc)
+    : m_vec(0, aloc)
+    , m_storage_size(0)
+    , m_aloc(aloc)
   { }
 
   WorkStorage(WorkStorage const&) = delete;
@@ -200,26 +231,30 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
   WorkStorage(WorkStorage&& o)
     : m_vec(std::move(o.m_vec))
     , m_storage_size(o.m_storage_size)
+    , m_aloc(std::move(o.m_aloc))
   {
     o.m_storage_size = 0;
   }
 
   WorkStorage& operator=(WorkStorage&& o)
   {
+    clear();
+
     m_vec = std::move(o.m_vec);
     m_storage_size = o.m_storage_size;
+    m_aloc = std::move(o.m_aloc);
 
     o.m_storage_size = 0;
   }
 
-  void reserve(size_t num_loops, size_t loop_storage_size)
+  void reserve(size_type num_loops, size_type loop_storage_size)
   {
     RAJA_UNUSED_VAR(loop_storage_size);
     m_vec.reserve(num_loops);
   }
 
   // number of loops stored
-  size_t size() const
+  size_type size() const
   {
     return m_vec.size();
   }
@@ -234,7 +269,7 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
     return const_iterator(m_vec.end());
   }
 
-  size_t storage_size() const
+  size_type storage_size() const
   {
     return m_storage_size;
   }
@@ -246,65 +281,91 @@ struct WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
-  ~WorkStorage()
+  void clear()
   {
-    for (size_t count = m_vec.size(); count > 0; --count) {
-      destroy_value(m_vec.pop_back());
+    while (!m_vec.empty()) {
+      destroy_value(m_vec.back());
+      m_vec.pop_back();
     }
   }
 
+  ~WorkStorage()
+  {
+    clear();
+  }
+
 private:
-  SimpleVector<value_type*, Allocator> m_vec;
-  size_t m_storage_size = 0;
+  RAJAVec<pointer_and_size, typename allocator_traits_type::template rebind_alloc<pointer_and_size>> m_vec;
+  size_type m_storage_size = 0;
+  allocator_type m_aloc;
 
   template < typename holder, typename ... holder_ctor_args >
-  value_type* create_value(const vtable_type* vtable,
-                           holder_ctor_args&&... ctor_args)
+  pointer_and_size create_value(const vtable_type* vtable,
+                                holder_ctor_args&&... ctor_args)
   {
-    value_type* value_ptr = static_cast<value_type*>(
-        m_vec.get_allocator().allocate(sizeof(true_value_type<holder>)));
-    m_storage_size += sizeof(true_value_type<holder>);
+    const size_type value_size = sizeof(true_value_type<holder>);
+
+    pointer value_ptr = reinterpret_cast<pointer>(
+        allocator_traits_type::allocate(m_aloc, value_size));
+    m_storage_size += value_size;
 
     value_type::template construct<holder>(
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
 
-    return value_ptr;
+    return pointer_and_size{value_ptr, value_size};
   }
 
-  void destroy_value(value_type* value_ptr)
+  void destroy_value(pointer_and_size value_and_size_ptr)
   {
-    value_type::destroy(value_ptr);
-    m_vec.get_allocator().deallocate(value_ptr);
+    value_type::destroy(value_and_size_ptr.ptr);
+    allocator_traits_type::deallocate(m_aloc, reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
   }
 };
 
 template < typename ALLOCATOR_T, typename Vtable_T >
-struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
+class WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
 {
+  using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
+  using propagate_on_container_copy_assignment =
+      typename allocator_traits_type::propagate_on_container_copy_assignment;
+  using propagate_on_container_move_assignment =
+      typename allocator_traits_type::propagate_on_container_move_assignment;
+  using propagate_on_container_swap            =
+      typename allocator_traits_type::propagate_on_container_swap;
+  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
+      "WorkStorage expects an allocator for 'char's.");
+public:
   using storage_policy = RAJA::ragged_array_of_objects;
-  using Allocator = ALLOCATOR_T;
   using vtable_type = Vtable_T;
 
   template < typename holder >
   using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+
   using value_type = GenericWorkStruct<vtable_type>;
+  using allocator_type = ALLOCATOR_T;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
 
   struct const_iterator
   {
     using value_type = const typename WorkStorage::value_type;
-    using pointer = value_type*;
-    using reference = value_type&;
-    using difference_type = std::ptrdiff_t;
+    using pointer = typename WorkStorage::const_pointer;
+    using reference = typename WorkStorage::const_reference;
+    using difference_type = typename WorkStorage::difference_type;
     using iterator_category = std::random_access_iterator_tag;
 
-    const_iterator(const char* array_begin, const size_t* offset_iter)
+    const_iterator(const char* array_begin, const size_type* offset_iter)
       : m_array_begin(array_begin)
       , m_offset_iter(offset_iter)
     { }
 
     RAJA_HOST_DEVICE reference operator*() const
     {
-      return *reinterpret_cast<const value_type*>(
+      return *reinterpret_cast<pointer>(
           m_array_begin + *m_offset_iter);
     }
 
@@ -426,12 +487,13 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
 
   private:
     const char* m_array_begin;
-    const size_t* m_offset_iter;
+    const size_type* m_offset_iter;
   };
 
 
-  WorkStorage(Allocator aloc)
-    : m_offsets(std::forward<Allocator>(aloc))
+  WorkStorage(allocator_type const& aloc)
+    : m_offsets(0, aloc)
+    , m_aloc(aloc)
   { }
 
   WorkStorage(WorkStorage const&) = delete;
@@ -442,6 +504,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
     , m_array_begin(o.m_array_begin)
     , m_array_end(o.m_array_end)
     , m_array_cap(o.m_array_cap)
+    , m_aloc(std::move(o.m_aloc))
   {
     o.m_array_begin = nullptr;
     o.m_array_end = nullptr;
@@ -450,10 +513,13 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
 
   WorkStorage& operator=(WorkStorage&& o)
   {
+    clear();
+
     m_offsets     = std::move(o.m_offsets);
     m_array_begin = o.m_array_begin;
     m_array_end   = o.m_array_end  ;
     m_array_cap   = o.m_array_cap  ;
+    m_aloc        = std::move(o.m_aloc);
 
     o.m_array_begin = nullptr;
     o.m_array_end   = nullptr;
@@ -461,14 +527,14 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
   }
 
 
-  void reserve(size_t num_loops, size_t loop_storage_size)
+  void reserve(size_type num_loops, size_type loop_storage_size)
   {
     m_offsets.reserve(num_loops);
     array_reserve(loop_storage_size);
   }
 
   // number of loops stored
-  size_t size() const
+  size_type size() const
   {
     return m_offsets.size();
   }
@@ -484,7 +550,7 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
   }
 
   // amount of storage used to store loops
-  size_t storage_size() const
+  size_type storage_size() const
   {
     return m_array_end - m_array_begin;
   }
@@ -496,52 +562,59 @@ struct WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
-  ~WorkStorage()
+  void clear()
   {
-    for (size_t count = size(); count > 0; --count) {
-      destroy_value(m_offsets.pop_back());
+    while (!m_offsets.empty()) {
+      destroy_value(m_offsets.back());
+      m_offsets.pop_back();
     }
     if (m_array_begin != nullptr) {
-      m_offsets.get_allocator().deallocate(m_array_begin);
+      allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
     }
   }
 
+  ~WorkStorage()
+  {
+    clear();
+  }
+
 private:
-  SimpleVector<size_t, Allocator> m_offsets;
+  RAJAVec<size_type, typename allocator_traits_type::template rebind_alloc<size_type>> m_offsets;
   char* m_array_begin = nullptr;
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
+  allocator_type m_aloc;
 
-  size_t storage_capacity() const
+  size_type storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
-  size_t storage_unused() const
+  size_type storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
-  void array_reserve(size_t loop_storage_size)
+  void array_reserve(size_type loop_storage_size)
   {
     if (loop_storage_size > storage_capacity()) {
 
-      char* new_array_begin = static_cast<char*>(
-          m_offsets.get_allocator().allocate(loop_storage_size));
+      char* new_array_begin =
+          allocator_traits_type::allocate(m_aloc, loop_storage_size);
       char* new_array_end   = new_array_begin + storage_size();
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
-      for (size_t i = 0; i < size(); ++i) {
-        value_type* old_value = reinterpret_cast<value_type*>(
-            m_array_begin + m_offsets.begin()[i]);
-        value_type* new_value = reinterpret_cast<value_type*>(
-            new_array_begin + m_offsets.begin()[i]);
+      for (size_type i = 0; i < size(); ++i) {
+        pointer old_value = reinterpret_cast<pointer>(
+            m_array_begin + m_offsets[i]);
+        pointer new_value = reinterpret_cast<pointer>(
+            new_array_begin + m_offsets[i]);
 
         value_type::move_destroy(new_value, old_value);
       }
 
       if (m_array_begin != nullptr) {
-        m_offsets.get_allocator().deallocate(m_array_begin);
+        allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
       }
 
       m_array_begin = new_array_begin;
@@ -551,18 +624,18 @@ private:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  size_t create_value(const vtable_type* vtable,
-                      holder_ctor_args&&... ctor_args)
+  size_type create_value(const vtable_type* vtable,
+                         holder_ctor_args&&... ctor_args)
   {
-    const size_t value_size = sizeof(true_value_type<holder>);
+    const size_type value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused()) {
       array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()));
     }
 
-    size_t value_offset = storage_size();
-    value_type* value_ptr =
-        reinterpret_cast<value_type*>(m_array_begin + value_offset);
+    size_type value_offset = storage_size();
+    pointer value_ptr =
+        reinterpret_cast<pointer>(m_array_begin + value_offset);
     m_array_end += value_size;
 
     value_type::template construct<holder>(
@@ -571,36 +644,53 @@ private:
     return value_offset;
   }
 
-  void destroy_value(size_t value_offset)
+  void destroy_value(size_type value_offset)
   {
-    value_type* value_ptr =
-        reinterpret_cast<value_type*>(m_array_begin + value_offset);
+    pointer value_ptr =
+        reinterpret_cast<pointer>(m_array_begin + value_offset);
     value_type::destroy(value_ptr);
   }
 };
 
 template < typename ALLOCATOR_T, typename Vtable_T >
-struct WorkStorage<RAJA::constant_stride_array_of_objects,
-                   ALLOCATOR_T,
-                   Vtable_T>
+class WorkStorage<RAJA::constant_stride_array_of_objects,
+                  ALLOCATOR_T,
+                  Vtable_T>
 {
+  using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
+  using propagate_on_container_copy_assignment =
+      typename allocator_traits_type::propagate_on_container_copy_assignment;
+  using propagate_on_container_move_assignment =
+      typename allocator_traits_type::propagate_on_container_move_assignment;
+  using propagate_on_container_swap            =
+      typename allocator_traits_type::propagate_on_container_swap;
+  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
+      "WorkStorage expects an allocator for 'char's.");
+public:
   using storage_policy = RAJA::constant_stride_array_of_objects;
-  using Allocator = ALLOCATOR_T;
   using vtable_type = Vtable_T;
 
   template < typename holder >
   using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+
   using value_type = GenericWorkStruct<vtable_type>;
+  using allocator_type = ALLOCATOR_T;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
 
   struct const_iterator
   {
     using value_type = const typename WorkStorage::value_type;
-    using pointer = value_type*;
-    using reference = value_type&;
-    using difference_type = std::ptrdiff_t;
+    using pointer = typename WorkStorage::const_pointer;
+    using reference = typename WorkStorage::const_reference;
+    using difference_type = typename WorkStorage::difference_type;
     using iterator_category = std::random_access_iterator_tag;
 
-    const_iterator(const char* array_pos, size_t stride)
+    const_iterator(const char* array_pos, size_type stride)
       : m_array_pos(array_pos)
       , m_stride(stride)
     { }
@@ -728,19 +818,19 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
 
   private:
     const char* m_array_pos;
-    size_t m_stride;
+    size_type m_stride;
   };
 
 
-  WorkStorage(Allocator aloc)
-    : m_aloc(std::forward<Allocator>(aloc))
+  WorkStorage(allocator_type const& aloc)
+    : m_aloc(aloc)
   { }
 
   WorkStorage(WorkStorage const&) = delete;
   WorkStorage& operator=(WorkStorage const&) = delete;
 
   WorkStorage(WorkStorage&& o)
-    : m_aloc(o.m_aloc)
+    : m_aloc(std::move(o.m_aloc))
     , m_stride(o.m_stride)
     , m_array_begin(o.m_array_begin)
     , m_array_end(o.m_array_end)
@@ -754,7 +844,9 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
 
   WorkStorage& operator=(WorkStorage&& o)
   {
-    m_aloc        = o.m_aloc       ;
+    clear();
+
+    m_aloc        = std::move(o.m_aloc);
     m_stride      = o.m_stride     ;
     m_array_begin = o.m_array_begin;
     m_array_end   = o.m_array_end  ;
@@ -766,14 +858,14 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
     o.m_array_cap   = nullptr;
   }
 
-  void reserve(size_t num_loops, size_t loop_storage_size)
+  void reserve(size_type num_loops, size_type loop_storage_size)
   {
     RAJA_UNUSED_VAR(num_loops);
     array_reserve(loop_storage_size, m_stride);
   }
 
   // number of loops stored
-  size_t size() const
+  size_type size() const
   {
     return storage_size() / m_stride;
   }
@@ -789,7 +881,7 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
   }
 
   // amount of storage used to store loops
-  size_t storage_size() const
+  size_type storage_size() const
   {
     return m_array_end - m_array_begin;
   }
@@ -800,43 +892,48 @@ struct WorkStorage<RAJA::constant_stride_array_of_objects,
     create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
-  ~WorkStorage()
+  void clear()
   {
-    for (size_t value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
+    for (size_type value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
       destroy_value(value_offset - m_stride);
     }
     if (m_array_begin != nullptr) {
-      m_aloc.deallocate(m_array_begin);
+      allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
     }
   }
 
+  ~WorkStorage()
+  {
+    clear();
+  }
+
 private:
-  Allocator m_aloc;
-  size_t m_stride     = 1; // can't be 0 because size divides stride
+  allocator_type m_aloc;
+  size_type m_stride     = 1; // can't be 0 because size divides stride
   char* m_array_begin = nullptr;
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
 
-  size_t storage_capacity() const
+  size_type storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
-  size_t storage_unused() const
+  size_type storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
-  void array_reserve(size_t loop_storage_size, size_t new_stride)
+  void array_reserve(size_type loop_storage_size, size_type new_stride)
   {
     if (loop_storage_size > storage_capacity() || new_stride > m_stride) {
 
-      char* new_array_begin = static_cast<char*>(
-          m_aloc.allocate(loop_storage_size));
+      char* new_array_begin =
+          allocator_traits_type::allocate(m_aloc, loop_storage_size);
       char* new_array_end   = new_array_begin + size() * new_stride;
       char* new_array_cap   = new_array_begin + loop_storage_size;
 
-      for (size_t i = 0; i < size(); ++i) {
+      for (size_type i = 0; i < size(); ++i) {
         value_type* old_value = reinterpret_cast<value_type*>(
             m_array_begin + i * m_stride);
         value_type* new_value = reinterpret_cast<value_type*>(
@@ -846,7 +943,7 @@ private:
       }
 
       if (m_array_begin != nullptr) {
-        m_aloc.deallocate(m_array_begin);
+        allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
       }
 
       m_stride      = new_stride     ;
@@ -860,7 +957,7 @@ private:
   void create_value(const vtable_type* vtable,
                     holder_ctor_args&&... ctor_args)
   {
-    const size_t value_size = sizeof(true_value_type<holder>);
+    const size_type value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused() && value_size <= m_stride) {
       array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()),
@@ -877,7 +974,7 @@ private:
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
-  void destroy_value(size_t value_offset)
+  void destroy_value(size_type value_offset)
   {
     value_type* value_ptr =
         reinterpret_cast<value_type*>(m_array_begin + value_offset);

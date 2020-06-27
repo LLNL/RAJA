@@ -13,23 +13,73 @@
 
 #include "RAJA_unit-test-forone.hpp"
 
+#include <cstddef>
+#include <limits>
+#include <new>
 
 namespace detail {
 
 template < typename Resource >
 struct ResourceAllocator
 {
-  void* allocate(size_t size)
+  template < typename T >
+  struct std_allocator
   {
-    return res.template allocate<char>(size);
-  }
-  void deallocate(void* ptr)
-  {
-    res.deallocate(ptr);
-  }
-private:
-  Resource res;
+    using value_type = T;
+
+    std_allocator() = default;
+
+    template < typename U >
+    std_allocator(std_allocator<U> const& other) noexcept
+      : m_res(other.get_resource())
+    { }
+
+    /*[[nodiscard]]*/
+    value_type* allocate(size_t num)
+    {
+      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
+        throw std::bad_alloc();
+      }
+
+      value_type* ptr = m_res.template allocate<value_type>(num);
+
+      if (!ptr) {
+        throw std::bad_alloc();
+      }
+
+      return ptr;
+    }
+
+    void deallocate(value_type* ptr, size_t) noexcept
+    {
+      m_res.deallocate(ptr);
+    }
+
+    Resource const& get_resource() const
+    {
+      return m_res;
+    }
+
+  private:
+    Resource m_res;
+  };
 };
+
+template <typename T, typename U, typename Resource>
+bool operator==(
+    typename ResourceAllocator<Resource>::template std_allocator<T> const& lhs,
+    typename ResourceAllocator<Resource>::template std_allocator<U> const& rhs)
+{
+  return lhs.get_resource() == rhs.get_resource();
+}
+
+template <typename T, typename U, typename Resource>
+bool operator!=(
+    typename ResourceAllocator<Resource>::template std_allocator<T> const& lhs,
+    typename ResourceAllocator<Resource>::template std_allocator<U> const& rhs)
+{
+  return !(lhs == rhs);
+}
 
 } // namespace detail
 
@@ -131,7 +181,7 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 //
 // Memory resource types for beck-end execution
 //
-using HostAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Host>>;
+using HostAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>>;
 
 using SequentialAllocatorList = HostAllocatorList;
 
@@ -144,15 +194,15 @@ using OpenMPAllocatorList = HostAllocatorList;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Cuda>>;
+using CudaAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Hip>>;
+using HipAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Hip>::template std_allocator<char>>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetAllocatorList = camp::list<detail::ResourceAllocator<camp::resources::Omp>>;
+using OpenMPTargetAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Omp>::template std_allocator<char>>;
 #endif
 
 #endif  // __TEST_WORKGROUP_UTILS_HPP__
