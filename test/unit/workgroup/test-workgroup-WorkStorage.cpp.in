@@ -13,7 +13,7 @@
 
 using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@StoragePolicyList,
-                                 @BACKEND@AllocatorList > >::Types;
+                                 WorkStorageAllocatorList > >::Types;
 
 REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
                             BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
