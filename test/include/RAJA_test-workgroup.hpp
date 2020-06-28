@@ -29,6 +29,12 @@ struct ResourceAllocator
 
     std_allocator() = default;
 
+    std_allocator(std_allocator const&) = default;
+    std_allocator(std_allocator &&) = default;
+
+    std_allocator& operator=(std_allocator const&) = default;
+    std_allocator& operator=(std_allocator &&) = default;
+
     template < typename U >
     std_allocator(std_allocator<U> const& other) noexcept
       : m_res(other.get_resource())
@@ -60,26 +66,22 @@ struct ResourceAllocator
       return m_res;
     }
 
+    template <typename U>
+    friend inline bool operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
+    {
+      return lhs.get_resource() == rhs.get_resource();
+    }
+
+    template <typename U>
+    friend inline bool operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
+
   private:
     Resource m_res;
   };
 };
-
-template <typename T, typename U, typename Resource>
-bool operator==(
-    typename ResourceAllocator<Resource>::template std_allocator<T> const& lhs,
-    typename ResourceAllocator<Resource>::template std_allocator<U> const& rhs)
-{
-  return lhs.get_resource() == rhs.get_resource();
-}
-
-template <typename T, typename U, typename Resource>
-bool operator!=(
-    typename ResourceAllocator<Resource>::template std_allocator<T> const& lhs,
-    typename ResourceAllocator<Resource>::template std_allocator<U> const& rhs)
-{
-  return !(lhs == rhs);
-}
 
 } // namespace detail
 
@@ -179,7 +181,7 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 
 
 //
-// Memory resource types for beck-end execution
+// Memory resource Allocator types
 //
 using HostAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>>;
 

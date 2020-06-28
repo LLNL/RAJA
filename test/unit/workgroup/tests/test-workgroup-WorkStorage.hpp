@@ -17,6 +17,7 @@
 #include <random>
 #include <array>
 #include <cstddef>
+#include <unordered_map>
 
 
 template <typename T>
@@ -544,11 +545,11 @@ struct NeverEqualAllocator
 
   NeverEqualAllocator() = default;
 
-  NeverEqualAllocator(NeverEqualAllocator const& other) = default;
-  NeverEqualAllocator(NeverEqualAllocator && other) = default;
+  NeverEqualAllocator(NeverEqualAllocator const&) = default;
+  NeverEqualAllocator(NeverEqualAllocator &&) = default;
 
-  NeverEqualAllocator& operator=(NeverEqualAllocator const& other) = default;
-  NeverEqualAllocator& operator=(NeverEqualAllocator && other) = default;
+  NeverEqualAllocator& operator=(NeverEqualAllocator const&) = default;
+  NeverEqualAllocator& operator=(NeverEqualAllocator &&) = default;
 
   NeverEqualAllocator select_on_container_copy_construction()
   {
@@ -595,11 +596,11 @@ struct AlwaysEqualAllocator
 
   AlwaysEqualAllocator() = default;
 
-  AlwaysEqualAllocator(AlwaysEqualAllocator const& other) = default;
-  AlwaysEqualAllocator(AlwaysEqualAllocator && other) = default;
+  AlwaysEqualAllocator(AlwaysEqualAllocator const&) = default;
+  AlwaysEqualAllocator(AlwaysEqualAllocator &&) = default;
 
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator const& other) = default;
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator && other) = default;
+  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator const&) = default;
+  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator &&) = default;
 
   AlwaysEqualAllocator select_on_container_copy_construction()
   {
@@ -662,6 +663,12 @@ struct WorkStorageTestAllocator
 
     std_allocator() = default;
 
+    std_allocator(std_allocator const&) = default;
+    std_allocator(std_allocator &&) = default;
+
+    std_allocator& operator=(std_allocator const&) = default;
+    std_allocator& operator=(std_allocator &&) = default;
+
     template < typename U >
     std_allocator(std_allocator<U> const& other) noexcept
       : m_impl(other.get_impl())
@@ -698,6 +705,18 @@ struct WorkStorageTestAllocator
       return m_impl;
     }
 
+    template <typename U>
+    friend inline bool operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
+    {
+      return lhs.get_impl() == rhs.get_impl();
+    }
+
+    template <typename U>
+    friend inline bool operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
+
   private:
     std_allocator(AllocatorImpl&& impl)
       : m_impl(impl)
@@ -706,22 +725,6 @@ struct WorkStorageTestAllocator
     AllocatorImpl m_impl;
   };
 };
-
-template <typename T, typename U, typename AllocatorImpl>
-bool operator==(
-    typename WorkStorageTestAllocator<AllocatorImpl>::template std_allocator<T> const& lhs,
-    typename WorkStorageTestAllocator<AllocatorImpl>::template std_allocator<U> const& rhs)
-{
-  return lhs.m_impl() == rhs.m_impl();
-}
-
-template <typename T, typename U, typename AllocatorImpl>
-bool operator!=(
-    typename WorkStorageTestAllocator<AllocatorImpl>::template std_allocator<T> const& lhs,
-    typename WorkStorageTestAllocator<AllocatorImpl>::template std_allocator<U> const& rhs)
-{
-  return !(lhs == rhs);
-}
 
 } // namespace detail
 
