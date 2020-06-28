@@ -308,7 +308,7 @@ private:
     if (m_aloc == rhs.m_aloc) {
       m_vec = std::move(rhs.m_vec);
     } else {
-      for (size_type i = 0; i < m_vec.size(); ++i) {
+      for (size_type i = 0; i < rhs.m_vec.size(); ++i) {
         m_vec.emplace_back(move_destroy_value(std::move(rhs), rhs.m_vec[i]));
       }
       rhs.m_vec.clear();
