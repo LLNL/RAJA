@@ -123,6 +123,15 @@ void testWorkGroupWorkStorageConstructor()
 
     ASSERT_EQ(container2.size(), (size_t)(0));
     ASSERT_EQ(container2.storage_size(), (size_t)0);
+
+    WorkStorage_type container3(Allocator{});
+    container3 = std::move(container2);
+
+    ASSERT_EQ(container2.size(), (size_t)(0));
+    ASSERT_EQ(container2.storage_size(), (size_t)0);
+
+    ASSERT_EQ(container3.size(), (size_t)(0));
+    ASSERT_EQ(container3.storage_size(), (size_t)0);
   }
 
   ASSERT_TRUE(success);
@@ -174,6 +183,15 @@ void testWorkGroupWorkStorageInsert()
 
     ASSERT_EQ(container2.size(), (size_t)1);
     ASSERT_TRUE(container2.storage_size() >= sizeof(callable));
+
+    WorkStorage_type container3(Allocator{});
+    container3 = std::move(container2);
+
+    ASSERT_EQ(container2.size(), (size_t)(0));
+    ASSERT_EQ(container2.storage_size(), (size_t)0);
+
+    ASSERT_EQ(container3.size(), (size_t)1);
+    ASSERT_TRUE(container3.storage_size() >= sizeof(callable));
   }
 
   ASSERT_TRUE(success);
@@ -295,42 +313,43 @@ void testWorkGroupWorkStorageInsertCall()
     ASSERT_FALSE(c.move_constructed);
     ASSERT_TRUE(c.moved_from);
 
-    ASSERT_EQ(container.size(), (size_t)1);
-    ASSERT_TRUE(container.storage_size() >= sizeof(callable));
+    auto test_contents = [&](WorkStorage_type& container) {
 
-    {
-      auto iter = container.begin();
+      ASSERT_EQ(container.size(), (size_t)1);
+      ASSERT_TRUE(container.storage_size() >= sizeof(callable));
 
-      double val = -1;
-      bool move_constructed = false;
-      bool moved_from = true;
-      WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+      {
+        auto iter = container.begin();
 
-      ASSERT_EQ(val, 1.23456789);
-      ASSERT_TRUE(move_constructed);
-      ASSERT_FALSE(moved_from);
-    }
+        double val = -1;
+        bool move_constructed = false;
+        bool moved_from = true;
+        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+
+        ASSERT_EQ(val, 1.23456789);
+        ASSERT_TRUE(move_constructed);
+        ASSERT_FALSE(moved_from);
+      }
+    };
+
+    test_contents(container);
+
 
     WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)(0));
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    ASSERT_EQ(container2.size(), (size_t)1);
-    ASSERT_TRUE(container2.storage_size() >= sizeof(callable));
+    test_contents(container2);
 
-    {
-      auto iter2 = container2.begin();
 
-      double val = -1;
-      bool move_constructed = false;
-      bool moved_from = true;
-      WorkStruct_type::call(&(*iter2), (void*)&val, &move_constructed, &moved_from);
+    WorkStorage_type container3(Allocator{});
+    container3 = std::move(container2);
 
-      ASSERT_EQ(val, 1.23456789);
-      ASSERT_TRUE(move_constructed);
-      ASSERT_FALSE(moved_from);
-    }
+    ASSERT_EQ(container2.size(), (size_t)(0));
+    ASSERT_EQ(container2.storage_size(), (size_t)0);
+
+    test_contents(container3);
   }
 
   ASSERT_TRUE(success);
@@ -454,70 +473,82 @@ void testWorkGroupWorkStorageMultiple(
       ASSERT_TRUE (vec2[i].moved_from);
     }
 
-    ASSERT_EQ(container.size(), num0+num1+num2);
-    ASSERT_GE(container.storage_size(),
-        num0*sizeof(callable0) +
-        num1*sizeof(callable1) +
-        num2*sizeof(callable2));
+    auto test_contents = [&](WorkStorage_type& container) {
+
+      ASSERT_EQ(container.size(), num0+num1+num2);
+      ASSERT_GE(container.storage_size(),
+          num0*sizeof(callable0) +
+          num1*sizeof(callable1) +
+          num2*sizeof(callable2));
+
+      {
+        auto iter = container.begin();
+
+        for (size_t i = 0; i < num0; ++i) {
+          type0 val{};
+          bool move_constructed = false;
+          bool moved_from = true;
+          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+
+          type0 expected = make_type0(i);
+          ASSERT_EQ(val, expected);
+          ASSERT_TRUE(move_constructed);
+          ASSERT_FALSE(moved_from);
+
+          ++iter;
+        }
+
+        for (size_t i = 0; i < num1; ++i) {
+          type1 val{};
+          bool move_constructed = false;
+          bool moved_from = true;
+          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+
+          type1 expected = make_type1(i);
+          ASSERT_EQ(val, expected);
+          ASSERT_TRUE(move_constructed);
+          ASSERT_FALSE(moved_from);
+
+          ++iter;
+        }
+
+        for (size_t i = 0; i < num2; ++i) {
+          type2 val{};
+          bool move_constructed = false;
+          bool moved_from = true;
+          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+
+          type2 expected = make_type2(i);
+          ASSERT_EQ(val, expected);
+          ASSERT_TRUE(move_constructed);
+          ASSERT_FALSE(moved_from);
+
+          ++iter;
+        }
+
+        ASSERT_EQ(iter, container.end());
+      }
+    };
+
+    test_contents(container);
+
 
     WorkStorage_type container2(std::move(container));
 
     ASSERT_EQ(container.size(), (size_t)0);
     ASSERT_EQ(container.storage_size(), (size_t)0);
 
-    ASSERT_EQ(container2.size(), num0+num1+num2);
-    ASSERT_GE(container2.storage_size(),
-        num0*sizeof(callable0) +
-        num1*sizeof(callable1) +
-        num2*sizeof(callable2));
+    test_contents(container2);
 
-    {
-      auto iter = container2.begin();
 
-      for (size_t i = 0; i < num0; ++i) {
-        type0 val{};
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+    WorkStorage_type container3(Allocator{});
+    container3 = std::move(container2);
 
-        type0 expected = make_type0(i);
-        ASSERT_EQ(val, expected);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
+    ASSERT_EQ(container2.size(), (size_t)(0));
+    ASSERT_EQ(container2.storage_size(), (size_t)0);
 
-        ++iter;
-      }
+    test_contents(container3);
 
-      for (size_t i = 0; i < num1; ++i) {
-        type1 val{};
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        type1 expected = make_type1(i);
-        ASSERT_EQ(val, expected);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-
-        ++iter;
-      }
-
-      for (size_t i = 0; i < num2; ++i) {
-        type2 val{};
-        bool move_constructed = false;
-        bool moved_from = true;
-        WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
-
-        type2 expected = make_type2(i);
-        ASSERT_EQ(val, expected);
-        ASSERT_TRUE(move_constructed);
-        ASSERT_FALSE(moved_from);
-
-        ++iter;
-      }
-
-      ASSERT_EQ(iter, container2.end());
-    }
   }
 
   ASSERT_TRUE(success);
