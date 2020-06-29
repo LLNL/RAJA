@@ -42,6 +42,27 @@ template <typename ExecPolicy,
           >
 void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 {
+  using WorkPool_type = RAJA::WorkPool<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkGroup_type = RAJA::WorkGroup<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkSite_type = RAJA::WorkSite<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
@@ -58,39 +79,57 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
                                     &check_array,
                                     &test_array);
 
-  for (IndexType i = IndexType(0); i < N; i++) {
-    test_array[i] = IndexType(0);
-  }
+  auto set_test_data = [&]() {
 
-  working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
+    for (IndexType i = IndexType(0); i < N; i++) {
+      test_array[i] = IndexType(0);
+    }
 
-  for (IndexType i = begin; i < end; ++i) {
-    test_array[ i ] = IndexType(i) + IndexType(5);
-  }
+    working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
 
-  RAJA::WorkPool<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >
-      pool(Allocator{});
+    for (IndexType i = begin; i < end; ++i) {
+      test_array[ i ] = IndexType(i);
+    }
+  };
 
-  pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-      [=] RAJA_HOST_DEVICE (IndexType i) {
-    working_array[i] += i + IndexType(5);
-  });
+  auto fill_pool = [&](WorkPool_type& pool, IndexType test_val) {
 
-  auto group = pool.instantiate();
+    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+        [=] RAJA_HOST_DEVICE (IndexType i) {
+      working_array[i] += i + test_val;
+    });
+  };
 
-  auto site = group.run();
+  auto check_test_data = [&](IndexType test_val) {
+
+    working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
+
+    for (IndexType i = IndexType(0); i < begin; i++) {
+      ASSERT_EQ(test_array[i], check_array[i]);
+    }
+    for (IndexType i = begin;        i < end;   i++) {
+      ASSERT_EQ(test_array[i] + test_val, check_array[i]);
+    }
+    for (IndexType i = end;          i < N;     i++) {
+      ASSERT_EQ(test_array[i], check_array[i]);
+    }
+  };
+
+
+  set_test_data();
+
+  WorkPool_type pool(Allocator{});
+
+  fill_pool(pool, IndexType(5));
+
+  WorkGroup_type group = pool.instantiate();
+
+  WorkSite_type site = group.run();
 
   working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
 
-  //
-  for (IndexType i = IndexType(0); i < N; i++) {
-    ASSERT_EQ(test_array[i], check_array[i]);
-  }
+  check_test_data(IndexType(5));
+
 
   deallocateForallTestData<IndexType>(working_res,
                                       working_array,
@@ -136,6 +175,27 @@ void testWorkGroupUnorderedMultiple(
     IndexType begin, IndexType end,
     IndexType num1, IndexType num2, IndexType num3)
 {
+  using WorkPool_type = RAJA::WorkPool<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkGroup_type = RAJA::WorkGroup<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkSite_type = RAJA::WorkSite<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
@@ -177,124 +237,150 @@ void testWorkGroupUnorderedMultiple(
                                 &test_array3);
 
 
-  for (IndexType j = IndexType(0); j < num1; j++) {
-    type1* test_ptr1 = test_array1 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      test_ptr1[i] = type1(0);
+  auto set_test_data = [&]() {
+
+    for (IndexType j = IndexType(0); j < num1; j++) {
+      type1* test_ptr1 = test_array1 + N * j;
+      for (IndexType i = IndexType(0); i < N; i++) {
+        test_ptr1[i] = type1(0);
+      }
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num2; j++) {
-    type2* test_ptr2 = test_array2 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      test_ptr2[i] = type2(0);
+    for (IndexType j = IndexType(0); j < num2; j++) {
+      type2* test_ptr2 = test_array2 + N * j;
+      for (IndexType i = IndexType(0); i < N; i++) {
+        test_ptr2[i] = type2(0);
+      }
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num3; j++) {
-    type3* test_ptr3 = test_array3 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      test_ptr3[i] = type3(0);
+    for (IndexType j = IndexType(0); j < num3; j++) {
+      type3* test_ptr3 = test_array3 + N * j;
+      for (IndexType i = IndexType(0); i < N; i++) {
+        test_ptr3[i] = type3(0);
+      }
     }
-  }
 
 
-  working_res.memcpy(working_array1, test_array1, sizeof(type1) * N * num1);
+    working_res.memcpy(working_array1, test_array1, sizeof(type1) * N * num1);
 
-  working_res.memcpy(working_array2, test_array2, sizeof(type2) * N * num2);
+    working_res.memcpy(working_array2, test_array2, sizeof(type2) * N * num2);
 
-  working_res.memcpy(working_array3, test_array3, sizeof(type3) * N * num3);
+    working_res.memcpy(working_array3, test_array3, sizeof(type3) * N * num3);
 
 
-  for (IndexType j = IndexType(0); j < num1; j++) {
-    type1* test_ptr1 = test_array1 + N * j;
-    for (IndexType i = begin; i < end; ++i) {
-      test_ptr1[ i ] = type1(i) + type1(5);
+    for (IndexType j = IndexType(0); j < num1; j++) {
+      type1* test_ptr1 = test_array1 + N * j;
+      for (IndexType i = begin; i < end; ++i) {
+        test_ptr1[ i ] = type1(i);
+      }
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num2; j++) {
-    type2* test_ptr2 = test_array2 + N * j;
-    for (IndexType i = begin; i < end; ++i) {
-      test_ptr2[ i ] = type2(i) + type2(7);
+    for (IndexType j = IndexType(0); j < num2; j++) {
+      type2* test_ptr2 = test_array2 + N * j;
+      for (IndexType i = begin; i < end; ++i) {
+        test_ptr2[ i ] = type2(i);
+      }
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num3; j++) {
-    type3* test_ptr3 = test_array3 + N * j;
-    for (IndexType i = begin; i < end; ++i) {
-      test_ptr3[ i ] = type3(i) + type3(11);
+    for (IndexType j = IndexType(0); j < num3; j++) {
+      type3* test_ptr3 = test_array3 + N * j;
+      for (IndexType i = begin; i < end; ++i) {
+        test_ptr3[ i ] = type3(i);
+      }
     }
-  }
+  };
 
+  auto fill_pool = [&](WorkPool_type& pool, type1 test_val1, type2 test_val2, type3 test_val3) {
 
-  RAJA::WorkPool<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >
-      pool(Allocator{});
-
-  for (IndexType j = IndexType(0); j < num1; j++) {
-    type1* working_ptr1 = working_array1 + N * j;
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr1[i] += type1(i) + type1(5);
-    });
-  }
-
-  for (IndexType j = IndexType(0); j < num2; j++) {
-    type2* working_ptr2 = working_array2 + N * j;
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr2[i] += type2(i) + type2(7);
-    });
-  }
-
-  for (IndexType j = IndexType(0); j < num3; j++) {
-    type3* working_ptr3 = working_array3 + N * j;
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_ptr3[i] += type3(i) + type3(11);
-    });
-  }
-
-  auto group = pool.instantiate();
-
-  auto site = group.run();
-
-
-  working_res.memcpy(check_array1, working_array1, sizeof(type1) * N * num1);
-
-  working_res.memcpy(check_array2, working_array2, sizeof(type2) * N * num2);
-
-  working_res.memcpy(check_array3, working_array3, sizeof(type3) * N * num3);
-
-
-  for (IndexType j = IndexType(0); j < num1; j++) {
-    type1* test_ptr1 = test_array1 + N * j;
-    type1* check_ptr1 = check_array1 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      ASSERT_EQ(test_ptr1[i], check_ptr1[i]);
+    for (IndexType j = IndexType(0); j < num1; j++) {
+      type1* working_ptr1 = working_array1 + N * j;
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+          [=] RAJA_HOST_DEVICE (IndexType i) {
+        working_ptr1[i] += type1(i) + test_val1;
+      });
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num2; j++) {
-    type2* test_ptr2 = test_array2 + N * j;
-    type2* check_ptr2 = check_array2 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      ASSERT_EQ(test_ptr2[i], check_ptr2[i]);
+    for (IndexType j = IndexType(0); j < num2; j++) {
+      type2* working_ptr2 = working_array2 + N * j;
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+          [=] RAJA_HOST_DEVICE (IndexType i) {
+        working_ptr2[i] += type2(i) + test_val2;
+      });
     }
-  }
 
-  for (IndexType j = IndexType(0); j < num3; j++) {
-    type3* test_ptr3 = test_array3 + N * j;
-    type3* check_ptr3 = check_array3 + N * j;
-    for (IndexType i = IndexType(0); i < N; i++) {
-      ASSERT_EQ(test_ptr3[i], check_ptr3[i]);
+    for (IndexType j = IndexType(0); j < num3; j++) {
+      type3* working_ptr3 = working_array3 + N * j;
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+          [=] RAJA_HOST_DEVICE (IndexType i) {
+        working_ptr3[i] += type3(i) + test_val3;
+      });
     }
-  }
+  };
+
+  auto check_test_data = [&](type1 test_val1, type2 test_val2, type3 test_val3) {
+
+    working_res.memcpy(check_array1, working_array1, sizeof(type1) * N * num1);
+
+    working_res.memcpy(check_array2, working_array2, sizeof(type2) * N * num2);
+
+    working_res.memcpy(check_array3, working_array3, sizeof(type3) * N * num3);
+
+
+    for (IndexType j = IndexType(0); j < num1; j++) {
+      type1* test_ptr1 = test_array1 + N * j;
+      type1* check_ptr1 = check_array1 + N * j;
+      for (IndexType i = IndexType(0); i < begin; i++) {
+        ASSERT_EQ(test_ptr1[i], check_ptr1[i]);
+      }
+      for (IndexType i = begin;        i < end;   i++) {
+        ASSERT_EQ(test_ptr1[i] + test_val1, check_ptr1[i]);
+      }
+      for (IndexType i = end;          i < N;     i++) {
+        ASSERT_EQ(test_ptr1[i], check_ptr1[i]);
+      }
+    }
+
+    for (IndexType j = IndexType(0); j < num2; j++) {
+      type2* test_ptr2 = test_array2 + N * j;
+      type2* check_ptr2 = check_array2 + N * j;
+      for (IndexType i = IndexType(0); i < begin; i++) {
+        ASSERT_EQ(test_ptr2[i], check_ptr2[i]);
+      }
+      for (IndexType i = begin;        i < end;   i++) {
+        ASSERT_EQ(test_ptr2[i] + test_val2, check_ptr2[i]);
+      }
+      for (IndexType i = end;          i < N;     i++) {
+        ASSERT_EQ(test_ptr2[i], check_ptr2[i]);
+      }
+    }
+
+    for (IndexType j = IndexType(0); j < num3; j++) {
+      type3* test_ptr3 = test_array3 + N * j;
+      type3* check_ptr3 = check_array3 + N * j;
+      for (IndexType i = IndexType(0); i < begin; i++) {
+        ASSERT_EQ(test_ptr3[i], check_ptr3[i]);
+      }
+      for (IndexType i = begin;        i < end;   i++) {
+        ASSERT_EQ(test_ptr3[i] + test_val3, check_ptr3[i]);
+      }
+      for (IndexType i = end;          i < N;     i++) {
+        ASSERT_EQ(test_ptr3[i], check_ptr3[i]);
+      }
+    }
+  };
+
+
+  set_test_data();
+
+  WorkPool_type pool(Allocator{});
+
+  fill_pool(pool, type1(5), type2(7), type3(11));
+
+  WorkGroup_type group = pool.instantiate();
+
+  WorkSite_type site = group.run();
+
+  check_test_data(type1(5), type2(7), type3(11));
 
 
   deallocateForallTestData<type1>(working_res,
