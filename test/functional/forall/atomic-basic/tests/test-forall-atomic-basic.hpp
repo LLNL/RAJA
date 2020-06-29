@@ -9,10 +9,8 @@
 /// Header file containing basic functional tests for atomic operations with forall.
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_BASIC_TEST_HPP__
-#define __TEST_FORALL_ATOMIC_BASIC_TEST_HPP__
-
-#include "RAJA_test-forall-data.hpp"
+#ifndef __TEST_FORALL_ATOMIC_BASIC_HPP__
+#define __TEST_FORALL_ATOMIC_BASIC_HPP__
 
 #include <numeric>
 
@@ -59,7 +57,7 @@ template <typename ExecPolicy,
           typename WORKINGRES,
           typename SegmentType,
           typename T>
-void testAtomicFunctionBasic( RAJA::Index_type seglimit )
+void ForallAtomicBasicTestImpl( RAJA::Index_type seglimit )
 {
   // initialize an array
   const int len = 10;
@@ -144,7 +142,13 @@ void testAtomicFunctionBasic( RAJA::Index_type seglimit )
                                 test_array );
 }
 
-TYPED_TEST_P(ForallAtomicBasicFunctionalTest, AtomicBasicFunctionalForall)
+TYPED_TEST_SUITE_P(ForallAtomicBasicTest);
+template <typename T>
+class ForallAtomicBasicTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -152,7 +156,10 @@ TYPED_TEST_P(ForallAtomicBasicFunctionalTest, AtomicBasicFunctionalForall)
   using SType   = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  testAtomicFunctionBasic<AExec, APol, ResType, SType, DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, SType, DType>( 10000 );
 }
 
-#endif  //__TEST_FORALL_ATOMIC_BASIC_TEST_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest,
+                            AtomicBasicForall);
+
+#endif  //__TEST_FORALL_ATOMIC_BASIC_HPP__

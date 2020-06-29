@@ -65,6 +65,8 @@ using TBBForallExecPols = camp::list< RAJA::tbb_for_exec,
 
 using TBBForallReduceExecPols = TBBForallExecPols;
 
+using TBBForallAtomicExecPols = TBBForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
@@ -74,6 +76,8 @@ using OpenMPTargetForallExecPols =
 
 using OpenMPTargetForallReduceExecPols = OpenMPTargetForallExecPols;
 
+using OpenMPTargetForallAtomicExecPols = OpenMPTargetForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -82,6 +86,8 @@ using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
 
 using CudaForallReduceExecPols = CudaForallExecPols;
 
+using CudaForallAtomicExecPols = CudaForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -89,6 +95,8 @@ using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
 
 using HipForallReduceExecPols = HipForallExecPols;
+
+using HipForallAtomicExecPols = HipForallExecPols;
 
 #endif
 

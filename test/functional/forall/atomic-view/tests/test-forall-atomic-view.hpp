@@ -9,16 +9,14 @@
 /// Header file containing basic functional tests for atomic operations with forall and views.
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_VIEW_TEST_HPP__
-#define __TEST_FORALL_ATOMIC_VIEW_TEST_HPP__
-
-#include "RAJA_test-forall-data.hpp"
+#ifndef __TEST_FORALL_ATOMIC_VIEW_HPP__
+#define __TEST_FORALL_ATOMIC_VIEW_HPP__
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
           typename T>
-void testAtomicViewBasic( RAJA::Index_type N )
+void ForallAtomicViewTestImpl( RAJA::Index_type N )
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
   RAJA::TypedRangeSegment<RAJA::Index_type> seg_half(0, N / 2);
@@ -77,14 +75,23 @@ void testAtomicViewBasic( RAJA::Index_type N )
   host_res.deallocate( check_array );
 }
 
-TYPED_TEST_P(ForallAtomicViewFunctionalTest, AtomicViewFunctionalForall)
+TYPED_TEST_SUITE_P(ForallAtomicViewTest);
+template <typename T>
+class ForallAtomicViewTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicViewTest, AtomicViewForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
+  ForallAtomicViewTestImpl<AExec, APol, ResType, DType>( 100000 );
 }
 
-#endif  //__TEST_FORALL_ATOMIC_VIEW_TEST_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicViewTest,
+                            AtomicViewForall);
+
+#endif  //__TEST_FORALL_ATOMIC_VIEW_HPP__
