@@ -124,6 +124,8 @@ N cores.
           RAJA with CUDA enabled and want to also enable RAJA tests, you
           must use CUDA version 9.2.x or newer.
 
+.. _build-external-tpl-label:
+
 .. note:: You may use externally-supplied versions of the camp and cub 
           libraries with RAJA if you wish. To do so, pass the following 
           options to CMake:

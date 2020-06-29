@@ -30,7 +30,7 @@ Also:
 
 .. note:: * For sorts using the CUDA back-end, RAJA uses the implementations
             provided by the NVIDIA cub library. For information please see
-            :ref:`build-external-tpl-label`.
+            :ref:`build-external-tpl <build-external-tpl-label>`.
           * The RAJA CUDA back-end implementation only supports sorting
             arithmetic types using RAJA operators less and greater.
 
