@@ -730,7 +730,13 @@ struct PropogatingAllocator : NeverEqualAllocator
   using propagate_on_container_move_assignment = std::true_type;
   using propagate_on_container_swap = std::true_type;
 
-  using NeverEqualAllocator::NeverEqualAllocator;
+  PropogatingAllocator() = default;
+
+  PropogatingAllocator(PropogatingAllocator const&) = default;
+  PropogatingAllocator(PropogatingAllocator &&) = default;
+
+  PropogatingAllocator& operator=(PropogatingAllocator const&) = default;
+  PropogatingAllocator& operator=(PropogatingAllocator &&) = default;
 
   PropogatingAllocator select_on_container_copy_construction()
   {
