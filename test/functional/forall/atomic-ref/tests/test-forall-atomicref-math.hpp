@@ -9,10 +9,8 @@
 /// Source file containing basic functional tests for arithmetic atomic operations using forall
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_REF_MATH_HPP__
-#define __TEST_FORALL_ATOMIC_REF_MATH_HPP__
-
-#include "RAJA_test-forall-data.hpp"
+#ifndef __TEST_FORALL_ATOMICREF_MATH_HPP__
+#define __TEST_FORALL_ATOMICREF_MATH_HPP__
 
 template < typename T, typename AtomicPolicy >
 struct PreIncCountOp {
@@ -155,7 +153,7 @@ template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
           typename T>
-void testAtomicFunctionRefMath( RAJA::Index_type N )
+void ForallAtomicRefMathTestImpl( RAJA::Index_type N )
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
 
@@ -190,14 +188,24 @@ void testAtomicFunctionRefMath( RAJA::Index_type N )
   hit_res.deallocate( hit );
 }
 
-TYPED_TEST_P(ForallAtomicRefMathFunctionalTest, AtomicRefMathFunctionalForall)
+
+TYPED_TEST_SUITE_P(ForallAtomicRefMathTest);
+template <typename T>
+class ForallAtomicRefMathTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicRefMathTest, AtomicRefMathForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testAtomicFunctionRefMath<AExec, APol, ResType, DType>( 10000 );
+  ForallAtomicRefMathTestImpl<AExec, APol, ResType, DType>( 10000 );
 }
 
-#endif  //__TEST_FORALL_ATOMIC_REF_MATH_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicRefMathTest,
+                            AtomicRefMathForall);
+
+#endif  //__TEST_FORALL_ATOMICREF_MATH_HPP__

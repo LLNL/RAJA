@@ -9,10 +9,8 @@
 /// Source file containing basic functional tests for non-arithmetic atomic operations using forall
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
-#define __TEST_FORALL_ATOMIC_REF_OTHER_HPP__
-
-#include "RAJA_test-forall-data.hpp"
+#ifndef __TEST_FORALL_ATOMICREF_OTHER_HPP__
+#define __TEST_FORALL_ATOMICREF_OTHER_HPP__
 
 #include <type_traits>
 
@@ -378,7 +376,7 @@ template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
           typename T>
-void testAtomicFunctionRefOther( RAJA::Index_type N )
+void ForallAtomicRefOtherTestImpl( RAJA::Index_type N )
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
 
@@ -422,14 +420,24 @@ void testAtomicFunctionRefOther( RAJA::Index_type N )
   list_res.deallocate( list );
 }
 
-TYPED_TEST_P(ForallAtomicRefOtherFunctionalTest, AtomicRefOtherFunctionalForall)
+
+TYPED_TEST_SUITE_P(ForallAtomicRefOtherTest);
+template <typename T>
+class ForallAtomicRefOtherTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicRefOtherTest, AtomicRefOtherForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testAtomicFunctionRefOther<AExec, APol, ResType, DType>( 10000 );
+  ForallAtomicRefOtherTestImpl<AExec, APol, ResType, DType>( 10000 );
 }
 
-#endif  //__TEST_FORALL_ATOMIC_REF_OTHER_HPP__
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicRefOtherTest,
+                            AtomicRefOtherForall);
+
+#endif  //__TEST_FORALL_ATOMICREF_OTHER_HPP__
