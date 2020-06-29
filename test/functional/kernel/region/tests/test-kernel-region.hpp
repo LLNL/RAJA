@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_REGION_BASIC_HPP__
-#define __TEST_KERNEL_REGION_BASIC_HPP__
-
-#include "test-kernel-region-data.hpp"
+#ifndef __TEST_KERNEL_REGION_HPP__
+#define __TEST_KERNEL_REGION_HPP__
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
+void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource host_res{camp::resources::Host()};
   camp::resources::Resource work_res{WORKING_RES()};
@@ -70,15 +68,25 @@ void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
                         check_array);
 }
 
-TYPED_TEST_P(KernelRegionBasicTest, RegionBasicKernel)
+
+TYPED_TEST_SUITE_P(KernelRegionTest);
+template <typename T>
+class KernelRegionTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(KernelRegionTest, RegionKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
-  KernelRegionBasicFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
 }
 
-#endif  // __TEST_KERNEL_REGION_BASIC_HPP__
+REGISTER_TYPED_TEST_SUITE_P(KernelRegionTest,
+                            RegionKernel);
+
+#endif  // __TEST_KERNEL_REGION_HPP__

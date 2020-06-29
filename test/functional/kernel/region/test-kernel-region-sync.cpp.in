@@ -5,12 +5,29 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "test-kernel-region.hpp"
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
 
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-region-data.hpp"
+#include "test-kernel-region-sync.hpp"
+
+
+//
+// Exec pols for kernel region tests
+//
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenMPKernelRegionSyncExecPols = 
-  camp::list< 
+using OpenMPKernelRegionSyncExecPols =
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::Region<RAJA::omp_parallel_region,
@@ -58,15 +75,20 @@ using OpenMPKernelRegionSyncExecPols =
 
   >;
 
+#endif // RAJA_ENABLE_OPENMP
 
-// Cartesian product of types for OpenMP tests
-using OpenMPKernelRegionSyncTypes =
-  Test< camp::cartesian_product<IdxTypeList, 
-                                HostResourceList,
-                                OpenMPKernelRegionSyncExecPols> >::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP,
+//
+// Cartesian product of types used in parameterized tests
+//
+using @REGION_BACKEND@KernelRegionSyncTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @REGION_BACKEND@ResourceList,
+                                @REGION_BACKEND@KernelRegionSyncExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@REGION_BACKEND@,
                                KernelRegionSyncTest,
-                               OpenMPKernelRegionSyncTypes);
-
-#endif
+                               @REGION_BACKEND@KernelRegionSyncTypes);
