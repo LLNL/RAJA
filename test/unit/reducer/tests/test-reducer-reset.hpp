@@ -86,7 +86,7 @@ template <  typename ReducePolicy,
             typename ForOnePol  >
 void testReducerReset()
 {
-  camp::resources::Resource work_res{WORKING_RES()};
+  camp::resources::Resource work_res{WORKING_RES::get_default()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
   NumericType * resetVal = nullptr;

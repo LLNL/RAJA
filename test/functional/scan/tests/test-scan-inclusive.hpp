@@ -34,7 +34,7 @@ void ScanInclusiveFunctionalTest(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   T* work_in;
   T* work_out;
@@ -69,7 +69,7 @@ void ScanInclusiveInplaceFunctionalTest(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   T* work_in;
   T* work_out;

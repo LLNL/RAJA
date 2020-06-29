@@ -14,7 +14,7 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void KernelRegionBasicFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource host_res{camp::resources::Host()};
-  camp::resources::Resource work_res{WORKING_RES()};
+  camp::resources::Resource work_res{WORKING_RES::get_default()};
 
   const INDEX_TYPE N = last - first;
   
