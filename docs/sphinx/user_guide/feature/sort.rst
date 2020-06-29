@@ -111,10 +111,12 @@ separately:
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter)``
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter, comparator)``
 
-Sort pairs generates the same output sequence of 'keys' as sort and reorders
-'vals' by permuting them the same as it did the 'keys'; i.e. sorting
-the pairs based on their 'keys'. The 'comparator' used in sort_pairs only
-compares 'keys'.
+Sort pairs generates the same output sequence of keys in 'keys_container' or
+'keys_iter' as sort does in 'container' or 'iter' and also reorders the sequence
+of values in 'vals_container' or 'vals_iter' by permuting the sequence of values
+in the same manner as the sequence of keys; i.e. sorting the sequence of pairs
+based on their keys. Note that the 'comparator' used in sort_pairs only compares
+keys.
 
 ---------------------
 RAJA Stable Sorts
