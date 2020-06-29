@@ -18,7 +18,7 @@ namespace util {
 
 inline
 void
-callPreLaunchPlugins(PluginContext p) noexcept
+callPreLaunchPlugins(PluginContext p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
@@ -30,7 +30,7 @@ callPreLaunchPlugins(PluginContext p) noexcept
 
 inline
 void
-callPostLaunchPlugins(PluginContext p) noexcept
+callPostLaunchPlugins(PluginContext p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
@@ -42,7 +42,7 @@ callPostLaunchPlugins(PluginContext p) noexcept
 
 inline
 void
-callInitPlugins(PluginOptions p) noexcept
+callInitPlugins(PluginOptions p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();

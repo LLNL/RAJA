@@ -91,14 +91,14 @@ namespace util {
 
     /// A static registration template.
     template <typename V>
-    class Add {
+    class add {
       entry Entry;
       node Node;
 
       static std::shared_ptr<T> CtorFn() { return std::make_shared<V>(); }
 
     public:
-      Add(const std::string& Name, const std::string& Desc)
+      add(const std::string& Name, const std::string& Desc)
           : Entry(Name, Desc, CtorFn), Node(Entry) {
         add_node(&Node);
       }

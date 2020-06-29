@@ -32,5 +32,3 @@ extern "C" RAJA::util::PluginStrategy *getPlugin()
 {
   return new TimerPlugin;
 }
-
-static RAJA::util::PluginRegistry::Add<TimerPlugin> P("timer-plugin", "Timer");

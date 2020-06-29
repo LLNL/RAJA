@@ -9,7 +9,6 @@ raja_add_executable(
   NAME plugin-example
   SOURCES test-plugin.cpp counter-plugin.cpp)
 
-
 raja_add_executable(
   NAME plugin-example-dynamic
   SOURCES test-plugin-dynamic.cpp)
