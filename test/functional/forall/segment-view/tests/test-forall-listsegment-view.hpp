@@ -8,8 +8,6 @@
 #ifndef __TEST_FORALL_LISTSEGMENT_VIEW_HPP__
 #define __TEST_FORALL_LISTSEGMENT_VIEW_HPP__
 
-#include "test-forall-segment-view.hpp"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

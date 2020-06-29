@@ -9,11 +9,12 @@
 /// Source file containing tests for atomic exchange and swap methods
 ///
 
-#include <RAJA/RAJA.hpp>
+#include "RAJA/RAJA.hpp"
+
 #include "RAJA_gtest.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 #endif
 
 // Basic Exchange

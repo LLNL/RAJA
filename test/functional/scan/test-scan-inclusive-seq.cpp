@@ -5,10 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-scan-inclusive.hpp"
-
-#include "../forall/test-forall-utils.hpp"
-#include "../forall/test-forall-execpol.hpp"
+#include "test-scan.hpp"
 
 using SequentialInclusiveScanTypes = 
   Test<camp::cartesian_product< SequentialForallExecPols,

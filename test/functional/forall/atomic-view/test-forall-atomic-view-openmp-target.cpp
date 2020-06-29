@@ -5,23 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing basic functional tests for atomic operations with forall and views.
-///
-
-#include "tests/test-forall-atomic-view.hpp"
-
-#include "../test-forall-execpol.hpp"
-
-#include "../test-forall-atomic-utils.hpp"
+#include "test-forall-atomic-view.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OmpTargetAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 OpenMPTargetForallExecPols,
-                                                                 OpenMPAtomicPols,
-                                                                 OpenMPTargetResourceList,
-                                                                 AtomicDataTypeList >
-                                      >::Types;
+using OmpTargetAtomicForallViewTypes = 
+  Test< camp::cartesian_product< OpenMPTargetForallExecPols,
+                                 OpenMPAtomicPols,
+                                 OpenMPTargetResourceList, 
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( OmpTargetTest,
                                 ForallAtomicViewFunctionalTest,

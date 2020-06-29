@@ -57,6 +57,7 @@ struct CudaStatementExecutor<
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline
@@ -69,13 +70,13 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
-    int chunk_size = TPol::chunk_size;
+    diff_t chunk_size = TPol::chunk_size;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
+    diff_t len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0; i < len; i += chunk_size) {
+    for (diff_t i = 0; i < len; i += chunk_size) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -137,6 +138,8 @@ struct CudaStatementExecutor<
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
   static
   inline
   RAJA_DEVICE
@@ -148,8 +151,8 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    auto len = segment.end() - segment.begin();
-    auto i = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t i = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
 
     // check have chunk
     if (i < len) {
@@ -175,8 +178,8 @@ struct CudaStatementExecutor<
   {
 
     // Compute how many blocks
-    int len = segment_length<ArgumentId>(data);
-    int num_blocks = len / chunk_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t num_blocks = len / chunk_size;
     if (num_blocks * chunk_size < len) {
       num_blocks++;
     }
@@ -229,6 +232,8 @@ struct CudaStatementExecutor<
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
   static
   inline
   RAJA_DEVICE
@@ -242,12 +247,12 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    auto len = segment.end() - segment.begin();
-    auto i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
-    auto i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    diff_t i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (int i = i0; i < len; i += i_stride) {
+    for (diff_t i = i0; i < len; i += i_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -267,8 +272,8 @@ struct CudaStatementExecutor<
   {
 
     // Compute how many blocks
-    int len = segment_length<ArgumentId>(data);
-    int num_blocks = len / chunk_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t num_blocks = len / chunk_size;
     if (num_blocks * chunk_size < len) {
       num_blocks++;
     }
@@ -320,6 +325,8 @@ struct CudaStatementExecutor<
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
   static
   inline
   RAJA_DEVICE
@@ -333,7 +340,7 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
 
     // Assign our new tiled segment
     segment = orig_segment.slice(i0, chunk_size);
@@ -352,8 +359,8 @@ struct CudaStatementExecutor<
   {
 
     // Compute how many blocks
-    int len = segment_length<ArgumentId>(data);
-    int num_threads = len / chunk_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t num_threads = len / chunk_size;
     if(num_threads * chunk_size < len){
       num_threads++;
     }
@@ -404,6 +411,8 @@ struct CudaStatementExecutor<
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
   static
   inline
   RAJA_DEVICE
@@ -417,14 +426,14 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    auto i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
 
     // Get our stride from the dimension
-    auto i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
+    diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    int len = segment_length<ArgumentId>(data);
-    for (int i = i0; i < len; i += i_stride) {
+    diff_t len = segment_length<ArgumentId>(data);
+    for (diff_t i = i0; i < len; i += i_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -444,12 +453,12 @@ struct CudaStatementExecutor<
   {
 
     // Compute how many blocks
-    int len = segment_length<ArgumentId>(data);
-    int num_threads = len / chunk_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t num_threads = len / chunk_size;
     if(num_threads * chunk_size < len){
       num_threads++;
     }
-    num_threads = std::max(num_threads, MinThreads);
+    num_threads = std::max(num_threads, (diff_t)MinThreads);
 
     LaunchDims dims;
     set_cuda_dim<ThreadDim>(dims.threads, num_threads);

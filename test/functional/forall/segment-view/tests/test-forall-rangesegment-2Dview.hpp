@@ -8,8 +8,6 @@
 #ifndef __TEST_FORALL_RANGESEGMENT_2DVIEW_HPP__
 #define __TEST_FORALL_RANGESEGMENT_2DVIEW_HPP__
 
-#include "test-forall-segment-view.hpp"
-
 #include <iostream>
 #include <numeric>
 
