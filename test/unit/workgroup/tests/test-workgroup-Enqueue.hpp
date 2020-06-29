@@ -95,38 +95,72 @@ template <typename ExecPolicy,
           typename Allocator,
           typename ... Args
           >
-void testWorkGroupEnqueueSingle(RAJA::xargs<Args...>)
+void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, size_t rep, size_t num)
 {
   IndexType success = (IndexType)1;
 
   using callable = EnqueueTestCallable<IndexType, Args...>;
 
-  {
-    RAJA::WorkPool<
+  using WorkPool_type = RAJA::WorkPool<
                     RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                     IndexType,
                     RAJA::xargs<Args...>,
                     Allocator
-                  >
-        pool(Allocator{});
+                  >;
 
-    ASSERT_EQ(pool.num_loops(), (size_t)0);
-    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
+  using WorkGroup_type = RAJA::WorkGroup<
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    IndexType,
+                    RAJA::xargs<Args...>,
+                    Allocator
+                  >;
 
-    {
-      callable c{&success, (IndexType)0};
+  {
+    auto test_empty = [&](WorkPool_type& pool) {
 
-      ASSERT_FALSE(c.move_constructed);
-      ASSERT_FALSE(c.moved_from);
+      ASSERT_EQ(pool.num_loops(), (size_t)0);
+      ASSERT_EQ(pool.storage_bytes(), (size_t)0);
+    };
 
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
+    auto fill_contents = [&](WorkPool_type& pool, size_t num, IndexType init_val) {
 
-      ASSERT_FALSE(c.move_constructed);
-      ASSERT_TRUE(c.moved_from);
+      for (size_t i = 0; i < num; ++i) {
+        callable c{&success, init_val};
+
+        ASSERT_FALSE(c.move_constructed);
+        ASSERT_FALSE(c.moved_from);
+
+        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
+
+        ASSERT_FALSE(c.move_constructed);
+        ASSERT_TRUE(c.moved_from);
+      }
+
+      ASSERT_EQ(pool.num_loops(), (size_t)num);
+      ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
+    };
+
+    auto test_contents = [&](WorkPool_type& pool, size_t num, IndexType) {
+
+      ASSERT_EQ(pool.num_loops(), (size_t)num);
+      ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
+    };
+
+
+    WorkPool_type pool(Allocator{});
+
+    test_empty(pool);
+
+    for (size_t i = 0; i < rep; ++i) {
+
+      fill_contents(pool, num, (IndexType)0);
+      test_contents(pool, num, (IndexType)0);
+
+      if (do_instantiate) {
+        WorkGroup_type group = pool.instantiate();
+        test_empty(pool);
+      }
     }
-
-    ASSERT_EQ(pool.num_loops(), (size_t)1);
-    ASSERT_GE(pool.storage_bytes(), sizeof(callable));
   }
 
   ASSERT_EQ(success, (IndexType)1);
@@ -141,65 +175,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupEnqueueSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
-}
-
-
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename ... Args
-          >
-void testWorkGroupEnqueueInstantiate(RAJA::xargs<Args...>)
-{
-  IndexType success = (IndexType)1;
-
-  using callable = EnqueueTestCallable<IndexType, Args...>;
-
-  {
-    RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                    IndexType,
-                    RAJA::xargs<Args...>,
-                    Allocator
-                  >
-        pool(Allocator{});
-
-    ASSERT_EQ(pool.num_loops(), (size_t)0);
-    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-
-    {
-      callable c{&success, (IndexType)0};
-
-      ASSERT_FALSE(c.move_constructed);
-      ASSERT_FALSE(c.moved_from);
-
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
-
-      ASSERT_FALSE(c.move_constructed);
-      ASSERT_TRUE(c.moved_from);
-    }
-
-    ASSERT_EQ(pool.num_loops(), (size_t)1);
-    ASSERT_GE(pool.storage_bytes(), sizeof(callable));
-
-    {
-      RAJA::WorkGroup<
-                      RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                      IndexType,
-                      RAJA::xargs<Args...>,
-                      Allocator
-                    >
-          group = pool.instantiate();
-    }
-
-    ASSERT_EQ(pool.num_loops(), (size_t)0);
-    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-  }
-
-  ASSERT_EQ(success, (IndexType)1);
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, 1, 1);
 }
 
 TYPED_TEST_P(WorkGroupBasicEnqueueInstantiateUnitTest, BasicWorkGroupEnqueueInstantiate)
@@ -211,68 +187,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueInstantiateUnitTest, BasicWorkGroupEnqueueInst
   using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupEnqueueInstantiate< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
-}
-
-
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename ... Args
-          >
-void testWorkGroupEnqueueReuse(RAJA::xargs<Args...>, size_t rep)
-{
-  IndexType success = (IndexType)1;
-
-  using callable = EnqueueTestCallable<IndexType, Args...>;
-
-  {
-    RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                    IndexType,
-                    RAJA::xargs<Args...>,
-                    Allocator
-                  >
-        pool(Allocator{});
-
-    ASSERT_EQ(pool.num_loops(), (size_t)0);
-    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-
-    for (size_t i = 0; i < rep; ++i) {
-
-      {
-        callable c{&success, (IndexType)0};
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_FALSE(c.moved_from);
-
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_TRUE(c.moved_from);
-      }
-
-      ASSERT_EQ(pool.num_loops(), (size_t)1);
-      ASSERT_GE(pool.storage_bytes(), sizeof(callable));
-
-      {
-        RAJA::WorkGroup<
-                        RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                        IndexType,
-                        RAJA::xargs<Args...>,
-                        Allocator
-                      >
-            group = pool.instantiate();
-      }
-
-      ASSERT_EQ(pool.num_loops(), (size_t)0);
-      ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-    }
-  }
-
-  ASSERT_EQ(success, (IndexType)1);
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, 1, 1);
 }
 
 TYPED_TEST_P(WorkGroupBasicEnqueueReuseUnitTest, BasicWorkGroupEnqueueReuse)
@@ -287,68 +202,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueReuseUnitTest, BasicWorkGroupEnqueueReuse)
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
-  testWorkGroupEnqueueReuse< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, dist(rng));
-}
-
-
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename ... Args
-          >
-void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, size_t rep, size_t num)
-{
-  IndexType success = (IndexType)1;
-
-  using callable = EnqueueTestCallable<IndexType, Args...>;
-
-  {
-    RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                    IndexType,
-                    RAJA::xargs<Args...>,
-                    Allocator
-                  >
-        pool(Allocator{});
-
-    ASSERT_EQ(pool.num_loops(), (size_t)0);
-    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-
-    for (size_t i = 0; i < rep; ++i) {
-
-      for (size_t i = 0; i < num; ++i) {
-        callable c{&success, (IndexType)0};
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_FALSE(c.moved_from);
-
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_TRUE(c.moved_from);
-      }
-
-      ASSERT_EQ(pool.num_loops(), (size_t)num);
-      ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
-
-      {
-        RAJA::WorkGroup<
-                        RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                        IndexType,
-                        RAJA::xargs<Args...>,
-                        Allocator
-                      >
-            group = pool.instantiate();
-      }
-
-      ASSERT_EQ(pool.num_loops(), (size_t)0);
-      ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-    }
-  }
-
-  ASSERT_EQ(success, (IndexType)1);
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), 1);
 }
 
 TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultiple)
@@ -363,7 +217,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultipl
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, dist(rng), dist(rng));
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), dist(rng));
 }
 
 #endif  //__TEST_WORKGROUP_ENQUEUE__
