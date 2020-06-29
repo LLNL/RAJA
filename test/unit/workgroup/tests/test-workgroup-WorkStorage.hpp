@@ -111,27 +111,28 @@ void testWorkGroupWorkStorageConstructor()
                                                     >;
 
   {
+    auto test_empty = [&](WorkStorage_type& container) {
+
+      ASSERT_EQ(container.size(), (size_t)(0));
+      ASSERT_EQ(container.storage_size(), (size_t)0);
+    };
+
     WorkStorage_type container(Allocator{});
 
-    ASSERT_EQ(container.size(), (size_t)(0));
-    ASSERT_EQ(container.storage_size(), (size_t)0);
+    test_empty(container);
+
 
     WorkStorage_type container2(std::move(container));
 
-    ASSERT_EQ(container.size(), (size_t)(0));
-    ASSERT_EQ(container.storage_size(), (size_t)0);
+    test_empty(container);
+    test_empty(container2);
 
-    ASSERT_EQ(container2.size(), (size_t)(0));
-    ASSERT_EQ(container2.storage_size(), (size_t)0);
 
     WorkStorage_type container3(Allocator{});
     container3 = std::move(container2);
 
-    ASSERT_EQ(container2.size(), (size_t)(0));
-    ASSERT_EQ(container2.storage_size(), (size_t)0);
-
-    ASSERT_EQ(container3.size(), (size_t)(0));
-    ASSERT_EQ(container3.storage_size(), (size_t)0);
+    test_empty(container2);
+    test_empty(container3);
   }
 
   ASSERT_TRUE(success);
