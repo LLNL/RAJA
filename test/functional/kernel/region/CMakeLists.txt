@@ -31,6 +31,8 @@ unset( KERNEL_REGION_BACKENDS )
 #
 # Generate kernel region sync tests for OpenMP.
 #
+if(RAJA_ENABLE_OPENMP)
+
 set(REGION_BACKEND OpenMP)
 
 configure_file( test-kernel-region-sync.cpp.in
@@ -42,3 +44,5 @@ target_include_directories(test-kernel-region-sync-${REGION_BACKEND}.exe
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 unset(REGION_BACKEND)
+
+endif()
