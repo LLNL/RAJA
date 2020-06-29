@@ -98,7 +98,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
       body(b[i]);
   });
 
-  return RAJA::resources::ProxyEvent(&res);
+  return RAJA::resources::EventProxy(&res);
 }
 ///
 /// TBB parallel for static policy implementation
@@ -154,7 +154,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
       },
       tbb_static_partitioner{});
 
-  return RAJA::resources::ProxyEvent(&res);
+  return RAJA::resources::EventProxy(&res);
 }
 
 }  // namespace tbb
