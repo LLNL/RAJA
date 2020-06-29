@@ -24,4 +24,4 @@ class CounterPlugin :
 };
 
 // Regiser plugin with the PluginRegistry
-static RAJA::util::PluginRegistry::Add<CounterPlugin> P("counter-plugin", "Counter");
+static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin", "Counter");
