@@ -818,7 +818,7 @@ struct WorkStorageTestAllocator
 
   private:
     std_allocator(AllocatorImpl&& impl)
-      : m_impl(impl)
+      : m_impl(std::move(impl))
     { }
 
     AllocatorImpl m_impl;
