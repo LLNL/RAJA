@@ -65,7 +65,7 @@ TEST(PluginTest, ForAllICountCounter)
   for (int i = 0; i < 10; i++) {
     RAJA::forall_Icount<RAJA::seq_exec>(
       RAJA::RangeSegment(0,10), icount,
-      [=] (int i, int count) {
+      [=] (int count, int i) {
         a[i] = count;
     });
     icount += 10;
@@ -132,7 +132,7 @@ TEST(PluginTest, ForAllICountIdxSetCounter)
   for (int i = 0; i < 10; i++) {
     RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>(
       iset,
-      [=] (int i, int count) {
+      [=] (int count, int i) {
         a[i] = count;
     });
   }
