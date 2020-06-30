@@ -53,8 +53,8 @@ if(RAJA_ENABLE_HIP)
 endif()
 
 
-set(Ordered_SUBTESTS Single Multiple)
+set(Ordered_SUBTESTS Single Multiple MultipleReusePool MultipleReuseGroup MultipleReusePoolGroup)
 buildunitworkgrouptest(Ordered "${Ordered_SUBTESTS}" "${BACKENDS}")
 
-set(Unordered_SUBTESTS Single Multiple)
+set(Unordered_SUBTESTS Single Multiple MultipleReusePool MultipleReuseGroup MultipleReusePoolGroup)
 buildunitworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${BACKENDS}")
