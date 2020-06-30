@@ -108,12 +108,6 @@ namespace util {
 } // closing brace for util namespace
 } // closing brace for RAJA namespace
 
-#define RAJA_DEFINE_REGISTRY() \
-  namespace RAJA { \
-  namespace util { \
-  } \
-  }
-
 #define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
   namespace RAJA { \
   namespace util { \
