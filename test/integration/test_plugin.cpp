@@ -15,11 +15,23 @@ int plugin_test_capture_counter_post{0};
 int plugin_test_launch_counter_pre{0};
 int plugin_test_launch_counter_post{0};
 
+static_assert(RAJA::type_traits::is_integral<int>::value, "");
+static_assert(RAJA::type_traits::is_iterator<int>::value, "");
+// concepts::enable_if<
+//     type_traits::is_integral<int>,
+//     concepts::negate<type_traits::is_iterator<int>>>
+
 // Check that the plugin is called the correct number of times,
 // once before and after each kernel capture for the capture counter
 // once before and after each kernel invocation for the launch counter
-TEST(PluginTest, Counter)
+TEST(PluginTest, ForAllCounter)
 {
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
   int* a = new int[10];
 
   for (int i = 0; i < 10; i++) {
@@ -27,6 +39,167 @@ TEST(PluginTest, Counter)
       RAJA::RangeSegment(0,10),
       [=] (int i) {
         a[i] = 0;
+    });
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+  delete[] a;
+}
+
+#ifdef CAMP_TYPE_TRAITS_IS_ITERATOR_OF_INT_SHOULD_BE_FALSE
+TEST(PluginTest, ForAllIdxLenCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  int* a = new int[10];
+  int* idx = new int[10];
+  for (int i = 0; i < 10; i++) {
+    idx[i] = i;
+  }
+
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall<RAJA::seq_exec>(
+      idx, 10,
+      [=] (int i) {
+        a[i] = 0;
+    });
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+  delete[] a;
+}
+
+TEST(PluginTest, ForAllIcountIdxLenCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  int* a = new int[10];
+  int* idx = new int[10];
+  for (int i = 0; i < 10; i++) {
+    idx[i] = i;
+  }
+
+  int icount = 0;
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall_Icount<RAJA::seq_exec>(
+      idx, 10, icount,
+      [=] (int i, int count) {
+        a[i] = count;
+    });
+    icount += 10;
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+  delete[] a;
+}
+#endif
+
+TEST(PluginTest, ForAllICountCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  int* a = new int[10];
+
+  int icount = 0;
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall_Icount<RAJA::seq_exec>(
+      RAJA::RangeSegment(0,10), icount,
+      [=] (int i, int count) {
+        a[i] = count;
+    });
+    icount += 10;
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+  delete[] a;
+}
+
+TEST(PluginTest, ForAllIdxSetCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  RAJA::TypedIndexSet< RAJA::RangeSegment > iset;
+
+  for (int i = 0; i < 10; i++) {
+    iset.push_back(RAJA::RangeSegment(0, 10));
+  }
+
+  int* a = new int[10];
+
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>(
+      iset,
+      [=] (int i) {
+        a[i] = 0;
+    });
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+  delete[] a;
+}
+
+TEST(PluginTest, ForAllICountIdxSetCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  RAJA::TypedIndexSet< RAJA::RangeSegment > iset;
+
+  for (int i = 0; i < 10; i++) {
+    iset.push_back(RAJA::RangeSegment(0, 10));
+  }
+
+  int* a = new int[10];
+
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>(
+      iset,
+      [=] (int i, int count) {
+        a[i] = count;
     });
   }
 
