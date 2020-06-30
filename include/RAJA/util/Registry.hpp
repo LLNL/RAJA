@@ -111,6 +111,12 @@ namespace util {
 #define RAJA_DEFINE_REGISTRY() \
   namespace RAJA { \
   namespace util { \
+  } \
+  }
+
+#define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
+  namespace RAJA { \
+  namespace util { \
   template<typename T> typename Registry<T>::node *Registry<T>::Head = nullptr;\
   template<typename T> typename Registry<T>::node *Registry<T>::Tail = nullptr;\
   template<typename T> \
@@ -124,12 +130,6 @@ namespace util {
   template<typename T> typename Registry<T>::iterator Registry<T>::begin() { \
     return iterator(Head); \
   } \
-  } \
-  }
-
-#define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
-  namespace RAJA { \
-  namespace util { \
   template REGISTRY_CLASS::node *Registry<REGISTRY_CLASS::type>::Head; \
   template REGISTRY_CLASS::node *Registry<REGISTRY_CLASS::type>::Tail; \
   template \

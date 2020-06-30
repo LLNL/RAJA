@@ -7,15 +7,12 @@
 
 #include "RAJA/util/PluginStrategy.hpp"
 
-RAJA_DEFINE_REGISTRY();
-RAJA_INSTANTIATE_REGISTRY(Plugin2CaptureRegistry);
-RAJA_INSTANTIATE_REGISTRY(Plugin2LaunchRegistry);
+RAJA_INSTANTIATE_REGISTRY(PluginRegistry);
 
 namespace RAJA {
 namespace util {
 
-Plugin2CaptureStrategy::Plugin2CaptureStrategy() = default;
-Plugin2LaunchStrategy::Plugin2LaunchStrategy() = default;
+PluginStrategy::PluginStrategy() = default;
 
 }
 }
