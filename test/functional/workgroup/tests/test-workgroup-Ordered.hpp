@@ -480,9 +480,9 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReusePoolFunctionalTest, BasicWorkGrou
   IndexType begin = dist_type(IndexType(1), IndexType(8191))(rng);
   IndexType end   = dist_type(begin,        IndexType(8192))(rng);
 
-  IndexType num1 = dist_type(IndexType(0), IndexType(32))(rng);
-  IndexType num2 = dist_type(IndexType(0), IndexType(32))(rng);
-  IndexType num3 = dist_type(IndexType(0), IndexType(32))(rng);
+  IndexType num1 = dist_type(IndexType(0), IndexType(16))(rng);
+  IndexType num2 = dist_type(IndexType(0), IndexType(16))(rng);
+  IndexType num3 = dist_type(IndexType(0), IndexType(16))(rng);
 
   IndexType pool_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
@@ -505,9 +505,9 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseGroupFunctionalTest, BasicWorkGro
   IndexType begin = dist_type(IndexType(1), IndexType(8191))(rng);
   IndexType end   = dist_type(begin,        IndexType(8192))(rng);
 
-  IndexType num1 = dist_type(IndexType(0), IndexType(32))(rng);
-  IndexType num2 = dist_type(IndexType(0), IndexType(32))(rng);
-  IndexType num3 = dist_type(IndexType(0), IndexType(32))(rng);
+  IndexType num1 = dist_type(IndexType(0), IndexType(16))(rng);
+  IndexType num2 = dist_type(IndexType(0), IndexType(16))(rng);
+  IndexType num3 = dist_type(IndexType(0), IndexType(16))(rng);
 
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
@@ -530,9 +530,9 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReusePoolGroupFunctionalTest, BasicWor
   IndexType begin = dist_type(IndexType(1), IndexType(4095))(rng);
   IndexType end   = dist_type(begin,        IndexType(4096))(rng);
 
-  IndexType num1 = dist_type(IndexType(0), IndexType(16))(rng);
-  IndexType num2 = dist_type(IndexType(0), IndexType(16))(rng);
-  IndexType num3 = dist_type(IndexType(0), IndexType(16))(rng);
+  IndexType num1 = dist_type(IndexType(0), IndexType(8))(rng);
+  IndexType num2 = dist_type(IndexType(0), IndexType(8))(rng);
+  IndexType num3 = dist_type(IndexType(0), IndexType(8))(rng);
 
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
