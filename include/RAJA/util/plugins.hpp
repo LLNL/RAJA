@@ -16,10 +16,34 @@ namespace util {
 
 inline
 void
+callPreCapturePlugins(PluginContext p) noexcept
+{
+  for (auto plugin = Plugin2CaptureRegistry::begin();
+      plugin != Plugin2CaptureRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->preCapture(p);
+  }
+}
+
+inline
+void
+callPostCapturePlugins(PluginContext p) noexcept
+{
+  for (auto plugin = Plugin2CaptureRegistry::begin();
+      plugin != Plugin2CaptureRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postCapture(p);
+  }
+}
+
+inline
+void
 callPreLaunchPlugins(PluginContext p) noexcept
 {
-  for (auto plugin = PluginRegistry::begin(); 
-      plugin != PluginRegistry::end();
+  for (auto plugin = Plugin2LaunchRegistry::begin();
+      plugin != Plugin2LaunchRegistry::end();
       ++plugin)
   {
     (*plugin).get()->preLaunch(p);
@@ -30,8 +54,8 @@ inline
 void
 callPostLaunchPlugins(PluginContext p) noexcept
 {
-  for (auto plugin = PluginRegistry::begin(); 
-      plugin != PluginRegistry::end();
+  for (auto plugin = Plugin2LaunchRegistry::begin();
+      plugin != Plugin2LaunchRegistry::end();
       ++plugin)
   {
     (*plugin).get()->postLaunch(p);
