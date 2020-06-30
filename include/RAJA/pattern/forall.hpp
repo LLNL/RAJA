@@ -168,6 +168,106 @@ RAJA_INLINE concepts::enable_if<
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
+  RAJA_FORCEINLINE_RECURSIVE
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              std::forward<Container>(c),
+              std::forward<LoopBody>(loop_body));
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with a value-based policy with icount
+ *
+ ******************************************************************************
+ */
+template <typename ExecutionPolicy,
+          typename Container,
+          typename IndexType,
+          typename LoopBody>
+RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
+                               Container&& c,
+                               IndexType&& icount,
+                               LoopBody&& loop_body)
+{
+  using std::begin;
+  using std::distance;
+  using std::end;
+  auto range = RangeSegment(0, distance(begin(c), end(c)));
+  detail::icount_adapter<Container, LoopBody, IndexType> adapted(c,
+                                                                 loop_body,
+                                                                 icount);
+  using policy::sequential::forall_impl;
+  RAJA_FORCEINLINE_RECURSIVE
+  forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
+}
+
+/*!
+******************************************************************************
+*
+* \brief Execute segments from forall_Icount traversal method.
+*
+*         For usage example, see reducers.hxx.
+*
+******************************************************************************
+*/
+template <typename SegmentIterPolicy,
+          typename SegmentExecPolicy,
+          typename... SegmentTypes,
+          typename LoopBody>
+RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
+                               const TypedIndexSet<SegmentTypes...>& iset,
+                               LoopBody loop_body)
+{
+  // no need for icount variant here
+  wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
+    iset.segmentCall(segID,
+                     detail::CallForallIcount(iset.getStartingIcount(segID)),
+                     SegmentExecPolicy(),
+                     loop_body);
+  });
+}
+
+template <typename SegmentIterPolicy,
+          typename SegmentExecPolicy,
+          typename LoopBody,
+          typename... SegmentTypes>
+RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
+                        const TypedIndexSet<SegmentTypes...>& iset,
+                        LoopBody loop_body)
+{
+  wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
+    iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), loop_body);
+  });
+}
+
+}  // end namespace wrap
+
+/*!
+ ******************************************************************************
+ *
+ * \brief The RAJA::plugin2 layer unwraps dynamic policies before dispatch
+ *
+ ******************************************************************************
+ */
+namespace plugin2
+{
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with a value-based policy
+ *
+ ******************************************************************************
+ */
+template <typename ExecutionPolicy,
+          typename Container,
+          typename LoopBody>
+RAJA_INLINE void forall(ExecutionPolicy&& p,
+                        Container&& c,
+                        LoopBody&& loop_body)
+{
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
@@ -178,9 +278,9 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 
   util::callPreLaunchPlugins(context);
 
-  forall_impl(std::forward<ExecutionPolicy>(p),
-              std::forward<Container>(c),
-              body);
+  wrap::forall(std::forward<ExecutionPolicy>(p),
+               std::forward<Container>(c),
+               body);
 
   util::callPostLaunchPlugins(context);
 }
@@ -211,15 +311,10 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 
   util::callPreLaunchPlugins(context);
 
-  using std::begin;
-  using std::distance;
-  using std::end;
-  auto range = RangeSegment(0, distance(begin(c), end(c)));
-  detail::icount_adapter<Container, LoopBody, IndexType> adapted(c,
-                                                                 body,
-                                                                 icount);
-  using policy::sequential::forall_impl;
-  forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
+  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
+                      std::forward<Container>(c),
+                      std::forward<IndexType>(icount),
+                      body);
 
   util::callPostLaunchPlugins(context);
 }
@@ -227,21 +322,18 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 /*!
 ******************************************************************************
 *
-* \brief Execute segments from forall_Icount traversal method.
-*
-*         For usage example, see reducers.hxx.
+ * \brief Generic dispatch over containers with a value-based policy
 *
 ******************************************************************************
 */
-template <typename SegmentIterPolicy,
-          typename SegmentExecPolicy,
-          typename... SegmentTypes,
+template <typename ExecutionPolicy,
+          typename Container,
           typename LoopBody>
-RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                               const TypedIndexSet<SegmentTypes...>& iset,
-                               LoopBody loop_body)
+RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
+                               Container&& c,
+                               LoopBody&& loop_body)
 {
-  util::PluginContext context{util::make_context<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>()};
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
   using RAJA::internal::trigger_updates_before;
@@ -251,43 +343,14 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
 
   util::callPreLaunchPlugins(context);
 
-  // no need for icount variant here
-  wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
-    iset.segmentCall(segID,
-                     detail::CallForallIcount(iset.getStartingIcount(segID)),
-                     SegmentExecPolicy(),
-                     body);
-  });
+  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
+                      std::forward<Container>(c),
+                      body);
 
   util::callPostLaunchPlugins(context);
 }
 
-template <typename SegmentIterPolicy,
-          typename SegmentExecPolicy,
-          typename LoopBody,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                        const TypedIndexSet<SegmentTypes...>& iset,
-                        LoopBody loop_body)
-{
-  util::PluginContext context{util::make_context<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::internal::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
-    iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), body);
-  });
-
-  util::callPostLaunchPlugins(context);
-}
-
-}  // end namespace wrap
+}  // end namespace plugin2
 
 /*!
  ******************************************************************************
@@ -305,9 +368,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<IdxSet>(c),
-                      std::forward<LoopBody>(loop_body));
+  plugin2::forall_Icount(std::forward<ExecutionPolicy>(p),
+                         std::forward<IdxSet>(c),
+                         std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -326,9 +389,9 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<IdxSet>(c),
-               std::forward<LoopBody>(loop_body));
+  plugin2::forall(std::forward<ExecutionPolicy>(p),
+                  std::forward<IdxSet>(c),
+                  std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -352,10 +415,10 @@ forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<Container>(c),
-                      icount,
-                      std::forward<LoopBody>(loop_body));
+  plugin2::forall_Icount(std::forward<ExecutionPolicy>(p),
+                         std::forward<Container>(c),
+                         icount,
+                         std::forward<LoopBody>(loop_body));
 }
 
 
@@ -375,9 +438,9 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               std::forward<LoopBody>(loop_body));
+  plugin2::forall(std::forward<ExecutionPolicy>(p),
+                  std::forward<Container>(c),
+                  std::forward<LoopBody>(loop_body));
 }
 
 //
@@ -407,9 +470,9 @@ forall(ExecutionPolicy&& p,
        const IndexType len,
        LoopBody&& loop_body)
 {
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               TypedListSegment<ArrayIdxType>(idx, len, Unowned),
-               std::forward<LoopBody>(loop_body));
+  plugin2::forall(std::forward<ExecutionPolicy>(p),
+                  TypedListSegment<ArrayIdxType>(idx, len, Unowned),
+                  std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -454,8 +517,7 @@ forall_Icount(ExecutionPolicy&& p,
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
-  RAJA_FORCEINLINE_RECURSIVE
-  wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  plugin2::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 }
 
 /*!
@@ -480,6 +542,7 @@ RAJA_INLINE void CallForall::operator()(T const& segment,
 {
   // this is only called inside a region, use impl
   using policy::sequential::forall_impl;
+  RAJA_FORCEINLINE_RECURSIVE
   forall_impl(ExecutionPolicy(), segment, body);
 }
 
