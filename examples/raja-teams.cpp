@@ -42,6 +42,7 @@ const int DIM = 2;
 
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
+  Adapted from CUDA programming guide: https://docs.nvidia.com/cuda/cuda-c-programming-guide/
 */
 #if defined(RAJA_ENABLE_CUDA)
 __global__ void matMultKernel(int N, double* C, double* A, double* B)
