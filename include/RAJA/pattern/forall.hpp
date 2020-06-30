@@ -246,116 +246,20 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
 /*!
  ******************************************************************************
  *
- * \brief The RAJA::plugin2 layer unwraps dynamic policies before dispatch
+ * \brief The RAJA::policy_by_value_interface forall functions provide an interface with
+ *        value-based policies. It also enforces the interface and performs
+ *        static checks as well as triggering plugins and loop body updates.
  *
  ******************************************************************************
  */
-namespace plugin2
+inline namespace policy_by_value_interface
 {
 
 
 /*!
  ******************************************************************************
  *
- * \brief Generic dispatch over containers with a value-based policy
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename Container,
-          typename LoopBody>
-RAJA_INLINE void forall(ExecutionPolicy&& p,
-                        Container&& c,
-                        LoopBody&& loop_body)
-{
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::internal::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               body);
-
-  util::callPostLaunchPlugins(context);
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over containers with a value-based policy with icount
- *
- ******************************************************************************
- */
-template <typename ExecutionPolicy,
-          typename Container,
-          typename IndexType,
-          typename LoopBody>
-RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
-                               Container&& c,
-                               IndexType&& icount,
-                               LoopBody&& loop_body)
-{
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::internal::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<Container>(c),
-                      std::forward<IndexType>(icount),
-                      body);
-
-  util::callPostLaunchPlugins(context);
-}
-
-/*!
-******************************************************************************
-*
- * \brief Generic dispatch over containers with a value-based policy
-*
-******************************************************************************
-*/
-template <typename ExecutionPolicy,
-          typename Container,
-          typename LoopBody>
-RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
-                               Container&& c,
-                               LoopBody&& loop_body)
-{
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::internal::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<Container>(c),
-                      body);
-
-  util::callPostLaunchPlugins(context);
-}
-
-}  // end namespace plugin2
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over  with icount
+ * \brief Generic dispatch over index set with icount with a value-based policy
  *
  ******************************************************************************
  */
@@ -368,15 +272,27 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  plugin2::forall_Icount(std::forward<ExecutionPolicy>(p),
-                         std::forward<IdxSet>(c),
-                         std::forward<LoopBody>(loop_body));
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
+                      std::forward<IdxSet>(c),
+                      body);
+
+  util::callPostLaunchPlugins(context);
 }
 
 /*!
  ******************************************************************************
  *
- * \brief Generic dispatch over  with icount
+ * \brief Generic dispatch over index set with a value-based policy
  *
  ******************************************************************************
  */
@@ -389,15 +305,27 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  plugin2::forall(std::forward<ExecutionPolicy>(p),
-                  std::forward<IdxSet>(c),
-                  std::forward<LoopBody>(loop_body));
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  wrap::forall(std::forward<ExecutionPolicy>(p),
+               std::forward<IdxSet>(c),
+               body);
+
+  util::callPostLaunchPlugins(context);
 }
 
 /*!
  ******************************************************************************
  *
- * \brief Generic dispatch over containers with icount
+ * \brief Generic dispatch over containers with icount with a value-based policy
  *
  ******************************************************************************
  */
@@ -415,12 +343,23 @@ forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  plugin2::forall_Icount(std::forward<ExecutionPolicy>(p),
-                         std::forward<Container>(c),
-                         icount,
-                         std::forward<LoopBody>(loop_body));
-}
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  util::callPreCapturePlugins(context);
 
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
+                      std::forward<Container>(c),
+                      icount,
+                      body);
+
+  util::callPostLaunchPlugins(context);
+}
 
 /*!
  ******************************************************************************
@@ -438,10 +377,25 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  plugin2::forall(std::forward<ExecutionPolicy>(p),
-                  std::forward<Container>(c),
-                  std::forward<LoopBody>(loop_body));
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  wrap::forall(std::forward<ExecutionPolicy>(p),
+               std::forward<Container>(c),
+               body);
+
+  util::callPostLaunchPlugins(context);
 }
+
+}  // end inline namespace policy_by_value_interface
+
 
 /*!
  * \brief Conversion from template-based policy to value-based policy for forall
@@ -451,7 +405,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
-  forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  policy_by_value_interface::forall(ExecutionPolicy(), std::forward<Args>(args)...);
 }
 
 /*!
@@ -463,7 +417,7 @@ RAJA_INLINE void forall(Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall_Icount(Args&&... args)
 {
-  forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
+  policy_by_value_interface::forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
 }
 
 namespace detail
