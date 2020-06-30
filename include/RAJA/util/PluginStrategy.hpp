@@ -22,13 +22,13 @@ class PluginStrategy
 
     virtual ~PluginStrategy() = default;
 
-    virtual void preCapture(PluginContext p) = 0;
+    virtual void preCapture(PluginContext p);
 
-    virtual void postCapture(PluginContext p) = 0;
+    virtual void postCapture(PluginContext p);
 
-    virtual void preLaunch(PluginContext p) = 0;
+    virtual void preLaunch(PluginContext p);
 
-    virtual void postLaunch(PluginContext p) = 0;
+    virtual void postLaunch(PluginContext p);
 };
 
 using PluginRegistry = Registry<PluginStrategy>;
