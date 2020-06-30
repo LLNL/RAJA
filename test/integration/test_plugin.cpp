@@ -145,3 +145,55 @@ TEST(PluginTest, ForAllICountIdxSetCounter)
 
   delete[] a;
 }
+
+
+TEST(PluginTest, ForAllMultiPolicyCounter)
+{
+  plugin_test_capture_counter_pre = 0;
+  plugin_test_capture_counter_post = 0;
+
+  plugin_test_launch_counter_pre = 0;
+  plugin_test_launch_counter_post = 0;
+
+  int* a = new int[10];
+
+  auto mp = RAJA::make_multi_policy<RAJA::seq_exec, RAJA::loop_exec>(
+      [](const RAJA::RangeSegment &r) {
+        if (r.size() < 10) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall(
+      mp, RAJA::RangeSegment(0, 9),
+      [=] (int i) {
+        a[i] = 0;
+    });
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
+
+
+  for (int i = 0; i < 10; i++) {
+    RAJA::forall(
+      mp, RAJA::RangeSegment(0, 10),
+      [=] (int i) {
+        a[i] = 0;
+    });
+  }
+
+  ASSERT_EQ(plugin_test_capture_counter_pre, 20);
+  ASSERT_EQ(plugin_test_capture_counter_post, 20);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 20);
+  ASSERT_EQ(plugin_test_launch_counter_post, 20);
+
+  delete[] a;
+}

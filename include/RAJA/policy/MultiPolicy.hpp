@@ -170,13 +170,8 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-      util::PluginContext context{util::make_context<Policy>()};
-      util::callPreLaunchPlugins(context); 
-
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
-
-      util::callPostLaunchPlugins(context);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }
