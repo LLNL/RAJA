@@ -470,9 +470,9 @@ forall(ExecutionPolicy&& p,
        const IndexType len,
        LoopBody&& loop_body)
 {
-  plugin2::forall(std::forward<ExecutionPolicy>(p),
-                  TypedListSegment<ArrayIdxType>(idx, len, Unowned),
-                  std::forward<LoopBody>(loop_body));
+  forall(std::forward<ExecutionPolicy>(p),
+         TypedListSegment<ArrayIdxType>(idx, len, Unowned),
+         std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -517,7 +517,7 @@ forall_Icount(ExecutionPolicy&& p,
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
-  plugin2::forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  forall(ExecutionPolicy(), std::forward<Args>(args)...);
 }
 
 /*!
