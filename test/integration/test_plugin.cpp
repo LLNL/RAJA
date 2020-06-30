@@ -9,25 +9,32 @@
 
 #include "gtest/gtest.h"
 
-int plugin_test_counter_pre{0};
-int plugin_test_counter_post{0};
+int plugin_test_capture_counter_pre{0};
+int plugin_test_capture_counter_post{0};
 
-// Check that the plugin is called the correct number of times, once before and
-// after each kernel invocation
+int plugin_test_launch_counter_pre{0};
+int plugin_test_launch_counter_post{0};
+
+// Check that the plugin is called the correct number of times,
+// once before and after each kernel capture for the capture counter
+// once before and after each kernel invocation for the launch counter
 TEST(PluginTest, Counter)
 {
   int* a = new int[10];
 
   for (int i = 0; i < 10; i++) {
     RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment(0,10), 
+      RAJA::RangeSegment(0,10),
       [=] (int i) {
         a[i] = 0;
     });
   }
 
-  ASSERT_EQ(plugin_test_counter_pre, 10);
-  ASSERT_EQ(plugin_test_counter_post, 10);
+  ASSERT_EQ(plugin_test_capture_counter_pre, 10);
+  ASSERT_EQ(plugin_test_capture_counter_post, 10);
+
+  ASSERT_EQ(plugin_test_launch_counter_pre, 10);
+  ASSERT_EQ(plugin_test_launch_counter_post, 10);
 
   delete[] a;
 }
