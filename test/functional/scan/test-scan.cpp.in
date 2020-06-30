@@ -5,20 +5,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_SCAN_HPP__
-#define __TEST_SCAN_HPP__
-
+//
+// test/include headers
+//
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
 
 #include "RAJA_test-forall-execpol.hpp"
 
-// Scan functional test class
-template<typename T>
-class ScanFunctionalTest: public ::testing::Test {};
-
-
+// 
 // Define scan operation types
+//
 using ScanOpTypes = camp::list< RAJA::operators::plus<int>,
 #if 0  // Parallel tests with plus operator and float data do not work
        // likely due to precision being too low and plus not associative
@@ -32,37 +29,27 @@ using ScanOpTypes = camp::list< RAJA::operators::plus<int>,
                                 RAJA::operators::maximum<float>,
                                 RAJA::operators::maximum<double> >;
 
-template <typename T>
-void allocScanTestData(int N, 
-                       camp::resources::Resource& work_res, 
-                       T** work_in, T** work_out, 
-                       T** host_in, T** host_out)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
 
-  *work_in  = work_res.allocate<T>(N);
-  *work_out = work_res.allocate<T>(N);
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-scan-data.hpp"
+#include "test-scan-@SCAN_TYPE@.hpp"
 
-  *host_in  = host_res.allocate<T>(N);
-  *host_out = host_res.allocate<T>(N);
-}
 
-template <typename T>
-void deallocScanTestData(camp::resources::Resource& work_res,
-                         T* work_in, T* work_out,
-                         T* host_in, T* host_out)
-{
-  camp::resources::Resource host_res{camp::resources::Host()};
+//
+// Cartesian product of types used in parameterized tests
+//
+using @SCAN_BACKEND@@SCAN_TYPE@ScanTypes =
+  Test< camp::cartesian_product< @SCAN_BACKEND@ForallExecPols,
+                                 @SCAN_BACKEND@ResourceList,
+                                 ScanOpTypes >>::Types;
 
-  work_res.deallocate(work_in);
-  work_res.deallocate(work_out);
-  host_res.deallocate(host_in);
-  host_res.deallocate(host_out);
-}
-
-TYPED_TEST_SUITE_P(ScanFunctionalTest);
-
-#include "tests/test-scan-exclusive.hpp"
-#include "tests/test-scan-inclusive.hpp"
-
-#endif //__TEST_SCAN_HPP__
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@SCAN_BACKEND@,
+                               Scan@SCAN_TYPE@Test,
+                               @SCAN_BACKEND@@SCAN_TYPE@ScanTypes);
