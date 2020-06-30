@@ -15,19 +15,32 @@ namespace RAJA {
 namespace util {
 
 
-class PluginStrategy 
+class Plugin2CaptureStrategy
 {
   public:
-    PluginStrategy();
+    Plugin2CaptureStrategy();
 
-    virtual ~PluginStrategy() = default;
+    virtual ~Plugin2CaptureStrategy() = default;
+
+    virtual void preCapture(PluginContext p) = 0;
+
+    virtual void postCapture(PluginContext p) = 0;
+};
+
+class Plugin2LaunchStrategy
+{
+  public:
+    Plugin2LaunchStrategy();
+
+    virtual ~Plugin2LaunchStrategy() = default;
 
     virtual void preLaunch(PluginContext p) = 0;
 
     virtual void postLaunch(PluginContext p) = 0;
 };
 
-using PluginRegistry = Registry<PluginStrategy>;
+using Plugin2CaptureRegistry = Registry<Plugin2CaptureStrategy>;
+using Plugin2LaunchRegistry = Registry<Plugin2LaunchStrategy>;
 
 } // closing brace for util namespace
 } // closing brace for RAJA namespace

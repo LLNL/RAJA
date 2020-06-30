@@ -105,10 +105,10 @@ namespace util {
     };
   };
 
-} // closing brace for util namespace 
+} // closing brace for util namespace
 } // closing brace for RAJA namespace
 
-#define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
+#define RAJA_DEFINE_REGISTRY() \
   namespace RAJA { \
   namespace util { \
   template<typename T> typename Registry<T>::node *Registry<T>::Head = nullptr;\
@@ -124,6 +124,12 @@ namespace util {
   template<typename T> typename Registry<T>::iterator Registry<T>::begin() { \
     return iterator(Head); \
   } \
+  } \
+  }
+
+#define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
+  namespace RAJA { \
+  namespace util { \
   template REGISTRY_CLASS::node *Registry<REGISTRY_CLASS::type>::Head; \
   template REGISTRY_CLASS::node *Registry<REGISTRY_CLASS::type>::Tail; \
   template \
@@ -132,4 +138,4 @@ namespace util {
   } \
   }
 
-#endif 
+#endif
