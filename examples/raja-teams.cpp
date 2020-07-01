@@ -5,17 +5,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cstdlib>
-#include <iostream>
-#include <cstring>
 #include <cmath>
-
-#include "memoryManager.hpp"
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 #include "RAJA/RAJA.hpp"
+#include "memoryManager.hpp"
 
 /*
- *  RAJA Teams Example: 
+ *  RAJA Teams Example:
  *  Matrix-matrix multiplication with shared memory
  */
 
@@ -31,7 +30,7 @@
 #define TEAM_SYNC() __syncthreads()
 #else
 #define TEAM_SHARED
-#define TEAM_SYNC() 
+#define TEAM_SYNC()
 #endif
 
 //
@@ -50,22 +49,23 @@ const int DIM = 2;
 
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
-  Adapted from CUDA programming guide: https://docs.nvidia.com/cuda/cuda-c-programming-guide/
+  Adapted from CUDA programming guide:
+  https://docs.nvidia.com/cuda/cuda-c-programming-guide/
 */
 #if defined(RAJA_ENABLE_CUDA)
-__global__ void matMultKernel(int N, double* C, double* A, double* B)
+__global__ void matMultKernel(int N, double *C, double *A, double *B)
 {
   // Block row and column
   const int by = blockIdx.y;
   const int bx = blockIdx.x;
 
-   // Each thread computes one element of Csub
+  // Each thread computes one element of Csub
   // by accumulating results into Cvalue
   double Cvalue(0.0);
 
   // Thread row and column within local Csub
-  const int ty = threadIdx.y; //local row
-  const int tx = threadIdx.x; //local column
+  const int ty = threadIdx.y;  // local row
+  const int tx = threadIdx.x;  // local column
 
   const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
   const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
@@ -82,8 +82,8 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 
     // Load Asub and Bsub from device memory to shared memory
     // Each thread loads one element of each sub-matrix
-    As[ty][tx] = A[row*N + m*CUDA_BLOCK_SIZE + tx];
-    Bs[ty][tx] = B[(m*CUDA_BLOCK_SIZE + ty)*N + col];
+    As[ty][tx] = A[row * N + m * CUDA_BLOCK_SIZE + tx];
+    Bs[ty][tx] = B[(m * CUDA_BLOCK_SIZE + ty) * N + col];
 
     // Synchronize to make sure the sub-matrices are loaded
     // before starting the computation
@@ -101,8 +101,7 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 
   // Write Csub to device memory
   // Each thread writes one element
-  C[col + N*row] = Cvalue;
-
+  C[col + N * row] = Cvalue;
 }
 #endif
 
@@ -125,386 +124,386 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 
-namespace RAJA {
+namespace RAJA
+{
 
-  enum ExecPlace {
-    HOST,
-    DEVICE
-  };
+enum ExecPlace { HOST, DEVICE };
 
-  template<ExecPlace EXEC_PLACE, typename POLICY>
-  struct LPolicy{
-    static constexpr ExecPlace exec_place = EXEC_PLACE;
-    using policy_t = POLICY;
-  };
+template <ExecPlace EXEC_PLACE, typename POLICY>
+struct LPolicy {
+  static constexpr ExecPlace exec_place = EXEC_PLACE;
+  using policy_t = POLICY;
+};
 
-  struct Teams{
-    int value[3];
+struct Teams {
+  int value[3];
 
-    Teams() : value{1,1,1}{}
-
-    Teams(int i) : value{i,1,1}{}
-
-    Teams(int i, int j) : value{i,j,1}{}
-
-    Teams(int i, int j, int k) : value{i,j,k}{}
-  };
-
-  struct Threads{
-    int value[3];
-
-    Threads() : value{1,1,1}{}
-
-    Threads(int i) : value{i,1,1}{}
-
-    Threads(int i, int j) : value{i,j,1}{}
-
-    Threads(int i, int j, int k) : value{i,j,k}{}
-  };
-
-  struct Lanes{
-    int value;
-
-    Lanes() : value(0){}
-
-    Lanes(int i) : value(i){}
-  };
-
-  class ResourceBase {
-  public:
-    Teams teams;
-    Threads threads;
-    Lanes lanes;
-  };
-
-  class LaunchContext : public ResourceBase {
-    public:
-      ExecPlace exec_place;
-
-      LaunchContext(ResourceBase const &base, ExecPlace place) :
-        ResourceBase(base),
-        exec_place(place)
-      {}
-  };
-
-  template<ExecPlace EXEC_PLACE>
-  class Resources : public ResourceBase {
-  public:
-    static constexpr ExecPlace exec_place = EXEC_PLACE;
-
-    Resources() : ResourceBase()
-    {}
-
-    template<typename ... ARGS>
-    explicit Resources(ARGS const &... args) : ResourceBase()
-    {
-      camp::sink( apply(args)... );
-    }
-
-  private:
-    RAJA_HOST_DEVICE
-    RAJA_INLINE
-    Teams apply(Teams const &a){
-      return(teams = a);
-    }
-
-    RAJA_HOST_DEVICE
-    RAJA_INLINE
-    Threads apply(Threads const &a){
-      return(threads = a);
-    }
+  Teams() : value{1, 1, 1} {}
 
-    RAJA_HOST_DEVICE
-    RAJA_INLINE
-    Lanes apply(Lanes const &a){
-      return(lanes = a);
-    }
+  Teams(int i) : value{i, 1, 1} {}
 
-  };
+  Teams(int i, int j) : value{i, j, 1} {}
 
-  template<typename RESOURCE>
-  struct LaunchPlaceSwitchboard;
+  Teams(int i, int j, int k) : value{i, j, k} {}
+};
 
-  template<>
-  struct LaunchPlaceSwitchboard<Resources<HOST>>{
-    template<typename BODY>
-    static
-    void exec(ExecPlace place, LaunchContext const &ctx, BODY const &body){
-      printf("Launching HOST Kernel\n");
-      body(ctx);
-      printf("Leaving HOST Kernel\n");
-    }
-  };
-
+struct Threads {
+  int value[3];
 
-  template<typename BODY>
-  __launch_bounds__(128, 1)
-  __global__ void launch_global_fcn(LaunchContext ctx, BODY body){
-    //printf("Entering global function\n");
-    body(ctx);
-    //printf("Leaving global function\n");
-  }
+  Threads() : value{1, 1, 1} {}
 
-  template<>
-  struct LaunchPlaceSwitchboard<Resources<DEVICE>>{
-    template<typename BODY>
-    static
-    void exec(ExecPlace place, LaunchContext const &ctx, BODY const &body){
-      //printf("Not implement yet!\n");
+  Threads(int i) : value{i, 1, 1} {}
 
-      dim3 blocks;
-      dim3 threads;
+  Threads(int i, int j) : value{i, j, 1} {}
 
-      blocks.x = ctx.teams.value[0];
-      blocks.y = ctx.teams.value[1];
-      blocks.z = ctx.teams.value[2];
+  Threads(int i, int j, int k) : value{i, j, k} {}
+};
 
-      threads.x = ctx.threads.value[0];
-      threads.y = ctx.threads.value[1];
-      threads.z = ctx.threads.value[2];
+struct Lanes {
+  int value;
 
-      printf("Launching CUDA Kernel with blocks=%d,%d,%d   thread=%d,%d,%d\n",
-          ctx.teams.value[0],
-          ctx.teams.value[1],
-          ctx.teams.value[2],
-          ctx.threads.value[0],
-          ctx.threads.value[1],
-          ctx.threads.value[2]);
+  Lanes() : value(0) {}
 
-      launch_global_fcn<<<blocks, threads>>>(ctx, body);
-      cudaDeviceSynchronize();
-      printf("Leaving CUDA Kernel\n");
-    }
-  };
+  Lanes(int i) : value(i) {}
+};
 
-  template<typename RESOURCE_TUPLE, camp::idx_t I, camp::idx_t IMAX>
-  struct LaunchPlaceExtractor {
+class ResourceBase
+{
+public:
+  Teams teams;
+  Threads threads;
+  Lanes lanes;
+};
 
-      template<typename BODY>
-      static
-      void launch(ExecPlace place, RESOURCE_TUPLE const &resources, BODY const &body){
+class LaunchContext : public ResourceBase
+{
+public:
+  ExecPlace exec_place;
 
-        using resource_t = camp::at_v<typename RESOURCE_TUPLE::TList, I>;
-
-        if(place == resource_t::exec_place){
-          auto const &resource = camp::get<I>(resources);
-
-          LaunchContext ctx(resource, place);
-
-          LaunchPlaceSwitchboard<resource_t>::exec(place, ctx, body);
-        }
-        else{
-
-          LaunchPlaceExtractor<RESOURCE_TUPLE, I+1, IMAX>::launch(place, resources, body);
-        }
-
-      }
-  };
-
-
-  template<typename RESOURCE_TUPLE, camp::idx_t IMAX>
-  struct LaunchPlaceExtractor<RESOURCE_TUPLE, IMAX, IMAX> {
-      template<typename BODY>
-      static
-      void launch(ExecPlace place, RESOURCE_TUPLE const &resources, BODY const &body){
-        printf("Failed to find resource requirements for execution place %d\n", (int)place);
-      }
-
-  };
-
-  template<typename RESOURCES, typename BODY>
-  void launch(ExecPlace place, RESOURCES const & resources, BODY const &body){
-    LaunchPlaceExtractor<RESOURCES, 0, camp::size<typename RESOURCES::TList>::value>::launch(place, resources, body);
-  }
-
-
-
-  template<typename POLICY, typename SEGMENT>
-  struct LoopExecute;
-
-  template<typename SEGMENT>
-  struct LoopExecute<loop_exec, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_HOST_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      // block stride loop
-      int len = segment.end()-segment.begin();
-      for(int i = 0;i < len; i++){
-
-        body(*(segment.begin()+i));
-
-      }
-
-    }
-
-  };
-
-  template<typename SEGMENT>
-  struct LoopExecute<cuda_thread_x_loop, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      int len = segment.end()-segment.begin();
-
-      for(int i = threadIdx.x;i < len;i += blockDim.x){
-        body(*(segment.begin()+i));
-      }
-
-    }
-
-  };
-
-  template<typename SEGMENT>
-  struct LoopExecute<cuda_thread_y_loop, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      int len = segment.end()-segment.begin();
-
-      for(int i = threadIdx.y;i < len;i += blockDim.y){
-        body(*(segment.begin()+i));
-      }
-
-    }
-
-  };
-
-  template<typename SEGMENT>
-  struct LoopExecute<cuda_block_x_loop, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      int len = segment.end()-segment.begin();
-
-      for(int i = blockIdx.x;i < len;i+= gridDim.x){
-        body(*(segment.begin()+i));
-      }
-
-    }
-
-  };
-
-  template<typename SEGMENT>
-  struct LoopExecute<cuda_block_x_direct, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      int len = segment.end()-segment.begin();
-      {
-        const int i = blockIdx.x; 
-        body(*(segment.begin()+i));
-      }
-
-    }
-
-  };
-
-  template<typename SEGMENT>
-  struct LoopExecute<cuda_block_y_direct, SEGMENT>{
-
-    template<typename BODY>
-    static
-    RAJA_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-
-      int len = segment.end()-segment.begin();
-      {
-        const int i = blockIdx.y; 
-        body(*(segment.begin()+i));
-      }
-
-    }
-
-  };
-
-
-
-  template<typename POLICY_LIST, camp::idx_t IDX, camp::idx_t MAX_IDX>
-  struct LoopPlaceSwitchboard{
-    template<typename SEGMENT, typename BODY>
-    static
-    RAJA_HOST_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-      if(camp::at_v<POLICY_LIST, IDX>::exec_place == ctx.exec_place){
-        LoopExecute<typename camp::at_v<POLICY_LIST, IDX>::policy_t, SEGMENT>::exec(ctx, segment, body);
-      }
-      else{
-        LoopPlaceSwitchboard<POLICY_LIST, IDX+1, MAX_IDX>::exec(ctx, segment, body);
-      }
-    }
-  };
-
-  template<typename POLICY_LIST, camp::idx_t MAX_IDX>
-  struct LoopPlaceSwitchboard<POLICY_LIST, MAX_IDX, MAX_IDX>
+  LaunchContext(ResourceBase const &base, ExecPlace place)
+      : ResourceBase(base), exec_place(place)
   {
-    template<typename SEGMENT, typename BODY>
-    static
-    RAJA_HOST_DEVICE
-    void exec(LaunchContext const &ctx, SEGMENT const &segment, BODY const &body){
-      printf("whoops!");
-    }
-  };
+  }
+};
 
+template <ExecPlace EXEC_PLACE>
+class Resources : public ResourceBase
+{
+public:
+  static constexpr ExecPlace exec_place = EXEC_PLACE;
 
-  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
-  RAJA_HOST_DEVICE
-  void loop(LaunchContext const &ctx, SEGMENT const &seg, BODY const &body){
+  Resources() : ResourceBase() {}
 
-
-    LoopPlaceSwitchboard<POLICY_LIST, 0, camp::size<POLICY_LIST>::value>::exec(ctx, seg, body);
-
-
+  template <typename... ARGS>
+  explicit Resources(ARGS const &... args) : ResourceBase()
+  {
+    camp::sink(apply(args)...);
   }
 
-} // namespace RAJA
+private:
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  Teams apply(Teams const &a) { return (teams = a); }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  Threads apply(Threads const &a) { return (threads = a); }
+
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  Lanes apply(Lanes const &a) { return (lanes = a); }
+};
+
+template <typename RESOURCE>
+struct LaunchPlaceSwitchboard;
+
+template <>
+struct LaunchPlaceSwitchboard<Resources<HOST>> {
+  template <typename BODY>
+  static void exec(ExecPlace place, LaunchContext const &ctx, BODY const &body)
+  {
+    printf("Launching HOST Kernel\n");
+    body(ctx);
+    printf("Leaving HOST Kernel\n");
+  }
+};
 
 
-  using policy1_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
+template <typename BODY>
+__launch_bounds__(128, 1) __global__
+    void launch_global_fcn(LaunchContext ctx, BODY body)
+{
+  // printf("Entering global function\n");
+  body(ctx);
+  // printf("Leaving global function\n");
+}
+
+template <>
+struct LaunchPlaceSwitchboard<Resources<DEVICE>> {
+  template <typename BODY>
+  static void exec(ExecPlace place, LaunchContext const &ctx, BODY const &body)
+  {
+    // printf("Not implement yet!\n");
+
+    dim3 blocks;
+    dim3 threads;
+
+    blocks.x = ctx.teams.value[0];
+    blocks.y = ctx.teams.value[1];
+    blocks.z = ctx.teams.value[2];
+
+    threads.x = ctx.threads.value[0];
+    threads.y = ctx.threads.value[1];
+    threads.z = ctx.threads.value[2];
+
+    printf("Launching CUDA Kernel with blocks=%d,%d,%d   thread=%d,%d,%d\n",
+           ctx.teams.value[0],
+           ctx.teams.value[1],
+           ctx.teams.value[2],
+           ctx.threads.value[0],
+           ctx.threads.value[1],
+           ctx.threads.value[2]);
+
+    launch_global_fcn<<<blocks, threads>>>(ctx, body);
+    cudaDeviceSynchronize();
+    printf("Leaving CUDA Kernel\n");
+  }
+};
+
+template <typename RESOURCE_TUPLE, camp::idx_t I, camp::idx_t IMAX>
+struct LaunchPlaceExtractor {
+
+  template <typename BODY>
+  static void launch(ExecPlace place,
+                     RESOURCE_TUPLE const &resources,
+                     BODY const &body)
+  {
+
+    using resource_t = camp::at_v<typename RESOURCE_TUPLE::TList, I>;
+
+    if (place == resource_t::exec_place) {
+      auto const &resource = camp::get<I>(resources);
+
+      LaunchContext ctx(resource, place);
+
+      LaunchPlaceSwitchboard<resource_t>::exec(place, ctx, body);
+    } else {
+
+      LaunchPlaceExtractor<RESOURCE_TUPLE, I + 1, IMAX>::launch(place,
+                                                                resources,
+                                                                body);
+    }
+  }
+};
+
+
+template <typename RESOURCE_TUPLE, camp::idx_t IMAX>
+struct LaunchPlaceExtractor<RESOURCE_TUPLE, IMAX, IMAX> {
+  template <typename BODY>
+  static void launch(ExecPlace place,
+                     RESOURCE_TUPLE const &resources,
+                     BODY const &body)
+  {
+    printf("Failed to find resource requirements for execution place %d\n",
+           (int)place);
+  }
+};
+
+template <typename RESOURCES, typename BODY>
+void launch(ExecPlace place, RESOURCES const &resources, BODY const &body)
+{
+  LaunchPlaceExtractor<
+      RESOURCES,
+      0,
+      camp::size<typename RESOURCES::TList>::value>::launch(place,
+                                                            resources,
+                                                            body);
+}
+
+
+template <typename POLICY, typename SEGMENT>
+struct LoopExecute;
+
+template <typename SEGMENT>
+struct LoopExecute<loop_exec, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment,
+                                    BODY const &body)
+  {
+
+    // block stride loop
+    int len = segment.end() - segment.begin();
+    for (int i = 0; i < len; i++) {
+
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment,
+                               BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+
+    for (int i = threadIdx.x; i < len; i += blockDim.x) {
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment,
+                               BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+
+    for (int i = threadIdx.y; i < len; i += blockDim.y) {
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_x_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment,
+                               BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+
+    for (int i = blockIdx.x; i < len; i += gridDim.x) {
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_x_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment,
+                               BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+    {
+      const int i = blockIdx.x;
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_y_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment,
+                               BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+    {
+      const int i = blockIdx.y;
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+
+template <typename POLICY_LIST, camp::idx_t IDX, camp::idx_t MAX_IDX>
+struct LoopPlaceSwitchboard {
+  template <typename SEGMENT, typename BODY>
+  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment,
+                                    BODY const &body)
+  {
+    if (camp::at_v<POLICY_LIST, IDX>::exec_place == ctx.exec_place) {
+      LoopExecute<typename camp::at_v<POLICY_LIST, IDX>::policy_t,
+                  SEGMENT>::exec(ctx, segment, body);
+    } else {
+      LoopPlaceSwitchboard<POLICY_LIST, IDX + 1, MAX_IDX>::exec(ctx,
+                                                                segment,
+                                                                body);
+    }
+  }
+};
+
+template <typename POLICY_LIST, camp::idx_t MAX_IDX>
+struct LoopPlaceSwitchboard<POLICY_LIST, MAX_IDX, MAX_IDX> {
+  template <typename SEGMENT, typename BODY>
+  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment,
+                                    BODY const &body)
+  {
+    printf("whoops!");
+  }
+};
+
+
+template <typename POLICY_LIST, typename SEGMENT, typename BODY>
+RAJA_HOST_DEVICE void loop(LaunchContext const &ctx,
+                           SEGMENT const &seg,
+                           BODY const &body)
+{
+
+
+  LoopPlaceSwitchboard<POLICY_LIST, 0, camp::size<POLICY_LIST>::value>::exec(
+      ctx, seg, body);
+}
+
+}  // namespace RAJA
+
+
+using policy1_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
 #ifdef RAJA_ENABLE_CUDA
-  using policy1x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_x_direct >;
-  using policy1y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_y_direct >;
+using policy1x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_x_direct>;
+using policy1y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_y_direct>;
 #else
-  using policy1_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
+using policy1_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
 #endif
-  using outer0 = camp::list<policy1_HOST, policy1x_DEVICE>;
-  using outer1 = camp::list<policy1_HOST, policy1y_DEVICE>;
+using outer0 = camp::list<policy1_HOST, policy1x_DEVICE>;
+using outer1 = camp::list<policy1_HOST, policy1y_DEVICE>;
 
-  using policy2_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
+using policy2_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
 #ifdef RAJA_ENABLE_CUDA
-  using policy2x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_x_loop >;
-  using policy2y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_y_loop >;
+using policy2x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_x_loop>;
+using policy2y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_y_loop>;
 #else
-  using policy2_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
+using policy2_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
 #endif
-  using team0 = camp::list<policy2_HOST, policy2x_DEVICE>;
-  using team1 = camp::list<policy2_HOST, policy2y_DEVICE>;
+using team0 = camp::list<policy2_HOST, policy2x_DEVICE>;
+using team1 = camp::list<policy2_HOST, policy2y_DEVICE>;
 
 
-int main(){
+int main()
+{
 
-  //N is number of blocks in each matrix
+  // N is number of blocks in each matrix
   const int NBlocks = 4;
   const int NThreads = CUDA_BLOCK_SIZE;
-  const int N = CUDA_BLOCK_SIZE*NBlocks;
+  const int N = CUDA_BLOCK_SIZE * NBlocks;
 
-//
-// Allocate and initialize matrix data.
-//
+  //
+  // Allocate and initialize matrix data.
+  //
   double *A = memoryManager::allocate<double>(N * N);
   double *B = memoryManager::allocate<double>(N * N);
   double *C = memoryManager::allocate<double>(N * N);
@@ -518,11 +517,10 @@ int main(){
 
   std::cout << "\n Running RAJA-Teams V2-version of matrix multiplication...\n";
 
-  for(int exec_place = 0;exec_place < 2;++ exec_place)
-  {
+  for (int exec_place = 0; exec_place < 2; ++exec_place) {
     RAJA::ExecPlace select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
-    //auto select_cpu_or_gpu = RAJA::HOST;
-    //auto select_cpu_or_gpu = RAJA::DEVICE;
+    // auto select_cpu_or_gpu = RAJA::HOST;
+    // auto select_cpu_or_gpu = RAJA::DEVICE;
 
     /*
      * launch just starts a "kernel" it's doesn't provide any looping.
@@ -539,115 +537,101 @@ int main(){
      * policy selection information.
      */
 
-     //========================
-     //Upper triangular pattern
-     //========================
-     const int N_tri = 5; 
-     RAJA::launch(
-       select_cpu_or_gpu,
-       camp::make_tuple(
-         RAJA::Resources<RAJA::HOST>(RAJA::Threads(N_tri)),
-         RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(N_tri), RAJA::Threads(N_tri)) ),
-      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
-    {
-
-      RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=] (int i){
-
-
-        // do a matrix triangular pattern
-        RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=] (int j){
-
-          printf("i=%d, j=%d\n", i, j);
-
-        }); // loop j
-
-
-      }); // loop i
-
-
-    }); // kernel    
-    
-     //========================
-     //Matrix-Matrix Multiplication Example
-     //========================    
-    //Set up Teams/Threads
-
+    //========================
+    // Upper triangular pattern
+    //========================
+    const int N_tri = 5;
     RAJA::launch(
-      select_cpu_or_gpu,
-      camp::make_tuple(
-        RAJA::Resources<RAJA::HOST>(RAJA::Threads(NBlocks, NBlocks)),
-        RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(NBlocks, NBlocks), RAJA::Threads(NThreads, NThreads)) ),
-      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
-    {
+        select_cpu_or_gpu,
+        camp::make_tuple(RAJA::Resources<RAJA::HOST>(RAJA::Threads(N_tri)),
+                         RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(N_tri),
+                                                       RAJA::Threads(N_tri))),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
+            // do a matrix triangular pattern
+            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+              printf("i=%d, j=%d\n", i, j);
+            });  // loop j
+          });    // loop i
+        });      // kernel
 
-      //
-      //Loop over teams
-      //
-      RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, NBlocks), [&] (int by) {
-          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, NBlocks), [&] (int bx) {
+    //========================
+    // Matrix-Matrix Multiplication Example
+    //========================
+    // Set up Teams/Threads
 
-              
-              TEAM_SHARED double As[NThreads][NThreads];
-              TEAM_SHARED double Bs[NThreads][NThreads];
-              TEAM_SHARED double Cs[NThreads][NThreads];
-              
-              //Team parallel loop
-              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
-                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
-                      Cs[ty][tx] = 0.0; 
-                    });
-                });
+    RAJA::launch(select_cpu_or_gpu,                 
+        camp::make_tuple(
+            RAJA::Resources<RAJA::HOST>(RAJA::Threads(NBlocks, NBlocks)),
+            RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(NBlocks, NBlocks),
+                                          RAJA::Threads(NThreads, NThreads))),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+          //
+          // Loop over teams
+          //
+          RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by) {
+            RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int bx) {
 
-              //Slide across matrix
-              for (int m = 0; m < (N / NThreads); ++m) {
+                  TEAM_SHARED double As[NThreads][NThreads];
+                  TEAM_SHARED double Bs[NThreads][NThreads];
+                  TEAM_SHARED double Cs[NThreads][NThreads];
 
-                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
-                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
+                  // Team parallel loop
+                  RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                      RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
-                        const int row = by * NThreads + ty;  // Matrix row index
-                        const int col = bx * NThreads + tx;  // Matrix column index
-                        
-                        As[ty][tx] = A[row*N + m*NThreads + tx];
-                        Bs[ty][tx] = B[(m*NThreads + ty)*N + col];
+                          Cs[ty][tx] = 0.0;
 
-                      }); 
-                  }); 
-
-                TEAM_SYNC();
-                
-                RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
-                    RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
-                        
-                        for(int e=0; e<NThreads; ++e){
-                          Cs[ty][tx] += As[ty][e] * Bs[e][tx];  
-                        }
-
+                        });
                       });
-                  });
-                TEAM_SYNC();                
-              }//slide across matrix 
 
-              
-              RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int ty) {
-                  RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&] (int tx) {
+                  // Slide across matrix
+                  for (int m = 0; m < (N / NThreads); ++m) {
 
-                      const int row = by * NThreads + ty;  // Matrix row index
-                      const int col = bx * NThreads + tx;  // Matrix column index
-                      C[col + N*row] = Cs[ty][tx];
+                    RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                        RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+
+                                const int row = by * NThreads + ty;  // Matrix row index
+                                const int col = bx * NThreads + tx;  // Matrix column index
+
+                                As[ty][tx] = A[row * N + m * NThreads + tx];
+                                Bs[ty][tx] = B[(m * NThreads + ty) * N + col];
+                              });
+                        });
+
+                    TEAM_SYNC();
+
+                    RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                        RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+
+                            for (int e = 0; e < NThreads; ++e) {
+
+                              Cs[ty][tx] += As[ty][e] * Bs[e][tx];
+
+                            }
+                          });
+                      });
+                    TEAM_SYNC();
+                  }  // slide across matrix
+
+
+                  RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                      RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+
+                              const int row = by * NThreads + ty;  // Matrix row index
+
+                              const int col = bx * NThreads + tx;  // Matrix column index
+
+                              C[col + N * row] = Cs[ty][tx];
+                        });
                     });
-                });
-
-            });       
-        });       
-
-    }); // kernel
+              });
+            });
+        });  // kernel
 
     checkResult<double>(C, N);
-    printf("\n"); 
+    printf("\n");
   }
-
-
-
 }
 
 
@@ -655,17 +639,17 @@ int main(){
 // Functions to check result and report P/F.
 //
 template <typename T>
-void checkResult(T* C, int N)
+void checkResult(T *C, int N)
 {
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( std::abs( C(row, col) - row * col * N ) > 10e-12 ) {
+      if (std::abs(C(row, col) - row * col * N) > 10e-12) {
         match = false;
       }
     }
   }
-  if ( match ) {
+  if (match) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
@@ -678,12 +662,12 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   bool match = true;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      if ( std::abs( Cview(row, col) - row * col * N ) > 10e-12 ) {
+      if (std::abs(Cview(row, col) - row * col * N) > 10e-12) {
         match = false;
       }
     }
   }
-  if ( match ) {
+  if (match) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
@@ -694,13 +678,13 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
 // Functions to print result.
 //
 template <typename T>
-void printResult(T* C, int N)
+void printResult(T *C, int N)
 {
   std::cout << std::endl;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      std::cout << "C(" << row << "," << col << ") = "
-                << C(row, col) << std::endl;
+      std::cout << "C(" << row << "," << col << ") = " << C(row, col)
+                << std::endl;
     }
   }
   std::cout << std::endl;
@@ -712,10 +696,9 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   std::cout << std::endl;
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      std::cout << "C(" << row << "," << col << ") = "
-                << Cview(row, col) << std::endl;
+      std::cout << "C(" << row << "," << col << ") = " << Cview(row, col)
+                << std::endl;
     }
   }
   std::cout << std::endl;
 }
-
