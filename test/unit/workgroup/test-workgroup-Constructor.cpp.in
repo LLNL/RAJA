@@ -9,9 +9,9 @@
 /// Source file containing tests for RAJA workgroup constructor.
 ///
 
-#include "test-workgroup-@TESTNAME@.hpp"
+#include "test-workgroup-Constructor.hpp"
 
-using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupConstructor@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  @BACKEND@OrderPolicyList,
                                  @BACKEND@StoragePolicyList,
@@ -19,9 +19,9 @@ using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
                                  XargsTypeList,
                                  @BACKEND@AllocatorList > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                            BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicConstructor@SUBTESTNAME@UnitTest,
+                            BasicWorkGroupConstructor@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                               @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types);
+                               WorkGroupBasicConstructor@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroupConstructor@SUBTESTNAME@Types);

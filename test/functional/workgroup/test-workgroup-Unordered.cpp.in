@@ -9,9 +9,9 @@
 /// Source file containing tests for RAJA workgroup unordered execution.
 ///
 
-#include "test-workgroup-@TESTNAME@.hpp"
+#include "test-workgroup-Unordered.hpp"
 
-using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupUnordered@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  @BACKEND@OrderedPolicyList,
                                  @BACKEND@StoragePolicyList,
@@ -19,9 +19,9 @@ using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
                                  @BACKEND@AllocatorList,
                                  @BACKEND@ResourceList > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@FunctionalTest,
-                            BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicUnordered@SUBTESTNAME@FunctionalTest,
+                            BasicWorkGroupUnordered@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupBasic@TESTNAME@@SUBTESTNAME@FunctionalTest,
-                               @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types);
+                               WorkGroupBasicUnordered@SUBTESTNAME@FunctionalTest,
+                               @BACKEND@BasicWorkGroupUnordered@SUBTESTNAME@Types);

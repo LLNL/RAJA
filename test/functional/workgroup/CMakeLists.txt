@@ -13,8 +13,7 @@
 # hipcc_cmake_linker_helper because it expects the path to hipcc as the first
 # argument
 #
-macro( buildunitworkgrouptest my_TESTNAME SUBTESTNAMES BACKENDS )
-  set(TESTNAME ${my_TESTNAME})
+macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
   foreach( BACKEND ${BACKENDS} )
     foreach( SUBTESTNAME ${SUBTESTNAMES} )
       configure_file( test-workgroup-${TESTNAME}.cpp.in
@@ -26,7 +25,6 @@ macro( buildunitworkgrouptest my_TESTNAME SUBTESTNAMES BACKENDS )
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
-  unset(TESTNAME)
 endmacro()
 
 

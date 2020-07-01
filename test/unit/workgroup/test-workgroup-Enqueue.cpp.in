@@ -9,9 +9,9 @@
 /// Source file containing tests for RAJA workgroup enqueue.
 ///
 
-#include "test-workgroup-@TESTNAME@.hpp"
+#include "test-workgroup-Enqueue.hpp"
 
-using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupEnqueue@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  @BACKEND@OrderPolicyList,
                                  @BACKEND@StoragePolicyList,
@@ -19,9 +19,9 @@ using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
                                  XargsTypeList,
                                  @BACKEND@AllocatorList > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                            BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicEnqueue@SUBTESTNAME@UnitTest,
+                            BasicWorkGroupEnqueue@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                               @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types);
+                               WorkGroupBasicEnqueue@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroupEnqueue@SUBTESTNAME@Types);

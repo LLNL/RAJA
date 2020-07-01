@@ -9,18 +9,18 @@
 /// Source file containing tests for RAJA workgroup vtable.
 ///
 
-#include "test-workgroup-@TESTNAME@.hpp"
+#include "test-workgroup-Vtable.hpp"
 
-using @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupVtable@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
                                  @BACKEND@ResourceList,
                                  @BACKEND@ForoneList > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                            BasicWorkGroup@TESTNAME@@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicVtable@SUBTESTNAME@UnitTest,
+                            BasicWorkGroupVtable@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupBasic@TESTNAME@@SUBTESTNAME@UnitTest,
-                               @BACKEND@BasicWorkGroup@TESTNAME@@SUBTESTNAME@Types);
+                               WorkGroupBasicVtable@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroupVtable@SUBTESTNAME@Types);
