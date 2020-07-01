@@ -5,15 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_REGION_SYNC_HPP__
-#define __TEST_KERNEL_REGION_SYNC_HPP__
-
-#include <algorithm>
-#include <numeric>
-#include <vector>
+#ifndef __TEST_KERNEL_REGION_HPP__
+#define __TEST_KERNEL_REGION_HPP__
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
+void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource host_res{camp::resources::Host()};
   camp::resources::Resource work_res{WORKING_RES()};
@@ -38,24 +34,12 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   host_res.memset( check_array, 0, sizeof(INDEX_TYPE) * N );
 
-  //
-  // Create a list segment with indices in reverse order from range
-  // segment below. In the test kernel below, the first and third
-  // lambda expressions are run in loops using the range segment. The
-  // second lambda is run in a loop using the list segment. This makes
-  // it so that parallel threads must be synchronized between the loops.
-  //
-  std::vector<INDEX_TYPE> idx_array(N);
-  std::iota(idx_array.begin(), idx_array.end(), first);
-  std::reverse(idx_array.begin(), idx_array.end());
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], N,
-                                          work_res);
 
   RAJA::TypedRangeSegment<INDEX_TYPE> rseg(first, last);
 
   RAJA::kernel<EXEC_POLICY>(
 
-    RAJA::make_tuple(rseg, lseg),
+    RAJA::make_tuple(rseg),
 
     [=] (INDEX_TYPE i) {
       work_array1[i - first] = 50;
@@ -85,24 +69,24 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 }
 
 
-TYPED_TEST_SUITE_P(KernelRegionSyncTest);
+TYPED_TEST_SUITE_P(KernelRegionTest);
 template <typename T>
-class KernelRegionSyncTest : public ::testing::Test
+class KernelRegionTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelRegionSyncTest, RegionSyncKernel)
+TYPED_TEST_P(KernelRegionTest, RegionKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
-  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
-  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
+  KernelRegionTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelRegionSyncTest,
-                            RegionSyncKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelRegionTest,
+                            RegionKernel);
 
-#endif  // __TEST_KERNEL_REGION_SYNC_HPP__
+#endif  // __TEST_KERNEL_REGION_HPP__
