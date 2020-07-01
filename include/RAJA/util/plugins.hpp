@@ -12,13 +12,14 @@
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 #include "RAJA/util/RuntimePluginLoader.hpp"
+#include "RAJA/util/KokkosPluginLoader.hpp"
 
 namespace RAJA {
 namespace util {
 
 inline
 void
-callPreLaunchPlugins(PluginContext p)
+callPreLaunchPlugins(PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
@@ -30,7 +31,7 @@ callPreLaunchPlugins(PluginContext p)
 
 inline
 void
-callPostLaunchPlugins(PluginContext p)
+callPostLaunchPlugins(PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
@@ -57,6 +58,19 @@ void
 init_plugins(const std::string& path)
 {   
   callInitPlugins(make_options(path));
+}
+
+
+inline
+void
+finalize_plugins()
+{   
+  for (auto plugin = PluginRegistry::begin(); 
+    plugin != PluginRegistry::end();
+    ++plugin)
+  {
+    (*plugin).get()->finalize();
+  }
 }
 
 } // closing brace for util namespace

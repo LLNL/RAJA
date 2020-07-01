@@ -12,11 +12,11 @@ class ExceptionPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
     throw std::runtime_error("preLaunch");
   }
 
-  void postLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
   }
 };
 

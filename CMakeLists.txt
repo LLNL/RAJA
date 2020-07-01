@@ -163,7 +163,8 @@ set (raja_sources
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp
-  src/RuntimePluginLoader.cpp)
+  src/RuntimePluginLoader.cpp
+  src/KokkosPluginLoader.cpp)
 
 set (raja_depends)
 

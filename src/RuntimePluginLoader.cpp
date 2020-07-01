@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <dirent.h>
 
+inline
 bool
 isSharedObject(const std::string filename)
 {
@@ -22,7 +23,7 @@ namespace util {
     initDirectory(std::string(env));
   }
 
-  void RuntimePluginLoader::preLaunch(RAJA::util::PluginContext p)
+  void RuntimePluginLoader::preLaunch(RAJA::util::PluginContext& p)
   {
     for (auto &plugin : plugins)
     {
@@ -30,7 +31,7 @@ namespace util {
     }
   }
 
-  void RuntimePluginLoader::postLaunch(RAJA::util::PluginContext p)
+  void RuntimePluginLoader::postLaunch(RAJA::util::PluginContext& p)
   {
     for (auto &plugin : plugins)
     {
@@ -98,4 +99,4 @@ namespace util {
 } // end namespace util
 } // end namespace RAJA
 
-static RAJA::util::PluginRegistry::add<RAJA::util::RuntimePluginLoader> P("RuntimePluginLoader", "RuntimePluginLoader");
+static RAJA::util::PluginRegistry::add<RAJA::util::RuntimePluginLoader> P("RuntimePluginLoader", "Dynamically load RAJA plugins.");

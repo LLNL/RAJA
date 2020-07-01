@@ -22,11 +22,13 @@ class PluginStrategy
 
     virtual ~PluginStrategy() = default;
 
-    virtual void preLaunch(PluginContext p) = 0;
-
-    virtual void postLaunch(PluginContext p) = 0;
-
     virtual void init(PluginOptions RAJA_UNUSED_ARG(p)) {}
+
+    virtual void preLaunch(PluginContext& p) = 0;
+
+    virtual void postLaunch(PluginContext& p) = 0;
+
+    virtual void finalize() {}
 };
 
 using PluginRegistry = Registry<PluginStrategy>;

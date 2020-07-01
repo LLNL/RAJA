@@ -14,11 +14,11 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
     plugin_test_counter_pre++;
   }
 
-  void postLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
     plugin_test_counter_post++;
   }
 };

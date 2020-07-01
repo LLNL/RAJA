@@ -18,9 +18,9 @@ namespace util {
   public:
     RuntimePluginLoader();
 
-    void preLaunch(RAJA::util::PluginContext p);
+    void preLaunch(RAJA::util::PluginContext& p);
 
-    void postLaunch(RAJA::util::PluginContext p);
+    void postLaunch(RAJA::util::PluginContext& p);
 
     void init(RAJA::util::PluginOptions p);
 

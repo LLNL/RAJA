@@ -20,6 +20,7 @@ struct PluginContext {
     platform(p) {}
 
   Platform platform;
+  uint64_t kID;
 };
 
 template<typename Policy>
