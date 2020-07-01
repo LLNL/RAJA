@@ -17,35 +17,6 @@
 #include <random>
 
 
-template <typename T>
-class WorkGroupBasicEnqueueSingleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueSingleUnitTest);
-
-template <typename T>
-class WorkGroupBasicEnqueueInstantiateUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueInstantiateUnitTest);
-
-template <typename T>
-class WorkGroupBasicEnqueueReuseUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueReuseUnitTest);
-
-template <typename T>
-class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
-
-
 template < typename IndexType,
            typename ... Args >
 struct EnqueueTestCallable
@@ -165,6 +136,35 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
   ASSERT_EQ(success, (IndexType)1);
 }
+
+
+template <typename T>
+class WorkGroupBasicEnqueueSingleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueSingleUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueInstantiateUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueInstantiateUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueReuseUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueReuseUnitTest);
+
+template <typename T>
+class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
 
 TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
 {

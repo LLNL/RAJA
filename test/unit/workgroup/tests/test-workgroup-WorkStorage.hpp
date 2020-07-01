@@ -17,43 +17,6 @@
 #include <random>
 #include <array>
 #include <cstddef>
-#include <unordered_map>
-
-
-template <typename T>
-class WorkGroupBasicWorkStorageConstructorUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
-
-template <typename T>
-class WorkGroupBasicWorkStorageInsertUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertUnitTest);
-
-template <typename T>
-class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
-
-template <typename T>
-class WorkGroupBasicWorkStorageInsertCallUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertCallUnitTest);
-
-template <typename T>
-class WorkGroupBasicWorkStorageMultipleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageMultipleUnitTest);
 
 
 template < typename T >
@@ -138,14 +101,6 @@ void testWorkGroupWorkStorageConstructor()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkStorageConstructor)
-{
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  testWorkGroupWorkStorageConstructor< StoragePolicy, Allocator >();
-}
-
 
 template <typename StoragePolicy,
           typename Allocator
@@ -222,14 +177,6 @@ void testWorkGroupWorkStorageInsert()
   ASSERT_TRUE(success);
 }
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageInsertUnitTest, BasicWorkGroupWorkStorageInsert)
-{
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  testWorkGroupWorkStorageInsert< StoragePolicy, Allocator >();
-}
-
 
 template <typename StoragePolicy,
           typename Allocator
@@ -291,14 +238,6 @@ void testWorkGroupWorkStorageIterator()
   }
 
   ASSERT_TRUE(success);
-}
-
-TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
-{
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  testWorkGroupWorkStorageIterator< StoragePolicy, Allocator >();
 }
 
 
@@ -395,14 +334,6 @@ void testWorkGroupWorkStorageInsertCall()
   }
 
   ASSERT_TRUE(success);
-}
-
-TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStorageInsertCall)
-{
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  testWorkGroupWorkStorageInsertCall< StoragePolicy, Allocator >();
 }
 
 // work around inconsistent std::array support over stl versions
@@ -617,6 +548,75 @@ void testWorkGroupWorkStorageMultiple(
   ASSERT_TRUE(success);
 }
 
+
+template <typename T>
+class WorkGroupBasicWorkStorageConstructorUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageInsertUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageInsertCallUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertCallUnitTest);
+
+template <typename T>
+class WorkGroupBasicWorkStorageMultipleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageMultipleUnitTest);
+
+
+TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkStorageConstructor)
+{
+  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  testWorkGroupWorkStorageConstructor< StoragePolicy, Allocator >();
+}
+
+TYPED_TEST_P(WorkGroupBasicWorkStorageInsertUnitTest, BasicWorkGroupWorkStorageInsert)
+{
+  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  testWorkGroupWorkStorageInsert< StoragePolicy, Allocator >();
+}
+
+TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
+{
+  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  testWorkGroupWorkStorageIterator< StoragePolicy, Allocator >();
+}
+
+TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStorageInsertCall)
+{
+  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  testWorkGroupWorkStorageInsertCall< StoragePolicy, Allocator >();
+}
+
 TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorageMultiple)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -628,211 +628,5 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorag
   testWorkGroupWorkStorageMultiple< StoragePolicy, Allocator >(
       dist(rng), dist(rng), dist(rng));
 }
-
-namespace detail {
-
-struct NeverEqualAllocator
-{
-  using propagate_on_container_copy_assignment = std::false_type;
-  using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::true_type;
-
-  NeverEqualAllocator() = default;
-
-  NeverEqualAllocator(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator(NeverEqualAllocator &&) = default;
-
-  NeverEqualAllocator& operator=(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator& operator=(NeverEqualAllocator &&) = default;
-
-  NeverEqualAllocator select_on_container_copy_construction()
-  {
-    return NeverEqualAllocator{};
-  }
-
-  ~NeverEqualAllocator()
-  {
-    assert(m_allocations.empty());
-  }
-
-  /*[[nodiscard]]*/
-  void* allocate(size_t size)
-  {
-    void* ptr = malloc(size);
-    auto iter_b = m_allocations.emplace(ptr, size);
-    assert(iter_b.second);
-    return ptr;
-  }
-
-  void deallocate(void* ptr, size_t size) noexcept
-  {
-    auto iter = m_allocations.find(ptr);
-    assert(iter != m_allocations.end());
-    assert(iter->second == size);
-    m_allocations.erase(iter);
-    free(ptr);
-  }
-
-  bool operator==(NeverEqualAllocator const&) const
-  {
-    return false;
-  }
-
-private:
-  std::unordered_map<void*, size_t> m_allocations;
-};
-
-struct AlwaysEqualAllocator
-{
-  using propagate_on_container_copy_assignment = std::false_type;
-  using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::false_type;
-
-  AlwaysEqualAllocator() = default;
-
-  AlwaysEqualAllocator(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator(AlwaysEqualAllocator &&) = default;
-
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator &&) = default;
-
-  AlwaysEqualAllocator select_on_container_copy_construction()
-  {
-    return *this;
-  }
-
-  /*[[nodiscard]]*/
-  void* allocate(size_t size)
-  {
-    return get_allocator().allocate(size);
-  }
-
-  void deallocate(void* ptr, size_t size) noexcept
-  {
-    get_allocator().deallocate(ptr, size);
-  }
-
-  bool operator==(AlwaysEqualAllocator const&) const
-  {
-    return true;
-  }
-
-private:
-  static inline NeverEqualAllocator& get_allocator()
-  {
-    static NeverEqualAllocator s_allocator;
-    return s_allocator;
-  }
-};
-
-struct PropogatingAllocator : NeverEqualAllocator
-{
-  using propagate_on_container_copy_assignment = std::true_type;
-  using propagate_on_container_move_assignment = std::true_type;
-  using propagate_on_container_swap = std::true_type;
-
-  PropogatingAllocator() = default;
-
-  PropogatingAllocator(PropogatingAllocator const&) = default;
-  PropogatingAllocator(PropogatingAllocator &&) = default;
-
-  PropogatingAllocator& operator=(PropogatingAllocator const&) = default;
-  PropogatingAllocator& operator=(PropogatingAllocator &&) = default;
-
-  PropogatingAllocator select_on_container_copy_construction()
-  {
-    return PropogatingAllocator(NeverEqualAllocator::select_on_container_copy_construction());
-  }
-
-private:
-  PropogatingAllocator(NeverEqualAllocator&& nea)
-    : NeverEqualAllocator(std::move(nea))
-  { }
-};
-
-template < typename AllocatorImpl >
-struct WorkStorageTestAllocator
-{
-  template < typename T >
-  struct std_allocator
-  {
-    using value_type = T;
-    using propagate_on_container_copy_assignment = typename AllocatorImpl::propagate_on_container_copy_assignment;
-    using propagate_on_container_move_assignment = typename AllocatorImpl::propagate_on_container_move_assignment;
-    using propagate_on_container_swap = typename AllocatorImpl::propagate_on_container_swap;
-
-    std_allocator() = default;
-
-    std_allocator(std_allocator const&) = default;
-    std_allocator(std_allocator &&) = default;
-
-    std_allocator& operator=(std_allocator const&) = default;
-    std_allocator& operator=(std_allocator &&) = default;
-
-    template < typename U >
-    std_allocator(std_allocator<U> const& other) noexcept
-      : m_impl(other.get_impl())
-    { }
-
-    std_allocator select_on_container_copy_construction()
-    {
-      return std_allocator(m_impl.select_on_container_copy_construction());
-    }
-
-    /*[[nodiscard]]*/
-    value_type* allocate(size_t num)
-    {
-      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
-        throw std::bad_alloc();
-      }
-
-      value_type* ptr = static_cast<value_type*>(m_impl.allocate(num*sizeof(value_type)));
-
-      if (!ptr) {
-        throw std::bad_alloc();
-      }
-
-      return ptr;
-    }
-
-    void deallocate(value_type* ptr, size_t num) noexcept
-    {
-      m_impl.deallocate(static_cast<void*>(ptr), num*sizeof(value_type));
-    }
-
-    AllocatorImpl const& get_impl() const
-    {
-      return m_impl;
-    }
-
-    template <typename U>
-    friend inline bool operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
-    {
-      return lhs.get_impl() == rhs.get_impl();
-    }
-
-    template <typename U>
-    friend inline bool operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
-    {
-      return !(lhs == rhs);
-    }
-
-  private:
-    std_allocator(AllocatorImpl&& impl)
-      : m_impl(std::move(impl))
-    { }
-
-    AllocatorImpl m_impl;
-  };
-};
-
-} // namespace detail
-
-//
-// Memory resource types for testing different std allocator requirements
-//
-using WorkStorageAllocatorList = camp::list<typename detail::WorkStorageTestAllocator<detail::AlwaysEqualAllocator>::template std_allocator<char>,
-                                            typename detail::WorkStorageTestAllocator<detail::NeverEqualAllocator>::template std_allocator<char>,
-                                            typename detail::WorkStorageTestAllocator<detail::PropogatingAllocator>::template std_allocator<char>>;
 
 #endif  //__TEST_WORKGROUP_WORKSTORAGE__

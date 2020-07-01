@@ -15,14 +15,6 @@
 #include "RAJA_test-workgroup.hpp"
 
 
-template <typename T>
-class WorkGroupBasicConstructorSingleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicConstructorSingleUnitTest);
-
-
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
@@ -70,6 +62,14 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
 
   ASSERT_TRUE(success);
 }
+
+template <typename T>
+class WorkGroupBasicConstructorSingleUnitTest : public ::testing::Test
+{
+};
+
+
+TYPED_TEST_SUITE_P(WorkGroupBasicConstructorSingleUnitTest);
 
 TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest, BasicWorkGroupConstructorSingle)
 {

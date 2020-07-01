@@ -15,14 +15,6 @@
 #include "RAJA_test-workgroup.hpp"
 
 
-template <typename T>
-class WorkGroupBasicVtableSingleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicVtableSingleUnitTest);
-
-
 template  < typename ForOnePol,
             typename ... CallArgs >
 typename  std::enable_if<
@@ -208,6 +200,14 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   host_res.deallocate( chckDtor );
   host_res.deallocate( testDtor );
 }
+
+
+template <typename T>
+class WorkGroupBasicVtableSingleUnitTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicVtableSingleUnitTest);
 
 TYPED_TEST_P(WorkGroupBasicVtableSingleUnitTest, BasicWorkGroupVtableSingle)
 {

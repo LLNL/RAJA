@@ -18,42 +18,6 @@
 #include <random>
 
 
-template <typename T>
-class WorkGroupBasicOrderedSingleFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedSingleFunctionalTest);
-
-template <typename T>
-class WorkGroupBasicOrderedMultipleFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleFunctionalTest);
-
-template <typename T>
-class WorkGroupBasicOrderedMultipleReusePoolFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReusePoolFunctionalTest);
-
-template <typename T>
-class WorkGroupBasicOrderedMultipleReuseGroupFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReuseGroupFunctionalTest);
-
-template <typename T>
-class WorkGroupBasicOrderedMultipleReusePoolGroupFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReusePoolGroupFunctionalTest);
-
-
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
@@ -159,32 +123,6 @@ void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
                                       working_array,
                                       check_array,
                                       test_array);
-}
-
-TYPED_TEST_P(WorkGroupBasicOrderedSingleFunctionalTest, BasicWorkGroupOrderedSingle)
-{
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
-
-  std::mt19937 rng(std::random_device{}());
-  using dist_type = std::uniform_int_distribution<IndexType>;
-
-  IndexType b1 = dist_type(IndexType(0), IndexType(15))(rng);
-  IndexType e1 = dist_type(b1, IndexType(16))(rng);
-
-  IndexType b2 = dist_type(e1, IndexType(127))(rng);
-  IndexType e2 = dist_type(b2, IndexType(128))(rng);
-
-  IndexType b3 = dist_type(e2, IndexType(1023))(rng);
-  IndexType e3 = dist_type(b3, IndexType(1024))(rng);
-
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
 }
 
 
@@ -440,6 +378,69 @@ void testWorkGroupOrderedMultiple(
                                   working_array3,
                                   check_array3,
                                   test_array3);
+}
+
+
+template <typename T>
+class WorkGroupBasicOrderedSingleFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicOrderedSingleFunctionalTest);
+
+template <typename T>
+class WorkGroupBasicOrderedMultipleFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleFunctionalTest);
+
+template <typename T>
+class WorkGroupBasicOrderedMultipleReusePoolFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReusePoolFunctionalTest);
+
+template <typename T>
+class WorkGroupBasicOrderedMultipleReuseGroupFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReuseGroupFunctionalTest);
+
+template <typename T>
+class WorkGroupBasicOrderedMultipleReusePoolGroupFunctionalTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReusePoolGroupFunctionalTest);
+
+
+TYPED_TEST_P(WorkGroupBasicOrderedSingleFunctionalTest, BasicWorkGroupOrderedSingle)
+{
+  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
+
+  std::mt19937 rng(std::random_device{}());
+  using dist_type = std::uniform_int_distribution<IndexType>;
+
+  IndexType b1 = dist_type(IndexType(0), IndexType(15))(rng);
+  IndexType e1 = dist_type(b1, IndexType(16))(rng);
+
+  IndexType b2 = dist_type(e1, IndexType(127))(rng);
+  IndexType e2 = dist_type(b2, IndexType(128))(rng);
+
+  IndexType b3 = dist_type(e2, IndexType(1023))(rng);
+  IndexType e3 = dist_type(b3, IndexType(1024))(rng);
+
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
 }
 
 TYPED_TEST_P(WorkGroupBasicOrderedMultipleFunctionalTest, BasicWorkGroupOrderedMultiple)
