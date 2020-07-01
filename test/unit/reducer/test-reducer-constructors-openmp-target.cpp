@@ -11,8 +11,6 @@
 
 #include "tests/test-reducer-constructors.hpp"
 
-#include "test-reducer-utils.hpp"
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetInitReducerConstructorTypes = 
   Test< camp::cartesian_product< OpenMPTargetReducerPolicyList,

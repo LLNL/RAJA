@@ -8,9 +8,12 @@
 #ifndef __TEST_FORALL_SEGMENT_HPP__
 #define __TEST_FORALL_SEGMENT_HPP__
 
-#include "RAJA/RAJA.hpp"
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
 
-#include "../../test-forall-utils.hpp"
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
 TYPED_TEST_SUITE_P(ForallSegmentTest);
 template <typename T>
@@ -18,9 +21,9 @@ class ForallSegmentTest : public ::testing::Test
 {
 };
 
-#include "test-forall-rangesegment.hpp"
-#include "test-forall-rangestridesegment.hpp"
-#include "test-forall-listsegment.hpp"
+#include "tests/test-forall-rangesegment.hpp"
+#include "tests/test-forall-rangestridesegment.hpp"
+#include "tests/test-forall-listsegment.hpp"
 
 REGISTER_TYPED_TEST_SUITE_P(ForallSegmentTest,
                             RangeSegmentForall,

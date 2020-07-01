@@ -5,23 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for logical, accessor, min/max, and cas atomic operations
-///
-
-#include "tests/test-forall-atomic-ref-other.hpp"
-
-#include "../test-forall-execpol.hpp"
-
-#include "../test-forall-atomic-utils.hpp"
+#include "test-forall-atomic-ref.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAtomicForallRefOtherTypes = Test< camp::cartesian_product<
-                                                                  CudaForallExecPols,
-                                                                  CudaAtomicPols,
-                                                                  CudaResourceList,
-                                                                  AtomicDataTypeList >
-                                        >::Types;
+using CudaAtomicForallRefOtherTypes = 
+  Test< camp::cartesian_product< CudaForallExecPols,
+                                 CudaAtomicPols,
+                                 CudaResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( CudaTest,
                                 ForallAtomicRefOtherFunctionalTest,

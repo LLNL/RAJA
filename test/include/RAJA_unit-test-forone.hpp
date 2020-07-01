@@ -5,10 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_unit_forone_HPP
-#define RAJA_unit_forone_HPP
+//
+// Header defining "for one" unit test utility so that constructs can be
+// tested outside of standard RAJA kernel launch utilities (forall, kernel).
+//
 
-#include <RAJA/RAJA.hpp>
+#ifndef __RAJA_test_forone_HPP__
+#define __RAJA_test_forone_HPP__
+
+#include "RAJA/RAJA.hpp"
 
 #include <type_traits>
 
@@ -115,4 +120,4 @@ void forone(L&& run)
   forone(forone_policy{}, std::forward<L>(run));
 }
 
-#endif // RAJA_unit_forone_HPP
+#endif // RAJA_test_forone_HPP__

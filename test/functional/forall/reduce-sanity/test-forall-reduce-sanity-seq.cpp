@@ -5,13 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "tests/test-forall-reduce-sanity.hpp"
-
-#include "../test-reducepol.hpp"
-
-// Sequential execution policy types
-using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
-                                                   RAJA::loop_exec >;
+#include "test-forall-reduce-sanity.hpp"
 
 // Cartesian product of types for Sequential tests
 using SequentialForallReduceSanityTypes =

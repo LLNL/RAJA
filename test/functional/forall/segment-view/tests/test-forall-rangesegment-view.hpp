@@ -8,8 +8,6 @@
 #ifndef __TEST_FORALL_RANGESEGMENT_VIEW_HPP__
 #define __TEST_FORALL_RANGESEGMENT_VIEW_HPP__
 
-#include "test-forall-segment-view.hpp"
-
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
