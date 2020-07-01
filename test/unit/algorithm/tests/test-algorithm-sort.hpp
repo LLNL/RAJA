@@ -101,7 +101,7 @@ using OpenMPSortSorters =
 
 #if defined(RAJA_ENABLE_TBB)
 
-using TbbSortSorters =
+using TBBSortSorters =
   camp::list<
               PolicySort<RAJA::tbb_for_exec>,
               PolicySortPairs<RAJA::tbb_for_exec>
