@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_REDUCEPOL_HPP__
-#define __TEST_REDUCEPOL_HPP__
+//
+// Reduction policies used for reduction tests
+//
+
+#ifndef __RAJA_test_reducepol_HPP__
+#define __RAJA_test_reducepol_HPP__
 
 #include "RAJA/RAJA.hpp"
 
@@ -15,7 +19,12 @@ using SequentialReducePols = camp::list< RAJA::seq_reduce >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPReducePols = 
+#if 0 // is ordered reduction broken???
+  camp::list< RAJA::omp_reduce,
+              RAJA::omp_reduce_ordered >;
+#else
   camp::list< RAJA::omp_reduce >;
+#endif
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
@@ -35,4 +44,4 @@ using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 using HipReducePols = camp::list< RAJA::hip_reduce >;
 #endif
 
-#endif  // __TEST_REDUCEPOL_HPP__
+#endif  // __RAJA_test_reducepol_HPP__

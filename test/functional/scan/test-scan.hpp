@@ -5,14 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_SCAN_UTILS_HPP__
-#define __TEST_SCAN_UTILS_HPP__
+#ifndef __TEST_SCAN_HPP__
+#define __TEST_SCAN_HPP__
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
 
-#include "camp/list.hpp"
-
+#include "RAJA_test-forall-execpol.hpp"
 
 // Scan functional test class
 template<typename T>
@@ -32,9 +31,6 @@ using ScanOpTypes = camp::list< RAJA::operators::plus<int>,
                                 RAJA::operators::maximum<int>,
                                 RAJA::operators::maximum<float>,
                                 RAJA::operators::maximum<double> >;
-
-using ListHostRes = camp::list< camp::resources::Host >;
-
 
 template <typename T>
 void allocScanTestData(int N, 
@@ -64,8 +60,9 @@ void deallocScanTestData(camp::resources::Resource& work_res,
   host_res.deallocate(host_out);
 }
 
-
-
 TYPED_TEST_SUITE_P(ScanFunctionalTest);
 
-#endif //__TEST_SCAN_UTILS_HPP__
+#include "tests/test-scan-exclusive.hpp"
+#include "tests/test-scan-inclusive.hpp"
+
+#endif //__TEST_SCAN_HPP__

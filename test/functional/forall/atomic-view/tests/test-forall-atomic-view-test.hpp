@@ -9,19 +9,10 @@
 /// Header file containing basic functional tests for atomic operations with forall and views.
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_VIEW_HPP__
-#define __TEST_FORALL_ATOMIC_VIEW_HPP__
+#ifndef __TEST_FORALL_ATOMIC_VIEW_TEST_HPP__
+#define __TEST_FORALL_ATOMIC_VIEW_TEST_HPP__
 
-#include <RAJA/RAJA.hpp>
-#include "RAJA_gtest.hpp"
-#include "camp/resource.hpp"
-
-TYPED_TEST_SUITE_P(ForallAtomicViewFunctionalTest);
-
-template <typename T>
-class ForallAtomicViewFunctionalTest : public ::testing::Test
-{
-};
+#include "RAJA_test-forall-data.hpp"
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
@@ -92,11 +83,8 @@ TYPED_TEST_P(ForallAtomicViewFunctionalTest, AtomicViewFunctionalForall)
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+
   testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( ForallAtomicViewFunctionalTest,
-                             AtomicViewFunctionalForall
-                           );
-
-#endif  //__TEST_FORALL_ATOMIC_VIEW_HPP__
+#endif  //__TEST_FORALL_ATOMIC_VIEW_TEST_HPP__

@@ -5,20 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing basic functional tests for atomic operations with forall and views.
-///
+#include "test-forall-atomic-view.hpp"
 
-#include "tests/test-forall-atomic-view.hpp"
-
-#include "../test-forall-atomic-utils.hpp"
-
-using SeqAtomicForallViewTypes = Test< camp::cartesian_product<
-                                                                 SequentialForallAtomicExecPols,
-                                                                 SequentialAtomicPols,
-                                                                 HostResourceList,
-                                                                 AtomicDataTypeList >
-                                      >::Types;
+using SeqAtomicForallViewTypes = 
+  Test< camp::cartesian_product< SequentialForallAtomicExecPols,
+                                 SequentialAtomicPols,
+                                 HostResourceList,
+                                 AtomicDataTypeList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P( SeqTest,
                                 ForallAtomicViewFunctionalTest,

@@ -11,7 +11,7 @@ add_subdirectory(indexset-view)
 add_subdirectory(segment)
 add_subdirectory(segment-view)
 
-add_subdirectory(atomic)
+add_subdirectory(atomic-basic)
 add_subdirectory(atomic-view)
 add_subdirectory(atomic-ref)
 

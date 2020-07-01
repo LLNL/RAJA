@@ -11,8 +11,6 @@
 
 #include "tests/test-reducer-constructors.hpp"
 
-#include "test-reducer-utils.hpp"
-
 using SequentialBasicReducerConstructorTypes = 
   Test< camp::cartesian_product< SequentialReducerPolicyList,
                                  DataTypeList,
