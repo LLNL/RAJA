@@ -5,36 +5,27 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-indexset-seq
-  SOURCES test-forall-indexset-seq.cpp)
+#
+# List of indexset test types for generating test files.
+#
+set(INDEXSETTESTTYPES ForallIndexSet ForallIcountIndexSet)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-indexset-openmp
-    SOURCES test-forall-indexset-openmp.cpp)
-endif()
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-indexset-openmp-target
-    SOURCES test-forall-indexset-openmp-target.cpp)
-endif()
+#
+# Generate tests for each enabled RAJA back-end.
+#
+# Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( BACKEND ${FORALL_BACKENDS} )
+  foreach( INDEXSETTESTTYPE ${INDEXSETTESTTYPES} )
+    configure_file( test-forall-indexset.cpp.in
+                    test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-${INDEXSETTESTTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
 
-if(RAJA_ENABLE_TBB)
-  raja_add_test(
-    NAME test-forall-indexset-tbb
-    SOURCES test-forall-indexset-tbb.cpp)
-endif()
+    target_include_directories(test-${INDEXSETTESTTYPE}-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
+endforeach()
 
-if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-indexset-cuda
-    SOURCES test-forall-indexset-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-indexset-hip
-    SOURCES test-forall-indexset-hip.cpp)
-endif()
+unset( INDEXSETTESTTYPES )
