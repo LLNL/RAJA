@@ -5,36 +5,27 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-segment-seq
-  SOURCES test-forall-segment-seq.cpp)
+#
+# List of segment types for generating test files.
+#
+set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-openmp
-    SOURCES test-forall-segment-openmp.cpp)
-endif()
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-segment-openmp-target
-    SOURCES test-forall-segment-openmp-target.cpp)
-endif()
+#
+# Generate tests for each enabled RAJA back-end. 
+# 
+# Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( BACKEND ${FORALL_BACKENDS} )
+  foreach( SEGTYPE ${SEGTYPES} )
+    configure_file( test-forall-segment.cpp.in
+                    test-forall-${SEGTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-${SEGTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${SEGTYPE}-${BACKEND}.cpp )
 
-if(RAJA_ENABLE_TBB)
-  raja_add_test(
-    NAME test-forall-segment-tbb
-    SOURCES test-forall-segment-tbb.cpp)
-endif()
+    target_include_directories(test-forall-${SEGTYPE}-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
+endforeach()
 
-if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-segment-cuda
-    SOURCES test-forall-segment-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-segment-hip
-    SOURCES test-forall-segment-hip.cpp)
-endif()
+unset( SEGTYPES )
