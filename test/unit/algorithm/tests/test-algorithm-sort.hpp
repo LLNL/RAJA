@@ -17,10 +17,10 @@
 /// Header file containing Sorter classes for sort tests
 ///
 
-#ifndef __TEST_POL_SORT_SORT_HPP__
-#define __TEST_POL_SORT_SORT_HPP__
+#ifndef __TEST_UNIT_ALGORITHM_SORT_HPP__
+#define __TEST_UNIT_ALGORITHM_SORT_HPP__
 
-#include "../test-sort-utils.hpp"
+#include "test-algorithm-sort-utils.hpp"
 
 template < typename policy >
 struct PolicySort
@@ -81,7 +81,7 @@ struct PolicySortPairs
 };
 
 
-using SeqSortSorters =
+using SequentialSortSorters =
   camp::list<
               PolicySort<RAJA::loop_exec>,
               PolicySortPairs<RAJA::loop_exec>,
@@ -91,7 +91,7 @@ using SeqSortSorters =
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenmpSortSorters =
+using OpenMPSortSorters =
   camp::list<
               PolicySort<RAJA::omp_parallel_for_exec>,
               PolicySortPairs<RAJA::omp_parallel_for_exec>
@@ -129,5 +129,5 @@ using HipSortSorters =
 
 #endif
 
-#endif //__TEST_POL_SORT_SORT_HPP__
+#endif //__TEST_UNIT_ALGORITHM_SORT_HPP__
 

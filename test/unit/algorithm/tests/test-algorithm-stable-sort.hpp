@@ -17,10 +17,10 @@
 /// Header file containing Sorter classes for stable sort tests
 ///
 
-#ifndef __TEST_POL_STABLE_SORT_HPP__
-#define __TEST_POL_STABLE_SORT_HPP__
+#ifndef __TEST_UNIT_ALGORITHM_STABLE_SORT_HPP__
+#define __TEST_UNIT_ALGORITHM_STABLE_SORT_HPP__
 
-#include "../test-sort-utils.hpp"
+#include "test-algorithm-sort-utils.hpp"
 
 
 template < typename policy >
@@ -81,7 +81,7 @@ struct PolicyStableSortPairs
   }
 };
 
-using SeqStableSortSorters =
+using SequentialStableSortSorters =
   camp::list<
               PolicyStableSort<RAJA::loop_exec>,
               PolicyStableSortPairs<RAJA::loop_exec>,
@@ -91,7 +91,7 @@ using SeqStableSortSorters =
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenmpStableSortSorters =
+using OpenMPStableSortSorters =
   camp::list<
               PolicyStableSort<RAJA::omp_parallel_for_exec>,
               PolicyStableSortPairs<RAJA::omp_parallel_for_exec>
@@ -129,4 +129,4 @@ using HipStableSortSorters =
 
 #endif
 
-#endif // __TEST_POL_STABLE_SORT_HPP__
+#endif // __TEST_UNIT_ALGORITHM_STABLE_SORT_HPP__

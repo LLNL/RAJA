@@ -17,10 +17,10 @@
 /// Header file containing Sorter classes for util sort tests
 ///
 
-#ifndef __TEST_UTIL_SORT_HPP__
-#define __TEST_UTIL_SORT_HPP__
+#ifndef __TEST_ALGORITHM_UTIL_SORT_HPP__
+#define __TEST_ALGORITHM_UTIL_SORT_HPP__
 
-#include "../test-sort-utils.hpp"
+#include "test-algorithm-sort-utils.hpp"
 
 
 template < typename forone_policy >
@@ -703,31 +703,31 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
 #endif
 
 
-using CpuInsertionSortSorters =
+using SequentialInsertionSortSorters =
   camp::list<
               InsertionSort<forone_seq>,
               InsertionSortPairs<forone_seq>
             >;
 
-using CpuShellSortSorters =
+using SequentialShellSortSorters =
   camp::list<
               ShellSort<forone_seq>,
               ShellSortPairs<forone_seq>
             >;
 
-using CpuHeapSortSorters =
+using SequentialHeapSortSorters =
   camp::list<
               HeapSort<forone_seq>,
               HeapSortPairs<forone_seq>
             >;
 
-using CpuIntroSortSorters =
+using SequentialIntroSortSorters =
   camp::list<
               IntroSort<forone_seq>,
               IntroSortPairs<forone_seq>
             >;
 
-using CpuMergeSortSorters =
+using SequentialMergeSortSorters =
   camp::list<
               MergeSort<forone_seq>,
               MergeSortPairs<forone_seq>
@@ -801,5 +801,5 @@ using HipMergeSortSorters =
 
 #endif
 
-#endif //__TEST_UTIL_SORT_HPP__
+#endif //__TEST_ALGORITHM_UTIL_SORT_HPP__
 

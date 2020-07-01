@@ -17,8 +17,8 @@
 /// Header file containing test infrastructure for sort tests
 ///
 
-#ifndef __TEST_SORT_HPP__
-#define __TEST_SORT_HPP__
+#ifndef __TEST_ALGORITHM_SORT_UTILS_HPP__
+#define __TEST_ALGORITHM_SORT_UTILS_HPP__
 
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
@@ -497,35 +497,20 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, c
       sorter, stability_category{}, pairs_category{}, use_comparator{}));
 }
 
-template <typename Sorter>
-void testSorterSizes(unsigned seed, RAJA::Index_type MaxN, Sorter sorter)
+template <typename K,
+          typename Sorter>
+void testSorter(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, camp::resources::Resource res)
 {
-  testSorterInterfaces<int>(seed, MaxN, sorter);
-#if defined(TEST_EXHAUSTIVE)
-  testSorterInterfaces<unsigned>(seed, MaxN), sorter;
-  testSorterInterfaces<long long>(seed, MaxN, sorter);
-  testSorterInterfaces<unsigned long long>(seed, MaxN, sorter);
-
-  testSorterInterfaces<float>(seed, MaxN, sorter);
-#endif
-  testSorterInterfaces<double>(seed, MaxN, sorter);
+  testSorterInterfaces<K>(seed, 0, sorter, res);
+  for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
+    testSorterInterfaces<K>(seed, n, sorter, res);
+  }
 }
 
 inline unsigned get_random_seed()
 {
   static unsigned seed = std::random_device{}();
   return seed;
-}
-
-template <typename Sorter>
-void testSorter(Sorter sorter, RAJA::Index_type MaxN = 10000)
-{
-  unsigned seed = get_random_seed();
-
-  testSorterSizes(seed, 0, sorter);
-  for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
-    testSorterSizes(seed, n, sorter);
-  }
 }
 
 
@@ -547,10 +532,7 @@ TYPED_TEST_P(SortUnitTest, UnitSort)
   Sorter sorter{};
   camp::resources::Resource res{ResType()};
 
-  testSorterInterfaces<KeyType>(seed, 0, sorter, res);
-  for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
-    testSorterInterfaces<KeyType>(seed, n, sorter, res);
-  }
+  testSorter<KeyType>(seed, MaxN, sorter, res);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(SortUnitTest, UnitSort);
@@ -588,5 +570,5 @@ using SortMaxNListTiny =
               camp::num<100>
             >;
 
-#endif //__TEST_SORT_HPP__
+#endif //__TEST_ALGORITHM_SORT_UTILS_HPP__
 
