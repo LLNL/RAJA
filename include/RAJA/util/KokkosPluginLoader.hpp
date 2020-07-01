@@ -30,8 +30,8 @@ namespace util {
     void finalize();
 
   private:
-    // Initialize plugin from a shared object file specified by 'path'.
     void initPlugin(const std::string &path);
+    
     void initDirectory(const std::string &path);
 
     std::vector<init_function> init_functions;

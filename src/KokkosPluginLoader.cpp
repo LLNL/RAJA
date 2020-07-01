@@ -34,7 +34,6 @@ namespace util {
   {
     for (auto &func : pre_functions)
     {
-      // name, devID, kID
       func("", 0, &(p.kID));
     }
   }
@@ -43,7 +42,6 @@ namespace util {
   {
     for (auto &func : post_functions)
     {
-      // kID
       func(p.kID);
     }
   }
