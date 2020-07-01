@@ -8,8 +8,6 @@
 #ifndef __TEST_KERNEL_REGION_DATA_HPP__
 #define __TEST_KERNEL_REGION_DATA_HPP__
 
-#include "camp/resource.hpp"
-
 template <typename T>
 void allocRegionTestData(int N,
                          camp::resources::Resource& work_res,
