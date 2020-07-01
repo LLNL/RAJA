@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test_subdirectory(region)
+add_subdirectory(region)

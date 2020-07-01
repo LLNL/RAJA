@@ -288,7 +288,7 @@ install(FILES
   DESTINATION "include/RAJA/")
 
 if(ENABLE_TESTS)
-  raja_add_test_subdirectory(test)
+  add_subdirectory(test)
 endif()
 
 if(ENABLE_REPRODUCERS)

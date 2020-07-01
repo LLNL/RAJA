@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test_subdirectory(forall)
+add_subdirectory(forall)
 
-raja_add_test_subdirectory(kernel)
+add_subdirectory(kernel)
 
-raja_add_test_subdirectory(scan)
+add_subdirectory(scan)
 
-raja_add_test_subdirectory(workgroup)
+add_subdirectory(workgroup)

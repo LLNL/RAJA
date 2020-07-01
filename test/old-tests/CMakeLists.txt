@@ -14,4 +14,4 @@
 #
 ###############################################################################
 
-raja_add_test_subdirectory(unit)
+add_subdirectory(unit)

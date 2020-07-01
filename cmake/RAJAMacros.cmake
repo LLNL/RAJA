@@ -49,6 +49,28 @@ macro(raja_add_executable)
     )
 endmacro(raja_add_executable)
 
+macro(raja_add_test)
+  set(options )
+  set(singleValueArgs NAME)
+  set(multiValueArgs SOURCES DEPENDS_ON)
+
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  list (APPEND arg_DEPENDS_ON gtest ${CMAKE_THREAD_LIBS_INIT})
+
+  raja_add_executable(
+    NAME ${arg_NAME}.exe
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    TEST On)
+
+  blt_add_test(
+    NAME ${arg_NAME}
+    #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
+    COMMAND ${TEST_DRIVER} ${arg_NAME})
+endmacro(raja_add_test)
+
 macro(raja_add_reproducer)
   set(options )
   set(singleValueArgs NAME)
@@ -84,60 +106,3 @@ macro(raja_add_benchmark)
     NAME ${arg_NAME}
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_benchmark)
-
-macro(raja_add_test)
-  set(options )
-  set(singleValueArgs NAME)
-  set(multiValueArgs SOURCES DEPENDS_ON)
-
-  cmake_parse_arguments(arg
-    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  list (APPEND arg_DEPENDS_ON gtest ${CMAKE_THREAD_LIBS_INIT})
-
-  raja_add_executable(
-    NAME ${arg_NAME}.exe
-    SOURCES ${arg_SOURCES}
-    DEPENDS_ON ${arg_DEPENDS_ON}
-    TEST On)
-
-  blt_add_test(
-    NAME ${arg_NAME}
-    #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
-    COMMAND ${TEST_DRIVER} ${arg_NAME})
-
-  if(DEFINED RAJA_TEST_STACK)
-    string(REPLACE ";" "_" DIRECTORY_TARGET "${RAJA_TEST_STACK}")
-    add_dependencies(${DIRECTORY_TARGET} ${arg_NAME})
-    unset(DIRECTORY_TARGET)
-  endif()
-endmacro(raja_add_test)
-
-macro(raja_add_test_subdirectory SUBDIRECTORY_NAME)
-
-  if(NOT DEFINED RAJA_TEST_STACK)
-    set(RAJA_TEST_STACK raja)
-  else()
-    string(REPLACE ";" "_" DIRECTORY_TARGET "${RAJA_TEST_STACK}")
-  endif()
-
-  list (APPEND RAJA_TEST_STACK ${SUBDIRECTORY_NAME})
-  string(REPLACE ";" "_" SUBDIRECTORY_TARGET "${RAJA_TEST_STACK}")
-  add_custom_target(${SUBDIRECTORY_TARGET})
-
-  if(DEFINED DIRECTORY_TARGET)
-    add_dependencies(${DIRECTORY_TARGET} ${SUBDIRECTORY_TARGET})
-    unset(DIRECTORY_TARGET)
-  endif()
-  unset(SUBDIRECTORY_TARGET)
-
-  add_subdirectory(${SUBDIRECTORY_NAME})
-
-  list (REMOVE_AT RAJA_TEST_STACK -1)
-
-  list (LENGTH RAJA_TEST_STACK RAJA_TEST_STACK_LENGTH)
-  if(${RAJA_TEST_STACK_LENGTH} EQUAL 1)
-    unset(RAJA_TEST_STACK)
-  endif()
-  unset(RAJA_TEST_STACK_LENGTH)
-endmacro(raja_add_test_subdirectory)

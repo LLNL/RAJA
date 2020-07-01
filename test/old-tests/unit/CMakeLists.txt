@@ -25,12 +25,12 @@ raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
 
-raja_add_test_subdirectory(cpu)
+add_subdirectory(cpu)
 
 if(ENABLE_CUDA)
-  raja_add_test_subdirectory(cuda)
+  add_subdirectory(cuda)
 endif(ENABLE_CUDA)
 
 if(ENABLE_TARGET_OPENMP)
-  raja_add_test_subdirectory(omp-target)
+  add_subdirectory(omp-target)
 endif(ENABLE_TARGET_OPENMP)
