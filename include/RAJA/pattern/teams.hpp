@@ -131,9 +131,7 @@ struct LaunchPlaceSwitchboard<Resources<HOST>> {
   template <typename BODY>
   static void exec(ExecPlace place, LaunchContext const &ctx, BODY const &body)
   {
-    printf("Launching HOST Kernel\n");
     body(ctx);
-    printf("Leaving HOST Kernel\n");
   }
 };
 
@@ -164,18 +162,8 @@ struct LaunchPlaceSwitchboard<Resources<DEVICE>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
-
-    printf("Launching CUDA Kernel with blocks=%d,%d,%d   thread=%d,%d,%d\n",
-           ctx.teams.value[0],
-           ctx.teams.value[1],
-           ctx.teams.value[2],
-           ctx.threads.value[0],
-           ctx.threads.value[1],
-           ctx.threads.value[2]);
-
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
     cudaDeviceSynchronize();
-    printf("Leaving CUDA Kernel\n");
   }
 };
 
