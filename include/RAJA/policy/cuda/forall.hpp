@@ -162,6 +162,7 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async> exec,
                              Iterable&& iter,
                              LoopBody&& loop_body)
 {
+  std::cout<<"Cuda forall_impl : Default\n";
   static RAJA::resources::Resource cuda_res{RAJA::resources::Cuda::get_default()};
   forall_impl(cuda_res, exec, iter, loop_body);
 }
@@ -172,6 +173,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
+  std::cout<<"Cuda forall_impl : Resource\n";
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
