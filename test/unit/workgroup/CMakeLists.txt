@@ -71,3 +71,12 @@ buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Insert Iterator InsertCall Multiple)
 buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
+
+unset(BACKENDS)
+unset(Vtable_BACKENDS)
+unset(WorkStorage_BACKENDS)
+
+unset(Constructor_SUBTESTS)
+unset(Vtable_SUBTESTS)
+unset(Enqueue_SUBTESTS)
+unset(WorkStorage_SUBTESTS)

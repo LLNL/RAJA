@@ -56,3 +56,8 @@ buildunitworkgrouptest(Ordered "${Ordered_SUBTESTS}" "${BACKENDS}")
 
 set(Unordered_SUBTESTS Single Multiple MultipleReusePool MultipleReuseGroup MultipleReusePoolGroup)
 buildunitworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${BACKENDS}")
+
+unset(BACKENDS)
+
+unset(Ordered_SUBTESTS)
+unset(Unordered_SUBTESTS)
