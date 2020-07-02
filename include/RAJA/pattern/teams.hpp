@@ -137,8 +137,8 @@ struct LaunchPlaceSwitchboard<Resources<HOST>> {
 
 
 template <typename BODY>
-__launch_bounds__(128, 1) __global__
-    void launch_global_fcn(LaunchContext ctx, BODY body)
+__global__
+void launch_global_fcn(LaunchContext ctx, BODY body)
 {
   // printf("Entering global function\n");
   body(ctx);
@@ -163,7 +163,6 @@ struct LaunchPlaceSwitchboard<Resources<DEVICE>> {
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
-    cudaDeviceSynchronize();
   }
 };
 
@@ -225,7 +224,7 @@ template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
                                     SEGMENT const &segment,
                                     BODY const &body)
   {
@@ -243,7 +242,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -260,7 +259,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -277,7 +276,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -294,7 +293,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -311,7 +310,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -328,7 +327,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_DEVICE void exec(LaunchContext const &ctx,
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -345,7 +344,7 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 template <typename POLICY_LIST, camp::idx_t IDX, camp::idx_t MAX_IDX>
 struct LoopPlaceSwitchboard {
   template <typename SEGMENT, typename BODY>
-  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static inline RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
                                     SEGMENT const &segment,
                                     BODY const &body)
   {
@@ -373,7 +372,7 @@ struct LoopPlaceSwitchboard<POLICY_LIST, MAX_IDX, MAX_IDX> {
 
 
 template <typename POLICY_LIST, typename SEGMENT, typename BODY>
-RAJA_HOST_DEVICE void loop(LaunchContext const &ctx,
+RAJA_HOST_DEVICE inline void loop(LaunchContext const &ctx,
                            SEGMENT const &seg,
                            BODY const &body)
 {
