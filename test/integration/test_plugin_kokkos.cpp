@@ -5,18 +5,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_Plugin_Linker_HPP
-#define RAJA_Plugin_Linker_HPP
+#include "RAJA/RAJA.hpp"
+#include "gtest/gtest.h"
 
-#include "RAJA/util/RuntimePluginLoader.hpp"
-#include "RAJA/util/KokkosPluginLoader.hpp"
+TEST(PluginTestKokkos, Exception)
+{
+  int* a = new int[10];
 
-namespace {
-  struct pluginLinker {
-    inline pluginLinker() {
-      (void)RAJA::util::linkRuntimePluginLoader();
-      (void)RAJA::util::linkKokkosPluginLoader();
-    }
-  } pluginLinker;
+  ASSERT_ANY_THROW({
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10),
+                               [=](int i) { a[i] = 0; });
+  });
+
+  delete[] a;
 }
-#endif
