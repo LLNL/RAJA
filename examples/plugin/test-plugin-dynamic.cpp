@@ -10,7 +10,6 @@
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-  // Loading .so files as plugins in current directory.
   RAJA::util::init_plugins("../lib/libtimer_plugin.so");
 
   double *a = new double[10];
