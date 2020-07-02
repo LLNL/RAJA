@@ -57,6 +57,7 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
+#include <iostream>
 
 #include "RAJA/internal/Iterators.hpp"
 
@@ -533,19 +534,26 @@ forall_Icount(ExecutionPolicy&& p,
  * this reduces implementation overhead and perfectly forwards all arguments
  */
 template <typename ExecutionPolicy, typename... Args>
-RAJA_INLINE void forall(Args&&... args)
+RAJA_INLINE concepts::enable_if<type_traits::is_execution_policy<ExecutionPolicy>> forall(Args&&... args)
 {
-  util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context);
+  std::cout<< "Forall : Default\n";
+  auto r = RAJA::resources::get_default_resource(ExecutionPolicy());
+  forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
+  //auto r = RAJA::resources::get_default_resource(ExecutionPolicy());
+  //util::PluginContext context{util::make_context<ExecutionPolicy>()};
+  //util::callPreLaunchPlugins(context);
 
-  RAJA_FORCEINLINE_RECURSIVE
-  wrap::forall(ExecutionPolicy(), std::forward<Args>(args)...);
+  //RAJA_FORCEINLINE_RECURSIVE
+  //wrap::forall(r, ExecutionPolicy(), std::forward<Args>(args)...);
 
-  util::callPostLaunchPlugins(context);
+  //util::callPostLaunchPlugins(context);
 }
+//template <typename Res, typename ExecutionPolicy, typename... Args>
+//RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_resource<Res>> forall(Res &r, ExecutionPolicy, Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE RAJA::resources::EventProxy forall(RAJA::resources::Resource &r, Args&&... args)
 {
+  std::cout<< "Forall : Resource\n";
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
 

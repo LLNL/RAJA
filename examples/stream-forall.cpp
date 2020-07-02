@@ -98,6 +98,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
+  //RAJA::resources::Resource host{RAJA::resources::Host()};
+
+  // _rajaseq_vector_add_start
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
+    c[i] = a[i] + b[i]; 
+  });
+  // _rajaseq_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+//----------------------------------------------------------------------------//
+// RAJA::seq_exec policy enforces strictly sequential execution.... 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA sequential vector addition...\n";
+
   RAJA::resources::Resource host{RAJA::resources::Host()};
 
   // _rajaseq_vector_add_start
