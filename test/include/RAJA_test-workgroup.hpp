@@ -287,17 +287,13 @@ struct WorkStorageTestAllocator
 //
 using IndexTypeTypeList = camp::list<
                                  int,
-#if defined(RAJA_TEST_EXHAUSTIVE)
                                  long,
-#endif
                                  RAJA::Index_type
                                >;
 
 using XargsTypeList = camp::list<
                                  RAJA::xargs<>,
-#if defined(RAJA_TEST_EXHAUSTIVE)
                                  RAJA::xargs<int*>,
-#endif
                                  RAJA::xargs<int, int*>
                                >;
 
