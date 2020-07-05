@@ -124,26 +124,25 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>;
 
-using policy1_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
-#ifdef RAJA_ENABLE_CUDA
-using policy1x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_x_direct>;
-using policy1y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_block_y_direct>;
-#else
-using policy1_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
-#endif
-using outer0 = camp::list<policy1_HOST, policy1x_DEVICE>;
-using outer1 = camp::list<policy1_HOST, policy1y_DEVICE>;
 
-using policy2_HOST = RAJA::LPolicy<RAJA::HOST, RAJA::loop_exec>;
 #ifdef RAJA_ENABLE_CUDA
-using policy2x_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_x_loop>;
-using policy2y_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::cuda_thread_y_loop>;
+using outer0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>;
+using outer1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_y_direct>;
 #else
-using policy2_DEVICE = RAJA::LPolicy<RAJA::DEVICE, RAJA::loop_exec>;
+using outer0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using outer1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 #endif
-using team0 = camp::list<policy2_HOST, policy2x_DEVICE>;
-using team1 = camp::list<policy2_HOST, policy2y_DEVICE>;
+
+
+#ifdef RAJA_ENABLE_CUDA
+using team0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
+using team1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
+#else
+using team0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using team1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+#endif
 
 
 int main()
@@ -151,8 +150,13 @@ int main()
 
   // N is number of blocks in each matrix
   const int NBlocks = 4;
+#ifdef RAJA_ENABLE_CUDA
   const int NThreads = CUDA_BLOCK_SIZE;
-  const int N = CUDA_BLOCK_SIZE * NBlocks;
+  const int N = NThreads * NBlocks;
+#else
+  const int NThreads = 1;
+  const int N = NThreads * NBlocks;
+#endif
 
   //
   // Allocate and initialize matrix data.
@@ -169,8 +173,9 @@ int main()
   }
 
   std::cout << "\n Running RAJA-Teams V2-version of matrix multiplication...\n";
+  std::cout << "  N = " << N << std::endl;
 
-  for (int exec_place = 0; exec_place < 2; ++exec_place) {
+  for (int exec_place = 0; exec_place < (int)RAJA::NUM_PLACES; ++exec_place) {
     RAJA::ExecPlace select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
     // auto select_cpu_or_gpu = RAJA::HOST;
     // auto select_cpu_or_gpu = RAJA::DEVICE;
@@ -193,31 +198,30 @@ int main()
     //========================
     // Upper triangular pattern
     //========================
-    const int N_tri = 5;
-    RAJA::launch(
-        select_cpu_or_gpu,
-        camp::make_tuple(RAJA::Resources<RAJA::HOST>(RAJA::Threads(N_tri)),
-                         RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(N_tri),
-                                                       RAJA::Threads(N_tri))),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
-            // do a matrix triangular pattern
-            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-              printf("i=%d, j=%d\n", i, j);
-            });  // loop j
-          });    // loop i
-        });      // kernel
+//    const int N_tri = 5;
+//    RAJA::launch<launch_policy>(
+//        select_cpu_or_gpu,
+//        RAJA::ResourceList{
+//            RAJA::Resources(RAJA::Threads(N_tri)),
+//            RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
+//        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+//          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
+//            // do a matrix triangular pattern
+//            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+//              printf("i=%d, j=%d\n", i, j);
+//            });  // loop j
+//          });    // loop i
+//        });      // kernel
 
     //========================
     // Matrix-Matrix Multiplication Example
     //========================
     // Set up Teams/Threads
 
-    RAJA::launch(select_cpu_or_gpu,                 
-        camp::make_tuple(
-            RAJA::Resources<RAJA::HOST>(RAJA::Threads(NBlocks, NBlocks)),
-            RAJA::Resources<RAJA::DEVICE>(RAJA::Teams(NBlocks, NBlocks),
-                                          RAJA::Threads(NThreads, NThreads))),
+    RAJA::launch<launch_policy>(select_cpu_or_gpu,
+          RAJA::ResourceList{
+            RAJA::Resources(RAJA::Threads(NBlocks, NBlocks)),
+            RAJA::Resources(RAJA::Teams(NBlocks, NBlocks), RAJA::Threads(NThreads, NThreads))},
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           //
           // Loop over teams
