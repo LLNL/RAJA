@@ -198,20 +198,20 @@ int main()
     //========================
     // Upper triangular pattern
     //========================
-//    const int N_tri = 5;
-//    RAJA::launch<launch_policy>(
-//        select_cpu_or_gpu,
-//        RAJA::ResourceList{
-//            RAJA::Resources(RAJA::Threads(N_tri)),
-//            RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
-//        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-//          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
-//            // do a matrix triangular pattern
-//            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-//              printf("i=%d, j=%d\n", i, j);
-//            });  // loop j
-//          });    // loop i
-//        });      // kernel
+    const int N_tri = 5;
+    RAJA::launch<launch_policy>(
+        select_cpu_or_gpu,
+        RAJA::ResourceList{
+            RAJA::Resources(RAJA::Threads(N_tri)),
+            RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
+            // do a matrix triangular pattern
+            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+              printf("i=%d, j=%d\n", i, j);
+            });  // loop j
+          });    // loop i
+        });      // kernel
 
     //========================
     // Matrix-Matrix Multiplication Example
