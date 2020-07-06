@@ -24,6 +24,9 @@
 
 #include "RAJA/pattern/WorkGroup/Vtable.hpp"
 
+#include <thread>
+#include <mutex>
+
 
 namespace RAJA
 {
@@ -51,10 +54,19 @@ inline void* get_cached_Vtable_cuda_device_call_ptrptr()
   return ptrptr;
 }
 
-// TODO: make thread safe
+// mutex that guards against concurrent use of
+// get_cached_Vtable_cuda_device_call_ptrptr()
+inline std::mutex& get_Vtable_cuda_mutex()
+{
+  static std::mutex s_mutex;
+  return s_mutex;
+}
+
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_Vtable_cuda_device_call()
 {
+  const std::lock_guard<std::mutex> lock(get_Vtable_cuda_mutex());
+
   typename Vtable_T::call_sig* ptrptr =
       static_cast<typename Vtable_T::call_sig*>(
         get_cached_Vtable_cuda_device_call_ptrptr());

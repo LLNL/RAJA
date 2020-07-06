@@ -31,7 +31,6 @@ namespace RAJA
 namespace detail
 {
 
-// TODO: make thread safe
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_Vtable_omp_target_call()
 {
