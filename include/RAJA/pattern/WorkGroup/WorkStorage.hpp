@@ -223,6 +223,7 @@ public:
   using const_pointer = const value_type*;
 
 private:
+  // struct used in storage vector to retain pointer and allocation size
   struct pointer_and_size
   {
     pointer ptr;
@@ -231,6 +232,7 @@ private:
 
 public:
 
+  // iterator base class for accessing stored WorkStructs outside of the container
   struct const_iterator_base
   {
     using value_type = const typename WorkStorage::value_type;
@@ -300,6 +302,9 @@ public:
     return *this;
   }
 
+  // reserve may be used to allocate enough memory to store num_loops
+  // and loop_storage_size is ignored in this version because each
+  // object has its own allocation
   void reserve(size_type num_loops, size_type loop_storage_size)
   {
     RAJA_UNUSED_VAR(loop_storage_size);
@@ -322,6 +327,7 @@ public:
     return const_iterator(m_vec.end());
   }
 
+  // number of bytes used for storage of loops
   size_type storage_size() const
   {
     size_type storage_size_nbytes = 0;
@@ -338,6 +344,8 @@ public:
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
+  // destroy all stored loops, deallocates individual loop storage but
+  // not vector of loops pointers
   void clear()
   {
     while (!m_vec.empty()) {
@@ -355,6 +363,7 @@ private:
   RAJAVec<pointer_and_size, typename allocator_traits_type::template rebind_alloc<pointer_and_size>> m_vec;
   allocator_type m_aloc;
 
+  // move assignment if allocator propagates on move assignment
   void move_assign_private(WorkStorage&& rhs, std::true_type)
   {
     clear();
@@ -362,12 +371,15 @@ private:
     m_aloc = std::move(rhs.m_aloc);
   }
 
+  // move assignment if allocator does not propagate on move assignment
   void move_assign_private(WorkStorage&& rhs, std::false_type)
   {
     clear();
     if (m_aloc == rhs.m_aloc) {
+      // take storage if allocators compare equal
       m_vec = std::move(rhs.m_vec);
     } else {
+      // allocate new storage if allocators do not compare equal
       for (size_type i = 0; i < rhs.m_vec.size(); ++i) {
         m_vec.emplace_back(move_destroy_value(std::move(rhs), rhs.m_vec[i]));
       }
@@ -375,6 +387,7 @@ private:
     }
   }
 
+  // allocate and construct value in storage
   template < typename holder, typename ... holder_ctor_args >
   pointer_and_size create_value(const vtable_type* vtable,
                                 holder_ctor_args&&... ctor_args)
@@ -390,6 +403,8 @@ private:
     return pointer_and_size{value_ptr, value_size};
   }
 
+  // allocate and move construct object as copy of other value and
+  // destroy and deallocate other value
   pointer_and_size move_destroy_value(WorkStorage&& rhs,
                                       pointer_and_size other_value_and_size)
   {
@@ -404,6 +419,7 @@ private:
     return pointer_and_size{value_ptr, other_value_and_size.size};
   }
 
+  // destroy and deallocate value
   void destroy_value(pointer_and_size value_and_size_ptr)
   {
     value_type::destroy(value_and_size_ptr.ptr);
@@ -440,6 +456,7 @@ public:
   using pointer = value_type*;
   using const_pointer = const value_type*;
 
+  // iterator base class for accessing stored WorkStructs outside of the container
   struct const_iterator_base
   {
     using value_type = const typename WorkStorage::value_type;
@@ -519,7 +536,8 @@ public:
     return *this;
   }
 
-
+  // reserve space for num_loops in the array of offsets
+  // and space for loop_storage_size bytes of loop storage
   void reserve(size_type num_loops, size_type loop_storage_size)
   {
     m_offsets.reserve(num_loops);
@@ -542,7 +560,7 @@ public:
     return const_iterator(m_array_begin, m_offsets.end());
   }
 
-  // amount of storage used to store loops
+  // number of bytes used for storage of loops
   size_type storage_size() const
   {
     return m_array_end - m_array_begin;
@@ -558,6 +576,7 @@ public:
     m_array_end += value_size;
   }
 
+  // destroy loops and deallocate loop storage (does not deallocate offsets)
   void clear()
   {
     array_clear();
@@ -578,6 +597,7 @@ private:
   char* m_array_cap   = nullptr;
   allocator_type m_aloc;
 
+  // move assignment if allocator propagates on move assignment
   void move_assign_private(WorkStorage&& rhs, std::true_type)
   {
     clear();
@@ -593,6 +613,7 @@ private:
     rhs.m_array_cap   = nullptr;
   }
 
+  // move assignment if allocator does not propagate on move assignment
   void move_assign_private(WorkStorage&& rhs, std::false_type)
   {
     if (m_aloc == rhs.m_aloc) {
@@ -621,16 +642,19 @@ private:
     }
   }
 
+  // get loop storage capacity, used and unused in bytes
   size_type storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
+  // get unused loop storage capacity in bytes
   size_type storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
+  // reserve space for loop_storage_size bytes of loop storage
   void array_reserve(size_type loop_storage_size)
   {
     if (loop_storage_size > storage_capacity()) {
@@ -655,6 +679,7 @@ private:
     }
   }
 
+  // destroy loop objects (does not deallocate storage)
   void array_clear()
   {
     while (!m_offsets.empty()) {
@@ -664,6 +689,8 @@ private:
     }
   }
 
+  // ensure there is enough storage to hold the next loop body at value offset
+  // and store the loop body
   template < typename holder, typename ... holder_ctor_args >
   size_type create_value(size_type value_offset,
                          const vtable_type* vtable,
@@ -683,12 +710,15 @@ private:
     return value_size;
   }
 
+  // move construct the loop body into value from other, and destroy the
+  // loop body in other
   void move_destroy_value(char* value_ptr, char* other_value_ptr)
   {
     value_type::move_destroy(reinterpret_cast<pointer>(value_ptr),
                              reinterpret_cast<pointer>(other_value_ptr));
   }
 
+  // destroy the loop body at value offset
   void destroy_value(size_type value_offset)
   {
     pointer value_ptr =
@@ -727,6 +757,7 @@ public:
   using pointer = value_type*;
   using const_pointer = const value_type*;
 
+  // iterator base class for accessing stored WorkStructs outside of the container
   struct const_iterator_base
   {
     using value_type = const typename WorkStorage::value_type;
@@ -805,6 +836,8 @@ public:
     return *this;
   }
 
+  // reserve space for loop_storage_size bytes of loop storage
+  // ignores num_loops
   void reserve(size_type num_loops, size_type loop_storage_size)
   {
     RAJA_UNUSED_VAR(num_loops);
@@ -827,7 +860,7 @@ public:
     return const_iterator(m_array_end, m_stride);
   }
 
-  // amount of storage used to store loops
+  // amount of storage in bytes used to store loops
   size_type storage_size() const
   {
     return m_array_end - m_array_begin;
@@ -840,6 +873,7 @@ public:
     m_array_end += m_stride;
   }
 
+  // destroy stored loop bodies and deallocates loop storage
   void clear()
   {
     array_clear();
@@ -860,6 +894,7 @@ private:
   char* m_array_end   = nullptr;
   char* m_array_cap   = nullptr;
 
+  // move assignment if allocator propagates on move assignment
   void move_assign_private(WorkStorage&& rhs, std::true_type)
   {
     clear();
@@ -876,6 +911,7 @@ private:
     rhs.m_array_cap   = nullptr;
   }
 
+  // move assignment if allocator does not propagate on move assignment
   void move_assign_private(WorkStorage&& rhs, std::false_type)
   {
     if (m_aloc == rhs.m_aloc) {
@@ -903,16 +939,22 @@ private:
     }
   }
 
+  // storage capacity, used and unused, in bytes
   size_type storage_capacity() const
   {
     return m_array_cap - m_array_begin;
   }
 
+  // unused storage capacity in bytes
   size_type storage_unused() const
   {
     return m_array_cap - m_array_end;
   }
 
+  // allocate enough storage for loop_storage_size bytes with
+  // each loop body separated by new_stride bytes
+  // note that this can reallocate storage with or without changing
+  // the storage stride
   void array_reserve(size_type loop_storage_size, size_type new_stride)
   {
     if (loop_storage_size > storage_capacity() || new_stride > m_stride) {
@@ -938,6 +980,7 @@ private:
     }
   }
 
+  // destroy the loops in storage (does not deallocate loop storage)
   void array_clear()
   {
     for (size_type value_offset = storage_size(); value_offset > 0; value_offset -= m_stride) {
@@ -946,6 +989,8 @@ private:
     }
   }
 
+  // ensure there is enough storage to store the loop body
+  // and construct the body in storage.
   template < typename holder, typename ... holder_ctor_args >
   void create_value(const vtable_type* vtable,
                     holder_ctor_args&&... ctor_args)
@@ -967,6 +1012,8 @@ private:
         value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
+  // move construct the loop body in value from other and
+  // destroy the loop body in other
   void move_destroy_value(char* value_ptr,
                           char* other_value_ptr)
   {
@@ -974,6 +1021,7 @@ private:
                              reinterpret_cast<pointer>(other_value_ptr));
   }
 
+  // destroy the loop body at value offset
   void destroy_value(size_type value_offset)
   {
     pointer value_ptr =
