@@ -292,21 +292,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                IdxSet&& c,
                                LoopBody&& loop_body)
 {
-
   std::cout<<"forall_Icount ExecPol Arg : Default\n";
-  static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected a TypedIndexSet but did not get one. Are you using "
-                "a TypedIndexSet policy by mistake?");
-
-  util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context);
-
-  wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<IdxSet>(c),
-                      std::forward<LoopBody>(loop_body));
-
-  util::callPostLaunchPlugins(context);
-
+  auto r = resources::get_default_resource(p);
+  forall_Icount(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
 RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource &r,
@@ -344,20 +332,8 @@ RAJA_INLINE concepts::enable_if<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   std::cout<<"forall indexset ExecPol Arg : Default\n";
-  static_assert(type_traits::is_index_set<IdxSet>::value,
-                "Expected a TypedIndexSet but did not get one. Are you using "
-                "a TypedIndexSet policy by mistake?");
-
-  util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context);
-
-
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<IdxSet>(c),
-               std::forward<LoopBody>(loop_body));
-
-  util::callPostLaunchPlugins(context);
-
+  auto r = resources::get_default_resource(p);
+  forall(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
@@ -397,19 +373,10 @@ RAJA_INLINE concepts::enable_if<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   std::cout<<"forall ExecPol Arg : Default\n";
-  static_assert(type_traits::is_random_access_range<Container>::value,
-                "Container does not model RandomAccessIterator");
-
-  util::PluginContext context{util::make_context<ExecutionPolicy>()};
-  util::callPreLaunchPlugins(context);
   auto r = resources::get_default_resource(p);
-
-  wrap::forall(r, std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               std::forward<LoopBody>(loop_body));
-
-  util::callPostLaunchPlugins(context);
+  forall(r, p, c, loop_body);
 }
+
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
@@ -423,7 +390,7 @@ forall(resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& lo
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
 
-  resources::EventProxy e =  wrap::forall(std::forward<ExecutionPolicy>(p),
+  resources::EventProxy e =  wrap::forall(r, std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
 
