@@ -41,6 +41,8 @@ using OpenMPForallExecPols =
               RAJA::omp_for_nowait_exec,
               RAJA::omp_for_exec >;
 
+using OpenMPForallReduceExecPols = OpenMPForallExecPols;
+
 using OpenMPForallAtomicExecPols =
   camp::list< // This policy works for the tests, but commenting it out
               // since its usage is questionable
@@ -60,22 +62,42 @@ using TBBForallExecPols = camp::list< RAJA::tbb_for_exec,
                                       RAJA::tbb_for_static< 4 >,
                                       RAJA::tbb_for_static< 8 >,
                                       RAJA::tbb_for_dynamic >;
+
+using TBBForallReduceExecPols = TBBForallExecPols;
+
+using TBBForallAtomicExecPols = TBBForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetForallExecPols =
   camp::list< RAJA::omp_target_parallel_for_exec<8>,
               RAJA::omp_target_parallel_for_exec_nt >;
+
+using OpenMPTargetForallReduceExecPols = OpenMPTargetForallExecPols;
+
+using OpenMPTargetForallAtomicExecPols = OpenMPTargetForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
                                        RAJA::cuda_exec<256> >;
+
+using CudaForallReduceExecPols = CudaForallExecPols;
+
+using CudaForallAtomicExecPols = CudaForallExecPols;
+
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
 using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec<256>  >;
+
+using HipForallReduceExecPols = HipForallExecPols;
+
+using HipForallAtomicExecPols = HipForallExecPols;
+
 #endif
 
 #endif  // __RAJA_test_forall_execpol_HPP__

@@ -48,4 +48,8 @@ using HipAtomicPols =
             >;
 #endif  // RAJA_ENABLE_HIP
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetAtomicPols = OpenMPAtomicPols;
+#endif
+
 #endif  // __TEST_ATOMICPOL__
