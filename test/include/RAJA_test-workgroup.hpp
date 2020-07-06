@@ -372,7 +372,14 @@ using HipExecPolicyList =
                 RAJA::hip_work<1024>
               >;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
-using HipOrderPolicyList   = SequentialOrderPolicyList;
+using HipOrderPolicyList   =
+    camp::list<
+                RAJA::ordered,
+                RAJA::reverse_ordered
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+              , RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average
+#endif
+              >;
 using HipStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
