@@ -128,20 +128,20 @@ using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t
 
 
 #ifdef RAJA_ENABLE_CUDA
-using outer0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>;
-using outer1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_y_direct>;
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>;
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_y_direct>;
 #else
-using outer0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
-using outer1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 #endif
 
 
 #ifdef RAJA_ENABLE_CUDA
-using team0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
-using team1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
 #else
-using team0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
-using team1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 #endif
 
 
@@ -205,9 +205,9 @@ int main()
             RAJA::Resources(RAJA::Threads(N_tri)),
             RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
+          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
-            RAJA::loop<team0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
               printf("i=%d, j=%d\n", i, j);
             });  // loop j
           });    // loop i
@@ -226,16 +226,16 @@ int main()
           //
           // Loop over teams
           //
-          RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by) {
-            RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int bx) {
+          RAJA::loop<teams1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by) {
+            RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int bx) {
 
                   TEAM_SHARED double As[NThreads][NThreads];
                   TEAM_SHARED double Bs[NThreads][NThreads];
                   TEAM_SHARED double Cs[NThreads][NThreads];
 
                   // Team parallel loop
-                  RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                      RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+                  RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                      RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
                           Cs[ty][tx] = 0.0;
 
@@ -245,8 +245,8 @@ int main()
                   // Slide across matrix
                   for (int m = 0; m < (N / NThreads); ++m) {
 
-                    RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                        RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+                    RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                        RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
                                 const int row = by * NThreads + ty;  // Matrix row index
                                 const int col = bx * NThreads + tx;  // Matrix column index
@@ -258,8 +258,8 @@ int main()
 
                     TEAM_SYNC();
 
-                    RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                        RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+                    RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                        RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
                             for (int e = 0; e < NThreads; ++e) {
 
@@ -272,8 +272,8 @@ int main()
                   }  // slide across matrix
 
 
-                  RAJA::loop<team1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                      RAJA::loop<team0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+                  RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                      RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
                               const int row = by * NThreads + ty;  // Matrix row index
 
