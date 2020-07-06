@@ -27,24 +27,15 @@ void ForallIndexSetViewTestImpl()
 
   camp::resources::Resource working_res{WORKING_RES()};
 
-  INDEX_TYPE last_idx = 0;
-
   IndexSetType iset; 
+  std::vector<INDEX_TYPE> is_indices;
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
-    iset, last_idx, working_res);
+    iset, is_indices, working_res);
 
-
-  //
-  // Collect actual indices in index set for testing.
-  //
-  std::vector<INDEX_TYPE> is_indices; 
-  getIndices(is_indices, iset);
-
- 
   //
   // Working array length
   //
-  const INDEX_TYPE N = last_idx + 1;
+  const INDEX_TYPE N = is_indices[ is_indices.size() - 1 ] + 1;
 
   //
   // Allocate and initialize arrays used in testing
