@@ -224,6 +224,7 @@ struct WorkRunnerForallOrdered
       Args...>;
   using base::base;
 
+  // run the loops using forall in the order that they were enqueued
   template < typename WorkContainer >
   typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
   {
@@ -267,6 +268,7 @@ struct WorkRunnerForallReverse
       Args...>;
   using base::base;
 
+  // run the loops using forall in the reverse order to the order they were enqueued
   template < typename WorkContainer >
   typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
   {
