@@ -5,53 +5,42 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-scan-inclusive-seq
-  SOURCES test-scan-inclusive-seq.cpp)
-
-raja_add_test(
-  NAME test-scan-exclusive-seq
-  SOURCES test-scan-exclusive-seq.cpp)
+list(APPEND SCAN_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
-raja_add_test(
-  NAME test-scan-inclusive-openmp
-  SOURCES test-scan-inclusive-openmp.cpp)
-
-raja_add_test(
-  NAME test-scan-exclusive-openmp
-  SOURCES test-scan-exclusive-openmp.cpp)
+  list(APPEND SCAN_BACKENDS OpenMP)
 endif()
 
 if(RAJA_ENABLE_TBB)
-
-raja_add_test(
-  NAME test-scan-inclusive-tbb
-  SOURCES test-scan-inclusive-tbb.cpp)
-raja_add_test(
-  NAME test-scan-exclusive-tbb
-  SOURCES test-scan-exclusive-tbb.cpp)
-
+  list(APPEND SCAN_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_CUDA)
-
-raja_add_test(
-  NAME test-scan-inclusive-cuda
-  SOURCES test-scan-inclusive-cuda.cpp)
-raja_add_test(
-  NAME test-scan-exclusive-cuda
-  SOURCES test-scan-exclusive-cuda.cpp)
-
+  list(APPEND SCAN_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
-
-raja_add_test(
-  NAME test-scan-inclusive-hip
-  SOURCES test-scan-inclusive-hip.cpp)
-raja_add_test(
-  NAME test-scan-exclusive-hip
-  SOURCES test-scan-exclusive-hip.cpp)
-
+  list(APPEND SCAN_BACKENDS Hip)
 endif()
+
+
+set(SCAN_TYPES Exclusive ExclusiveInplace Inclusive InclusiveInplace)
+
+#
+# Generate scan tests for each enabled RAJA back-end.
+#
+foreach( SCAN_BACKEND ${SCAN_BACKENDS} )
+  foreach( SCAN_TYPE ${SCAN_TYPES} )
+    configure_file( test-scan.cpp.in
+                    test-${SCAN_TYPE}-scan-${SCAN_BACKEND}.cpp )
+    raja_add_test( NAME test-${SCAN_TYPE}-scan-${SCAN_BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-${SCAN_TYPE}-scan-${SCAN_BACKEND}.cpp )
+
+    target_include_directories(test-${SCAN_TYPE}-scan-${SCAN_BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+  endforeach()
+endforeach()
+
+unset( SCAN_TYPES )
+unset( SCAN_BACKENDS )
