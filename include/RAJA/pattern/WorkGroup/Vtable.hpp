@@ -41,6 +41,10 @@ struct Vtable {
   using call_sig = void(*)(const void* /*obj*/, CallArgs... /*args*/);
   using destroy_sig = void(*)(void* /*obj*/);
 
+  ///
+  /// move construct an object of type T in dest as a copy of a T from src and
+  /// destroy the T obj in src
+  ///
   template < typename T >
   static void move_construct_destroy(void* dest, void* src)
   {
@@ -50,13 +54,16 @@ struct Vtable {
     (*src_as_T).~T();
   }
 
+  ///
+  /// call the call operator of the object of type T in obj with args
+  ///
   template < typename T >
   static void host_call(const void* obj, CallArgs... args)
   {
     const T* obj_as_T = static_cast<const T*>(obj);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
   }
-
+  ///
   template < typename T >
   static RAJA_DEVICE void device_call(const void* obj, CallArgs... args)
   {
@@ -64,6 +71,9 @@ struct Vtable {
     (*obj_as_T)(std::forward<CallArgs>(args)...);
   }
 
+  ///
+  /// destoy the object of type T in obj
+  ///
   template < typename T >
   static void destroy(void* obj)
   {
