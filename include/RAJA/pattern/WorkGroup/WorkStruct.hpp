@@ -51,6 +51,8 @@ struct WorkStruct<size, Vtable<CallArgs...>>
 {
   using vtable_type = Vtable<CallArgs...>;
 
+  // construct a WorkStruct with a value of type holder from the args and
+  // check a variety of constraints at compile time
   template < typename holder, typename ... holder_ctor_args >
   static RAJA_INLINE
   void construct(void* ptr, const vtable_type* vtable, holder_ctor_args&&... ctor_args)
@@ -76,6 +78,7 @@ struct WorkStruct<size, Vtable<CallArgs...>>
     new(&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
+  // move construct in dst from the value in src and destroy the value in src
   static RAJA_INLINE
   void move_destroy(WorkStruct* value_dst,
                     WorkStruct* value_src)
@@ -85,12 +88,14 @@ struct WorkStruct<size, Vtable<CallArgs...>>
     value_dst->vtable->move_construct_destroy_function_ptr(&value_dst->obj, &value_src->obj);
   }
 
+  // destroy the value ptr
   static RAJA_INLINE
   void destroy(WorkStruct* value_ptr)
   {
     value_ptr->vtable->destroy_function_ptr(&value_ptr->obj);
   }
 
+  // call the call operator of the value ptr with args
   static RAJA_HOST_DEVICE RAJA_INLINE
   void call(const WorkStruct* value_ptr, CallArgs... args)
   {
