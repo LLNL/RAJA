@@ -65,6 +65,10 @@ struct WorkRunner<
   using IndexType = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
+  ///
+  /// run the loops in the given work container in order using forall
+  /// run all loops asynchronously and synchronize after is necessary
+  ///
   template < typename WorkContainer >
   per_run_storage run(WorkContainer const& storage, Args... args) const
   {
@@ -116,6 +120,10 @@ struct WorkRunner<
   using IndexType = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
+  ///
+  /// run the loops in the given work container in reverse order using forall
+  /// run all loops asynchronously and synchronize after is necessary
+  ///
   template < typename WorkContainer >
   per_run_storage run(WorkContainer const& storage, Args... args) const
   {
