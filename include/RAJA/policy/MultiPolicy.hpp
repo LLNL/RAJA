@@ -90,6 +90,18 @@ RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE resources::EventProxy forall_impl(resources::Resource &r,
+                                  MultiPolicy<Selector, Policies...> p,
+                                  Iterable &&iter,
+                                  Body &&body)
+{
+  p.invoke(iter, body);
+  return resources::EventProxy(&r);
+}
 
 }  // end namespace multi
 }  // end namespace policy
@@ -154,6 +166,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
+      std::cout <<"policy_invoker: Index\n";
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
     } else {
@@ -173,6 +186,7 @@ struct policy_invoker<0, size, Policy, rest...> {
       util::PluginContext context{util::make_context<Policy>()};
       util::callPreLaunchPlugins(context); 
 
+      std::cout <<"policy_invoker: No index\n";
       using policy::multi::forall_impl;
       forall_impl(_p, iter, body);
 

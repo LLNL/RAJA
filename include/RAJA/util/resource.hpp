@@ -65,6 +65,12 @@ namespace RAJA
     return detail::get_cuda_default(); 
   }
 
+  template <typename SELECTOR, typename... POLICIES>
+  RAJA_INLINE Resource get_default_resource(RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...> &p){
+    std::cout<<"get default MultPolicy\n";
+    return Resource{Host::get_default()};
+  }
+
   // Temporary to catch all of the other policies.
   template<typename EXEC_POL>
   RAJA_INLINE Resource get_default_resource(EXEC_POL){
