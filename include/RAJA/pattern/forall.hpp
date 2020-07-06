@@ -288,13 +288,13 @@ RAJA_INLINE RAJA::resources::EventProxy forall(RAJA::resources::Resource &r,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
-                               IdxSet&& c,
-                               LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy forall_Icount(ExecutionPolicy&& p,
+                                                IdxSet&& c,
+                                                LoopBody&& loop_body)
 {
   std::cout<<"forall_Icount ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
-  forall_Icount(r, p, c, loop_body);
+  return forall_Icount(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
 RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource &r,
@@ -327,13 +327,14 @@ RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource 
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::enable_if<
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy,
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   std::cout<<"forall indexset ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
-  forall(r, p, c, loop_body);
+  return forall(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
@@ -367,14 +368,15 @@ forall(resources::Resource &r, ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::enable_if<
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   std::cout<<"forall ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
-  forall(r, p, c, loop_body);
+  return forall(r, p, c, loop_body);
 }
 
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
@@ -405,11 +407,11 @@ forall(resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& lo
  * this reduces implementation overhead and perfectly forwards all arguments
  */
 template <typename ExecutionPolicy, typename... Args>
-RAJA_INLINE concepts::enable_if<type_traits::is_execution_policy<ExecutionPolicy>> forall(Args&&... args)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_execution_policy<ExecutionPolicy>> forall(Args&&... args)
 {
   std::cout<< "Forall : Default\n";
   auto r = resources::get_default_resource(ExecutionPolicy());
-  forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
+  return forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 
 template <typename ExecutionPolicy, typename... Args>
@@ -433,11 +435,11 @@ RAJA_INLINE resources::EventProxy forall(resources::Resource &r, Args&&... args)
  * this reduces implementation overhead and perfectly forwards all arguments
  */
 template <typename ExecutionPolicy, typename... Args>
-RAJA_INLINE concepts::enable_if<type_traits::is_execution_policy<ExecutionPolicy>> forall_Icount(Args&&... args)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_execution_policy<ExecutionPolicy>> forall_Icount(Args&&... args)
 {
   std::cout<< "Forall Icount : Default\n";
   auto r = resources::get_default_resource(ExecutionPolicy());
-  forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
+  return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE resources::EventProxy forall_Icount(resources::Resource &r, Args&&... args)
