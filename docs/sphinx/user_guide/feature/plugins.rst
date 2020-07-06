@@ -52,7 +52,7 @@ Dynamic Loading
 -----------------
 ::
 
-  void RAJA::util::PluginStrategy *getPlugin ()
+  extern "C" RAJA::util::PluginStrategy *getPlugin ()
   {
     return new PluginName;
   }
@@ -89,7 +89,7 @@ Example Implementation
   static RAJA::util::PluginRegistry::add<CounterPlugin> P("Counter", "Counts number of kernel launches.");
   
   // Dynamically loading plugin.
-  void RAJA::util::PluginStrategy *getPlugin ()
+  extern "C" RAJA::util::PluginStrategy *getPlugin ()
   {
     return new CounterPlugin;
   }
