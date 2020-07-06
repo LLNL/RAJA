@@ -149,10 +149,10 @@ struct WorkRunner<
  */
 template <typename Segment_type, typename LoopBody,
           typename index_type, typename ... Args>
-struct HoldDeviceXThreadblockLoop
+struct HoldCudaDeviceXThreadblockLoop
 {
   template < typename segment_in, typename body_in >
-  HoldDeviceXThreadblockLoop(segment_in&& segment, body_in&& body)
+  HoldCudaDeviceXThreadblockLoop(segment_in&& segment, body_in&& body)
     : m_segment(std::forward<segment_in>(segment))
     , m_body(std::forward<body_in>(body))
   { }
@@ -235,7 +235,7 @@ struct WorkRunner<
 
   // The type  that will hold the segment and loop body in work storage
   template < typename ITERABLE, typename LOOP_BODY >
-  using holder_type = HoldDeviceXThreadblockLoop<ITERABLE, LOOP_BODY,
+  using holder_type = HoldCudaDeviceXThreadblockLoop<ITERABLE, LOOP_BODY,
                                  index_type, Args...>;
 
   // The policy indicating where the call function is invoked
