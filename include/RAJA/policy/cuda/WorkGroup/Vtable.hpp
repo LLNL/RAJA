@@ -34,6 +34,8 @@ namespace RAJA
 namespace detail
 {
 
+// global function that gets the device function pointer and
+// writes it into a pinned ptrptr
 template < typename T, typename Vtable_T >
 __global__ void get_Vtable_cuda_device_call_global(
     typename Vtable_T::call_sig* ptrptr)
@@ -41,6 +43,7 @@ __global__ void get_Vtable_cuda_device_call_global(
   *ptrptr = &Vtable_T::template device_call<T>;
 }
 
+// allocate the pinned ptrptr buffer
 inline void* get_Vtable_cuda_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
@@ -48,6 +51,7 @@ inline void* get_Vtable_cuda_device_call_ptrptr()
   return ptrptr;
 }
 
+// get the pinned ptrptr buffer
 inline void* get_cached_Vtable_cuda_device_call_ptrptr()
 {
   static void* ptrptr = get_Vtable_cuda_device_call_ptrptr();
@@ -62,6 +66,9 @@ inline std::mutex& get_Vtable_cuda_mutex()
   return s_mutex;
 }
 
+// get the device function pointer by calling a global function to
+// write it into a pinned ptrptr, beware different instantiates of this
+// function may run concurrently
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_Vtable_cuda_device_call()
 {
@@ -77,6 +84,8 @@ inline typename Vtable_T::call_sig get_Vtable_cuda_device_call()
   return *ptrptr;
 }
 
+// get the device function pointer and store it so it can be used
+// multiple times
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_cached_Vtable_cuda_device_call()
 {

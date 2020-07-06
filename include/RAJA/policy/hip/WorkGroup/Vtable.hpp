@@ -36,6 +36,8 @@ namespace detail
 
 #if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
+// global function that gets the device function pointer and
+// writes it into a pinned ptrptr
 template < typename T, typename Vtable_T >
 __global__ void get_Vtable_hip_device_call_global(
     typename Vtable_T::call_sig* ptrptr)
@@ -43,6 +45,7 @@ __global__ void get_Vtable_hip_device_call_global(
   *ptrptr = &Vtable_T::template device_call<T>;
 }
 
+// allocate the pinned ptrptr buffer
 inline void* get_Vtable_hip_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
@@ -50,6 +53,7 @@ inline void* get_Vtable_hip_device_call_ptrptr()
   return ptrptr;
 }
 
+// get the pinned ptrptr buffer
 inline void* get_cached_Vtable_hip_device_call_ptrptr()
 {
   static void* ptrptr = get_Vtable_hip_device_call_ptrptr();

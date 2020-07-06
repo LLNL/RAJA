@@ -31,6 +31,8 @@ namespace RAJA
 namespace detail
 {
 
+// get the device function pointer by opening a target region and writing out
+// the pointer to the function call
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_Vtable_omp_target_call()
 {
@@ -44,6 +46,8 @@ inline typename Vtable_T::call_sig get_Vtable_omp_target_call()
   return ptr;
 }
 
+// get the device function pointer and store it so it can be used
+// multiple times
 template < typename T, typename Vtable_T >
 inline typename Vtable_T::call_sig get_cached_Vtable_omp_target_call()
 {
