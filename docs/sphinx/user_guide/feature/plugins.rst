@@ -34,7 +34,24 @@ Static vs Dynamic Linking
 Quick Start Guide
 ^^^^^^^^^^^
 
+**Static**
 
+1. Build RAJA normally.
+
+2. Either use an ``#include`` statement within the code or compiler flags to link your plugin file with your project at compile time.
+A brief example of this would be something like ``g++ project.cpp plugin.cpp -lRAJA -fopenmp -ldl -o project``.
+
+3. When you run your project, your plugin should work!
+
+**Dynamic**
+
+1. Build RAJA normally.
+
+2. Compile your plugin to be shared object files with a .so extension. A brief example of this wouldbe something like ``g++ plugin.cpp -lRAJA -fopenmp -fPIC -shared -o plugin.so``.
+
+3. Set the environment variable ``RAJA_PLUGINS`` to be the path of your .so file. This can either be the path to its directory or to the shared object file itself. If the path is to a directory, it will attempt to load all .so files in that directory.
+
+4. When you run your project, your plugins should work!
 
 ^^^^^^^^^^^
 Further Details
@@ -61,9 +78,9 @@ Optional Functions
 ^^^^^^^^^^^
 The init and finalize functions have standard implementations and thus are not needed in a user-made plugin. Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
 
-* ``void init(PluginOptions p) {}`` - Called by the user
+* ``void init(PluginOptions p) {}`` - runs on all plugins when the user makes a call to ``init_plugins``
 
-* ``void finalize() {}``
+* ``void finalize() {}`` - runs on all plugins when the user makes a call to ``finalize_plugins``
 
 ^^^^^^^^^^^^^^^^^
 Static Loading
