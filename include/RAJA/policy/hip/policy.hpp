@@ -23,6 +23,7 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include <utility>
+#include "hip/hip_runtime.h"
 
 #include "RAJA/pattern/reduce.hpp"
 
@@ -169,9 +170,9 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
-#if defined(__HIPCC__)
+#if defined(__HIP_PLATFORM_HCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(__CUDACC__)
+#elif defined(__HIP_PLATFORM_NVCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
 
