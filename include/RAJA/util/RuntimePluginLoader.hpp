@@ -17,10 +17,10 @@
 namespace RAJA {
 namespace util {
 
-  class RuntimePluginLoader : public ::RAJA::util::PluginStrategy
+  class RuntimePluginLoader : public RAJA::util::PluginStrategy
   {
 
-    using Parent = ::RAJA::util::PluginStrategy;
+    using Parent = RAJA::util::PluginStrategy;
 
   public:
     RuntimePluginLoader();

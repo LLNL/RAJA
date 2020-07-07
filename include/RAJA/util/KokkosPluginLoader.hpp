@@ -19,13 +19,13 @@ namespace util {
 
   class KokkosPluginLoader : public ::RAJA::util::PluginStrategy
   {
+  public:
     using Parent = ::RAJA::util::PluginStrategy;
     typedef void (*init_function)(const int, const uint64_t, const uint32_t, void*);
     typedef void (*pre_function)(const char*, const uint32_t, uint64_t*);
     typedef void (*post_function)(uint64_t);
     typedef void (*finalize_function)();
 
-  public:
     KokkosPluginLoader();
 
     void init(RAJA::util::PluginOptions p);

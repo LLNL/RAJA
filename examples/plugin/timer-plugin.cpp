@@ -24,9 +24,13 @@ public:
     double elapsedMs = std::chrono::duration<double, std::milli>(end_time - start_time).count();
 
     if (p.platform == RAJA::Platform::host)
+    {
       printf("[TimerPlugin]: Elapsed time of host kernel was %f ms\n", elapsedMs);
+    }
     else
+    {
       printf("[TimerPlugin]: Elapsed time of device kernel was %f ms\n", elapsedMs);
+    }
   }
 
 private:
