@@ -12,12 +12,29 @@
 Plugins
 ========
 
+------------
+About RAJA Plugins
+------------
+
 RAJA supports user-made plugins that may be loaded either at the time of compilation or during runtime. These two methods are not mutually exclusive, as plugins loaded dynamically can be run alongside plugins that are loaded statically.
 
 ------------
-Plugin API
+Using RAJA Plugins
 ------------
 
+^^^^^^^^^^^
+Quick Start Guide
+^^^^^^^^^^^
+
+
+^^^^^^^^^^^
+Further Details
+^^^^^^^^^^^
+
+
+------------
+Building Plugins For RAJA
+------------
 
 ^^^^^^^^^^^
 Required Functions
@@ -28,39 +45,46 @@ The preLaunch and postLaunch functions are automatically called by RAJA before a
 
 * ``void postLaunch(PluginContext& p) {}`` - Will occur after kernel/forall execution.
 
+* ``At least one method of loading the plugin, either statically or dynamically.``
+
 ^^^^^^^^^^^
-Unrequired Functions
+Optional Functions
 ^^^^^^^^^^^
-The init and finalize functions have standard implementations and thus are not required to be included in a user-made plugin. Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
+The init and finalize functions have standard implementations and thus are not needed in a user-made plugin. Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
 
 * ``void init(PluginOptions p) {}`` - Called by the user
 
 * ``void finalize() {}``
 
-
------------------
+^^^^^^^^^^^^^^^^^
 Static Loading
------------------
-
+^^^^^^^^^^^^^^^^^
+If the plugin is to be linked to a project at compile time, adding the following one-liner will add the plugin to the RAJA PluginRegistry.
 ::
 
   static RAJA::util::PluginRegistry::add<PluginName> P("Name", "Description");
 
 
------------------
+^^^^^^^^^^^^^^^^^
 Dynamic Loading
------------------
+^^^^^^^^^^^^^^^^^
+If the plugin is to be dynamically linked to a project during runtime, the RAJA Plugin API requires a few conditions to be met.
+
+1. The plugin has the following factory function delared outside of the plugin class. This will return a pointer to an instance of your plugin, and thanks to the ``extern "C"``, a dynamically linked project will be able to access this function as well as the instance it returns.
 ::
 
   extern "C" RAJA::util::PluginStrategy *getPlugin ()
   {
-    return new PluginName;
+    return new MyPluginName;
   }
   
 
------------------
+2. The plugin has been compiled to be a shared object with a .so extension. For example ``g++ plugin.cpp -lRAJA -fopenmp -fPIC -shared -o plugin.so``
+3. The RAJA_PLUGINS environment variable has been set, or the user has made a call to ``RAJA::util::init_plugins("path")`` with a path specified to either a directory or a .so file. It's worth noting that these are not mutually exclusive, RAJA will look for plugins from the environment variable on program startup and new plugins may be loaded after that using ``init_plugins``.
+
+^^^^^^^^^^^^^^^^^
 Example Implementation
------------------
+^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -72,9 +96,13 @@ Example Implementation
     public:
     void preLaunch(RAJA::util::PluginContext& p) {
       if (p.platform == RAJA::Platform::host)
-       std::cout << "Launching host kernel for the " << ++host_counter << " time!" << std::endl;
+      {
+        std::cout << "Launching host kernel for the " << ++host_counter << " time!" << std::endl;
+      }
       else
-       std::cout << "Launching device kernel for the " << ++device_counter << " time!" << std::endl;
+      {
+        std::cout << "Launching device kernel for the " << ++device_counter << " time!" << std::endl;
+      }    
     }
 
     void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
@@ -93,5 +121,3 @@ Example Implementation
   {
     return new CounterPlugin;
   }
-  
-  
