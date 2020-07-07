@@ -114,38 +114,8 @@ Example Implementation
 ^^^^^^^^^^^^^^^^^
 
 The following is an example plugin that simply will print out the number of times a kernel has been launched and has the ability to be loaded either statically or dynamically.
-::
 
-  #include "RAJA/util/PluginStrategy.hpp"
-  #include <iostream>
-
-  class CounterPlugin : public RAJA::util::PluginStrategy
-  {
-    public:
-    void preLaunch(RAJA::util::PluginContext& p) {
-      if (p.platform == RAJA::Platform::host)
-      {
-        std::cout << "Launching host kernel for the " << ++host_counter << " time!" << std::endl;
-      }
-      else
-      {
-        std::cout << "Launching device kernel for the " << ++device_counter << " time!" << std::endl;
-      }    
-    }
-  
-    void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
-    }
-    
-    private:
-    int host_counter;
-    int device_counter;
-  };
-
-  // Statically loading plugin.
-  static RAJA::util::PluginRegistry::add<CounterPlugin> P("Counter", "Counts number of kernel launches.");
-  
-  // Dynamically loading plugin.
-  extern "C" RAJA::util::PluginStrategy *getPlugin ()
-  {
-    return new CounterPlugin;
-  }
+.. literalinclude:: ../../../../examples/plugin/counter-plugin.cpp
+   :start-after: _plugin_example_start
+   :end-before: _plugin_example_end
+   :language: C++
