@@ -15,9 +15,13 @@ class CounterPlugin :
   public:
   void preLaunch(RAJA::util::PluginContext& p) {
     if (p.platform == RAJA::Platform::host)
+    {
       std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_counter << " time!" << std::endl;
+    }
     else
+    {
       std::cout << " [CounterPlugin]: Launching device kernel for the " << ++device_counter << " time!" << std::endl;
+    }
   }
 
   void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
@@ -28,5 +32,11 @@ class CounterPlugin :
    int device_counter;
 };
 
-// Regiser plugin with the PluginRegistry
-static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin", "Counter");
+// Statically loading plugin.
+static RAJA::util::PluginRegistry::add<CounterPlugin> P("Counter", "Counts number of kernel launches.");
+
+// Dynamically loading plugin.
+extern "C" RAJA::util::PluginStrategy *getPlugin ()
+{
+  return new CounterPlugin;
+}
