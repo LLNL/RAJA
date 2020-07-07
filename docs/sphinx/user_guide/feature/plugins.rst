@@ -38,8 +38,7 @@ Quick Start Guide
 
 1. Build RAJA normally.
 
-2. Either use an ``#include`` statement within the code or compiler flags to link your plugin file with your project at compile time.
-A brief example of this would be something like ``g++ project.cpp plugin.cpp -lRAJA -fopenmp -ldl -o project``.
+2. Either use an ``#include`` statement within the code or compiler flags to link your plugin file with your project at compile time. A brief example of this would be something like ``g++ project.cpp plugin.cpp -lRAJA -fopenmp -ldl -o project``.
 
 3. When you run your project, your plugin should work!
 
