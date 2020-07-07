@@ -8,14 +8,14 @@
 #ifndef RAJA_Plugin_Options_HPP
 #define RAJA_Plugin_Options_HPP
 
+#include <string>
+
 namespace RAJA {
 namespace util {
 
-#include <string>
-
 struct PluginOptions
 {
-    PluginOptions(const std::string newstr) : str(newstr) {};
+    PluginOptions(const std::string& newstr) : str(newstr) {};
     
     std::string str;
 };

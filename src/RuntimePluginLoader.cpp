@@ -12,7 +12,7 @@
 
 inline
 bool
-isSharedObject(const std::string filename)
+isSharedObject(const std::string& filename)
 {
   return (filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
 }

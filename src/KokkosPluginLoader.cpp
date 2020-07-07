@@ -10,9 +10,11 @@
 #include <dlfcn.h>
 #include <dirent.h>
 
+const uint64_t kokkos_interface_version = 20171029;
+
 inline
 bool
-isSharedObject(const std::string filename)
+isSharedObject(const std::string& filename)
 {
   return (filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
 }
@@ -23,7 +25,7 @@ namespace util {
   KokkosPluginLoader::KokkosPluginLoader()
   {
     char *env = ::getenv("KOKKOS_PLUGINS");
-    if (nullptr == env)
+    if (env == nullptr)
     {
       return;
     }
@@ -31,7 +33,7 @@ namespace util {
 
     for (auto &func : init_functions)
     {
-      func(0, 20171029, 0, nullptr);
+      func(0, kokkos_interface_version, 0, nullptr);
     }
   }
 
