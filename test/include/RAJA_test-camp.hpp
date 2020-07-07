@@ -20,6 +20,16 @@
 //
 using HostResourceList = camp::list<camp::resources::Host>;
 
+using SequentialResourceList = HostResourceList;
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPResourceList = HostResourceList;
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBResourceList = HostResourceList;
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 using CudaResourceList = camp::list<camp::resources::Cuda>;
 #endif

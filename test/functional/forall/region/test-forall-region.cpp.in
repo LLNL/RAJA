@@ -1,0 +1,61 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-forall-region.hpp"
+
+
+//
+// Region and exec pols for forall region tests
+//
+
+using SequentialRegionPols = camp::list< RAJA::seq_region >;
+
+using SequentialForallRegionExecPols = SequentialForallExecPols;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPRegionPols = camp::list< RAJA::omp_parallel_region >;
+
+using OpenMPForallRegionExecPols =
+  camp::list< RAJA::omp_for_nowait_exec,
+              RAJA::omp_for_exec >;
+
+#endif
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @REGION_BACKEND@ForallRegionTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @REGION_BACKEND@ResourceList,
+                                @REGION_BACKEND@RegionPols,
+                                @REGION_BACKEND@ForallRegionExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@REGION_BACKEND@,
+                               ForallRegionTest,
+                               @REGION_BACKEND@ForallRegionTypes);
+
+
+

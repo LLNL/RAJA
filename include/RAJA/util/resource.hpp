@@ -42,7 +42,7 @@ namespace RAJA
 
   namespace detail
   {
-#if defined(ENABLE_CUDA) || defined(ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
     // Non templated inline function so as not to generate duplicate objects for cuda resource.
     RAJA_INLINE Resource get_cuda_default(){
       static Resource r = Resource{Cuda::get_default()};
@@ -56,7 +56,7 @@ namespace RAJA
     return Resource{Host::get_default()};
   }
 
-#if defined(ENABLE_CUDA) || defined(ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(cuda_exec<BlockSize, Async>){
     std::cout<<"Get defualt cuda_exec\n";
