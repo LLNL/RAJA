@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// _plugin_example_start
 #include "RAJA/util/PluginStrategy.hpp"
 
 #include <iostream>
@@ -30,3 +31,4 @@ class CounterPlugin :
 
 // Regiser plugin with the PluginRegistry
 static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin", "Counter");
+// _plugin_example_end
