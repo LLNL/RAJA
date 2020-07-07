@@ -42,11 +42,13 @@ namespace RAJA
 
   namespace detail
   {
+#if defined(ENABLE_CUDA) || defined(ENABLE_HIP)
     // Non templated inline function so as not to generate duplicate objects for cuda resource.
     RAJA_INLINE Resource get_cuda_default(){
       static Resource r = Resource{Cuda::get_default()};
       return r;
     }
+#endif
   }
 
   RAJA_INLINE Resource get_default_resource(seq_exec){
@@ -54,6 +56,7 @@ namespace RAJA
     return Resource{Host::get_default()};
   }
 
+#if defined(ENABLE_CUDA) || defined(ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(cuda_exec<BlockSize, Async>){
     std::cout<<"Get defualt cuda_exec\n";
@@ -64,9 +67,10 @@ namespace RAJA
     std::cout<<"Get defualt cuda_exec\n";
     return detail::get_cuda_default(); 
   }
+#endif
 
   template <typename SELECTOR, typename... POLICIES>
-  RAJA_INLINE Resource get_default_resource(RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...> &p){
+  RAJA_INLINE Resource get_default_resource(RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>){
     std::cout<<"get default MultPolicy\n";
     return Resource{Host::get_default()};
   }

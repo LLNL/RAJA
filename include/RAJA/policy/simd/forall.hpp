@@ -61,6 +61,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
                                                     Func &&loop_body)
 {
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA_UNUSED_VAR(host_res);
 
   auto begin = std::begin(iter);
   auto end = std::end(iter);

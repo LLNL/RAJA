@@ -68,6 +68,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
   RAJA_EXTRACT_BED_IT(iter);
 
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
+  RAJA_UNUSED_VAR(host_res);
 
   RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
