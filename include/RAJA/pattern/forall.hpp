@@ -173,7 +173,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(RAJA::resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 
-  std::cout<< "wrap::Forall : Resource\n";
+  //std::cout<< "wrap::Forall : Resource\n";
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -201,7 +201,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource 
                                                       IndexType&& icount,
                                                       LoopBody&& loop_body)
 {
-  std::cout<< "wrap::Forall_Icount : Resource does this ever get called?\n";
+  //std::cout<< "wrap::Forall_Icount : Resource does this ever get called?\n";
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -237,7 +237,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource 
                                                          LoopBody loop_body)
 {
 
-  std::cout<< "wrap::Forall_Icount : Resource this should not exist\n";
+  //std::cout<< "wrap::Forall_Icount : Resource this should not exist\n";
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -263,7 +263,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall(RAJA::resources::Resource &r,
                                                const TypedIndexSet<SegmentTypes...>& iset,
                                                LoopBody loop_body)
 {
-  std::cout<< "wrap::Forall Indexset : Resource\n";
+  //std::cout<< "wrap::Forall Indexset : Resource\n";
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -292,7 +292,7 @@ RAJA_INLINE resources::EventProxy forall_Icount(ExecutionPolicy&& p,
                                                 IdxSet&& c,
                                                 LoopBody&& loop_body)
 {
-  std::cout<<"forall_Icount ExecPol Arg : Default\n";
+  //std::cout<<"forall_Icount ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
   return forall_Icount(r, p, c, loop_body);
 }
@@ -302,7 +302,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_Icount(RAJA::resources::Resource 
                                                       IdxSet&& c,
                                                       LoopBody&& loop_body)
 {
-  std::cout<<"forall_Icount ExecPol Arg : Resource\n";
+  //std::cout<<"forall_Icount ExecPol Arg : Resource\n";
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
@@ -332,7 +332,7 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  std::cout<<"forall indexset ExecPol Arg : Default\n";
+  //std::cout<<"forall indexset ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
   return forall(r, p, c, loop_body);
 }
@@ -341,7 +341,7 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(resources::Resource &r, ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  std::cout<<"forall indexset ExecPol Arg : Resource\n";
+  //std::cout<<"forall indexset ExecPol Arg : Resource\n";
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
@@ -374,7 +374,7 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-  std::cout<<"forall ExecPol Arg : Default\n";
+  //std::cout<<"forall ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
   return forall(r, p, c, loop_body);
 }
@@ -385,7 +385,7 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
     type_traits::is_range<Container>>
 forall(resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-  std::cout<<"forall ExecPol Arg : Resource\n";
+  //std::cout<<"forall ExecPol Arg : Resource\n";
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
@@ -409,7 +409,7 @@ forall(resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& lo
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_execution_policy<ExecutionPolicy>> forall(Args&&... args)
 {
-  std::cout<< "Forall : Default\n";
+  //std::cout<< "Forall : Default\n";
   auto r = resources::get_default_resource(ExecutionPolicy());
   return forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
@@ -417,7 +417,7 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_executi
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE resources::EventProxy forall(resources::Resource &r, Args&&... args)
 {
-  std::cout<< "Forall : Resource\n";
+  //std::cout<< "Forall : Resource\n";
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
 
@@ -437,14 +437,14 @@ RAJA_INLINE resources::EventProxy forall(resources::Resource &r, Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_execution_policy<ExecutionPolicy>> forall_Icount(Args&&... args)
 {
-  std::cout<< "Forall Icount : Default\n";
+  //std::cout<< "Forall Icount : Default\n";
   auto r = resources::get_default_resource(ExecutionPolicy());
   return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE resources::EventProxy forall_Icount(resources::Resource &r, Args&&... args)
 {
-  std::cout<< "Forall Icount : Resource\n";
+  //std::cout<< "Forall Icount : Resource\n";
   util::PluginContext context{util::make_context<ExecutionPolicy>()};
   util::callPreLaunchPlugins(context);
 

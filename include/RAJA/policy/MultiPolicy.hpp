@@ -166,7 +166,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
-      std::cout <<"policy_invoker: Index\n";
+      //std::cout <<"policy_invoker: Index\n";
       using policy::multi::forall_impl;
       auto r = resources::get_default_resource(_p);
       forall_impl(r, _p, iter, body);
@@ -187,7 +187,7 @@ struct policy_invoker<0, size, Policy, rest...> {
       util::PluginContext context{util::make_context<Policy>()};
       util::callPreLaunchPlugins(context); 
 
-      std::cout <<"policy_invoker: No index\n";
+      //std::cout <<"policy_invoker: No index\n";
       using policy::multi::forall_impl;
       auto r = resources::get_default_resource(_p);
       forall_impl(r, _p, iter, body);

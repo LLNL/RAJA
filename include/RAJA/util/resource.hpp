@@ -60,19 +60,19 @@ namespace RAJA
   }
 
   RAJA_INLINE Resource get_default_resource(seq_exec){
-    std::cout<<"Get defualt seq_exec\n";
+    //std::cout<<"Get defualt seq_exec\n";
     return Resource{Host::get_default()};
   }
 
 #if defined(RAJA_ENABLE_CUDA)
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(cuda_exec<BlockSize, Async>){
-    std::cout<<"Get defualt cuda_exec\n";
+    //std::cout<<"Get defualt cuda_exec\n";
     return detail::get_cuda_default(); 
   }
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(ExecPolicy<seq_exec,cuda_exec<BlockSize, Async>>){
-    std::cout<<"Get defualt cuda_exec\n";
+    //std::cout<<"Get defualt cuda_exec\n";
     return detail::get_cuda_default(); 
   }
 #endif
@@ -80,26 +80,26 @@ namespace RAJA
 #if defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(hip_exec<BlockSize, Async>){
-    std::cout<<"Get defualt hip_exec\n";
+    //std::cout<<"Get defualt hip_exec\n";
     return detail::get_hip_default(); 
   }
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(ExecPolicy<seq_exec,hip_exec<BlockSize, Async>>){
-    std::cout<<"Get defualt hip_exec\n";
+    //std::cout<<"Get defualt hip_exec\n";
     return detail::get_hip_default(); 
   }
 #endif
 
   template <typename SELECTOR, typename... POLICIES>
   RAJA_INLINE Resource get_default_resource(RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>){
-    std::cout<<"get default MultPolicy\n";
+    //std::cout<<"get default MultPolicy\n";
     return Resource{Host::get_default()};
   }
 
   // Temporary to catch all of the other policies.
   template<typename EXEC_POL>
   RAJA_INLINE Resource get_default_resource(EXEC_POL){
-    std::cout<<"Get defualt EXEC_POL\n";
+    //std::cout<<"Get defualt EXEC_POL\n";
     return Resource{Host::get_default()};
   }
 

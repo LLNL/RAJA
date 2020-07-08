@@ -56,7 +56,7 @@ namespace sequential
 //template <typename Iterable, typename Func>
 //RAJA_INLINE void forall_impl(const seq_exec &exec, Iterable &&iter, Func &&body)
 //{
-//  std::cout<<"Seq forall_impl : Default\n";
+//  //std::cout<<"Seq forall_impl : Default\n";
 //  RAJA::resources::Resource res{RAJA::resources::Host()};
 //  forall_impl(res, exec, iter, body);
 //} 
@@ -64,7 +64,7 @@ namespace sequential
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res, const seq_exec &, Iterable &&iter, Func &&body)
 {
-  std::cout<<"Seq forall_impl : Resource\n";
+  //std::cout<<"Seq forall_impl : Resource\n";
   RAJA_EXTRACT_BED_IT(iter);
 
   RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
