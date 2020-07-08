@@ -45,11 +45,17 @@ struct mp_test_body {
 namespace test_policy
 {
 // fake forall_impl overload to test multipolicy dispatch
-template <int i, typename Iterable>
-void forall_impl(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
+//template <int i, typename Iterable>
+//void forall_impl(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
+//{
+//  body(p, iter.size());
+//}
+template <typename Resource, int i, typename Iterable>
+void forall_impl(Resource &, const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
 {
   body(p, iter.size());
 }
+
 }  // namespace test_policy
 
 using test_policy::mp_tag;
