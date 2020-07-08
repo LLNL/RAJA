@@ -11,8 +11,6 @@
 
 #include "tests/test-reducer-constructors.hpp"
 
-#include "test-reducer-utils.hpp"
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaInitReducerConstructorTypes = 
   Test< camp::cartesian_product< CudaReducerPolicyList,

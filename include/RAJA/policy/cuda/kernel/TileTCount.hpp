@@ -63,6 +63,7 @@ struct CudaStatementExecutor<
       statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -75,13 +76,13 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
-    int chunk_size = TPol::chunk_size;
+    diff_t chunk_size = TPol::chunk_size;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
+    diff_t len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0, t = 0; i < len; i += chunk_size, ++t) {
+    for (diff_t i = 0, t = 0; i < len; i += chunk_size, ++t) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -133,6 +134,7 @@ struct CudaStatementExecutor<
                       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -145,9 +147,9 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    auto t = get_cuda_dim<BlockDim>(blockIdx);
-    auto i = t * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t t = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i = t * chunk_size;
 
     // Iterate through grid stride of chunks
     if (i < len) {
@@ -204,6 +206,7 @@ struct CudaStatementExecutor<
                       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -218,14 +221,14 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    auto t0 = get_cuda_dim<BlockDim>(blockIdx);
-    auto t_stride = get_cuda_dim<BlockDim>(gridDim);
-    auto i0 = t0 * chunk_size;
-    auto i_stride = t_stride * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t t0 = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t t_stride = get_cuda_dim<BlockDim>(gridDim);
+    diff_t i0 = t0 * chunk_size;
+    diff_t i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (int i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
+    for (diff_t i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -278,6 +281,7 @@ struct CudaStatementExecutor<
                           Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -292,10 +296,10 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    auto t0 = get_cuda_dim<ThreadDim>(threadIdx);
-    auto t_stride = get_cuda_dim<ThreadDim>(blockDim);
-    auto i0 = t0 * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t t0 = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t t_stride = get_cuda_dim<ThreadDim>(blockDim);
+    diff_t i0 = t0 * chunk_size;
 
     // Assign our new tiled segment
     segment = orig_segment.slice(i0, chunk_size);
