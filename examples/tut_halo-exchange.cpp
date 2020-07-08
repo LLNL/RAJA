@@ -186,6 +186,7 @@ int main(int argc, char **argv)
     std::exit(1);
   }
 
+  // _halo_exchange_input_params_start
   //
   // Define grid dimensions
   // Define halo width
@@ -198,6 +199,7 @@ int main(int argc, char **argv)
   const int halo_width =     (argc != 7) ?   1 : std::atoi(argv[4]);
   const int num_vars   =     (argc != 7) ?   3 : std::atoi(argv[5]);
   const int num_cycles =     (argc != 7) ?   3 : std::atoi(argv[6]);
+  // _halo_exchange_input_params_end
 
   std::cout << "grid dimensions "    << grid_dims[0]
             << " x "                 << grid_dims[1]
@@ -222,9 +224,10 @@ int main(int argc, char **argv)
                        grid_plus_halo_dims[1] *
                        grid_plus_halo_dims[2] ;
 
-
+  // _halo_exchange_vars_allocate_start
   //
-  // Allocate and initialize grid variables.
+  // Allocate grid variables and reference grid variables used to check
+  // correctness.
   //
   std::vector<double*> vars    (num_vars, nullptr);
   std::vector<double*> vars_ref(num_vars, nullptr);
@@ -233,8 +236,10 @@ int main(int argc, char **argv)
     vars[v]     = memoryManager::allocate<double>(var_size);
     vars_ref[v] = memoryManager::allocate<double>(var_size);
   }
+  // _halo_exchange_vars_allocate_end
 
 
+  // _halo_exchange_index_list_generate_start
   //
   // Generate index lists for packing and unpacking
   //
@@ -245,10 +250,11 @@ int main(int argc, char **argv)
   std::vector<int*> unpack_index_lists(num_neighbors, nullptr);
   std::vector<int > unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
+  // _halo_exchange_index_lisgeneratete_end
 
 
   //
-  // Generate index lists for packing and unpacking
+  // Convenience type alias to reduce typing
   //
   using range_segment = RAJA::TypedRangeSegment<int>;
 
@@ -280,6 +286,7 @@ int main(int argc, char **argv)
         }
       }
 
+      // _halo_exchange_sequential_cstyle_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -300,7 +307,9 @@ int main(int argc, char **argv)
 
         // send single message
       }
+      // _halo_exchange_sequential_cstyle_packing_end
 
+      // _halo_exchange_sequential_cstyle_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -321,6 +330,7 @@ int main(int argc, char **argv)
           buffer += len;
         }
       }
+      // _halo_exchange_sequential_cstyle_unpacking_end
 
     }
 
@@ -349,7 +359,9 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA loop forall halo exchange...\n";
 
+    // _halo_exchange_loop_forall_policies_start
     using forall_policy = RAJA::loop_exec;
+    // _halo_exchange_loop_forall_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -373,6 +385,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_loop_forall_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -384,18 +397,18 @@ int main(int argc, char **argv)
 
           double* var = vars[v];
 
-          // _rajaloop_forall_pack_halo_exchange_start
           RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
             buffer[i] = var[list[i]];
           });
-          // _rajaloop_forall_pack_halo_exchange_end
 
           buffer += len;
         }
 
         // send single message
       }
+      // _halo_exchange_loop_forall_packing_end
 
+      // _halo_exchange_loop_forall_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -409,15 +422,14 @@ int main(int argc, char **argv)
 
           double* var = vars[v];
 
-          // _rajaloop_forall_unpack_halo_exchange_start
           RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
             var[list[i]] = buffer[i];
           });
-          // _rajaloop_forall_unpack_halo_exchange_end
 
           buffer += len;
         }
       }
+      // _halo_exchange_loop_forall_unpacking_end
 
     }
 
@@ -441,6 +453,7 @@ int main(int argc, char **argv)
   {
   std::cout << "\n Running RAJA loop workgroup halo exchange...\n";
 
+    // _halo_exchange_loop_workgroup_policies_start
     using forall_policy = RAJA::loop_exec;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
@@ -462,6 +475,7 @@ int main(int argc, char **argv)
                                      int,
                                      RAJA::xargs<>,
                                      memory_manager_allocator<char> >;
+    // _halo_exchange_loop_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -488,6 +502,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_loop_workgroup_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -499,24 +514,22 @@ int main(int argc, char **argv)
 
           double* var = vars[v];
 
-          // _rajaloop_workgroup_pack_enqueue_halo_exchange_start
           pool_pack.enqueue(range_segment(0, len), [=] (int i) {
             buffer[i] = var[list[i]];
           });
-          // _rajaloop_workgroup_pack_enqueue_halo_exchange_end
 
           buffer += len;
         }
       }
 
-      // _rajaloop_workgroup_pack_run_halo_exchange_start
       workgroup group_pack = pool_pack.instantiate();
 
       worksite site_pack = group_pack.run();
-      // _rajaloop_workgroup_pack_run_halo_exchange_end
 
       // send all messages
+      // _halo_exchange_loop_workgroup_packing_end
 
+      // _halo_exchange_loop_workgroup_unpacking_start
       // recv all messages
 
       for (int l = 0; l < num_neighbors; ++l) {
@@ -530,21 +543,18 @@ int main(int argc, char **argv)
 
           double* var = vars[v];
 
-          // _rajaloop_workgroup_unpack_enqueue_halo_exchange_start
           pool_unpack.enqueue(range_segment(0, len), [=] (int i) {
             var[list[i]] = buffer[i];
           });
-          // _rajaloop_workgroup_unpack_enqueue_halo_exchange_end
 
           buffer += len;
         }
       }
 
-      // _rajaloop_workgroup_unpack_run_halo_exchange_start
       workgroup group_unpack = pool_unpack.instantiate();
 
       worksite site_unpack = group_unpack.run();
-      // _rajaloop_workgroup_unpack_run_halo_exchange_end
+      // _halo_exchange_loop_workgroup_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -570,7 +580,9 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA Openmp forall halo exchange...\n";
 
+    // _halo_exchange_openmp_forall_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
+    // _halo_exchange_openmp_forall_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -594,6 +606,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_openmp_forall_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -614,7 +627,9 @@ int main(int argc, char **argv)
 
         // send single message
       }
+      // _halo_exchange_openmp_forall_packing_end
 
+      // _halo_exchange_openmp_forall_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -635,6 +650,7 @@ int main(int argc, char **argv)
           buffer += len;
         }
       }
+      // _halo_exchange_openmp_forall_unpacking_end
 
     }
 
@@ -656,6 +672,7 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA OpenMP workgroup halo exchange...\n";
 
+    // _halo_exchange_openmp_workgroup_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
@@ -677,6 +694,7 @@ int main(int argc, char **argv)
                                      int,
                                      RAJA::xargs<>,
                                      memory_manager_allocator<char> >;
+    // _halo_exchange_openmp_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -703,6 +721,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_openmp_workgroup_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -727,7 +746,9 @@ int main(int argc, char **argv)
       worksite site_pack = group_pack.run();
 
       // send all messages
+      // _halo_exchange_openmp_workgroup_packing_end
 
+      // _halo_exchange_openmp_workgroup_unpacking_start
       // recv all messages
 
       for (int l = 0; l < num_neighbors; ++l) {
@@ -752,6 +773,7 @@ int main(int argc, char **argv)
       workgroup group_unpack = pool_unpack.instantiate();
 
       worksite site_unpack = group_unpack.run();
+      // _halo_exchange_openmp_workgroup_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -803,7 +825,9 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, cuda_unpack_index_lists);
 
 
+    // _halo_exchange_cuda_forall_policies_start
     using forall_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
+    // _halo_exchange_cuda_forall_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -827,6 +851,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_cuda_forall_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -849,7 +874,9 @@ int main(int argc, char **argv)
 
         // send single message
       }
+      // _halo_exchange_cuda_forall_packing_end
 
+      // _halo_exchange_cuda_forall_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -872,6 +899,7 @@ int main(int argc, char **argv)
       }
 
       cudaErrchk(cudaDeviceSynchronize());
+      // _halo_exchange_cuda_forall_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -932,6 +960,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, cuda_unpack_index_lists);
 
 
+    // _halo_exchange_cuda_workgroup_policies_start
     using forall_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
@@ -953,6 +982,7 @@ int main(int argc, char **argv)
                                      int,
                                      RAJA::xargs<>,
                                      pinned_allocator<char> >;
+    // _halo_exchange_cuda_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -979,6 +1009,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_cuda_workgroup_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -1005,7 +1036,9 @@ int main(int argc, char **argv)
       cudaErrchk(cudaDeviceSynchronize());
 
       // send all messages
+      // _halo_exchange_cuda_workgroup_packing_end
 
+      // _halo_exchange_cuda_workgroup_unpacking_start
       // recv all messages
 
       for (int l = 0; l < num_neighbors; ++l) {
@@ -1032,6 +1065,7 @@ int main(int argc, char **argv)
       worksite site_unpack = group_unpack.run();
 
       cudaErrchk(cudaDeviceSynchronize());
+      // _halo_exchange_cuda_workgroup_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1099,7 +1133,9 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
 
+    // _halo_exchange_hip_forall_policies_start
     using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
+    // _halo_exchange_hip_forall_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -1123,6 +1159,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_hip_forall_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -1145,7 +1182,9 @@ int main(int argc, char **argv)
 
         // send single message
       }
+      // _halo_exchange_hip_forall_packing_end
 
+      // _halo_exchange_hip_forall_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -1168,6 +1207,7 @@ int main(int argc, char **argv)
       }
 
       hipErrchk(hipDeviceSynchronize());
+      // _halo_exchange_hip_forall_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1228,6 +1268,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
 
+    // _halo_exchange_hip_workgroup_policies_start
     using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
@@ -1253,6 +1294,7 @@ int main(int argc, char **argv)
                                      int,
                                      RAJA::xargs<>,
                                      pinned_allocator<char> >;
+    // _halo_exchange_hip_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -1279,6 +1321,7 @@ int main(int argc, char **argv)
         });
       }
 
+      // _halo_exchange_hip_workgroup_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -1305,7 +1348,9 @@ int main(int argc, char **argv)
       hipErrchk(hipDeviceSynchronize());
 
       // send all messages
+      // _halo_exchange_hip_workgroup_packing_end
 
+      // _halo_exchange_hip_workgroup_unpacking_start
       // recv all messages
 
       for (int l = 0; l < num_neighbors; ++l) {
@@ -1332,6 +1377,7 @@ int main(int argc, char **argv)
       worksite site_unpack = group_unpack.run();
 
       hipErrchk(hipDeviceSynchronize());
+      // _halo_exchange_hip_workgroup_unpacking_end
     }
 
     for (int l = 0; l < num_neighbors; ++l) {

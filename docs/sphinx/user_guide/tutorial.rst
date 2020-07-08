@@ -286,3 +286,4 @@ tiling mechanisms to transform loop patterns.
    tutorial/offset-layout.rst
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
+   tutorial/halo-exchange.rst
