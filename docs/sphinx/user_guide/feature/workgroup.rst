@@ -62,6 +62,80 @@ is a workgroup policy that will run loops sequentially on the host in the order
 they were enqueued and store the loop bodies sequentially in single buffer in
 memory.
 
+The work execution policy acts like the execution policies used with ``RAJA::forall``
+and determines the backend used to run the loops and the parallelism within each
+loop.
+
+ ====================================== ========================================
+ Work Execution Policies                Brief description
+ ====================================== ========================================
+ seq_work                               Execute loop iterations strictly
+                                        sequentially.
+ simd_work                              Execute loop iterations sequentially and
+                                        try to force generation of SIMD
+                                        instructions via compiler hints in RAJA
+                                        internal implementation.
+ loop_work                              Execute loop iterations sequentially and
+                                        allow compiler to generate any
+                                        optimizations.
+ omp_work                               Execute loop iterations in parallel
+                                        using OpenMP.
+ tbb_work                               Execute loop iterations in parallel
+                                        using TBB.
+ cuda_work<BLOCK_SIZE>,                 Execute loop iterations in parallel
+ cuda_work_async<BLOCK_SISZE>           using a CUDA kernel launched with given
+                                        thread-block size.
+ omp_target_work                        Execute loop iterations in parallel
+                                        using OpenMP target.
+ ====================================== ========================================
+
+The work ordering policy acts like the outer execution policies used with
+``RAJA::forall`` when ``RAJA::forall`` is used with an IndexSet
+and determines the strategy used to run the loops and the parallelism between
+each loop.
+
+ ====================================== ========================================
+ Work Execution Policies                Brief description
+ ====================================== ========================================
+ ordered                                Execute loops sequentially in the order
+                                        they were enqueued.
+ reverse_ordered                        Execute loops sequentially in the
+                                        reverse of the order order they were
+                                        enqueued.
+ unordered_cuda_loop_y_block_iter_x_threadblock_average
+                                        Execute loops in parallel by mapping
+                                        each loop to a set of cuda blocks with
+                                        the same index in the y direction.
+                                        Each loop is given a number of threads,
+                                        over one of more blocks in the x
+                                        direction, equal to the average number
+                                        of iterations of all the loops rounded
+                                        up to a multiple of the block size.
+ ====================================== ========================================
+
+The work storage policy determines the strategy used to allocate and layout the
+storage used to store the ranges, loop bodies, and other data necessary to
+implement the workstorage constructs.
+
+ ====================================== ========================================
+ Work Storage Policies                  Brief description
+ ====================================== ========================================
+ array_of_pointers                      Store loop data in individual
+                                        allocations and keep an array of
+                                        pointers to the individual loop data
+                                        allocations.
+ ragged_array_of_objects                Store loops sequentially in a single
+                                        allocation, reallocating and moving the
+                                        loop data items as needed, and keep an
+                                        array of offsets to the individual loop
+                                        data items.
+ constant_stride_array_of_objects       Store loops sequentially in a single
+                                        allocation with a consistent stride
+                                        between loop data items, reallocating
+                                        and/or changing the stride and moving
+                                        the loop  data items as needed.
+ ====================================== ========================================
+
 
 .. _workgroup-Arguments-label:
 
