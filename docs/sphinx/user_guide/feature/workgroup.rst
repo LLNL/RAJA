@@ -89,28 +89,28 @@ loop.
                                         using OpenMP target.
  ====================================== ========================================
 
-The work ordering policy acts like the outer execution policies used with
-``RAJA::forall`` when ``RAJA::forall`` is used with an IndexSet
-and determines the strategy used to run the loops and the parallelism between
-each loop.
+The work ordering policy acts like the segment iteration execution policies when
+``RAJA::forall`` is used with a ``RAJA::IndexSet`` and determines the backend
+used when iterating over the loops and the parallelism between each loop.
 
  ====================================== ========================================
  Work Execution Policies                Brief description
  ====================================== ========================================
  ordered                                Execute loops sequentially in the order
-                                        they were enqueued.
+                                        they were enqueued using forall.
  reverse_ordered                        Execute loops sequentially in the
                                         reverse of the order order they were
-                                        enqueued.
+                                        enqueued using forall.
  unordered_cuda_loop_y_block_iter_x_threadblock_average
                                         Execute loops in parallel by mapping
                                         each loop to a set of cuda blocks with
-                                        the same index in the y direction.
-                                        Each loop is given a number of threads,
-                                        over one of more blocks in the x
-                                        direction, equal to the average number
-                                        of iterations of all the loops rounded
-                                        up to a multiple of the block size.
+                                        the same index in the y direction in
+                                        a cuda kernel. Each loop is given a
+                                        number of threads over one of more
+                                        blocks in the x direction equal to the
+                                        average number of iterations of all the
+                                        loops rounded up to a multiple of the
+                                        block size.
  ====================================== ========================================
 
 The work storage policy determines the strategy used to allocate and layout the
