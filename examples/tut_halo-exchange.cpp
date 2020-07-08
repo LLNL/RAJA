@@ -15,6 +15,7 @@
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/util/Timer.hpp"
 
 /*
  *  Halo exchange Example
@@ -259,9 +260,14 @@ int main(int argc, char **argv)
   using range_segment = RAJA::TypedRangeSegment<int>;
 
 
+  auto timer = RAJA::Timer();
+
+
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running C-style halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -275,6 +281,8 @@ int main(int argc, char **argv)
     }
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -332,6 +340,12 @@ int main(int argc, char **argv)
       }
       // _halo_exchange_sequential_cstyle_unpacking_end
 
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -339,6 +353,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate(buffers[l]);
 
     }
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // copy result of exchange for reference later
     for (int v = 0; v < num_vars; ++v) {
@@ -359,6 +375,8 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA loop forall halo exchange...\n";
 
+    double minCycle = std::numeric_limits<double>::max();
+
     // _halo_exchange_loop_forall_policies_start
     using forall_policy = RAJA::loop_exec;
     // _halo_exchange_loop_forall_policies_end
@@ -374,6 +392,8 @@ int main(int argc, char **argv)
     }
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -431,6 +451,12 @@ int main(int argc, char **argv)
       }
       // _halo_exchange_loop_forall_unpacking_end
 
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -438,6 +464,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate(buffers[l]);
 
     }
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -452,6 +480,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
   std::cout << "\n Running RAJA loop workgroup halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_loop_workgroup_policies_start
     using forall_policy = RAJA::loop_exec;
@@ -491,6 +521,8 @@ int main(int argc, char **argv)
     workpool pool_unpack(memory_manager_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -555,6 +587,13 @@ int main(int argc, char **argv)
 
       worksite site_unpack = group_unpack.run();
       // _halo_exchange_loop_workgroup_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -562,6 +601,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate(buffers[l]);
 
     }
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -580,6 +621,8 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA Openmp forall halo exchange...\n";
 
+    double minCycle = std::numeric_limits<double>::max();
+
     // _halo_exchange_openmp_forall_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
     // _halo_exchange_openmp_forall_policies_end
@@ -595,6 +638,8 @@ int main(int argc, char **argv)
     }
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -652,6 +697,12 @@ int main(int argc, char **argv)
       }
       // _halo_exchange_openmp_forall_unpacking_end
 
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -659,6 +710,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate(buffers[l]);
 
     }
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -671,6 +724,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA OpenMP workgroup halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_openmp_workgroup_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
@@ -710,6 +765,8 @@ int main(int argc, char **argv)
     workpool pool_unpack(memory_manager_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -774,6 +831,13 @@ int main(int argc, char **argv)
 
       worksite site_unpack = group_unpack.run();
       // _halo_exchange_openmp_workgroup_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -781,6 +845,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate(buffers[l]);
 
     }
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -800,6 +866,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Cuda forall halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
@@ -840,6 +908,8 @@ int main(int argc, char **argv)
     }
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -900,6 +970,13 @@ int main(int argc, char **argv)
 
       cudaErrchk(cudaDeviceSynchronize());
       // _halo_exchange_cuda_forall_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -924,6 +1001,8 @@ int main(int argc, char **argv)
     }
 
 
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
     //printResult(vars, var_size, num_vars);
@@ -935,6 +1014,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Cuda workgroup halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
@@ -998,6 +1079,8 @@ int main(int argc, char **argv)
     workpool pool_unpack(pinned_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -1066,6 +1149,13 @@ int main(int argc, char **argv)
 
       cudaErrchk(cudaDeviceSynchronize());
       // _halo_exchange_cuda_workgroup_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1090,6 +1180,8 @@ int main(int argc, char **argv)
     }
 
 
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
     //printResult(vars, var_size, num_vars);
@@ -1108,6 +1200,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Hip forall halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
@@ -1148,6 +1242,8 @@ int main(int argc, char **argv)
     }
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -1208,6 +1304,13 @@ int main(int argc, char **argv)
 
       hipErrchk(hipDeviceSynchronize());
       // _halo_exchange_hip_forall_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1232,6 +1335,8 @@ int main(int argc, char **argv)
     }
 
 
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
     //printResult(vars, var_size, num_vars);
@@ -1243,6 +1348,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Hip workgroup halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
@@ -1310,6 +1417,8 @@ int main(int argc, char **argv)
     workpool pool_unpack(pinned_allocator<char>{});
 
     for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
 
       // set vars
       for (int v = 0; v < num_vars; ++v) {
@@ -1378,6 +1487,13 @@ int main(int argc, char **argv)
 
       hipErrchk(hipDeviceSynchronize());
       // _halo_exchange_hip_workgroup_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1401,6 +1517,8 @@ int main(int argc, char **argv)
       memoryManager::deallocate_gpu(hip_unpack_index_lists[l]);
     }
 
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
