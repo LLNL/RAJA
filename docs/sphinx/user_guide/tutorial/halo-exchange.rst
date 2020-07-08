@@ -200,17 +200,21 @@ enqueued loops to all be run using a single cuda kernel:
 
 The packing is the same as the previous workgroup packing examples with the
 exception of added synchronization after calling run and before sending the
-messages. With workgroup the number of cuda kernels and synchronizations is one
-each, while the previous cuda example using forall used
-``num_neighbors * num_vars`` cuda kernels and ``num_neighbors`` synchronizations:
+messages. The previous cuda example used forall to launch
+``num_neighbors * num_vars`` cuda kernels and performed ``num_neighbors``
+synchronizations to send each message in turn. Here the reorganization to pack
+all messages before sending lets us use an unordered cuda work ordering policy
+in the workgroup constructs that reduces the number of cuda kernel launches to
+one. It also allows us to synchronize once before sending all of the messages:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_cuda_workgroup_packing_start
    :end-before: _halo_exchange_cuda_workgroup_packing_end
    :language: C++
 
-Similarly here we wait to receive all of the messages before
-unpacking and only launch one cuda kernel for packing:
+After waiting to receive all of the messages we use workgroup constructs using
+a cuda unordered work ordering policy to unpack all of the messages using a
+single kernel launch:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_cuda_workgroup_unpacking_start
