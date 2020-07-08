@@ -53,13 +53,22 @@ Quick Start Guide
 4. When you run your project, your plugins should work!
 
 ^^^^^^^^^^^
-Further Details
+Interfacing with Plugins
 ^^^^^^^^^^^
+The RAJA Plugin API allows for limited interfacing between a project and a plugin. There are, however a couple functions that allow for this to take place. ``init_plugins`` and ``finalize_plugins``. Using one of these will call the corresponding ``init`` or ``finalize`` function inside of *every* currently loaded plugin. It's worth noting that plugins don't require either an init or finalize function by default.
+
+* ``RAJA::util::init_plugins();`` - Will call the ``init`` function of every currently loaded plugin.
+
+* ``RAJA::util::init_plugins("path/to/plugins");`` - Does the same as the above call to init_plugins, but will also dynamically load plugins located at the path specified.
+
+* ``RAJA::util::finalize_plugins();`` - Will call the ``finalize`` function of every currently loaded plugin. 
 
 
 ------------
-Building Plugins For RAJA
+Creating Plugins For RAJA
 ------------
+
+Plugins take advantage of *polymorphism*, using ``RAJA::util::PluginStrategy`` as the parent and implementing the required functions for the API. An example implementation can be found at the bottom of this page.
 
 ^^^^^^^^^^^
 Required Functions
