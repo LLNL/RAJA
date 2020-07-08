@@ -42,10 +42,17 @@ namespace RAJA
 
   namespace detail
   {
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA)
     // Non templated inline function so as not to generate duplicate objects for cuda resource.
     RAJA_INLINE Resource get_cuda_default(){
       static Resource r = Resource{Cuda::get_default()};
+      return r;
+    }
+#endif
+#if defined(RAJA_ENABLE_HIP)
+    // Non templated inline function so as not to generate duplicate objects for cuda resource.
+    RAJA_INLINE Resource get_hip_default(){
+      static Resource r = Resource{Hip::get_default()};
       return r;
     }
 #endif
@@ -56,7 +63,7 @@ namespace RAJA
     return Resource{Host::get_default()};
   }
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA)
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Resource get_default_resource(cuda_exec<BlockSize, Async>){
     std::cout<<"Get defualt cuda_exec\n";
@@ -66,6 +73,19 @@ namespace RAJA
   RAJA_INLINE Resource get_default_resource(ExecPolicy<seq_exec,cuda_exec<BlockSize, Async>>){
     std::cout<<"Get defualt cuda_exec\n";
     return detail::get_cuda_default(); 
+  }
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  template<size_t BlockSize, bool Async>
+  RAJA_INLINE Resource get_default_resource(hip_exec<BlockSize, Async>){
+    std::cout<<"Get defualt hip_exec\n";
+    return detail::get_hip_default(); 
+  }
+  template<size_t BlockSize, bool Async>
+  RAJA_INLINE Resource get_default_resource(ExecPolicy<seq_exec,hip_exec<BlockSize, Async>>){
+    std::cout<<"Get defualt hip_exec\n";
+    return detail::get_hip_default(); 
   }
 #endif
 
