@@ -202,12 +202,12 @@ int main(int argc, char **argv)
   const int num_cycles =     (argc != 7) ?   3 : std::atoi(argv[6]);
   // _halo_exchange_input_params_end
 
-  std::cout << "grid dimensions "    << grid_dims[0]
-            << " x "                 << grid_dims[1]
-            << " x "                 << grid_dims[2] << "\n"
-            << "halo width"          << halo_width   << "\n"
-            << "number of variables" << num_vars     << "\n"
-            << "number of cycles"    << num_cycles   << "\n";
+  std::cout << "grid dimensions "     << grid_dims[0]
+            << " x "                  << grid_dims[1]
+            << " x "                  << grid_dims[2] << "\n"
+            << "halo width "          << halo_width   << "\n"
+            << "number of variables " << num_vars     << "\n"
+            << "number of cycles "    << num_cycles   << "\n";
 
   if ( grid_dims[0] < halo_width ||
        grid_dims[1] < halo_width ||
