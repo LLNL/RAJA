@@ -155,14 +155,14 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async> exec,
-                             Iterable&& iter,
-                             LoopBody&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Hip(0)};
-  forall_impl(res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+//RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async> exec,
+//                             Iterable&& iter,
+//                             LoopBody&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Hip(0)};
+//  forall_impl(res, exec, iter, loop_body);
+//}
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,

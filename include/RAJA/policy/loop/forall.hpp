@@ -52,12 +52,12 @@ namespace loop
 //
 
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const loop_exec &exec, Iterable &&iter, Func &&body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, exec, iter, body);
-} 
+//template <typename Iterable, typename Func>
+//RAJA_INLINE void forall_impl(const loop_exec &exec, Iterable &&iter, Func &&body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, exec, iter, body);
+//} 
 
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource & res, const loop_exec &, Iterable &&iter, Func &&body)

@@ -157,15 +157,15 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async> exec,
-                             Iterable&& iter,
-                             LoopBody&& loop_body)
-{
-  std::cout<<"Cuda forall_impl : Default\n";
-  static RAJA::resources::Resource cuda_res{RAJA::resources::Cuda::get_default()};
-  forall_impl(cuda_res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+//RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async> exec,
+//                             Iterable&& iter,
+//                             LoopBody&& loop_body)
+//{
+//  std::cout<<"Cuda forall_impl : Default\n";
+//  static RAJA::resources::Resource cuda_res{RAJA::resources::Cuda::get_default()};
+//  forall_impl(cuda_res, exec, iter, loop_body);
+//}
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
@@ -252,24 +252,24 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
  *
  ******************************************************************************
  */
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                             const TypedIndexSet<SegmentTypes...>& iset,
-                             LoopBody&& loop_body)
-{
-  int num_seg = iset.getNumSegments();
-  for (int isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(isi,
-                     detail::CallForall(),
-                     cuda_exec<BlockSize, true>(),
-                     loop_body);
-  }  // iterate over segments of index set
-
-  if (!Async) RAJA::cuda::synchronize();
-}
+//template <typename LoopBody,
+//          size_t BlockSize,
+//          bool Async,
+//          typename... SegmentTypes>
+//RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+//                             const TypedIndexSet<SegmentTypes...>& iset,
+//                             LoopBody&& loop_body)
+//{
+//  int num_seg = iset.getNumSegments();
+//  for (int isi = 0; isi < num_seg; ++isi) {
+//    iset.segmentCall(isi,
+//                     detail::CallForall(),
+//                     cuda_exec<BlockSize, true>(),
+//                     loop_body);
+//  }  // iterate over segments of index set
+//
+//  if (!Async) RAJA::cuda::synchronize();
+//}
 template <typename LoopBody,
           size_t BlockSize,
           bool Async,

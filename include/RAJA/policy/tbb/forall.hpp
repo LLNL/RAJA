@@ -67,14 +67,14 @@ namespace tbb
  * argument.  This should be used for composable parallelism and increased work
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, p, iter, loop_body);
-}
+//template <typename Iterable, typename Func>
+//RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, p, iter, loop_body);
+//}
 
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
@@ -121,14 +121,14 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
  * threads must be maintained across multiple loops for correctness. NOTE: if
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>& p,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, p, iter, loop_body);
-}
+//template <typename Iterable, typename Func, size_t ChunkSize>
+//RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>& p,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, p, iter, loop_body);
+//}
 
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,

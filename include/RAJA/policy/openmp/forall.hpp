@@ -55,14 +55,14 @@ namespace omp
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>& exec,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename Func, typename InnerPolicy>
+//RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>& exec,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, exec, iter, loop_body);
+//}
 template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
                                                     const omp_parallel_exec<InnerPolicy>&,
@@ -84,14 +84,14 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 /// OpenMP for nowait policy implementation
 ///
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exec,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename Func>
+//RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exec,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, exec, iter, loop_body);
+//}
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res, 
                                                     const omp_for_nowait_exec&,
@@ -114,14 +114,14 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_exec& exec,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename Func>
+//RAJA_INLINE void forall_impl(const omp_for_exec& exec,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, exec, iter, loop_body);
+//}
 template <typename Iterable, typename Func>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
                                                     const omp_for_exec&,
@@ -144,14 +144,14 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 /// OpenMP parallel for static policy implementation
 ///
 
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>& exec,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA::resources::Resource res{RAJA::resources::Host()};
-  forall_impl(res, exec, iter, loop_body);
-}
+//template <typename Iterable, typename Func, size_t ChunkSize>
+//RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>& exec,
+//                             Iterable&& iter,
+//                             Func&& loop_body)
+//{
+//  RAJA::resources::Resource res{RAJA::resources::Host()};
+//  forall_impl(res, exec, iter, loop_body);
+//}
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
                                                     const omp_for_static<ChunkSize>&,
