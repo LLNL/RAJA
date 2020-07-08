@@ -25,13 +25,6 @@
 #define CUDA_BLOCK_SIZE 16
 #endif
 
-#if defined(__CUDA_ARCH__)
-#define TEAM_SHARED __shared__
-#define TEAM_SYNC() __syncthreads()
-#else
-#define TEAM_SHARED
-#define TEAM_SYNC()
-#endif
 
 //
 // Define dimensionality of matrices.

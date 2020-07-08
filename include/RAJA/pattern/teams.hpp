@@ -33,6 +33,15 @@
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
+#if defined(__CUDA_ARCH__)
+#define TEAM_SHARED __shared__
+#define TEAM_SYNC() __syncthreads()
+#else
+#define TEAM_SHARED
+#define TEAM_SYNC()
+#endif
+
+
 namespace RAJA
 {
 
