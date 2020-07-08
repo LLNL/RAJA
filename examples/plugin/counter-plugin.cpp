@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// _plugin_example_start
 #include "RAJA/util/PluginStrategy.hpp"
 
 #include <iostream>
@@ -40,3 +41,4 @@ extern "C" RAJA::util::PluginStrategy *getPlugin ()
 {
   return new CounterPlugin;
 }
+// _plugin_example_end
