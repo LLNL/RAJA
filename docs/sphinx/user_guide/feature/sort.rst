@@ -42,12 +42,12 @@ Sort Operations
 -----------------
 
 In general, a sort operation takes a sequence of numbers ``x`` and a binary
-comparison operator ``*op*`` that forms a strict weak ordering of elements in input
+comparison operator ``op`` that forms a strict weak ordering of elements in input
 sequence ``x`` and produces a sequence of numbers ``y`` as output. The output sequence
 is a permutation of the input sequence where each pair of elements ``a`` and ``b``,
-where ``a`` is before ``b`` in the output sequence, satisfies ``!(b *op* a)``.
+where ``a`` is before ``b`` in the output sequence, satisfies ``!(b op a)``.
 Sorts are stable if they always preserve the order of equivalent elements,
-where equivalent elements satisfy ``!(a *op* b) && !(b *op* a)``.
+where equivalent elements satisfy ``!(a op b) && !(b op a)``.
 
 A **stable sort** takes an input sequence ``x`` where equivalent elements a\ :sub:`i`
 and a\ :sub:`j` for any i != j where a\ :sub:`i` appears before a\ :sub:`j` if i < j
