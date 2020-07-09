@@ -41,21 +41,22 @@ sort operations.
 Sort Operations
 -----------------
 
-In general, a sort operation takes a sequence of numbers 'x' and a binary
-comparison operator 'op' that forms a strict weak ordering of elements in input
-sequence x and produces a sequence of numbers 'y' as output. The output sequence
-is a permutation of the input sequence where each pair of elements 'a' and 'b,'
-where a is before b in the output sequence, satisfies `!(b *op* a)`.
+In general, a sort operation takes a sequence of numbers ``x`` and a binary
+comparison operator ``*op*`` that forms a strict weak ordering of elements in input
+sequence ``x`` and produces a sequence of numbers ``y`` as output. The output sequence
+is a permutation of the input sequence where each pair of elements ``a`` and ``b``,
+where ``a`` is before ``b`` in the output sequence, satisfies ``!(b *op* a)``.
 Sorts are stable if they always preserve the order of equivalent elements,
-where equivalent elements satisfy `!(a *op* b) && !(b *op* a)`.
+where equivalent elements satisfy ``!(a *op* b) && !(b *op* a)``.
 
-A **stable sort** takes an input sequence 'x' where elements a\ :sub:`i` and a\ :sub:`j`
-for any i != j are equivalent elements and a\ :sub:`i` appears before a\ :sub:`j` if i < j
+A **stable sort** takes an input sequence ``x`` where equivalent elements a\ :sub:`i`
+and a\ :sub:`j` for any i != j where a\ :sub:`i` appears before a\ :sub:`j` if i < j
 
    x = { a\ :sub:`0`\, b\ :sub:`0`\, a\ :sub:`1`\, ... }
 
-and calculates the sorted output sequence that preserves the order of equivalent
-elements, so a\ :sub:`i` still appears before a\ :sub:`j` if i < j:
+and calculates the stably sorted output sequence ``y`` which preserves the order of
+equivalent elements, in other words the sorted sequence where element a\ :sub:`i`
+appears before the equivalent element a\ :sub:`j` if i < j:
 
    y = { a\ :sub:`0`\, a\ :sub:`1`\, b\ :sub:`0`\, ... }
 
@@ -79,7 +80,7 @@ RAJA unstable sort operations look like the following:
  * ``RAJA::sort< exec_policy >(iter, iter + N)``
  * ``RAJA::sort< exec_policy >(iter, iter + N, comparator)``
 
-For example sorting the 'in' array filled with this sequence of values::
+For example sorting the ``in`` array filled with this sequence of values::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
@@ -90,13 +91,13 @@ by performing a sequential unstable sort operation using the following code:
    :end-before: _sort_seq_end
    :language: C++
 
-fills the 'out' array with this sequence of values::
+fills the ``out`` array with this sequence of values::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 Note that the syntax is essentially the same as :ref:`scan-label`.
-Here, 'container' is a range of elements and 'iter' is a random access
-iterator to a range of elements. 'container' and 'iter' provide access to the
+Here, ``container`` is a range of elements and ``iter`` is a random access
+iterator to a range of elements. ``container`` and ``iter`` provide access to the
 input sequence and contain the output sequence at the end of sort. The first
 and third sort operations above will be *non-decreasing* sorts since there is
 no comparator argument given; i.e., the sequences will be reordered *in-place*
@@ -111,11 +112,11 @@ separately:
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter)``
  * ``RAJA::sort_pairs< exec_policy >(keys_iter, keys_iter + N, vals_iter, comparator)``
 
-Sort pairs generates the same output sequence of keys in 'keys_container' or
-'keys_iter' as sort does in 'container' or 'iter' and also reorders the sequence
-of values in 'vals_container' or 'vals_iter' by permuting the sequence of values
+Sort pairs generates the same output sequence of keys in ``keys_container`` or
+``keys_iter`` as sort does in ``container`` or ``iter`` and also reorders the sequence
+of values in ``vals_container`` or ``vals_iter`` by permuting the sequence of values
 in the same manner as the sequence of keys; i.e. sorting the sequence of pairs
-based on their keys. Note that the 'comparator' used in sort_pairs only compares
+based on their keys. Note that the ``comparator`` used in sort_pairs only compares
 keys.
 
 ---------------------
