@@ -59,14 +59,14 @@ A sequential unstable sort operation is performed by:
    :end-before: _sort_seq_end
    :language: C++
 
-Since no comparator is passed to the sort method, the default ``*less*`` operation
+Since no comparator is passed to the sort method, the default less operation
 is applied and the result generated in the ``out`` array is non-decreasing sort
 on the ``out`` array. The resulting ``out`` array contains the values::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 We can be explicit about the operation used in the sort by passing the
-``*less*`` operator to the sort method:
+less operator to the sort method:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_seq_less_start
@@ -122,7 +122,7 @@ Other Comparators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Using a different comparator allows sorting in a different order.
-Here is a sequential stable sort that uses the ``*greater*`` operator:
+Here is a sequential stable sort that uses the greater operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_seq_greater_start
@@ -147,7 +147,7 @@ Sort *Pairs* operations generate the same results as the sort operations
 we have just described. However, an additional array of values is also permuted
 to match the sorted array so **two arrays are passed to sort pairs methods.**
 
-Here is a sequential unstable sort pairs that uses the ``*less*`` operator:
+Here is a sequential unstable sort pairs that uses the less operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_pairs_seq_less_start
@@ -163,7 +163,7 @@ Note that some of the pairs with equivalent keys stayed in the same order
 they appeared in the unsorted arrays like ``(8,0) (8,1)``, while others are
 reversed like ``(9,1) (9,0)``.
 
-Here is a sequential stable sort pairs that uses the ``*greater*`` operator:
+Here is a sequential stable sort pairs that uses the greater operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_pairs_seq_greater_start
