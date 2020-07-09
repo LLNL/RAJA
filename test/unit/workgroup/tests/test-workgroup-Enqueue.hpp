@@ -146,20 +146,6 @@ class WorkGroupBasicEnqueueSingleUnitTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueSingleUnitTest);
 
 template <typename T>
-class WorkGroupBasicEnqueueInstantiateUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueInstantiateUnitTest);
-
-template <typename T>
-class WorkGroupBasicEnqueueReuseUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueReuseUnitTest);
-
-template <typename T>
 class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
 {
 };
@@ -176,33 +162,6 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
   testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, 1, 1);
-}
-
-TYPED_TEST_P(WorkGroupBasicEnqueueInstantiateUnitTest, BasicWorkGroupEnqueueInstantiate)
-{
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
-
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, 1, 1);
-}
-
-TYPED_TEST_P(WorkGroupBasicEnqueueReuseUnitTest, BasicWorkGroupEnqueueReuse)
-{
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
-
-  std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<size_t> dist(0, 128);
-
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), 1);
 }
 
 TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultiple)

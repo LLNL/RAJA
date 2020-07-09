@@ -66,7 +66,7 @@ buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
 set(Vtable_SUBTESTS Single)
 buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}")
 
-set(Enqueue_SUBTESTS Single Instantiate Reuse Multiple)
+set(Enqueue_SUBTESTS Single Multiple)
 buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Insert Iterator InsertCall Multiple)
