@@ -87,49 +87,38 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
                   >;
 
   {
-    auto test_empty = [&](WorkPool_type& pool) {
-
-      ASSERT_EQ(pool.num_loops(), (size_t)0);
-      ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-    };
-
-    auto fill_contents = [&](WorkPool_type& pool, size_t num, IndexType init_val) {
-
-      for (size_t i = 0; i < num; ++i) {
-        callable c{&success, init_val};
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_FALSE(c.moved_from);
-
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
-
-        ASSERT_FALSE(c.move_constructed);
-        ASSERT_TRUE(c.moved_from);
-      }
-
-      ASSERT_EQ(pool.num_loops(), (size_t)num);
-      ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
-    };
-
-    auto test_contents = [&](WorkPool_type& pool, size_t num, IndexType) {
-
-      ASSERT_EQ(pool.num_loops(), (size_t)num);
-      ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
-    };
-
-
     WorkPool_type pool(Allocator{});
 
-    test_empty(pool);
+    // test_empty(pool);
+    ASSERT_EQ(pool.num_loops(), (size_t)0);
+    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
     for (size_t i = 0; i < rep; ++i) {
 
-      fill_contents(pool, num, (IndexType)0);
-      test_contents(pool, num, (IndexType)0);
+      {
+        for (size_t i = 0; i < num; ++i) {
+          callable c{&success, IndexType(0)};
+
+          ASSERT_FALSE(c.move_constructed);
+          ASSERT_FALSE(c.moved_from);
+
+          pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
+
+          ASSERT_FALSE(c.move_constructed);
+          ASSERT_TRUE(c.moved_from);
+        }
+
+        ASSERT_EQ(pool.num_loops(), (size_t)num);
+        ASSERT_GE(pool.storage_bytes(), num*sizeof(callable));
+      }
 
       if (do_instantiate) {
         WorkGroup_type group = pool.instantiate();
-        test_empty(pool);
+
+        {
+          ASSERT_EQ(pool.num_loops(), (size_t)0);
+          ASSERT_EQ(pool.storage_bytes(), (size_t)0);
+        }
       }
     }
   }
