@@ -105,82 +105,6 @@ void testWorkGroupWorkStorageConstructor()
 template <typename StoragePolicy,
           typename Allocator
           >
-void testWorkGroupWorkStorageInsert()
-{
-  bool success = true;
-
-  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
-  using WorkStorage_type = RAJA::detail::WorkStorage<
-                                                      StoragePolicy,
-                                                      Allocator,
-                                                      Vtable_type
-                                                    >;
-
-  using callable = TestCallable<short>;
-
-  const Vtable_type* vtable = RAJA::detail::get_Vtable<
-      callable, Vtable_type>(RAJA::seq_work{});
-
-  {
-    auto test_empty = [&](WorkStorage_type& container) {
-
-      ASSERT_EQ(container.size(), (size_t)(0));
-      ASSERT_EQ(container.storage_size(), (size_t)0);
-    };
-
-    auto fill_contents = [&](WorkStorage_type& container, short init_val) {
-
-      container.template emplace<callable>(vtable, callable{init_val});
-
-      ASSERT_EQ(container.size(), (size_t)1);
-      ASSERT_TRUE(container.storage_size() >= sizeof(callable));
-    };
-
-    auto test_contents = [&](WorkStorage_type& container, short) {
-
-      ASSERT_EQ(container.size(), (size_t)1);
-      ASSERT_TRUE(container.storage_size() >= sizeof(callable));
-    };
-
-
-    WorkStorage_type container(Allocator{});
-
-    test_empty(container);
-    fill_contents(container, 0);
-    test_contents(container, 0);
-
-
-    WorkStorage_type container2(std::move(container));
-
-    test_empty(container);
-    test_contents(container2, 0);
-
-
-    WorkStorage_type container3(Allocator{});
-    container3 = std::move(container2);
-
-    test_empty(container2);
-    test_contents(container3, 0);
-
-
-    WorkStorage_type container4(Allocator{});
-
-    fill_contents(container4, 1);
-    test_contents(container4, 1);
-
-    container4 = std::move(container3);
-
-    test_empty(container3);
-    test_contents(container4, 0);
-  }
-
-  ASSERT_TRUE(success);
-}
-
-
-template <typename StoragePolicy,
-          typename Allocator
-          >
 void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
@@ -557,13 +481,6 @@ class WorkGroupBasicWorkStorageConstructorUnitTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
 
 template <typename T>
-class WorkGroupBasicWorkStorageInsertUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertUnitTest);
-
-template <typename T>
 class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
 {
 };
@@ -591,14 +508,6 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkSto
   using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
 
   testWorkGroupWorkStorageConstructor< StoragePolicy, Allocator >();
-}
-
-TYPED_TEST_P(WorkGroupBasicWorkStorageInsertUnitTest, BasicWorkGroupWorkStorageInsert)
-{
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  testWorkGroupWorkStorageInsert< StoragePolicy, Allocator >();
 }
 
 TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
