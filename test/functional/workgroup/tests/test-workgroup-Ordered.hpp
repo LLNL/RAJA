@@ -16,6 +16,7 @@
 #include "RAJA_test-forall-data.hpp"
 
 #include <random>
+#include <vector>
 
 
 template <typename ExecPolicy,
@@ -134,7 +135,7 @@ template <typename ExecPolicy,
           typename WORKING_RES
           >
 void testWorkGroupOrderedMultiple(
-    IndexType begin, IndexType end,
+    std::mt19937& rng, IndexType max_begin, IndexType min_end,
     IndexType num1, IndexType num2, IndexType num3,
     IndexType pool_reuse, IndexType group_reuse)
 {
@@ -159,9 +160,32 @@ void testWorkGroupOrderedMultiple(
                   Allocator
                 >;
 
-  ASSERT_GE(begin, (IndexType)0);
-  ASSERT_GE(end, begin);
-  IndexType N = end + begin;
+  ASSERT_GT(min_end, max_begin);
+  IndexType N = min_end + max_begin;
+
+  std::vector<IndexType> begin1, end1;
+  std::vector<IndexType> begin2, end2;
+  std::vector<IndexType> begin3, end3;
+
+  {
+    using dist_type = std::uniform_int_distribution<IndexType>;
+
+    for (IndexType j = IndexType(0); j < num1; j++) {
+      begin1.push_back(dist_type(max_begin, min_end-1)(rng));
+      end1.push_back(dist_type(begin1.back(), min_end)(rng));
+    }
+
+    for (IndexType j = IndexType(0); j < num2; j++) {
+      begin2.push_back(dist_type(max_begin, min_end-1)(rng));
+      end2.push_back(dist_type(begin2.back(), min_end)(rng));
+    }
+
+    for (IndexType j = IndexType(0); j < num3; j++) {
+      begin3.push_back(dist_type(max_begin, min_end-1)(rng));
+      end3.push_back(dist_type(begin3.back(), min_end)(rng));
+    }
+  }
+
 
   camp::resources::Resource working_res{WORKING_RES()};
 
@@ -233,21 +257,21 @@ void testWorkGroupOrderedMultiple(
 
     for (IndexType j = IndexType(0); j < num1; j++) {
       type1* test_ptr1 = test_array1 + N * j;
-      for (IndexType i = begin; i < end; ++i) {
+      for (IndexType i = begin1[j]; i < end1[j]; ++i) {
         test_ptr1[ i ] = type1(i);
       }
     }
 
     for (IndexType j = IndexType(0); j < num2; j++) {
       type2* test_ptr2 = test_array2 + N * j;
-      for (IndexType i = begin; i < end; ++i) {
+      for (IndexType i = begin2[j]; i < end2[j]; ++i) {
         test_ptr2[ i ] = type2(i);
       }
     }
 
     for (IndexType j = IndexType(0); j < num3; j++) {
       type3* test_ptr3 = test_array3 + N * j;
-      for (IndexType i = begin; i < end; ++i) {
+      for (IndexType i = begin3[j]; i < end3[j]; ++i) {
         test_ptr3[ i ] = type3(i);
       }
     }
@@ -257,11 +281,11 @@ void testWorkGroupOrderedMultiple(
 
     for (IndexType j = IndexType(0); j < num1; j++) {
       type1* working_ptr1 = working_array1 + N * j;
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr1[i] += type1(i);
       });
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr1[i] += test_val1;
       });
@@ -269,11 +293,11 @@ void testWorkGroupOrderedMultiple(
 
     for (IndexType j = IndexType(0); j < num2; j++) {
       type2* working_ptr2 = working_array2 + N * j;
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr2[i] += type2(i);
       });
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr2[i] += test_val2;
       });
@@ -281,11 +305,11 @@ void testWorkGroupOrderedMultiple(
 
     for (IndexType j = IndexType(0); j < num3; j++) {
       type3* working_ptr3 = working_array3 + N * j;
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr3[i] += type3(i);
       });
-      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+      pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
           [=] RAJA_HOST_DEVICE (IndexType i) {
         working_ptr3[i] += test_val3;
       });
@@ -304,13 +328,13 @@ void testWorkGroupOrderedMultiple(
     for (IndexType j = IndexType(0); j < num1; j++) {
       type1* test_ptr1 = test_array1 + N * j;
       type1* check_ptr1 = check_array1 + N * j;
-      for (IndexType i = IndexType(0); i < begin; i++) {
+      for (IndexType i = IndexType(0); i < begin1[j]; i++) {
         ASSERT_EQ(test_ptr1[i], check_ptr1[i]);
       }
-      for (IndexType i = begin;        i < end;   i++) {
+      for (IndexType i = begin1[j];    i < end1[j];   i++) {
         ASSERT_EQ(test_ptr1[i] + test_val1, check_ptr1[i]);
       }
-      for (IndexType i = end;          i < N;     i++) {
+      for (IndexType i = end1[j];      i < N;     i++) {
         ASSERT_EQ(test_ptr1[i], check_ptr1[i]);
       }
     }
@@ -318,13 +342,13 @@ void testWorkGroupOrderedMultiple(
     for (IndexType j = IndexType(0); j < num2; j++) {
       type2* test_ptr2 = test_array2 + N * j;
       type2* check_ptr2 = check_array2 + N * j;
-      for (IndexType i = IndexType(0); i < begin; i++) {
+      for (IndexType i = IndexType(0); i < begin2[j]; i++) {
         ASSERT_EQ(test_ptr2[i], check_ptr2[i]);
       }
-      for (IndexType i = begin;        i < end;   i++) {
+      for (IndexType i = begin2[j];    i < end2[j];   i++) {
         ASSERT_EQ(test_ptr2[i] + test_val2, check_ptr2[i]);
       }
-      for (IndexType i = end;          i < N;     i++) {
+      for (IndexType i = end2[j];      i < N;     i++) {
         ASSERT_EQ(test_ptr2[i], check_ptr2[i]);
       }
     }
@@ -332,13 +356,13 @@ void testWorkGroupOrderedMultiple(
     for (IndexType j = IndexType(0); j < num3; j++) {
       type3* test_ptr3 = test_array3 + N * j;
       type3* check_ptr3 = check_array3 + N * j;
-      for (IndexType i = IndexType(0); i < begin; i++) {
+      for (IndexType i = IndexType(0); i < begin3[j]; i++) {
         ASSERT_EQ(test_ptr3[i], check_ptr3[i]);
       }
-      for (IndexType i = begin;        i < end;   i++) {
+      for (IndexType i = begin3[j];    i < end3[j];   i++) {
         ASSERT_EQ(test_ptr3[i] + test_val3, check_ptr3[i]);
       }
-      for (IndexType i = end;          i < N;     i++) {
+      for (IndexType i = end3[j];      i < N;     i++) {
         ASSERT_EQ(test_ptr3[i], check_ptr3[i]);
       }
     }
@@ -434,9 +458,6 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupOrd
   std::mt19937 rng(std::random_device{}());
   using dist_type = std::uniform_int_distribution<IndexType>;
 
-  IndexType begin = dist_type(IndexType(1), IndexType(4095))(rng);
-  IndexType end   = dist_type(begin,        IndexType(4096))(rng);
-
   IndexType num1 = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType num2 = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType num3 = dist_type(IndexType(0), IndexType(8))(rng);
@@ -445,7 +466,7 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupOrd
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
   testWorkGroupOrderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
-      begin, end, num1, num2, num3, pool_reuse, group_reuse);
+      rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse, group_reuse);
 }
 
 #endif  //__TEST_WORKGROUP_ORDERED__
