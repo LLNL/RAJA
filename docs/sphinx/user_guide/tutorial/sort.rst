@@ -38,11 +38,11 @@ and output values. We set the input array and print them as follows:
    :end-before: _sort_array_init_end
    :language: C++
 
-This generates the following sequence of values in the 'in' array::
+This generates the following sequence of values in the ``in`` array::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
-This generates the following sequence of values in the 'in' and 'in_vals'
+This generates the following sequence of values in the ``in`` and ``in_vals``
 arrays::
 
    (6,0) (7,0) (2,0) (1,0) (0,0) (9,0) (4,0) (8,0) (5,0) (3,0)
@@ -59,21 +59,21 @@ A sequential unstable sort operation is performed by:
    :end-before: _sort_seq_end
    :language: C++
 
-Since no comparator is passed to the sort method, the default 'less' operation
-is applied and the result generated in the 'out' array is non-decreasing sort
-on the 'out' array. The resulting 'out' array contains the values::
+Since no comparator is passed to the sort method, the default ``*less*`` operation
+is applied and the result generated in the ``out`` array is non-decreasing sort
+on the ``out`` array. The resulting ``out`` array contains the values::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 We can be explicit about the operation used in the sort by passing the
-'less' operator to the sort method:
+``*less*`` operator to the sort method:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_seq_less_start
    :end-before: _sort_seq_less_end
    :language: C++
 
-The result in the 'out' array is the same.
+The result in the ``out`` array is the same.
 
 An unstable parallel sort operation using OpenMP multi-threading is
 accomplished similarly by replacing the execution policy type:
@@ -122,7 +122,7 @@ Other Comparators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Using a different comparator allows sorting in a different order.
-Here is a sequential stable sort that uses the 'greater' operator:
+Here is a sequential stable sort that uses the ``*greater*`` operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_seq_greater_start
@@ -147,7 +147,7 @@ Sort *Pairs* operations generate the same results as the sort operations
 we have just described. However, an additional array of values is also permuted
 to match the sorted array so **two arrays are passed to sort pairs methods.**
 
-Here is a sequential unstable sort pairs that uses the 'less' operator:
+Here is a sequential unstable sort pairs that uses the ``*less*`` operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_pairs_seq_less_start
@@ -160,10 +160,10 @@ This generates the following sequence in the output array::
    (5,1) (5,0) (6,1) (6,0) (7,0) (7,1) (8,0) (8,1) (9,1) (9,0)
 
 Note that some of the pairs with equivalent keys stayed in the same order
-they appeared in the unsorted arrays like '(8,0) (8,1)', while others are
-reversed like '(9,1) (9,0)'.
+they appeared in the unsorted arrays like ``(8,0) (8,1)``, while others are
+reversed like ``(9,1) (9,0)``.
 
-Here is a sequential stable sort pairs that uses the 'greater' operator:
+Here is a sequential stable sort pairs that uses the ``*greater*`` operator:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_pairs_seq_greater_start
