@@ -22,17 +22,17 @@ void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   INDEX_TYPE* check_array;
 
-  allocRegionTestData(N,
+  allocRegionTestData(static_cast<size_t>(N),
                       work_res,
                       &work_array1, &work_array2, &work_array3,
                       host_res,
                       &check_array);
 
-  work_res.memset( work_array1, 0, sizeof(INDEX_TYPE) * N );
-  work_res.memset( work_array2, 0, sizeof(INDEX_TYPE) * N );
-  work_res.memset( work_array3, 0, sizeof(INDEX_TYPE) * N );
+  work_res.memset( work_array1, 0, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
+  work_res.memset( work_array2, 0, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
+  work_res.memset( work_array3, 0, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
 
-  host_res.memset( check_array, 0, sizeof(INDEX_TYPE) * N );
+  host_res.memset( check_array, 0, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
 
 
   RAJA::TypedRangeSegment<INDEX_TYPE> rseg(first, last);
@@ -56,7 +56,7 @@ void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   );
   
-  work_res.memcpy(check_array, work_array3, sizeof(INDEX_TYPE) * N);
+  work_res.memcpy(check_array, work_array3, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
 
   for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(check_array[i], 151);
