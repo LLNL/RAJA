@@ -27,8 +27,7 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   std::vector<INDEX_TYPE> idx_array(N);
   std::iota(&idx_array[0], &idx_array[0] + N, first);
 
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0],
-                                          static_cast<size_t>(N),
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], N,
                                           working_res);
 
   INDEX_TYPE* working_array;
@@ -41,7 +40,7 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
                                      &check_array,
                                      &test_array);
 
-  working_res.memset( working_array, 0, static_cast<size_t>(sizeof(INDEX_TYPE) * N) );
+  working_res.memset( working_array, 0, sizeof(INDEX_TYPE) * N );
 
   RAJA::region<REG_POLICY>([=]() {
 
@@ -56,7 +55,7 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   });
 
 
-  working_res.memcpy(check_array, working_array, static_cast<size_t>(sizeof(INDEX_TYPE) * N));
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
   for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(check_array[i], 3);

@@ -23,10 +23,10 @@ void allocateForallTestData(T N,
 {
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  *work_array = work_res.allocate<T>(static_cast<size_t>(RAJA::stripIndexType(N)));
+  *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
 
-  *check_array = host_res.allocate<T>(static_cast<size_t>(RAJA::stripIndexType(N)));
-  *test_array = host_res.allocate<T>(static_cast<size_t>(RAJA::stripIndexType(N)));
+  *check_array = host_res.allocate<T>(RAJA::stripIndexType(N));
+  *test_array = host_res.allocate<T>(RAJA::stripIndexType(N));
 }
 
 template<typename T>
