@@ -5,54 +5,32 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-atomic-ref-math-seq
-  SOURCES test-forall-atomic-ref-math-seq.cpp)
+#
+# Generate atomicref math tests for each enabled RAJA back-end.
+#
+# Note: FORALL_ATOMIC_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( ATOMIC_BACKEND ${FORALL_ATOMIC_BACKENDS} )
+  configure_file( test-forall-atomicref-math.cpp.in
+                  test-forall-atomicref-math-${ATOMIC_BACKEND}.cpp )
+  raja_add_test( NAME test-forall-atomicref-math-${ATOMIC_BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-atomicref-math-${ATOMIC_BACKEND}.cpp )
 
-raja_add_test(
-  NAME test-forall-atomic-ref-other-seq
-  SOURCES test-forall-atomic-ref-other-seq.cpp)
+  target_include_directories(test-forall-atomicref-math-${ATOMIC_BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-atomic-ref-math-openmp
-    SOURCES test-forall-atomic-ref-math-openmp.cpp)
+#
+# Generate atomicref other tests for each enabled RAJA back-end.
+#
+# Note: FORALL_ATOMIC_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( ATOMIC_BACKEND ${FORALL_ATOMIC_BACKENDS} )
+  configure_file( test-forall-atomicref-other.cpp.in
+                  test-forall-atomicref-other-${ATOMIC_BACKEND}.cpp )
+  raja_add_test( NAME test-forall-atomicref-other-${ATOMIC_BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-atomicref-other-${ATOMIC_BACKEND}.cpp )
 
-  raja_add_test(
-    NAME test-forall-atomic-ref-other-openmp
-    SOURCES test-forall-atomic-ref-other-openmp.cpp)
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-atomic-ref-math-openmp-target
-    SOURCES test-forall-atomic-ref-math-openmp-target.cpp)
-
-  raja_add_test(
-    NAME test-forall-atomic-ref-other-openmp-target
-    SOURCES test-forall-atomic-ref-other-openmp-target.cpp)
-endif()
-
-if(RAJA_ENABLE_TBB)
-  # reserved for future compatability
-endif()
-
-if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-atomic-ref-math-cuda
-    SOURCES test-forall-atomic-ref-math-cuda.cpp)
-
-  raja_add_test(
-    NAME test-forall-atomic-ref-other-cuda
-    SOURCES test-forall-atomic-ref-other-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-atomic-ref-math-hip
-    SOURCES test-forall-atomic-ref-math-hip.cpp)
-
-  raja_add_test(
-    NAME test-forall-atomic-ref-other-hip
-    SOURCES test-forall-atomic-ref-other-hip.cpp)
-endif()
+  target_include_directories(test-forall-atomicref-other-${ATOMIC_BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()

@@ -8,22 +8,12 @@
 #ifndef __TEST_FORALL_REGION_HPP__
 #define __TEST_FORALL_REGION_HPP__
 
-#include "RAJA/RAJA.hpp"
-
-#include "../../test-forall-utils.hpp"
-
 #include <numeric>
 #include <vector>
 
-TYPED_TEST_SUITE_P(ForallRegionTest);
-template <typename T>
-class ForallRegionTest : public ::testing::Test
-{
-};
-
 template <typename INDEX_TYPE, typename WORKING_RES, 
           typename REG_POLICY, typename EXEC_POLICY>
-void ForallBasicRegionTest(INDEX_TYPE first, INDEX_TYPE last)
+void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource working_res{WORKING_RES()};
 
@@ -77,19 +67,26 @@ void ForallBasicRegionTest(INDEX_TYPE first, INDEX_TYPE last)
                                        test_array);
 }
 
-TYPED_TEST_P(ForallRegionTest, RegionSegmentForall)
+
+TYPED_TEST_SUITE_P(ForallRegionTest);
+template <typename T>
+class ForallRegionTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallRegionTest, RegionForall)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using REG_POLICY  = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(0, 25);
-  ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(1, 153);
-  ForallBasicRegionTest<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(3, 2556);
+  ForallRegionTestImpl<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(0, 25);
+  ForallRegionTestImpl<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(1, 153);
+  ForallRegionTestImpl<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(3, 2556);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallRegionTest,
-                            RegionSegmentForall);
+                            RegionForall);
 
 #endif  // __TEST_FORALL_REGION_HPP__
