@@ -64,9 +64,9 @@ template < typename T, typename Vtable_T >
 inline const Vtable_T* get_Vtable(omp_target_work const&)
 {
   static Vtable_T vtable{
-        &Vtable_T::move_construct_destroy<T>,
+        &Vtable_T::template move_construct_destroy<T>,
         get_cached_Vtable_omp_target_call<T, Vtable_T>(),
-        &Vtable_T::destroy<T>,
+        &Vtable_T::template destroy<T>,
         sizeof(T)
       };
   return &vtable;

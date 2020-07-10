@@ -63,7 +63,7 @@ struct forone_openmp_target : public RunOnHost { };
 template < >
 struct forone_policy_info<forone_openmp_target>
 {
-  using type = RAJA::omp_target_parallel_for_exec<1>
+  using type = RAJA::omp_target_parallel_for_exec<1>;
   static const char* name() { return "forone_openmp_target"; }
 };
 
