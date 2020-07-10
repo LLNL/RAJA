@@ -34,6 +34,7 @@ add_subdirectory(segment)
 add_subdirectory(segment-view)
 
 add_subdirectory(reduce-basic)
+add_subdirectory(reduce-bitwise)
 
 unset( FORALL_BACKENDS ) 
 
