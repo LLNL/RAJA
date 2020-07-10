@@ -11,7 +11,7 @@ build_script:
 
     cd build
 
-    cmake ../
+    cmake ../ -DENABLE_OPENMP=Off
 
     cmake --build . --config Release
 test_script:
