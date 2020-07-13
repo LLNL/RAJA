@@ -60,20 +60,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
-  int *c = memoryManager::allocate<int>(N);
+  RAJA::resources::Resource host{RAJA::resources::Host()};
 
-  int *a_ = memoryManager::allocate<int>(N);
-  int *b_ = memoryManager::allocate<int>(N);
-  int *c_ = memoryManager::allocate<int>(N);
+  int *a = host.allocate<int>(N);
+  int *b = host.allocate<int>(N);
+  int *c = host.allocate<int>(N);
+
+  int *a_ = host.allocate<int>(N);
+  int *b_ = host.allocate<int>(N);
+  int *c_ = host.allocate<int>(N);
 
 
   for (int i = 0; i < N; ++i) {
     a[i] = -i;
-    b[i] = i;
+    b[i] = 2 * i;
     a_[i] = -i;
-    b_[i] = i;
+    b_[i] = 2 * i;
 
   }
 
@@ -82,14 +84,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-style vector addition...\n";
 
-  // _cstyle_vector_add_start
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
-  // _cstyle_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -98,205 +97,213 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
-  //RAJA::resources::Resource host{RAJA::resources::Host()};
 
-  // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });
-  // _rajaseq_vector_add_end
-
-  checkResult(c, N);
-//printResult(c, N);
-//----------------------------------------------------------------------------//
-// RAJA::seq_exec policy enforces strictly sequential execution.... 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA sequential vector addition...\n";
-
-  RAJA::resources::Resource host{RAJA::resources::Host()};
-
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::loop_exec policy enforces strictly sequential execution.... 
+// RAJA::loop_exec policy enforces loop execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA loop vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::loop_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::sind_exec policy enforces strictly sequential execution.... 
+// RAJA::sind_exec policy enforces simd execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA simd_exec vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::simd_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 #if defined(RAJA_ENABLE_OPENMP)
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_parallel_exec policy enforces strictly sequential execution.... 
+// RAJA::omp_for_parallel_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA omp_parallel<seq_exec> vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::omp_parallel_exec<RAJA::seq_exec>>(host, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_nowait_exec policy enforces strictly sequential execution.... 
+// RAJA::omp_for_nowait_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA omp_for_nowait vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::omp_for_nowait_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_exec policy enforces strictly sequential execution.... 
+// RAJA::omp_for_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA omp_for_exec vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::omp_for_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
 //----------------------------------------------------------------------------//
-// RAJA::tbb_for_dynamic policy enforces strictly sequential execution.... 
+// RAJA::tbb_for_dynamic policy execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA tbb_for_dynamic vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::tbb_for_dynamic>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::tbb_for_static policy enforces strictly sequential execution.... 
+// RAJA::tbb_for_static policy execution.... 
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA tbb_for_static<8> vector addition...\n";
 
-  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::tbb_for_static<8>>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
 #endif
 
 
-//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA CUDA vector addition...\n";
+//----------------------------------------------------------------------------//
+// RAJA::cuda_exec policy execution.... 
+//----------------------------------------------------------------------------//
+  {
+  std::cout << "\n Running RAJA CUDA vector addition on 2 seperate streams...\n";
   RAJA::resources::Resource res_cuda1{RAJA::resources::Cuda()};
   RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
 
-  // _rajacuda_vector_add_start
-  auto e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
+
+  int* d_a2 = res_cuda2.allocate<int>(sizeof(int) * N);
+  int* d_b2 = res_cuda2.allocate<int>(sizeof(int) * N);
+  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
+
+  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
+  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+
+  res_cuda2.memcpy(d_a2, a, sizeof(int)* N);
+  res_cuda2.memcpy(d_b2, b, sizeof(int)* N);
+
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    c[i] = a[i] + b[i]; 
+    d_c1[i] = d_a1[i] + d_b1[i]; 
   });    
 
-  auto e_ = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    c_[i] = a_[i] + b_[i]; 
+    d_c2[i] = d_a2[i] + d_b2[i]; 
   }); 
-  // _rajacuda_vector_add_end
+
+  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
+
+  res_cuda2.memcpy(c_, d_c2, sizeof(int)*N );
 
   checkResult(c, N);
   checkResult(c_, N);
-//printResult(c, N);
-#endif
 
-////----------------------------------------------------------------------------//
-//
-//#if defined(RAJA_ENABLE_HIP)
-//  std::cout << "\n Running RAJA HIP vector addition...\n";
-//
-//  int *d_a = memoryManager::allocate_gpu<int>(N);
-//  int *d_b = memoryManager::allocate_gpu<int>(N);
-//  int *d_c = memoryManager::allocate_gpu<int>(N);
-//
-//  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
-//  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
-//
-//  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
-//    [=] RAJA_DEVICE (int i) {
-//    d_c[i] = d_a[i] + d_b[i];
-//  });
-//
-//  hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
-//
-//  checkResult(c, N);
-////printResult(c, N);
-//
-//  memoryManager::deallocate_gpu(d_a);
-//  memoryManager::deallocate_gpu(d_b);
-//  memoryManager::deallocate_gpu(d_c);
-//#endif
-//
-////----------------------------------------------------------------------------//
+  res_cuda1.deallocate(d_a1);
+  res_cuda1.deallocate(d_b1);
+  res_cuda1.deallocate(d_c1);
+
+  res_cuda2.deallocate(d_a2);
+  res_cuda2.deallocate(d_b2);
+  res_cuda2.deallocate(d_c2);
+  }
+
+
+//----------------------------------------------------------------------------//
+// RAJA::cuda_exec policy with waiting event.... 
+//----------------------------------------------------------------------------//
+  {
+  std::cout << "\n Running RAJA CUDA vector with dependency between two seperate streams...\n";
+  RAJA::resources::Resource res_cuda1{RAJA::resources::Cuda()};
+  RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
+
+  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
+
+  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
+
+  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
+  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+
+  RAJA::resources::Event e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c1[i] = d_a1[i] + d_b1[i]; 
+  });    
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c2[i] = -1;
+  }); 
+
+  res_cuda2.wait_for(&e);
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c2[i] = d_c1[i]; 
+  }); 
+
+  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
+  res_cuda1.memcpy(c_, d_c2, sizeof(int)*N );
+
+  checkResult(c, N);
+  checkResult(c_, N);
+
+  res_cuda1.deallocate(d_a1);
+  res_cuda1.deallocate(d_b1);
+
+  res_cuda1.deallocate(d_c1);
+  res_cuda2.deallocate(d_c2);
+  }
+
+#endif
 
 //
 // Clean up.
 //
-  memoryManager::deallocate(a);
-  memoryManager::deallocate(b);
-  memoryManager::deallocate(c);
-  memoryManager::deallocate(a_);
-  memoryManager::deallocate(b_);
-  memoryManager::deallocate(c_);
+  host.deallocate(a);
+  host.deallocate(b);
+  host.deallocate(c);
+
+  host.deallocate(a_);
+  host.deallocate(b_);
+  host.deallocate(c_);
 
   std::cout << "\n DONE!...\n";
 
@@ -310,7 +317,7 @@ void checkResult(int* res, int len)
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
-    if ( res[i] != 0 ) { correct = false; }
+    if ( res[i] != i ) { correct = false; }
   }
   if ( correct ) {
     std::cout << "\n\t result -- PASS\n";
