@@ -425,7 +425,7 @@ class ReduceBitAnd<omp_target_reduce, T>
 {
 public:
 
-  using self = ReduceBitOr<omp_target_reduce, T>;
+  using self = ReduceBitAnd<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::and_bit<T>, T>;
   using parent::parent;
 
