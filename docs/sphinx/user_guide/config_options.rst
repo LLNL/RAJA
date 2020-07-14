@@ -301,9 +301,10 @@ and their default settings:
 Setting RAJA Back-End Features
 ===============================
 
-To access compiler and hardware optimization features, it is often necessary
-to pass options to a compiler. This sections describes how to do this and
-which CMake variables to use for certain cases. 
+Various `RAJA_ENABLE_*` options are listed above for enabling RAJA back-ends,
+such as OpenMP and CUDA. To access compiler and hardware optimization features,i
+it may be necessary to pass options to a compiler. This sections describes how 
+to do this and which CMake variables to use for certain cases. 
 
 * **OpenMP Compiler Options**
 
