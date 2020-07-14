@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
 
 TEST(LayoutUnitTest, OffsetVsRegular)
 {

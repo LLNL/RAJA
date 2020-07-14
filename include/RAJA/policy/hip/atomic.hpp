@@ -24,6 +24,7 @@
 
 #include <stdexcept>
 #include <type_traits>
+#include "hip/hip_runtime.h"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
