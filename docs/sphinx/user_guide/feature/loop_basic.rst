@@ -115,7 +115,10 @@ limits the amount of parallelism that can be exposed and the types of
 parallelism that may be used. For example, if an OpenMP or CUDA
 parallel execution policy is used on the outermost loop, then all inner loops
 would be run sequentially in each thread. It also makes it difficult to perform 
-transformations like loop interchange and loop collapse. 
+transformations like loop interchange and loop collapse without changing the 
+source code, which breaks RAJA encapsulation.
+
+.. note:: **We do not recommend nesting ``RAJA::forall`` statements for nested loops.**
 
 The RAJA *kernel* interface facilitates parallel execution and transformations 
 of arbitrary loop nests and other complex loops. It can treat a complex loop 
@@ -229,6 +232,9 @@ with the outermost loop and ending with the innermost loop.
 See :ref:`matmultkernel-label` for a complete example showing RAJA nested
 loop functionality and :ref:`nestedreorder-label` for a detailed example 
 describing nested loop reordering.
+
+.. note:: In general, RAJA execution policies for ``RAJA::forall`` and 
+          ``RAJA::kernel`` are different.
 
 A summary of all RAJA execution policies that may be used with ``RAJA::forall``
 or ``RAJA::kernel`` may be found in :ref:`policies-label`. Also, a discussion
