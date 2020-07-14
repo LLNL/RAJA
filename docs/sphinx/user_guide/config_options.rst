@@ -306,6 +306,9 @@ such as OpenMP and CUDA. To access compiler and hardware optimization features,i
 it may be necessary to pass options to a compiler. This sections describes how 
 to do this and which CMake variables to use for certain cases. 
 
+.. note:: Please see :ref:`getting_started_building-label` for notes about 
+          which versions of various back-ends RAJA supports.
+
 * **OpenMP Compiler Options**
 
 The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
