@@ -136,6 +136,9 @@ N cores.
             * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
             * External cub: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<cub dir name> 
 
+.. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
+          use the Hip back-end, which supports AMD GPUs.
+
 ----------------
 Installing RAJA
 ----------------
