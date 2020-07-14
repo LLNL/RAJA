@@ -323,6 +323,13 @@ the clang compiler as a CMake option::
 
 * **CUDA Compiler Options**
 
+.. note:: When building RAJA with CUDA enabled, the NVIDIA cub library is 
+          required. Cub is included with RAJA as a git submodule and that 
+          will be used by default. If you would like to use an 
+          externally-supplied cub library, please see 
+          :ref:`getting_started_building-label` for instructions on how 
+          to do this.
+
 When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
 
   * CMAKE_CUDA_FLAGS_RELEASE 

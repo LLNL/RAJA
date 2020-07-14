@@ -27,6 +27,9 @@ simplest form requires:
 
 - C++ compiler with C++11 support
 - `CMake <https://cmake.org/>`_ version 3.9 or greater.
+- The `camp <https://github.com/LLNL/camp>`_ C++ meta-programming library.
+  This is included with RAJA as a Git submodule. Instructions for using
+  an externally-supplied version of the camp library are below.
 
 
 ==================
@@ -75,6 +78,8 @@ Building and installing RAJA can be very easy or more complicated, depending
 on which features you want to use and how well you understand how to use
 your system.
 
+.. _getting_started_building-label:
+
 --------------
 Building RAJA
 --------------
@@ -118,11 +123,12 @@ N cores.
           `Google Test framework <https://github.com/google/googletest>`_, 
           so you can also run tests via Google Test commands.
 
-          It is very important to note that the version of Googletest that
+.. note:: It is very important to note that the version of Googletest that
           is used in RAJA version v0.11.0 or newer requires CUDA version 
           9.2.x or newer when compiling with nvcc. Thus, if you build
           RAJA with CUDA enabled and want to also enable RAJA tests, you
-          must use CUDA version 9.2.x or newer.
+          must use CUDA version 9.2.x or newer. Earlier versions of RAJA
+          allow older versions of CUDA to be used.
 
 .. note:: You may use externally-supplied versions of the camp and cub 
           libraries with RAJA if you wish. To do so, pass the following 
