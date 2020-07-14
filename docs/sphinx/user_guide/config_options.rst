@@ -80,14 +80,15 @@ and their default settings:
 
 * **Examples, tests, warnings, etc.**
 
-     Variables that control whether RAJA tests and examples are built when
-     the library is compiled are:
+     Variables that control whether RAJA tests, examples, or tutorial
+     exercises are built when RAJA is compiled:
 
       ======================   ======================
       Variable                 Default
       ======================   ======================
       ENABLE_TESTS             On 
       ENABLE_EXAMPLES          On 
+      ENABLE_EXERCISES         On 
       ======================   ======================
 
      RAJA can also be configured to build with compiler warnings reported as
@@ -101,6 +102,7 @@ and their default settings:
 
      RAJA Views/Layouts may be configured to check for out of bounds 
      indexing:
+
       =========================   ======================
       Variable                    Default
       =========================   ======================
@@ -112,27 +114,27 @@ and their default settings:
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
 
-      ======================   ======================
+      ======================   ============================================
       Variable                 Default
-      ======================   ======================
+      ======================   ============================================
       ENABLE_OPENMP            On 
-      ENABLE_TARGET_OPENMP     Off 
-      ENABLE_CUDA              Off 
+      ENABLE_TARGET_OPENMP     Off (when on, ENABLE_OPENMP must also be on)
       ENABLE_TBB               Off 
-      ======================   ======================
+      ENABLE_CUDA              Off 
+      ENABLE_HIP               Off 
+      ======================   ============================================
 
      Other compilation options are available via the following:
 
-      ======================   ======================
+      ======================   ==========================================
       Variable                 Default
-      ======================   ======================
-      ENABLE_CLANG_CUDA        Off
+      ======================   ==========================================
+      ENABLE_CLANG_CUDA        Off (when on, ENABLE_CUDA must also be on)
       ENABLE_CUB               On (when CUDA enabled)
-      ======================   ======================
+      ======================   ==========================================
 
       Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
-      the native support in the Clang compiler. When using it, the 
-      'ENABLE_CUDA' variable must also be turned on.
+      the native support in the Clang compiler.
 
       The 'ENABLE_CUB' variable is used to enable NVIDIA CUB library support
       for RAJA CUDA scans. Since the CUB library is included in RAJA as a
