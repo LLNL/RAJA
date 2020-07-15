@@ -217,6 +217,8 @@ void testWorkGroupOrderedMultiple(
 
 
   WorkPool_type pool(Allocator{});
+  WorkGroup_type group = pool.instantiate();
+  WorkSite_type site = group.run();
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 
@@ -263,7 +265,7 @@ void testWorkGroupOrderedMultiple(
       }
     }
 
-    WorkGroup_type group = pool.instantiate();
+    group = pool.instantiate();
 
     for (IndexType gr = 0; gr < group_reuse; gr++) {
 
@@ -320,7 +322,7 @@ void testWorkGroupOrderedMultiple(
         }
       }
 
-      WorkSite_type site = group.run();
+      site = group.run();
 
       // check_test_data(type1(5), type2(7), type3(11));
       {
@@ -374,6 +376,10 @@ void testWorkGroupOrderedMultiple(
         }
       }
     }
+
+    site.clear();
+    group.clear();
+    pool.clear();
   }
 
 

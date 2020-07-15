@@ -358,6 +358,8 @@ void testWorkGroupUnorderedMultiple(
         }
       }
     }
+
+    pool.clear();
   }
 
 
