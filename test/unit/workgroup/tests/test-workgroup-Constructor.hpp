@@ -57,7 +57,12 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
                   >
         site = group.run(Xargs{}...);
 
-    RAJA_UNUSED_VAR(site);
+    pool.clear();
+    group.clear();
+    site.clear();
+
+    ASSERT_EQ(pool.num_loops(), (size_t)0);
+    ASSERT_EQ(pool.storage_bytes(), (size_t)0);
   }
 
   ASSERT_TRUE(success);

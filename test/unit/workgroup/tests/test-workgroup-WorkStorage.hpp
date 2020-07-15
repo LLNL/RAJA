@@ -84,6 +84,10 @@ void testWorkGroupWorkStorageConstructor()
 
     test_empty(container);
 
+    container.clear();
+
+    test_empty(container);
+
 
     WorkStorage_type container2(std::move(container));
 
@@ -227,6 +231,10 @@ void testWorkGroupWorkStorageInsertCall()
 
 
     WorkStorage_type container(Allocator{});
+
+    test_empty(container);
+
+    container.clear();
 
     test_empty(container);
     fill_contents(container, 1.23456789);
@@ -438,6 +446,11 @@ void testWorkGroupWorkStorageMultiple(
     };
 
     WorkStorage_type container(Allocator{});
+
+    test_empty(container);
+    fill_contents(container, 1.0, 100.0, 1000.0);
+
+    container.clear();
 
     test_empty(container);
     fill_contents(container, 1.0, 100.0, 1000.0);

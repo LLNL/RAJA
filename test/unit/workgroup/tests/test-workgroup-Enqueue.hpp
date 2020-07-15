@@ -114,12 +114,12 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
       if (do_instantiate) {
         WorkGroup_type group = pool.instantiate();
-
-        {
-          ASSERT_EQ(pool.num_loops(), (size_t)0);
-          ASSERT_EQ(pool.storage_bytes(), (size_t)0);
-        }
+      } else {
+        pool.clear();
       }
+
+      ASSERT_EQ(pool.num_loops(), (size_t)0);
+      ASSERT_EQ(pool.storage_bytes(), (size_t)0);
     }
   }
 
@@ -151,6 +151,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
 
   testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, 1, 1);
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, 1, 1);
 }
 
 TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultiple)
@@ -165,6 +166,7 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultipl
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, dist(rng), dist(rng));
   testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), dist(rng));
 }
 
