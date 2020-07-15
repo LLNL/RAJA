@@ -384,6 +384,7 @@ private:
         m_vec.emplace_back(move_destroy_value(std::move(rhs), rhs.m_vec[i]));
       }
       rhs.m_vec.clear();
+      rhs.clear();
     }
   }
 
@@ -641,6 +642,7 @@ private:
       m_array_end = m_array_begin + rhs.storage_size();
       rhs.m_array_end = rhs.m_array_begin;
       rhs.m_offsets.clear();
+      rhs.clear();
     }
   }
 
@@ -942,6 +944,7 @@ private:
         m_array_end += m_stride;
       }
       rhs.m_array_end = rhs.m_array_begin;
+      rhs.clear();
     }
   }
 
