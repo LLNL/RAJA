@@ -938,6 +938,42 @@ public:
   }
 };
 
+//! specialization of ReduceBitOr for hip_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitOr<hip_reduce_base<maybe_atomic>, T>
+    : public hip::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = hip::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator|= for ReduceOr -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitOr& operator|=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitAnd for hip_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitAnd<hip_reduce_base<maybe_atomic>, T>
+    : public hip::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = hip::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator&= for ReduceBitAnd -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitAnd& operator&=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
 //! specialization of ReduceMin for hip_reduce
 template <bool maybe_atomic, typename T>
 class ReduceMin<hip_reduce_base<maybe_atomic>, T>
