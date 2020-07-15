@@ -841,12 +841,13 @@ public:
     return *this;
   }
 
-  // reserve space for loop_storage_size bytes of loop storage
-  // ignores num_loops
+  // reserve space for at least loop_storage_size bytes of loop storage
+  // and num_loops at current stride
   void reserve(size_type num_loops, size_type loop_storage_size)
   {
-    RAJA_UNUSED_VAR(num_loops);
-    array_reserve(loop_storage_size, m_stride);
+    size_type num_storage_loops =
+        std::max(num_loops, (loop_storage_size + num_loops - 1) / num_loops);
+    array_reserve(num_storage_loops*m_stride, m_stride);
   }
 
   // number of loops stored
@@ -964,6 +965,7 @@ private:
   // each loop body separated by new_stride bytes
   // note that this can reallocate storage with or without changing
   // the storage stride
+  // Note that loop_storage_size must be a multiple of new_stride
   void array_reserve(size_type loop_storage_size, size_type new_stride)
   {
     if (loop_storage_size > storage_capacity() || new_stride > m_stride) {
@@ -1007,7 +1009,7 @@ private:
     const size_type value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused() && value_size <= m_stride) {
-      array_reserve(std::max(storage_size() + value_size, 2*storage_capacity()),
+      array_reserve(std::max(storage_size() + m_stride, 2*storage_capacity()),
                     m_stride);
     } else if (value_size > m_stride) {
       array_reserve((size()+1)*value_size,
