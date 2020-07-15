@@ -193,6 +193,10 @@ struct WorkRunnerForallOrdered_base
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 
+  // clear any state so ready to be destroyed or reused
+  void clear()
+  { }
+
   // no extra storage required here
   using per_run_storage = int;
 };

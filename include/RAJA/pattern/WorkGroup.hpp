@@ -250,10 +250,17 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
 
   inline workgroup_type instantiate();
 
-  ~WorkPool()
+  void clear()
   {
     // storage is about to be destroyed
     // but it was never used so no synchronization necessary
+    m_storage.clear();
+    m_runner.clear();
+  }
+
+  ~WorkPool()
+  {
+    clear();
   }
 
 private:
@@ -304,10 +311,17 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
 
   inline worksite_type run(Args...);
 
-  ~WorkGroup()
+  void clear()
   {
     // storage is about to be destroyed
     // TODO: synchronize
+    m_storage.clear();
+    m_runner.clear();
+  }
+
+  ~WorkGroup()
+  {
+    clear();
   }
 
 private:
@@ -356,10 +370,15 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
 
-  ~WorkSite()
+  void clear()
   {
     // resources is about to be released
     // TODO: synchronize
+  }
+
+  ~WorkSite()
+  {
+    clear();
   }
 
 private:

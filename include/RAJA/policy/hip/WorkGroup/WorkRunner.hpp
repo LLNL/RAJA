@@ -341,6 +341,12 @@ struct WorkRunner<
     return run_storage;
   }
 
+  // clear any state so ready to be destroyed or reused
+  void clear()
+  {
+    m_total_iterations = 0;
+  }
+
 private:
   index_type m_total_iterations = 0;
 };

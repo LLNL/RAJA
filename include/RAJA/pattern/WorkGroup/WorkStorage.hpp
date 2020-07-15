@@ -344,14 +344,14 @@ public:
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
-  // destroy all stored loops, deallocates individual loop storage but
-  // not vector of loops pointers
+  // destroy all stored loops, deallocates all storage
   void clear()
   {
     while (!m_vec.empty()) {
       destroy_value(m_vec.back());
       m_vec.pop_back();
     }
+    m_vec.shrink_to_fit();
   }
 
   ~WorkStorage()
@@ -576,12 +576,15 @@ public:
     m_array_end += value_size;
   }
 
-  // destroy loops and deallocate loop storage (does not deallocate offsets)
+  // destroy loops and deallocate all storage
   void clear()
   {
     array_clear();
     if (m_array_begin != nullptr) {
       allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
+      m_array_begin = nullptr;
+      m_array_end   = nullptr;
+      m_array_cap   = nullptr;
     }
   }
 
@@ -616,8 +619,8 @@ private:
   // move assignment if allocator does not propagate on move assignment
   void move_assign_private(WorkStorage&& rhs, std::false_type)
   {
+    clear();
     if (m_aloc == rhs.m_aloc) {
-      clear();
 
       m_offsets     = std::move(rhs.m_offsets);
       m_array_begin = rhs.m_array_begin;
@@ -628,7 +631,6 @@ private:
       rhs.m_array_end   = nullptr;
       rhs.m_array_cap   = nullptr;
     } else {
-      array_clear();
       array_reserve(rhs.storage_size());
 
       for (size_type i = 0; i < rhs.size(); ++i) {
@@ -679,7 +681,7 @@ private:
     }
   }
 
-  // destroy loop objects (does not deallocate storage)
+  // destroy loop objects (does not deallocate array storage)
   void array_clear()
   {
     while (!m_offsets.empty()) {
@@ -687,6 +689,7 @@ private:
       m_array_end = m_array_begin + m_offsets.back();
       m_offsets.pop_back();
     }
+    m_offsets.shrink_to_fit();
   }
 
   // ensure there is enough storage to hold the next loop body at value offset
@@ -873,12 +876,15 @@ public:
     m_array_end += m_stride;
   }
 
-  // destroy stored loop bodies and deallocates loop storage
+  // destroy stored loop bodies and deallocates all storage
   void clear()
   {
     array_clear();
     if (m_array_begin != nullptr) {
       allocator_traits_type::deallocate(m_aloc, m_array_begin, storage_capacity());
+      m_array_begin = nullptr;
+      m_array_end   = nullptr;
+      m_array_cap   = nullptr;
     }
   }
 
@@ -914,8 +920,8 @@ private:
   // move assignment if allocator does not propagate on move assignment
   void move_assign_private(WorkStorage&& rhs, std::false_type)
   {
+    clear();
     if (m_aloc == rhs.m_aloc) {
-      clear();
 
       m_stride      = rhs.m_stride     ;
       m_array_begin = rhs.m_array_begin;
@@ -927,7 +933,7 @@ private:
       rhs.m_array_end   = nullptr;
       rhs.m_array_cap   = nullptr;
     } else {
-      array_clear();
+
       m_stride = rhs.m_stride;
       array_reserve(rhs.storage_size(), rhs.m_stride);
 
