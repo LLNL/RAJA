@@ -211,8 +211,8 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
-  WorkPool(Allocator aloc)
-    : m_storage(std::forward<Allocator>(aloc))
+  explicit WorkPool(Allocator const& aloc)
+    : m_storage(aloc)
   { }
 
   WorkPool(WorkPool const&) = delete;
@@ -371,7 +371,7 @@ private:
 
   per_run_storage m_run_storage;
 
-  WorkSite(per_run_storage&& run_storage)
+  explicit WorkSite(per_run_storage&& run_storage)
     : m_run_storage(std::move(run_storage))
   { }
 };

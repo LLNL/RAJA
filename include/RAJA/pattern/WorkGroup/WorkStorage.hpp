@@ -281,7 +281,7 @@ public:
   using const_iterator = random_access_iterator<const_iterator_base>;
 
 
-  WorkStorage(allocator_type const& aloc)
+  explicit WorkStorage(allocator_type const& aloc)
     : m_vec(0, aloc)
     , m_aloc(aloc)
   { }
@@ -508,7 +508,7 @@ public:
   using const_iterator = random_access_iterator<const_iterator_base>;
 
 
-  WorkStorage(allocator_type const& aloc)
+  explicit WorkStorage(allocator_type const& aloc)
     : m_offsets(0, aloc)
     , m_aloc(aloc)
   { }
@@ -808,7 +808,7 @@ public:
   using const_iterator = random_access_iterator<const_iterator_base>;
 
 
-  WorkStorage(allocator_type const& aloc)
+  explicit WorkStorage(allocator_type const& aloc)
     : m_aloc(aloc)
   { }
 
