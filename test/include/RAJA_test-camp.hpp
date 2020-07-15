@@ -16,7 +16,7 @@
 #include "camp/list.hpp"
 
 //
-// Memory resource types for beck-end memory management
+// Memory resource types for back-end memory management
 //
 using HostResourceList = camp::list<camp::resources::Host>;
 
