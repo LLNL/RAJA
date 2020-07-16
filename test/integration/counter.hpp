@@ -22,4 +22,6 @@ struct CounterData
 // to be used
 extern CounterData* plugin_test_data;
 
+extern camp::resources::Resource* plugin_test_resource;
+
 #endif  // RAJA_counter_HPP

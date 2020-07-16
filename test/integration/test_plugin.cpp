@@ -12,20 +12,28 @@
 
 CounterData* plugin_test_data = nullptr;
 
+camp::resources::Resource* plugin_test_resource = nullptr;
+
 struct SetupPluginVars
 {
-  SetupPluginVars()
+  SetupPluginVars(camp::resources::Resource const& test_resource)
+    : m_test_resource(test_resource)
   {
-    if (plugin_test_data == nullptr) {
-      plugin_test_data = new CounterData;
-    }
+    // ASSERT_EQ(plugin_test_data, nullptr);
+    // ASSERT_EQ(plugin_test_resource, nullptr);
 
-    plugin_test_data->capture_platform_active = RAJA::Platform::undefined;
-    plugin_test_data->capture_counter_pre     = 0;
-    plugin_test_data->capture_counter_post    = 0;
-    plugin_test_data->launch_platform_active = RAJA::Platform::undefined;
-    plugin_test_data->launch_counter_pre     = 0;
-    plugin_test_data->launch_counter_post    = 0;
+    plugin_test_data = m_test_resource.allocate<CounterData>(1);
+    plugin_test_resource = &m_test_resource;
+
+    CounterData data;
+    data.capture_platform_active = RAJA::Platform::undefined;
+    data.capture_counter_pre     = 0;
+    data.capture_counter_post    = 0;
+    data.launch_platform_active = RAJA::Platform::undefined;
+    data.launch_counter_pre     = 0;
+    data.launch_counter_post    = 0;
+
+    m_test_resource.memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
   SetupPluginVars(SetupPluginVars const&) = delete;
@@ -35,10 +43,16 @@ struct SetupPluginVars
 
   ~SetupPluginVars()
   {
-    if (plugin_test_data != nullptr) {
-      delete plugin_test_data; plugin_test_data = nullptr;
-    }
+    // ASSERT_NE(plugin_test_data, nullptr);
+    // ASSERT_NE(plugin_test_resource, nullptr);
+
+    m_test_resource.deallocate(plugin_test_data);
+    plugin_test_data = nullptr;
+    plugin_test_resource = nullptr;
   }
+
+private:
+  camp::resources::Resource m_test_resource;
 };
 
 
@@ -56,7 +70,9 @@ struct PluginTestCallable
     , m_data_iptr(rhs.m_data_iptr)
     , m_data(rhs.m_data)
   {
-    CounterData i_data = *m_data_iptr;
+    CounterData i_data;
+    plugin_test_resource->memcpy(&i_data, m_data_iptr, sizeof(CounterData));
+
     if (m_data.capture_platform_active == RAJA::Platform::undefined &&
         i_data.capture_platform_active != RAJA::Platform::undefined) {
       m_data = i_data;
@@ -134,9 +150,9 @@ private:
 // test with basic forall
 TEST(PluginTest, ForAllCounter)
 {
-  SetupPluginVars spv;
+  SetupPluginVars spv(camp::resources::Host{});
 
-  CounterData* data = new CounterData[10];
+  CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
   for (int i = 0; i < 10; i++) {
 
@@ -145,30 +161,34 @@ TEST(PluginTest, ForAllCounter)
       PluginTestCallable{data}
     );
 
-    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].capture_counter_post,    i                   );
-    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].launch_counter_post,    i                   );
+    CounterData loop_data;
+    plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
+    ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+    ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
+  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
+  ASSERT_EQ(plugin_data.launch_counter_post,    10);
 
-  delete[] data;
+  plugin_test_resource->deallocate(data);
 }
 
 // test with basic forall_Icount
 TEST(PluginTest, ForAllICountCounter)
 {
-  SetupPluginVars spv;
+  SetupPluginVars spv(camp::resources::Host{});
 
-  CounterData* data = new CounterData[10];
+  CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
   for (int i = 0; i < 10; i++) {
 
@@ -177,30 +197,34 @@ TEST(PluginTest, ForAllICountCounter)
       PluginTestCallable{data}
     );
 
-    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].capture_counter_post,    i                   );
-    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].launch_counter_post,    i                   );
+    CounterData loop_data;
+    plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
+    ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+    ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
+  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
+  ASSERT_EQ(plugin_data.launch_counter_post,    10);
 
-  delete[] data;
+  plugin_test_resource->deallocate(data);
 }
 
 // test with IndexSet forall
 TEST(PluginTest, ForAllIdxSetCounter)
 {
-  SetupPluginVars spv;
+  SetupPluginVars spv(camp::resources::Host{});
 
-  CounterData* data = new CounterData[10];
+  CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
   for (int i = 0; i < 10; i++) {
 
@@ -216,31 +240,35 @@ TEST(PluginTest, ForAllIdxSetCounter)
     );
 
     for (int j = i; j < 10; j++) {
-      ASSERT_EQ(data[j].capture_platform_active, RAJA::Platform::host);
-      ASSERT_EQ(data[j].capture_counter_pre,     i+1                 );
-      ASSERT_EQ(data[j].capture_counter_post,    i                   );
-      ASSERT_EQ(data[j].launch_platform_active, RAJA::Platform::host);
-      ASSERT_EQ(data[j].launch_counter_pre,     i+1                 );
-      ASSERT_EQ(data[j].launch_counter_post,    i                   );
+      CounterData loop_data;
+      plugin_test_resource->memcpy(&loop_data, &data[j], sizeof(CounterData));
+      ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+      ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+      ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+      ASSERT_EQ(loop_data.launch_counter_post,    i                   );
     }
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
+  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
+  ASSERT_EQ(plugin_data.launch_counter_post,    10);
 
-  delete[] data;
+  plugin_test_resource->deallocate(data);
 }
 
 // test with IndexSet forall_Icount
 TEST(PluginTest, ForAllIcountIdxSetCounter)
 {
-  SetupPluginVars spv;
+  SetupPluginVars spv(camp::resources::Host{});
 
-  CounterData* data = new CounterData[10];
+  CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
   for (int i = 0; i < 10; i++) {
 
@@ -256,31 +284,35 @@ TEST(PluginTest, ForAllIcountIdxSetCounter)
     );
 
     for (int j = i; j < 10; j++) {
-      ASSERT_EQ(data[j].capture_platform_active, RAJA::Platform::host);
-      ASSERT_EQ(data[j].capture_counter_pre,     i+1                 );
-      ASSERT_EQ(data[j].capture_counter_post,    i                   );
-      ASSERT_EQ(data[j].launch_platform_active, RAJA::Platform::host);
-      ASSERT_EQ(data[j].launch_counter_pre,     i+1                 );
-      ASSERT_EQ(data[j].launch_counter_post,    i                   );
+      CounterData loop_data;
+      plugin_test_resource->memcpy(&loop_data, &data[j], sizeof(CounterData));
+      ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+      ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+      ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+      ASSERT_EQ(loop_data.launch_counter_post,    i                   );
     }
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
+  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
+  ASSERT_EQ(plugin_data.launch_counter_post,    10);
 
-  delete[] data;
+  plugin_test_resource->deallocate(data);
 }
 
 // test with multi_policy forall
 TEST(PluginTest, ForAllMultiPolicyCounter)
 {
-  SetupPluginVars spv;
+  SetupPluginVars spv(camp::resources::Host{});
 
-  CounterData* data = new CounterData[10];
+  CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
   auto mp = RAJA::make_multi_policy<RAJA::seq_exec, RAJA::loop_exec>(
       [](const RAJA::RangeSegment &r) {
@@ -298,20 +330,26 @@ TEST(PluginTest, ForAllMultiPolicyCounter)
       PluginTestCallable{data}
     );
 
-    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].capture_counter_post,    i                   );
-    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].launch_counter_post,    i                   );
+    CounterData loop_data;
+    plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
+    ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+    ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     5);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    5);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     5);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    5);
+  {
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     5);
+  ASSERT_EQ(plugin_data.capture_counter_post,    5);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     5);
+  ASSERT_EQ(plugin_data.launch_counter_post,    5);
+  }
 
   for (int i = 5; i < 10; i++) {
 
@@ -320,20 +358,25 @@ TEST(PluginTest, ForAllMultiPolicyCounter)
       PluginTestCallable{data}
     );
 
-    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].capture_counter_post,    i                   );
-    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
-    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
-    ASSERT_EQ(data[i].launch_counter_post,    i                   );
+    CounterData loop_data;
+    plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
+    ASSERT_EQ(loop_data.capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.capture_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.capture_counter_post,    i                   );
+    ASSERT_EQ(loop_data.launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(loop_data.launch_counter_pre,     i+1                 );
+    ASSERT_EQ(loop_data.launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
-  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
-  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
-
-  delete[] data;
+  {
+  CounterData plugin_data;
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
+  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
+  ASSERT_EQ(plugin_data.launch_counter_post,    10);
+  }
+  plugin_test_resource->deallocate(data);
 }
