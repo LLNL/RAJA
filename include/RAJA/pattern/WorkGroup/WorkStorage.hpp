@@ -846,7 +846,7 @@ public:
   void reserve(size_type num_loops, size_type loop_storage_size)
   {
     size_type num_storage_loops =
-        std::max(num_loops, (loop_storage_size + num_loops - 1) / num_loops);
+        std::max(num_loops, (loop_storage_size + m_stride - 1) / m_stride);
     array_reserve(num_storage_loops*m_stride, m_stride);
   }
 
