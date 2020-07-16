@@ -15,11 +15,6 @@ int plugin_test_capture_counter_post{0};
 int plugin_test_launch_counter_pre{0};
 int plugin_test_launch_counter_post{0};
 
-static_assert(RAJA::type_traits::is_integral<int>::value, "");
-static_assert(RAJA::type_traits::is_iterator<int>::value, "");
-// concepts::enable_if<
-//     type_traits::is_integral<int>,
-//     concepts::negate<type_traits::is_iterator<int>>>
 
 // Check that the plugin is called the correct number of times,
 // once before and after each kernel capture for the capture counter
