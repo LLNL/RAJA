@@ -61,6 +61,7 @@
 #include "RAJA/internal/Iterators.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/MultiPolicy.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
@@ -313,6 +314,28 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 /*!
  ******************************************************************************
  *
+ * \brief Generic dispatch over containers with a multi policy
+ *
+ ******************************************************************************
+ */
+template <typename ExecutionPolicy, typename Container, typename LoopBody>
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_multi_policy<ExecutionPolicy>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+{
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container does not model RandomAccessIterator");
+
+  // plugins handled in multipolicy policy_invoker
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              std::forward<Container>(c),
+              std::forward<LoopBody>(loop_body));
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief Generic dispatch over containers with icount with a value-based policy
  *
  ******************************************************************************
@@ -359,6 +382,7 @@ forall_Icount(ExecutionPolicy&& p,
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
 RAJA_INLINE concepts::enable_if<
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
