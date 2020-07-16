@@ -7,4 +7,7 @@
 /build/
 /build_*/
 /build-*/
+/install/
+/install_*/
+/install-*/
 /Debug/
