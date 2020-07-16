@@ -65,7 +65,7 @@ relatively straightforward to parameterize an application using execution
 policy types so that it can be compiled in a specific configuration suitable 
 to a given architecture.
 
-RAJA support for various exexution back-ends is the result of collaborative
+RAJA support for various execution back-ends is the result of collaborative
 development between the RAJA team and academic and industrial partners.
 Currently available execution back-ends include: 
 sequential, 
