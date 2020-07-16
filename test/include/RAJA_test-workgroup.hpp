@@ -68,7 +68,7 @@ struct ResourceAllocator
     }
 
     template <typename U>
-    friend inline bool operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator==(std_allocator const& /*lhs*/, std_allocator<U> const& /*rhs*/)
     {
       return true; // lhs.get_resource() == rhs.get_resource(); // TODO not equality comparable yet
     }
