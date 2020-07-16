@@ -7,14 +7,19 @@
 #ifndef  RAJA_counter_HPP
 #define  RAJA_counter_HPP
 
-// note that these are pointers here to allow different types of memory
-// to be used
-extern int*            plugin_test_capture_counter_pre;
-extern int*            plugin_test_capture_counter_post;
-extern RAJA::Platform* plugin_test_capture_platform_active;
 
-extern int*            plugin_test_launch_counter_pre;
-extern int*            plugin_test_launch_counter_post;
-extern RAJA::Platform* plugin_test_launch_platform_active;
+struct CounterData
+{
+  RAJA::Platform capture_platform_active = RAJA::Platform::undefined;
+  int            capture_counter_pre     = 0;
+  int            capture_counter_post    = 0;
+  RAJA::Platform launch_platform_active = RAJA::Platform::undefined;
+  int            launch_counter_pre     = 0;
+  int            launch_counter_post    = 0;
+};
+
+// note the use of a pointer here to allow different types of memory
+// to be used
+extern CounterData* plugin_test_data;
 
 #endif  // RAJA_counter_HPP

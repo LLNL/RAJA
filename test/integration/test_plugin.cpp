@@ -9,34 +9,23 @@
 
 #include "gtest/gtest.h"
 
-RAJA::Platform* plugin_test_capture_platform_active = nullptr;
-int*            plugin_test_capture_counter_pre     = nullptr;
-int*            plugin_test_capture_counter_post    = nullptr;
 
-RAJA::Platform* plugin_test_launch_platform_active = nullptr;
-int*            plugin_test_launch_counter_pre     = nullptr;
-int*            plugin_test_launch_counter_post    = nullptr;
+CounterData* plugin_test_data = nullptr;
 
 struct SetupPluginVars
 {
   SetupPluginVars()
   {
-    if (s_plugin_storage == nullptr) {
-      s_plugin_storage = new PluginStorage;
-      plugin_test_capture_platform_active = &s_plugin_storage->capture_platform_active;
-      plugin_test_capture_counter_pre     = &s_plugin_storage->capture_counter_pre;
-      plugin_test_capture_counter_post    = &s_plugin_storage->capture_counter_post;
-      plugin_test_launch_platform_active = &s_plugin_storage->launch_platform_active;
-      plugin_test_launch_counter_pre     = &s_plugin_storage->launch_counter_pre;
-      plugin_test_launch_counter_post    = &s_plugin_storage->launch_counter_post;
+    if (plugin_test_data == nullptr) {
+      plugin_test_data = new CounterData;
     }
 
-    s_plugin_storage->capture_platform_active = RAJA::Platform::undefined;
-    s_plugin_storage->capture_counter_pre     = 0;
-    s_plugin_storage->capture_counter_post    = 0;
-    s_plugin_storage->launch_platform_active = RAJA::Platform::undefined;
-    s_plugin_storage->launch_counter_pre     = 0;
-    s_plugin_storage->launch_counter_post    = 0;
+    plugin_test_data->capture_platform_active = RAJA::Platform::undefined;
+    plugin_test_data->capture_counter_pre     = 0;
+    plugin_test_data->capture_counter_post    = 0;
+    plugin_test_data->launch_platform_active = RAJA::Platform::undefined;
+    plugin_test_data->launch_counter_pre     = 0;
+    plugin_test_data->launch_counter_post    = 0;
   }
 
   SetupPluginVars(SetupPluginVars const&) = delete;
@@ -46,102 +35,38 @@ struct SetupPluginVars
 
   ~SetupPluginVars()
   {
-    if (s_plugin_storage != nullptr) {
-      delete s_plugin_storage; s_plugin_storage = nullptr;
-      plugin_test_capture_platform_active = nullptr;
-      plugin_test_capture_counter_pre     = nullptr;
-      plugin_test_capture_counter_post    = nullptr;
-      plugin_test_launch_platform_active = nullptr;
-      plugin_test_launch_counter_pre     = nullptr;
-      plugin_test_launch_counter_post    = nullptr;
+    if (plugin_test_data != nullptr) {
+      delete plugin_test_data; plugin_test_data = nullptr;
     }
   }
-
-private:
-  struct PluginStorage
-  {
-    RAJA::Platform capture_platform_active;
-    int            capture_counter_pre;
-    int            capture_counter_post;
-    RAJA::Platform launch_platform_active;
-    int            launch_counter_pre;
-    int            launch_counter_post;
-  };
-
-  static PluginStorage* s_plugin_storage;
 };
-
-typename SetupPluginVars::PluginStorage* SetupPluginVars::s_plugin_storage = nullptr;
 
 
 struct PluginTestCallable
 {
-  PluginTestCallable(RAJA::Platform* capture_platform_optr,
-                     int*            capture_count_pre_optr,
-                     int*            capture_count_post_optr,
-                     RAJA::Platform* launch_platform_optr,
-                     int*            launch_count_pre_optr,
-                     int*            launch_count_post_optr)
-    : m_capture_platform_optr  (capture_platform_optr)
-    , m_capture_count_pre_optr (capture_count_pre_optr)
-    , m_capture_count_post_optr(capture_count_post_optr)
-    , m_launch_platform_optr  (launch_platform_optr)
-    , m_launch_count_pre_optr (launch_count_pre_optr)
-    , m_launch_count_post_optr(launch_count_post_optr)
-
-    , m_capture_platform_iptr  (plugin_test_capture_platform_active)
-    , m_capture_count_pre_iptr (plugin_test_capture_counter_pre)
-    , m_capture_count_post_iptr(plugin_test_capture_counter_post)
-    , m_launch_platform_iptr  (plugin_test_launch_platform_active)
-    , m_launch_count_pre_iptr (plugin_test_launch_counter_pre)
-    , m_launch_count_post_iptr(plugin_test_launch_counter_post)
-  { }
+  PluginTestCallable(CounterData* data_optr)
+    : m_data_optr(data_optr)
+    , m_data_iptr(plugin_test_data)
+  {
+    clear_data();
+  }
 
   PluginTestCallable(PluginTestCallable const& rhs)
-    : m_capture_platform_optr  (rhs.m_capture_platform_optr)
-    , m_capture_count_pre_optr (rhs.m_capture_count_pre_optr)
-    , m_capture_count_post_optr(rhs.m_capture_count_post_optr)
-    , m_launch_platform_optr  (rhs.m_launch_platform_optr)
-    , m_launch_count_pre_optr (rhs.m_launch_count_pre_optr)
-    , m_launch_count_post_optr(rhs.m_launch_count_post_optr)
-
-    , m_capture_platform_iptr  (rhs.m_capture_platform_iptr)
-    , m_capture_count_pre_iptr (rhs.m_capture_count_pre_iptr)
-    , m_capture_count_post_iptr(rhs.m_capture_count_post_iptr)
-    , m_launch_platform_iptr  (rhs.m_launch_platform_iptr)
-    , m_launch_count_pre_iptr (rhs.m_launch_count_pre_iptr)
-    , m_launch_count_post_iptr(rhs.m_launch_count_post_iptr)
-
-    , m_capture_platform  (rhs.m_capture_platform)
-    , m_capture_count_pre (rhs.m_capture_count_pre)
-    , m_capture_count_post(rhs.m_capture_count_post)
+    : m_data_optr(rhs.m_data_optr)
+    , m_data_iptr(rhs.m_data_iptr)
+    , m_data(rhs.m_data)
   {
-    if (m_capture_platform == RAJA::Platform::undefined &&
-        *m_capture_platform_iptr != RAJA::Platform::undefined) {
-      m_capture_platform   = *m_capture_platform_iptr;
-      m_capture_count_pre  = *m_capture_count_pre_iptr;
-      m_capture_count_post = *m_capture_count_post_iptr;
+    CounterData i_data = *m_data_iptr;
+    if (m_data.capture_platform_active == RAJA::Platform::undefined &&
+        i_data.capture_platform_active != RAJA::Platform::undefined) {
+      m_data = i_data;
     }
   }
 
   PluginTestCallable(PluginTestCallable && rhs)
-    : m_capture_platform_optr  (rhs.m_capture_platform_optr)
-    , m_capture_count_pre_optr (rhs.m_capture_count_pre_optr)
-    , m_capture_count_post_optr(rhs.m_capture_count_post_optr)
-    , m_launch_platform_optr  (rhs.m_launch_platform_optr)
-    , m_launch_count_pre_optr (rhs.m_launch_count_pre_optr)
-    , m_launch_count_post_optr(rhs.m_launch_count_post_optr)
-
-    , m_capture_platform_iptr  (rhs.m_capture_platform_iptr)
-    , m_capture_count_pre_iptr (rhs.m_capture_count_pre_iptr)
-    , m_capture_count_post_iptr(rhs.m_capture_count_post_iptr)
-    , m_launch_platform_iptr  (rhs.m_launch_platform_iptr)
-    , m_launch_count_pre_iptr (rhs.m_launch_count_pre_iptr)
-    , m_launch_count_post_iptr(rhs.m_launch_count_post_iptr)
-
-    , m_capture_platform  (rhs.m_capture_platform)
-    , m_capture_count_pre (rhs.m_capture_count_pre)
-    , m_capture_count_post(rhs.m_capture_count_post)
+    : m_data_optr(rhs.m_data_optr)
+    , m_data_iptr(rhs.m_data_iptr)
+    , m_data(rhs.m_data)
   {
     rhs.clear();
   }
@@ -150,23 +75,9 @@ struct PluginTestCallable
   PluginTestCallable& operator=(PluginTestCallable && rhs)
   {
     if (this != &rhs) {
-      m_capture_platform_optr   = rhs.m_capture_platform_optr;
-      m_capture_count_pre_optr  = rhs.m_capture_count_pre_optr;
-      m_capture_count_post_optr = rhs.m_capture_count_post_optr;
-      m_launch_platform_optr   = rhs.m_launch_platform_optr;
-      m_launch_count_pre_optr  = rhs.m_launch_count_pre_optr;
-      m_launch_count_post_optr = rhs.m_launch_count_post_optr;
-
-      m_capture_platform_iptr   = rhs.m_capture_platform_iptr;
-      m_capture_count_pre_iptr  = rhs.m_capture_count_pre_iptr;
-      m_capture_count_post_iptr = rhs.m_capture_count_post_iptr;
-      m_launch_platform_iptr   = rhs.m_launch_platform_iptr;
-      m_launch_count_pre_iptr  = rhs.m_launch_count_pre_iptr;
-      m_launch_count_post_iptr = rhs.m_launch_count_post_iptr;
-
-      m_capture_platform   = rhs.m_capture_platform;
-      m_capture_count_pre  = rhs.m_capture_count_pre;
-      m_capture_count_post = rhs.m_capture_count_post;
+      m_data_optr = rhs.m_data_optr;
+      m_data_iptr = rhs.m_data_iptr;
+      m_data      = rhs.m_data;
 
       rhs.clear();
     }
@@ -176,12 +87,12 @@ struct PluginTestCallable
 
   void operator()(int i) const
   {
-    m_capture_platform_optr  [i] = m_capture_platform;
-    m_capture_count_pre_optr [i] = m_capture_count_pre;
-    m_capture_count_post_optr[i] = m_capture_count_post;
-    m_launch_platform_optr  [i] = *m_launch_platform_iptr;
-    m_launch_count_pre_optr [i] = *m_launch_count_pre_iptr;
-    m_launch_count_post_optr[i] = *m_launch_count_post_iptr;
+    m_data_optr[i].capture_platform_active = m_data.capture_platform_active;
+    m_data_optr[i].capture_counter_pre     = m_data.capture_counter_pre;
+    m_data_optr[i].capture_counter_post    = m_data.capture_counter_post;
+    m_data_optr[i].launch_platform_active = m_data_iptr->launch_platform_active;
+    m_data_optr[i].launch_counter_pre     = m_data_iptr->launch_counter_pre;
+    m_data_optr[i].launch_counter_post    = m_data_iptr->launch_counter_post;
   }
 
   void operator()(int count, int i) const
@@ -191,43 +102,26 @@ struct PluginTestCallable
   }
 
 private:
-  RAJA::Platform* m_capture_platform_optr   = nullptr;
-  int*            m_capture_count_pre_optr  = nullptr;
-  int*            m_capture_count_post_optr = nullptr;
-  RAJA::Platform* m_launch_platform_optr   = nullptr;
-  int*            m_launch_count_pre_optr  = nullptr;
-  int*            m_launch_count_post_optr = nullptr;
+        CounterData* m_data_optr = nullptr;
+  const CounterData* m_data_iptr = nullptr;
+        CounterData  m_data;
 
-  const RAJA::Platform* m_capture_platform_iptr   = nullptr;
-  const int*            m_capture_count_pre_iptr  = nullptr;
-  const int*            m_capture_count_post_iptr = nullptr;
-  const RAJA::Platform* m_launch_platform_iptr   = nullptr;
-  const int*            m_launch_count_pre_iptr  = nullptr;
-  const int*            m_launch_count_post_iptr = nullptr;
-
-  RAJA::Platform  m_capture_platform   = RAJA::Platform::undefined;
-  int             m_capture_count_pre  = -1;
-  int             m_capture_count_post = -1;
 
   void clear()
   {
-    m_capture_platform_optr   = nullptr;
-    m_capture_count_pre_optr  = nullptr;
-    m_capture_count_post_optr = nullptr;
-    m_launch_platform_optr   = nullptr;
-    m_launch_count_pre_optr  = nullptr;
-    m_launch_count_post_optr = nullptr;
+    m_data_optr = nullptr;
+    m_data_iptr = nullptr;
+    clear_data();
+  }
 
-    m_capture_platform_iptr   = nullptr;
-    m_capture_count_pre_iptr  = nullptr;
-    m_capture_count_post_iptr = nullptr;
-    m_launch_platform_iptr   = nullptr;
-    m_launch_count_pre_iptr  = nullptr;
-    m_launch_count_post_iptr = nullptr;
-
-    m_capture_platform   = RAJA::Platform::undefined;
-    m_capture_count_pre  = -1;
-    m_capture_count_post = -1;
+  void clear_data()
+  {
+    m_data.capture_platform_active = RAJA::Platform::undefined;
+    m_data.capture_counter_pre     = -1;
+    m_data.capture_counter_post    = -1;
+    m_data.launch_platform_active = RAJA::Platform::undefined;
+    m_data.launch_counter_pre     = -1;
+    m_data.launch_counter_post    = -1;
   }
 };
 
@@ -242,49 +136,31 @@ TEST(PluginTest, ForAllCounter)
 {
   SetupPluginVars spv;
 
-  RAJA::Platform* capture_platform   = new RAJA::Platform[10];
-  int*            capture_count_pre  = new int[10];
-  int*            capture_count_post = new int[10];
-
-  RAJA::Platform* launch_platform   = new RAJA::Platform[10];
-  int*            launch_count_pre  = new int[10];
-  int*            launch_count_post = new int[10];
+  CounterData* data = new CounterData[10];
 
   for (int i = 0; i < 10; i++) {
 
     RAJA::forall<RAJA::seq_exec>(
       RAJA::RangeSegment(i,i+1),
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
-    ASSERT_EQ(capture_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(capture_count_pre[i] , i+1                 );
-    ASSERT_EQ(capture_count_post[i], i                   );
-
-    ASSERT_EQ(launch_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(launch_count_pre[i] , i+1                 );
-    ASSERT_EQ(launch_count_post[i], i                   );
+    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].capture_counter_post,    i                   );
+    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 10);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
 
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 10);
-
-  delete[] capture_platform  ;
-  delete[] capture_count_pre ;
-  delete[] capture_count_post;
-  delete[] launch_platform  ;
-  delete[] launch_count_pre ;
-  delete[] launch_count_post;
+  delete[] data;
 }
 
 // test with basic forall_Icount
@@ -292,49 +168,31 @@ TEST(PluginTest, ForAllICountCounter)
 {
   SetupPluginVars spv;
 
-  RAJA::Platform* capture_platform   = new RAJA::Platform[10];
-  int*            capture_count_pre  = new int[10];
-  int*            capture_count_post = new int[10];
-
-  RAJA::Platform* launch_platform   = new RAJA::Platform[10];
-  int*            launch_count_pre  = new int[10];
-  int*            launch_count_post = new int[10];
+  CounterData* data = new CounterData[10];
 
   for (int i = 0; i < 10; i++) {
 
     RAJA::forall_Icount<RAJA::seq_exec>(
       RAJA::RangeSegment(i,i+1), i,
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
-    ASSERT_EQ(capture_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(capture_count_pre[i] , i+1                 );
-    ASSERT_EQ(capture_count_post[i], i                   );
-
-    ASSERT_EQ(launch_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(launch_count_pre[i] , i+1                 );
-    ASSERT_EQ(launch_count_post[i], i                   );
+    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].capture_counter_post,    i                   );
+    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 10);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
 
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 10);
-
-  delete[] capture_platform  ;
-  delete[] capture_count_pre ;
-  delete[] capture_count_post;
-  delete[] launch_platform  ;
-  delete[] launch_count_pre ;
-  delete[] launch_count_post;
+  delete[] data;
 }
 
 // test with IndexSet forall
@@ -342,13 +200,7 @@ TEST(PluginTest, ForAllIdxSetCounter)
 {
   SetupPluginVars spv;
 
-  RAJA::Platform* capture_platform   = new RAJA::Platform[10];
-  int*            capture_count_pre  = new int[10];
-  int*            capture_count_post = new int[10];
-
-  RAJA::Platform* launch_platform   = new RAJA::Platform[10];
-  int*            launch_count_pre  = new int[10];
-  int*            launch_count_post = new int[10];
+  CounterData* data = new CounterData[10];
 
   for (int i = 0; i < 10; i++) {
 
@@ -360,39 +212,27 @@ TEST(PluginTest, ForAllIdxSetCounter)
 
     RAJA::forall<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>(
       iset,
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
     for (int j = i; j < 10; j++) {
-      ASSERT_EQ(capture_platform[j]  , RAJA::Platform::host);
-      ASSERT_EQ(capture_count_pre[j] , i+1                 );
-      ASSERT_EQ(capture_count_post[j], i                   );
-
-      ASSERT_EQ(launch_platform[j]  , RAJA::Platform::host);
-      ASSERT_EQ(launch_count_pre[j] , i+1                 );
-      ASSERT_EQ(launch_count_post[j], i                   );
+      ASSERT_EQ(data[j].capture_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(data[j].capture_counter_pre,     i+1                 );
+      ASSERT_EQ(data[j].capture_counter_post,    i                   );
+      ASSERT_EQ(data[j].launch_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(data[j].launch_counter_pre,     i+1                 );
+      ASSERT_EQ(data[j].launch_counter_post,    i                   );
     }
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 10);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
 
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 10);
-
-  delete[] capture_platform  ;
-  delete[] capture_count_pre ;
-  delete[] capture_count_post;
-  delete[] launch_platform  ;
-  delete[] launch_count_pre ;
-  delete[] launch_count_post;
+  delete[] data;
 }
 
 // test with IndexSet forall_Icount
@@ -400,13 +240,7 @@ TEST(PluginTest, ForAllIcountIdxSetCounter)
 {
   SetupPluginVars spv;
 
-  RAJA::Platform* capture_platform   = new RAJA::Platform[10];
-  int*            capture_count_pre  = new int[10];
-  int*            capture_count_post = new int[10];
-
-  RAJA::Platform* launch_platform   = new RAJA::Platform[10];
-  int*            launch_count_pre  = new int[10];
-  int*            launch_count_post = new int[10];
+  CounterData* data = new CounterData[10];
 
   for (int i = 0; i < 10; i++) {
 
@@ -418,39 +252,27 @@ TEST(PluginTest, ForAllIcountIdxSetCounter)
 
     RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>>(
       iset,
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
     for (int j = i; j < 10; j++) {
-      ASSERT_EQ(capture_platform[j]  , RAJA::Platform::host);
-      ASSERT_EQ(capture_count_pre[j] , i+1                 );
-      ASSERT_EQ(capture_count_post[j], i                   );
-
-      ASSERT_EQ(launch_platform[j]  , RAJA::Platform::host);
-      ASSERT_EQ(launch_count_pre[j] , i+1                 );
-      ASSERT_EQ(launch_count_post[j], i                   );
+      ASSERT_EQ(data[j].capture_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(data[j].capture_counter_pre,     i+1                 );
+      ASSERT_EQ(data[j].capture_counter_post,    i                   );
+      ASSERT_EQ(data[j].launch_platform_active, RAJA::Platform::host);
+      ASSERT_EQ(data[j].launch_counter_pre,     i+1                 );
+      ASSERT_EQ(data[j].launch_counter_post,    i                   );
     }
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 10);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
 
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 10);
-
-  delete[] capture_platform  ;
-  delete[] capture_count_pre ;
-  delete[] capture_count_post;
-  delete[] launch_platform  ;
-  delete[] launch_count_pre ;
-  delete[] launch_count_post;
+  delete[] data;
 }
 
 // test with multi_policy forall
@@ -458,13 +280,7 @@ TEST(PluginTest, ForAllMultiPolicyCounter)
 {
   SetupPluginVars spv;
 
-  RAJA::Platform* capture_platform   = new RAJA::Platform[10];
-  int*            capture_count_pre  = new int[10];
-  int*            capture_count_post = new int[10];
-
-  RAJA::Platform* launch_platform   = new RAJA::Platform[10];
-  int*            launch_count_pre  = new int[10];
-  int*            launch_count_post = new int[10];
+  CounterData* data = new CounterData[10];
 
   auto mp = RAJA::make_multi_policy<RAJA::seq_exec, RAJA::loop_exec>(
       [](const RAJA::RangeSegment &r) {
@@ -479,64 +295,45 @@ TEST(PluginTest, ForAllMultiPolicyCounter)
 
     RAJA::forall(mp,
       RAJA::RangeSegment(i,i+1),
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
-    ASSERT_EQ(capture_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(capture_count_pre[i] , i+1                 );
-    ASSERT_EQ(capture_count_post[i], i                   );
-
-    ASSERT_EQ(launch_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(launch_count_pre[i] , i+1                 );
-    ASSERT_EQ(launch_count_post[i], i                   );
+    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].capture_counter_post,    i                   );
+    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  5);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 5);
-
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  5);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 5);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     5);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    5);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     5);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    5);
 
   for (int i = 5; i < 10; i++) {
 
     RAJA::forall(mp,
       RAJA::RangeSegment(i,i+1),
-      PluginTestCallable{capture_platform,
-                         capture_count_pre,
-                         capture_count_post,
-                         launch_platform,
-                         launch_count_pre,
-                         launch_count_post}
+      PluginTestCallable{data}
     );
 
-    ASSERT_EQ(capture_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(capture_count_pre[i] , i+1                 );
-    ASSERT_EQ(capture_count_post[i], i                   );
-
-    ASSERT_EQ(launch_platform[i]  , RAJA::Platform::host);
-    ASSERT_EQ(launch_count_pre[i] , i+1                 );
-    ASSERT_EQ(launch_count_post[i], i                   );
+    ASSERT_EQ(data[i].capture_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].capture_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].capture_counter_post,    i                   );
+    ASSERT_EQ(data[i].launch_platform_active, RAJA::Platform::host);
+    ASSERT_EQ(data[i].launch_counter_pre,     i+1                 );
+    ASSERT_EQ(data[i].launch_counter_post,    i                   );
   }
 
-  ASSERT_EQ(*plugin_test_capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_capture_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_capture_counter_post, 10);
+  ASSERT_EQ(plugin_test_data->capture_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->capture_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->capture_counter_post,    10);
+  ASSERT_EQ(plugin_test_data->launch_platform_active, RAJA::Platform::undefined);
+  ASSERT_EQ(plugin_test_data->launch_counter_pre,     10);
+  ASSERT_EQ(plugin_test_data->launch_counter_post,    10);
 
-  ASSERT_EQ(*plugin_test_launch_platform_active,  RAJA::Platform::undefined);
-  ASSERT_EQ(*plugin_test_launch_counter_pre,  10);
-  ASSERT_EQ(*plugin_test_launch_counter_post, 10);
-
-  delete[] capture_platform  ;
-  delete[] capture_count_pre ;
-  delete[] capture_count_post;
-  delete[] launch_platform  ;
-  delete[] launch_count_pre ;
-  delete[] launch_count_post;
+  delete[] data;
 }
