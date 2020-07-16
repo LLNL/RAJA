@@ -13,4 +13,8 @@ extern int plugin_test_capture_counter_post;
 extern int plugin_test_launch_counter_pre;
 extern int plugin_test_launch_counter_post;
 
+extern RAJA::Platform plugin_test_capture_platform_active;
+
+extern RAJA::Platform plugin_test_launch_platform_active;
+
 #endif  // RAJA_counter_HPP

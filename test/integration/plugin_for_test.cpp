@@ -14,20 +14,26 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preCapture(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void preCapture(RAJA::util::PluginContext p) {
     plugin_test_capture_counter_pre++;
+    plugin_test_capture_platform_active = p.platform;
   }
 
-  void postCapture(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void postCapture(RAJA::util::PluginContext p) {
     plugin_test_capture_counter_post++;
+    ASSERT_EQ(plugin_test_capture_platform_active, p.platform);
+    plugin_test_capture_platform_active = RAJA::platform::undefined;
   }
 
-  void preLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void preLaunch(RAJA::util::PluginContext p) {
     plugin_test_launch_counter_pre++;
+    plugin_test_launch_platform_active = p.platform;
   }
 
-  void postLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+  void postLaunch(RAJA::util::PluginContext p) {
     plugin_test_launch_counter_post++;
+    ASSERT_EQ(plugin_test_launch_platform_active, p.platform);
+    plugin_test_launch_platform_active = RAJA::platform::undefined;
   }
 };
 

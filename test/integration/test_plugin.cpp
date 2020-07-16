@@ -15,6 +15,10 @@ int plugin_test_capture_counter_post{0};
 int plugin_test_launch_counter_pre{0};
 int plugin_test_launch_counter_post{0};
 
+RAJA::Platform plugin_test_capture_platform_active = RAJA::Platform::undefined;
+
+RAJA::Platform plugin_test_launch_platform_active = RAJA::Platform::undefined;
+
 
 // Check that the plugin is called the correct number of times,
 // once before and after each kernel capture for the capture counter
