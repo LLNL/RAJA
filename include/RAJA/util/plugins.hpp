@@ -14,6 +14,13 @@
 namespace RAJA {
 namespace util {
 
+template <typename T>
+auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
+{
+  return item;
+}
+
+
 inline
 void
 callPreCapturePlugins(PluginContext p) noexcept

@@ -92,18 +92,6 @@ namespace RAJA
 //////////////////////////////////////////////////////////////////////
 //
 
-namespace internal
-{
-
-template <typename T>
-auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
-{
-  return item;
-}
-
-
-}  // end namespace internal
-
 namespace detail
 {
 /// Adapter to replace specific implementations for the icount variants
@@ -275,7 +263,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
-  using RAJA::internal::trigger_updates_before;
+  using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
   util::callPostCapturePlugins(context);
@@ -308,7 +296,7 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
-  using RAJA::internal::trigger_updates_before;
+  using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
   util::callPostCapturePlugins(context);
@@ -346,7 +334,7 @@ forall_Icount(ExecutionPolicy&& p,
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
-  using RAJA::internal::trigger_updates_before;
+  using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
   util::callPostCapturePlugins(context);
@@ -380,7 +368,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
-  using RAJA::internal::trigger_updates_before;
+  using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
   util::callPostCapturePlugins(context);
