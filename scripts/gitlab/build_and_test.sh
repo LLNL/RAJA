@@ -81,7 +81,7 @@ then
 fi
 
 build_dir="${build_root}/build_${hostconfig//.cmake/}"
-install_dir="${build_root}/install_${sys_type}_${conf}"
+install_dir="${build_root}/install_${hostconfig//.cmake/}"
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo "~~~~~ Host-config: ${hostconfig_path}"
