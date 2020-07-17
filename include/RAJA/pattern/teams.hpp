@@ -31,6 +31,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
 #if defined(__CUDA_ARCH__)
@@ -46,11 +47,12 @@ namespace RAJA
 {
 
 #ifdef RAJA_ENABLE_CUDA
-enum ExecPlace { HOST, DEVICE, NUM_PLACES };
+enum ExecPlace { HOST, OMP, DEVICE, NUM_PLACES };
 #else
 enum ExecPlace { HOST, NUM_PLACES };
 #endif
 
+#if 0
 template <typename HOST_POLICY, typename DEVICE_POLICY>
 struct LoopPolicy {
     using host_policy_t = HOST_POLICY;
@@ -62,6 +64,22 @@ struct LaunchPolicy {
     using host_policy_t = HOST_POLICY;
     using device_policy_t = DEVICE_POLICY;
 };
+#endif
+
+template <typename HOST_POLICY, typename OMP_POLICY, typename DEVICE_POLICY>
+struct LoopPolicy {
+    using host_policy_t = HOST_POLICY;
+    using omp_policy_t  = OMP_POLICY;
+    using device_policy_t = DEVICE_POLICY;
+};
+
+template <typename HOST_POLICY, typename OMP_POLICY, typename DEVICE_POLICY>
+struct LaunchPolicy {
+    using host_policy_t = HOST_POLICY;
+    using omp_policy_t  = OMP_POLICY;
+    using device_policy_t = DEVICE_POLICY;
+};
+
 
 struct Teams {
   int value[3];
@@ -179,6 +197,8 @@ public:
 
 struct seq_launch_t{};
 
+struct omp_launch_t{};
+
 template<bool async, int num_threads=0>
 struct cuda_launch_t{};
 
@@ -195,6 +215,15 @@ struct LaunchExecute<RAJA::seq_launch_t> {
   }
 };
 
+//Perhaps just leave this as host?
+template <>
+struct LaunchExecute<RAJA::omp_launch_t> {
+  template <typename BODY>
+  static void exec(LaunchContext const &ctx, BODY const &body)
+  {
+    body(ctx);
+  }
+};
 
 #ifdef RAJA_ENABLE_CUDA
 template <typename BODY>
@@ -317,6 +346,11 @@ void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
     using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
 
     launch_t::exec(LaunchContext(resources.host_resources, HOST), body);
+  }else if(place == OMP)
+  {
+    printf("Launching OMP code ! \n");
+    using launch_t = LaunchExecute<typename POLICY_LIST::omp_policy_t>;
+    launch_t::exec(LaunchContext(resources.host_resources, OMP), body);
   }
 #ifdef RAJA_ENABLE_CUDA
   else if(place == DEVICE){
@@ -345,6 +379,24 @@ struct LoopExecute<loop_exec, SEGMENT> {
 
     // block stride loop
     int len = segment.end() - segment.begin();
+    for (int i = 0; i < len; i++) {
+
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment,
+                                    BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+#pragma omp parallel for
     for (int i = 0; i < len; i++) {
 
       body(*(segment.begin() + i));
@@ -493,15 +545,21 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                            SEGMENT const &segment,
                            BODY const &body)
 {
-#ifndef __CUDA_ARCH__
-  LoopExecute<typename POLICY_LIST::host_policy_t,
-              SEGMENT>::exec(ctx, segment, body);
-#else
+
+#ifdef __CUDA_ARCH__
   LoopExecute<typename POLICY_LIST::device_policy_t,
               SEGMENT>::exec(ctx, segment, body);
+#else
+  switch (ctx.exec_place)
+  {
+     case OMP: LoopExecute<typename POLICY_LIST::omp_policy_t,
+                           SEGMENT>::exec(ctx, segment, body); break;
+
+     case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
+                            SEGMENT>::exec(ctx, segment, body); break;
+  }
 #endif
 }
-
 
 }  // end namespace RAJA
 

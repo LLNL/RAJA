@@ -117,12 +117,17 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 
-using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>;
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::omp_launch_t, RAJA::cuda_launch_t<false>>;
 
 
 #ifdef RAJA_ENABLE_CUDA
-using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>;
-using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_y_direct>;
+//using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::cuda_block_y_direct>;
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::omp_parallel_for_exec,
+                                RAJA::cuda_block_y_direct>;
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::loop_exec,
+                                RAJA::cuda_block_x_direct>;
 #else
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
@@ -130,8 +135,8 @@ using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
 
 #ifdef RAJA_ENABLE_CUDA
-using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
-using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec,  RAJA::cuda_thread_y_loop>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
 #else
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
