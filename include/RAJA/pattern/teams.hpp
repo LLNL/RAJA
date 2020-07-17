@@ -47,7 +47,7 @@ namespace RAJA
 {
 
 #ifdef RAJA_ENABLE_CUDA
-enum ExecPlace { HOST, OMP, DEVICE, NUM_PLACES };
+enum ExecPlace { HOST, HOST_THREADS, DEVICE, NUM_PLACES };
 #else
 enum ExecPlace { HOST, NUM_PLACES };
 #endif
@@ -66,17 +66,17 @@ struct LaunchPolicy {
 };
 #endif
 
-template <typename HOST_POLICY, typename OMP_POLICY, typename DEVICE_POLICY>
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
 struct LoopPolicy {
     using host_policy_t = HOST_POLICY;
-    using omp_policy_t  = OMP_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
     using device_policy_t = DEVICE_POLICY;
 };
 
-template <typename HOST_POLICY, typename OMP_POLICY, typename DEVICE_POLICY>
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
 struct LaunchPolicy {
     using host_policy_t = HOST_POLICY;
-    using omp_policy_t  = OMP_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
     using device_policy_t = DEVICE_POLICY;
 };
 
@@ -346,11 +346,11 @@ void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
     using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
 
     launch_t::exec(LaunchContext(resources.host_resources, HOST), body);
-  }else if(place == OMP)
+  }else if(place == HOST_THREADS)
   {
     printf("Launching OMP code ! \n");
-    using launch_t = LaunchExecute<typename POLICY_LIST::omp_policy_t>;
-    launch_t::exec(LaunchContext(resources.host_resources, OMP), body);
+    using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
+    launch_t::exec(LaunchContext(resources.host_resources, HOST_THREADS), body);
   }
 #ifdef RAJA_ENABLE_CUDA
   else if(place == DEVICE){
@@ -545,14 +545,13 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                            SEGMENT const &segment,
                            BODY const &body)
 {
-
 #ifdef __CUDA_ARCH__
   LoopExecute<typename POLICY_LIST::device_policy_t,
               SEGMENT>::exec(ctx, segment, body);
 #else
   switch (ctx.exec_place)
   {
-     case OMP: LoopExecute<typename POLICY_LIST::omp_policy_t,
+     case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
                            SEGMENT>::exec(ctx, segment, body); break;
 
      case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
@@ -560,6 +559,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
   }
 #endif
 }
+
+
 
 }  // end namespace RAJA
 
