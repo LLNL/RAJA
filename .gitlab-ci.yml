@@ -59,15 +59,15 @@ stages:
     - echo ${ALLOC_NAME}
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - echo ${JOBID}
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 10 -N 1 -n 1 -c 4 scripts/gitlab/build_and_test.sh --build-only
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 1 -N 1 -n 1 -c 4 scripts/gitlab/build_and_test.sh --test-only
+    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 10 -N 1 scripts/gitlab/build_and_test.sh --build-only
+    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 5 -N 1 scripts/gitlab/build_and_test.sh --test-only
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
     - lalloc 1 -W 10 scripts/gitlab/build_and_test.sh --build-only
-    - lalloc 1 -W 1 scripts/gitlab/build_and_test.sh --test-only
+    - lalloc 1 -W 5 scripts/gitlab/build_and_test.sh --test-only
 
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
