@@ -38,7 +38,7 @@ using SequentialPluginKernelExecPols = camp::list<
       RAJA::KernelPolicy<
         RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::loop_exec,
           RAJA::statement::For<0, RAJA::simd_exec,
-            RAJA::statement::Lambda<0>>>>,
+            RAJA::statement::Lambda<0>>>>
     >;
 
 #if defined(RAJA_ENABLE_OPENMP)
