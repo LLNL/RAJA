@@ -106,7 +106,7 @@ command in the build directory; i.e.,::
   $ cd build-dir
   $ make
 
-If you have access to a multi-core system you can compile in parallel by running
+If you have access to a multicore system you can compile in parallel by running
 ``make -j`` (to build with all available cores) or ``make -j N`` to build using
 N cores.
 

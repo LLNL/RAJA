@@ -56,7 +56,7 @@ RAJA supports five common reduction types:
 .. note:: * When ``RAJA::ReduceMinLoc`` and ``RAJA::ReduceMaxLoc`` are used 
             in a sequential execution context, the loop index of the 
             min/max is the first index where the min/max occurs.
-          * When theese reductions are used in a parallel execution context, 
+          * When these reductions are used in a parallel execution context, 
             the loop index computed for the reduction value may be any index 
             where the min or max occurs. 
 

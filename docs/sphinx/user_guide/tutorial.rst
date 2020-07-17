@@ -35,7 +35,7 @@ on a GPU device when running GPU code. This can be done using explicit host
 and device allocation and copying between host and device memory spaces or via 
 unified memory (UM), if available. RAJA developers also support a library 
 called `CHAI <https://github.com/LLNL/CHAI>`_ which complements RAJA by 
-providing a alternative to manual host-deveice memory copy calls or UM. 
+providing a alternative to manual host-device memory copy calls or UM. 
 For more information, see :ref:`plugins-label`.
 
 .. _tutorial-lambda-label:
@@ -46,7 +46,7 @@ A Little C++ Background
 
 RAJA makes heavy use of C++ templates and using RAJA most easily and 
 effectively is done by representing the bodies of loop kernels as C++ lambda 
-expressions. Alternatively, C++ functors can be used, but they make 
+expressions. Alternatively, C++ factors can be used, but they make 
 application source code more complex, potentially placing a significant 
 negative burden on source code readability and maintainability.
 
@@ -74,7 +74,7 @@ their code; for example::
   });
 
 The "IdxType" and "LoopBody" types are deduced by the compiler based on what 
-arguments sre passed to the ``RAJA::forall`` method. Here, the loop body type 
+arguments are passed to the ``RAJA::forall`` method. Here, the loop body type 
 is defined by the lambda expression::
 
   [=](int i) { a[i] = b[i] + c[i]; }
@@ -236,9 +236,9 @@ directory. Additional information about the RAJA features
 used can be found in :ref:`features-label`.
 
 The examples demonstrate CPU execution (sequential, SIMD, OpenMP
-multi-threading) and CUDA GPU execution. Examples that show how to use
+multithreading) and CUDA GPU execution. Examples that show how to use
 RAJA with other parallel programming model back-ends that are in 
-development will appear in furture RAJA releases. For adventurous users who 
+development will appear in future RAJA releases. For adventurous users who 
 wish to try experimental features, usage is similar to what is shown in the 
 examples here.
 
