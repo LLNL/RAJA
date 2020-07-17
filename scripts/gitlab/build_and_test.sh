@@ -103,7 +103,7 @@ then
 
     cmake \
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} \
-      -C ${hostconfgi_path} \
+      -C ${hostconfig_path} \
       -DENABLE_OPENMP=${ENABLE_OPENMP:-On} \
       -DCMAKE_INSTALL_PREFIX=${install_dir} \
       ${project_dir}
