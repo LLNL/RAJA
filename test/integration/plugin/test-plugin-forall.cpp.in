@@ -19,13 +19,13 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-plugin.hpp"
+#include "test-plugin-forall.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@PluginTypes =
+using @BACKEND@PluginForallTypes =
   Test< camp::cartesian_product<@BACKEND@ForallExecPols,
                                 @BACKEND@ResourceList,
                                 @BACKEND@PlatformList > >::Types;
@@ -34,5 +34,5 @@ using @BACKEND@PluginTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               PluginTest,
-                               @BACKEND@PluginTypes);
+                               PluginForallTest,
+                               @BACKEND@PluginForallTypes);
