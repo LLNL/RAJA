@@ -21,5 +21,5 @@ add_custom_target(raja-doxygen
 install(DIRECTORY ${DOXYGEN_HTML_DIR}
   DESTINATION "docs/doxygen/" OPTIONAL)
 
-add_dependencies(docs
+add_dependencies(raja-docs
   raja-doxygen)

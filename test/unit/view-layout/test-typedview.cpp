@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
 
 RAJA_INDEX_VALUE(TX, "TX");
 RAJA_INDEX_VALUE(TIX, "TIX");
@@ -22,43 +22,9 @@ class OffsetLayoutViewUnitTest : public ::testing::Test {};
 template<typename T>
 class TypedIntegralViewUnitTest : public ::testing::Test {};
 
-using allTypes = ::testing::Types<RAJA::Index_type,
-                                  int,
-#if defined(RAJA_TEST_EXHAUSTIVE)
-                                  unsigned int,
-                                  char,
-                                  unsigned char,
-                                  short,
-                                  unsigned short,
-                                  long,
-                                  unsigned long,
-                                  long int,
-                                  unsigned long int,
-                                  long long,
-                                  unsigned long long, 
-                                  float , 
-#endif
-                                  double>;
-
-using IntegralTypes = ::testing::Types<RAJA::Index_type,
-                                       int,
-#if defined(RAJA_TEST_EXHAUSTIVE)
-                                       unsigned int,
-                                       char,
-                                       unsigned char,
-                                       short,
-                                       unsigned short,
-                                       long,
-                                       unsigned long,
-                                       long int,
-                                       unsigned long int,
-                                       long long,
-#endif
-                                       unsigned long long>;
-
-TYPED_TEST_SUITE(TypedViewUnitTest, allTypes);
-TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, allTypes);
-TYPED_TEST_SUITE(TypedIntegralViewUnitTest, allTypes);
+TYPED_TEST_SUITE(TypedViewUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(TypedIntegralViewUnitTest, UnitIntFloatTypes);
 
 TYPED_TEST(TypedViewUnitTest, Constructors)
 {

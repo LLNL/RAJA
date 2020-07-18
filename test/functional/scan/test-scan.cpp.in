@@ -1,0 +1,55 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-forall-execpol.hpp"
+
+// 
+// Define scan operation types
+//
+using ScanOpTypes = camp::list< RAJA::operators::plus<int>,
+#if 0  // Parallel tests with plus operator and float data do not work
+       // likely due to precision being too low and plus not associative
+                                RAJA::operators::plus<float>,
+#endif
+                                RAJA::operators::plus<double>,
+                                RAJA::operators::minimum<int>,
+                                RAJA::operators::minimum<float>,
+                                RAJA::operators::minimum<double>,
+                                RAJA::operators::maximum<int>,
+                                RAJA::operators::maximum<float>,
+                                RAJA::operators::maximum<double> >;
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-scan-data.hpp"
+#include "test-scan-@SCAN_TYPE@.hpp"
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @SCAN_BACKEND@@SCAN_TYPE@ScanTypes =
+  Test< camp::cartesian_product< @SCAN_BACKEND@ForallExecPols,
+                                 @SCAN_BACKEND@ResourceList,
+                                 ScanOpTypes >>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@SCAN_BACKEND@,
+                               Scan@SCAN_TYPE@Test,
+                               @SCAN_BACKEND@@SCAN_TYPE@ScanTypes);

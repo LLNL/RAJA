@@ -8,14 +8,12 @@
 #ifndef __TEST_KERNEL_REGION_SYNC_HPP__
 #define __TEST_KERNEL_REGION_SYNC_HPP__
 
-#include "test-kernel-region-utils.hpp"
-
 #include <algorithm>
 #include <numeric>
 #include <vector>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelRegionSyncFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
+void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   camp::resources::Resource host_res{camp::resources::Host()};
   camp::resources::Resource work_res{WORKING_RES()};
@@ -86,18 +84,25 @@ void KernelRegionSyncFunctionalTest(INDEX_TYPE first, INDEX_TYPE last)
                         check_array);
 }
 
-TYPED_TEST_P(KernelRegionFunctionalTest, RegionSyncKernel)
+
+TYPED_TEST_SUITE_P(KernelRegionSyncTest);
+template <typename T>
+class KernelRegionSyncTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(KernelRegionSyncTest, RegionSyncKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
-  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
-  KernelRegionSyncFunctionalTest<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
+  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(0, 25);
+  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(1, 153);
+  KernelRegionSyncTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(3, 2556);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelRegionFunctionalTest,
+REGISTER_TYPED_TEST_SUITE_P(KernelRegionSyncTest,
                             RegionSyncKernel);
 
 #endif  // __TEST_KERNEL_REGION_SYNC_HPP__

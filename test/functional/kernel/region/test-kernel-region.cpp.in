@@ -1,0 +1,111 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-region-data.hpp"
+#include "test-kernel-region.hpp"
+
+
+//
+// Exec pols for kernel region tests
+//
+
+using SequentialKernelRegionExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::seq_region,
+        RAJA::statement::For<0, RAJA::seq_exec,
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::seq_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::For<0, RAJA::seq_exec,
+          RAJA::statement::Lambda<2>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::seq_region,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::Lambda<2>
+        >
+      >
+    >
+
+  >;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelRegionExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::omp_parallel_region,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+          RAJA::statement::Lambda<2>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::omp_parallel_region,
+        RAJA::statement::For<0, RAJA::omp_for_exec,
+          RAJA::statement::Lambda<0>
+        >,
+        RAJA::statement::For<0, RAJA::omp_for_exec,
+          RAJA::statement::Lambda<1>
+        >,
+        RAJA::statement::For<0, RAJA::omp_for_exec,
+          RAJA::statement::Lambda<2>
+        >
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @REGION_BACKEND@KernelRegionTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @REGION_BACKEND@ResourceList,
+                                @REGION_BACKEND@KernelRegionExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@REGION_BACKEND@,
+                               KernelRegionTest,
+                               @REGION_BACKEND@KernelRegionTypes);
