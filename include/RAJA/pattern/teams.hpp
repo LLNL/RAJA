@@ -298,46 +298,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async,nthreads>> {
 #endif
 
 
-
-//template <typename RESOURCE_TUPLE, camp::idx_t I, camp::idx_t IMAX>
-//struct LaunchPlaceExtractor {
-//
-//  template <typename BODY>
-//  static void launch(ExecPlace place,
-//                     RESOURCE_TUPLE const &resources,
-//                     BODY const &body)
-//  {
-//
-//    using resource_t = camp::at_v<typename RESOURCE_TUPLE::TList, I>;
-//
-//    if (place == resource_t::exec_place) {
-//      auto const &resource = camp::get<I>(resources);
-//
-//      LaunchContext ctx(resource, place);
-//
-//      LaunchPlaceSwitchboard<resource_t>::exec(place, ctx, body);
-//    } else {
-//
-//      LaunchPlaceExtractor<RESOURCE_TUPLE, I + 1, IMAX>::launch(place,
-//                                                                resources,
-//                                                                body);
-//    }
-//  }
-//};
-//
-//
-//template <typename RESOURCE_TUPLE, camp::idx_t IMAX>
-//struct LaunchPlaceExtractor<RESOURCE_TUPLE, IMAX, IMAX> {
-//  template <typename BODY>
-//  static void launch(ExecPlace place,
-//                     RESOURCE_TUPLE const &resources,
-//                     BODY const &body)
-//  {
-//    printf("Failed to find resource requirements for execution place %d\n",
-//           (int)place);
-//  }
-//};
-
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
 {
@@ -378,12 +338,54 @@ struct LoopExecute<loop_exec, SEGMENT> {
   {
 
     // block stride loop
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
     for (int i = 0; i < len; i++) {
 
       body(*(segment.begin() + i));
     }
   }
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment0,
+                                    SEGMENT const &segment1,
+                                    BODY const &body)
+  {
+
+    // block stride loop
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+    for (int j = 0; j < len1; j++) {
+      for (int i = 0; i < len0; i++) {
+
+        body(*(segment0.begin() + i),*(segment1.begin() + j));
+      }
+    }
+  }
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment0,
+                                    SEGMENT const &segment1,
+                                    SEGMENT const &segment2,
+                                    BODY const &body)
+  {
+
+    // block stride loop
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+    for (int k = 0; k < len2; k++) {
+      for (int j = 0; j < len1; j++) {
+        for (int i = 0; i < len0; i++) {
+          body(*(segment0.begin() + i),*(segment1.begin() + j), *(segment2.begin() + k));
+        }
+      }
+    }
+  }
+
 };
 
 template <typename SEGMENT>
@@ -402,6 +404,50 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       body(*(segment.begin() + i));
     }
   }
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment0,
+                                    SEGMENT const &segment1,
+                                    BODY const &body)
+  {
+
+    // block stride loop
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+#pragma omp parallel for collapse (2)
+    for (int j = 0; j < len1; j++) {
+      for (int i = 0; i < len0; i++) {
+
+        body(*(segment0.begin() + i),*(segment1.begin() + j));
+      }
+    }
+  }
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+                                    SEGMENT const &segment0,
+                                    SEGMENT const &segment1,
+                                    SEGMENT const &segment2,
+                                    BODY const &body)
+  {
+
+    // block stride loop
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+#pragma omp parallel for collapse (3)
+    for (int k = 0; k < len2; k++) {
+      for (int j = 0; j < len1; j++) {
+        for (int i = 0; i < len0; i++) {
+          body(*(segment0.begin() + i),*(segment1.begin() + j), *(segment2.begin() + k));
+        }
+      }
+    }
+  }
+
 };
 
 
@@ -508,36 +554,53 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
     }
   }
 };
-#endif
 
-//template <typename POLICY_LIST, camp::idx_t IDX, camp::idx_t MAX_IDX>
-//struct LoopPlaceSwitchboard {
-//  template <typename SEGMENT, typename BODY>
-//  static inline RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
-//                                    SEGMENT const &segment,
-//                                    BODY const &body)
-//  {
-//    if (camp::at_v<POLICY_LIST, IDX>::exec_place == ctx.exec_place) {
-//      LoopExecute<typename camp::at_v<POLICY_LIST, IDX>::policy_t,
-//                  SEGMENT>::exec(ctx, segment, body);
-//    } else {
-//      LoopPlaceSwitchboard<POLICY_LIST, IDX + 1, MAX_IDX>::exec(ctx,
-//                                                                segment,
-//                                                                body);
-//    }
-//  }
-//};
-//
-//template <typename POLICY_LIST, camp::idx_t MAX_IDX>
-//struct LoopPlaceSwitchboard<POLICY_LIST, MAX_IDX, MAX_IDX> {
-//  template <typename SEGMENT, typename BODY>
-//  static RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
-//                                    SEGMENT const &segment,
-//                                    BODY const &body)
-//  {
-//    printf("whoops!");
-//  }
-//};
+//collapsed cuda policies
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment0,
+                               SEGMENT const &segment1,
+                               BODY const &body)
+  {
+    int len1 = segment1.end() - segment1.begin();
+    int len0 = segment0.end() - segment0.begin();
+    {
+      const int i = blockIdx.x; const int j = blockIdx.y;
+      body(*(segment0.begin() + i), *(segment1.begin() + j));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+                               SEGMENT const &segment0,
+                               SEGMENT const &segment1,
+                               SEGMENT const &segment2,
+                               BODY const &body)
+  {
+    int len2 = segment2.end() - segment2.begin();
+    int len1 = segment1.end() - segment1.begin();
+    int len0 = segment0.end() - segment0.begin();
+    {
+      const int i = blockIdx.x; 
+      const int j = blockIdx.y;
+      const int k = blockIdx.z;
+      body(*(segment0.begin() + i), 
+           *(segment1.begin() + j),
+           *(segment2.begin() + k));
+    }
+  }
+};
+
+
+#endif
 
 
 template <typename POLICY_LIST, typename CONTEXT, typename SEGMENT, typename BODY>
@@ -558,6 +621,51 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                             SEGMENT>::exec(ctx, segment, body); break;
   }
 #endif
+}
+
+template <typename POLICY_LIST, typename CONTEXT, typename SEGMENT, typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
+                           SEGMENT const &segment0,
+                           SEGMENT const &segment1,
+                           BODY const &body)
+{
+#ifdef __CUDA_ARCH__
+  LoopExecute<typename POLICY_LIST::device_policy_t,
+              SEGMENT>::exec(ctx, segment0, segment1, body);
+#else
+  switch (ctx.exec_place)
+  {
+     case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
+                                    SEGMENT>::exec(ctx, segment0, segment1, body); break;
+
+     case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
+                            SEGMENT>::exec(ctx, segment0, segment1, body); break;
+  }
+#endif
+}
+
+template <typename POLICY_LIST, typename CONTEXT, typename SEGMENT, typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
+                           SEGMENT const &segment0,
+                           SEGMENT const &segment1,
+                           SEGMENT const &segment2,
+                           BODY const &body)
+{
+
+#ifdef __CUDA_ARCH__
+  LoopExecute<typename POLICY_LIST::device_policy_t,
+              SEGMENT>::exec(ctx, segment0, segment1, segment2, body);
+#else
+  switch (ctx.exec_place)
+  {
+     case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
+                                    SEGMENT>::exec(ctx, segment0, segment1, segment2, body); break;
+
+     case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
+                            SEGMENT>::exec(ctx, segment0, segment1, segment2, body); break;
+  }
+#endif
+
 }
 
 

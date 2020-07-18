@@ -128,6 +128,10 @@ using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
                                 RAJA::loop_exec,
                                 RAJA::cuda_block_x_direct>;
+
+using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                 RAJA::omp_parallel_for_exec,
+                                 RAJA::cuda_block_xyz_direct<2>>;
 #else
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
@@ -216,16 +220,19 @@ int main()
     //========================
     // Set up Teams/Threads
 
+    RAJA::RangeSegment TeamRange(0, NBlocks);
+
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
           RAJA::ResourceList{
-            RAJA::Resources(RAJA::Threads(NBlocks, NBlocks)),
-            RAJA::Resources(RAJA::Teams(NBlocks, NBlocks), RAJA::Threads(NThreads, NThreads))},
+          RAJA::Resources(RAJA::Teams(NBlocks, NBlocks), RAJA::Threads(NThreads, NThreads))},
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           //
           // Loop over teams
           //
-          RAJA::loop<teams1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by) {
-            RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int bx) {
+          //RAJA::loop<teams1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by) {
+          //RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int bx) {
+
+          RAJA::loop<teams01>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
 
                   TEAM_SHARED double As[NThreads][NThreads];
                   TEAM_SHARED double Bs[NThreads][NThreads];
@@ -280,7 +287,7 @@ int main()
                               C[col + N * row] = Cs[ty][tx];
                         });
                     });
-              });
+                  //});
             });
         });  // kernel
 
