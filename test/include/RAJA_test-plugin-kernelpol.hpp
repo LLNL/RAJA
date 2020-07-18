@@ -116,6 +116,7 @@ using HipPluginKernelExecPols = camp::list<
           RAJA::statement::Tile<0, RAJA::tile_fixed<128>, RAJA::hip_block_x_direct,
             RAJA::statement::For<0, RAJA::hip_thread_x_direct,
               RAJA::statement::Lambda<0>>>>>
+    >;
 #endif
 
 #endif  // __RAJA_test_plugin_kernelpol_HPP__
