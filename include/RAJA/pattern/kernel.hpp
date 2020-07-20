@@ -105,6 +105,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               Bodies &&... bodies)
 {
   util::PluginContext context{util::make_context<PolicyType>()};
+  util::callPreLaunchPlugins(context);
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -122,8 +123,6 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                                          camp::decay<Bodies>...>;
 
 
-  util::callPreCapturePlugins(context);
-
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
   // it is passed through all of the kernel mechanics by-referenece,
@@ -133,11 +132,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
-  util::callPostCapturePlugins(context);
-
   using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
-
-  util::callPreLaunchPlugins(context);
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE

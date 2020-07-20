@@ -4,28 +4,23 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 #include "RAJA/util/PluginStrategy.hpp"
 
 #include <iostream>
+
+#include "counter.hpp"
 
 class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preLaunch(RAJA::util::PluginContext p) {
-    if (p.platform == RAJA::Platform::host)
-      std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_counter << " time!" << std::endl;
-    else
-      std::cout << " [CounterPlugin]: Launching device kernel for the " << ++device_counter << " time!" << std::endl;
+  void preLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+    plugin_test_counter_pre++;
   }
 
   void postLaunch(RAJA::util::PluginContext RAJA_UNUSED_ARG(p)) {
+    plugin_test_counter_post++;
   }
-
-  private:
-   int host_counter;
-   int device_counter;
 };
 
 // Regiser plugin with the PluginRegistry

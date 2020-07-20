@@ -15,20 +15,16 @@ namespace RAJA {
 namespace util {
 
 
-class PluginStrategy
+class PluginStrategy 
 {
   public:
     PluginStrategy();
 
     virtual ~PluginStrategy() = default;
 
-    virtual void preCapture(PluginContext p);
+    virtual void preLaunch(PluginContext p) = 0;
 
-    virtual void postCapture(PluginContext p);
-
-    virtual void preLaunch(PluginContext p);
-
-    virtual void postLaunch(PluginContext p);
+    virtual void postLaunch(PluginContext p) = 0;
 };
 
 using PluginRegistry = Registry<PluginStrategy>;

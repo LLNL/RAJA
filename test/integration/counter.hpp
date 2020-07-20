@@ -4,15 +4,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+#ifndef  RAJA_counter_HPP
+#define  RAJA_counter_HPP
 
-#include "RAJA/util/PluginStrategy.hpp"
+extern int plugin_test_counter_pre;
+extern int plugin_test_counter_post;
 
-RAJA_INSTANTIATE_REGISTRY(PluginRegistry);
-
-namespace RAJA {
-namespace util {
-
-PluginStrategy::PluginStrategy() = default;
-
-}
-}
+#endif  // RAJA_counter_HPP

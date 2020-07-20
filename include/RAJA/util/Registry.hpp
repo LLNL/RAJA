@@ -105,7 +105,7 @@ namespace util {
     };
   };
 
-} // closing brace for util namespace
+} // closing brace for util namespace 
 } // closing brace for RAJA namespace
 
 #define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
@@ -132,4 +132,4 @@ namespace util {
   } \
   }
 
-#endif
+#endif 

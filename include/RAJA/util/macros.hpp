@@ -28,12 +28,11 @@
 #endif
 
 //
-// Macros for decorating host/device functions for CUDA and HIP kernels.
+// Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
- || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__))
+#if defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)
 #define RAJA_DEVICE_CODE
 #endif
 
@@ -129,10 +128,9 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #if defined(__CUDA_ARCH__)
   asm ("trap;");
 
-#elif defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIPCC__)
   abort();
-
-#else
+#else 
 #ifdef RAJA_COMPILER_MSVC
   char *value;
   size_t len;

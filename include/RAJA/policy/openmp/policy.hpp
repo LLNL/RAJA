@@ -63,11 +63,7 @@ struct omp_parallel_region
 };
 
 struct omp_for_exec
-    : make_policy_pattern_launch_platform_t<Policy::openmp,
-                                            Pattern::forall,
-                                            Launch::undefined,
-                                            Platform::host,
-                                            omp::For> {
+    : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
 
 struct omp_for_nowait_exec

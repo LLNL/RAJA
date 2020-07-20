@@ -29,7 +29,6 @@
 
 #include <hip/hip_runtime.h>
 
-#include "RAJA/util/macros.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 #include "RAJA/util/basic_mempool.hpp"
@@ -290,7 +289,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   if (numThreads > policy::hip::WARP_SIZE) {
 
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>)];
-    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd =
+    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd = 
       reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
@@ -817,7 +816,7 @@ public:
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
       : parent{other.parent},
 #else
       : parent{&other},
@@ -825,7 +824,7 @@ public:
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -842,7 +841,7 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;
