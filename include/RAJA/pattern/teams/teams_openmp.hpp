@@ -25,7 +25,8 @@
 namespace RAJA
 {
 
-struct omp_launch_t{};
+struct omp_launch_t {
+};
 
 template <>
 struct LaunchExecute<RAJA::omp_launch_t> {
@@ -40,9 +41,10 @@ template <typename SEGMENT>
 struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                                    SEGMENT const &segment,
-                                    BODY const &body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -54,31 +56,33 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                                    SEGMENT const &segment0,
-                                    SEGMENT const &segment1,
-                                    BODY const &body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
   {
 
     // block stride loop
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse (2)
+#pragma omp parallel for collapse(2)
     for (int j = 0; j < len1; j++) {
       for (int i = 0; i < len0; i++) {
 
-        body(*(segment0.begin() + i),*(segment1.begin() + j));
+        body(*(segment0.begin() + i), *(segment1.begin() + j));
       }
     }
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                                    SEGMENT const &segment0,
-                                    SEGMENT const &segment1,
-                                    SEGMENT const &segment2,
-                                    BODY const &body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
   {
 
     // block stride loop
@@ -86,19 +90,19 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse (3)
+#pragma omp parallel for collapse(3)
     for (int k = 0; k < len2; k++) {
       for (int j = 0; j < len1; j++) {
         for (int i = 0; i < len0; i++) {
-          body(*(segment0.begin() + i),*(segment1.begin() + j), *(segment2.begin() + k));
+          body(*(segment0.begin() + i),
+               *(segment1.begin() + j),
+               *(segment2.begin() + k));
         }
       }
     }
   }
-
 };
 
 
-
-}
+}  // namespace RAJA
 #endif

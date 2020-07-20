@@ -25,12 +25,12 @@
 namespace RAJA
 {
 
-template<bool async, int num_threads=0>
-struct cuda_launch_t{};
+template <bool async, int num_threads = 0>
+struct cuda_launch_t {
+};
 
 template <typename BODY>
-__global__
-void launch_global_fcn(LaunchContext ctx, BODY body)
+__global__ void launch_global_fcn(LaunchContext ctx, BODY body)
 {
   // printf("Entering global function\n");
   body(ctx);
@@ -39,7 +39,7 @@ void launch_global_fcn(LaunchContext ctx, BODY body)
 
 
 template <bool async>
-struct LaunchExecute<RAJA::cuda_launch_t<async,0>> {
+struct LaunchExecute<RAJA::cuda_launch_t<async, 0>> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -57,7 +57,7 @@ struct LaunchExecute<RAJA::cuda_launch_t<async,0>> {
     printf("grid block dim %d %d %d \n", blocks.x, blocks.y, blocks.z);
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
 
-    if(!async){
+    if (!async) {
       cudaDeviceSynchronize();
     }
   }
@@ -65,9 +65,8 @@ struct LaunchExecute<RAJA::cuda_launch_t<async,0>> {
 
 
 template <typename BODY, int num_threads>
-__launch_bounds__(num_threads, 1)
-__global__
-void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
+__launch_bounds__(num_threads, 1) __global__
+    void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
 {
   // printf("Entering global function\n");
   body(ctx);
@@ -76,7 +75,7 @@ void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
 
 
 template <bool async, int nthreads>
-struct LaunchExecute<RAJA::cuda_launch_t<async,nthreads>> {
+struct LaunchExecute<RAJA::cuda_launch_t<async, nthreads>> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -90,9 +89,9 @@ struct LaunchExecute<RAJA::cuda_launch_t<async,nthreads>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
-    launch_global_fcn_fixed<nthreads> <<<blocks, threads>>>(ctx, body);
+    launch_global_fcn_fixed<nthreads><<<blocks, threads>>>(ctx, body);
 
-    if(!async){
+    if (!async) {
       cudaDeviceSynchronize();
     }
   }
@@ -102,9 +101,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -119,9 +119,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -136,9 +137,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -153,9 +155,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -170,9 +173,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -187,9 +191,10 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
   {
 
     int len = segment.end() - segment.begin();
@@ -200,21 +205,23 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
   }
 };
 
-//collapsed cuda policies
+// collapsed cuda policies
 
 template <typename SEGMENT>
 struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment0,
-                               SEGMENT const &segment1,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
   {
     int len1 = segment1.end() - segment1.begin();
     int len0 = segment0.end() - segment0.begin();
     {
-      const int i = blockIdx.x; const int j = blockIdx.y;
+      const int i = blockIdx.x;
+      const int j = blockIdx.y;
       body(*(segment0.begin() + i), *(segment1.begin() + j));
     }
   }
@@ -224,20 +231,21 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-                               SEGMENT const &segment0,
-                               SEGMENT const &segment1,
-                               SEGMENT const &segment2,
-                               BODY const &body)
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
   {
     int len2 = segment2.end() - segment2.begin();
     int len1 = segment1.end() - segment1.begin();
     int len0 = segment0.end() - segment0.begin();
     {
-      const int i = blockIdx.x; 
+      const int i = blockIdx.x;
       const int j = blockIdx.y;
       const int k = blockIdx.z;
-      body(*(segment0.begin() + i), 
+      body(*(segment0.begin() + i),
            *(segment1.begin() + j),
            *(segment2.begin() + k));
     }
@@ -245,5 +253,5 @@ struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
 };
 
 
-}
+}  // namespace RAJA
 #endif
