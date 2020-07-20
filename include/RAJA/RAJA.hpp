@@ -43,7 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
-#include "RAJA/pattern/teams.hpp"
+#include "RAJA/pattern/teams/teams_core.hpp"
 
 
 //
@@ -55,6 +55,7 @@
 // All platforms must support loop execution.
 //
 #include "RAJA/policy/loop.hpp"
+#include "RAJA/pattern/teams/teams_sequential.hpp"
 
 //
 // All platforms should support simd execution.
@@ -67,6 +68,7 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
+#include "RAJA/pattern/teams/teams_cuda.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -75,6 +77,7 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
+#include "RAJA/pattern/teams/teams_openmp.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp_target.hpp"

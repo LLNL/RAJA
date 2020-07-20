@@ -127,7 +127,7 @@ using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 #endif
 
 
-#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
 //using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::cuda_block_y_direct>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
                                 RAJA::omp_parallel_for_exec,
