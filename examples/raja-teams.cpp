@@ -125,7 +125,7 @@ using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 #endif
 
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_USE_OPENMP)
 //using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::cuda_block_y_direct>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
                                 RAJA::omp_parallel_for_exec,
@@ -137,6 +137,17 @@ using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
 using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
                                  RAJA::omp_parallel_for_exec,
                                  RAJA::cuda_block_xyz_direct<2>>;
+
+#elif defined(RAJA_ENABLE_CUDA)
+
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::cuda_block_y_direct>;
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::cuda_block_x_direct>;
+
+using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                 RAJA::cuda_block_xyz_direct<2>>;
+
 #else
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec>;
@@ -144,9 +155,12 @@ using teams01 = RAJA::LoopPolicy<RAJA::loop_exec>;
 #endif
 
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec,  RAJA::cuda_thread_y_loop>;
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
+#elif defined(RAJA_ENABLE_CUDA)
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
 #else
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec>;
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec>;

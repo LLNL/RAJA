@@ -196,11 +196,13 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
+//Consolidate to one set of resources?
 struct ResourceList
 {
-  Resources host_resources;
-#if defined(RAJA_USE_CUDA)
-  Resources device_resources;
+  Resources team_resources;
+  //Resources host_resources;
+#if defined(RAJA_ENABLE_CUDA)
+  //Resources device_resources;
 #endif
 };
 
@@ -272,6 +274,8 @@ struct LaunchExecute<RAJA::cuda_launch_t<async,0>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
+    printf("thread block dim %d %d %d \n", threads.x, threads.y, threads.z);
+    printf("grid block dim %d %d %d \n", blocks.x, blocks.y, blocks.z);
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
 
     if(!async){
@@ -326,21 +330,21 @@ void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
   if(place == HOST){
     using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
 
-    launch_t::exec(LaunchContext(resources.host_resources, HOST), body);
+    launch_t::exec(LaunchContext(resources.team_resources, HOST), body);
   }
 #ifdef RAJA_ENABLE_OPENMP
   else if(place == HOST_THREADS)
   {
     printf("Launching OMP code ! \n");
     using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
-    launch_t::exec(LaunchContext(resources.host_resources, HOST_THREADS), body);
+    launch_t::exec(LaunchContext(resources.team_resources, HOST_THREADS), body);
   }
 #endif
 #ifdef RAJA_ENABLE_CUDA
   else if(place == DEVICE){
     using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
 
-    launch_t::exec(LaunchContext(resources.device_resources, DEVICE), body);
+    launch_t::exec(LaunchContext(resources.team_resources, DEVICE), body);
   }
 #endif
   else {
