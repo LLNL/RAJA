@@ -34,6 +34,7 @@
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
+
 #if defined(__CUDA_ARCH__)
 #define TEAM_SHARED __shared__
 #define TEAM_SYNC() __syncthreads()
@@ -46,13 +47,31 @@
 namespace RAJA
 {
 
-#ifdef RAJA_ENABLE_CUDA
+//GPU or CPU threads available
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
 enum ExecPlace { HOST, HOST_THREADS, DEVICE, NUM_PLACES };
+#elif defined(RAJA_ENABLE_CUDA)
+enum ExecPlace { HOST, DEVICE, NUM_PLACES };
 #else
 enum ExecPlace { HOST, NUM_PLACES };
 #endif
 
-#if 0
+//GPU or CPU threads available
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
+struct LoopPolicy {
+    using host_policy_t = HOST_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
+    using device_policy_t = DEVICE_POLICY;
+};
+
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
+struct LaunchPolicy {
+    using host_policy_t = HOST_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
+    using device_policy_t = DEVICE_POLICY;
+};
+#elif defined(RAJA_ENABLE_CUDA)
 template <typename HOST_POLICY, typename DEVICE_POLICY>
 struct LoopPolicy {
     using host_policy_t = HOST_POLICY;
@@ -63,22 +82,18 @@ template <typename HOST_POLICY, typename DEVICE_POLICY>
 struct LaunchPolicy {
     using host_policy_t = HOST_POLICY;
     using device_policy_t = DEVICE_POLICY;
+};
+#else
+template <typename HOST_POLICY>
+struct LoopPolicy {
+    using host_policy_t = HOST_POLICY;
+};
+
+template <typename HOST_POLICY>
+struct LaunchPolicy {
+    using host_policy_t = HOST_POLICY;
 };
 #endif
-
-template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
-struct LoopPolicy {
-    using host_policy_t = HOST_POLICY;
-    using host_threads_policy_t  = HOST_THREADS_POLICY;
-    using device_policy_t = DEVICE_POLICY;
-};
-
-template <typename HOST_POLICY, typename HOST_THREADS_POLICY, typename DEVICE_POLICY>
-struct LaunchPolicy {
-    using host_policy_t = HOST_POLICY;
-    using host_threads_policy_t  = HOST_THREADS_POLICY;
-    using device_policy_t = DEVICE_POLICY;
-};
 
 
 struct Teams {
@@ -156,13 +171,17 @@ public:
   RAJA_INLINE
   Resources() = default;
 
+  Resources(Teams in_teams, Threads in_threads)
+    : teams(in_teams), threads(in_threads) {};
+
+  /*
   template <typename... ARGS>
   RAJA_INLINE
   explicit Resources(ARGS const &... args)
   {
     camp::sink(apply(args)...);
   }
-
+  */
 private:
   RAJA_HOST_DEVICE
   RAJA_INLINE
@@ -180,7 +199,9 @@ private:
 struct ResourceList
 {
   Resources host_resources;
+#if defined(RAJA_USE_CUDA)
   Resources device_resources;
+#endif
 };
 
 class LaunchContext : public Resources
@@ -306,12 +327,15 @@ void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
     using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
 
     launch_t::exec(LaunchContext(resources.host_resources, HOST), body);
-  }else if(place == HOST_THREADS)
+  }
+#ifdef RAJA_ENABLE_OPENMP
+  else if(place == HOST_THREADS)
   {
     printf("Launching OMP code ! \n");
     using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
     launch_t::exec(LaunchContext(resources.host_resources, HOST_THREADS), body);
   }
+#endif
 #ifdef RAJA_ENABLE_CUDA
   else if(place == DEVICE){
     using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
@@ -332,7 +356,7 @@ template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment,
                                     BODY const &body)
   {
@@ -346,7 +370,7 @@ struct LoopExecute<loop_exec, SEGMENT> {
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment0,
                                     SEGMENT const &segment1,
                                     BODY const &body)
@@ -365,7 +389,7 @@ struct LoopExecute<loop_exec, SEGMENT> {
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment0,
                                     SEGMENT const &segment1,
                                     SEGMENT const &segment2,
@@ -388,11 +412,12 @@ struct LoopExecute<loop_exec, SEGMENT> {
 
 };
 
+#if defined(RAJA_ENABLE_OPENMP)
 template <typename SEGMENT>
 struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment,
                                     BODY const &body)
   {
@@ -406,7 +431,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment0,
                                     SEGMENT const &segment1,
                                     BODY const &body)
@@ -426,7 +451,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                     SEGMENT const &segment0,
                                     SEGMENT const &segment1,
                                     SEGMENT const &segment2,
@@ -449,7 +474,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   }
 
 };
-
+#endif
 
 #ifdef RAJA_ENABLE_CUDA
 
@@ -457,7 +482,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -474,7 +499,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -491,7 +516,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -508,7 +533,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_loop, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -525,7 +550,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -542,7 +567,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment,
                                BODY const &body)
   {
@@ -561,7 +586,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment0,
                                SEGMENT const &segment1,
                                BODY const &body)
@@ -579,7 +604,7 @@ template <typename SEGMENT>
 struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const &ctx,
+  static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
                                SEGMENT const &segment0,
                                SEGMENT const &segment1,
                                SEGMENT const &segment2,
@@ -614,11 +639,15 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #else
   switch (ctx.exec_place)
   {
+#if defined(RAJA_ENABLE_OPENMP)
      case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
                            SEGMENT>::exec(ctx, segment, body); break;
+#endif
 
      case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
                             SEGMENT>::exec(ctx, segment, body); break;
+
+     default: RAJA_ABORT_OR_THROW("Back end not support \n"); break;
   }
 #endif
 }
@@ -635,8 +664,10 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #else
   switch (ctx.exec_place)
   {
+#if defined(RAJA_ENABLE_OPENMP)
      case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
                                     SEGMENT>::exec(ctx, segment0, segment1, body); break;
+#endif
 
      case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
                             SEGMENT>::exec(ctx, segment0, segment1, body); break;
@@ -658,8 +689,11 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #else
   switch (ctx.exec_place)
   {
+
+#ifdef RAJA_ENABLE_OPENMP
      case HOST_THREADS: LoopExecute<typename POLICY_LIST::host_threads_policy_t,
                                     SEGMENT>::exec(ctx, segment0, segment1, segment2, body); break;
+#endif
 
      case HOST: LoopExecute<typename POLICY_LIST::host_policy_t,
                             SEGMENT>::exec(ctx, segment0, segment1, segment2, body); break;

@@ -116,8 +116,13 @@ void printResult(T *C, int N);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
-
+#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
 using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::omp_launch_t, RAJA::cuda_launch_t<false>>;
+#elif defined(RAJA_ENABLE_CUDA)
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>;
+#else
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+#endif
 
 
 #ifdef RAJA_ENABLE_CUDA
@@ -133,8 +138,9 @@ using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
                                  RAJA::omp_parallel_for_exec,
                                  RAJA::cuda_block_xyz_direct<2>>;
 #else
-using teams0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
-using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec>;
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec>;
+using teams01 = RAJA::LoopPolicy<RAJA::loop_exec>;
 #endif
 
 
@@ -142,8 +148,8 @@ using teams1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec,  RAJA::cuda_thread_y_loop>;
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
 #else
-using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
-using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec>;
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec>;
 #endif
 
 
@@ -204,8 +210,7 @@ int main()
     RAJA::launch<launch_policy>(
         select_cpu_or_gpu,
         RAJA::ResourceList{
-            RAJA::Resources(RAJA::Threads(N_tri)),
-            RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
+          RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
