@@ -120,6 +120,8 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::omp_launch_t, RAJA::cuda_launch_t<false>>;
 #elif defined(RAJA_ENABLE_CUDA)
 using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>;
+#elif defined(RAJA_ENABLE_OPENMP)
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::omp_launch_t>;
 #else
 using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 #endif
@@ -148,6 +150,17 @@ using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
 using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
                                  RAJA::cuda_block_xyz_direct<2>>;
 
+#elif defined(RAJA_ENABLE_OPENMP)
+
+using teams1 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::omp_parallel_for_exec>;
+
+using teams0 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                RAJA::loop_exec>;
+
+using teams01 = RAJA::LoopPolicy<RAJA::loop_exec,
+                                 RAJA::omp_parallel_for_exec>;
+
 #else
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec>;
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec>;
@@ -161,6 +174,9 @@ using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec, RAJA::cuda_t
 #elif defined(RAJA_ENABLE_CUDA)
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_y_loop>;
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::cuda_thread_x_loop>;
+#elif defined(RAJA_ENABLE_OPENMP)
+using threads1 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+using threads0 = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 #else
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec>;
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec>;

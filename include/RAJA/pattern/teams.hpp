@@ -52,6 +52,8 @@ namespace RAJA
 enum ExecPlace { HOST, HOST_THREADS, DEVICE, NUM_PLACES };
 #elif defined(RAJA_ENABLE_CUDA)
 enum ExecPlace { HOST, DEVICE, NUM_PLACES };
+#elif defined(RAJA_ENABLE_OPENMP)
+enum ExecPlace { HOST, HOST_THREADS, NUM_PLACES};
 #else
 enum ExecPlace { HOST, NUM_PLACES };
 #endif
@@ -82,6 +84,18 @@ template <typename HOST_POLICY, typename DEVICE_POLICY>
 struct LaunchPolicy {
     using host_policy_t = HOST_POLICY;
     using device_policy_t = DEVICE_POLICY;
+};
+#elif defined(RAJA_ENABLE_OPENMP)
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY>
+struct LoopPolicy {
+    using host_policy_t = HOST_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
+};
+
+template <typename HOST_POLICY, typename HOST_THREADS_POLICY>
+struct LaunchPolicy {
+    using host_policy_t = HOST_POLICY;
+    using host_threads_policy_t  = HOST_THREADS_POLICY;
 };
 #else
 template <typename HOST_POLICY>
