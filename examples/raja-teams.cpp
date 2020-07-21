@@ -21,9 +21,7 @@
 /*
   Define number of threads in x and y dimensions of a CUDA thread block
 */
-#if defined(RAJA_ENABLE_CUDA)
-#define CUDA_BLOCK_SIZE 16
-#endif
+#define THREAD_BLOCK_SZ 16
 
 
 //
@@ -60,30 +58,30 @@ __global__ void matMultKernel(int N, double *C, double *A, double *B)
   const int ty = threadIdx.y;  // local row
   const int tx = threadIdx.x;  // local column
 
-  const int row = by * CUDA_BLOCK_SIZE + ty;  // Matrix row index
-  const int col = bx * CUDA_BLOCK_SIZE + tx;  // Matrix column index
+  const int row = by * THREAD_BLOCK_SZ + ty;  // Matrix row index
+  const int col = bx * THREAD_BLOCK_SZ + tx;  // Matrix column index
 
   // Shared memory used to store Asub and Bsub respectively
-  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+  __shared__ double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
 
   // Loop over all the sub-matrices of A and B that are
   // required to compute Csub
   // Multiply each pair of sub-matrices together
   // and accumulate the results
-  for (int m = 0; m < (N / CUDA_BLOCK_SIZE); ++m) {
+  for (int m = 0; m < (N / THREAD_BLOCK_SZ); ++m) {
 
     // Load Asub and Bsub from device memory to shared memory
     // Each thread loads one element of each sub-matrix
-    As[ty][tx] = A[row * N + m * CUDA_BLOCK_SIZE + tx];
-    Bs[ty][tx] = B[(m * CUDA_BLOCK_SIZE + ty) * N + col];
+    As[ty][tx] = A[row * N + m * THREAD_BLOCK_SZ + tx];
+    Bs[ty][tx] = B[(m * THREAD_BLOCK_SZ + ty) * N + col];
 
     // Synchronize to make sure the sub-matrices are loaded
     // before starting the computation
     __syncthreads();
 
     // Multiply Asub and Bsub together
-    for (int e = 0; e < CUDA_BLOCK_SIZE; ++e)
+    for (int e = 0; e < THREAD_BLOCK_SZ; ++e)
       Cvalue += As[ty][e] * Bs[e][tx];
 
     // Synchronize to make sure that the preceding
@@ -190,7 +188,7 @@ int main()
   // N is number of blocks in each matrix
   const int NBlocks = 4;
 #ifdef RAJA_ENABLE_CUDA
-  const int NThreads = CUDA_BLOCK_SIZE;
+  const int NThreads = THREAD_BLOCK_SZ;
   const int N = NThreads * NBlocks;
 #else
   const int NThreads = 1;
@@ -269,9 +267,9 @@ int main()
 
           RAJA::loop<teams01>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
 
-            TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-            TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-            TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+            TEAM_SHARED double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+            TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+            TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
 
             // Team parallel loop
             RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 
