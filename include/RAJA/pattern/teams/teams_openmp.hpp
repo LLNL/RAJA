@@ -63,7 +63,6 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
-    // block stride loop
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -85,7 +84,6 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
-    // block stride loop
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
