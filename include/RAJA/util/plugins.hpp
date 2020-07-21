@@ -15,13 +15,14 @@ namespace RAJA {
 namespace util {
 
 template <typename T>
-auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
+RAJA_INLINE auto trigger_updates_before(T&& item)
+  -> typename std::remove_reference<T>::type
 {
   return item;
 }
 
 
-inline
+RAJA_INLINE
 void
 callPreCapturePlugins(PluginContext p) noexcept
 {
@@ -33,7 +34,7 @@ callPreCapturePlugins(PluginContext p) noexcept
   }
 }
 
-inline
+RAJA_INLINE
 void
 callPostCapturePlugins(PluginContext p) noexcept
 {
@@ -45,7 +46,7 @@ callPostCapturePlugins(PluginContext p) noexcept
   }
 }
 
-inline
+RAJA_INLINE
 void
 callPreLaunchPlugins(PluginContext p) noexcept
 {
@@ -57,7 +58,7 @@ callPreLaunchPlugins(PluginContext p) noexcept
   }
 }
 
-inline
+RAJA_INLINE
 void
 callPostLaunchPlugins(PluginContext p) noexcept
 {
