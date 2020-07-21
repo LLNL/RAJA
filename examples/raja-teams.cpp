@@ -269,9 +269,9 @@ int main()
 
           RAJA::loop<teams01>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
 
-            TEAM_SHARED double As[NThreads][NThreads];
-            TEAM_SHARED double Bs[NThreads][NThreads];
-            TEAM_SHARED double Cs[NThreads][NThreads];
+            TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+            TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+            TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
 
             // Team parallel loop
             RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 

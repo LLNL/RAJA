@@ -279,7 +279,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
       break;
 
     default:
-      RAJA_ABORT_OR_THROW("Back end not support \n");
+      RAJA_ABORT_OR_THROW("Backend not support \n");
       break;
   }
 #endif
@@ -314,6 +314,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                                       segment1,
                                                                       body);
       break;
+      
+  default: RAJA_ABORT_OR_THROW("Backend not support \n"); break;
   }
 #endif
 }
@@ -346,6 +348,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
       LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
           ctx, segment0, segment1, segment2, body);
       break;
+
+  default: RAJA_ABORT_OR_THROW("Backend not support \n"); break;
   }
 #endif
 }
