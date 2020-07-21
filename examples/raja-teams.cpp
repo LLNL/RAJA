@@ -239,7 +239,7 @@ int main()
     //========================
     const int N_tri = 5;
     RAJA::launch<launch_policy>(select_cpu_or_gpu,                                
-        RAJA::ResourceList{RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri))},
+        RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
@@ -257,8 +257,8 @@ int main()
     RAJA::RangeSegment TeamRange(0, NBlocks);
 
     RAJA::launch<launch_policy>(select_cpu_or_gpu,                                
-        RAJA::ResourceList{RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
-                                           RAJA::Threads(NThreads, NThreads))},
+      RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
+                      RAJA::Threads(NThreads, NThreads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           //
           // Loop over teams

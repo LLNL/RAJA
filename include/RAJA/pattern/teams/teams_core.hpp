@@ -193,11 +193,6 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
-// Consolidate to one set of resources?
-struct ResourceList {
-  Resources team_resources;
-};
-
 class LaunchContext : public Resources
 {
 public:
@@ -220,26 +215,26 @@ template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, ResourceList const &resources, BODY const &body)
+void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 {
 
   if (place == HOST) {
     using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
 
-    launch_t::exec(LaunchContext(resources.team_resources, HOST), body);
+    launch_t::exec(LaunchContext(team_resources, HOST), body);
   }
 #ifdef RAJA_ENABLE_OPENMP
   else if (place == HOST_THREADS) {
     printf("Launching OMP code ! \n");
     using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
-    launch_t::exec(LaunchContext(resources.team_resources, HOST_THREADS), body);
+    launch_t::exec(LaunchContext(team_resources, HOST_THREADS), body);
   }
 #endif
 #ifdef RAJA_ENABLE_CUDA
   else if (place == DEVICE) {
     using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
 
-    launch_t::exec(LaunchContext(resources.team_resources, DEVICE), body);
+    launch_t::exec(LaunchContext(team_resources, DEVICE), body);
   }
 #endif
   else {
