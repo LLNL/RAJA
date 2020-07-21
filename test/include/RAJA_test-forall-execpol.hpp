@@ -34,26 +34,21 @@ using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec,
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
-  camp::list< // This policy works for the tests, but commenting it out
-              // since its usage is questionable
-              // RAJA::omp_parallel_exec<RAJA::seq_exec>,
-              RAJA::omp_parallel_for_exec, 
-              RAJA::omp_for_nowait_exec,
-              RAJA::omp_for_exec >;
+  camp::list< RAJA::omp_parallel_for_exec, 
+              RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>,
+              RAJA::omp_parallel_exec<RAJA::omp_for_exec> >;
 
 using OpenMPForallReduceExecPols = OpenMPForallExecPols;
 
 using OpenMPForallAtomicExecPols =
-  camp::list< // This policy works for the tests, but commenting it out
-              // since its usage is questionable
-              // RAJA::omp_parallel_exec<RAJA::seq_exec>,
+  camp::list< RAJA::omp_parallel_for_exec
 #if defined(RAJA_TEST_EXHAUSTIVE)
-              RAJA::omp_parallel_for_exec, 
-              RAJA::omp_for_nowait_exec,
+              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_exec>
 #endif
-              RAJA::omp_for_exec >;
+            >; 
 
-#endif
+#endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_TBB)
 using TBBForallExecPols = camp::list< RAJA::tbb_for_exec,
