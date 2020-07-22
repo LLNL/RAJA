@@ -117,7 +117,6 @@ build using N cores.
             You can also run individual tests by invoking test 
             executables directly. They live in subdirectories in the ``test`` 
             directory, which mimicks the RAJA test source directory structure.
-
             RAJA tests use the 
             `Google Test framework <https://github.com/google/googletest>`_, 
             so you can also run tests via Google Test commands.
