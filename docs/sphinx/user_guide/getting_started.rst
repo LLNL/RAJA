@@ -88,11 +88,11 @@ RAJA uses CMake to configure a build. A "bare boes" configuration looks like::
             the source directory, so you must create a build directory and
             run CMake in it.
 
-When you run CMake, it will generate output about the compiler that will be
-and which RAJA features have been specified or discovered. Some RAJA features, 
-like OpenMP support are enabled if, for example, the compiler supports OpenMP.
-For a complete summary of RAJA configuration options, please see 
-:ref:`configopt-label`.
+When you run CMake, it will generate output about the build environment 
+(compiler and version, options, etc.). Some RAJA features, 
+like OpenMP support are enabled by default if, for example, the compiler 
+supports OpenMP. These can be disabled if desired. For a summary of 
+RAJA configuration options, please see :ref:`configopt-label`.
 
 After CMake successfully completes, you compile RAJA by executing the ``make``
 command in the build directory; i.e.,::
@@ -124,9 +124,10 @@ build using N cores.
           * RAJA also contains example and tutorial exercise 
             programs you can run if you wish. Similar to the RAJA tests, 
             the examples and exercises are built by default and can be
-            disabled with a CMake option. The source files for these are 
-            located in the ``RAJA/examples`` and ``RAJA/exercises`` directories,
-            respectively. When they are built 
+            disabled with CMake options (see :ref:`configopt-label`). The 
+            source files for these are located in the ``RAJA/examples`` and 
+            ``RAJA/exercises`` directories, respectively. Feel free to 
+            experiment by editing the source files and recompiling.
 
 .. note:: You may use an externally-supplied version of the camp library with
           with RAJA if you wish. To do so, pass the following option to CMake:
