@@ -122,10 +122,9 @@ struct HoldForall
 
   RAJA_INLINE void operator()(Args... args) const
   {
-    // TODO:: decide when to run hooks, may bypass this and use impl directly
-    RAJA::forall<ExecutionPolicy>(
-        m_segment,
-        HoldBodyArgs{m_body, std::forward<Args>(args)...});
+    wrap::forall(ExecutionPolicy(),
+                 m_segment,
+                 HoldBodyArgs{m_body, std::forward<Args>(args)...});
   }
 
 private:

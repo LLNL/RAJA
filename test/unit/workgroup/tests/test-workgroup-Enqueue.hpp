@@ -29,20 +29,8 @@ struct EnqueueTestCallable
   EnqueueTestCallable(EnqueueTestCallable const&) = default;
   EnqueueTestCallable& operator=(EnqueueTestCallable const&) = default;
 
-  RAJA_HOST_DEVICE EnqueueTestCallable(EnqueueTestCallable&& o)
-    : ptr(o.ptr)
-    , val(o.val)
-    , move_constructed(true)
-  {
-    o.moved_from = true;
-  }
-  RAJA_HOST_DEVICE EnqueueTestCallable& operator=(EnqueueTestCallable&& o)
-  {
-    ptr = o.ptr;
-    val = o.val;
-    o.moved_from = true;
-    return *this;
-  }
+  EnqueueTestCallable(EnqueueTestCallable&& o) = default;
+  EnqueueTestCallable& operator=(EnqueueTestCallable&& o) = default;
 
   RAJA_HOST_DEVICE void operator()(IndexType i, Args... args) const
   {
@@ -53,9 +41,6 @@ struct EnqueueTestCallable
 private:
   IndexType* ptr;
   IndexType  val;
-public:
-  bool move_constructed = false;
-  bool moved_from = false;
 };
 
 
@@ -97,15 +82,7 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
       {
         for (size_t i = 0; i < num; ++i) {
-          callable c{&success, IndexType(0)};
-
-          ASSERT_FALSE(c.move_constructed);
-          ASSERT_FALSE(c.moved_from);
-
-          pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, std::move(c));
-
-          ASSERT_FALSE(c.move_constructed);
-          ASSERT_TRUE(c.moved_from);
+          pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, callable{&success, IndexType(0)});
         }
 
         ASSERT_EQ(pool.num_loops(), (size_t)num);

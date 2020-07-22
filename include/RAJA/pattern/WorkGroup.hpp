@@ -23,6 +23,9 @@
 #include "RAJA/pattern/WorkGroup/WorkStorage.hpp"
 #include "RAJA/pattern/WorkGroup/WorkRunner.hpp"
 
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
+
 namespace RAJA
 {
 
@@ -237,15 +240,23 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
   template < typename segment_T, typename loop_T >
-  inline void enqueue(segment_T&& seg, loop_T&& loop)
+  inline void enqueue(segment_T&& seg, loop_T&& loop_body)
   {
     if (m_storage.begin() == m_storage.end()) {
       // perform auto-reserve on reuse
       reserve(m_max_num_loops, m_max_storage_bytes);
     }
 
+    util::PluginContext context{util::make_context<exec_policy>()};
+    util::callPreCapturePlugins(context);
+
+    using RAJA::util::trigger_updates_before;
+    auto body = trigger_updates_before(loop_body);
+
     m_runner.enqueue(
-        m_storage, std::forward<segment_T>(seg), std::forward<loop_T>(loop));
+        m_storage, std::forward<segment_T>(seg), std::move(body));
+
+    util::callPostCapturePlugins(context);
   }
 
   inline workgroup_type instantiate();
@@ -440,8 +451,15 @@ WorkGroup<
     xargs<Args...>,
     ALLOCATOR_T>::run(Args... args)
 {
+  util::PluginContext context{util::make_context<EXEC_POLICY_T>()};
+  util::callPreLaunchPlugins(context);
+
   // move any per run storage into worksite
-  return worksite_type{m_runner.run(m_storage, std::forward<Args>(args)...)};
+  worksite_type site(m_runner.run(m_storage, std::forward<Args>(args)...));
+
+  util::callPostLaunchPlugins(context);
+
+  return site;
 }
 
 }  // namespace RAJA
