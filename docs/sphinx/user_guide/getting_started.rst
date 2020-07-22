@@ -163,7 +163,7 @@ to nvcc.
 
 To set the CUDA compute architecture for the nvcc compiler, which should be
 chosen based on the NVIDIA GPU hardware you are using, you can use the
-`CUDA_ARCH` CMake variable. For example, the CMake option::
+``CUDA_ARCH`` CMake variable. For example, the CMake option::
 
   -DCUDA_ARCH=sm_60
 
@@ -172,18 +172,18 @@ stage of compilation. It will pick the PTX architecture to use in the first
 stage of compilation that is suitable for the SASS architecture you specify.
 
 Alternatively, you may specify the PTX and SASS architectures, using
-appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
+appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
 
 .. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use
           all supported CUDA features.** Mostly, the architecture level affects
           which RAJA CUDA atomic operations are available and how they are
           implemented inside RAJA. This is described in :ref:`atomics-label`.
 
-          * If you do not specify a value for `CUDA_ARCH`, it will be set to
+          * If you do not specify a value for ``CUDA_ARCH``, it will be set to
             `sm_35` by default and CMake will emit a status message 
             indicatting this choice was made.
 
-          * If you give a `CUDA_ARCH` value less than `sm_35` (e.g., `sm_30`),
+          * If you give a ``CUDA_ARCH`` value less than `sm_35` (e.g., `sm_30`),
             CMake will report this and stop processing.
 
 Also, RAJA relies on the CUB CUDA utilities library for some CUDA functionality.
@@ -211,7 +211,7 @@ OpenMP
 ^^^^^^^
 
 To use OpenMP target offlad GPU execution, additional options may need to be
-passed to the compiler. The variable `OpenMP_CXX_FLAGS` is used for this.
+passed to the compiler. The variable ``OpenMP_CXX_FLAGS`` is used for this.
 Option syntax follows the CMake *list* pattern. For example, to specify OpenMP 
 target options for NVIDIA GPUs using a clang-based compiler, one may do
 something like::
