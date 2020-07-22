@@ -69,7 +69,7 @@ We can be explicit about the operation used in the scan by passing the
 
 The result in the 'out' array is the same.
 
-An inclusive parallel scan operation using OpenMP multi-threading is
+An inclusive parallel scan operation using OpenMP multithreading is
 accomplished similarly by replacing the execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp

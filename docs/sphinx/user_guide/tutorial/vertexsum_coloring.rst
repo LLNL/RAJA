@@ -102,7 +102,7 @@ using the vectors:
 
 Now, we can use an index set execution policy that iterates over the 
 segments sequentially and executes each segment in parallel using OpenMP
-multi-threading (and ``RAJA::forall``):
+multithreading (and ``RAJA::forall``):
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
    :start-after: _raja_seq_colorindexset_vertexsum_start

@@ -73,7 +73,7 @@ This policy allows the compiler to generate optimizations, such as SIMD if
 compiler heuristics suggest that it is safe to do so and potentially 
 beneficial for performance, but the optimizations are not forced.
 
-To run the kernel with OpenMP multi-threaded parallelism on a CPU, we use the
+To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
 ``RAJA::omp_parallel_for_exec`` execution policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
