@@ -13,7 +13,7 @@
 
 using @BACKEND@BasicWorkGroupUnordered@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
-                                 @BACKEND@OrderedPolicyList,
+                                 @BACKEND@OrderPolicyList,
                                  @BACKEND@StoragePolicyList,
                                  IndexTypeTypeList,
                                  @BACKEND@AllocatorList,
