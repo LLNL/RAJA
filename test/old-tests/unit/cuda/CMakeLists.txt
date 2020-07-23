@@ -10,10 +10,6 @@ raja_add_test(
   SOURCES test-reduce-sum.cpp)
 
 raja_add_test(
-  NAME test-cuda-reduce-min
-  SOURCES test-reduce-min.cpp)
-
-raja_add_test(
   NAME test-cuda-reduce-loc
   SOURCES test-reduce-loc.cpp)
 
@@ -24,10 +20,6 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-reduce-randloc
   SOURCES test-reduce-randloc.cpp)
-
-raja_add_test(
-  NAME test-cuda-reduce-max
-  SOURCES test-reduce-max.cpp)
 
 raja_add_test(
   NAME test-cuda-synchronize
