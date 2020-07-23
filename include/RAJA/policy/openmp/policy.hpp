@@ -86,8 +86,6 @@ struct Runtime : private internal::Schedule<-1, default_chunk_size> {
 //////////////////////////////////////////////////////////////////////
 //
 
-namespace exec {
-
 struct omp_parallel_region
     : make_policy_pattern_launch_platform_t<Policy::openmp,
                                             Pattern::region,
@@ -176,23 +174,22 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
                                                       Launch::sync> {
 };
 
-}  // namespace exec
 }  // namespace omp
 }  // namespace policy
 
-using policy::omp::exec::omp_for_exec;
-using policy::omp::exec::omp_for_nowait_exec;
-using policy::omp::exec::omp_for_schedule_exec;
-using policy::omp::exec::omp_for_nowait_schedule_exec;
-using policy::omp::exec::omp_for_static;
-using policy::omp::exec::omp_parallel_exec;
-using policy::omp::exec::omp_parallel_for_exec;
-using policy::omp::exec::omp_parallel_for_segit;
-using policy::omp::exec::omp_parallel_region;
-using policy::omp::exec::omp_parallel_segit;
-using policy::omp::exec::omp_reduce;
-using policy::omp::exec::omp_reduce_ordered;
-using policy::omp::exec::omp_synchronize;
+using policy::omp::omp_for_exec;
+using policy::omp::omp_for_nowait_exec;
+using policy::omp::omp_for_schedule_exec;
+using policy::omp::omp_for_nowait_schedule_exec;
+using policy::omp::omp_for_static;
+using policy::omp::omp_parallel_exec;
+using policy::omp::omp_parallel_for_exec;
+using policy::omp::omp_parallel_for_segit;
+using policy::omp::omp_parallel_region;
+using policy::omp::omp_parallel_segit;
+using policy::omp::omp_reduce;
+using policy::omp::omp_reduce_ordered;
+using policy::omp::omp_synchronize;
 
 }  // namespace RAJA
 
