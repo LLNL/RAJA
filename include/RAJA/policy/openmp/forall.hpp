@@ -77,7 +77,7 @@ namespace internal
 
   /// Tag dispatch for omp forall
 
-  template <typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Iterable, typename Func>
   RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
                                Iterable&& iter,
                                Func&& loop_body)
@@ -89,7 +89,7 @@ namespace internal
     }
   }
 
-  template <typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Iterable, typename Func, int ChunkSize>
   RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>&,
                                Iterable&& iter,
                                Func&& loop_body)
@@ -114,7 +114,7 @@ namespace internal
   }
 
   // dynamic & guided
-  template <typename Policy, typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Policy, typename Iterable, typename Func>
   RAJA_INLINE void forall_impl(const Policy&,
                                Iterable&& iter,
                                Func&& loop_body)
@@ -129,7 +129,7 @@ namespace internal
 
   /// Tag dispatch for omp forall with nowait
 
-  template <typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Iterable, typename Func>
   RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto&,
                                Iterable&& iter,
                                Func&& loop_body)
@@ -141,7 +141,7 @@ namespace internal
     }
   }
 
-  template <typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Iterable, typename Func, int ChunkSize>
   RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>&,
                                Iterable&& iter,
                                Func&& loop_body)
@@ -166,7 +166,7 @@ namespace internal
   }
 
   // dynamic & guided
-  template <typename Policy, typename Iterable, typename Func, unsigned int ChunkSize>
+  template <typename Policy, typename Iterable, typename Func>
   RAJA_INLINE void forall_impl_nowait(const Policy&,
                                Iterable&& iter,
                                Func&& loop_body)
