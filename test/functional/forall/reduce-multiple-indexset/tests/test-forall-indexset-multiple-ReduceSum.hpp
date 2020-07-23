@@ -72,28 +72,35 @@ void ForallIndexSetReduceSumMultipleTestImpl()
 
   const double drinit = 5.0;
   const int irinit = 4;
+  const int test_repeat = 4;
 
   RAJA::ReduceSum<REDUCE_POLICY, double> dsum0(drinit * 1.0);
   RAJA::ReduceSum<REDUCE_POLICY, int> isum1(irinit * 2);
   RAJA::ReduceSum<REDUCE_POLICY, double> dsum2(drinit * 3.0);
   RAJA::ReduceSum<REDUCE_POLICY, int> isum3(irinit * 4);
 
-  RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-    dsum0 += 1.0 * dworking_array[idx];
-    isum1 += 2 * iworking_array[idx];
-    dsum2 += 3.0 * dworking_array[idx];
-    isum3 += 4 * iworking_array[idx];
-  });
+  for (int tcount = 1; tcount <= test_repeat; ++tcount) {
+ 
+    RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+      dsum0 += 1.0 * dworking_array[idx];
+      isum1 += 2 * iworking_array[idx];
+      dsum2 += 3.0 * dworking_array[idx];
+      isum3 += 4 * iworking_array[idx];
+    });
 
-  double dchk_val = dinit_val * static_cast<double>(iset.getLength());
-  int ichk_val = iinit_val * static_cast<int>(iset.getLength());
+    double dchk_val = dinit_val * static_cast<double>(iset.getLength());
+    int ichk_val = iinit_val * static_cast<int>(iset.getLength());
 
-  ASSERT_FLOAT_EQ(static_cast<double>(dsum0.get()), 
-                                      1 * dchk_val + (drinit * 1.0));
-  ASSERT_EQ(static_cast<int>(isum1.get()), 2 * ichk_val + (irinit * 2));
-  ASSERT_FLOAT_EQ(static_cast<double>(dsum2.get()), 
-                                      3 * dchk_val + (drinit * 3.0));
-  ASSERT_EQ(static_cast<int>(isum3.get()), 4 * ichk_val + (irinit * 4));
+    ASSERT_FLOAT_EQ(static_cast<double>(dsum0.get()), 
+                               tcount * (1 * dchk_val) + (drinit * 1.0) );
+    ASSERT_EQ(static_cast<int>(isum1.get()), 
+                               tcount * (2 * ichk_val) + (irinit * 2) );
+    ASSERT_FLOAT_EQ(static_cast<double>(dsum2.get()),
+                               tcount * (3 * dchk_val) + (drinit * 3.0) );
+    ASSERT_EQ(static_cast<int>(isum3.get()), 
+                               tcount * (4 * ichk_val) + (irinit * 4) );
+
+  }
 
   deallocateForallTestData<double>(working_res,
                                    dworking_array,

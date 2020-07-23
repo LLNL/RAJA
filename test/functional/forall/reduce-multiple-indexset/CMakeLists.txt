@@ -9,7 +9,7 @@
 # List of reduction types for generating test files.
 #
 #set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMinLoc ReduceMaxLoc)
-set(REDUCETYPES ReduceSum)
+set(REDUCETYPES ReduceSum ReduceMin)
 
 
 #
