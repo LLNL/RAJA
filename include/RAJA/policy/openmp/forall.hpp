@@ -129,29 +129,13 @@ namespace internal
 
   /// Tag dispatch for omp forall with nowait
 
-
-  template <typename Policy, typename Iterable, typename Func, unsigned int ChunkSize>
-  RAJA_INLINE void forall_impl(const Policy&,
-                               Iterable&& iter,
-                               Func&& loop_body)
-  {
-    omp_sched_t prev_sched;
-    int prev_chunk;
-    omp_get_schedule(&prev_sched, &prev_chunk);
-    omp_set_schedule(Policy::schedule, Policy::chunk_size);
-    forall_impl(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
-    omp_set_schedule(prev_sched, prev_chunk);
-  }
-
-  /// Tag dispatch for omp forall with nowait
-
   template <typename Iterable, typename Func, unsigned int ChunkSize>
   RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto&,
                                Iterable&& iter,
                                Func&& loop_body)
   {
     RAJA_EXTRACT_BED_IT(iter);
-    #pragma omp for
+    #pragma omp for nowait
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       loop_body(begin_it[i]);
     }
@@ -163,7 +147,7 @@ namespace internal
                                Func&& loop_body)
   {
     RAJA_EXTRACT_BED_IT(iter);
-    #pragma omp for schedule(static, ChunkSize)
+    #pragma omp for schedule(static, ChunkSize) nowait
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       loop_body(begin_it[i]);
     }
@@ -175,7 +159,7 @@ namespace internal
                                Func&& loop_body)
   {
     RAJA_EXTRACT_BED_IT(iter);
-    #pragma omp for schedule(runtime)
+    #pragma omp for schedule(runtime) nowait
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       loop_body(begin_it[i]);
     }
