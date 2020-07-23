@@ -115,9 +115,8 @@ build using N cores.
             in the build directory after the build completes.
 
             You can also run individual tests by invoking test 
-            executables directly. They live in subdirectories in the ``test`` 
-            directory, which mimicks the RAJA test source directory structure.
-            RAJA tests use the 
+            executables directly. They will be located in the ``test`` 
+            subdirectory in the build space directory. RAJA tests use the 
             `Google Test framework <https://github.com/google/googletest>`_, 
             so you can also run tests via Google Test commands.
 
@@ -126,7 +125,9 @@ build using N cores.
             the examples and exercises are built by default and can be
             disabled with CMake options (see :ref:`configopt-label`). The 
             source files for these are located in the ``RAJA/examples`` and 
-            ``RAJA/exercises`` directories, respectively. Feel free to 
+            ``RAJA/exercises`` directories, respectively. When built, the
+            executables for the examples and exercises will be located in
+            the ``bin`` subdirectory in the build space directory. Feel free to 
             experiment by editing the source files and recompiling.
 
 .. note:: You may use an externally-supplied version of the camp library with
@@ -144,10 +145,7 @@ To run RAJA code on NVIDIA GPUs, one typically must have a CUDA compiler
 installed on your system, in addition to a host code compiler. You may need 
 to specify both when you run CMake. The host compiler is specified using the 
 ``CMAKE_CXX_COMPILER`` CMake variable. The CUDA compiler is specified with
-the ``CMAKE_CUDA_COMPILER`` variable. In addition, you must also use the
-``CUDA_TOOLKIT_ROOT_DIR`` variable to set the location of the top-level
-directory for the CUDA toolchain. Typically, the CUDA compiler is 
-``path/to/cuda-toolchain/bin/nvcc``.
+the ``CMAKE_CUDA_COMPILER`` variable.
 
 When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
 

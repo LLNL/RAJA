@@ -58,10 +58,7 @@ Notable changes include:
 
   * Build changes/improvements:
       * The blt, camp, cub, and rocPRIM submodules have all been updated to more
-        recent versions. RAJA now requires rocm version 3.5 or newer. Also,
-        with the newer blt version used by RAJA, the CUDA_TOOLKIT_ROOT_DIR
-        CMake variable must be used to specify the location of the top-level
-        directory of the CUDA toolchain for CUDA builds.
+        recent versions. RAJA now requires rocm version 3.5 or newer.
       * Build for clang9 on macosx has been fixed.
       * Build for Intel19 on Windows has been fixed.
       * Host/device annotations have been added to reduction operations to
