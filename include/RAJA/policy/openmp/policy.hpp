@@ -33,8 +33,11 @@ namespace omp
 
 namespace internal
 {
+
+    struct ScheduleTag {};
+
     template <omp_sched_t Sched, int Chunk>
-    struct Schedule {
+    struct Schedule : public ScheduleTag {
         constexpr static omp_sched_t schedule = Sched;
         constexpr static int chunk_size = Chunk;
     };
@@ -101,7 +104,7 @@ struct omp_for_nowait_schedule_exec : make_policy_pattern_launch_platform_t<Poli
                                                               omp::For,
                                                               omp::NoWait,
                                                               Sched> {
-    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Sched>::value,
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::ScheduleTag, Sched>::value,
         "Schedule must be one of: Auto|Runtime|Static|Dynamic|Guided");
 };
 
@@ -113,7 +116,7 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
                                                               Platform::host,
                                                               omp::For,
                                                               Sched> {
-    static_assert(std::is_base_of<::RAJA::policy::omp::internal::Schedule, Sched>::value,
+    static_assert(std::is_base_of<::RAJA::policy::omp::internal::ScheduleTag, Sched>::value,
         "Schedule must be one of: Auto|Runtime|Static|Dynamic|Guided");
 };
 

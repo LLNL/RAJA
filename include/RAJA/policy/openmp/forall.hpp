@@ -182,7 +182,7 @@ namespace internal
 } // end namespace internal
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_schedule<Schedule>&,
+RAJA_INLINE void forall_impl(const omp_for_schedule_exec<Schedule>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
@@ -190,7 +190,7 @@ RAJA_INLINE void forall_impl(const omp_for_schedule<Schedule>&,
 }
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_nowait_schedule<Schedule>&,
+RAJA_INLINE void forall_impl(const omp_for_nowait_schedule_exec<Schedule>&,
                              Iterable&& iter,
                              Func&& loop_body)
 {
