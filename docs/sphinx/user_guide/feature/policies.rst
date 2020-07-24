@@ -83,19 +83,19 @@ caveats.
                                                       synchronization after 
                                                       loop; i.e., apply
                                                       ``omp for nowait`` pragma
- omp_for_schedule<Schedule>             forall,       Parallel execution with
+ omp_for_schedule_exec<Sched>           forall,       Parallel execution with
                                         kernel (For)  OpenMP CPU multithreading
                                                       inside an *existing* 
                                                       parallel region (see 
                                                       comments below) with a
-                                                      specified schedule
- omp_for_nowait_schedule<Schedule>      forall,       Parallel execution with
+                                                      specified schedule (*Sched*)
+ omp_for_nowait_schedule_exec<Sched>    forall,       Parallel execution with
                                         kernel (For)  OpenMP CPU multithreading
                                                       inside an *existing* 
                                                       parallel region (see 
                                                       comments below) with a
-                                                      specified schedule and
-                                                      without synchronization
+                                                      specified schedule (*Sched*)
+                                                      and without synchronization
                                                       after loop; e.g., append
                                                       ``nowait`` to pragma
  ====================================== ============= ==========================
