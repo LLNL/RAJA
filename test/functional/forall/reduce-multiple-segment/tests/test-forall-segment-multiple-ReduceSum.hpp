@@ -11,12 +11,13 @@
 #include <cstdlib>
 #include <numeric>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE,
+          typename DATA_TYPE, typename WORKING_RES,
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceSumMultipleStaggeredTestImpl(RAJA::Index_type first, 
-                                              RAJA::Index_type last)
+void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first, 
+                                              IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -31,7 +32,7 @@ void ForallReduceSumMultipleStaggeredTestImpl(RAJA::Index_type first,
 
   const DATA_TYPE initval = 2;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = initval;
   }
 
@@ -52,7 +53,7 @@ void ForallReduceSumMultipleStaggeredTestImpl(RAJA::Index_type first,
   const int nloops = 2;
   for (int j = 0; j < nloops; ++j) {
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       sum0 += working_array[idx];
       sum1 += working_array[idx] * 2;
       sum2 += working_array[idx] * 3;
@@ -82,12 +83,13 @@ void ForallReduceSumMultipleStaggeredTestImpl(RAJA::Index_type first,
                                       test_array);
 }
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE,
+          typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceSumMultipleStaggered2TestImpl(RAJA::Index_type first, 
-			                       RAJA::Index_type last)
+void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first, 
+			                       IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -102,7 +104,7 @@ void ForallReduceSumMultipleStaggered2TestImpl(RAJA::Index_type first,
 
   const DATA_TYPE initval = 2;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = initval;
   }
 
@@ -132,7 +134,7 @@ void ForallReduceSumMultipleStaggered2TestImpl(RAJA::Index_type first,
   const int nloops = 3;
   for (int j = 0; j < nloops; ++j) {
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       sum0 += working_array[idx];
       sum1 += working_array[idx] * 2;
       sum2 += working_array[idx] * 3;
@@ -170,15 +172,16 @@ class ForallReduceSumMultipleTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceSumMultipleTest, ReduceSumMultipleForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceSumMultipleStaggeredTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceSumMultipleStaggeredTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
                                            EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 
-  ForallReduceSumMultipleStaggered2TestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceSumMultipleStaggered2TestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
                                             EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 }
 

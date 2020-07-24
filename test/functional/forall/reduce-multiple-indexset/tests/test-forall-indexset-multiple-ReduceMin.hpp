@@ -19,17 +19,17 @@
 // not aligned with warp boundaries, for example, to check that reduction
 // mechanics don't depend on any sort of special indexing.
 //
-template <typename WORKING_RES, 
+template <typename IDX_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
 void ForallIndexSetReduceMinMultipleTestImpl()
 {
-  using RangeSegType = RAJA::TypedRangeSegment<RAJA::Index_type>;
+  using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
   using IdxSetType = RAJA::TypedIndexSet<RangeSegType>;
 
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(1, 1037);
-  RAJA::TypedRangeSegment<RAJA::Index_type> r2(1043, 2036);
-  RAJA::TypedRangeSegment<RAJA::Index_type> r3(4098, 6103);
-  RAJA::TypedRangeSegment<RAJA::Index_type> r4(10243, 15286);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(1, 1037);
+  RAJA::TypedRangeSegment<IDX_TYPE> r2(1043, 2036);
+  RAJA::TypedRangeSegment<IDX_TYPE> r3(4098, 6103);
+  RAJA::TypedRangeSegment<IDX_TYPE> r4(10243, 15286);
 
   IdxSetType iset;
   iset.push_back(r1); 
@@ -37,7 +37,7 @@ void ForallIndexSetReduceMinMultipleTestImpl()
   iset.push_back(r3); 
   iset.push_back(r4); 
 
-  const RAJA::Index_type alen = 15286;
+  const IDX_TYPE alen = 15286;
 
   camp::resources::Resource working_res{WORKING_RES()};
 
@@ -53,7 +53,7 @@ void ForallIndexSetReduceMinMultipleTestImpl()
 
   const double default_val = DBL_MAX;
 
-  for (RAJA::Index_type i = 0; i < alen; ++i) {
+  for (IDX_TYPE i = 0; i < alen; ++i) {
     test_array[i] = default_val;
   }
   
@@ -84,7 +84,7 @@ void ForallIndexSetReduceMinMultipleTestImpl()
  
      working_res.memcpy(working_array, test_array, sizeof(double) * alen);
 
-     RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+     RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
        dmin0.min(working_array[i]);
        dmin1.min(2 * working_array[i]);
      });
@@ -109,11 +109,12 @@ class ForallIndexSetReduceMinMultipleTest : public ::testing::Test
 TYPED_TEST_P(ForallIndexSetReduceMinMultipleTest, 
              ReduceMinMultipleForallIndexSet)
 {
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMinMultipleTestImpl<WORKING_RES, 
+  ForallIndexSetReduceMinMultipleTestImpl<IDX_TYPE, WORKING_RES,
                                           EXEC_POLICY, REDUCE_POLICY>();
 }
 
