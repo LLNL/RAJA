@@ -10,10 +10,6 @@ raja_add_test(
   SOURCES test-reduce-sum.cpp)
 
 raja_add_test(
-  NAME test-cuda-reduce-loc
-  SOURCES test-reduce-loc.cpp)
-
-raja_add_test(
   NAME test-cuda-reduce-tupleloc
   SOURCES test-reduce-tupleloc.cpp)
 
