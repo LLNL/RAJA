@@ -83,6 +83,21 @@ caveats.
                                                       synchronization after 
                                                       loop; i.e., apply
                                                       ``omp for nowait`` pragma
+ omp_for_schedule<Schedule>             forall,       Parallel execution with
+                                        kernel (For)  OpenMP CPU multithreading
+                                                      inside an *existing* 
+                                                      parallel region (see 
+                                                      comments below) with a
+                                                      specified schedule
+ omp_for_nowait_schedule<Schedule>      forall,       Parallel execution with
+                                        kernel (For)  OpenMP CPU multithreading
+                                                      inside an *existing* 
+                                                      parallel region (see 
+                                                      comments below) with a
+                                                      specified schedule and
+                                                      without synchronization
+                                                      after loop; e.g., append
+                                                      ``nowait`` to pragma
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
@@ -255,6 +270,20 @@ The following notes provide additional information about policy usage.
           complete before the kernel exits. In this example, this is not
           really needed since there is no more code to execute in the parallel
           region and there is an implicit barrier at the end of it.
+
+.. note:: As noted above, a *Scheduling Policy* can be specified for
+          ``omp_for_schedule_exec`` and ``omp_for_nowait_schedule_exec`` policies.
+          All possible schedules reside under the ``RAJA::policy::omp`` namespace
+
+          * ``Static<ChunkSize>`` equivilent to ``schedule(static, ChunkSize)``
+          * ``Dynamic<ChunkSize>`` equivilent to ``schedule(dynamic, ChunkSize)``
+          * ``Guided<ChunkSize>`` equivilent to ``schedule(guided, ChunkSize)``
+          * ``Runtime`` equivilent to ``schedule(runtime)``
+          * ``Auto`` equivilent to no schedule specified
+
+          There is a special identifier ``RAJA::policy::omp::default_chunk_size``
+          which can be used as the template argument to ``Static``, ``Dynamic``,
+          or ``Guided`` to defer to the implementation-defined default chunk size.
 
 .. note:: To control the number of TBB worker threads used by these policies:
           set the value of the environment variable 'TBB_NUM_WORKERS' (which is
