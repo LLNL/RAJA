@@ -113,6 +113,7 @@ namespace internal
     }
   }
 
+  #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
   RAJA_INLINE void forall_impl(const Policy&,
@@ -126,6 +127,7 @@ namespace internal
     forall_impl(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
     omp_set_schedule(prev_sched, prev_chunk);
   }
+  #endif
 
   /// Tag dispatch for omp forall with nowait
 
@@ -165,6 +167,7 @@ namespace internal
     }
   }
 
+  #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
   RAJA_INLINE void forall_impl_nowait(const Policy&,
@@ -178,6 +181,7 @@ namespace internal
     forall_impl_nowait(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
     omp_set_schedule(prev_sched, prev_chunk);
   }
+  #endif
 
 } // end namespace internal
 

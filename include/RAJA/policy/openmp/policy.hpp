@@ -22,7 +22,20 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#if defined(RAJA_COMPILER_MSVC)
+typedef enum omp_sched_t { 
+    // schedule kinds 
+    omp_sched_static = 0x1, 
+    omp_sched_dynamic = 0x2, 
+    omp_sched_guided = 0x3, 
+    omp_sched_auto = 0x4, 
+    
+    // schedule modifier 
+    omp_sched_monotonic = 0x80000000u 
+} omp_sched_t;
+#else
 #include <omp.h>
+#endif
 
 namespace RAJA
 {
@@ -33,7 +46,6 @@ namespace omp
 
 namespace internal
 {
-
     struct ScheduleTag {};
 
     template <omp_sched_t Sched, int Chunk>
