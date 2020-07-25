@@ -29,6 +29,7 @@
 
 #include <cuda.h>
 
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 #include "RAJA/util/basic_mempool.hpp"
@@ -938,7 +939,7 @@ public:
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
       : parent{other.parent},
 #else
       : parent{&other},
@@ -946,7 +947,7 @@ public:
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -963,7 +964,7 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(__CUDA_ARCH__)
+#if !defined(RAJA_DEVICE_CODE)
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;

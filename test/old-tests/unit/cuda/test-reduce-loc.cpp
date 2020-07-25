@@ -167,48 +167,6 @@ double* ReduceCUDA<Reducer>::dvalue = nullptr;
 
 TYPED_TEST_SUITE_P(ReduceCUDA);
 
-GPU_TYPED_TEST_P(ReduceCUDA, generic)
-{
-
-  using applier = reduce_applier<TypeParam>;
-  using IndexType = typename applier::IndexType;
-  using reducer = ReduceCUDA<TypeParam>;
-  double* dvalue = reducer::dvalue;
-  reset(dvalue, TEST_VEC_LEN, applier::def());
-
-  reduce::detail::ValueLoc<double, IndexType> dcurrent(applier::def(), LocCompare<IndexType>().defaultVal());
-
-  for (int tcount = 0; tcount < test_repeat; ++tcount) {
-
-
-    TypeParam dmin0(applier::def(), -1);
-    TypeParam dmin1(applier::def(), -1);
-    TypeParam dmin2(applier::big(), -1);
-
-    int loops = 16;
-    for (int k = 0; k < loops; k++) {
-
-      double droll = dist(mt);
-      int index = int(dist2(mt));
-      reduce::detail::ValueLoc<double, IndexType> randval(droll, LocCompare<IndexType>().getVal(index));
-      applier::updatedvalue(dvalue, randval, dcurrent);
-
-      forall<cuda_exec<block_size>>(RAJA::RangeSegment(0, TEST_VEC_LEN),
-                                    [=] RAJA_DEVICE(int i) {
-                                      applier::apply(dmin0, dvalue[i], IndexType(i));
-                                      applier::apply(dmin1, 2 * dvalue[i], IndexType(i));
-                                      applier::apply(dmin2, dvalue[i], IndexType(i));
-                                    });
-
-      applier::cmp(dmin0, dcurrent);
-
-      ASSERT_FLOAT_EQ(dcurrent.val * 2, dmin1.get());
-      ASSERT_EQ(dcurrent.getLoc(), dmin1.getLoc());
-      ASSERT_FLOAT_EQ(applier::big(), dmin2.get());
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 //
@@ -316,7 +274,6 @@ GPU_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ReduceCUDA,
-                            generic,
                             indexset_align,
                             indexset_noalign);
 
