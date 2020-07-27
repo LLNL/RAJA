@@ -63,22 +63,25 @@ caveats.
                                         sort          it; i.e., apply ``omp
                                                       parallel for`` pragma
  omp_for_exec                           forall,       Parallel execution with
-                                        kernel (For)  OpenMP CPU multithreading
-                                                      inside an *existing*
-                                                      parallel region; i.e.,
-                                                      apply ``omp for`` pragma
+                                        kernel (For), OpenMP CPU multithreading
+                                        scan          inside an *existing* 
+                                                      parallel region (see 
+                                                      comments below); i.e., 
+                                                      apply ``omp for`` pragma 
  omp_for_static<CHUNK_SIZE>             forall,       Execute loop with OpenMP
-                                        kernel (For)  CPU multithreading using
-                                                      static schedule and given
-                                                      chunk size inside an
-                                                      *existing* parallel
-                                                      region; i.e., apply ``omp                                                       for schedule(static,
+                                        kernel (For), CPU multithreading using
+                                        scan          static schedule and given
+                                                      chunk size inside an 
+                                                      *existing* parallel 
+                                                      region (see comments 
+                                                      below); i.e., apply ``omp                                                       for schedule(static, 
                                                       CHUNK_SIZE)`` pragma
  omp_for_nowait_exec                    forall,       Parallel execution with
-                                        kernel (For)  OpenMP CPU multithreading
-                                                      inside an existing
-                                                      parallel region without
-                                                      synchronization after
+                                        kernel (For), OpenMP CPU multithreading
+                                        scan          inside an *existing* 
+                                                      parallel region (see 
+                                                      comments below) without
+                                                      synchronization after 
                                                       loop; i.e., apply
                                                       ``omp for nowait`` pragma
  ====================================== ============= ==========================
@@ -102,12 +105,12 @@ caveats.
  CUDA Execution Policies                Works with    Brief description
  ====================================== ============= ==========================
  cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
-                                        kernel (For), in a CUDA kernel launched
-                                        scan,         with given thread-block
-                                        sort          size. If block size not
-                                                      given, the default value
-                                                      of 256 threads/block is
-                                                      used.
+                                        scan,         in a CUDA kernel launched
+                                        sort          with given thread-block
+                                                      size. If block size not
+                                                      given, the default value 
+                                                      of 256 threads/block is 
+                                                      used. 
  cuda_thread_x_direct                   kernel (For)  Map loop iterates
                                                       directly to CUDA threads
                                                       in x-dimension, one
@@ -224,6 +227,35 @@ The following notes provide additional information about policy usage.
           fixed for duration of run), or call the OpenMP routine
           'omp_set_num_threads(nthreads)' (which allows changing number of
           threads at runtime).
+
+.. note:: As noted above, some OpenMP policies must only be used within an
+          **existing** parallel region to work the way you would expect them
+          to. For example::
+
+            RAJA::region<RAJA::omp_parallel_region>([=]() {
+
+              RAJA::forall<RAJA::omp_for_nowait_exec>(segment, [=] (int idx) {
+                 // do something at iterate 'idx'
+              });
+
+              RAJA::forall<RAJA::omp_for_exec>(segment, [=] (int idx) {
+                 // do something else at iterate 'idx'
+              });
+
+            });
+
+          Here, the ``RAJA::region<RAJA::omp_parallel_region>`` method call
+          creates an OpenMP parallel region, which contains two ``RAJA::forall``
+          kernels. The first uses the ``RAJA::omp_for_nowait_exec`` policy, 
+          meaning that no thread synchronization is needed after the kernel.
+          Thus, threads can start working on the second kernel while others
+          are still working on the first kernel. I general, this can only be 
+          guaranteed to be correct if the segments used in the two kernels
+          are the same and each loop is data parallel. The second kernel uses
+          the ``RAJA::omp_for_exec`` policy, which means that all threads will
+          complete before the kernel exits. In this example, this is not
+          really needed since there is no more code to execute in the parallel
+          region and there is an implicit barrier at the end of it.
 
 .. note:: To control the number of TBB worker threads used by these policies:
           set the value of the environment variable 'TBB_NUM_WORKERS' (which is
