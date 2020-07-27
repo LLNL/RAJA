@@ -13,10 +13,8 @@
 #define __TEST_FORALL_INDEXSET_BUILD_HPP__
 
 #include "RAJA/RAJA.hpp"
-
 #include "camp/resource.hpp"
 
-#include <random>
 #include <random>
 
 //
