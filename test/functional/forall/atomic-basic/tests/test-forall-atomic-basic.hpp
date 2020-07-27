@@ -65,7 +65,8 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
 
   camp::resources::Resource work_res{WORKINGRES()};
 
-  SegmentType seg = RSMultiplexer<IdxType, SegmentType>().makeseg(seglimit, work_res);
+  SegmentType seg = 
+    RSMultiplexer<IdxType, SegmentType>().makeseg(seglimit, work_res);
 
   T * work_array;
   T * test_array;
@@ -155,11 +156,17 @@ TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using SType   = typename camp::at<TypeParam, camp::num<4>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<5>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicBasicTestImpl<AExec, APol, ResType, 
-                            IdxType, SType, DType>( 10000 );
+                            IdxType, RAJA::TypedRangeSegment<IdxType>, 
+                            DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
+                            IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
+                            DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
+                            IdxType, RAJA::TypedListSegment<IdxType>, 
+                            DType>( 10000 );
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest,

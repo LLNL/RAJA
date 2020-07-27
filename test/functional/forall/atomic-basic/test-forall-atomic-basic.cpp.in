@@ -39,7 +39,6 @@ using @ATOMIC_BACKEND@ForallAtomicBasicTypes =
                                 @ATOMIC_BACKEND@AtomicPols,
                                 @ATOMIC_BACKEND@ResourceList,
                                 TestIdxTypeList,
-                                AtomicSegmentList,
                                 AtomicDataTypeList > >::Types;
 
 //
