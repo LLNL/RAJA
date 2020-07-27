@@ -602,9 +602,10 @@ explanation along with examples of how they are used can be found in
   * ``statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, 'ArgId' is the position of the loop argument we will iterate on (defines the order of hyperplanes), 'HpExecPolicy' is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), 'ArgList' is a list of other indices that along with ArgId define a hyperplane, and 'ExecPolicy' is the execution policy that applies to the loops in ArgList. Then, for each iteration, everything in the 'EnclosedStatements' is executed.
 
 
-The list below summarizes auxillary types used in the above statments:
+The following list summarizes auxillary types used in the above statments. These
+types live in the ``RAJA`` namespace.
 
-  * ``tile_fixed<TileSize>`` TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a fixed size specified by 'TileSize'. This statement type can be used as the 'TilePolicy' template paramter in the Tile statements above.
+  * ``tile_fixed<TileSize>`` tile policy argument to a Tile or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by 'TileSize'. This statement type can be used as the 'TilePolicy' template paramter in the Tile statements above.
  
   * ``Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
 
@@ -613,7 +614,6 @@ The list below summarizes auxillary types used in the above statments:
   * ``Params<...>`` argument to a Lambda statement; used to specify which params in a tuple will be used as lambda arguments.
   
   * ``ValuesT<T, ...>`` argument to a Lambda statement; used to specify compile time constants, of type T, that will be used as lambda arguments.
-
 
 
 Examples that show how to use a variety of these statement types can be found

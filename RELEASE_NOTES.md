@@ -47,11 +47,11 @@ Notable changes include:
       * RAJA ListSegment constructors have been expanded to accept a camp
         Resource object. This enables run time specification of the memory
         space where the data for list segment indices will live. In earlier
-        RAJA versions, where list segment index data lived was a compile-time
-        choice based on whether CUDA or HIP was enabled and the data used
-        unified memory for either case. This is still supported, but should be
-        considered a DEPRECATED FEATURE. In the next RAJA release, ListSegment
-        construction will require a camp Resource object.
+        RAJA versions, the space in which list segment index data lived was a 
+        compile-time choice based on whether CUDA or HIP was enabled and the 
+        data resided in unified memory for either case. This is still supported
+        in this releae, but is a DEPRECATED FEATURE. In the next RAJA release, 
+        ListSegment construction will require a camp Resource object.
       * A reset method was added to OpenMP target offload reduction classes
         so they contain the same functionality as reductions for all other 
         back-ends.
