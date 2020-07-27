@@ -18,12 +18,12 @@ set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMinLoc ReduceMaxLoc)
 #
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( REDUCETYPE ${REDUCETYPES} )
-    configure_file( test-forall-segment-multiple-reduce.cpp.in
-                    test-forall-segment-multiple-${REDUCETYPE}-${BACKEND}.cpp )
-    raja_add_test( NAME test-forall-segment-multiple-${REDUCETYPE}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-segment-multiple-${REDUCETYPE}-${BACKEND}.cpp )
+    configure_file( test-forall-indexset-multiple-reduce.cpp.in
+                    test-forall-indexset-multiple-${REDUCETYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-indexset-multiple-${REDUCETYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-indexset-multiple-${REDUCETYPE}-${BACKEND}.cpp )
 
-    target_include_directories(test-forall-segment-multiple-${REDUCETYPE}-${BACKEND}.exe
+    target_include_directories(test-forall-indexset-multiple-${REDUCETYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()
