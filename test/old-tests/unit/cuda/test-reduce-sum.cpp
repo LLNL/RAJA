@@ -75,54 +75,6 @@ int* ReduceSumCUDA::ivalue = nullptr;
 
 const size_t block_size = 256;
 
-//
-// test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
-//        of the array using an indexset with four range segments
-//        not aligned with warp boundaries to check that reduction
-//        mechanics don't depend on any sort of special indexing.
-//
-GPU_TEST_F(ReduceSumCUDA, indexset_noalign)
-{
-  double* dvalue = ReduceSumCUDA::dvalue;
-  int* ivalue = ReduceSumCUDA::ivalue;
-
-
-  RangeSegment seg0(1, 1230);
-  RangeSegment seg1(1237, 3385);
-  RangeSegment seg2(4860, 10110);
-  RangeSegment seg3(20490, 32003);
-
-  UnitIndexSet iset;
-  iset.push_back(seg0);
-  iset.push_back(seg1);
-  iset.push_back(seg2);
-  iset.push_back(seg3);
-
-  double dtinit = 5.0;
-  int itinit = 4;
-
-  ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
-  ReduceSum<cuda_reduce, int> isum1(itinit * 2);
-  ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
-  ReduceSum<cuda_reduce, int> isum3(itinit * 4);
-
-  forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset, [=] RAJA_DEVICE(int i) {
-        dsum0 += dvalue[i];
-        isum1 += 2 * ivalue[i];
-        dsum2 += 3 * dvalue[i];
-        isum3 += 4 * ivalue[i];
-      });
-
-  double dbase_chk_val = dinit_val * double(iset.getLength());
-  int ibase_chk_val = iinit_val * double(iset.getLength());
-
-  ASSERT_FLOAT_EQ(double(dsum0), dbase_chk_val + (dtinit * 1.0));
-  ASSERT_EQ(int(isum1), 2 * ibase_chk_val + (itinit * 2));
-  ASSERT_FLOAT_EQ(double(dsum2), 3 * dbase_chk_val + (dtinit * 3.0));
-  ASSERT_EQ(int(isum3), 4 * ibase_chk_val + (itinit * 4));
-}
-
 GPU_TEST_F(ReduceSumCUDA, atomic_reduce)
 {
   double* rand_dvalue = ReduceSumCUDA::rand_dvalue;

@@ -11,6 +11,8 @@
 // Note that in the type lists, a subset of types is used by default.
 // For more comprehensive type testing define the macro RAJA_TEST_EXHAUSTIVE.
 //
+// Also, some tests may define their own index types to test.
+//
 
 #ifndef __RAJA_test_index_types_HPP__
 #define __RAJA_test_index_types_HPP__
@@ -27,7 +29,7 @@ RAJA_INDEX_VALUE_T(StrongInt, int, "StrongIntType");
 RAJA_INDEX_VALUE_T(StrongULL, unsigned long long , "StrongULLType");
 
 //
-// Index types list
+// Standard index types list
 //
 using IdxTypeList = camp::list<RAJA::Index_type,
                                int,
