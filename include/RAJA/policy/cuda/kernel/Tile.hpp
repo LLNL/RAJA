@@ -248,11 +248,11 @@ struct CudaStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    diff_t i_init = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
     diff_t i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (diff_t i = i0; i < len; i += i_stride) {
+    for (diff_t i = i_init; i < len; i += i_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -433,12 +433,12 @@ struct CudaStatementExecutor<
 
     // compute trip count
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    diff_t i_init = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
     diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i0;
+      diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work

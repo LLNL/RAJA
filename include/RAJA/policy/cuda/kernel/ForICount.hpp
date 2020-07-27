@@ -165,12 +165,12 @@ struct CudaStatementExecutor<
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = threadIdx.x;
+    diff_t i_init = threadIdx.x;
     diff_t i_stride = RAJA::policy::cuda::WARP_SIZE;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i0;
+      diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -297,12 +297,12 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = mask_t::maskValue(threadIdx.x);
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
     diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i0;
+      diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -428,12 +428,12 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = mask_t::maskValue(threadIdx.x);
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
     diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i0;
+      diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -490,12 +490,12 @@ struct CudaStatementExecutor<
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i_init = get_cuda_dim<ThreadDim>(threadIdx);
     diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim);
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i0;
+      diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -596,11 +596,11 @@ struct CudaStatementExecutor<
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i_init = get_cuda_dim<BlockDim>(blockIdx);
     diff_t i_stride = get_cuda_dim<BlockDim>(gridDim);
 
     // Iterate through grid stride of chunks
-    for (diff_t i = i0; i < len; i += i_stride) {
+    for (diff_t i = i_init; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
