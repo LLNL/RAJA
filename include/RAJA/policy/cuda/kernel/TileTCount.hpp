@@ -8,12 +8,14 @@
  ******************************************************************************
  */
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_TileTCount_HPP
 #define RAJA_policy_cuda_kernel_TileTCount_HPP
@@ -151,7 +153,7 @@ struct CudaStatementExecutor<
     diff_t t = get_cuda_dim<BlockDim>(blockIdx);
     diff_t i = t * chunk_size;
 
-    // Iterate through grid stride of chunks
+    // check have a chunk
     if (i < len) {
 
       // Keep copy of original segment, so we can restore it
@@ -402,4 +404,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 #endif  // RAJA_ENABLE_CUDA
-#endif  /* RAJA_pattern_kernel_HPP */
+#endif  /* RAJA_policy_cuda_kernel_TileTCount_HPP */

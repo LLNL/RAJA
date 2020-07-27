@@ -515,7 +515,7 @@ struct CudaStatementExecutor<
 
 /*
  * Executor for block work sharing inside CudaKernel.
- * Provides a direct mapping for each block in xyz.
+ * Provides a direct mapping of each block in xyz.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
@@ -665,4 +665,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_cuda_kernel_ForICount_HPP */

@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
 #ifndef RAJA_policy_cuda_kernel_For_HPP
 #define RAJA_policy_cuda_kernel_For_HPP
 
@@ -781,4 +782,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_cuda_kernel_For_HPP */
