@@ -41,70 +41,54 @@ namespace RAJA
 {
 
 // GPU or CPU threads available
-#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
-enum ExecPlace { HOST, HOST_THREADS, DEVICE, NUM_PLACES };
-#elif defined(RAJA_ENABLE_CUDA)
-enum ExecPlace { HOST, DEVICE, NUM_PLACES };
-#elif defined(RAJA_ENABLE_OPENMP)
-enum ExecPlace { HOST, HOST_THREADS, NUM_PLACES };
-#else
-enum ExecPlace { HOST, NUM_PLACES };
+enum ExecPlace {
+HOST
+#if defined(RAJA_ENABLE_OPENMP)
+,HOST_THREADS
 #endif
+#if defined(RAJA_ENABLE_CUDA)
+,DEVICE
+#endif
+,NUM_PLACES };
+
 
 // Support for Host, Host_threads, and Device
-#if defined(RAJA_ENABLE_CUDA) && defined(RAJA_ENABLE_OPENMP)
-template <typename HOST_POLICY,
-          typename HOST_THREADS_POLICY,
-          typename DEVICE_POLICY>
-struct LoopPolicy {
-  using host_policy_t = HOST_POLICY;
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-  using device_policy_t = DEVICE_POLICY;
-};
-
-template <typename HOST_POLICY,
-          typename HOST_THREADS_POLICY,
-          typename DEVICE_POLICY>
-struct LaunchPolicy {
-  using host_policy_t = HOST_POLICY;
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-  using device_policy_t = DEVICE_POLICY;
-};
-#elif defined(RAJA_ENABLE_CUDA)
-template <typename HOST_POLICY, typename DEVICE_POLICY>
-struct LoopPolicy {
-  using host_policy_t = HOST_POLICY;
-  using device_policy_t = DEVICE_POLICY;
-};
-
-template <typename HOST_POLICY, typename DEVICE_POLICY>
-struct LaunchPolicy {
-  using host_policy_t = HOST_POLICY;
-  using device_policy_t = DEVICE_POLICY;
-};
-#elif defined(RAJA_ENABLE_OPENMP)
-template <typename HOST_POLICY, typename HOST_THREADS_POLICY>
-struct LoopPolicy {
-  using host_policy_t = HOST_POLICY;
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-};
-
-template <typename HOST_POLICY, typename HOST_THREADS_POLICY>
-struct LaunchPolicy {
-  using host_policy_t = HOST_POLICY;
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-};
-#else
-template <typename HOST_POLICY>
-struct LoopPolicy {
-  using host_policy_t = HOST_POLICY;
-};
-
-template <typename HOST_POLICY>
-struct LaunchPolicy {
-  using host_policy_t = HOST_POLICY;
-};
+template <typename HOST_POLICY
+#if defined(RAJA_ENABLE_OPENMP)
+          ,typename HOST_THREADS_POLICY
 #endif
+#if defined(RAJA_ENABLE_CUDA)
+          ,typename DEVICE_POLICY
+#endif
+          >
+struct LoopPolicy {
+  using host_policy_t = HOST_POLICY;
+#if defined(RAJA_ENABLE_OPENMP)
+  using host_threads_policy_t = HOST_THREADS_POLICY;
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  using device_policy_t = DEVICE_POLICY;
+#endif
+};
+
+template <typename HOST_POLICY
+#if defined(RAJA_ENABLE_OPENMP)
+          ,typename HOST_THREADS_POLICY
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+          ,typename DEVICE_POLICY
+#endif
+>
+struct LaunchPolicy {
+  using host_policy_t = HOST_POLICY;
+#if defined(RAJA_ENABLE_OPENMP)
+  using host_threads_policy_t = HOST_THREADS_POLICY;
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  using device_policy_t = DEVICE_POLICY;
+#endif
+};
+
 
 struct Teams {
   int value[3];
@@ -309,7 +293,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                                       segment1,
                                                                       body);
       break;
-      
+
   default: RAJA_ABORT_OR_THROW("Backend not support \n"); break;
   }
 #endif
