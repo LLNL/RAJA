@@ -27,6 +27,7 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include <algorithm>
+#include "hip/hip_runtime.h"
 
 #include "RAJA/pattern/forall.hpp"
 

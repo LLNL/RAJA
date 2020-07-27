@@ -173,9 +173,10 @@ using segment_diff_type =
 
 
 
+
 template <camp::idx_t ArgumentId, typename Data>
 RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
-    segment_diff_type<ArgumentId, Data>
+  segment_diff_type<ArgumentId, Data>
 {
   return camp::get<ArgumentId>(data.segment_tuple).end() -
          camp::get<ArgumentId>(data.segment_tuple).begin();

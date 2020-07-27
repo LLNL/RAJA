@@ -5,34 +5,17 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-forall-atomic-view-seq
-  SOURCES test-forall-atomic-view-seq.cpp)
+#
+# Generate tests for each enabled RAJA back-end.
+#
+# Note: FORALL_ATOMIC_BACKENDS is defined in ../CMakeLists.txt
+#
+foreach( ATOMIC_BACKEND ${FORALL_ATOMIC_BACKENDS} )
+  configure_file( test-forall-atomic-view.cpp.in
+                  test-forall-atomic-view-${ATOMIC_BACKEND}.cpp )
+  raja_add_test( NAME test-forall-atomic-view-${ATOMIC_BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-atomic-view-${ATOMIC_BACKEND}.cpp )
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-forall-atomic-view-openmp
-    SOURCES test-forall-atomic-view-openmp.cpp)
-endif()
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-forall-atomic-view-openmp-target
-    SOURCES test-forall-atomic-view-openmp-target.cpp)
-endif()
-
-if(RAJA_ENABLE_TBB)
-  # reserved for future compatability
-endif()
-
-if(RAJA_ENABLE_CUDA)
-  raja_add_test(
-    NAME test-forall-atomic-view-cuda
-    SOURCES test-forall-atomic-view-cuda.cpp)
-endif()
-
-if(RAJA_ENABLE_HIP)
-  raja_add_test(
-    NAME test-forall-atomic-view-hip
-    SOURCES test-forall-atomic-view-cuda.cpp)
-endif()
+  target_include_directories(test-forall-atomic-view-${ATOMIC_BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()

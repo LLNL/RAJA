@@ -9,14 +9,15 @@
 /// Source file containing tests for atomic add, subtract, inc, and dec methods
 ///
 
-#include <RAJA/RAJA.hpp>
+#include "RAJA/RAJA.hpp"
+
 #include "RAJA_gtest.hpp"
 
-#include "test-atomic-ref.hpp"
-
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 #endif
+
+#include "test-atomic-ref.hpp"
 
 // Basic AddSub
 

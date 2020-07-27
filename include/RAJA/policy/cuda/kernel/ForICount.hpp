@@ -58,15 +58,15 @@ struct CudaStatementExecutor<
         Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_cuda_dim<ThreadDim>(threadIdx);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -109,15 +109,15 @@ struct CudaStatementExecutor<
                          EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i = get_cuda_dim<0>(threadIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_cuda_dim<0>(threadIdx);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -156,6 +156,7 @@ struct CudaStatementExecutor<
                          EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -163,16 +164,13 @@ struct CudaStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i0 = threadIdx.x;
-
-    // Get our stride from the dimension
-    diff_type i_stride = RAJA::policy::cuda::WARP_SIZE;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i0 = threadIdx.x;
+    diff_t i_stride = RAJA::policy::cuda::WARP_SIZE;
 
     // Iterate through grid stride of chunks
-    for (diff_type ii = 0; ii < len; ii += i_stride) {
-      diff_type i = ii + i0;
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i0;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -215,6 +213,8 @@ struct CudaStatementExecutor<
           statement::For<ArgumentId, RAJA::cuda_warp_masked_direct<Mask>,
                          EnclosedStmts ...>, Types >;
 
+  using typename Base::diff_t;
+
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
   // Set the argument type for this loop
@@ -233,10 +233,9 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    diff_type i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -276,6 +275,8 @@ struct CudaStatementExecutor<
           statement::For<ArgumentId, RAJA::cuda_warp_masked_loop<Mask>,
                          EnclosedStmts ...>, Types >;
 
+  using typename Base::diff_t;
+
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
   // Set the argument type for this loop
@@ -295,22 +296,19 @@ struct CudaStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i0 = mask_t::maskValue(threadIdx.x);
-
-    // Get our stride from the dimension
-    diff_type i_stride = (diff_type) mask_t::max_masked_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i0 = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
-    for (diff_type ii = 0; ii < len; ii += i_stride) {
-      diff_type i = ii + i0;
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i0;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
       bool have_work = i < len;
 
-      // Assign the x thread to the argument
+      // Assign the x thread to the argument and param
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
@@ -350,6 +348,8 @@ struct CudaStatementExecutor<
           statement::For<ArgumentId, RAJA::cuda_thread_masked_direct<Mask>,
                          EnclosedStmts ...>, Types >;
 
+  using typename Base::diff_t;
+
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
   // Set the argument type for this loop
@@ -365,10 +365,9 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    diff_type i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -410,6 +409,8 @@ struct CudaStatementExecutor<
           statement::For<ArgumentId, RAJA::cuda_thread_masked_loop<Mask>,
                          EnclosedStmts ...>, Types >;
 
+  using typename Base::diff_t;
+
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
   // Set the argument type for this loop
@@ -426,16 +427,13 @@ struct CudaStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i0 = mask_t::maskValue(threadIdx.x);
-
-    // Get our stride from the dimension
-    diff_type i_stride = (diff_type) mask_t::max_masked_size;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i0 = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
-    for (diff_type ii = 0; ii < len; ii += i_stride) {
-      diff_type i = ii + i0;
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i0;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -485,21 +483,19 @@ struct CudaStatementExecutor<
         Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i0 = get_cuda_dim<ThreadDim>(threadIdx);
-
-    // Get our stride from the dimension
-    diff_type i_stride = get_cuda_dim<ThreadDim>(blockDim);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim);
 
     // Iterate through grid stride of chunks
-    for (diff_type ii = 0; ii < len; ii += i_stride) {
-      diff_type i = ii + i0;
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i0;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -544,14 +540,14 @@ struct CudaStatementExecutor<
       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_cuda_dim<BlockDim>(blockIdx);
 
     if (i < len) {
 
@@ -593,20 +589,18 @@ struct CudaStatementExecutor<
       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    using diff_type = segment_diff_type<ArgumentId, Data>;
-    diff_type len = segment_length<ArgumentId>(data);
-    diff_type i0 = get_cuda_dim<BlockDim>(blockIdx);
-
-    // Get our stride from the dimension
-    diff_type i_stride = get_cuda_dim<BlockDim>(gridDim);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i_stride = get_cuda_dim<BlockDim>(gridDim);
 
     // Iterate through grid stride of chunks
-    for (diff_type i = i0; i < len; i += i_stride) {
+    for (diff_t i = i0; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -643,17 +637,16 @@ struct CudaStatementExecutor<
       statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using diff_type = segment_diff_type<ArgumentId, Data>;
+    diff_t len = segment_length<ArgumentId>(data);
 
-    diff_type len = segment_length<ArgumentId>(data);
-
-    for (diff_type i = 0; i < len; ++i) {
+    for(diff_t i = 0;i < len;++ i){
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);

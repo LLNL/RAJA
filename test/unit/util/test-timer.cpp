@@ -9,7 +9,7 @@
 /// Source file containing unit tests for Timer class
 ///
 
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
 
 #include "RAJA/util/Timer.hpp"
 
