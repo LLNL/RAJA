@@ -12,11 +12,11 @@
 #include <numeric>
 #include <iostream>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMaxLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMaxLocBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -31,19 +31,19 @@ void ForallReduceMaxLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type la
 
   const int modval = 100;
   const DATA_TYPE max_init = -modval;
-  const RAJA::Index_type maxloc_init = -1;
-  const RAJA::Index_type maxloc_idx = (last - first) * 2/3 + first;
+  const IDX_TYPE maxloc_init = -1;
+  const IDX_TYPE maxloc_idx = (last - first) * 2/3 + first;
   const DATA_TYPE big_max = modval+1;
-  const RAJA::Index_type big_maxloc = maxloc_init;
+  const IDX_TYPE big_maxloc = maxloc_init;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
   test_array[maxloc_idx] = static_cast<DATA_TYPE>(big_max);
 
   DATA_TYPE ref_max = max_init;
-  RAJA::Index_type ref_maxloc = maxloc_init;
-  for (RAJA::Index_type i = first; i < last; ++i) {
+  IDX_TYPE ref_maxloc = maxloc_init;
+  for (IDX_TYPE i = first; i < last; ++i) {
     if ( test_array[i] > ref_max ) {
        ref_max = test_array[i];
        ref_maxloc = i;
@@ -53,36 +53,36 @@ void ForallReduceMaxLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type la
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
 
-  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> maxinit(big_max, maxloc_init);
-  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> max(max_init, maxloc_init);
+  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> maxinit(big_max, maxloc_init);
+  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> max(max_init, maxloc_init);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     maxinit.maxloc( working_array[idx], idx );
     max.maxloc( working_array[idx], idx );
   });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(maxinit.get()), big_max);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(maxinit.getLoc()), big_maxloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(maxinit.getLoc()), big_maxloc);
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
 
   max.reset(max_init, maxloc_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), maxloc_init);
+  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), maxloc_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     max.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
   
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) { 
     max.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(max.getLoc()), ref_maxloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
  
 
   deallocateForallTestData<DATA_TYPE>(working_res,
@@ -99,17 +99,18 @@ class ForallReduceMaxLocBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMaxLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMaxLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMaxLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxLocBasicTest,
