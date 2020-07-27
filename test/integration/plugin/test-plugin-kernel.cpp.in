@@ -10,33 +10,29 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index-types.hpp"
+#include "RAJA_test-platform.hpp"
 
-#include "RAJA_test-forall-data.hpp"
-
-#include "RAJA_test-forall-indexset-execpol.hpp"
-#include "RAJA_test-indexset-build.hpp"
-
+#include "RAJA_test-plugin-kernelpol.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-@INDEXSETTESTTYPE@.hpp"
+#include "test-plugin-kernel.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@ForallIndexSetTypes =
-  Test< camp::cartesian_product<IdxTypeList,
+using @BACKEND@PluginKernelTypes =
+  Test< camp::cartesian_product<@BACKEND@PluginKernelExecPols,
                                 @BACKEND@ResourceList,
-                                @BACKEND@ForallIndexSetExecPols>>::Types;
+                                @BACKEND@PlatformList > >::Types;
 
 //
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               @INDEXSETTESTTYPE@Test,
-                               @BACKEND@ForallIndexSetTypes);
+                               PluginKernelTest,
+                               @BACKEND@PluginKernelTypes);

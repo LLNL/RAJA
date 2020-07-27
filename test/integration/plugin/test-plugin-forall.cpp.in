@@ -10,40 +10,29 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index-types.hpp"
+#include "RAJA_test-platform.hpp"
 
-#include "RAJA_test-forall-data.hpp"
 #include "RAJA_test-forall-execpol.hpp"
-#include "RAJA_test-reducepol.hpp"
-
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-multiple-@REDUCETYPE@.hpp"
-
-//
-// Data types for reduction basic tests
-//
-using ReductionMultipleDataTypeList = camp::list< int,
-                                                  float,
-                                                  double >;
+#include "test-plugin-forall.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@ForallReduceMultipleTypes =
-  Test< camp::cartesian_product<ReductionMultipleDataTypeList,
+using @BACKEND@PluginForallTypes =
+  Test< camp::cartesian_product<@BACKEND@ForallExecPols,
                                 @BACKEND@ResourceList,
-                                @BACKEND@ForallReduceExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@PlatformList > >::Types;
 
 //
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Forall@REDUCETYPE@MultipleTest,
-                               @BACKEND@ForallReduceMultipleTypes);
+                               PluginForallTest,
+                               @BACKEND@PluginForallTypes);

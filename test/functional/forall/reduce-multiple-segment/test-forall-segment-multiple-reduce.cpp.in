@@ -22,17 +22,17 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-basic-@REDUCETYPE@.hpp"
+#include "test-forall-segment-multiple-@REDUCETYPE@.hpp"
 
 //
 // Data types for reduction basic tests
 //
-using ReductionDataTypeList = camp::list< int,
-                                          float,
-                                          double >;
+using ReductionMultipleDataTypeList = camp::list< int,
+                                                  float,
+                                                  double >;
 
 //
-// These tests exercise only one index type. We parameterize here to 
+// These tests exercise only one index type. We parameterize here to
 // make it easier to expand types in the future if needed.
 //
 using TestIdxTypeList = camp::list< RAJA::Index_type >;
@@ -40,9 +40,9 @@ using TestIdxTypeList = camp::list< RAJA::Index_type >;
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@ForallReduceBasicTypes =
+using @BACKEND@ForallReduceMultipleTypes =
   Test< camp::cartesian_product<TestIdxTypeList,
-                                ReductionDataTypeList,
+                                ReductionMultipleDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;
@@ -51,5 +51,5 @@ using @BACKEND@ForallReduceBasicTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Forall@REDUCETYPE@BasicTest,
-                               @BACKEND@ForallReduceBasicTypes);
+                               Forall@REDUCETYPE@MultipleTest,
+                               @BACKEND@ForallReduceMultipleTypes);
