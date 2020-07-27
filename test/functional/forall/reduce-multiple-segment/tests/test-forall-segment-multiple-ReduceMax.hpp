@@ -14,14 +14,15 @@
 #include <numeric>
 #include <random>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, 
+          typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first, 
-                                     RAJA::Index_type last)
+void ForallReduceMaxMultipleTestImpl(IDX_TYPE first, 
+                                     IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
-  RAJA::Index_type index_len = last - first;
+  IDX_TYPE index_len = last - first;
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -37,7 +38,7 @@ void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first,
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(-SHRT_MAX);
   const DATA_TYPE big_val = 500;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = default_val;
   }
 
@@ -58,7 +59,7 @@ void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first,
   for (int j = 0; j < nloops; ++j) {
 
     DATA_TYPE roll = static_cast<DATA_TYPE>( dist(mt) );
-    RAJA::Index_type max_index = static_cast<RAJA::Index_type>(dist2(mt));
+    IDX_TYPE max_index = static_cast<IDX_TYPE>(dist2(mt));
 
     if ( test_array[max_index] < roll ) {
       test_array[max_index] = roll;
@@ -67,7 +68,7 @@ void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first,
       working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
     }
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       max0.max(working_array[idx]);
       max1.max(2 * working_array[idx]);
       max2.max(working_array[idx]);
@@ -87,7 +88,7 @@ void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first,
   for (int j = 0; j < nloops_b; ++j) {
 
     DATA_TYPE roll = dist(mt);
-    RAJA::Index_type max_index = static_cast<RAJA::Index_type>(dist2(mt));
+    IDX_TYPE max_index = static_cast<IDX_TYPE>(dist2(mt));
 
     if ( test_array[max_index] < roll ) {
       test_array[max_index] = roll;
@@ -96,7 +97,7 @@ void ForallReduceMaxMultipleTestImpl(RAJA::Index_type first,
       working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
     }
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       max0.max(working_array[idx]);
       max1.max(2 * working_array[idx]);
       max2.max(working_array[idx]);    
@@ -122,12 +123,13 @@ class ForallReduceMaxMultipleTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMaxMultipleTest, ReduceMaxMultipleForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMaxMultipleTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxMultipleTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES,
                                   EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 }
 
