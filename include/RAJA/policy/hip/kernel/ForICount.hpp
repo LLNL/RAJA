@@ -235,7 +235,7 @@ struct HipStatementExecutor<
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    diff_t i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -297,7 +297,7 @@ struct HipStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = mask_t::maskValue((int)threadIdx.x);
+    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
     diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
@@ -367,7 +367,7 @@ struct HipStatementExecutor<
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    diff_t i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -428,7 +428,7 @@ struct HipStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = mask_t::maskValue(threadIdx.x);
+    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
     diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
