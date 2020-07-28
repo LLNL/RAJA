@@ -7,3 +7,7 @@
 
 ####
 # All butte build jobs
+nvcc_10_clang_8_0_1 (build and test on butte):
+  variables:
+    SPEC: "%clang@8.0.1+cuda"
+  extends: .build_and_test_on_butte_advanced
