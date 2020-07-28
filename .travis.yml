@@ -45,12 +45,6 @@ matrix:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
     - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On"
-  - compiler: nvcc9
-    env:
-    - COMPILER=g++
-    - IMG=nvcc9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
-    - DO_TEST=no
   - compiler: nvcc10.2
     env:
     - COMPILER=g++
