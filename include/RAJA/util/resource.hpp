@@ -23,6 +23,7 @@
 #include "camp/resource.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/hip/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 namespace RAJA
 {

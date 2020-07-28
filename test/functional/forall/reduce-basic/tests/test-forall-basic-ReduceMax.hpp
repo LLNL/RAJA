@@ -11,11 +11,11 @@
 #include <cstdlib>
 #include <numeric>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMaxBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMaxBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
@@ -32,12 +32,12 @@ void ForallReduceMaxBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
   const DATA_TYPE max_init = -1;
   const DATA_TYPE big_max = modval + 1;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
 
   DATA_TYPE ref_max = max_init;
-  for (RAJA::Index_type i = first; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     ref_max = RAJA_MAX(test_array[i], ref_max); 
   }
 
@@ -46,7 +46,7 @@ void ForallReduceMaxBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> maxinit(big_max);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max(max_init);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     maxinit.max( working_array[idx] );
     max.max( working_array[idx] );
   });
@@ -58,13 +58,13 @@ void ForallReduceMaxBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     max.max( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     max.max( working_array[idx] * factor);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
@@ -84,16 +84,17 @@ class ForallReduceMaxBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMaxBasicTest, ReduceMaxBasicForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMaxBasicTestImpl<DATA_TYPE, WORKING_RES, 
+  ForallReduceMaxBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
                                 EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 

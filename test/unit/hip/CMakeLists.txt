@@ -10,24 +10,12 @@ raja_add_test(
   SOURCES test-reduce-sum.cpp)
 
 raja_add_test(
-  NAME test-hip-reduce-min
-  SOURCES test-reduce-min.cpp)
-
-raja_add_test(
-  NAME test-hip-reduce-loc
-  SOURCES test-reduce-loc.cpp)
-
-raja_add_test(
   NAME test-hip-reduce-tupleloc
   SOURCES test-reduce-tupleloc.cpp)
 
 raja_add_test(
   NAME test-hip-reduce-randloc
   SOURCES test-reduce-randloc.cpp)
-
-raja_add_test(
-  NAME test-hip-reduce-max
-  SOURCES test-reduce-max.cpp)
 
 raja_add_test(
   NAME test-hip-synchronize
