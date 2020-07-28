@@ -277,7 +277,6 @@ RAJA_INLINE resources::EventProxy forall_Icount(ExecutionPolicy&& p,
                                                 IdxSet&& c,
                                                 LoopBody&& loop_body)
 {
-  //std::cout<<"forall_Icount ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
   return forall_Icount(r, p, c, loop_body);
 }
@@ -328,7 +327,8 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   return forall(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy,
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(resources::Resource &r, ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
