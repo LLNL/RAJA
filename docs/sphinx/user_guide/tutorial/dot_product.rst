@@ -65,7 +65,7 @@ a reduction value type (i.e., 'double'). An initial value of zero for the
 sum is passed to the reduction object constructor. After the kernel executes,
 we use the 'get' method to retrieve the reduced value.
 
-The OpenMP multi-threaded variant of the loop is implemented similarly:
+The OpenMP multithreaded variant of the loop is implemented similarly:
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
    :start-after: _rajaomp_dotprod_start
