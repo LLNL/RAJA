@@ -22,11 +22,11 @@
 
 // test with basic forall
 template <typename ExecPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginForallTestImpl()
 {
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -61,11 +61,11 @@ void PluginForallTestImpl()
 
 // test with basic forall_Icount
 template <typename ExecPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginForAllICountTestImpl()
 {
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -100,11 +100,11 @@ void PluginForAllICountTestImpl()
 
 // test with IndexSet forall
 template <typename ExecPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginForAllIdxSetTestImpl()
 {
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -147,11 +147,11 @@ void PluginForAllIdxSetTestImpl()
 
 // test with IndexSet forall_Icount
 template <typename ExecPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginForAllIcountIdxSetTestImpl()
 {
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -194,7 +194,7 @@ void PluginForAllIcountIdxSetTestImpl()
 
 // test with multi_policy forall
 template <typename ExecPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginForAllMultiPolicyTestImpl()
 {
@@ -242,7 +242,7 @@ void PluginForAllMultiPolicyTestImpl()
   }
 
   {
-    SetupPluginVars spv(WORKINGRES{});
+    SetupPluginVars spv(WORKING_RES::get_default());
 
     CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
