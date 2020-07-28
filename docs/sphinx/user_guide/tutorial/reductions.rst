@@ -70,7 +70,7 @@ object is retrieved after the kernel by calling a 'get()' method on the
 reduction object. The min-loc/max-loc index values are obtained using 
 'getLoc()' methods.
 
-For parallel multi-threading execution via OpenMP, the example can be run 
+For parallel multithreading execution via OpenMP, the example can be run 
 by replacing the execution and reduction policies with:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp

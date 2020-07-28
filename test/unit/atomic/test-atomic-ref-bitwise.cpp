@@ -9,11 +9,12 @@
 /// Source file containing tests for atomic bit methods
 ///
 
-#include <RAJA/RAJA.hpp>
+#include "RAJA/RAJA.hpp"
+
 #include "RAJA_gtest.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA_unit_forone.hpp"
+#include "RAJA_unit-test-forone.hpp"
 #endif
 
 // Basic Bitwise
@@ -124,33 +125,33 @@ GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test and/or
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result[0], (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
 
   // test xor
-  forone<<<1,1>>>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<<<1,1>>>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
+  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );

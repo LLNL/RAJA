@@ -9,42 +9,16 @@
 /// Source file containing unit tests for Operators.
 ///
 
-#include "gtest/gtest.h"
-#include "RAJA/RAJA.hpp"
-
-#ifndef INTEGRAL_TYPES
-  #define INTEGRAL_TYPES \
-    RAJA::Index_type,    \
-    char,                \
-    unsigned char,       \
-    short,               \
-    unsigned short,      \
-    int,                 \
-    unsigned int,        \
-    long,                \
-    unsigned long,       \
-    long int,            \
-    unsigned long int,   \
-    long long,           \
-    unsigned long long
-#endif // INTEGRAL_TYPES
-
-#ifndef FLOATING_TYPES
-  #define FLOATING_TYPES \
-    float,               \
-    double
-#endif // FLOATING_TYPES
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
 
 template<typename T>
 class OperatorsUnitTest : public ::testing::Test {};
 template<typename T>
 class OperatorsIntegralUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<INTEGRAL_TYPES, FLOATING_TYPES>;
-using MyIntegralTypes = ::testing::Types<INTEGRAL_TYPES>;
-
-TYPED_TEST_SUITE(OperatorsUnitTest, MyTypes);
-TYPED_TEST_SUITE(OperatorsIntegralUnitTest, MyIntegralTypes);
+TYPED_TEST_SUITE(OperatorsUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(OperatorsIntegralUnitTest, UnitExpandedIntegralTypes);
 
 template<typename T>
 void plus_test()
