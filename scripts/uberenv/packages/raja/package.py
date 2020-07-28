@@ -261,8 +261,8 @@ class Raja(CMakePackage, CudaPackage):
         cfg.write(cmake_cache_option("RAJA_HOST_CONFIG_LOADED", True))
 
         # shared vs static libs
-        cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec)
-        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec)
+        cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
 
         # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
         # is used by the spack compiler wrapper.  This can go away when BLT
