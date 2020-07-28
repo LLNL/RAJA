@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,8 +20,8 @@
 
 #include "RAJA/config.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/plugins.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
@@ -31,8 +31,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
-
-#include "RAJA/util/chai_support.hpp"
 
 namespace RAJA
 {
@@ -60,8 +58,8 @@ template <typename... Ts>
 struct IterableWrapperTuple<camp::tuple<Ts...>> {
 
   using type =
-      camp::tuple<RAJA::impl::Span<typename camp::decay<Ts>::iterator,
-                                   typename camp::decay<Ts>::IndexType>...>;
+      camp::tuple<RAJA::Span<typename camp::decay<Ts>::iterator,
+                             typename camp::decay<Ts>::IndexType>...>;
 };
 
 
@@ -70,14 +68,14 @@ namespace internal
 template <class Tuple, camp::idx_t... I>
 RAJA_INLINE constexpr auto make_wrapped_tuple_impl(Tuple &&t,
                                                    camp::idx_seq<I...>)
-    -> camp::tuple<RAJA::impl::Span<
+    -> camp::tuple<RAJA::Span<
         typename camp::decay<
             camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
         typename camp::decay<
             camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType>...>
 {
   return camp::make_tuple(
-      RAJA::impl::Span<
+      RAJA::Span<
           typename camp::decay<
               camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
           typename camp::decay<camp::tuple_element_t<I, camp::decay<Tuple>>>::
@@ -106,8 +104,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
-
-  detail::setChaiExecutionSpace<PolicyType>();
+  util::PluginContext context{util::make_context<PolicyType>()};
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -120,11 +117,12 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
 
   using param_tuple_t = camp::decay<ParamTuple>;
 
-  using loop_data_t = internal::LoopData<PolicyType,
-                                         segment_tuple_t,
+  using loop_data_t = internal::LoopData<segment_tuple_t,
                                          param_tuple_t,
                                          camp::decay<Bodies>...>;
 
+
+  util::callPreCapturePlugins(context);
 
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
@@ -135,13 +133,17 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                         std::forward<ParamTuple>(params),
                         std::forward<Bodies>(bodies)...);
 
+  util::callPostCapturePlugins(context);
+
+  using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
+
+  util::callPreLaunchPlugins(context);
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
-  internal::execute_statement_list<PolicyType>(loop_data);
+  internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
 
-
-  detail::clearChaiExecutionSpace();
+  util::callPostLaunchPlugins(context);
 }
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>
@@ -163,6 +165,7 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
 #include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"

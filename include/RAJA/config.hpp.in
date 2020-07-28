@@ -22,7 +22,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,7 +39,7 @@
  ******************************************************************************
  */
 #cmakedefine ENABLE_FT
-
+#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *
@@ -71,6 +71,24 @@
 /*!
  ******************************************************************************
  *
+ * \brief Add bounds check to views and layouts
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_BOUNDS_CHECK
+
+/*
+ ******************************************************************************
+ *
+ * \brief Exhaustive index types for tests
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_TEST_EXHAUSTIVE
+
+/*!
+ ******************************************************************************
+ *
  * \brief Programming model back-ends, plus CHAI enable/disable.
  *
  ******************************************************************************
@@ -80,7 +98,7 @@
 #cmakedefine RAJA_ENABLE_TBB
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
-#cmakedefine RAJA_ENABLE_CHAI
+#cmakedefine RAJA_ENABLE_HIP
 
 /*!
  ******************************************************************************
@@ -126,8 +144,8 @@
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP)
-#if not defined(_OPENMP)
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler 
+#if !defined(_OPENMP)
+#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
@@ -145,9 +163,9 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-const int RAJA_VERSION_MAJOR = @RAJA_VERSION_MAJOR@;
-const int RAJA_VERSION_MINOR = @RAJA_VERSION_MINOR@;
-const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
+#define RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@
+#define RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@
+#define RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@
 
 
 /*!
@@ -184,6 +202,15 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+//
+// Runtime bounds checking for Views
+//
+#if defined(RAJA_ENABLE_BOUNDS_CHECK)
+#define RAJA_BOUNDS_CHECK_INTERNAL
+#define RAJA_BOUNDS_CHECK_constexpr
+#else
+#define RAJA_BOUNDS_CHECK_constexpr constexpr
+#endif
 
 //
 //  Compiler-specific definitions for inline directives, data alignment
@@ -236,7 +263,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, RAJA::DATA_ALIGN)
@@ -261,7 +288,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
@@ -269,11 +296,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    RAJA_PRAGMA(GCC ivdep)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #else
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
@@ -327,12 +354,23 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Apple Clang compiler supports older options
 #if ( ( (__clang_major__ >= 4 ) ||  (__clang_major__ >= 3 && __clang_minor__ > 7) ) && !defined(__APPLE__) )
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(assume_safety))
-#else 
+#else
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(enable))
 #endif
 
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
+
+
+// This is the same as undefined compiler, but squelches the warning message
+#elif defined(RAJA_COMPILER_MSVC)
+
+#define RAJA_FORCEINLINE_RECURSIVE
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d) d
+#define RAJA_SIMD
+#define RAJA_NO_SIMD
+
 
 #else
 
@@ -370,7 +408,7 @@ T * align_hint(T * x)
   return static_cast<T *>(RAJA_ALIGN_DATA(x));
 #endif
 }
-    
+
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard

@@ -1,11 +1,11 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_custom_target(docs)
+add_custom_target(raja-docs)
 
 if (SPHINX_FOUND)
   add_subdirectory(sphinx/user_guide)

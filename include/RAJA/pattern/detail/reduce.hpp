@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,13 +117,16 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   IndexType loc = DefaultLoc<IndexType>().value();
 
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &) = default;
-
-#if defined(CUDART_VERSION) && CUDART_VERSION < 9020
+#if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020 || defined(__HIPCC__)
+  RAJA_HOST_DEVICE constexpr ValueLoc() {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
   RAJA_HOST_DEVICE
+  ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
+#else
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &other) = default;
+  ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
-  ValueLoc& operator=(ValueLoc const &) = default;
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
@@ -312,6 +315,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -333,20 +337,29 @@ class BaseReduceMinLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
   /// \brief reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMinLoc &minloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value
@@ -371,6 +384,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE 
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
@@ -416,20 +430,29 @@ class BaseReduceMaxLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMaxLoc &maxloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value

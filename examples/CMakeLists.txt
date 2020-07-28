@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,11 +82,13 @@ raja_add_executable(
   SOURCES ltimes.cpp)
 
 if(ENABLE_TARGET_OPENMP)
-raja_add_executable(
-  NAME target-kernel
-  SOURCES omp-target-kernel.cpp)
+  raja_add_executable(
+    NAME target-kernel
+    SOURCES omp-target-kernel.cpp)
 
-raja_add_executable(
-  NAME omp-target-ltimes
-  SOURCES omp-target-ltimes.cpp)
+  raja_add_executable(
+    NAME omp-target-ltimes
+    SOURCES omp-target-ltimes.cpp)
 endif()
+
+add_subdirectory(plugin)

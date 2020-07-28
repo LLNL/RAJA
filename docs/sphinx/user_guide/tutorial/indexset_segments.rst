@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -168,7 +168,7 @@ policy as before.
 Before we end the discussion of these examples, we demonstrate a few more 
 index set execution policy variations. To run the previous three segment 
 code by iterating over the segments sequentially and executing each 
-segment in parallel using OpenMP multi-threading, we would use this policy 
+segment in parallel using OpenMP multithreading, we would use this policy 
 definition:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp

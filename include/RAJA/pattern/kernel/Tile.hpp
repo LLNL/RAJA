@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,13 +50,15 @@ struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   using exec_policy_t = ExecPolicy;
 };
 
+}  // end namespace statement
+
 ///! tag for a tiling loop
 template <camp::idx_t chunk_size_>
 struct tile_fixed {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 };
 
-}  // end namespace statement
+
 
 namespace internal
 {
@@ -66,10 +68,10 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <camp::idx_t ArgumentId, typename Data, typename... EnclosedStmts>
-struct TileWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+template <camp::idx_t ArgumentId, typename Data, typename Types, typename... EnclosedStmts>
+struct TileWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
-  using Base = GenericWrapper<Data, EnclosedStmts...>;
+  using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
   using privatizer = NestedPrivatizer<TileWrapper>;
 
@@ -201,9 +203,10 @@ struct IterableTiler {
 template <camp::idx_t ArgumentId,
           typename TPol,
           typename EPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>> {
+    statement::Tile<ArgumentId, TPol, EPol, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -220,7 +223,7 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data,
+    TileWrapper<ArgumentId, Data, Types,
                 EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list

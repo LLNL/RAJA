@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -90,7 +90,12 @@ public:
                 "All segments must have the same value_type");
 
   //! Construct empty index set
+#if _MSC_VER < 1910
+   // this one instance of constexpr does not work on VS2012 or VS2015
+  RAJA_INLINE TypedIndexSet() : PARENT() {}
+#else
   RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
+#endif
 
   //! Copy-constructor for index set
   RAJA_INLINE
@@ -232,12 +237,15 @@ private:
   {
     Index_type num = getNumSegments();
 
-    RangeStrideSegment Iter = (pend == PUSH_BACK)
-                                  ? RangeStrideSegment(0, num, 1)
-                                  : RangeStrideSegment(num - 1, -1, -1);
-
-    for (Index_type i : Iter)
-      segment_push_into(i, c, pend, pcopy);
+    if (pend == PUSH_BACK) {
+      for (Index_type i = 0; i < num; ++i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    } else {
+      for (Index_type i = num-1; i > -1; --i) {
+        segment_push_into(i, c, pend, pcopy);
+      } 
+    }
   }
 
 
@@ -749,24 +757,17 @@ private:
 };
 
 
-RAJA_DEPRECATE_ALIAS(
-    "IndexSet will be deprecated soon. Please transition to TypedIndexSet")
-typedef TypedIndexSet<RAJA::RangeSegment,
-                      RAJA::ListSegment,
-                      RAJA::RangeStrideSegment>
-    IndexSet;
-
 namespace type_traits
 {
 
 template <typename T>
 struct is_index_set
-    : SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
 };
 
 template <typename T>
 struct is_indexset_policy
-    : SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
 };
 }  // namespace type_traits
 

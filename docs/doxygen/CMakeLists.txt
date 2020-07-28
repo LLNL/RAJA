@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,5 +21,5 @@ add_custom_target(raja-doxygen
 install(DIRECTORY ${DOXYGEN_HTML_DIR}
   DESTINATION "docs/doxygen/" OPTIONAL)
 
-add_dependencies(docs
+add_dependencies(raja-docs
   raja-doxygen)

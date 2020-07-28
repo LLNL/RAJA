@@ -17,7 +17,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,8 @@
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/plugins.hpp"
+#include "RAJA/util/Registry.hpp"
 
 
 //
@@ -64,6 +66,10 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -101,6 +107,11 @@
 #include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
+//
+// View for sequences of objects
+//
+#include "RAJA/util/Span.hpp"
 
 //
 // Atomic operations support
@@ -142,8 +153,6 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
-
-
 
 #include "RAJA/pattern/scan.hpp"
 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -63,7 +63,11 @@ struct omp_parallel_region
 };
 
 struct omp_for_exec
-    : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::For> {
 };
 
 struct omp_for_nowait_exec

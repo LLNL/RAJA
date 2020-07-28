@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -182,8 +182,8 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec >,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
+  RAJA::statement::For<1, RAJA::loop_exec ,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
@@ -213,8 +213,8 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec >,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
+  RAJA::statement::For<1, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> > >;
   
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {

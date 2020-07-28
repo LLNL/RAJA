@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -507,8 +507,38 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicXor<unsigned long long>(
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicExchange(T volatile *acc, T value)
 {
-  // attempt to use the CUDA builtin atomic, if it exists for T
-  return ::atomicExch((T *)acc, value);
+  return cuda_atomic_CAS_oper(acc, [=] __device__(T) {
+    return value;
+  });
+}
+
+template <>
+RAJA_INLINE __device__ int cuda_atomicExchange<int>(
+    int volatile *acc, int value)
+{
+  return ::atomicExch((int *)acc, value);
+}
+
+template <>
+RAJA_INLINE __device__ unsigned cuda_atomicExchange<unsigned>(
+    unsigned volatile *acc, unsigned value)
+{
+  return ::atomicExch((unsigned *)acc, value);
+}
+
+template <>
+RAJA_INLINE __device__ unsigned long long cuda_atomicExchange<unsigned long long>(
+    unsigned long long volatile *acc,
+    unsigned long long value)
+{
+  return ::atomicExch((unsigned long long *)acc, value);
+}
+
+template <>
+RAJA_INLINE __device__ float cuda_atomicExchange<float>(
+    float volatile *acc, float value)
+{
+  return ::atomicExch((float *)acc, value);
 }
 #endif
 

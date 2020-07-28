@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,14 +59,14 @@ namespace internal
 {
 
 //Statement executor to initalize RAJA local array
-template<camp::idx_t... Indices, typename... EnclosedStmts>
-struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_seq<Indices...>, EnclosedStmts...> >{
+template<camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_seq<Indices...>, EnclosedStmts...>, Types>{
   
   //Execute statement list
   template<class Data>
   static void RAJA_INLINE initMem(Data && data)
   {
-    execute_statement_list<camp::list<EnclosedStmts...>>(data);
+    execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
   }
   
   //Intialize local array

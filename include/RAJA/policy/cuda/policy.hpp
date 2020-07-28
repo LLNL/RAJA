@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -229,6 +229,18 @@ struct cuda_thread_xyz_loop{};
 using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
 using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
 using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
+
+/*!
+ * Maps segment indices to CUDA blocks.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical blocks to fit all of the direct map requests.
+ */
+template<int dim>
+struct cuda_block_xyz_direct{};
+
+using cuda_block_x_direct = cuda_block_xyz_direct<0>;
+using cuda_block_y_direct = cuda_block_xyz_direct<1>;
+using cuda_block_z_direct = cuda_block_xyz_direct<2>;
 
 
 /*!

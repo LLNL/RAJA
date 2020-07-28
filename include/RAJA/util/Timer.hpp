@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,7 +56,9 @@ private:
 
 public:
   BGQTimer() : tstart(), tstop(), telapsed(0) {}
+
   void start() { gettimeofday(&tstart, 0); }
+
   void stop()
   {
     gettimeofday(&tstop, 0);
@@ -110,7 +112,9 @@ public:
   ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), telapsed(0)
   {
   }
+
   void start() { tstart = ClockType::now(); }
+
   void stop()
   {
     tstop = ClockType::now();
@@ -157,7 +161,9 @@ private:
 
 public:
   GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
+
   void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
+
   void stop()
   {
     clock_gettime(CLOCK_MONOTONIC, &tstop);
@@ -218,6 +224,7 @@ public:
   ClockTimer() : telapsed(0) { ; }
 
   void start() { tstart = clock(); }
+
   void stop()
   {
     tstop = clock();

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,12 +40,15 @@ namespace internal
 {
 
 //Intialize thread shared array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
-struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::InitLocalMem<RAJA::cuda_shared_mem,
+                             camp::idx_seq<Indices...>, EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   //Launch loops
@@ -129,12 +132,12 @@ struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_shared_mem
 };
 
 //Intialize thread private array
-template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts>
-struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>>
+template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
+struct CudaStatementExecutor<Data, statement::InitLocalMem<RAJA::cuda_thread_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   //Launch loops

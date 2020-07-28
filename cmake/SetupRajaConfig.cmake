@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,7 +13,7 @@ option(RAJA_USE_FLOAT Off)
 option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
-if (ENABLE_CUDA)
+if (ENABLE_CUDA OR ENABLE_HIP)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -26,6 +26,7 @@ endif()
 ## Fault tolerance options
 option(ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
+option(ENABLE_ITERATOR_OVERFLOW_DEBUG "Enable Overflow checking during Iterator operations" OFF)
 
 ## Timer options
 set(RAJA_TIMER "chrono" CACHE STRING
@@ -59,7 +60,7 @@ set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
 set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
 set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
-set(RAJA_ENABLE_CHAI ${ENABLE_CHAI})
+set(RAJA_ENABLE_HIP ${ENABLE_HIP})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
 
 # Configure a header file with all the variables we found.

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,10 +28,3 @@ if (ENABLE_TBB)
     set(ENABLE_TBB Off)
   endif()
 endif ()
-
-if (ENABLE_CHAI)
-  message(STATUS "CHAI enabled")
-  find_package(umpire)
-  find_package(chai)
-  include_directories(${CHAI_INCLUDE_DIRS})
-endif()

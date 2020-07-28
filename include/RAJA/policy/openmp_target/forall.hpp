@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,9 +39,8 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+
+  RAJA_EXTRACT_BED_IT(iter);
 
   // Reset if exceed CUDA threads per block limit.
   int tperteam = ThreadsPerTeam;
@@ -52,7 +51,7 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
 
   // calculate number of teams based on user defined threads per team
   // datasize is distance between begin() and end() of iterable
-  auto numteams = RAJA_DIVIDE_CEILING_INT( distance, tperteam );
+  auto numteams = RAJA_DIVIDE_CEILING_INT( distance_it, tperteam );
   if ( numteams > tperteam )
   {
     // Omp target reducers will write team # results, into Threads-sized array.
@@ -60,12 +59,13 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&
     numteams = tperteam;
   }
 
+// thread_limit(tperteam) unused due to XL seg fault (when tperteam != distance)
+  auto i = distance_it;
 #pragma omp target teams distribute parallel for num_teams(numteams) \
-    thread_limit(tperteam) schedule(static, 1) map(to              \
-                                                    : body)
-  for (Index_type i = 0; i < distance; ++i) {
+    schedule(static, 1) firstprivate(body,begin_it)
+  for (i = 0; i < distance_it; ++i) {
     Body ib = body;
-    ib(begin[i]);
+    ib(begin_it[i]);
   }
 
 }
@@ -77,15 +77,14 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+
+  RAJA_EXTRACT_BED_IT(iter);
+
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to                                                           \
-        : body)
-  for (Index_type i = 0; i < distance; ++i) {
+    firstprivate(body,begin_it)
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     Body ib = body;
-    ib(begin[i]);
+    ib(begin_it[i]);
   }
 }
 

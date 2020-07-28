@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/kernel/Param.hpp"
 
 namespace RAJA
 {
@@ -63,11 +64,11 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <camp::idx_t ArgumentId, typename ParamId, typename Data,
+template <camp::idx_t ArgumentId, typename ParamId, typename Data, typename Types,
           typename... EnclosedStmts>
-struct ForICountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
+struct ForICountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
-  using Base = GenericWrapper<Data, EnclosedStmts...>;
+  using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
   using privatizer = NestedPrivatizer<ForICountWrapper>;
 
@@ -89,17 +90,21 @@ struct ForICountWrapper : public GenericWrapper<Data, EnclosedStmts...> {
 template <camp::idx_t ArgumentId,
           typename ParamId,
           typename ExecPolicy,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>> {
+    statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
 
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
     // Create a wrapper, just in case forall_impl needs to thread_privatize
-    ForICountWrapper<ArgumentId, ParamId, Data,
+    ForICountWrapper<ArgumentId, ParamId, Data, NewTypes,
                      EnclosedStmts...> for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);

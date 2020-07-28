@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -60,7 +60,7 @@ RAJA::kernel Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::kernel`` variants, we use ``RAJA::statement::Tile`` types
-for the outer loop tiling and ``RAJA::statement::tile_fixed`` types to 
+for the outer loop tiling and ``RAJA::tile_fixed`` types to 
 indicate the tile dimensions. The complete sequential RAJA variant is:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp

@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,79 +36,23 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 
 namespace RAJA
 {
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads.
- * This does no (additional) work-sharing between thread blocks.
- */
-
-struct cuda_thread_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                              RAJA::Policy::cuda,
-                              RAJA::Pattern::forall,
-                              RAJA::Launch::undefined,
-                              RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing iterations
- * exclusively over blocks.
- */
-
-struct cuda_block_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                             RAJA::Policy::cuda,
-                             RAJA::Pattern::forall,
-                             RAJA::Launch::undefined,
-                             RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing work over
- * physical blocks and executing sequentially within blocks.
- */
-
-template <size_t num_blocks>
-struct cuda_block_seq_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                                 RAJA::Policy::cuda,
-                                 RAJA::Pattern::forall,
-                                 RAJA::Launch::undefined,
-                                 RAJA::Platform::cuda> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads
- * and blocks, but limiting the number of threads to num_threads.
- */
-template <size_t num_threads>
-struct cuda_threadblock_exec
-    : public RAJA::make_policy_pattern_launch_platform_t<
-          RAJA::Policy::cuda,
-          RAJA::Pattern::forall,
-          RAJA::Launch::undefined,
-          RAJA::Platform::cuda> {
-};
 
 
 namespace internal
 {
 
 RAJA_INLINE
-int get_size(cuda_dim_t dims)
+size_t get_size(cuda_dim_t dims)
 {
   if(dims.x == 0 && dims.y == 0 && dims.z == 0){
     return 0;
   }
-  return (dims.x ? dims.x : 1) *
-         (dims.y ? dims.y : 1) *
-         (dims.z ? dims.z : 1);
+  return size_t(dims.x ? dims.x : 1) *
+         size_t(dims.y ? dims.y : 1) *
+         size_t(dims.z ? dims.z : 1);
 }
 
 struct LaunchDims {
@@ -157,12 +101,12 @@ struct LaunchDims {
   }
 
   RAJA_INLINE
-  int num_blocks() const {
+  size_t num_blocks() const {
     return get_size(blocks);
   }
 
   RAJA_INLINE
-  int num_threads() const {
+  size_t num_threads() const {
     return get_size(threads);
   }
 
@@ -191,7 +135,7 @@ struct CudaFixedMaxBlocksData
 };
 
 RAJA_INLINE
-int cuda_max_blocks(int block_size)
+size_t cuda_max_blocks(size_t block_size)
 {
   static CudaFixedMaxBlocksData data = {-1, -1};
 
@@ -201,7 +145,7 @@ int cuda_max_blocks(int block_size)
     data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
   }
 
-  int max_blocks = data.multiProcessorCount *
+  size_t max_blocks = data.multiProcessorCount *
                   (data.maxThreadsPerMultiProcessor / block_size);
 
   // printf("MAX_BLOCKS=%d\n", max_blocks);
@@ -219,7 +163,7 @@ struct CudaOccMaxBlocksThreadsData
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
-                                       int &max_blocks, int &max_threads)
+                                       size_t &max_blocks, size_t &max_threads)
 {
   static CudaOccMaxBlocksThreadsData data = {-1, -1, -1};
 
@@ -244,10 +188,10 @@ struct CudaOccMaxBlocksFixedThreadsData
   int multiProcessorCount;
 };
 
-template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
+template < typename RAJA_UNUSED_ARG(UniqueMarker), size_t num_threads, typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
-                               int &max_blocks)
+                               size_t &max_blocks)
 {
   static CudaOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
 
@@ -275,23 +219,26 @@ void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
 struct CudaOccMaxBlocksVariableThreadsData
 {
   int prev_shmem_size;
-  int prev_num_threads;
-  int max_blocks;
+  size_t prev_num_threads;
+  size_t max_blocks;
   int multiProcessorCount;
 };
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
-                               int &max_blocks, int num_threads)
+                               size_t &max_blocks, size_t num_threads)
 {
-  static CudaOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+  static CudaOccMaxBlocksVariableThreadsData data = {0, 0, 0, 0};
 
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
 
+    int max_blocks(0);
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.max_blocks, func, num_threads, shmem_size));
+    &max_blocks, func, static_cast<int>(num_threads), shmem_size));
+
+    data.max_blocks = max_blocks;
 
     if (data.multiProcessorCount < 0) {
 
@@ -362,18 +309,18 @@ struct CudaStatementListExecutorHelper<num_stmts, num_stmts, StmtList> {
 };
 
 
-template <typename Data, typename Policy>
+template <typename Data, typename Policy, typename Types>
 struct CudaStatementExecutor;
 
-template <typename Data, typename StmtList>
+template <typename Data, typename StmtList, typename Types>
 struct CudaStatementListExecutor;
 
 
-template <typename Data, typename... Stmts>
-struct CudaStatementListExecutor<Data, StatementList<Stmts...>> {
+template <typename Data, typename... Stmts, typename Types>
+struct CudaStatementListExecutor<Data, StatementList<Stmts...>, Types> {
 
   using enclosed_stmts_t =
-      camp::list<CudaStatementExecutor<Data, Stmts>...>;
+      camp::list<CudaStatementExecutor<Data, Stmts, Types>...>;
 
   static constexpr size_t num_stmts = sizeof...(Stmts);
 
@@ -399,10 +346,11 @@ struct CudaStatementListExecutor<Data, StatementList<Stmts...>> {
 };
 
 
-template <typename StmtList, typename Data>
+template <typename StmtList, typename Data, typename Types>
 using cuda_statement_list_executor_t = CudaStatementListExecutor<
     Data,
-    StmtList>;
+    StmtList,
+    Types>;
 
 
 

@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,8 +38,6 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 namespace RAJA
@@ -58,7 +56,7 @@ namespace RAJA
  * runtime.
  * Num_threads is 1024, which may not be appropriate for all kernels.
  */
-template <bool async0, int num_blocks, int num_threads>
+template <bool async0, size_t num_blocks, size_t num_threads>
 struct cuda_launch {};
 
 /*!
@@ -67,7 +65,7 @@ struct cuda_launch {};
  * If num_blocks is 0 then num_blocks is chosen at runtime.
  * Num_blocks is chosen to maximize the number of blocks running concurrently.
  */
-template <bool async0, int num_blocks, int num_threads>
+template <bool async0, size_t num_blocks, size_t num_threads>
 using cuda_explicit_launch = cuda_launch<async0, num_blocks, num_threads>;
 
 
@@ -76,7 +74,7 @@ using cuda_explicit_launch = cuda_launch<async0, num_blocks, num_threads>;
  * are determined by the CUDA occupancy calculator.
  * If num_threads is 0 then num_threads is chosen at runtime.
  */
-template <int num_threads0, bool async0>
+template <size_t num_threads0, bool async0>
 using cuda_occ_calc_launch = cuda_launch<async0, 0, num_threads0>;
 
 namespace statement
@@ -99,7 +97,7 @@ struct CudaKernelExt
  * calculator determine the unspecified values.
  * The kernel launch is synchronous.
  */
-template <int num_blocks, int num_threads, typename... EnclosedStmts>
+template <size_t num_blocks, size_t num_threads, typename... EnclosedStmts>
 using CudaKernelExp =
     CudaKernelExt<cuda_launch<false, num_blocks, num_threads>, EnclosedStmts...>;
 
@@ -109,7 +107,7 @@ using CudaKernelExp =
  * calculator determine the unspecified values.
  * The kernel launch is asynchronous.
  */
-template <int num_blocks, int num_threads, typename... EnclosedStmts>
+template <size_t num_blocks, size_t num_threads, typename... EnclosedStmts>
 using CudaKernelExpAsync =
     CudaKernelExt<cuda_launch<true, num_blocks, num_threads>, EnclosedStmts...>;
 
@@ -136,9 +134,9 @@ using CudaKernelOccAsync =
  * number of threads (specified by num_threads)
  * The kernel launch is synchronous.
  */
-template <int num_threads, typename... EnclosedStmts>
+template <size_t num_threads, typename... EnclosedStmts>
 using CudaKernelFixed =
-    CudaKernelExt<cuda_explicit_launch<false, 0, num_threads>,
+    CudaKernelExt<cuda_explicit_launch<false, operators::limits<size_t>::max(), num_threads>,
                   EnclosedStmts...>;
 
 /*!
@@ -146,20 +144,21 @@ using CudaKernelFixed =
  * number of threads (specified by num_threads)
  * The kernel launch is asynchronous.
  */
-template <int num_threads, typename... EnclosedStmts>
+template <size_t num_threads, typename... EnclosedStmts>
 using CudaKernelFixedAsync =
-    CudaKernelExt<cuda_explicit_launch<true, 0, num_threads>, EnclosedStmts...>;
+    CudaKernelExt<cuda_explicit_launch<true, operators::limits<size_t>::max(), num_threads>,
+                  EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads
- * Thre kernel launch is synchronous.
+ * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernel = CudaKernelFixed<1024, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel with 1024 threads
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <typename... EnclosedStmts>
 using CudaKernelAsync = CudaKernelFixedAsync<1024, EnclosedStmts...>;
@@ -242,7 +241,7 @@ struct CudaKernelLauncherGetter<0, Data, executor_t>
  * Helper class that handles CUDA kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<typename LaunchPolicy, typename StmtList, typename Data>
+template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
 struct CudaLaunchHelper;
 
 
@@ -251,19 +250,19 @@ struct CudaLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the CUDA occupancy calculator.
  */
-template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data>
-struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Data>
+template<bool async0, size_t num_blocks, size_t num_threads, typename StmtList, typename Data, typename Types>
+struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
 {
   using Self = CudaLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data>;
+  using executor_t = internal::cuda_statement_list_executor_t<StmtList, Data, Types>;
 
   using kernelGetter_t = CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
 
   inline static void recommended_blocks_threads(int shmem_size,
-      int &recommended_blocks, int &recommended_threads)
+      size_t &recommended_blocks, size_t &recommended_threads)
   {
     auto func = kernelGetter_t::get();
 
@@ -318,7 +317,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
     }
   }
 
-  inline static void max_threads(int RAJA_UNUSED_ARG(shmem_size), int &max_threads)
+  inline static void max_threads(int RAJA_UNUSED_ARG(shmem_size), size_t &max_threads)
   {
     if (num_threads <= 0) {
 
@@ -339,7 +338,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   }
 
   inline static void max_blocks(int shmem_size,
-      int &max_blocks, int actual_threads)
+      size_t &max_blocks, size_t actual_threads)
   {
     auto func = kernelGetter_t::get();
 
@@ -348,8 +347,24 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
       //
       // determine blocks at runtime
       //
-      internal::cuda_occupancy_max_blocks<Self>(
-          func, shmem_size, max_blocks, actual_threads);
+      if (num_threads <= 0 ||
+          num_threads != actual_threads) {
+
+        //
+        // determine blocks when actual_threads != num_threads
+        //
+        internal::cuda_occupancy_max_blocks<Self>(
+            func, shmem_size, max_blocks, actual_threads);
+
+      } else {
+
+        //
+        // determine blocks when actual_threads == num_threads
+        //
+        internal::cuda_occupancy_max_blocks<Self, num_threads>(
+            func, shmem_size, max_blocks);
+
+      }
 
     } else {
 
@@ -383,7 +398,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline
-cuda_dim_t fitCudaDims(unsigned int limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
+cuda_dim_t fitCudaDims(size_t limit, cuda_dim_t result, cuda_dim_t minimum = cuda_dim_t()){
 
 
   // clamp things to at least 1
@@ -434,9 +449,9 @@ cuda_dim_t fitCudaDims(unsigned int limit, cuda_dim_t result, cuda_dim_t minimum
 /*!
  * Specialization that launches CUDA kernels for RAJA::kernel from host code
  */
-template <typename LaunchConfig, typename... EnclosedStmts>
+template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>> {
+    statement::CudaKernelExt<LaunchConfig, EnclosedStmts...>, Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
@@ -447,8 +462,8 @@ struct StatementExecutor<
   {
 
     using data_t = camp::decay<Data>;
-    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t>;
-    using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t>;
+    using executor_t = cuda_statement_list_executor_t<stmt_list_t, data_t, Types>;
+    using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
     //
@@ -458,8 +473,8 @@ struct StatementExecutor<
 
 
     // Only launch kernel if we have something to iterate over
-    int num_blocks = launch_dims.num_blocks();
-    int num_threads = launch_dims.num_threads();
+    size_t num_blocks = launch_dims.num_blocks();
+    size_t num_threads = launch_dims.num_threads();
     if (num_blocks > 0 || num_threads > 0) {
 
       //
@@ -472,7 +487,8 @@ struct StatementExecutor<
       //
       // Compute the recommended physical kernel blocks and threads
       //
-      int recommended_blocks, recommended_threads;
+      size_t recommended_blocks;
+      size_t recommended_threads;
       launch_t::recommended_blocks_threads(
           shmem, recommended_blocks, recommended_threads);
 
@@ -480,7 +496,7 @@ struct StatementExecutor<
       //
       // Compute the MAX physical kernel threads
       //
-      int max_threads;
+      size_t max_threads;
       launch_t::max_threads(shmem, max_threads);
 
 
@@ -513,10 +529,10 @@ struct StatementExecutor<
       //
       // Compute the MAX physical kernel blocks
       //
-      int max_blocks;
+      size_t max_blocks;
       launch_t::max_blocks(shmem, max_blocks, launch_dims.num_threads());
 
-      int use_blocks;
+      size_t use_blocks;
 
       if ( launch_dims.num_threads() == recommended_threads ) {
 
@@ -540,9 +556,10 @@ struct StatementExecutor<
       //
       // make sure that we fit
       //
+      /* Doesn't make sense to check this anymore - AJK
       if(launch_dims.num_blocks() > max_blocks){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num blocks");
-      }
+      }*/
       if(launch_dims.num_threads() > max_threads){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }

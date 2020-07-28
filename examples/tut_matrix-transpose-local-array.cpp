@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -202,8 +202,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_localarray_raja_start
   using SEQ_EXEC_POL_I =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
@@ -248,15 +248,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   //Alias for convenience
-  using RAJA::statement::Segs;
-  using RAJA::statement::Offsets;
-  using RAJA::statement::Params;
+  using RAJA::Segs;
+  using RAJA::Offsets;
+  using RAJA::Params;
 
   // _mattranspose_localarray_raja_lambdaargs_start
   using SEQ_EXEC_POL_II =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
 
@@ -309,8 +309,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //      These loops iterate over the number of
     //      tiles needed to carry out the transpose
     //
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         // This statement will initalize local array memory inside a
         // kernel. The cpu_tile_mem policy specifies that memory should be
         // allocated on the stack. The entries in the RAJA::ParamList
@@ -376,8 +376,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //      These loops iterate over the number of
     //      tiles needed to carry out the transpose
     //
-    RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
       // This statement will initalize local array memory inside a
       // kernel. The cpu_tile_mem policy specifies that memory should be
       // allocated on the stack. The entries in the RAJA::ParamList
@@ -445,8 +445,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList
@@ -507,6 +507,103 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
+
+//--------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  //--------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA - HIP matrix transpose example ...\n";
+
+  int *d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int *d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
+
+  //
+  // In the following implementations of matrix transpose, we
+  // use RAJA 'View' objects to access the matrix data. A RAJA view
+  // holds a pointer to a data array and enables multi-dimensional indexing
+  // into the data.
+  //
+  RAJA::View<int, RAJA::Layout<DIM>> d_Aview(d_A, N_r, N_c);
+  RAJA::View<int, RAJA::Layout<DIM>> d_Atview(d_At, N_c, N_r);
+
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+
+  using HIP_EXEC_POL =
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      //
+      // (0) Execution policies for outer loops
+      //      These loops iterate over the number of
+      //      tiles needed to carry out the transpose
+      //
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+          // This statement will initalize local array memory inside a
+          // kernel. The cpu_tile_mem policy specifies that memory should be
+          // allocated on the stack. The entries in the RAJA::ParamList
+          // identify RAJA local arrays to intialize in the parameter tuple.
+          RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2>,
+            //
+            // (1) Execution policies for the first set of inner
+            // loops. These loops copy data from the global matrices
+            // to the local tile.
+            //
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_y_direct,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_x_direct,
+                                          RAJA::statement::Lambda<0>
+              >
+            >,
+            // Synchronize threads to ensure all loads
+            // to the local array are complete
+            RAJA::statement::HipSyncThreads,
+            //
+            // (2) Execution policies for the second set of inner
+            // loops. These loops copy data from the local tile to
+            // the global matrix.
+            //     Note: The order of the loops have been
+            //     swapped! This enables us to swap which
+            //     index has unit stride.
+            //
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct,
+                                            RAJA::statement::Lambda<1>
+              >
+            >,
+            // Synchronize threads to ensure all reads
+            // from the local array are complete
+            RAJA::statement::HipSyncThreads
+          >
+        >
+      >
+    >
+  >;
+
+
+  RAJA::kernel_param<HIP_EXEC_POL>(
+      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
+      RAJA::make_tuple((int)0, (int)0, Tile_Array),
+
+      [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+
+        Tile_Array(ty, tx) = d_Aview(row, col);
+
+      },
+
+      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+
+        d_Atview(col, row) = Tile_Array(ty, tx);
+
+      });
+
+  hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+  checkResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
+#endif
+
+//--------------------------------------------------------------------------//
+
   return 0;
 }
 

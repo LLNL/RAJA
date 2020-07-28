@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,7 +31,7 @@
  *    -  Index range segment 
  *    -  Index list segment 
  *    -  Strided index range segment 
- *    -  IndexSet segment container
+ *    -  TypedIndexSet segment container
  *    -  Hierarchical execution policies
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -42,6 +42,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //----------------------------------------------------------------------------//
@@ -102,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 //
 // In the following, we show RAJA versions of the daxpy operation and 
-// using different Segment constructs and IndexSets. These are all 
+// using different Segment constructs and TypedIndexSets. These are all 
 // run sequentially. The only thing that changes in these versions is
 // the object passed to the 'forall' method that defines the iteration
 // space.
@@ -346,6 +350,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(a, aref, N);
 //printResult(a, N);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout <<
+    "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" <<
+    " (sequential iteration over segments, HIP parallel segment execution)...\n";
+
+  using OMP_ISET_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                             RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+
+  double* d_a = memoryManager::allocate_gpu<double>(N);
+  double* d_b = memoryManager::allocate_gpu<double>(N);
+
+  hipErrchk(hipMemcpy( d_a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b,  b, N * sizeof(double), hipMemcpyHostToDevice ));
+
+  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (IdxType i) {
+    d_a[i] += d_b[i] * c;
+  });
+
+  hipErrchk(hipMemcpy( a, d_a, N * sizeof(double), hipMemcpyDeviceToHost ));
+
+  checkResult(a, aref, N);
+//printResult(a, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
 #endif
 
 //----------------------------------------------------------------------------//

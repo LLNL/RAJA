@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -13,8 +13,8 @@ Plugins
 *******
 
 RAJA provides a plugin mechanism to support optional components that provide
-additional functionality to make writing applications easier. Currently,
-there is only one RAJA plugin that we support, CHAI.
+additional functionality to make writing applications easier. Currently, there
+is only one library that provides a RAJA plugin: CHAI.
 
 =======
 CHAI
@@ -27,17 +27,12 @@ one memory space to another as needed to run a RAJA-based kernel.
 The data can be accessed inside any RAJA kernel, and regardless of where 
 that kernel executes, CHAI will make the data available.
 
-To build RAJA with CHAI integration, you need to download and install CHAI. 
-Please see the `CHAI project <https://github.com/LLNL/CHAI>`_ for details. 
+To build CHAI with RAJA integration, you need to download and install CHAI with
+the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see the `CHAI project
+<https://github.com/LLNL/CHAI>` for details
 
-After CHAI is installed, RAJA can be configured to use it by passing two 
-additional arguments to CMake::
-
-    $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
-
-After RAJA has been built with CHAI support enabled, applications can use 
-``chai::ManangedArray`` objects to access data inside RAJA kernels; for 
-example::
+After CHAI has been build with RAJA support enabled, applications can use CHAI
+``ManangedArray`` objects to access data inside a RAJA kernel; for example,::
 
   chai::ManagedArray<float> array(1000);
 
