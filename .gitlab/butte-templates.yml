@@ -29,7 +29,3 @@
 .build_and_test_on_butte_advanced:
   extends: [.build_and_test_on_butte, .advanced_pipeline]
   allow_failure: true
-
-####
-# All butte build jobs
-

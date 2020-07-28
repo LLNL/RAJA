@@ -52,10 +52,3 @@ release_resources (on quartz):
 
 .build_and_test_on_quartz_advanced:
   extends: [.build_and_test_on_quartz, .advanced_pipeline]
-
-####
-# Quartz build jobs
-clang_9_0_0 (build and test on quartz):
-  variables:
-    HOST_CONFIG: "quartz-toss_3_x86_64_ib-clang@9.0.0.cmake"
-  extends: .build_and_test_on_quartz

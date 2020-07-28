@@ -31,7 +31,7 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
-  BUILD_ROOT: ${CI_BUILDS_DIR}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}_${CI_PIPELINE_ID}
+  BUILD_ROOT: ${CI_PROJECT_DIR}
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
@@ -59,15 +59,13 @@ stages:
     - echo ${ALLOC_NAME}
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - echo ${JOBID}
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 10 -N 1 scripts/gitlab/build_and_test.sh --build-only
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 5 -N 1 scripts/gitlab/build_and_test.sh --test-only
+    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 15 -N 1 scripts/gitlab/build_and_test.sh
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
-    - lalloc 1 -W 10 scripts/gitlab/build_and_test.sh --build-only
-    - lalloc 1 -W 5 scripts/gitlab/build_and_test.sh --test-only
+    - lalloc 1 -W 15 scripts/gitlab/build_and_test.sh
 
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
@@ -75,6 +73,9 @@ stages:
 
 # This is where jobs are included.
 include:
-  - local: .gitlab/quartz.yml
-  - local: .gitlab/lassen.yml
-  - local: .gitlab/butte.yml
+  - local: .gitlab/quartz-templates.yml
+  - local: .gitlab/quartz-jobs.yml
+  - local: .gitlab/lassen-templates.yml
+  - local: .gitlab/lassen-jobs.yml
+  - local: .gitlab/butte-templates.yml
+  - local: .gitlab/butte-jobs.yml

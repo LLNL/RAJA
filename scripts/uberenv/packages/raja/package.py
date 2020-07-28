@@ -91,10 +91,11 @@ class Raja(CMakePackage, CudaPackage):
         if '+cuda' in spec:
             var= '-'.join([var,'cuda'])
 
-        host_config_path = "%s-%s-%s%s.cmake" % (socket.gethostname().rstrip('1234567890'),
+        host_config_path = "hc-%s-%s-%s%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),
                                                self._get_sys_type(spec),
                                                spec.compiler,
-                                               var)
+                                               var,
+                                               spec.dag_hash())
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
         return host_config_path
@@ -165,6 +166,8 @@ class Raja(CMakePackage, CudaPackage):
         cfg.write("# Compiler Spec: {0}\n".format(spec.compiler))
         cfg.write("# CMake executable path: %s\n" % cmake_exe)
         cfg.write("#------------------\n\n".format("-" * 60))
+
+        cfg.write(cmake_cache_string("CMAKE_BUILD_TYPE", spec.variants['build_type'].value))
 
         #######################
         # Compiler Settings
@@ -257,6 +260,25 @@ class Raja(CMakePackage, CudaPackage):
 
         cfg.write(cmake_cache_option("RAJA_HOST_CONFIG_LOADED", True))
 
+        # shared vs static libs
+        cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec)
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec)
+
+        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
+        # is used by the spack compiler wrapper.  This can go away when BLT
+        # removes -Werror from GTest flags
+        if self.spec.satisfies('%clang target=ppc64le:') or not self.run_tests:
+            cfg.write(cmake_cache_option("ENABLE_TESTS",False))
+        else:
+            cfg.write(cmake_cache_option("ENABLE_TESTS",True))
+
+        #######################
+        # Close and save
+        #######################
+        cfg.write("\n")
+        cfg.close()
+
+        print("OUT: host-config file {0}".format(host_config_path))
 
     def cmake_args(self):
         spec = self.spec
@@ -264,25 +286,5 @@ class Raja(CMakePackage, CudaPackage):
 
         options = []
         options.extend(['-C', host_config_path])
-
-        # shared vs static libs
-        if "+shared" in spec:
-            options.append('-DBUILD_SHARED_LIBS=ON')
-        else:
-            options.append('-DBUILD_SHARED_LIBS=OFF')
-
-        # OpenMP
-        if "+openmp" in spec:
-            options.append('-DENABLE_OPENMP=ON')
-        else:
-            options.append('-DENABLE_OPENMP=ON')
-
-        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
-        # is used by the spack compiler wrapper.  This can go away when BLT
-        # removes -Werror from GTest flags
-        if self.spec.satisfies('%clang target=ppc64le:') or not self.run_tests:
-            options.append('-DENABLE_TESTS=OFF')
-        else:
-            options.append('-DENABLE_TESTS=ON')
 
         return options

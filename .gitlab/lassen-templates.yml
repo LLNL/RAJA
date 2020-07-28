@@ -27,11 +27,3 @@
 # In particular, the rules section will be merged. Careful when changing rules.
 .build_and_test_on_lassen_advanced:
   extends: [.build_and_test_on_lassen, .advanced_pipeline]
-
-####
-# All lassen build jobs
-nvcc_10_clang_8_0_1 (build and test on lassen):
-  variables:
-    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-clang@8.0.1-cuda.cmake"
-  extends: .build_and_test_on_lassen
-
