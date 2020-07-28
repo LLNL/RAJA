@@ -25,6 +25,11 @@
 //
 #include "test-forall-atomic-basic.hpp"
 
+//
+// These tests exercise only one index type. We parameterize here to
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
 
 //
 // Cartesian product of types used in parameterized tests
@@ -33,7 +38,7 @@ using @ATOMIC_BACKEND@ForallAtomicBasicTypes =
   Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
                                 @ATOMIC_BACKEND@AtomicPols,
                                 @ATOMIC_BACKEND@ResourceList,
-                                AtomicSegmentList,
+                                TestIdxTypeList,
                                 AtomicDataTypeList > >::Types;
 
 //
