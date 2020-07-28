@@ -324,7 +324,6 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  //std::cout<<"forall indexset ExecPol Arg : Default\n";
   auto r = resources::get_default_resource(p);
   return forall(r, p, c, loop_body);
 }
@@ -333,7 +332,6 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy,
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(resources::Resource &r, ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  //std::cout<<"forall indexset ExecPol Arg : Resource\n";
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
@@ -430,11 +428,11 @@ forall_Icount(resources::Resource& r,
 
   util::callPreLaunchPlugins(context);
 
-  //wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
-  resources::EventProxy e =  wrap::forall_Icount(r, std::forward<ExecutionPolicy>(p),
-                      std::forward<Container>(c),
-                      icount,
-                      body);
+  resources::EventProxy e =  wrap::forall_Icount(r,
+                                                 std::forward<ExecutionPolicy>(p),
+                                                 std::forward<Container>(c),
+                                                 icount,
+                                                 body);
 
   util::callPostLaunchPlugins(context);
   return e;
@@ -480,9 +478,10 @@ forall(resources::Resource &r, ExecutionPolicy&& p, Container&& c, LoopBody&& lo
 
   util::callPreLaunchPlugins(context);
 
-  resources::EventProxy e =  wrap::forall(r, std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               std::forward<LoopBody>(loop_body));
+  resources::EventProxy e =  wrap::forall(r,
+                                          std::forward<ExecutionPolicy>(p),
+                                          std::forward<Container>(c),
+                                          std::forward<LoopBody>(loop_body));
 
   util::callPostLaunchPlugins(context);
   return e;
@@ -517,7 +516,6 @@ RAJA_INLINE resources::EventProxy forall(resources::Resource &r, Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy, type_traits::is_execution_policy<ExecutionPolicy>> forall_Icount(Args&&... args)
 {
-  //std::cout<< "Forall Icount : Default\n";
   auto r = resources::get_default_resource(ExecutionPolicy());
   return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
