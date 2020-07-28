@@ -60,7 +60,7 @@ struct TeamSharedArray
 #endif
   }
 
- 
+
   template<typename ...Indices>
   RAJA_HOST_DEVICE
   DataType &operator()(Indices ...indices)
@@ -208,7 +208,7 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
-template<typename DataType, size_t N, size_t Nx, size_t Ny, size_t Nz> 
+template<typename DataType, size_t N, size_t Nx, size_t Ny, size_t Nz>
 struct PrivateMemoryImpl
 {
 
@@ -225,20 +225,20 @@ struct PrivateMemoryImpl
   RAJA_HOST_DEVICE
   double &operator()(int i, int tx, int ty=0, int tz=0) const
   {
-#if defined(__CUDA_ARCH__)  
+#if defined(__CUDA_ARCH__)
     return Array[i];
 #else
     const int offset = N*tx + N*Nx*ty + N*Nx*Ny*tz;
     return Array[i + offset];
 #endif
-  }  
+  }
 
 };
 
 template<size_t Nx=16, size_t Ny=16, size_t Nz=4>
 struct TeamExclusive
 {
- template<typename DataType, size_t N> 
+ template<typename DataType, size_t N>
   using ExclusiveMem = PrivateMemoryImpl<DataType, N, Nx, Ny,Nz>;
 };
 
@@ -250,9 +250,9 @@ public:
   LaunchContext(Resources const &base, ExecPlace place)
       : Resources(base), exec_place(place)
   {
-  }  
+  }
 
-  
+
   RAJA_HOST_DEVICE
   void teamSync()
   {
@@ -269,28 +269,30 @@ struct LaunchExecute;
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 {
+  switch (place) {
+    case HOST: {
+        using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+         launch_t::exec(LaunchContext(team_resources, HOST), body);
+        break;
+      }
 
-  if (place == HOST) {
-    using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-
-    launch_t::exec(LaunchContext(team_resources, HOST), body);
-  }
 #ifdef RAJA_ENABLE_OPENMP
-  else if (place == HOST_THREADS) {
-    printf("Launching OMP code ! \n");
-    using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
-    launch_t::exec(LaunchContext(team_resources, HOST_THREADS), body);
-  }
+    case HOST_THREADS: {
+        printf("Launching OMP code ! \n");
+        using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
+        launch_t::exec(LaunchContext(team_resources, HOST_THREADS), body);
+        break;
+      }
 #endif
 #ifdef RAJA_ENABLE_CUDA
-  else if (place == DEVICE) {
-    using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-
-    launch_t::exec(LaunchContext(team_resources, DEVICE), body);
-  }
+    case DEVICE: {
+        using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+        launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+        break;
+      }
 #endif
-  else {
-    throw "unknown launch place!";
+    default:
+      throw "unknown launch place!";
   }
 }
 

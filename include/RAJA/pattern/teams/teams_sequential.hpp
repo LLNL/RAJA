@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_sequantial_HPP
+#ifndef RAJA_pattern_teams_sequential_HPP
 #define RAJA_pattern_teams_sequential_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
