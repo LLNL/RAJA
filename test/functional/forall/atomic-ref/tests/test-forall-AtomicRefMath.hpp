@@ -12,104 +12,104 @@
 #ifndef __TEST_FORALL_ATOMICREF_MATH_HPP__
 #define __TEST_FORALL_ATOMICREF_MATH_HPP__
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct PreIncCountOp {
-  PreIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  PreIncCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (++counter) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct PostIncCountOp {
-  PostIncCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  PostIncCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (counter++);
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct AddEqCountOp {
-  AddEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  AddEqCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (counter += (T)1) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchAddCountOp {
-  FetchAddCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  FetchAddCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)seg.size())
   { count[0] = (T)0; }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return counter.fetch_add((T)1);
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct PreDecCountOp {
-  PreDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  PreDecCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (--counter);
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct PostDecCountOp {
-  PostDecCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  PostDecCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (counter--) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct SubEqCountOp {
-  SubEqCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  SubEqCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return (counter -= (T)1);
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
-template < typename T, typename AtomicPolicy >
+template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchSubCountOp {
-  FetchSubCountOp(T* count, RAJA::TypedRangeSegment<RAJA::Index_type> seg)
+  FetchSubCountOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
     : counter(count), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   { count[0] = (T)seg.size(); }
   RAJA_HOST_DEVICE
-    T operator()(RAJA::Index_type RAJA_UNUSED_ARG(i)) const {
+    T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
       return counter.fetch_sub((T)1) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> counter;
@@ -118,20 +118,21 @@ struct FetchSubCountOp {
 
 template <typename ExecPolicy,
          typename AtomicPolicy,
+         typename IdxType,
          typename T,
-  template <typename, typename> class CountOp>
-void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
+         template <typename, typename, typename> class CountOp>
+void testAtomicRefCount(RAJA::TypedRangeSegment<IdxType> seg,
     T* count, T* list, bool* hit)
 {
-  CountOp<T, AtomicPolicy> countop(count, seg);
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  CountOp<T, AtomicPolicy, IdxType> countop(count, seg);
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
       list[i] = countop.max + (T)1;
       hit[i] = false;
       });
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
       T val = countop(i);
       list[i] = val;
-      hit[(RAJA::Index_type)val] = true;
+      hit[(IdxType)val] = true;
       });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -141,7 +142,7 @@ void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
 #endif
 
   EXPECT_EQ(countop.final, count[0]);
-  for (RAJA::Index_type i = 0; i < seg.size(); i++) {
+  for (IdxType i = 0; i < seg.size(); i++) {
     EXPECT_LE(countop.min, list[i]);
     EXPECT_GE(countop.max, list[i]);
     EXPECT_TRUE(hit[i]);
@@ -152,10 +153,11 @@ void testAtomicRefCount(RAJA::TypedRangeSegment<RAJA::Index_type> seg,
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
+          typename IdxType,
           typename T>
-void ForallAtomicRefMathTestImpl( RAJA::Index_type N )
+void ForallAtomicRefMathTestImpl( IdxType N )
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
+  RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
   camp::resources::Resource count_res{WORKINGRES()};
   camp::resources::Resource list_res{WORKINGRES()};
@@ -173,15 +175,23 @@ void ForallAtomicRefMathTestImpl( RAJA::Index_type N )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreIncCountOp  >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostIncCountOp >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, AddEqCountOp   >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, FetchAddCountOp>(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     PreIncCountOp  >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     PostIncCountOp >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     AddEqCountOp   >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     FetchAddCountOp>(seg, count, list, hit);
 
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PreDecCountOp  >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, PostDecCountOp >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, SubEqCountOp   >(seg, count, list, hit);
-  testAtomicRefCount<ExecPolicy, AtomicPolicy, T, FetchSubCountOp>(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     PreDecCountOp  >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     PostDecCountOp >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     SubEqCountOp   >(seg, count, list, hit);
+  testAtomicRefCount<ExecPolicy, AtomicPolicy, IdxType, T, 
+                     FetchSubCountOp>(seg, count, list, hit);
 
   count_res.deallocate( count );
   list_res.deallocate( list );
@@ -200,9 +210,10 @@ TYPED_TEST_P(ForallAtomicRefMathTest, AtomicRefMathForall)
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicRefMathTestImpl<AExec, APol, ResType, DType>( 10000 );
+  ForallAtomicRefMathTestImpl<AExec, APol, ResType, IdxType, DType>( 10000 );
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicRefMathTest,
