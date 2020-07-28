@@ -224,17 +224,45 @@ int main()
      */
 
     //========================
+    //Simple Shared memory pattern
+    //========================
+    const int NTeams = 2; 
+    const int Nthreads = 5;
+    RAJA::launch<launch_policy>(select_cpu_or_gpu,
+        RAJA::Resources(RAJA::Teams(NTeams), RAJA::Threads(Nthreads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NTeams), [&](int e) {
+
+            
+            RAJA::TeamSharedArray<double, Nthreads> s_A;
+
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
+               s_A(i) = i; 
+            });
+
+            ctx.teamSync();
+
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
+                printf("s_(%d) = %f \n", i, s_A(Nthreads-i)); 
+            });
+
+
+          });
+        });
+
+
+    //========================
     // Upper triangular pattern
     //========================
     const int N_tri = 5;
-    using team_t = RAJA::TeamExclusive<5>;
+    using Teams_t = RAJA::TeamExclusive<5>;
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
             
-              team_t::ExclusiveMem<int, 0> Val; 
+            Teams_t::ExclusiveMem<int, 0> Val; 
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
               Val(0, j) = j; 
@@ -275,7 +303,7 @@ int main()
             //TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             RAJA::TeamSharedArray<double, THREAD_BLOCK_SZ, THREAD_BLOCK_SZ> Cs;
 
-            printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
+            //printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
 
             // Team parallel loop
             RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
