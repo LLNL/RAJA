@@ -208,6 +208,40 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
+template<typename DataType, size_t N, size_t Nx, size_t Ny, size_t Nz> 
+struct PrivateMemoryImpl
+{
+
+  const int X{Nx};
+  const int Y{Ny};
+  const int Z{Nz};
+
+#if defined(__CUDA_ARCH__)
+ mutable double Array[N];
+#else
+  mutable double Array[N*Nx*Ny*Nz];
+#endif
+
+  RAJA_HOST_DEVICE
+  double &operator()(int i, int tx, int ty=0, int tz=0) const
+  {
+#if defined(__CUDA_ARCH__)  
+    return Array[i];
+#else
+    const int offset = N*tx + N*Nx*ty + N*Nx*Ny*tz;
+    return Array[i + offset];
+#endif
+  }  
+
+};
+
+template<size_t Nx=16, size_t Ny=16, size_t Nz=4>
+struct TeamExclusive
+{
+ template<typename DataType, size_t N> 
+  using ExclusiveMem = PrivateMemoryImpl<DataType, N, Nx, Ny,Nz>;
+};
+
 class LaunchContext : public Resources
 {
 public:
@@ -216,7 +250,9 @@ public:
   LaunchContext(Resources const &base, ExecPlace place)
       : Resources(base), exec_place(place)
   {
-  }
+  }  
+
+  
   RAJA_HOST_DEVICE
   void teamSync()
   {
@@ -225,6 +261,7 @@ public:
 #endif
   }
 };
+
 
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;

@@ -177,7 +177,7 @@ int main()
 {
 
   // N is number of blocks in each matrix
-  const int NBlocks = 1;
+  const int NBlocks = 4;
 #ifdef RAJA_ENABLE_CUDA
   const int NThreads = THREAD_BLOCK_SZ;
   const int N = NThreads * NBlocks;
@@ -227,14 +227,25 @@ int main()
     // Upper triangular pattern
     //========================
     const int N_tri = 5;
+    using team_t = RAJA::TeamExclusive<5>;
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
+            
+              team_t::ExclusiveMem<int, 0> Val; 
+
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-              printf("i=%d, j=%d\n", i, j);
+              Val(0, j) = j; 
             });  // loop j
+
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+                printf("i=%d, j=%d\n", i, Val(0, j));
+            });  // loop j
+
+
+
           });    // loop i
         });      // kernel
 
@@ -249,7 +260,7 @@ int main()
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
       RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
                       RAJA::Threads(NThreads, NThreads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+                      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           //
           // Loop over teams
           //
@@ -263,6 +274,7 @@ int main()
             TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             //TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             RAJA::TeamSharedArray<double, THREAD_BLOCK_SZ, THREAD_BLOCK_SZ> Cs;
+
             printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
 
             // Team parallel loop
