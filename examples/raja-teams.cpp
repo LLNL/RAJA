@@ -177,7 +177,7 @@ int main()
 {
 
   // N is number of blocks in each matrix
-  const int NBlocks = 4;
+  const int NBlocks = 1;
 #ifdef RAJA_ENABLE_CUDA
   const int NThreads = THREAD_BLOCK_SZ;
   const int N = NThreads * NBlocks;
@@ -245,6 +245,7 @@ int main()
 
     RAJA::RangeSegment TeamRange(0, NBlocks);
 
+    printf("select_cpu_or_gpu %d \n", select_cpu_or_gpu);
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
       RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
                       RAJA::Threads(NThreads, NThreads)),
@@ -260,12 +261,14 @@ int main()
 
             TEAM_SHARED double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
-            TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+            //TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+            RAJA::TeamSharedArray<double, THREAD_BLOCK_SZ, THREAD_BLOCK_SZ> Cs;
+            printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
 
             // Team parallel loop
             RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
                 RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-                    Cs[ty][tx] = 0.0;
+                    Cs(ty,tx) = 0.0;
                   });
               });
 
@@ -291,7 +294,7 @@ int main()
 
                       for (int e = 0; e < NThreads; ++e) {
 
-                        Cs[ty][tx] += As[ty][e] * Bs[e][tx];
+                        Cs(ty,tx) += As[ty][e] * Bs[e][tx];
                       }
                     });
                 });
@@ -306,7 +309,7 @@ int main()
                         const int row = by * NThreads + ty;  // Matrix row index
                         const int col = bx * NThreads + tx;  // Matrix column index
 
-                        C[col + N * row] = Cs[ty][tx];
+                        C[col + N * row] = Cs(ty,tx);
                     });
               });
             //});

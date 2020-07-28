@@ -26,6 +26,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -39,6 +40,36 @@
 
 namespace RAJA
 {
+
+template<typename DataType, camp::idx_t... Sizes>
+struct TeamSharedArray
+{
+  using layout_t = RAJA::StaticLayout<camp::make_idx_seq_t<sizeof...(Sizes)>,Sizes...>;
+#if defined(__CUDA_ARCH__)
+  DataType *array;
+#else
+  DataType array[layout_t::size()];
+#endif
+
+  TeamSharedArray()
+  {
+#if defined(__CUDA_ARCH__)
+    const camp::idx_t NumElem = layout_t::size();
+    TEAM_SHARED DataType m_array[NumElem];
+    array = &m_array[0];
+#endif
+  }
+
+ 
+  template<typename ...Indices>
+  RAJA_HOST_DEVICE
+  DataType &operator()(Indices ...indices)
+  {
+    return array[layout_t::s_oper(indices...)];
+  }
+};
+
+
 
 // GPU or CPU threads available
 enum ExecPlace {
