@@ -41,6 +41,17 @@ then
         prefix_opt="--prefix=${prefix}"
     fi
 
+    extra_variants=""
+    extra_deps=""
+
+    if [[ -n "${UPDATE_CHAI}" ]]
+    then
+        chai_version="${UPDATE_CHAI}"
+        extra_variants="${extra_variants} +chai"
+        extra_deps="${extra_deps} ^chai@${chai_version}"
+
+    spec="${spec} ${extra_variants} ${extra_deps}"
+
     python scripts/uberenv/uberenv.py --spec=${spec} ${prefix_opt}
 
 fi
