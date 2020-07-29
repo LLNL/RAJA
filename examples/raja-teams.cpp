@@ -114,30 +114,35 @@ void printResult(T *C, int N);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
-using launch_policy =
-  RAJA::LaunchPolicy<RAJA::seq_launch_t
+using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t
 #if defined(RAJA_ENABLE_OPENMP)
-                     ,RAJA::omp_launch_t
+                                         ,
+                                         RAJA::omp_launch_t
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                     ,RAJA::cuda_launch_t<false>
+                                         ,
+                                         RAJA::cuda_launch_t<false>
 #endif
-                     >;
+                                         >;
 
 using teams1 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                                ,RAJA::omp_parallel_for_exec
+                                ,
+                                RAJA::omp_parallel_for_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                                ,RAJA::cuda_block_y_direct
+                                ,
+                                RAJA::cuda_block_y_direct
 #endif
                                 >;
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                                ,RAJA::loop_exec
+                                ,
+                                RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                                ,RAJA::cuda_block_x_direct
+                                ,
+                                RAJA::cuda_block_x_direct
 #endif
                                 >;
 
@@ -145,32 +150,37 @@ using teams0 = RAJA::LoopPolicy<RAJA::loop_exec
 using teams01 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_OPENMP)
 
-                                 ,RAJA::omp_parallel_for_exec
+                                 ,
+                                 RAJA::omp_parallel_for_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                                 ,RAJA::cuda_block_xyz_direct<2>
+                                 ,
+                                 RAJA::cuda_block_xyz_direct<2>
 #endif
                                  >;
 
 
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                                  ,RAJA::loop_exec
+                                  ,
+                                  RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                                  ,RAJA::cuda_thread_y_loop
+                                  ,
+                                  RAJA::cuda_thread_y_loop
 #endif
                                   >;
 
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                                  ,RAJA::loop_exec
+                                  ,
+                                  RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                                  ,RAJA::cuda_thread_x_loop
+                                  ,
+                                  RAJA::cuda_thread_x_loop
 #endif
->;
-
+                                  >;
 
 
 int main()
@@ -224,29 +234,28 @@ int main()
      */
 
     //========================
-    //Simple Shared memory pattern
+    // Simple Shared memory pattern
     //========================
-    const int NTeams = 2; 
+    const int NTeams = 2;
     const int Nthreads = 5;
-    RAJA::launch<launch_policy>(select_cpu_or_gpu,
+    RAJA::launch<launch_policy>(
+        select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(NTeams), RAJA::Threads(Nthreads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NTeams), [&](int e) {
 
-            
-            RAJA::TeamSharedArray<double, Nthreads> s_A;
+            TEAM_SHARED int s_A[Nthreads];
 
-            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
-               s_A(i) = i; 
+            RAJA::loop<threads0>(ctx,RAJA::RangeSegment(0, Nthreads), [&](int i) {
+                s_A[i] = i; 
             });
 
             ctx.teamSync();
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
-                printf("s_(%d) = %f \n", i, s_A(Nthreads-i)); 
+                
+                printf("s_(%d) = %d \n", i, s_A[Nthreads - 1 - i]);
             });
-
-
           });
         });
 
@@ -256,24 +265,22 @@ int main()
     //========================
     const int N_tri = 5;
     using Teams_t = RAJA::TeamExclusive<5>;
-    RAJA::launch<launch_policy>(select_cpu_or_gpu,
+    RAJA::launch<launch_policy>(
+        select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
-            
-            Teams_t::ExclusiveMem<int, 0> Val; 
+
+            Teams_t::ExclusiveMem<int, 0> Val;
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-              Val(0, j) = j; 
+              Val(0, j) = j;
             });  // loop j
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-                printf("i=%d, j=%d\n", i, Val(0, j));
+              printf("i=%d, j=%d\n", i, Val(0, j));
             });  // loop j
-
-
-
           });    // loop i
         });      // kernel
 
@@ -286,9 +293,9 @@ int main()
 
     printf("select_cpu_or_gpu %d \n", select_cpu_or_gpu);
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
-      RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
-                      RAJA::Threads(NThreads, NThreads)),
-                      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
+                        RAJA::Threads(NThreads, NThreads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           //
           // Loop over teams
           //
@@ -300,41 +307,44 @@ int main()
 
             TEAM_SHARED double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
-            //TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
-            RAJA::TeamSharedArray<double, THREAD_BLOCK_SZ, THREAD_BLOCK_SZ> Cs;
+            // TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
+            RAJA::TeamSharedArray<double, THREAD_BLOCK_SZ, THREAD_BLOCK_SZ> Cs;//Not correct???
 
-            //printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
+            // printf("size of  Cs %d As %d \n", sizeof(Cs), sizeof(As));
 
             // Team parallel loop
-            RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-                    Cs(ty,tx) = 0.0;
-                  });
-              });
+            RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 
+                RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) { 
+
+                    Cs(ty, tx) = 0.0;
+
+                  });                                                                          
+                });
 
             // Slide across matrix
             for (int m = 0; m < (N / NThreads); ++m) {
 
-              RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+              RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                   
                     RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-
-                          const int row = by * NThreads + ty;  // Matrix row index
+                                         
+                          const int row = by * NThreads + ty;  // Matrix row index                            
                           const int col = bx * NThreads + tx;  // Matrix column index
-
 
                           As[ty][tx] = A[row * N + m * NThreads + tx];
                           Bs[ty][tx] = B[(m * NThreads + ty) * N + col];
-                        });
-                  });
+
+                      });
+                });
 
               ctx.teamSync();
 
-              RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+              RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                  
                   RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-
+                                       
                       for (int e = 0; e < NThreads; ++e) {
-
-                        Cs(ty,tx) += As[ty][e] * Bs[e][tx];
+                        
+                        Cs(ty, tx) += As[ty][e] * Bs[e][tx];
+                          
                       }
                     });
                 });
@@ -343,15 +353,15 @@ int main()
             }  // slide across matrix
 
 
-            RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                  RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-
+            RAJA::loop<threads1>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 
+                RAJA::loop<threads0>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+                                     
                         const int row = by * NThreads + ty;  // Matrix row index
                         const int col = bx * NThreads + tx;  // Matrix column index
+                        C[col + N * row] = Cs(ty, tx);
 
-                        C[col + N * row] = Cs(ty,tx);
-                    });
-              });
+                  });
+                });
             //});
           });
         });  // kernel
