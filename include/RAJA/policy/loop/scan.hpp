@@ -67,12 +67,17 @@ concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>> exclusive_inplace(
     BinFn f,
     T v)
 {
-  const int n = end - begin;
-  decltype(*begin) agg = v;
+  using std::distance;
+  const auto n = distance(begin, end);
 
-  for (int i = 0; i < n; ++i) {
-    auto t = *(begin + i);
-    *(begin + i) = agg;
+  using DistanceT = typename std::remove_const<decltype(n)>::type;
+  using ValueT = decltype(*begin);
+  
+  ValueT agg = v;
+
+  for (DistanceT i = 0; i < n; ++i) {
+    auto t = begin[i];
+    begin[i] = agg;
     agg = f(agg, t);
   }
 }

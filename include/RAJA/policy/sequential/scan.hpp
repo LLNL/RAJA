@@ -44,7 +44,8 @@ template <typename ExecPolicy, typename Iter, typename BinFn>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
 inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = decltype(*begin);
+  ValueT agg = *begin;
 
   RAJA_NO_SIMD
   for (Iter i = ++begin; i != end; ++i) {
@@ -61,13 +62,16 @@ template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
 concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
 exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
 {
-  const int n = end - begin;
-  decltype(*begin) agg = v;
+  using std::distance;
+  const auto n = distance(begin, end);
+
+  using ValueT = decltype(*begin);
+  ValueT agg = v;
 
   RAJA_NO_SIMD
   for (int i = 0; i < n; ++i) {
-    auto t = *(begin + i);
-    *(begin + i) = agg;
+    auto t = begin[i];
+    begin[i] = agg;
     agg = f(agg, t);
   }
 }
@@ -84,7 +88,9 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
     OutIter out,
     BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = decltype(*begin);
+  ValueT agg = *begin;
+
   *out++ = agg;
 
   RAJA_NO_SIMD
@@ -111,7 +117,8 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
     BinFn f,
     T v)
 {
-  decltype(*begin) agg = v;
+  using ValueT = typename std::remove_const<decltype(*begin)>::type;
+  ValueT agg = v;
   OutIter o = out;
   *o++ = v;
 
