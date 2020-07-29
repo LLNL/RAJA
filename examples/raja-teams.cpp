@@ -210,7 +210,7 @@ int main()
     }
   }
 
-  std::cout << "\n Running RAJA-Teams V2-version of matrix multiplication...\n";
+  std::cout << "\n Running RAJA-Teams examples...\n";
   std::cout << "  N = " << N << std::endl;
 
   for (int exec_place = 0; exec_place < (int)RAJA::NUM_PLACES; ++exec_place) {
@@ -236,13 +236,15 @@ int main()
     //========================
     // Simple Shared memory pattern
     //========================
+    std::cout << "\n Running Simple Shared memory pattern example...\n";
+
     const int NTeams = 2;
     const int Nthreads = 5;
     RAJA::launch<launch_policy>(
         select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(NTeams), RAJA::Threads(Nthreads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NTeams), [&](int e) {
+          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, NTeams), [&](int) {
 
             TEAM_SHARED int s_A[Nthreads];
 
@@ -263,6 +265,8 @@ int main()
     //========================
     // Upper triangular pattern
     //========================
+    std::cout << "\n Running Upper triangular pattern example...\n";
+
     const int N_tri = 5;
     using Teams_t = RAJA::TeamExclusive<5>;
     RAJA::launch<launch_policy>(
@@ -272,21 +276,58 @@ int main()
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
             // do a matrix triangular pattern
 
-            Teams_t::ExclusiveMem<int, 0> Val;
+            Teams_t::ExclusiveMem<int, 1> Val;
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
               Val(0, j) = j;
             });  // loop j
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
-              printf("i=%d, j=%d\n", i, Val(0, j));
+              printf("i=%d, j=%d\n", i, j);
+              printf("Val(0, j)=%d\n", Val(0, j));
             });  // loop j
           });    // loop i
         });      // kernel
 
+   
+    //=============================
+    // Upper triangular pattern #2
+    //=============================
+    std::cout << "\n Running Upper triangular pattern #2 example...\n";
+
+    const int N_tri2 = 5;
+
+    int* Ddat = memoryManager::allocate<int>(N_tri2 * N_tri2);
+    RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri2, N_tri2); 
+
+    for (int r = 0; r < N_tri2; ++r) {
+      for (int c = 0; c < N_tri2; ++c) {
+        D(r, c) = 0;
+      }
+    }
+
+    RAJA::launch<launch_policy>( select_cpu_or_gpu,
+      RAJA::Resources(RAJA::Teams(N_tri2), RAJA::Threads(N_tri2)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int r) {
+
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(r, N_tri), [=](int c) {
+              D(r, c) = r * N_tri + c;
+            });  // loop j
+
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(r, N_tri), [=](int c) {
+              printf("r=%d, c=%d : D=%d\n", r, c, D(r, c));
+            });  // loop c
+          });    // loop r
+        });      // outer lambda
+
+    memoryManager::deallocate(Ddat);
+
     //========================
     // Matrix-Matrix Multiplication Example
     //========================
+    std::cout << "\n Running Matrix-Matrix Multiplication example...\n";
+
     // Set up Teams/Threads
 
     RAJA::RangeSegment TeamRange(0, NBlocks);
