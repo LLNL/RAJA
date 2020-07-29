@@ -114,14 +114,24 @@ void printResult(T *C, int N);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
-using launch_policy = RAJA::LaunchPolicy<RAJA::omp_launch_t
+using launch_policy = RAJA::LaunchPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+  RAJA::omp_launch_t
+#else
+  RAJA::seq_launch_t
+#endif
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_launch_t<false>
 #endif
                                          >;
 
-using teams1 = RAJA::LoopPolicy<RAJA::omp_parallel_for_exec
+using teams1 = RAJA::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+RAJA::omp_parallel_for_exec
+#else
+RAJA::loop_exec
+#endif
 #if defined(RAJA_ENABLE_CUDA)
                                 ,
                                 RAJA::cuda_block_y_direct
@@ -134,7 +144,12 @@ using teams0 = RAJA::LoopPolicy<RAJA::loop_exec
 #endif
                                 >;
 
-using teams01 = RAJA::LoopPolicy<RAJA::omp_parallel_for_exec
+using teams01 = RAJA::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+RAJA::omp_parallel_for_exec
+#else
+RAJA::loop_exec
+#endif
 #if defined(RAJA_ENABLE_CUDA)
                                  ,
                                  RAJA::cuda_block_xyz_direct<2>
