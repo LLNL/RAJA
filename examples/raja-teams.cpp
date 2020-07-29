@@ -273,16 +273,16 @@ int main()
         select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [=](int i) {
+          RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [&](int i) {
             // do a matrix triangular pattern
 
             Teams_t::ExclusiveMem<int, 1> Val;
 
-            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [&](int j) {
               Val(0, j) = j;
             });  // loop j
 
-            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [=](int j) {
+            RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [&](int j) {
               printf("i=%d, j=%d\n", i, j);
               printf("Val(0, j)=%d\n", Val(0, j));
             });  // loop j

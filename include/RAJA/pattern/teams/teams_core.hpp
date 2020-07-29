@@ -217,13 +217,13 @@ struct PrivateMemoryImpl
   const int Z{Nz};
 
 #if defined(__CUDA_ARCH__)
- mutable double Array[N];
+ mutable DataType Array[N];
 #else
-  mutable double Array[N*Nx*Ny*Nz];
+  mutable DataType Array[N*Nx*Ny*Nz];
 #endif
 
   RAJA_HOST_DEVICE
-  double &operator()(int i, int tx, int ty=0, int tz=0) const
+  DataType &operator()(int i, int tx, int ty=0, int tz=0) const
   {
 #if defined(__CUDA_ARCH__)
     return Array[i];
