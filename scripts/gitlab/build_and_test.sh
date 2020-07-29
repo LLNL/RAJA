@@ -19,6 +19,8 @@ build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
 
+chai_version=${UPDATE_CHAI:-""}
+
 # Dependencies
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
@@ -44,11 +46,11 @@ then
     extra_variants=""
     extra_deps=""
 
-    if [[ -n "${UPDATE_CHAI}" ]]
+    if [[ -n ${chai_version} ]]
     then
-        chai_version="${UPDATE_CHAI}"
         extra_variants="${extra_variants} +chai"
         extra_deps="${extra_deps} ^chai@${chai_version}"
+    fi
 
     spec="${spec} ${extra_variants} ${extra_deps}"
 
