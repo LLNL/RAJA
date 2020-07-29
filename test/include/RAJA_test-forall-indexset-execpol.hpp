@@ -9,6 +9,7 @@
 #define __RAJA_test_forall_indexset_execpol_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "camp/list.hpp"
 
 // Sequential execution policy types
 using SequentialForallIndexSetExecPols =

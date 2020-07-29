@@ -13,6 +13,7 @@
 #define __RAJA_test_reducepol_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "camp/list.hpp"
 
 // Sequential reduction policy types
 using SequentialReducePols = camp::list< RAJA::seq_reduce >;
