@@ -71,16 +71,13 @@ class Raja(CMakePackage, CudaPackage):
     version('0.4.1', tag='v0.4.1', submodules="True")
     version('0.4.0', tag='v0.4.0', submodules="True")
 
-    variant('chai', default=False, description='Build CHAI support')
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
-
-    depends_on('chai', when='+chai')
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
 
-    phases = ['hostconfig', 'cmake', 'build',' install']
+    phases = ['hostconfig', 'cmake', 'build', 'install']
 
     def _get_sys_type(self, spec):
         sys_type = str(spec.architecture)
@@ -241,17 +238,6 @@ class Raja(CMakePackage, CudaPackage):
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
-
-        if "+chai" in spec:
-            cfg.write("#------------------{0}\n".format("-" * 60))
-            cfg.write("# CHAI\n")
-            cfg.write("#------------------{0}\n\n".format("-" * 60))
-
-            cfg.write(cmake_cache_option("ENABLE_CHAI", True))
-            chai_dir = spec['chai'].prefix
-            cfg.write(cmake_cache_entry("chai_DIR", chai_dir))
-        else:
-            cfg.write(cmake_cache_option("ENABLE_CHAI", False))
 
         cfg.write("#------------------{0}\n".format("-" * 60))
         cfg.write("# Other\n")

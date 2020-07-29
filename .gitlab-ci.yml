@@ -44,6 +44,7 @@ stages:
   - q_release_resources
   - l_build_and_test
   - b_build_and_test
+  - multi_project
 
 # This is the rules that drives the activation of "advanced" jobs. All advanced
 # jobs will share this through a template mechanism.
@@ -70,6 +71,19 @@ stages:
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
 
+# If testing develop branch, trigger CHAI pipeline with this version of RAJA.
+# TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
+#       This will prevent from sticking to a branch (here develop).
+trigger-chai:
+  stage: multi_project
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" || $MULTI_PROJECT == "ON"' #run only if ...
+  variables:
+    UPDATE_RAJA: develop
+  trigger:
+    project: bernede1/chai-no-mirror
+    branch: feature/multi-project-integration
+    strategy: depend
 
 # This is where jobs are included.
 include:
