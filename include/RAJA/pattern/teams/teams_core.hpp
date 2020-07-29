@@ -74,9 +74,6 @@ struct TeamSharedArray
 // GPU or CPU threads available
 enum ExecPlace {
 HOST
-#if defined(RAJA_ENABLE_OPENMP)
-,HOST_THREADS
-#endif
 #if defined(RAJA_ENABLE_CUDA)
 ,DEVICE
 #endif
@@ -85,36 +82,24 @@ HOST
 
 // Support for Host, Host_threads, and Device
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_OPENMP)
-          ,typename HOST_THREADS_POLICY
-#endif
 #if defined(RAJA_ENABLE_CUDA)
           ,typename DEVICE_POLICY
 #endif
           >
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_OPENMP)
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-#endif
 #if defined(RAJA_ENABLE_CUDA)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
 
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_OPENMP)
-          ,typename HOST_THREADS_POLICY
-#endif
 #if defined(RAJA_ENABLE_CUDA)
           ,typename DEVICE_POLICY
 #endif
 >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_OPENMP)
-  using host_threads_policy_t = HOST_THREADS_POLICY;
-#endif
 #if defined(RAJA_ENABLE_CUDA)
   using device_policy_t = DEVICE_POLICY;
 #endif
@@ -236,7 +221,7 @@ struct PrivateMemoryImpl
 };
 
 template<size_t Nx=16, size_t Ny=16, size_t Nz=4>
-struct TeamExclusive
+struct ThreadExclusive
 {
  template<typename DataType, size_t N>
   using ExclusiveMem = PrivateMemoryImpl<DataType, N, Nx, Ny,Nz>;
@@ -275,15 +260,6 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
          launch_t::exec(LaunchContext(team_resources, HOST), body);
         break;
       }
-
-#ifdef RAJA_ENABLE_OPENMP
-    case HOST_THREADS: {
-        printf("Launching OMP code ! \n");
-        using launch_t = LaunchExecute<typename POLICY_LIST::host_threads_policy_t>;
-        launch_t::exec(LaunchContext(team_resources, HOST_THREADS), body);
-        break;
-      }
-#endif
 #ifdef RAJA_ENABLE_CUDA
     case DEVICE: {
         using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
@@ -312,25 +288,10 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
   LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
                                                                     segment,
                                                                     body);
-#else
-  switch (ctx.exec_place) {
-#if defined(RAJA_ENABLE_OPENMP)
-    case HOST_THREADS:
-      LoopExecute<typename POLICY_LIST::host_threads_policy_t, SEGMENT>::exec(
-          ctx, segment, body);
-      break;
-#endif
-
-    case HOST:
-      LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
-                                                                      segment,
-                                                                      body);
-      break;
-
-    default:
-      RAJA_ABORT_OR_THROW("Backend not support \n");
-      break;
-  }
+#else  
+  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  segment,
+                                                                  body);
 #endif
 }
 
@@ -349,23 +310,10 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                                     segment1,
                                                                     body);
 #else
-  switch (ctx.exec_place) {
-#if defined(RAJA_ENABLE_OPENMP)
-    case HOST_THREADS:
-      LoopExecute<typename POLICY_LIST::host_threads_policy_t, SEGMENT>::exec(
-          ctx, segment0, segment1, body);
-      break;
-#endif
-
-    case HOST:
-      LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
-                                                                      segment0,
-                                                                      segment1,
-                                                                      body);
-      break;
-
-  default: RAJA_ABORT_OR_THROW("Backend not support \n"); break;
-  }
+  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  segment0,
+                                                                  segment1,
+                                                                  body);
 #endif
 }
 
@@ -384,22 +332,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
   LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(
       ctx, segment0, segment1, segment2, body);
 #else
-  switch (ctx.exec_place) {
-
-#ifdef RAJA_ENABLE_OPENMP
-    case HOST_THREADS:
-      LoopExecute<typename POLICY_LIST::host_threads_policy_t, SEGMENT>::exec(
-          ctx, segment0, segment1, segment2, body);
-      break;
-#endif
-
-    case HOST:
-      LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
-          ctx, segment0, segment1, segment2, body);
-      break;
-
-  default: RAJA_ABORT_OR_THROW("Backend not support \n"); break;
-  }
+  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
+      ctx, segment0, segment1, segment2, body);                                                                  
 #endif
 }
 

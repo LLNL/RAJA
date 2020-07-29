@@ -114,45 +114,27 @@ void printResult(T *C, int N);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
-using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t
-#if defined(RAJA_ENABLE_OPENMP)
-                                         ,
-                                         RAJA::omp_launch_t
-#endif
+using launch_policy = RAJA::LaunchPolicy<RAJA::omp_launch_t
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_launch_t<false>
 #endif
                                          >;
 
-using teams1 = RAJA::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_OPENMP)
-                                ,
-                                RAJA::omp_parallel_for_exec
-#endif
+using teams1 = RAJA::LoopPolicy<RAJA::omp_parallel_for_exec
 #if defined(RAJA_ENABLE_CUDA)
                                 ,
                                 RAJA::cuda_block_y_direct
 #endif
                                 >;
 using teams0 = RAJA::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_OPENMP)
-                                ,
-                                RAJA::loop_exec
-#endif
 #if defined(RAJA_ENABLE_CUDA)
                                 ,
                                 RAJA::cuda_block_x_direct
 #endif
                                 >;
 
-
-using teams01 = RAJA::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_OPENMP)
-
-                                 ,
-                                 RAJA::omp_parallel_for_exec
-#endif
+using teams01 = RAJA::LoopPolicy<RAJA::omp_parallel_for_exec
 #if defined(RAJA_ENABLE_CUDA)
                                  ,
                                  RAJA::cuda_block_xyz_direct<2>
@@ -161,10 +143,6 @@ using teams01 = RAJA::LoopPolicy<RAJA::loop_exec
 
 
 using threads1 = RAJA::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_OPENMP)
-                                  ,
-                                  RAJA::loop_exec
-#endif
 #if defined(RAJA_ENABLE_CUDA)
                                   ,
                                   RAJA::cuda_thread_y_loop
@@ -172,10 +150,6 @@ using threads1 = RAJA::LoopPolicy<RAJA::loop_exec
                                   >;
 
 using threads0 = RAJA::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_OPENMP)
-                                  ,
-                                  RAJA::loop_exec
-#endif
 #if defined(RAJA_ENABLE_CUDA)
                                   ,
                                   RAJA::cuda_thread_x_loop
@@ -268,7 +242,7 @@ int main()
     std::cout << "\n Running Upper triangular pattern example...\n";
 
     const int N_tri = 5;
-    using Teams_t = RAJA::TeamExclusive<5>;
+    using ThreadExclusive_t = RAJA::ThreadExclusive<5>;
     RAJA::launch<launch_policy>(
         select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
@@ -276,7 +250,7 @@ int main()
           RAJA::loop<teams0>(ctx, RAJA::RangeSegment(0, N_tri), [&](int i) {
             // do a matrix triangular pattern
 
-            Teams_t::ExclusiveMem<int, 1> Val;
+           ThreadExclusive_t::ExclusiveMem<int, 1> Val;
 
             RAJA::loop<threads0>(ctx, RAJA::RangeSegment(i, N_tri), [&](int j) {
               Val(0, j) = j;
