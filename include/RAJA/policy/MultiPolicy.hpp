@@ -183,7 +183,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
       using policy::multi::forall_impl;
       RAJA_FORCEINLINE_RECURSIVE
       auto r = resources::get_default_resource(_p);
-      forall_impl(r, _p, std::forward<Iterable>(iter), loop_body);
+      forall_impl(r, _p, std::forward<Iterable>(iter), body);
 
       util::callPostLaunchPlugins(context);
     } else {
