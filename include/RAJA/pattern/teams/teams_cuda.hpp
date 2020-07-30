@@ -53,8 +53,8 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 0>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
-    printf("thread block dim %d %d %d \n", threads.x, threads.y, threads.z);
-    printf("grid block dim %d %d %d \n", blocks.x, blocks.y, blocks.z);
+    //printf("thread block dim %d %d %d \n", threads.x, threads.y, threads.z);
+    //printf("grid block dim %d %d %d \n", blocks.x, blocks.y, blocks.z);
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
 
     if (!async) {
