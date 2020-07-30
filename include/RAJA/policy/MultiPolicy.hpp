@@ -92,17 +92,18 @@ RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
-template <typename Iterable,
+template <typename Res,
+          typename Iterable,
           typename Body,
           typename Selector,
           typename... Policies>
-RAJA_INLINE resources::EventProxy forall_impl(resources::Resource &r,
+RAJA_INLINE resources::EventProxy<Res> forall_impl(Res &r,
                                   MultiPolicy<Selector, Policies...> p,
                                   Iterable &&iter,
                                   Body &&body)
 {
   p.invoke(iter, body);
-  return resources::EventProxy(&r);
+  return resources::EventProxy<Res>(&r);
 }
 
 }  // end namespace multi
