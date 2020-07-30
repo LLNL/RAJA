@@ -207,6 +207,7 @@ struct PrivateMemoryImpl
   mutable DataType Array[N*Nx*Ny*Nz];
 #endif
 
+  RAJA_INLINE
   RAJA_HOST_DEVICE
   DataType &operator()(int i, int tx, int ty=0, int tz=0) const
   {
