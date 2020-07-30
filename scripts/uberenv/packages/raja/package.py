@@ -71,7 +71,7 @@ class Raja(CMakePackage, CudaPackage):
     version('0.4.1', tag='v0.4.1', submodules="True")
     version('0.4.0', tag='v0.4.0', submodules="True")
 
-    variant('chai', default=True, description='Build CHAI support')
+    variant('chai', default=False, description='Build CHAI support')
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
 
