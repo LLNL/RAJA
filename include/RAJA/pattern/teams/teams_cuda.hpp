@@ -228,6 +228,26 @@ struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
 };
 
 template <typename SEGMENT>
+struct LoopExecute<cuda_thread_xyz_direct<2>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    int len1 = segment1.end() - segment1.begin();
+    int len0 = segment0.end() - segment0.begin();
+    {
+      const int i = threadIdx.x;
+      const int j = threadIdx.y;
+      body(*(segment0.begin() + i), *(segment1.begin() + j));
+    }
+  }
+};
+
+template <typename SEGMENT>
 struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
 
   template <typename BODY>
