@@ -65,13 +65,18 @@ namespace RAJA
     using type = Host;
   };
 
-  template<>
-  struct get_default_resource_s<seq_exec>{
-    using type = Host;
-  };
-
 
 #if defined(RAJA_ENABLE_CUDA)
+  template<size_t BlockSize, bool Async>
+  struct get_default_resource_s<cuda_exec<BlockSize, Async>>{
+    using type = Cuda;
+  };
+
+  template<typename ISetIter, size_t BlockSize, bool Async>
+  struct get_default_resource_s<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
+    using type = Cuda;
+  };
+
   template<size_t BlockSize, bool Async>
   RAJA_INLINE Cuda get_default_resource(cuda_exec<BlockSize, Async>){
     //std::cout<<"Get defualt cuda_exec\n";

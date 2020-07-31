@@ -206,105 +206,105 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //
 //
-//#if defined(RAJA_ENABLE_CUDA)
-////----------------------------------------------------------------------------//
-//// RAJA::cuda_exec policy execution.... 
-////----------------------------------------------------------------------------//
-//  {
-//  std::cout << "\n Running RAJA CUDA vector addition on 2 seperate streams...\n";
-//  RAJA::resources::Resource res_cuda1{RAJA::resources::Cuda()};
-//  RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
-//
-//  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//
-//  int* d_a2 = res_cuda2.allocate<int>(sizeof(int) * N);
-//  int* d_b2 = res_cuda2.allocate<int>(sizeof(int) * N);
-//  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
-//
-//  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
-//  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
-//
-//  res_cuda2.memcpy(d_a2, a, sizeof(int)* N);
-//  res_cuda2.memcpy(d_b2, b, sizeof(int)* N);
-//
-//
-//  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
-//    [=] RAJA_DEVICE (int i) { 
-//    d_c1[i] = d_a1[i] + d_b1[i]; 
-//  });    
-//
-//  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
-//    [=] RAJA_DEVICE (int i) { 
-//    d_c2[i] = d_a2[i] + d_b2[i]; 
-//  }); 
-//
-//  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
-//
-//  res_cuda2.memcpy(c_, d_c2, sizeof(int)*N );
-//
-//  checkResult(c, N);
-//  checkResult(c_, N);
-//
-//  res_cuda1.deallocate(d_a1);
-//  res_cuda1.deallocate(d_b1);
-//  res_cuda1.deallocate(d_c1);
-//
-//  res_cuda2.deallocate(d_a2);
-//  res_cuda2.deallocate(d_b2);
-//  res_cuda2.deallocate(d_c2);
-//  }
-//
-//
-////----------------------------------------------------------------------------//
-//// RAJA::cuda_exec policy with waiting event.... 
-////----------------------------------------------------------------------------//
-//  {
-//  std::cout << "\n Running RAJA CUDA vector with dependency between two seperate streams...\n";
-//  RAJA::resources::Resource res_cuda1{RAJA::resources::Cuda()};
-//  RAJA::resources::Resource res_cuda2{RAJA::resources::Cuda()};
-//
-//  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//
-//  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
-//  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
-//
-//  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
-//  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
-//
-//  RAJA::resources::Event e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
-//    [=] RAJA_DEVICE (int i) { 
-//    d_c1[i] = d_a1[i] + d_b1[i]; 
-//  });    
-//
-//  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
-//    [=] RAJA_DEVICE (int i) { 
-//    d_c2[i] = -1;
-//  }); 
-//
-//  res_cuda2.wait_for(&e);
-//
-//  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
-//    [=] RAJA_DEVICE (int i) { 
-//    d_c2[i] = d_c1[i]; 
-//  }); 
-//
-//  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
-//  res_cuda1.memcpy(c_, d_c2, sizeof(int)*N );
-//
-//  checkResult(c, N);
-//  checkResult(c_, N);
-//
-//  res_cuda1.deallocate(d_a1);
-//  res_cuda1.deallocate(d_b1);
-//
-//  res_cuda1.deallocate(d_c1);
-//  res_cuda2.deallocate(d_c2);
-//  }
-//
-//#endif
+#if defined(RAJA_ENABLE_CUDA)
+//----------------------------------------------------------------------------//
+// RAJA::cuda_exec policy execution.... 
+//----------------------------------------------------------------------------//
+  {
+  std::cout << "\n Running RAJA CUDA vector addition on 2 seperate streams...\n";
+  RAJA::resources::Cuda res_cuda1;
+  RAJA::resources::Cuda res_cuda2;
+
+  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
+
+  int* d_a2 = res_cuda2.allocate<int>(sizeof(int) * N);
+  int* d_b2 = res_cuda2.allocate<int>(sizeof(int) * N);
+  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
+
+  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
+  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+
+  res_cuda2.memcpy(d_a2, a, sizeof(int)* N);
+  res_cuda2.memcpy(d_b2, b, sizeof(int)* N);
+
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c1[i] = d_a1[i] + d_b1[i]; 
+  });    
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c2[i] = d_a2[i] + d_b2[i]; 
+  }); 
+
+  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
+
+  res_cuda2.memcpy(c_, d_c2, sizeof(int)*N );
+
+  checkResult(c, N);
+  checkResult(c_, N);
+
+  res_cuda1.deallocate(d_a1);
+  res_cuda1.deallocate(d_b1);
+  res_cuda1.deallocate(d_c1);
+
+  res_cuda2.deallocate(d_a2);
+  res_cuda2.deallocate(d_b2);
+  res_cuda2.deallocate(d_c2);
+  }
+
+
+//----------------------------------------------------------------------------//
+// RAJA::cuda_exec policy with waiting event.... 
+//----------------------------------------------------------------------------//
+  {
+  std::cout << "\n Running RAJA CUDA vector with dependency between two seperate streams...\n";
+  RAJA::resources::Cuda res_cuda1;
+  RAJA::resources::Cuda res_cuda2;
+
+  int* d_a1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_b1 = res_cuda1.allocate<int>(sizeof(int) * N);
+
+  int* d_c1 = res_cuda1.allocate<int>(sizeof(int) * N);
+  int* d_c2 = res_cuda2.allocate<int>(sizeof(int) * N);
+
+  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
+  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+
+  RAJA::resources::Event e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c1[i] = d_a1[i] + d_b1[i]; 
+  });    
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c2[i] = -1;
+  }); 
+
+  res_cuda2.wait_for(&e);
+
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c2[i] = d_c1[i]; 
+  }); 
+
+  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
+  res_cuda1.memcpy(c_, d_c2, sizeof(int)*N );
+
+  checkResult(c, N);
+  checkResult(c_, N);
+
+  res_cuda1.deallocate(d_a1);
+  res_cuda1.deallocate(d_b1);
+
+  res_cuda1.deallocate(d_c1);
+  res_cuda2.deallocate(d_c2);
+  }
+
+#endif
 //
 //
 // Clean up.

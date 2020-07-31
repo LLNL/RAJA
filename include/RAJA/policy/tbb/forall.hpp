@@ -67,24 +67,13 @@ namespace tbb
  * argument.  This should be used for composable parallelism and increased work
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
-//template <typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, p, iter, loop_body);
-//}
 
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
-                                                    const tbb_for_dynamic& p,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Resource &host_res,
+                                                               const tbb_for_dynamic& p,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
-  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   using std::begin;
   using std::distance;
   using std::end;
@@ -99,7 +88,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
       body(b[i]);
   });
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 ///
 /// TBB parallel for static policy implementation
@@ -121,24 +110,13 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
  * threads must be maintained across multiple loops for correctness. NOTE: if
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
-//template <typename Iterable, typename Func, size_t ChunkSize>
-//RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>& p,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, p, iter, loop_body);
-//}
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
-                                                    const tbb_for_static<ChunkSize>&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Resource &host_res,
+                                                               const tbb_for_static<ChunkSize>&,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
-  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   using std::begin;
   using std::distance;
   using std::end;
@@ -156,7 +134,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
       },
       tbb_static_partitioner{});
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 }  // namespace tbb

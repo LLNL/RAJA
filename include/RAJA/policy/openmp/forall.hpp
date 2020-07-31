@@ -55,26 +55,18 @@ namespace omp
 /// OpenMP parallel for policy implementation
 ///
 
-//template <typename Iterable, typename Func, typename InnerPolicy>
-//RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>& exec,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, exec, iter, loop_body);
-//}
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
                                                     const omp_parallel_exec<InnerPolicy>&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  RAJA::resources::EventProxy ep(&res);
+  resources::EventProxy<resources::Host> ep(&host_res);
 
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    ep = forall_impl(res, InnerPolicy{}, iter, body.get_priv());
+    ep = forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
 
   return ep;
@@ -84,90 +76,57 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 /// OpenMP for nowait policy implementation
 ///
 
-//template <typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const omp_for_nowait_exec& exec,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, exec, iter, loop_body);
-//}
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res, 
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res, 
                                                     const omp_for_nowait_exec&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     loop_body(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 ///
 /// OpenMP parallel for policy implementation
 ///
 
-//template <typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const omp_for_exec& exec,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, exec, iter, loop_body);
-//}
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
                                                     const omp_for_exec&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     loop_body(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 ///
 /// OpenMP parallel for static policy implementation
 ///
 
-//template <typename Iterable, typename Func, size_t ChunkSize>
-//RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>& exec,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, exec, iter, loop_body);
-//}
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
                                                     const omp_for_static<ChunkSize>&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     loop_body(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 //

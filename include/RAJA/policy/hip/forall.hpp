@@ -155,17 +155,8 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-//template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-//RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async> exec,
-//                             Iterable&& iter,
-//                             LoopBody&& loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Hip(0)};
-//  forall_impl(res, exec, iter, loop_body);
-//}
-
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
+RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hip_res,
                                                     hip_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
@@ -176,7 +167,6 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 
   auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  RAJA::resources::Hip hip_res = RAJA::resources::raja_get<RAJA::resources::Hip>(res);
   hipStream_t stream = hip_res.get_stream();
 
   //
@@ -230,7 +220,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
     RAJA_FT_END;
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 //

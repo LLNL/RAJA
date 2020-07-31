@@ -157,31 +157,18 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-//template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-//RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async> exec,
-//                             Iterable&& iter,
-//                             LoopBody&& loop_body)
-//{
-//  //std::cout<<"Cuda forall_impl : Default\n";
-//  static RAJA::resources::Resource cuda_res{RAJA::resources::Cuda::get_default()};
-//  forall_impl(cuda_res, exec, iter, loop_body);
-//}
-
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-//RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
-RAJA_INLINE resources::EventProxy<resources::Cuda&> forall_impl(RAJA::resources::Cuda &cuda_res,
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &cuda_res,
                                                     cuda_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
-  //std::cout<<"Cuda forall_impl : Resource\n";
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  //RAJA::resources::Cuda cuda_res = RAJA::resources::raja_get<RAJA::resources::Cuda>(res);
   cudaStream_t stream = cuda_res.get_stream();
 
   //
@@ -231,7 +218,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda&> forall_impl(RAJA::resources:
     RAJA_FT_END;
   }
 
-  return RAJA::resources::EventProxy<resources::Cuda&>(cuda_res);
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 
@@ -253,29 +240,11 @@ RAJA_INLINE resources::EventProxy<resources::Cuda&> forall_impl(RAJA::resources:
  *
  ******************************************************************************
  */
-//template <typename LoopBody,
-//          size_t BlockSize,
-//          bool Async,
-//          typename... SegmentTypes>
-//RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-//                             const TypedIndexSet<SegmentTypes...>& iset,
-//                             LoopBody&& loop_body)
-//{
-//  int num_seg = iset.getNumSegments();
-//  for (int isi = 0; isi < num_seg; ++isi) {
-//    iset.segmentCall(isi,
-//                     detail::CallForall(),
-//                     cuda_exec<BlockSize, true>(),
-//                     loop_body);
-//  }  // iterate over segments of index set
-//
-//  if (!Async) RAJA::cuda::synchronize();
-//}
 template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE resources::EventProxy<resources::Cuda&> forall_impl(resources::Cuda &r,
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &r,
                                                     ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                                                     const TypedIndexSet<SegmentTypes...>& iset,
                                                     LoopBody&& loop_body)
@@ -290,7 +259,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda&> forall_impl(resources::Cuda 
   }  // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize();
-  return RAJA::resources::EventProxy<resources::Cuda&>(r);
+  return resources::EventProxy<resources::Cuda>(&r);
 }
 
 }  // namespace cuda
