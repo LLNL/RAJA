@@ -193,15 +193,6 @@ class Chai(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS", flags,
                                             description))
 
-        if "toss_3_x86_64_ib" in sys_type:
-            release_flags = "-O3 -finline-functions -axCORE-AVX2 -diag-disable cpu-dispatch"
-            cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-            reldebinf_flags = "-O3 -g -finline-functions -axCORE-AVX2 -diag-disable cpu-dispatch"
-            cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-            debug_flags = "-O0 -g"
-            cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
-
-
         if "+cuda" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
             cfg.write("# Cuda\n")

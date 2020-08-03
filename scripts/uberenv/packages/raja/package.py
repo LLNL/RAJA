@@ -239,16 +239,6 @@ class Raja(CMakePackage, CudaPackage):
                 flag = '-arch sm_{0}'.format(cuda_arch[0])
                 cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS", flag))
 
-            if "blueos_3_ppc64le_ib" in sys_type:
-                host_opt_flags = "-Xcompiler -O3 -Xcompiler -fopenmp"
-
-                release_flags = "-O3 {0}".format(host_opt_flags)
-                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", release_flags))
-                reldebinf_flags = "-O3 -g -lineinfo {0}".format(host_opt_flags)
-                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-                debug_flags = "-O0 -g -G"
-                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_DEBUG", debug_flags))
-
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
 
