@@ -17,11 +17,43 @@
 namespace RAJA {
 namespace util {
 
-inline
+template <typename T>
+RAJA_INLINE auto trigger_updates_before(T&& item)
+  -> typename std::remove_reference<T>::type
+{
+  return item;
+}
+
+
+RAJA_INLINE
+void
+callPreCapturePlugins(PluginContext p) noexcept
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->preCapture(p);
+  }
+}
+
+RAJA_INLINE
+void
+callPostCapturePlugins(PluginContext p) noexcept
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postCapture(p);
+  }
+}
+
+RAJA_INLINE
 void
 callPreLaunchPlugins(PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); 
+  for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
@@ -29,11 +61,11 @@ callPreLaunchPlugins(PluginContext& p)
   }
 }
 
-inline
+RAJA_INLINE
 void
 callPostLaunchPlugins(PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); 
+  for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {

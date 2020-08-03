@@ -14,23 +14,29 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
+  void preCapture(RAJA::util::PluginContext p) {
+    if (p.platform == RAJA::Platform::host)
+      std::cout << " [CounterPlugin]: Capturing host kernel for the " << ++host_capture_counter << " time!" << std::endl;
+    else
+      std::cout << " [CounterPlugin]: Capturing device kernel for the " << ++device_capture_counter << " time!" << std::endl;
+  }
+
   void preLaunch(RAJA::util::PluginContext& p) {
     if (p.platform == RAJA::Platform::host)
     {
-      std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_counter << " time!" << std::endl;
+      std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_launch_counter << " time!" << std::endl;
     }
     else
     {
-      std::cout << " [CounterPlugin]: Launching device kernel for the " << ++device_counter << " time!" << std::endl;
+      std::cout << " [CounterPlugin]: Launching device kernel for the " << ++device_launch_counter << " time!" << std::endl;
     }
   }
 
-  void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
-  }
-
   private:
-   int host_counter;
-   int device_counter;
+   int host_capture_counter;
+   int device_capture_counter;
+   int host_launch_counter;
+   int device_launch_counter;
 };
 
 // Statically loading plugin.
