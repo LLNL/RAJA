@@ -38,8 +38,11 @@ private:
   std::chrono::steady_clock::time_point end_time;
 };
 
-// Factory function for RuntimePluginLoader.
+// Dynamically loading plugin.
 extern "C" RAJA::util::PluginStrategy *getPlugin()
 {
   return new TimerPlugin;
 }
+
+// Statically loading plugin.
+static RAJA::util::PluginRegistry::add<TimerPlugin> P("Timer", "Prints elapsed time of kernel executions.");

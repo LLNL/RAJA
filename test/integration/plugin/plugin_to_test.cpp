@@ -44,7 +44,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void preLaunch(RAJA::util::PluginContext p) {
+  void preLaunch(RAJA::util::PluginContext& p) {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -58,7 +58,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void postLaunch(RAJA::util::PluginContext p) {
+  void postLaunch(RAJA::util::PluginContext& p) {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -73,5 +73,5 @@ class CounterPlugin :
   }
 };
 
-// Regiser plugin with the PluginRegistry
-static RAJA::util::PluginRegistry::Add<CounterPlugin> P("counter-plugin", "Counter");
+// Statically loading plugin.
+static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin", "Counter");

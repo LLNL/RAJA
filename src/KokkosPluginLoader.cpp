@@ -37,8 +37,6 @@ namespace util {
     }
   }
 
-  void KokkosPluginLoader::init(RAJA::util::PluginOptions RAJA_UNUSED_ARG(p)) {}
-
   void KokkosPluginLoader::preLaunch(RAJA::util::PluginContext& p)
   {
     for (auto &func : pre_functions)
@@ -77,28 +75,28 @@ namespace util {
     if (init)
       init_functions.push_back(init);
     else
-      printf("[KokkosPluginLoader]: lsym failed: %s\n", dlerror());
+      printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
 
     // Getting and storing preLaunch function.
     pre_function pre = (pre_function) dlsym(plugin, "kokkosp_begin_parallel_for");
     if (pre)
       pre_functions.push_back(pre);
     else
-      printf("[KokkosPluginLoader]: lsym failed: %s\n", dlerror());
+      printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
 
     // Getting and storing postLaunch function.
     post_function post = (post_function) dlsym(plugin, "kokkosp_end_parallel_for");
     if (post)
       post_functions.push_back(post);
     else
-      printf("[KokkosPluginLoader]: lsym failed: %s\n", dlerror());
+      printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
 
     // Getting and storing finalize function.
     finalize_function finalize = (finalize_function) dlsym(plugin, "kokkosp_finalize_library");
     if (post)
       finalize_functions.push_back(finalize);
     else
-      printf("[KokkosPluginLoader]: lsym failed: %s\n", dlerror());
+      printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
   }
 
   // Initialize all plugins in a directory specified by 'path'.

@@ -15,9 +15,6 @@ class ExceptionPlugin :
   void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
     throw std::runtime_error("preLaunch");
   }
-
-  void postLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) {
-  }
 };
 
 extern "C" RAJA::util::PluginStrategy *getPlugin()

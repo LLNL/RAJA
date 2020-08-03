@@ -28,8 +28,6 @@ namespace util {
 
     KokkosPluginLoader();
 
-    void init(RAJA::util::PluginOptions p);
-
     void preLaunch(RAJA::util::PluginContext& p);
 
     void postLaunch(RAJA::util::PluginContext& p);
