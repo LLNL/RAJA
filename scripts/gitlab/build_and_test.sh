@@ -34,15 +34,6 @@ then
         exit 1
     fi
 
-    prefix_opt=""
-
-    if [[ -d /dev/shm ]]
-    then
-        prefix="/dev/shm/${hostname}/${spec}"
-        mkdir -p ${prefix}
-        prefix_opt="--prefix=${prefix}"
-    fi
-
     extra_variants=""
     extra_deps=""
 
@@ -50,6 +41,15 @@ then
     then
         extra_variants="${extra_variants} +chai"
         extra_deps="${extra_deps} ^chai@${chai_version}"
+    fi
+
+    prefix_opt=""
+
+    if [[ -d /dev/shm ]]
+    then
+        prefix="/dev/shm/${hostname}/${spec// /_}"
+        mkdir -p ${prefix}
+        prefix_opt="--prefix=${prefix}"
     fi
 
     spec="${spec} ${extra_variants} ${extra_deps}"
