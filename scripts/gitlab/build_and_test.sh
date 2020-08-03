@@ -54,7 +54,7 @@ then
 
     spec="${spec} ${extra_variants} ${extra_deps}"
 
-    python scripts/uberenv/uberenv.py --spec=${spec} ${prefix_opt}
+    python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
 fi
 
