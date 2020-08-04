@@ -29,7 +29,7 @@ endif()
 
 add_subdirectory(plugin)
 
-if(NOT _WIN32)
+if(NOT WIN32)
 raja_add_test(
   NAME test-plugin-dynamic
   SOURCES test_plugin_dynamic.cpp)
