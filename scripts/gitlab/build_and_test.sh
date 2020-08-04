@@ -43,6 +43,9 @@ then
         extra_deps="${extra_deps} ^chai@${chai_version}"
     fi
 
+    [[ -n ${extra_variants} ]] && spec="${spec} ${extra_variants}"
+    [[ -n ${extra_deps} ]] && spec="${spec} ${extra_deps}"
+
     prefix_opt=""
 
     if [[ -d /dev/shm ]]
@@ -51,8 +54,6 @@ then
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
-
-    spec="${spec} ${extra_variants} ${extra_deps}"
 
     python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
