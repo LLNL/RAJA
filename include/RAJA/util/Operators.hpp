@@ -428,7 +428,7 @@ struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
     return lhs & rhs;
   }
 
-RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{~0}; }
+RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
 };
 
 
