@@ -7,8 +7,10 @@
 
 #include "RAJA/util/RuntimePluginLoader.hpp"
 
+#ifndef _WIN32
 #include <dlfcn.h>
 #include <dirent.h>
+#endif
 
 inline
 bool

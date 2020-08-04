@@ -7,8 +7,10 @@
 
 #include "RAJA/util/KokkosPluginLoader.hpp"
 
+#ifndef _WIN32
 #include <dlfcn.h>
 #include <dirent.h>
+#endif
 
 const uint64_t kokkos_interface_version = 20171029;
 
