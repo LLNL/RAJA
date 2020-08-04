@@ -12,11 +12,11 @@
 #include <numeric>
 #include <iostream>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMinLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceMinLocBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -31,19 +31,19 @@ void ForallReduceMinLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type la
 
   const int modval = 100;
   const DATA_TYPE min_init = modval+1;
-  const RAJA::Index_type minloc_init = -1;
-  const RAJA::Index_type minloc_idx = (last - first) * 2/3 + first;
+  const IDX_TYPE minloc_init = -1;
+  const IDX_TYPE minloc_idx = (last - first) * 2/3 + first;
   const DATA_TYPE small_min = -modval;
-  const RAJA::Index_type small_minloc = minloc_init;
+  const IDX_TYPE small_minloc = minloc_init;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
   test_array[minloc_idx] = static_cast<DATA_TYPE>(small_min);
 
   DATA_TYPE ref_min = min_init;
-  RAJA::Index_type ref_minloc = minloc_init;
-  for (RAJA::Index_type i = first; i < last; ++i) {
+  IDX_TYPE ref_minloc = minloc_init;
+  for (IDX_TYPE i = first; i < last; ++i) {
     if ( test_array[i] < ref_min ) {
        ref_min = test_array[i];
        ref_minloc = i;
@@ -53,36 +53,36 @@ void ForallReduceMinLocBasicTestImpl(RAJA::Index_type first, RAJA::Index_type la
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
 
-  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> mininit(small_min, minloc_init);
-  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::Index_type> min(min_init, minloc_init);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> mininit(small_min, minloc_init);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> min(min_init, minloc_init);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     mininit.minloc( working_array[idx], idx );
     min.minloc( working_array[idx], idx );
   });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(mininit.getLoc()), small_minloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(mininit.getLoc()), small_minloc);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
 
   min.reset(min_init, minloc_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), minloc_init);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), minloc_init);
 
   DATA_TYPE factor = 2;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     min.minloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
 
   factor = 3;
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) { 
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) { 
     min.minloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
-  ASSERT_EQ(static_cast<RAJA::Index_type>(min.getLoc()), ref_minloc);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,
@@ -99,17 +99,18 @@ class ForallReduceMinLocBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMinLocBasicTest, ReduceMinLocBasicForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMinLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceMinLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceMinLocBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                   EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                  EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceMinLocBasicTest,

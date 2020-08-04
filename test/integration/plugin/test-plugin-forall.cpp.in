@@ -10,34 +10,29 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index-types.hpp"
-
-#include "RAJA_test-atomic-types.hpp"
-#include "RAJA_test-atomicpol.hpp"
+#include "RAJA_test-platform.hpp"
 
 #include "RAJA_test-forall-execpol.hpp"
-#include "RAJA_test-forall-data.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-atomicref-other.hpp"
+#include "test-plugin-forall.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @ATOMIC_BACKEND@ForallAtomicRefOtherTypes =
-  Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
-                                @ATOMIC_BACKEND@AtomicPols,
-                                @ATOMIC_BACKEND@ResourceList,
-                                AtomicDataTypeList > >::Types;
+using @BACKEND@PluginForallTypes =
+  Test< camp::cartesian_product<@BACKEND@ForallExecPols,
+                                @BACKEND@ResourceList,
+                                @BACKEND@PlatformList > >::Types;
 
 //
 // Instantiate parameterized test
 //
-INSTANTIATE_TYPED_TEST_SUITE_P(@ATOMIC_BACKEND@,
-                               ForallAtomicRefOtherTest,
-                               @ATOMIC_BACKEND@ForallAtomicRefOtherTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               PluginForallTest,
+                               @BACKEND@PluginForallTypes);
