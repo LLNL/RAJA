@@ -109,8 +109,8 @@ struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
 
     int len = segment.end() - segment.begin();
 
-    for (int i = threadIdx.x; i < len; i += blockDim.x) {
-      body(*(segment.begin() + i));
+    for (int tx = threadIdx.x; tx < len; tx += blockDim.x) {
+      body(*(segment.begin() + tx));
     }
   }
 };
@@ -127,8 +127,44 @@ struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
 
     int len = segment.end() - segment.begin();
 
-    for (int i = threadIdx.y; i < len; i += blockDim.y) {
-      body(*(segment.begin() + i));
+    for (int ty = threadIdx.y; ty < len; ty += blockDim.y) {
+      body(*(segment.begin() + ty));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_x_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = threadIdx.x;
+      if(tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_y_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int ty = threadIdx.y;
+      if(ty < len) body(*(segment.begin() + ty));
     }
   }
 };
@@ -163,8 +199,8 @@ struct LoopExecute<cuda_block_x_loop, SEGMENT> {
 
     int len = segment.end() - segment.begin();
 
-    for (int i = blockIdx.x; i < len; i += gridDim.x) {
-      body(*(segment.begin() + i));
+    for (int bx = blockIdx.x; bx < len; bx += gridDim.x) {
+      body(*(segment.begin() + bx));
     }
   }
 };
@@ -181,8 +217,8 @@ struct LoopExecute<cuda_block_x_direct, SEGMENT> {
 
     int len = segment.end() - segment.begin();
     {
-      const int i = blockIdx.x;
-      body(*(segment.begin() + i));
+      const int bx = blockIdx.x;
+      if(bx < len) body(*(segment.begin() + bx));
     }
   }
 };
@@ -199,8 +235,8 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 
     int len = segment.end() - segment.begin();
     {
-      const int i = blockIdx.y;
-      body(*(segment.begin() + i));
+      const int by = blockIdx.y;
+      if(by < len) body(*(segment.begin() + by));
     }
   }
 };
