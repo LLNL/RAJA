@@ -69,7 +69,7 @@ namespace tbb
  */
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Resource &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
                                                                const tbb_for_dynamic& p,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
@@ -112,7 +112,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Resour
  */
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Resource &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
                                                                const tbb_for_static<ChunkSize>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
