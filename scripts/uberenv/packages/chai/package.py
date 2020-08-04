@@ -72,7 +72,7 @@ class Chai(CMakePackage, CudaPackage):
     depends_on('cmake@3.9:', type='build', when="+cuda")
     depends_on('umpire+cuda', when="+cuda")
 
-    phases = ['hostconfig', 'cmake', 'build',' install']
+    phases = ['hostconfig', 'cmake', 'build','install']
 
     def _get_sys_type(self, spec):
         sys_type = str(spec.architecture)
