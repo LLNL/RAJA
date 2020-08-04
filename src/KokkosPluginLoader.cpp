@@ -64,6 +64,7 @@ namespace util {
   // Initialize plugin from a shared object file specified by 'path'.
   void KokkosPluginLoader::initPlugin(const std::string &path)
   {
+    #ifndef _WIN32
     void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (!plugin)
     {
@@ -97,11 +98,15 @@ namespace util {
       finalize_functions.push_back(finalize);
     else
       printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+    #else
+    (void)path;
+    #endif
   }
 
   // Initialize all plugins in a directory specified by 'path'.
   void KokkosPluginLoader::initDirectory(const std::string &path)
   {
+    #ifndef _WIN32
     if (isSharedObject(path))
     {
       initPlugin(path);
@@ -126,6 +131,9 @@ namespace util {
     {
       perror("[KokkosPluginLoader]: Could not open plugin directory");
     }
+    #else
+    (void)path;
+    #endif
   }
 
   void linkKokkosPluginLoader() {}

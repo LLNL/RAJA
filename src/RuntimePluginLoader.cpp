@@ -83,6 +83,7 @@ void RuntimePluginLoader::finalize()
 // Initialize plugin from a shared object file specified by 'path'.
 void RuntimePluginLoader::initPlugin(const std::string &path)
 {
+  #ifndef _WIN32
   void *plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
   if (!plugin)
   {
@@ -99,11 +100,15 @@ void RuntimePluginLoader::initPlugin(const std::string &path)
   {
     printf("[RuntimePluginLoader]: dlsym failed: %s\n", dlerror());
   }
+  #else
+  (void)path;
+  #endif
 }
 
 // Initialize all plugins in a directory specified by 'path'.
 void RuntimePluginLoader::initDirectory(const std::string &path)
 {
+  #ifndef _WIN32
   if (isSharedObject(path))
   {
     initPlugin(path);
@@ -128,6 +133,9 @@ void RuntimePluginLoader::initDirectory(const std::string &path)
   {
     perror("[RuntimePluginLoader]: Could not open plugin directory");
   }
+  #else
+  (void)path;
+  #endif
 }
 
 void linkRuntimePluginLoader() {}

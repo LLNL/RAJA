@@ -29,6 +29,7 @@ endif()
 
 add_subdirectory(plugin)
 
+if(NOT _WIN32)
 raja_add_test(
   NAME test-plugin-dynamic
   SOURCES test_plugin_dynamic.cpp)
@@ -45,3 +46,4 @@ target_link_libraries(kokkos_plugin PRIVATE RAJA gtest)
 
 set_tests_properties(test-plugin-kokkos.exe PROPERTIES
                      ENVIRONMENT "KOKKOS_PLUGINS=${CMAKE_BINARY_DIR}/lib/libkokkos_plugin.so")
+endif()
