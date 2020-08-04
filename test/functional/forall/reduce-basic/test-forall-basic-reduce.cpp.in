@@ -31,12 +31,18 @@ using ReductionDataTypeList = camp::list< int,
                                           float,
                                           double >;
 
+//
+// These tests exercise only one index type. We parameterize here to 
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
 
 //
 // Cartesian product of types used in parameterized tests
 //
 using @BACKEND@ForallReduceBasicTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                ReductionDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;

@@ -50,8 +50,7 @@ struct HipStatementExecutor<
     Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
-        Types> {
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>, Types> {
 
   using Base = HipStatementExecutor<
         Data,
@@ -59,14 +58,15 @@ struct HipStatementExecutor<
         Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -101,24 +101,23 @@ struct HipStatementExecutor<
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_direct,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_direct,
-                         EnclosedStmts ...>,
-          Types>;
+                         EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_hip_dim<0>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_hip_dim<0>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -145,22 +144,19 @@ template <typename Data,
 struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId, RAJA::hip_warp_loop,
-                       EnclosedStmts ...>,
-  Types>
+                       EnclosedStmts ...>, Types >
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_loop,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_loop,
-                         EnclosedStmts ...>,
-          Types>;
-
+                         EnclosedStmts ...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -168,27 +164,24 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    int len = segment_length<ArgumentId>(data);
-    //auto i0 = threadIdx.x;
-    //auto i_stride = RAJA::policy::hip::WARP_SIZE;
-    //auto i = i0;
-    auto &i = camp::get<ArgumentId>(data.offset_tuple);
-    i = threadIdx.x;
-    for( ; i < len; i += RAJA::policy::hip::WARP_SIZE){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = threadIdx.x;
+    diff_t i_stride = RAJA::policy::hip::WARP_SIZE;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
-      //  data.template assign_offset<ArgumentId>(i);
+      data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - threadIdx.x < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 };
@@ -209,22 +202,22 @@ struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_warp_masked_direct<Mask>,
-                       EnclosedStmts ...>,
-  Types>
+                       EnclosedStmts ...>, Types >
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
-                         EnclosedStmts ...>,
-          Types>;
+                         EnclosedStmts ...>, Types >;
+
+  using typename Base::diff_t;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
@@ -240,9 +233,9 @@ struct HipStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue((int)threadIdx.x);
+    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -271,22 +264,22 @@ struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_warp_masked_loop<Mask>,
-                       EnclosedStmts ...>,
-  Types>
+                       EnclosedStmts ...>, Types >
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
-                         EnclosedStmts ...>,
-          Types>;
+                         EnclosedStmts ...>, Types >;
+
+  using typename Base::diff_t;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
@@ -303,23 +296,24 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    int len = segment_length<ArgumentId>(data);
-    auto i = mask_t::maskValue((int)threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument and param
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue((int)threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -343,22 +337,22 @@ struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_thread_masked_direct<Mask>,
-                       EnclosedStmts ...>,
-  Types>
+                       EnclosedStmts ...>, Types >
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
-                         EnclosedStmts ...>,
-          Types>;
+                         EnclosedStmts ...>, Types >;
+
+  using typename Base::diff_t;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
@@ -371,9 +365,9 @@ struct HipStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue((int)threadIdx.x);
+    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -404,22 +398,22 @@ struct HipStatementExecutor<
   Data,
   statement::ForICount<ArgumentId, ParamId,
                        RAJA::hip_thread_masked_loop<Mask>,
-                       EnclosedStmts ...>,
-  Types>
+                       EnclosedStmts ...>, Types >
   : public HipStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
-                   EnclosedStmts ...>,
-    Types> {
+                   EnclosedStmts ...>, Types > {
 
   using Base = HipStatementExecutor<
           Data,
           statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
-                         EnclosedStmts ...>,
-          Types>;
+                         EnclosedStmts ...>, Types >;
+
+  using typename Base::diff_t;
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
@@ -433,23 +427,24 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    int len = segment_length<ArgumentId>(data);
-    int i = mask_t::maskValue((int)threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue((int)threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -488,31 +483,30 @@ struct HipStatementExecutor<
         Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
-    auto i_stride = get_hip_dim<ThreadDim>(dim3(blockDim.x,blockDim.y,blockDim.z));
-    auto i = i0;
-    for(;i < len;i += i_stride){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
+    diff_t i_stride = get_hip_dim<ThreadDim>(dim3(blockDim.x,blockDim.y,blockDim.z));
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 };
@@ -546,13 +540,14 @@ struct HipStatementExecutor<
       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_hip_dim<BlockDim>(blockIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_hip_dim<BlockDim>(blockIdx);
 
     if (i < len) {
 
@@ -594,15 +589,18 @@ struct HipStatementExecutor<
       Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = get_hip_dim<BlockDim>(blockIdx);
-    auto i_stride = get_hip_dim<BlockDim>(gridDim);
-    for(auto i = i0;i < len;i += i_stride){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = get_hip_dim<BlockDim>(blockIdx);
+    diff_t i_stride = get_hip_dim<BlockDim>(gridDim);
+
+    // Iterate through grid stride of chunks
+    for (diff_t i = i_init; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -629,30 +627,26 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
-    Types>
+    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>, Types >
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
-        Types> {
+        statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types > {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
-      Types>;
+      statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types >;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    using idx_type = camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;
+    diff_t len = segment_length<ArgumentId>(data);
 
-    idx_type len = segment_length<ArgumentId>(data);
-
-    for(idx_type i = 0;i < len;++ i){
+    for(diff_t i = 0;i < len;++ i){
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
@@ -671,4 +665,4 @@ struct HipStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_hip_kernel_ForICount_HPP */

@@ -12,18 +12,24 @@
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
 
-#include "RAJA_test-atomic-types.hpp"
-#include "RAJA_test-atomicpol.hpp"
-
-#include "RAJA_test-forall-execpol.hpp"
 #include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-reducepol.hpp"
+
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-atomic-basic.hpp"
+#include "test-forall-segment-multiple-@REDUCETYPE@.hpp"
+
+//
+// Data types for reduction basic tests
+//
+using ReductionMultipleDataTypeList = camp::list< int,
+                                                  float,
+                                                  double >;
 
 //
 // These tests exercise only one index type. We parameterize here to
@@ -34,16 +40,16 @@ using TestIdxTypeList = camp::list< RAJA::Index_type >;
 //
 // Cartesian product of types used in parameterized tests
 //
-using @ATOMIC_BACKEND@ForallAtomicBasicTypes =
-  Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
-                                @ATOMIC_BACKEND@AtomicPols,
-                                @ATOMIC_BACKEND@ResourceList,
-                                TestIdxTypeList,
-                                AtomicDataTypeList > >::Types;
+using @BACKEND@ForallReduceMultipleTypes =
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                ReductionMultipleDataTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@ForallReduceExecPols,
+                                @BACKEND@ReducePols>>::Types;
 
 //
 // Instantiate parameterized test
 //
-INSTANTIATE_TYPED_TEST_SUITE_P(@ATOMIC_BACKEND@,
-                               ForallAtomicBasicTest,
-                               @ATOMIC_BACKEND@ForallAtomicBasicTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               Forall@REDUCETYPE@MultipleTest,
+                               @BACKEND@ForallReduceMultipleTypes);
