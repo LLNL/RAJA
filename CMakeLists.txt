@@ -256,7 +256,7 @@ endif (NOT TARGET camp)
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp "-l${CMAKE_DL_LIBS}")
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
 
 install(TARGETS RAJA
   EXPORT RAJA
