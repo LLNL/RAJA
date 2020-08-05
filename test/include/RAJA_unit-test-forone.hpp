@@ -14,6 +14,7 @@
 #define __RAJA_test_forone_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "camp/camp.hpp"
 
 #include <type_traits>
 

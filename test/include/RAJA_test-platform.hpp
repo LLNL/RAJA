@@ -14,6 +14,8 @@
 
 #include "RAJA/RAJA.hpp"
 
+#include "camp/list.hpp"
+
 template < RAJA::Platform PLATFORM >
 struct PlatformHolder
 {
