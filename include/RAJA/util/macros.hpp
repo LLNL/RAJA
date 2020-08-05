@@ -173,14 +173,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #endif
 #endif
 
-#if defined(__clang__)
-
-// The clang compiler doesn't seem to understand the C++14 attribute
-// syntax so we use use __attribute__(deprecated("Message"))
-#define RAJA_DEPRECATE(Msg) __attribute__((deprecated(Msg)))
-#define RAJA_DEPRECATE_ALIAS(Msg)
-
-#elif defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
+#if defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
 // When using a C++14 compiler, use the standard-specified deprecated attribute
 #define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
 #define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
