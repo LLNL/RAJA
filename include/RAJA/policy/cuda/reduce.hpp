@@ -1061,6 +1061,42 @@ public:
   }
 };
 
+//! specialization of ReduceBitOr for cuda_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitOr<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = cuda::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator|= for ReduceBitOr -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitOr& operator|=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitAnd for cuda_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitAnd<cuda_reduce_base<maybe_atomic>, T>
+    : public cuda::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = cuda::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator&= for ReduceBitAnd -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitAnd& operator&=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
 //! specialization of ReduceMin for cuda_reduce
 template <bool maybe_atomic, typename T>
 class ReduceMin<cuda_reduce_base<maybe_atomic>, T>
