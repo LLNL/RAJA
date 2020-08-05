@@ -34,6 +34,9 @@ Notable changes include:
       * New 'cuda_block_{x,y,z}_direct' and 'hip_block_{x,y,z}_direct' execution
         policies have been added. Please see the RAJA user guide for more 
         information.
+      * New OpenMP execution policies added to support static, dynamic, and 
+        guided scheduling. Please see the RAJA user guide for more
+        information.
      
   * API Changes:
       * The RAJA 'VarOps' namespace has been removed. All entities previously
