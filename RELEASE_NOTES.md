@@ -13,7 +13,9 @@ Version vxx.yy.zz -- Release date 20yy-mm-dd
 Version v0.12.0 -- Release date 2020-08-dd
 ============================================
 
-This release contains new features, notable changes, and bug fixes.
+This release contains new features, notable changes, and bug fixes. Please
+see the RAJA user guide for more information about using the items in this
+release.
 
 Notable changes include:
 
@@ -21,22 +23,20 @@ Notable changes include:
       * The 'master' branch in the RAJA git repo has been renamed to 'main'.
 
   * New features:
-      * In previous versions of RAJA, the RAJA::kernel interface required 
-        that every lambda invoked in a kernel accept an index 
-        argument for every segment in the segment tuple passed as the first
-        argument to RAJA::kernel execution templates, even if not all 
-        segment indices were used in a lambda. This release still allows that
-        usage pattern, but expands the interface to allow only segment index 
-        arguments used in a lambda to be passed. This requires an additional
-        template parameter to be passed to RAJA::statement::Lambda types,
-        which identify the segment indices that will be passed and in which 
-        order. Please see the RAJA user guide for more information.
+      * The RAJA::kernel interface has been expanded to allow only segment 
+        index arguments used in a lambda to be passed to the lambda. In 
+        previous versions of RAJA, every lambda invoked in a kernel had to 
+        accept an index argument for every segment in the segment tuple passed 
+        to RAJA::kernel execution templates, even if not all segment indices 
+        were used in a lambda. This release still allows that usage pattern.
+        The new capability requires an additional template parameter to be 
+        passed to the RAJA::statement::Lambda type, which identify the segment 
+        indices that will be passed and in which order.
       * New 'cuda_block_{x,y,z}_direct' and 'hip_block_{x,y,z}_direct' execution
-        policies have been added. Please see the RAJA user guide for more 
-        information.
+        policies have been added.
       * New OpenMP execution policies added to support static, dynamic, and 
-        guided scheduling. Please see the RAJA user guide for more
-        information.
+        guided scheduling.
+      * Support for bitwise and and or reductions have been added.
      
   * API Changes:
       * The RAJA 'VarOps' namespace has been removed. All entities previously
@@ -93,8 +93,8 @@ Notable changes include:
       * Several fixes have been made in the Layout and Static Layout types.
       * Several fixes have been made to the OpenMP target offload back-end
         to address host-device memory issues.
-      * A variety of RAJA User Guide issues have been addressedi, as well as
-        issues in the RAJA example codes.
+      * A variety of RAJA User Guide issues have been addressed, as well as
+        issues in RAJA example codes.
 
 Version v0.11.0 -- Release date 2020-01-29
 ==========================================
