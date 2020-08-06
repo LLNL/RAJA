@@ -20,8 +20,6 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/region.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
 
 #include <iostream>
 #include <type_traits>
