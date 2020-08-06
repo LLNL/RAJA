@@ -145,8 +145,8 @@ Here is an example of a bitwise or reduction::
   int my_or_reduce_val = static_cast<int>(my_or.get());
 
 The result of the reduction is the value '13'. In binary representation
-(i.e., bits) :math:`9 = ...01001` (the vector entries) and 
-:math:`5 = ...00101' (the initial reduction value). 
+(i.e., bits), :math:`9 = ...01001` (the vector entries) and 
+:math:`5 = ...00101` (the initial reduction value). 
 So :math:`9 | 5 = ...01001 | ...00101 = ...01101 = 13`.
 
 -------------------
