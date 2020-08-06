@@ -103,7 +103,7 @@ void RuntimePluginLoader::initPlugin(const std::string &path)
     printf("[RuntimePluginLoader]: dlsym failed: %s\n", dlerror());
   }
   #else
-  (void)path;
+  RAJA_UNUSED_ARG(path);
   #endif
 }
 
@@ -136,7 +136,7 @@ void RuntimePluginLoader::initDirectory(const std::string &path)
     perror("[RuntimePluginLoader]: Could not open plugin directory");
   }
   #else
-  (void)path;
+  RAJA_UNUSED_ARG(path);
   #endif
 }
 

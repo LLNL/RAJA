@@ -24,7 +24,6 @@ RAJA_INLINE auto trigger_updates_before(T&& item)
   return item;
 }
 
-
 RAJA_INLINE
 void
 callPreCapturePlugins(PluginContext& p)
