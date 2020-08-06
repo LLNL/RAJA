@@ -55,9 +55,9 @@ RAJA supports five common reduction types:
 
 and two less common bitwise reduction types:
 
-* ``ReduceBitAnd< reduce_policy, data_type >`` - Bitwise 'and' of values (i.e., ``a & b`).
+* ``ReduceBitAnd< reduce_policy, data_type >`` - Bitwise 'and' of values (i.e., ``a & b``).
 
-* ``ReduceBitOr< reduce_policy, data_type >`` - Bitwise 'or' of values (i.e., ``a | b`).
+* ``ReduceBitOr< reduce_policy, data_type >`` - Bitwise 'or' of values (i.e., ``a | b``).
 
 .. note:: * When ``RAJA::ReduceMinLoc`` and ``RAJA::ReduceMaxLoc`` are used 
             in a sequential execution context, the loop index of the 
@@ -66,7 +66,7 @@ and two less common bitwise reduction types:
             the loop index computed for the reduction value may be any index 
             where the min or max occurs. 
 
-.. note:: ``RAJA::ReduceBitAnd`` and ``RAJA::ReduceBitOr`` reduction types are designed to work on integral data types because in C++, at the language level, **there is no such thing as a bitwise operator on floating-point numbers.**
+.. note:: ``RAJA::ReduceBitAnd`` and ``RAJA::ReduceBitOr`` reduction types are designed to work on integral data types because **in C++, at the language level, there is no such thing as a bitwise operator on floating-point numbers.**
 
 -------------------
 Reduction Examples
@@ -144,10 +144,10 @@ Here is an example of a bitwise or reduction::
   // After kernel is run, extract the reduced value
   int my_or_reduce_val = static_cast<int>(my_or.get());
 
-The result of the reduction is the value '13' since the binary representation
-of the integer '9' (the vector values) is :math:`...01001` and the binary
-representation of the integer '5' (the initial reduction value) is 
-:math:`...00101`. That is, :math:`9 | 5 = ...01101 = 13`.
+The result of the reduction is the value '13'. In binary representation
+(i.e., bits) :math:`9 = ...01001` (the vector entries) and 
+:math:`5 = ...00101' (the initial reduction value). 
+So :math:`9 | 5 = ...01001 | ...00101 = ...01101 = 13`.
 
 -------------------
 Reduction Policies
