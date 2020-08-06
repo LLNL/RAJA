@@ -12,32 +12,36 @@
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
 
-#include "RAJA_test-atomic-types.hpp"
-#include "RAJA_test-atomicpol.hpp"
-
-#include "RAJA_test-forall-execpol.hpp"
 #include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-reducepol.hpp"
+
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-atomicref-other.hpp"
+#include "test-forall-bitwise-@REDUCETYPE@.hpp"
+
+//
+// Data types for reduction basic tests
+//
+using ReductionDataTypeList = camp::list< int >;
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @ATOMIC_BACKEND@ForallAtomicRefOtherTypes =
-  Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
-                                @ATOMIC_BACKEND@AtomicPols,
-                                @ATOMIC_BACKEND@ResourceList,
-                                AtomicDataTypeList > >::Types;
+using @BACKEND@ForallReduceBitwiseTypes =
+  Test< camp::cartesian_product<ReductionDataTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@ForallReduceExecPols,
+                                @BACKEND@ReducePols>>::Types;
 
 //
 // Instantiate parameterized test
 //
-INSTANTIATE_TYPED_TEST_SUITE_P(@ATOMIC_BACKEND@,
-                               ForallAtomicRefOtherTest,
-                               @ATOMIC_BACKEND@ForallAtomicRefOtherTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               Forall@REDUCETYPE@BitwiseTest,
+                               @BACKEND@ForallReduceBitwiseTypes);
