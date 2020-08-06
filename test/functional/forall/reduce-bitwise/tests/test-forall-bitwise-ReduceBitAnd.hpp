@@ -11,11 +11,11 @@
 #include <cstdlib>
 #include <numeric>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceBitAndBitwiseTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceBitAndBitwiseTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -28,42 +28,60 @@ void ForallReduceBitAndBitwiseTestImpl(RAJA::Index_type first, RAJA::Index_type 
                                     &check_array,
                                     &test_array);
 
-  const int modval = 100;
-
-  for (RAJA::Index_type i = 0; i < last; ++i) {
-    test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
+  //
+  // First a simple non-trivial test that is mildly interesting
+  //
+  for (IDX_TYPE i = 0; i < last; ++i) {
+    test_array[i] = 13;
   }
-
-  DATA_TYPE ref_sum = 0;
-  for (RAJA::Index_type i = first; i < last; ++i) {
-    ref_sum &= test_array[i]; 
-  }
-
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
+  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> simpand(21);
 
-  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> sum(0);
-  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> sum2(2);
-
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-    sum  &= working_array[idx];
-    sum2 &= working_array[idx];
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+    simpand &= working_array[idx];
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum2.get()), ref_sum);
+  ASSERT_EQ(static_cast<DATA_TYPE>(simpand.get()), 5);
 
-  sum.reset(0);
+  
+  // 
+  // And now a randomized test that pushes zeros around
+  // 
+
+  const int modval = 100;
+
+  for (IDX_TYPE i = 0; i < last; ++i) {
+    test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
+  }
+  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
+
+  DATA_TYPE ref_and = 0;
+  for (IDX_TYPE i = first; i < last; ++i) {
+    ref_and &= test_array[i];
+  }
+
+  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> redand(0);
+  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> redand2(2);
+
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+    redand  &= working_array[idx];
+    redand2 &= working_array[idx];
+  });
+
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand2.get()), ref_and);
+
+  redand.reset(0);
 
   const int nloops = 3;
-
   for (int j = 0; j < nloops; ++j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
-      sum &= working_array[idx];
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+      redand &= working_array[idx];
     });
   }
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,
@@ -81,17 +99,18 @@ class ForallReduceBitAndBitwiseTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceBitAndBitwiseTest, ReduceBitAndBitwiseForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceBitAndBitwiseTestImpl<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceBitAndBitwiseTestImpl<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceBitAndBitwiseTestImpl<DATA_TYPE, WORKING_RES, 
-                            EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceBitAndBitwiseTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                    EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceBitAndBitwiseTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                    EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceBitAndBitwiseTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                                    EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceBitAndBitwiseTest,

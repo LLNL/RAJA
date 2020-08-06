@@ -25,16 +25,23 @@
 #include "test-forall-bitwise-@REDUCETYPE@.hpp"
 
 //
-// Data types for reduction basic tests
+// Data types for reduction bitwise tests
 //
 using ReductionDataTypeList = camp::list< int >;
+
+//
+// These tests exercise only one index type. We parameterize here to
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
 using @BACKEND@ForallReduceBitwiseTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                ReductionDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;
