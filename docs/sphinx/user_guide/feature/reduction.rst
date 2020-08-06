@@ -31,10 +31,10 @@ Also
             **reduction policy type must be compatibe with the execution
             policy used by the kernel.** For example, in a CUDA kernel,
             a CUDA reduction policy must be used. 
-          * Each RAJA reduction type accepts an **initial reduction value** at
-            construction.
-          * Each RAJA reduction type has a 'get' method to access its reduced
-            value after kernel execution completes.
+          * Each RAJA reduction type accepts an **initial reduction value or 
+            values** at construction (see below).
+          * Each RAJA reduction type has a 'get' method to access reduced
+            values after kernel execution completes.
 
 
 ----------------
@@ -53,12 +53,27 @@ RAJA supports five common reduction types:
 
 * ``ReduceMaxLoc< reduce_policy, data_type >`` - Max value and a loop index where the maximum was found.
 
+and two less common bitwise reduction types:
+
+* ``ReduceBitAnd< reduce_policy, data_type >`` - Bitwise 'and' of values (i.e., ``a & b`).
+
+* ``ReduceBitOr< reduce_policy, data_type >`` - Bitwise 'or' of values (i.e., ``a | b`).
+
 .. note:: * When ``RAJA::ReduceMinLoc`` and ``RAJA::ReduceMaxLoc`` are used 
             in a sequential execution context, the loop index of the 
             min/max is the first index where the min/max occurs.
           * When these reductions are used in a parallel execution context, 
             the loop index computed for the reduction value may be any index 
             where the min or max occurs. 
+
+.. note:: ``RAJA::ReduceBitAnd`` and ``RAJA::ReduceBitOr`` reduction types are designed to work on integral data types because in C++, at the language level, **there is no such thing as a bitwise operator on floating-point numbers.**
+
+-------------------
+Reduction Examples
+-------------------
+
+Next, we provide a few examples to illustrate basic usage of RAJA reduction
+types.
 
 Here is a simple RAJA reduction example that shows how to use a sum reduction 
 type and a min-loc reduction type::
@@ -105,6 +120,34 @@ values depending on the order of the reduction finalization since the loop
 is run in parallel. Also, note that the reduction objects are created using
 a ``RAJA::omp_reduce`` reduction policy, which is compatible with the 
 OpenMP execution policy used in the kernel.
+
+Here is an example of a bitwise or reduction::
+
+  const int N = 100;
+
+  //
+  // Initialize all entries in array of length N to the value '9'
+  //
+  int vec[N] = {9};
+
+  // Create a bitwise or reduction object with initial value of '5'
+  RAJA::ReduceBitOr< RAJA::omp_reduce, int > my_or(5);
+
+  // Run a kernel using the reduction object
+  RAJA::forall<RAJA::omp_parallel_for_exec>( RAJA::RangeSegment(0, N),
+    [=](RAJA::Index_type i) {
+
+    my_or |= vec[i];
+
+  });
+
+  // After kernel is run, extract the reduced value
+  int my_or_reduce_val = static_cast<int>(my_or.get());
+
+The result of the reduction is the value '13' since the binary representation
+of the integer '9' (the vector values) is :math:`...01001` and the binary
+representation of the integer '5' (the initial reduction value) is 
+:math:`...00101`. That is, :math:`9 | 5 = ...01101 = 13`.
 
 -------------------
 Reduction Policies
