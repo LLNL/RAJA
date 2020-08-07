@@ -81,8 +81,8 @@ trigger-chai:
   variables:
     UPDATE_RAJA: develop
   trigger:
-    project: bernede1/chai-no-mirror
-    branch: feature/multi-project-integration
+    project: radiuss/chai
+    branch: develop
     strategy: depend
 
 # This is where jobs are included.
