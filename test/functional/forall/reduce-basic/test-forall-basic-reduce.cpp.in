@@ -34,7 +34,8 @@ using CoreReductionDataTypeList = camp::list< int,
 //
 // Data types for bitwise reduction basic tests
 //
-using BitwiseReductionDataTypeList = camp::list< int >;
+using BitwiseReductionDataTypeList = camp::list< int,
+                                                 unsigned int >;
 
 
 //
