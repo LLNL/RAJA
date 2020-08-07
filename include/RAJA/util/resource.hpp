@@ -91,6 +91,16 @@ namespace RAJA
 
 #if defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
+  struct get_default_resource_s<hip_exec<BlockSize, Async>>{
+    using type = Hip;
+  };
+
+  template<typename ISetIter, size_t BlockSize, bool Async>
+  struct get_default_resource_s<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
+    using type = Hip;
+  };
+
+  template<size_t BlockSize, bool Async>
   RAJA_INLINE Hip get_default_resource(hip_exec<BlockSize, Async>){
     //std::cout<<"Get defualt hip_exec\n";
     return detail::get_hip_default(); 
