@@ -77,5 +77,3 @@ include:
   - local: .gitlab/quartz-jobs.yml
   - local: .gitlab/lassen-templates.yml
   - local: .gitlab/lassen-jobs.yml
-  - local: .gitlab/butte-templates.yml
-  - local: .gitlab/butte-jobs.yml
