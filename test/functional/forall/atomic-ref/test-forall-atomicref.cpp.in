@@ -1,0 +1,50 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-atomic-types.hpp"
+#include "RAJA_test-atomicpol.hpp"
+
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-forall-data.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-forall-@TEST@.hpp"
+
+//
+// These tests exercise only one index type. We parameterize here to
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @ATOMIC_BACKEND@Forall@TEST@Types =
+  Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
+                                @ATOMIC_BACKEND@AtomicPols,
+                                @ATOMIC_BACKEND@ResourceList,
+                                TestIdxTypeList,
+                                AtomicDataTypeList > >::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@ATOMIC_BACKEND@,
+                               Forall@TEST@Test,
+                               @ATOMIC_BACKEND@Forall@TEST@Types);
