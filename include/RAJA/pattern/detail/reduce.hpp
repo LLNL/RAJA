@@ -48,7 +48,8 @@
   RAJA_DECLARE_INDEX_REDUCER(MinLoc, POL, COMBINER)    \
   RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)    \
   RAJA_DECLARE_REDUCER(BitOr, POL, COMBINER)           \
-  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)
+  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)          \
+  RAJA_DECLARE_REDUCER(BitXor, POL, COMBINER)
 
 namespace RAJA
 {
@@ -56,16 +57,18 @@ namespace RAJA
 namespace reduce
 {
 
-#if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp declare target
 #endif
 
 namespace detail
 {
 
-template <typename T, template <typename...> class Op>
-struct op_adapter : private Op<T, T, T> {
-  using operator_type = Op<T, T, T>;
+template <typename T, template <typename> class Op>
+struct op_adapter : private Op<T> {
+  using operator_type = Op<T>;
+  static_assert (RAJA::operators::is_associative<operator_type>::value,
+                 "Only Associative operators can be used in reductions.");
   RAJA_HOST_DEVICE static constexpr T identity()
   {
     return operator_type::identity();
@@ -98,8 +101,12 @@ template <typename T>
 struct and_bit : detail::op_adapter<T, RAJA::operators::bit_and> {
 };
 
+template <typename T>
+struct xor_bit : detail::op_adapter<T, RAJA::operators::bit_xor> {
+};
 
-#if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
 #endif
 
@@ -107,7 +114,8 @@ namespace detail
 {
 
 template <typename T, bool = std::is_integral<T>::value>
-struct DefaultLoc {};
+struct DefaultLoc {
+};
 
 template <typename T>
 struct DefaultLoc<T, false>  // any non-integral type
@@ -116,8 +124,7 @@ struct DefaultLoc<T, false>  // any non-integral type
 };
 
 template <typename T>
-struct DefaultLoc<T, true>
-{
+struct DefaultLoc<T, true> {
   RAJA_HOST_DEVICE constexpr T value() const { return -1; }
 };
 
@@ -326,7 +333,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -341,7 +348,10 @@ public:
  *
  **************************************************************************
  */
-template <typename T, typename IndexType, template <typename, typename> class Combiner>
+template <typename T,
+          typename IndexType,
+          template <typename, typename>
+          class Combiner>
 class BaseReduceMinLoc
     : public BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>
 {
@@ -353,9 +363,10 @@ public:
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx,
+  constexpr BaseReduceMinLoc(T init_val,
+                             IndexType init_idx,
                              T identity_ = reduce_type::identity())
-    : Base(value_type(init_val, init_idx), identity_)
+      : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -367,7 +378,8 @@ public:
     return *this;
   }
 
-  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+  void reset(T init_val,
+             IndexType init_idx = DefaultLoc<IndexType>().value(),
              T identity_ = reduce_type::identity())
   {
     Base::reset(value_type(init_val, init_idx), identity_);
@@ -395,7 +407,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
@@ -475,7 +487,29 @@ public:
   }
 };
 
+/*!
+ **************************************************************************
+ *
+ * \brief  Bitwise XOR reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitXor : public BaseReduce<T, RAJA::reduce::xor_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::xor_bit, Combiner>;
+  using Base::Base;
 
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitOr &operator^=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
 /*!
  **************************************************************************
  *
@@ -483,21 +517,27 @@ public:
  *
  **************************************************************************
  */
-template <typename T, typename IndexType, template <typename, typename> class Combiner>
-class BaseReduceMaxLoc
-    : public BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>
+template <typename T,
+          typename IndexType,
+          template <typename, typename>
+          class Combiner>
+class BaseReduceMaxLoc : public BaseReduce<ValueLoc<T, IndexType, false>,
+                                           RAJA::reduce::max,
+                                           Combiner>
 {
 public:
-  using Base = BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
+  using Base =
+      BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
   using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx,
+  constexpr BaseReduceMaxLoc(T init_val,
+                             IndexType init_idx,
                              T identity_ = reduce_type::identity())
-    : Base(value_type(init_val, init_idx), identity_)
+      : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -509,7 +549,8 @@ public:
     return *this;
   }
 
-  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+  void reset(T init_val,
+             IndexType init_idx = DefaultLoc<IndexType>().value(),
              T identity_ = reduce_type::identity())
   {
     Base::reset(value_type(init_val, init_idx), identity_);
