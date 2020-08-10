@@ -73,6 +73,8 @@ class Raja(CMakePackage, CudaPackage):
 
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
+    variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
+            multi=False, description='Tests to run')
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
@@ -258,6 +260,11 @@ class Raja(CMakePackage, CudaPackage):
         # removes -Werror from GTest flags
         if self.spec.satisfies('%clang target=ppc64le:'):
             cfg.write(cmake_cache_option("ENABLE_TESTS",False))
+            if 'tests=benchmarks' in spec or not 'tests=none' in spec:
+                print("MSG: no testing supported on %clang target=ppc64le:")
+        else:
+            cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
+            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec))
 
         #######################
         # Close and save
