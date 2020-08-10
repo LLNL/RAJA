@@ -11,9 +11,9 @@
 TEST(MultiViewUnitTest, BasicTest)
 {
   constexpr int N = 12;
-  int * myarr[2];
-  int arr1[N];
-  int arr2[N];
+  camp::idx_t * myarr[2];
+  camp::idx_t arr1[N];
+  camp::idx_t arr2[N];
 
   for ( int ii = 0; ii < 12; ++ii )
   {
@@ -31,13 +31,14 @@ TEST(MultiViewUnitTest, BasicTest)
                            );
 
   // multi array of pointers view
-  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>> arrView(myarr, layout);
+  constexpr int swizzle = 1;
+  RAJA::MultiView<camp::idx_t, RAJA::Layout<2, RAJA::Index_type, 0>, camp::idx_t **, swizzle> arrView(myarr, layout);
 
-  for ( int zz = 0; zz < 2; ++zz )
+  for ( camp::idx_t zz = 0; zz < 2; ++zz )
   {
-    for ( int kk = 0; kk < 2; ++kk )
+    for ( camp::idx_t kk = 0; kk < 2; ++kk )
     {
-      for ( int jj = 0; jj < 6; ++jj )
+      for ( camp::idx_t jj = 0; jj < 6; ++jj )
       {
         printf ( "arr%i(%i, %i) %d\n", zz, kk, jj, arrView(zz, kk, jj) );
       }
@@ -46,21 +47,21 @@ TEST(MultiViewUnitTest, BasicTest)
 
   // switch values
   printf ( "Switching values\n" );
-  for ( int kk = 0; kk < 2; ++kk )
+  for ( camp::idx_t kk = 0; kk < 2; ++kk )
   {
-    for ( int jj = 0; jj < 6; ++jj )
+    for ( camp::idx_t jj = 0; jj < 6; ++jj )
     {
-      int temp = arrView(0, kk, jj);
+      camp::idx_t temp = arrView(0, kk, jj);
       arrView(0, kk, jj) = arrView(1, kk, jj);
       arrView(1, kk, jj) = temp;
     }
   }
 
-  for ( int zz = 0; zz < 2; ++zz )
+  for ( camp::idx_t zz = 0; zz < 2; ++zz )
   {
-    for ( int kk = 0; kk < 2; ++kk )
+    for ( camp::idx_t kk = 0; kk < 2; ++kk )
     {
-      for ( int jj = 0; jj < 6; ++jj )
+      for ( camp::idx_t jj = 0; jj < 6; ++jj )
       {
         printf ( "arr%i(%i, %i) %d\n", zz, kk, jj, arrView(zz, kk, jj) );
       }

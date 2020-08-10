@@ -27,6 +27,8 @@
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 
+#include <tuple>
+
 namespace RAJA
 {
 
@@ -111,9 +113,82 @@ struct View {
   }
 };
 
+
+// select certain indices from a tuple, given a curated index sequence
+// returns linear index of layout(ar...)
+template <typename Lay, typename Tup, camp::idx_t... Idxs>
+RAJA::Index_type selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> )
+{ 
+  return lyout(
+                camp::get<Idxs>(std::forward<Tup>(tup))...
+              );
+}
+
+// sequence combiner
+template <typename Seq1, typename Seq2>
+struct cat_seq;
+
+template <camp::idx_t... Idxs1, camp::idx_t... Idxs2>
+struct cat_seq < camp::idx_seq<Idxs1...>,
+                      camp::idx_seq<Idxs2...>
+                    >
+{
+  using type = camp::idx_seq<Idxs1..., Idxs2...>;
+};
+
+template <typename Seq1, typename Seq2>
+using cat_seq_t = typename cat_seq<Seq1, Seq2>::type;
+
+// sequence offsetter
+template <camp::idx_t Offset, typename Seq>
+struct offset_seq;
+
+template <camp::idx_t Offset, camp::idx_t... Idxs>
+struct offset_seq<Offset, camp::idx_seq<Idxs...>>
+{
+  using type = camp::idx_seq<(Idxs+Offset)...>;
+};
+
+template <camp::idx_t Offset, typename Seq>
+using offset_seq_t = typename offset_seq<Offset, Seq>::type;
+
+// remove the Nth index in a parameter pack
+// returns linear index of layout(ar...)
+template <typename Lay, RAJA::Index_type Nth = 0, typename Tup>
+auto removenth( Lay lyout, Tup&& tup ) ->
+  decltype( selecttuple<Lay>(
+              lyout,
+              std::forward<Tup>(tup),
+              cat_seq_t<  camp::make_idx_seq_t<Nth>,  // sequence up to Nth
+                          offset_seq_t<
+                            Nth+1,
+                            camp::make_idx_seq_t<camp::tuple_size<Tup>::value - Nth-1>
+                          > // sequence after Nth
+                       >{}
+            )
+          )
+{
+  return selecttuple<Lay>(
+              lyout,
+              std::forward<Tup>(tup),
+              cat_seq_t<  camp::make_idx_seq_t<Nth>,  // sequence up to Nth
+                          offset_seq_t<
+                            Nth+1,
+                            camp::make_idx_seq_t<camp::tuple_size<Tup>::value - Nth-1>
+                          > // sequence after Nth
+                       >{}
+          );
+}
+
+
+
+
+// P2Pidx represents the pointer-to-pointer index for swizzling of indices.
+// Default of 0 means that the p2p index is in the 0th position.
 template <typename ValueType,
           typename LayoutType,
-          typename PointerType = ValueType **>
+          typename PointerType = ValueType **,
+          RAJA::Index_type P2Pidx = 0>
 struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
@@ -168,14 +243,15 @@ struct MultiView {
     return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
   }
 
-  // first = pointer index, rest = layout args
+  // Swizzling of indices is set by P2Pidx, which is defaulted to 0.
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
-  template <typename ArgFirst, typename... ArgRest>
-  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(ArgFirst af, ArgRest... ar) const
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... ar) const
   {
-    auto pidx = stripIndexType(af);
-    auto idx = stripIndexType(layout(ar...));
+    auto pidx = stripIndexType( camp::get<P2Pidx>( camp::forward_as_tuple( ar... ) ) );
+    
+    auto idx = stripIndexType( removenth<LayoutType, P2Pidx>( layout, camp::forward_as_tuple( ar... ) ) );
     return data[pidx][idx];
   }
 };
