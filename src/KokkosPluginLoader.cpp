@@ -22,8 +22,9 @@ isSharedObject(const std::string& filename)
 }
 
 template<typename function>
+RAJA_INLINE
 void
-getFunction(void* plugin, std::vector<function>& functions, const char fname[])
+getFunction(void* plugin, std::vector<function>& functions, const char* fname)
 {
   #ifndef _WIN32
   function func = (function) dlsym(plugin, fname);
@@ -43,7 +44,7 @@ namespace util {
 
 KokkosPluginLoader::KokkosPluginLoader()
 {
-  char *env = ::getenv("KOKKOS_PLUGINS");
+  char *env = getenv("KOKKOS_PLUGINS");
   if (env == nullptr)
   {
     return;
