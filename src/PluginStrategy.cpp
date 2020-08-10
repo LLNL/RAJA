@@ -16,9 +16,9 @@ PluginStrategy::PluginStrategy() = default;
 
 void PluginStrategy::init(PluginOptions) { }
 
-void PluginStrategy::preCapture(PluginContext) { }
+void PluginStrategy::preCapture(PluginContext&) { }
 
-void PluginStrategy::postCapture(PluginContext) { }
+void PluginStrategy::postCapture(PluginContext&) { }
 
 void PluginStrategy::preLaunch(PluginContext&) { }
 

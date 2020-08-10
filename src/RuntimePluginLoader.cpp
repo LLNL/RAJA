@@ -41,7 +41,7 @@ void RuntimePluginLoader::init(RAJA::util::PluginOptions p)
   }
 }
 
-void RuntimePluginLoader::preCapture(RAJA::util::PluginContext p)
+void RuntimePluginLoader::preCapture(RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {
@@ -49,7 +49,7 @@ void RuntimePluginLoader::preCapture(RAJA::util::PluginContext p)
   }
 }
 
-void RuntimePluginLoader::postCapture(RAJA::util::PluginContext p)
+void RuntimePluginLoader::postCapture(RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {

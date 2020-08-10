@@ -24,9 +24,9 @@ class PluginStrategy
 
     virtual void init(PluginOptions p);
 
-    virtual void preCapture(PluginContext p);
+    virtual void preCapture(PluginContext& p);
 
-    virtual void postCapture(PluginContext p);
+    virtual void postCapture(PluginContext& p);
 
     virtual void preLaunch(PluginContext& p);
 

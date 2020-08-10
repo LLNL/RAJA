@@ -77,9 +77,9 @@ The preLaunch and postLaunch functions are automatically called by RAJA before a
 
 * ``void init(PluginOptions p) {}`` - runs on all plugins when the user makes a call to ``init_plugins``
 
-* ``void preCapture(PluginContext p) {}`` - Will occur before capture of kernel/forall.
+* ``void preCapture(PluginContext& p) {}`` - Will occur before capture of kernel/forall.
 
-* ``void postCapture(PluginContext p) {}`` - Will occur after capture of kernel/forall.
+* ``void postCapture(PluginContext& p) {}`` - Will occur after capture of kernel/forall.
 
 * ``void preLaunch(PluginContext& p) {}`` - Will occur before kernel/forall execution.
 

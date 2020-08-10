@@ -14,7 +14,7 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preCapture(RAJA::util::PluginContext p) {
+  void preCapture(RAJA::util::PluginContext& p) {
     if (p.platform == RAJA::Platform::host)
       std::cout << " [CounterPlugin]: Capturing host kernel for the " << ++host_capture_counter << " time!" << std::endl;
     else

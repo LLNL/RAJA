@@ -26,9 +26,9 @@ namespace util {
 
     void init(RAJA::util::PluginOptions p);
 
-    void preCapture(RAJA::util::PluginContext p);
+    void preCapture(RAJA::util::PluginContext& p);
 
-    void postCapture(RAJA::util::PluginContext p);
+    void postCapture(RAJA::util::PluginContext& p);
 
     void preLaunch(RAJA::util::PluginContext& p);
 
