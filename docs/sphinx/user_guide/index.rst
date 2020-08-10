@@ -39,24 +39,18 @@ have been made in highly-scalable MPI-only applications that have been in
 service over multiple platform generations. Often, maintaining developer and 
 user productivity requires the ability to build single-source application 
 source code bases that can be readily ported to new architectures. RAJA is 
-one C++-based programming model abstraction layer that can help to meet this 
-performance portability challenge.
+one C++ abstraction layer that helps address this performance portability 
+challenge.
 
 RAJA provides portable abstractions for simple and complex loops -- as well 
-as a variety of loop transformations, reductions, scans, atomic operations, 
-data layouts and views, iteration spaces, etc. Currently available execution
-patterns supported by different programming model back-ends include: 
-sequential, 
-`SIMD <https://en.wikipedia.org/wiki/SIMD>`_, 
-`NVIDIA CUDA <https://developer.nvidia.com/about-cuda>`_, 
-`OpenMP <https://www.openmp.org>`_ CPU multi-threading and target offload. 
-OpenMP target offload support is incomplete and should be considered 
-experimental. Support for `Intel Threading Building Blocks (TBB) <https://www.threadingbuildingblocks.org>`_ and `AMD HIP <https://gpuopen.com/compute-product/hip-convert-cuda-to-portable-c-code/>`_ support are also under development.
+reductions, scans, atomic operations, sorts, data layouts, views, and loop 
+iteration spaces, as well as compile-time loop transformations. Features
+are continually growing as new use cases arise due to expanding user adoption.
 
-RAJA uses standard C++11 -- C++ is the predominant programming language in
-many LLNL applications. RAJA requirements and design are rooted in a 
+RAJA uses standard C++11 -- C++ is the programming language model of choice
+for many HPC applications. RAJA requirements and design are rooted in a 
 decades of developer experience working on production mesh-based 
-multiphysics applications at LLNL. An important RAJA requirement is that
+multiphysics applications. An important RAJA requirement is that
 application developers can specialize RAJA concepts for different code 
 implementation patterns and C++ usage, since data structures and algorithms 
 vary widely across applications.
@@ -65,11 +59,27 @@ RAJA helps developers insulate application loop kernels from underlying
 architecture and programming model-specific implementation details. Loop 
 bodies and loop execution are decoupled using C++ lambda expressions 
 (loop bodies) and C++ templates (loop execution methods). This approach 
-promotes the perspective that developers should focus on tuning 
+promotes the perspective that application developers should focus on tuning 
 loop patterns rather than individual loops as much as possible. RAJA makes it 
 relatively straightforward to parameterize an application using execution 
 policy types so that it can be compiled in a specific configuration suitable 
-to a given architecture. 
+to a given architecture.
+
+RAJA support for various execution back-ends is the result of collaborative
+development between the RAJA team and academic and industrial partners.
+Currently available execution back-ends include: 
+sequential, 
+`SIMD <https://en.wikipedia.org/wiki/SIMD>`_, 
+`Threading Building Blocks (TBB) <https://github.com/oneapi-src/oneTBB>`_,
+`NVIDIA CUDA <https://developer.nvidia.com/about-cuda>`_, 
+`OpenMP <https://www.openmp.org>`_ CPU multithreading and target offload, and
+`AMD HIP <https://github.com/ROCm-Developer-Tools/HIP>`_. Sequential,
+CUDA, OpenMP CPU multithreading, and HIP execution are supported for all
+RAJA features. Sequential, OpenMP CPU multithreading, and CUDA
+are considered the most developed at this point as these have been our primary
+focus up to now. Those back-ends are used in a wide variety of production 
+applications. OpenMP target offload and TBB back-ends do not support
+all RAJA features and should be considered experimental.
 
 ================================
 Interacting with the RAJA Team
@@ -116,4 +126,5 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    config_options
    plugins
    contributing
+   developer_guide
    raja_license

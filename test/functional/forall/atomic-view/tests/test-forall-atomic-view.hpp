@@ -12,25 +12,15 @@
 #ifndef __TEST_FORALL_ATOMIC_VIEW_HPP__
 #define __TEST_FORALL_ATOMIC_VIEW_HPP__
 
-#include <RAJA/RAJA.hpp>
-#include "RAJA_gtest.hpp"
-#include "camp/resource.hpp"
-
-TYPED_TEST_SUITE_P(ForallAtomicViewFunctionalTest);
-
-template <typename T>
-class ForallAtomicViewFunctionalTest : public ::testing::Test
-{
-};
-
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
+          typename IdxType,
           typename T>
-void testAtomicViewBasic( RAJA::Index_type N )
+void ForallAtomicViewTestImpl( IdxType N )
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> seg(0, N);
-  RAJA::TypedRangeSegment<RAJA::Index_type> seg_half(0, N / 2);
+  RAJA::TypedRangeSegment<IdxType> seg(0, N);
+  RAJA::TypedRangeSegment<IdxType> seg_half(0, N / 2);
 
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
@@ -48,7 +38,7 @@ void testAtomicViewBasic( RAJA::Index_type N )
 #endif
 
   RAJA::forall<RAJA::seq_exec>(seg,
-                               [=](RAJA::Index_type i) { source[i] = (T)1; });
+                               [=](IdxType i) { source[i] = (T)1; });
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
@@ -58,12 +48,12 @@ void testAtomicViewBasic( RAJA::Index_type N )
 
 
   // Zero out dest using atomic view
-  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE(IdxType i) {
     sum_atomic_view(i) = (T)0;
   });
 
   // Assign values to dest using atomic view
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
     sum_atomic_view(i / 2) += vec_view(i);
   });
 
@@ -77,7 +67,7 @@ void testAtomicViewBasic( RAJA::Index_type N )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  for (RAJA::Index_type i = 0; i < N / 2; ++i) {
+  for (IdxType i = 0; i < N / 2; ++i) {
     EXPECT_EQ((T)2, check_array[i]);
   }
 
@@ -86,17 +76,24 @@ void testAtomicViewBasic( RAJA::Index_type N )
   host_res.deallocate( check_array );
 }
 
-TYPED_TEST_P(ForallAtomicViewFunctionalTest, AtomicViewFunctionalForall)
+TYPED_TEST_SUITE_P(ForallAtomicViewTest);
+template <typename T>
+class ForallAtomicViewTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicViewTest, AtomicViewForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<3>>::type;
-  testAtomicViewBasic<AExec, APol, ResType, DType>( 100000 );
+  using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
+
+  ForallAtomicViewTestImpl<AExec, APol, ResType, IdxType, DType>( 100000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( ForallAtomicViewFunctionalTest,
-                             AtomicViewFunctionalForall
-                           );
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicViewTest,
+                            AtomicViewForall);
 
 #endif  //__TEST_FORALL_ATOMIC_VIEW_HPP__

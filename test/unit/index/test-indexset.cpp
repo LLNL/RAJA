@@ -9,9 +9,7 @@
 /// Source file containing unit tests for IndexSet class.
 ///
 
-#include "gtest/gtest.h"
-
-#include "RAJA/RAJA.hpp"
+#include "RAJA_test-base.hpp"
 
 TEST(IndexSetUnitTest, Empty)
 {

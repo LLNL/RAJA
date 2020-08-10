@@ -392,6 +392,57 @@ public:
   }
 };
 
+//! specialization of ReduceBitOr for omp_target_reduce
+template <typename T>
+class ReduceBitOr<omp_target_reduce, T>
+    : public TargetReduce<RAJA::reduce::or_bit<T>, T>
+{
+public:
+
+  using self = ReduceBitOr<omp_target_reduce, T>;
+  using parent = TargetReduce<RAJA::reduce::or_bit<T>, T>;
+  using parent::parent;
+
+  //! enable operator|= for ReduceBitOr -- alias for reduce()
+  self &operator|=(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+
+  //! enable operator|= for ReduceBitOr -- alias for reduce()
+  const self &operator|=(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitAnd for omp_target_reduce
+template <typename T>
+class ReduceBitAnd<omp_target_reduce, T>
+    : public TargetReduce<RAJA::reduce::and_bit<T>, T>
+{
+public:
+
+  using self = ReduceBitAnd<omp_target_reduce, T>;
+  using parent = TargetReduce<RAJA::reduce::and_bit<T>, T>;
+  using parent::parent;
+
+  //! enable operator&= for ReduceBitAnd -- alias for reduce()
+  self &operator&=(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+
+  //! enable operator&= for ReduceBitAnd -- alias for reduce()
+  const self &operator&=(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
 
 //! specialization of ReduceMin for omp_target_reduce
 template <typename T>

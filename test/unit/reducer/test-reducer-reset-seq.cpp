@@ -11,8 +11,6 @@
 
 #include "tests/test-reducer-reset.hpp"
 
-#include "test-reducer-utils.hpp"
-
 using SequentialReducerResetTypes = 
   Test< camp::cartesian_product< SequentialReducerPolicyList,
                                  DataTypeList,

@@ -9,8 +9,7 @@
 /// Source file containing unit tests for RAJAVec
 ///
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
+#include "RAJA_test-base.hpp"
 
 TEST(RAJAVecUnitTest, basic_test)
 {
