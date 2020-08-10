@@ -14,11 +14,28 @@
 
 const uint64_t kokkos_interface_version = 20171029;
 
-inline
+RAJA_INLINE
 bool
 isSharedObject(const std::string& filename)
 {
   return (filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
+}
+
+template<typename function>
+void
+getFunction(void* plugin, std::vector<function>& functions, const char fname[])
+{
+  #ifndef _WIN32
+  function func = (function) dlsym(plugin, fname);
+  if (func)
+    functions.push_back(func);
+  else
+    printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+  #else
+  RAJA_UNUSED_ARG(plugin);
+  RAJA_UNUSED_ARG(functions);
+  RAJA_UNUSED_ARG(fname);
+  #endif
 }
 
 namespace RAJA {
@@ -73,33 +90,14 @@ void KokkosPluginLoader::initPlugin(const std::string &path)
     printf("[KokkosPluginLoader]: dlopen failed: %s\n", dlerror());
   }
 
-  // Getting and storing init function.
-  init_function init = (init_function) dlsym(plugin, "kokkosp_init_library");
-  if (init)
-    init_functions.push_back(init);
-  else
-    printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+  // Getting and storing supported kokkos functions.
+  getFunction<init_function>(plugin, init_functions, "kokkosp_init_library");
 
-  // Getting and storing preLaunch function.
-  pre_function pre = (pre_function) dlsym(plugin, "kokkosp_begin_parallel_for");
-  if (pre)
-    pre_functions.push_back(pre);
-  else
-    printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+  getFunction<pre_function>(plugin, pre_functions, "kokkosp_begin_parallel_for");
 
-  // Getting and storing postLaunch function.
-  post_function post = (post_function) dlsym(plugin, "kokkosp_end_parallel_for");
-  if (post)
-    post_functions.push_back(post);
-  else
-    printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+  getFunction<post_function>(plugin, post_functions, "kokkosp_end_parallel_for");
 
-  // Getting and storing finalize function.
-  finalize_function finalize = (finalize_function) dlsym(plugin, "kokkosp_finalize_library");
-  if (post)
-    finalize_functions.push_back(finalize);
-  else
-    printf("[KokkosPluginLoader]: dlsym failed: %s\n", dlerror());
+  getFunction<finalize_function>(plugin, finalize_functions, "kokkosp_finalize_library");
   #else
   RAJA_UNUSED_ARG(path);
   #endif

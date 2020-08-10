@@ -15,7 +15,6 @@
 namespace RAJA {
 namespace util {
 
-
 class PluginStrategy
 {
   public:
