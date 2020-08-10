@@ -103,7 +103,7 @@ Dynamic Loading
 ^^^^^^^^^^^^^^^^^
 If the plugin is to be dynamically loaded to a project during runtime, the RAJA Plugin API requires a few conditions to be met. The following must be true about the plugin, not necessarily of the project using it.
 
-1. **The plugin must have following factory function.** This will return a pointer to an instance of your plugin. Thanks to the ``extern "C"`` a project will be able to search for "getPlugin" within the dynamically loaded plugin correctly.
+1. **The plugin must have the following factory function.** This will return a pointer to an instance of your plugin. Thanks to the ``extern "C"`` a project will be able to search for "getPlugin" within the dynamically loaded plugin correctly.
 ::
 
   extern "C" RAJA::util::PluginStrategy *getPlugin ()
