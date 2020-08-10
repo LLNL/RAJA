@@ -27,8 +27,6 @@
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 
-#include <tuple>
-
 namespace RAJA
 {
 
