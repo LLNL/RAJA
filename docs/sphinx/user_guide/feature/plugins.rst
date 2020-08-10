@@ -71,24 +71,23 @@ Creating Plugins For RAJA
 Plugins take advantage of *polymorphism*, using ``RAJA::util::PluginStrategy`` as the parent and implementing the required functions for the API. An example implementation can be found at the bottom of this page.
 
 ^^^^^^^^^^^
-Required Functions
+Functions
 ^^^^^^^^^^^
 The preLaunch and postLaunch functions are automatically called by RAJA before and after loop execution. This applies to RAJA's kernel and forall implementations.
+
+* ``void init(PluginOptions p) {}`` - runs on all plugins when the user makes a call to ``init_plugins``
+
+* ``void preCapture(PluginContext p) {}`` - Will occur before capture of kernel/forall.
+
+* ``void postCapture(PluginContext p) {}`` - Will occur after capture of kernel/forall.
 
 * ``void preLaunch(PluginContext& p) {}`` - Will occur before kernel/forall execution.
 
 * ``void postLaunch(PluginContext& p) {}`` - Will occur after kernel/forall execution.
 
-* ``At least one method of loading the plugin, either statically or dynamically.``
-
-^^^^^^^^^^^
-Optional Functions
-^^^^^^^^^^^
-The init and finalize functions have standard implementations and thus are not needed in a user-made plugin. Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
-
-* ``void init(PluginOptions p) {}`` - runs on all plugins when the user makes a call to ``init_plugins``
-
 * ``void finalize() {}`` - runs on all plugins when the user makes a call to ``finalize_plugins``
+
+Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
 
 ^^^^^^^^^^^^^^^^^
 Static Loading
