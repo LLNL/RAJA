@@ -33,17 +33,30 @@ using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec,
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
-  camp::list< RAJA::omp_parallel_for_exec, 
-              RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>,
-              RAJA::omp_parallel_exec<RAJA::omp_for_exec> >;
+  camp::list< RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_exec>
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<4>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<8>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Dynamic<2>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Guided<3>>>
+#endif       
+             >;
 
 using OpenMPForallReduceExecPols = OpenMPForallExecPols;
 
 using OpenMPForallAtomicExecPols =
-  camp::list< RAJA::omp_parallel_for_exec
+  camp::list< RAJA::omp_parallel_exec<RAJA::omp_for_exec>
 #if defined(RAJA_TEST_EXHAUSTIVE)
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<4>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<8>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Dynamic<2>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Guided<3>>>
               , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_exec>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Static<4>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Static<8>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Dynamic<2>>>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Guided<3>>>
 #endif
             >; 
 
