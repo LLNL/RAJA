@@ -64,9 +64,9 @@ namespace reduce
 namespace detail
 {
 
-template <typename T, template <typename> class Op>
-struct op_adapter : private Op<T> {
-  using operator_type = Op<T>;
+template <typename T, template <typename, typename, typename> class Op>
+struct op_adapter : private Op<T, T, T> {
+  using operator_type = Op<T, T, T>;
   static_assert (RAJA::operators::is_associative<operator_type>::value,
                  "Only Associative operators can be used in reductions.");
   RAJA_HOST_DEVICE static constexpr T identity()
