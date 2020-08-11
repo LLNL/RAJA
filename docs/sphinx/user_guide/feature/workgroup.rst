@@ -17,7 +17,9 @@ In this section, we describe the basics of RAJA workgroups.
 RAJA interface for grouped loop execution. ``RAJA::WorkPool`` takes a set  of simple
 loops (e.g., non-nested loops) and instantiates a ``RAJA::WorkGroup``. ``RAJA::WorkGroup``
 represents an executable form of those loops and when run makes a ``RAJA::WorkSite``.
-``RAJA::WorkSite`` holds all of the resources used for a single run of the loops.
+``RAJA::WorkSite`` holds all of the resources used for a single run of the loops. Be aware
+that the RAJA workgroup constructs API is still being developed and may change in later RAJA
+releases.
 
 .. note:: * All **workgroup** constructs are in the namespace ``RAJA``.
           * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates
