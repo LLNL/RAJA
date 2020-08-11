@@ -499,7 +499,7 @@ public:
   //! reducer function; updates the current instance's state
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  const BaseReduceBitOr &operator^=(T rhs) const
+  const BaseReduceBitXor &operator^=(T rhs) const
   {
     this->combine(rhs);
     return *this;
