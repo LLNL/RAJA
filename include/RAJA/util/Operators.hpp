@@ -234,8 +234,7 @@ struct limits<T, typename std::enable_if<types::is_signed_integral<T>::value>::t
 
 // limits for signed integer types
 template <typename T>
-    struct limits<T, typename std::enable_if<types::is_unsigned_integral<T>::value>::type>::
-        type > {
+struct limits<T, typename std::enable_if<types::is_unsigned_integral<T>::value>::type> {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
     return static_cast<T>(0);
