@@ -263,6 +263,7 @@ public:
   /// does not own the segment data and will hold a pointer to given
   /// array's data. In this case, caller must manage object lifetimes properly.
   ///
+  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
   TypedListSegment(const value_type* values,
                    Index_type length,
                    IndexOwnership owned = Owned)
@@ -281,6 +282,7 @@ public:
   /// The object must provide methods: begin(), end(), size().
   ///
   template <typename Container>
+  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
   explicit TypedListSegment(const Container& container)
     : m_resource(camp::resources::Resource{camp::resources::Host()}),
       m_use_resource(false),
