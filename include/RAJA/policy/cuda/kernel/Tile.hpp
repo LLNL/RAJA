@@ -8,12 +8,14 @@
  ******************************************************************************
  */
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_Tile_HPP
 #define RAJA_policy_cuda_kernel_Tile_HPP
@@ -248,11 +250,11 @@ struct CudaStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
+    diff_t i_init = get_cuda_dim<BlockDim>(blockIdx) * chunk_size;
     diff_t i_stride = get_cuda_dim<BlockDim>(gridDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (diff_t i = i0; i < len; i += i_stride) {
+    for (diff_t i = i_init; i < len; i += i_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -340,13 +342,19 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t i = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
+
+    // execute enclosed statements if any thread will
+    // but mask off threads without work
+    bool have_work = i < len;
 
     // Assign our new tiled segment
-    segment = orig_segment.slice(i0, chunk_size);
+    diff_t slice_size = have_work ? chunk_size : 0;
+    segment = orig_segment.slice(i, slice_size);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active);
+    enclosed_stmts_t::exec(data, thread_active && have_work);
 
     // Set range back to original values
     segment = orig_segment;
@@ -367,7 +375,7 @@ struct CudaStatementExecutor<
 
     LaunchDims dims;
     set_cuda_dim<ThreadDim>(dims.threads, num_threads);
-
+    set_cuda_dim<ThreadDim>(dims.min_threads, num_threads);
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
@@ -426,20 +434,24 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
-
-    // Get our stride from the dimension
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = get_cuda_dim<ThreadDim>(threadIdx) * chunk_size;
     diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim) * chunk_size;
 
     // Iterate through grid stride of chunks
-    diff_t len = segment_length<ArgumentId>(data);
-    for (diff_t i = i0; i < len; i += i_stride) {
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign our new tiled segment
-      segment = orig_segment.slice(i, chunk_size);
+      diff_t slice_size = have_work ? chunk_size : 0;
+      segment = orig_segment.slice(i, slice_size);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
 
     // Set range back to original values
@@ -489,4 +501,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 #endif  // RAJA_ENABLE_CUDA
-#endif  /* RAJA_pattern_kernel_HPP */
+#endif  /* RAJA_policy_cuda_kernel_Tile_HPP */
