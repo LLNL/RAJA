@@ -17,7 +17,7 @@ void ForallReduceBitAndBitwiseTestImpl(RAJA::Index_type first, RAJA::Index_type 
 {
   RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
