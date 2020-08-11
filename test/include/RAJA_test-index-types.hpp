@@ -18,7 +18,6 @@
 #define __RAJA_test_index_types_HPP__
 
 #include "RAJA/RAJA.hpp"
-
 #include "camp/list.hpp"
 
 //

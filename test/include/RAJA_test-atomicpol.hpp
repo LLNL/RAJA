@@ -8,6 +8,9 @@
 #ifndef __TEST_ATOMICPOL__
 #define __TEST_ATOMICPOL__
 
+#include "RAJA/RAJA.hpp"
+#include "camp/list.hpp"
+
 using SequentialAtomicPols =
   camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
