@@ -49,6 +49,40 @@ macro(raja_add_executable)
     )
 endmacro(raja_add_executable)
 
+macro(raja_add_library)
+  set(options )
+  set(singleValueArgs NAME SHARED)
+  set(multiValueArgs SOURCES DEPENDS_ON)
+
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  list (APPEND arg_DEPENDS_ON RAJA)
+
+  if (ENABLE_OPENMP)
+    list (APPEND arg_DEPENDS_ON openmp)
+  endif ()
+
+  if (ENABLE_CUDA)
+    list (APPEND arg_DEPENDS_ON cuda)
+  endif ()
+
+  if (ENABLE_HIP)
+    list (APPEND arg_DEPENDS_ON hip)
+  endif ()
+
+  if (ENABLE_TBB)
+    list (APPEND arg_DEPENDS_ON tbb)
+  endif ()
+
+  blt_add_library(
+    NAME ${arg_NAME}
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    SHARED ${arg_SHARED}
+    )
+endmacro(raja_add_library)
+
 macro(raja_add_test)
   set(options )
   set(singleValueArgs NAME)
