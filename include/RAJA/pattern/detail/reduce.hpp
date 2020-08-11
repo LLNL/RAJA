@@ -114,12 +114,7 @@ namespace detail
 {
 
 template <typename T, bool = std::is_integral<T>::value>
-struct DefaultLoc {
-};
-
-template <typename T>
-struct DefaultLoc<T, false>  // any non-integral type
-{
+struct DefaultLoc { // any non-integral type
   RAJA_HOST_DEVICE constexpr T value() const { return T(); }
 };
 
