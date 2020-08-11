@@ -32,7 +32,8 @@ TEST(MultiViewUnitTest, BasicTest)
 
   // multi array of pointers view
   constexpr int swizzle = 1;
-  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>, int **, swizzle> arrView(myarr, layout);
+  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>, swizzle> arrView(myarr, layout);
+  //RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>, int **, swizzle> arrView(myarr, layout);
 
   for ( int zz = 0; zz < 2; ++zz )
   {

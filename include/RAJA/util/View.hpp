@@ -185,8 +185,8 @@ auto removenth( Lay lyout, Tup&& tup ) ->
 // Default of 0 means that the p2p index is in the 0th position.
 template <typename ValueType,
           typename LayoutType,
-          typename PointerType = ValueType **,
-          RAJA::Index_type P2Pidx = 0>
+          RAJA::Index_type P2Pidx = 0,
+          typename PointerType = ValueType **>
 struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
@@ -195,7 +195,7 @@ struct MultiView {
   using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
       typename std::remove_pointer<
         typename std::remove_pointer<pointer_type>::type>::type>::type>::type;
-  using NonConstView = MultiView<nc_value_type, layout_type, nc_pointer_type>;
+  using NonConstView = MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
   pointer_type data;
@@ -230,7 +230,7 @@ struct MultiView {
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>
+  RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>
   shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
@@ -238,7 +238,7 @@ struct MultiView {
     typename add_offset<layout_type>::type shift_layout(layout);
     shift_layout.shift(shift);
 
-    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
+    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>(data, shift_layout);
   }
 
   // Swizzling of indices is set by P2Pidx, which is defaulted to 0.
