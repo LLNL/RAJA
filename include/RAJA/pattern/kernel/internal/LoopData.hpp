@@ -119,24 +119,14 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
-  RAJA_INLINE RAJA_HOST_DEVICE
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
     //assign_begin_all();
   }
-
-  template <typename SegmentTuple0,
-            typename ParamTuple0,
-            typename... Bodies0>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
-      LoopData<SegmentTuple0, ParamTuple0, Bodies0...> &c)
-      : segment_tuple(c.segment_tuple),
-        param_tuple(c.param_tuple),
-        bodies(c.bodies),
-        offset_tuple(c.offset_tuple)
-  {
-  }
+  constexpr LoopData(LoopData const &) = default;
+  constexpr LoopData(LoopData &&) = default;
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE RAJA_INLINE void assign_offset(IndexT const &i)
