@@ -416,6 +416,8 @@ struct bit_or : public detail::binary_function<Arg1, Arg2, Ret> {
   {
     return lhs | rhs;
   }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -425,7 +427,10 @@ struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
   {
     return lhs & rhs;
   }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
 };
+
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
