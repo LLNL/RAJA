@@ -99,6 +99,8 @@ void KokkosPluginLoader::initPlugin(const std::string &path)
   getFunction<post_function>(plugin, post_functions, "kokkosp_end_parallel_for");
 
   getFunction<finalize_function>(plugin, finalize_functions, "kokkosp_finalize_library");
+
+  dlclose(plugin);
   #else
   RAJA_UNUSED_ARG(path);
   #endif

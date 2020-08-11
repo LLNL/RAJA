@@ -81,7 +81,6 @@ void RuntimePluginLoader::finalize()
   }
 }
 
-
 // Initialize plugin from a shared object file specified by 'path'.
 void RuntimePluginLoader::initPlugin(const std::string &path)
 {
@@ -102,6 +101,8 @@ void RuntimePluginLoader::initPlugin(const std::string &path)
   {
     printf("[RuntimePluginLoader]: dlsym failed: %s\n", dlerror());
   }
+
+  dlclose(plugin);
   #else
   RAJA_UNUSED_ARG(path);
   #endif
