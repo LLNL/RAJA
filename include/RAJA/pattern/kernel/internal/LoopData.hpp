@@ -119,7 +119,7 @@ struct LoopData {
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
-  RAJA_INLINE
+  RAJA_INLINE RAJA_HOST_DEVICE
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
