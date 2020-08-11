@@ -26,7 +26,7 @@ TYPED_TEST_SUITE(ListSegmentUnitTest, UnitIndexTypes);
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests in this file. 
 //
-  camp::resources::Resource host_res{camp::resources::Host()};
+camp::resources::Resource host_res{camp::resources::Host()};
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)
@@ -45,7 +45,7 @@ TYPED_TEST(ListSegmentUnitTest, Constructors)
 
   ASSERT_EQ(moved, copied);
 
-  RAJA::TypedListSegment<TypeParam> container(idx);
+  RAJA::TypedListSegment<TypeParam> container(idx, host_res);
 
   ASSERT_EQ(list1, container); 
 }
