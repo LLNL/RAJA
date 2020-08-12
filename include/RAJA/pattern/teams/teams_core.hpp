@@ -41,36 +41,6 @@
 namespace RAJA
 {
 
-template<typename DataType, camp::idx_t... Sizes>
-struct TeamSharedArray
-{
-  using layout_t = RAJA::StaticLayout<camp::make_idx_seq_t<sizeof...(Sizes)>,Sizes...>;
-#if defined(__CUDA_ARCH__)
-  DataType *array;
-#else
-  DataType array[layout_t::size()];
-#endif
-
-  TeamSharedArray()
-  {
-#if defined(__CUDA_ARCH__)
-    const camp::idx_t NumElem = layout_t::size();
-    TEAM_SHARED DataType m_array[NumElem];
-    array = &m_array[0];
-#endif
-  }
-
-
-  template<typename ...Indices>
-  RAJA_HOST_DEVICE
-  DataType &operator()(Indices ...indices)
-  {
-    return array[layout_t::s_oper(indices...)];
-  }
-};
-
-
-
 // GPU or CPU threads available
 enum ExecPlace {
 HOST
@@ -171,14 +141,6 @@ public:
   Resources(Teams in_teams, Threads in_threads)
       : teams(in_teams), threads(in_threads){};
 
-  /*
-  template <typename... ARGS>
-  RAJA_INLINE
-  explicit Resources(ARGS const &... args)
-  {
-    camp::sink(apply(args)...);
-  }
-  */
 private:
   RAJA_HOST_DEVICE
   RAJA_INLINE
@@ -193,40 +155,6 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
-template<typename DataType, size_t N, size_t Nx, size_t Ny, size_t Nz>
-struct PrivateMemoryImpl
-{
-
-  const int X{Nx};
-  const int Y{Ny};
-  const int Z{Nz};
-
-#if defined(__CUDA_ARCH__)
- mutable DataType Array[N];
-#else
-  mutable DataType Array[N*Nx*Ny*Nz];
-#endif
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  DataType &operator()(int i, int tx, int ty=0, int tz=0) const
-  {
-#if defined(__CUDA_ARCH__)
-    return Array[i];
-#else
-    const int offset = N*tx + N*Nx*ty + N*Nx*Ny*tz;
-    return Array[i + offset];
-#endif
-  }
-
-};
-
-template<size_t Nx=16, size_t Ny=16, size_t Nz=4>
-struct ThreadExclusive
-{
- template<typename DataType, size_t N>
-  using ExclusiveMem = PrivateMemoryImpl<DataType, N, Nx, Ny,Nz>;
-};
 
 class LaunchContext : public Resources
 {

@@ -32,9 +32,7 @@ struct cuda_launch_t {
 template <typename BODY>
 __global__ void launch_global_fcn(LaunchContext ctx, BODY body)
 {
-  // printf("Entering global function\n");
   body(ctx);
-  // printf("Leaving global function\n");
 }
 
 
@@ -53,8 +51,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 0>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
-    //printf("thread block dim %d %d %d \n", threads.x, threads.y, threads.z);
-    //printf("grid block dim %d %d %d \n", blocks.x, blocks.y, blocks.z);
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
 
     if (!async) {
@@ -68,9 +64,7 @@ template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
     void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
 {
-  // printf("Entering global function\n");
   body(ctx);
-  // printf("Leaving global function\n");
 }
 
 
@@ -258,7 +252,7 @@ struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
     {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
-      body(*(segment0.begin() + i), *(segment1.begin() + j));
+      if(i < len0 && i < len1 ) body(*(segment0.begin() + i), *(segment1.begin() + j));
     }
   }
 };
