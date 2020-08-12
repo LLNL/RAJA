@@ -222,7 +222,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res&r,
                                                 LoopBody loop_body)
 {
   // no need for icount variant here
-  auto segIterRes = resources::get_default_resource(SegmentIterPolicy());
+  auto segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
   wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r](int segID) {
     iset.segmentCall(segID,
                      detail::CallForallIcount(iset.getStartingIcount(segID)),
@@ -244,7 +244,7 @@ RAJA_INLINE resources::EventProxy<Res> forall(Res &r,
                                          const TypedIndexSet<SegmentTypes...>& iset,
                                          LoopBody loop_body)
 {
-  auto segIterRes = resources::get_default_resource(SegmentIterPolicy());
+  auto segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
   wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), loop_body, r);
   });
@@ -282,7 +282,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                 LoopBody&& loop_body)
 {
   std::cout<< "Check3\n";
-  auto r = resources::get_default_resource(p);
+  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall_Icount(r, p, c, loop_body);
 }
 template <typename Res, typename ExecutionPolicy, typename IdxSet, typename LoopBody>
@@ -330,7 +330,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   std::cout<< "Check5\n";
-  auto r = resources::get_default_resource(p);
+  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(r, p, c, loop_body);
 }
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
@@ -409,7 +409,7 @@ forall_Icount(
               LoopBody&& loop_body)
 {
   std::cout<< "Check8\n";
-  auto r = resources::get_default_resource(p);
+  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall_Icount(r, p, c, icount, loop_body);
 }
 template <typename Res,
@@ -467,7 +467,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   std::cout<< "Check10\n";
-  auto r = resources::get_default_resource(p);
+  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(r, p, c, loop_body);
 }
 
@@ -511,18 +511,15 @@ forall(Res &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
  * this reduces implementation overhead and perfectly forwards all arguments
  */
 template <typename ExecutionPolicy, typename... Args, 
-          typename Res = typename resources::get_default_resource_s<ExecutionPolicy>::type >
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall(Args&&... args)
-//RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_execution_policy<ExecutionPolicy>> forall(Args&&... args)
 {
   std::cout<< "Check12\n";
   Res r = Res::get_default();
-  //auto r = resources::get_default_resource(ExecutionPolicy());
   return forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>> forall(Res &r, Args&&... args)
-//RAJA_INLINE resources::EventProxy<Res> forall(Res &r, Args&&... args)
 {
   std::cout<< "Check13\n";
   return policy_by_value_interface::forall(r, ExecutionPolicy(), std::forward<Args>(args)...);
@@ -534,19 +531,15 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_re
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-//template <typename ExecutionPolicy, typename Res, typename... Args>
 template <typename ExecutionPolicy, typename... Args, 
-          typename Res = typename resources::get_default_resource_s<ExecutionPolicy>::type >
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(Args&&... args)
-//RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_execution_policy<ExecutionPolicy>> forall_Icount(Args&&... args)
 {
   std::cout<< "Check1\n";
   Res r = Res::get_default();
-  //auto r = resources::get_default_resource(ExecutionPolicy());
   return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
-//RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res &r, Args&&... args)
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>> forall_Icount(Res &r, Args&&... args)
 {
   std::cout<< "Check2\n";
