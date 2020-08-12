@@ -64,7 +64,7 @@ void buildTypedIndexSetAligned(
 {
   if (length == 0) return;
 
-  camp::resources::Resource work_res{camp::resources::WORKING_RES()};
+  camp::resources::Resource work_res{WORKING_RES()};
 
   /* only transform relatively large */
   if (length > RANGE_MIN_LENGTH) {
@@ -247,7 +247,7 @@ void buildLockFreeBlockIndexset(
     int midDim,
     int slowDim)
 {
-  constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100
+  constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
 
     int numThreads = getMaxOMPThreadsCPU();
 
@@ -413,7 +413,7 @@ void buildLockFreeColorIndexset(
     Index_type* elemPermutation = 0l,
     Index_type* ielemPermutation = 0l)
 {
-  camp::resources::Resource work_res{camp::resources::WORKING_RES()};
+  camp::resources::Resource work_res{WORKING_RES()};
 
   bool done = false;
   bool* isMarked = new bool[numEntity];
