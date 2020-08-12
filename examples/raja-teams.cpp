@@ -124,6 +124,10 @@ using launch_policy = RAJA::LaunchPolicy<
                                          ,
                                          RAJA::cuda_launch_t<false>
 #endif
+#if defined(RAJA_ENABLE_HIP)
+                                         ,
+                                         RAJA::hip_launch_t<false>
+#endif
                                          >;
 
 using teams1 = RAJA::LoopPolicy<
@@ -136,11 +140,19 @@ RAJA::loop_exec
                                 ,
                                 RAJA::cuda_block_y_direct
 #endif
+#if defined(RAJA_ENABLE_HIP)
+                                ,
+                                RAJA::hip_block_y_direct
+#endif
                                 >;
 using teams_x = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                 ,
                                 RAJA::cuda_block_x_direct
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                ,
+                                 RAJA::hip_block_x_direct
 #endif
                                 >;
 
@@ -154,6 +166,10 @@ RAJA::loop_exec
                                  ,
                                  RAJA::cuda_block_xy_nested_direct
 #endif
+#if defined(RAJA_ENABLE_HIP)
+                                 ,
+                                 RAJA::hip_block_xy_nested_direct
+#endif
                                  >;
 
 
@@ -162,6 +178,10 @@ using threads_y = RAJA::LoopPolicy<RAJA::loop_exec
                                   ,
                                   RAJA::cuda_thread_y_loop
 #endif
+#if defined(RAJA_ENABLE_HIP)
+                                  ,
+                                  RAJA::hip_thread_y_loop
+#endif
                                   >;
 
 using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
@@ -169,15 +189,18 @@ using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
                                   ,
                                   RAJA::cuda_thread_x_loop
 #endif
+#if defined(RAJA_ENABLE_HIP)
+                                  ,
+                                  RAJA::hip_thread_x_loop
+#endif
                                   >;
 
-
-int main()
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   // N is number of blocks in each matrix
   const int NBlocks = 4;
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_ENABLE_DEVICE
   const int NThreads = THREAD_BLOCK_SZ;
   const int N = NThreads * NBlocks;
 #else
@@ -185,6 +208,7 @@ int main()
   const int N = NThreads * NBlocks;
 #endif
 
+  printf("NThreads = %d \n", NThreads);
   //
   // Allocate and initialize matrix data.
   //
@@ -282,62 +306,94 @@ int main()
     const int N_tri2 = 5;
 
     int* Ddat = memoryManager::allocate<int>(N_tri2 * N_tri2);
-    RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri2, N_tri2);
+    int *Ddat_ptr = Ddat;
 
-    for (int r = 0; r < N_tri2; ++r) {
-      for (int c = 0; c < N_tri2; ++c) {
-        D(r, c) = 0;
-      }
+#if defined(RAJA_ENABLE_HIP)
+   int* Ddat_device = memoryManager::allocate_gpu<int>(N_tri2 * N_tri2);
+   hipErrchk(hipMemcpy(Ddat_device, Ddat, N_tri2 * N_tri2 * sizeof(int),
+                       hipMemcpyHostToDevice ));
+   if(exec_place == RAJA::ExecPlace::DEVICE)
+    {
+      Ddat_ptr = Ddat_device;
     }
+#endif
+
+    RAJA::View<int, RAJA::Layout<2>> D(Ddat_ptr, N_tri2, N_tri2);
 
     RAJA::launch<launch_policy>( select_cpu_or_gpu,
       RAJA::Resources(RAJA::Teams(N_tri2), RAJA::Threads(N_tri2)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [=](int r) {
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [=](int c) {
+
+          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
+
+            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
               D(r, c) = r * N_tri + c;
             });  // loop j
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [=](int c) {
+            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
               printf("r=%d, c=%d : D=%d\n", r, c, D(r, c));
             });  // loop c
           });    // loop r
+
         });      // outer lambda
 
     memoryManager::deallocate(Ddat);
+
+#if defined(RAJA_ENABLE_HIP)
+    memoryManager::deallocate_gpu(Ddat_device);
+#endif
+
 
     //========================
     // Matrix-Matrix Multiplication Example
     //========================
     std::cout << "\n Running Matrix-Matrix Multiplication example...\n";
 
-    // Set up Teams/Threads
+    double *A_ptr=A;
+    double *B_ptr=B;
+    double *C_ptr=C;
+#if defined(RAJA_ENABLE_HIP)
+    double* A_device = memoryManager::allocate_gpu<double>(N*N);
+    double* B_device = memoryManager::allocate_gpu<double>(N*N);
+    double* C_device = memoryManager::allocate_gpu<double>(N*N);
+    hipErrchk(hipMemcpy( A_device, A, N * N * sizeof(double), hipMemcpyHostToDevice ));
+    hipErrchk(hipMemcpy( B_device, B, N * N * sizeof(double), hipMemcpyHostToDevice ));
+    hipErrchk(hipMemcpy( C_device, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
 
-    RAJA::RangeSegment TeamRange(0, NBlocks);
+   if(exec_place == RAJA::ExecPlace::DEVICE)
+    {
+      A_ptr=A_device;
+      B_ptr=B_device;
+      C_ptr=C_device;
+    }
+#endif
+
+    // Set up Teams/Threads
 
     printf("select_cpu_or_gpu %d \n", select_cpu_or_gpu);
     RAJA::launch<launch_policy>(select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
                         RAJA::Threads(NThreads, NThreads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+
+          RAJA::RangeSegment TeamRange(0, NBlocks);
+          RAJA::RangeSegment ThreadRange(0, NThreads);
           //
           // Loop over teams
           //
           // RAJA::loop<teams1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by)
           // { RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int
           // bx) {
-
           RAJA::loop<teams_xy>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
 
             TEAM_SHARED double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
 
-
             // Team parallel loop
-            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+            RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                     Cs[ty][tx] = 0.0;
 
@@ -347,22 +403,22 @@ int main()
             // Slide across matrix
             for (int m = 0; m < (N / NThreads); ++m) {
 
-              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                    RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+              RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                    RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                           const int row = by * NThreads + ty;  // Matrix row index
                           const int col = bx * NThreads + tx;  // Matrix column index
 
-                          As[ty][tx] = A[row * N + m * NThreads + tx];
-                          Bs[ty][tx] = B[(m * NThreads + ty) * N + col];
+                          As[ty][tx] = A_ptr[row * N + m * NThreads + tx];
+                          Bs[ty][tx] = B_ptr[(m * NThreads + ty) * N + col];
 
                       });
                 });
 
               ctx.teamSync();
 
-              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                  RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+              RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                  RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                       for (int e = 0; e < NThreads; ++e) {
 
@@ -373,25 +429,37 @@ int main()
                 });
 
               ctx.teamSync();
+
             }  // slide across matrix
 
 
-            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
-                RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
+            RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                         const int row = by * NThreads + ty;  // Matrix row index
                         const int col = bx * NThreads + tx;  // Matrix column index
-                        C[col + N * row] = Cs[ty][tx];
+                        C_ptr[col + N * row] = Cs[ty][tx];
 
                   });
                 });
             //});
+
           });
+
         });  // kernel
 
-    checkResult<double>(C, N);
+#if defined(RAJA_ENABLE_HIP)
+   if(exec_place == RAJA::ExecPlace::DEVICE)
+    {
+      hipErrchk(hipMemcpy(C, C_device, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+    }
+#endif
+
+    checkResult<double>(C_ptr, N);
     printf("\n");
+
   }
+
 }
 
 

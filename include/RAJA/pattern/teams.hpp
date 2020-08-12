@@ -29,6 +29,10 @@
 #include "RAJA/pattern/teams/teams_cuda.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/pattern/teams/teams_hip.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/pattern/teams/teams_openmp.hpp"
 #endif

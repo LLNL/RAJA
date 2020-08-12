@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/util/macros.hpp"
@@ -31,8 +32,11 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#define RAJA_ENABLE_DEVICE
+#endif
 
-#if defined(__CUDA_ARCH__)
+#if defined(RAJA_DEVICE_CODE)
 #define TEAM_SHARED __shared__
 #else
 #define TEAM_SHARED
@@ -44,7 +48,7 @@ namespace RAJA
 // GPU or CPU threads available
 enum ExecPlace {
 HOST
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 ,DEVICE
 #endif
 ,NUM_PLACES };
@@ -52,25 +56,25 @@ HOST
 
 // Support for Host, Host_threads, and Device
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_DEVICE)
           ,typename DEVICE_POLICY
 #endif
           >
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_DEVICE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
 
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_DEVICE)
           ,typename DEVICE_POLICY
 #endif
 >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_DEVICE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
@@ -170,7 +174,7 @@ public:
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(__CUDA_ARCH__)
+#if defined(RAJA_DEVICE_CODE)
     __syncthreads();
 #endif
   }
@@ -189,7 +193,7 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
          launch_t::exec(LaunchContext(team_resources, HOST), body);
         break;
       }
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_ENABLE_DEVICE
     case DEVICE: {
         using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
         launch_t::exec(LaunchContext(team_resources, DEVICE), body);
@@ -213,11 +217,11 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                        SEGMENT const &segment,
                                        BODY const &body)
 {
-#ifdef __CUDA_ARCH__
+#if defined(RAJA_DEVICE_CODE)
   LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
                                                                     segment,
                                                                     body);
-#else  
+#else
   LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
                                                                   segment,
                                                                   body);
@@ -233,7 +237,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                        SEGMENT const &segment1,
                                        BODY const &body)
 {
-#ifdef __CUDA_ARCH__
+#if defined(RAJA_DEVICE_CODE)
   LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
                                                                     segment0,
                                                                     segment1,
@@ -257,12 +261,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                        BODY const &body)
 {
 
-#ifdef __CUDA_ARCH__
+#if defined(RAJA_DEVICE_CODE)
   LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(
       ctx, segment0, segment1, segment2, body);
 #else
   LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
-      ctx, segment0, segment1, segment2, body);                                                                  
+      ctx, segment0, segment1, segment2, body);
 #endif
 }
 
