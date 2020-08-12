@@ -30,7 +30,7 @@ namespace util {
 
     void postCapture(const RAJA::util::PluginContext& p) override;
 
-    void preLaunch(RAJA::util::PluginContext& p) override;
+    void preLaunch(const RAJA::util::PluginContext& p) override;
 
     void postLaunch(const RAJA::util::PluginContext& p) override;
 

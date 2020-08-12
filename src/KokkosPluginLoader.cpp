@@ -57,7 +57,7 @@ KokkosPluginLoader::KokkosPluginLoader()
   }
 }
 
-void KokkosPluginLoader::preLaunch(RAJA::util::PluginContext& p)
+void KokkosPluginLoader::preLaunch(const RAJA::util::PluginContext& p)
 {
   for (auto &func : pre_functions)
   {

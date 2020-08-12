@@ -44,7 +44,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void preLaunch(RAJA::util::PluginContext& p) override {
+  void preLaunch(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 

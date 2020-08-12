@@ -28,7 +28,7 @@ class PluginStrategy
 
     virtual void postCapture(const PluginContext& p);
 
-    virtual void preLaunch(PluginContext& p);
+    virtual void preLaunch(const PluginContext& p);
 
     virtual void postLaunch(const PluginContext& p);
 

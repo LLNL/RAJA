@@ -81,7 +81,7 @@ The preLaunch and postLaunch functions are automatically called by RAJA before a
 
 * ``void postCapture(const PluginContext& p) override {}`` - Will occur after capture of kernel/forall.
 
-* ``void preLaunch(PluginContext& p) override {}`` - Will occur before kernel/forall execution.
+* ``void preLaunch(const PluginContext& p) override {}`` - Will occur before kernel/forall execution.
 
 * ``void postLaunch(const PluginContext& p) override {}`` - Will occur after kernel/forall execution.
 

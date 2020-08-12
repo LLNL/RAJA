@@ -21,7 +21,7 @@ class CounterPlugin :
       std::cout << " [CounterPlugin]: Capturing device kernel for the " << ++device_capture_counter << " time!" << std::endl;
   }
 
-  void preLaunch(RAJA::util::PluginContext& p) override {
+  void preLaunch(const RAJA::util::PluginContext& p) override {
     if (p.platform == RAJA::Platform::host)
     {
       std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_launch_counter << " time!" << std::endl;

@@ -20,7 +20,7 @@ void PluginStrategy::preCapture(const PluginContext&) { }
 
 void PluginStrategy::postCapture(const PluginContext&) { }
 
-void PluginStrategy::preLaunch(PluginContext&) { }
+void PluginStrategy::preLaunch(const PluginContext&) { }
 
 void PluginStrategy::postLaunch(const PluginContext&) { }
 

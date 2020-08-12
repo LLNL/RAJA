@@ -57,7 +57,7 @@ void RuntimePluginLoader::postCapture(const RAJA::util::PluginContext& p)
   }
 }
 
-void RuntimePluginLoader::preLaunch(RAJA::util::PluginContext& p)
+void RuntimePluginLoader::preLaunch(const RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {

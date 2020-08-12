@@ -13,7 +13,7 @@
 class TimerPlugin : public RAJA::util::PluginStrategy
 {
 public:
-  void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override
+  void preLaunch(const RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override
   {
     start_time = std::chrono::steady_clock::now();
   }
