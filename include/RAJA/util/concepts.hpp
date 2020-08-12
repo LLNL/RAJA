@@ -31,11 +31,19 @@ namespace RAJA
 namespace concepts
 {
 using namespace camp::concepts;
+
+template <typename From, typename To>
+struct ConvertibleTo
+  : DefineConcept(convertible_to<To>(camp::val<From>())) {
+};
+
 }
 
 namespace type_traits
 {
 using namespace camp::type_traits;
+
+DefineTypeTraitFromConcept(convertible_to, concepts::ConvertibleTo);
 }
 
 }  // end namespace RAJA

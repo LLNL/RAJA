@@ -133,6 +133,8 @@ N cores.
           must use CUDA version 9.2.x or newer. Earlier versions of RAJA
           allow older versions of CUDA to be used.
 
+.. _build-external-tpl-label:
+
 .. note:: You may use externally-supplied versions of the camp and cub 
           libraries with RAJA if you wish. To do so, pass the following 
           options to CMake:
