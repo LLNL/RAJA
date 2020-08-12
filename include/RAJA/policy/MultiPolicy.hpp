@@ -133,6 +133,7 @@ auto make_multi_policy(camp::idx_seq<Indices...>,
 /// forall, must return an int in the set 0 to N-1 selecting the policy to use
 /// \return A MultiPolicy containing the given selector s
 template <typename... Policies, typename Selector>
+RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 {
   return MultiPolicy<Selector, Policies...>(s, Policies{}...);
@@ -148,6 +149,7 @@ auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 /// forall, must return an int in the set 0 to N-1 selecting the policy to use
 /// \return A MultiPolicy containing the given selector s
 template <typename... Policies, typename Selector>
+RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
