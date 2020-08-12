@@ -34,7 +34,6 @@ add_subdirectory(segment)
 add_subdirectory(segment-view)
 
 add_subdirectory(reduce-basic)
-add_subdirectory(reduce-bitwise)
 add_subdirectory(reduce-multiple-segment)
 add_subdirectory(reduce-multiple-indexset)
 
