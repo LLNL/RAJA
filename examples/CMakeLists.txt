@@ -40,10 +40,14 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
-  
+
 raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
+
+raja_add_executable(
+  NAME tut_sort
+  SOURCES tut_sort.cpp)
 
 raja_add_executable(
   NAME tut_atomic-histogram
@@ -80,7 +84,7 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
-  
+
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
