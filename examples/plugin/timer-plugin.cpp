@@ -13,12 +13,12 @@
 class TimerPlugin : public RAJA::util::PluginStrategy
 {
 public:
-  void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p))
+  void preLaunch(RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override
   {
     start_time = std::chrono::steady_clock::now();
   }
 
-  void postLaunch(const RAJA::util::PluginContext& p)
+  void postLaunch(const RAJA::util::PluginContext& p) override
   {
     end_time = std::chrono::steady_clock::now();
     double elapsedMs = std::chrono::duration<double, std::milli>(end_time - start_time).count();

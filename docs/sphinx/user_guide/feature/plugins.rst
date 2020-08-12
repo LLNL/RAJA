@@ -75,17 +75,17 @@ Functions
 ^^^^^^^^^^^
 The preLaunch and postLaunch functions are automatically called by RAJA before and after loop execution. This applies to RAJA's kernel and forall implementations.
 
-* ``void init(PluginOptions p) {}`` - runs on all plugins when the user makes a call to ``init_plugins``
+* ``void init(const PluginOptions& p) override {}`` - runs on all plugins when the user makes a call to ``init_plugins``
 
-* ``void preCapture(PluginContext& p) {}`` - Will occur before capture of kernel/forall.
+* ``void preCapture(const PluginContext& p) override {}`` - Will occur before capture of kernel/forall.
 
-* ``void postCapture(PluginContext& p) {}`` - Will occur after capture of kernel/forall.
+* ``void postCapture(const PluginContext& p) override {}`` - Will occur after capture of kernel/forall.
 
-* ``void preLaunch(PluginContext& p) {}`` - Will occur before kernel/forall execution.
+* ``void preLaunch(PluginContext& p) override {}`` - Will occur before kernel/forall execution.
 
-* ``void postLaunch(PluginContext& p) {}`` - Will occur after kernel/forall execution.
+* ``void postLaunch(const PluginContext& p) override {}`` - Will occur after kernel/forall execution.
 
-* ``void finalize() {}`` - runs on all plugins when the user makes a call to ``finalize_plugins``
+* ``void finalize() override {}`` - Runs on all plugins when the user makes a call to ``finalize_plugins``. This will also unload all currently loaded plugins.
 
 Init and finalize are never run by RAJA by default and are only run when the user makes a call to RAJA::util::init_plugin() or RAJA::util::finalize_plugin() respectively.
 

@@ -16,7 +16,7 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preCapture(const RAJA::util::PluginContext& p) {
+  void preCapture(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -30,7 +30,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void postCapture(const RAJA::util::PluginContext& p) {
+  void postCapture(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -44,7 +44,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void preLaunch(RAJA::util::PluginContext& p) {
+  void preLaunch(RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -58,7 +58,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void postLaunch(const RAJA::util::PluginContext& p) {
+  void postLaunch(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 

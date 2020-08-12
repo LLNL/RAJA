@@ -32,7 +32,7 @@ namespace util {
 
     void postLaunch(const RAJA::util::PluginContext& p) override;
 
-    void finalize();
+    void finalize() override;
 
   private:
     void initPlugin(const std::string &path);
