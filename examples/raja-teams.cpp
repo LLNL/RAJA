@@ -228,7 +228,7 @@ int main()
     std::cout << "\n Running Simple Shared memory pattern example...\n";
 
     const int NTeams = 2;
-    const int Nthreads = 5;
+    constexpr int Nthreads = 5;
     RAJA::launch<launch_policy>(
         select_cpu_or_gpu,
         RAJA::Resources(RAJA::Teams(NTeams), RAJA::Threads(Nthreads)),
