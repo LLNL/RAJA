@@ -235,16 +235,18 @@ int main()
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
           RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, NTeams), [&](int) {
 
-            TEAM_SHARED int s_A[Nthreads];
+            //Appveyor has trouble with constexpr.
+            //Had to hardcode the number
+            TEAM_SHARED int s_A[5];
 
             RAJA::loop<threads_x>(ctx,RAJA::RangeSegment(0, Nthreads), [&](int i) {
-                s_A[i] = i; 
+                s_A[i] = i;
             });
 
             ctx.teamSync();
 
             RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
-                
+
                 printf("s_(%d) = %d \n", i, s_A[Nthreads - 1 - i]);
             });
           });
@@ -271,7 +273,7 @@ int main()
           });    // loop i
         });      // kernel
 
-   
+
     //=============================
     // Upper triangular pattern #2
     //=============================
@@ -280,7 +282,7 @@ int main()
     const int N_tri2 = 5;
 
     int* Ddat = memoryManager::allocate<int>(N_tri2 * N_tri2);
-    RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri2, N_tri2); 
+    RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri2, N_tri2);
 
     for (int r = 0; r < N_tri2; ++r) {
       for (int c = 0; c < N_tri2; ++c) {
@@ -334,21 +336,21 @@ int main()
 
 
             // Team parallel loop
-            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 
-                RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) { 
+            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
+                RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
 
                     Cs[ty][tx] = 0.0;
 
-                  });                                                                          
+                  });
                 });
 
             // Slide across matrix
             for (int m = 0; m < (N / NThreads); ++m) {
 
-              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                   
+              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
                     RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-                                         
-                          const int row = by * NThreads + ty;  // Matrix row index                            
+
+                          const int row = by * NThreads + ty;  // Matrix row index
                           const int col = bx * NThreads + tx;  // Matrix column index
 
                           As[ty][tx] = A[row * N + m * NThreads + tx];
@@ -359,13 +361,13 @@ int main()
 
               ctx.teamSync();
 
-              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                  
+              RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
                   RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-                                       
+
                       for (int e = 0; e < NThreads; ++e) {
-                        
+
                         Cs[ty][tx] += As[ty][e] * Bs[e][tx];
-                          
+
                       }
                     });
                 });
@@ -374,9 +376,9 @@ int main()
             }  // slide across matrix
 
 
-            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {                                 
+            RAJA::loop<threads_y>(ctx, RAJA::RangeSegment(0, NThreads), [&](int ty) {
                 RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, NThreads), [&](int tx) {
-                                     
+
                         const int row = by * NThreads + ty;  // Matrix row index
                         const int col = bx * NThreads + tx;  // Matrix column index
                         C[col + N * row] = Cs[ty][tx];
