@@ -13,5 +13,6 @@ raja_add_executable(
   NAME plugin-example-dynamic
   SOURCES test-plugin-dynamic.cpp)
   
-add_library(timer_plugin SHARED timer-plugin.cpp)
-target_link_libraries(timer_plugin PRIVATE RAJA)
+raja_add_plugin_library(NAME timer_plugin
+                        SHARED TRUE
+                        SOURCES timer-plugin.cpp)
