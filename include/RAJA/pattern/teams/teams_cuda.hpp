@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -20,7 +19,6 @@
 #define RAJA_pattern_teams_cuda_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
-
 
 namespace RAJA
 {
@@ -101,7 +99,7 @@ struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
 
     for (int tx = threadIdx.x; tx < len; tx += blockDim.x) {
       body(*(segment.begin() + tx));
@@ -119,7 +117,7 @@ struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
 
     for (int ty = threadIdx.y; ty < len; ty += blockDim.y) {
       body(*(segment.begin() + ty));
@@ -173,7 +171,7 @@ struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
 
     for (int i = threadIdx.z; i < len; i += blockDim.z) {
       body(*(segment.begin() + i));
@@ -191,7 +189,7 @@ struct LoopExecute<cuda_block_x_loop, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
 
     for (int bx = blockIdx.x; bx < len; bx += gridDim.x) {
       body(*(segment.begin() + bx));
@@ -209,7 +207,7 @@ struct LoopExecute<cuda_block_x_direct, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
     {
       const int bx = blockIdx.x;
       if(bx < len) body(*(segment.begin() + bx));
@@ -227,7 +225,7 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
       BODY const &body)
   {
 
-    int len = segment.end() - segment.begin();
+    const int len = segment.end() - segment.begin();
     {
       const int by = blockIdx.y;
       if(by < len) body(*(segment.begin() + by));
@@ -236,9 +234,15 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
 };
 
 // collapsed cuda policies
+struct cuda_block_xy_nested_direct;
+struct cuda_block_xyz_nested_direct;
+
+struct cuda_thread_xy_nested_direct;
+struct cuda_thread_xyz_nested_direct;
+
 
 template <typename SEGMENT>
-struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
+struct LoopExecute<cuda_block_xy_nested_direct, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -247,8 +251,8 @@ struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
       SEGMENT const &segment1,
       BODY const &body)
   {
-    int len1 = segment1.end() - segment1.begin();
-    int len0 = segment0.end() - segment0.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
     {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
@@ -258,7 +262,7 @@ struct LoopExecute<cuda_block_xyz_direct<2>, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct LoopExecute<cuda_thread_xyz_direct<2>, SEGMENT> {
+struct LoopExecute<cuda_thread_xy_nested_direct, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -267,18 +271,19 @@ struct LoopExecute<cuda_thread_xyz_direct<2>, SEGMENT> {
       SEGMENT const &segment1,
       BODY const &body)
   {
-    int len1 = segment1.end() - segment1.begin();
-    int len0 = segment0.end() - segment0.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
     {
       const int i = threadIdx.x;
       const int j = threadIdx.y;
-      body(*(segment0.begin() + i), *(segment1.begin() + j));
+      if(i < len0 && j < len1) body(*(segment0.begin() + i), *(segment1.begin() + j));
     }
   }
 };
 
+
 template <typename SEGMENT>
-struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
+struct LoopExecute<cuda_block_xyz_nested_direct, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -288,16 +293,16 @@ struct LoopExecute<cuda_block_xyz_direct<3>, SEGMENT> {
       SEGMENT const &segment2,
       BODY const &body)
   {
-    int len2 = segment2.end() - segment2.begin();
-    int len1 = segment1.end() - segment1.begin();
-    int len0 = segment0.end() - segment0.begin();
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
     {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
       const int k = blockIdx.z;
-      body(*(segment0.begin() + i),
-           *(segment1.begin() + j),
-           *(segment2.begin() + k));
+      if(i < len0 && j < len1 && k < len2 ) body(*(segment0.begin() + i),
+                                                 *(segment1.begin() + j),
+                                                 *(segment2.begin() + k));
     }
   }
 };

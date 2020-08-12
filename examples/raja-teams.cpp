@@ -152,7 +152,7 @@ RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
                                  ,
-                                 RAJA::cuda_block_xyz_direct<2>
+                                 RAJA::cuda_block_xy_nested_direct
 #endif
                                  >;
 
