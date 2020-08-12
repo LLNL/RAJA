@@ -40,14 +40,12 @@ namespace omp
 //  forall_impl(res, exec, iter, loop_body);
 //}
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
-                                                    const omp_target_parallel_for_exec<ThreadsPerTeam>&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &omp_res,
+                                                              const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+                                                              Iterable&& iter,
+                                                              Func&& loop_body)
 {
   char *omp_ptr;
-
-  RAJA::resources::Omp omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
   omp_res.get_ptr_dev(omp_ptr);
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -81,7 +79,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
     ib(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return resources::EventProxy<resources::Omp>(&res);
 }
 
 //template <typename Iterable, typename Func>
@@ -93,14 +91,12 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
 //  forall_impl(res, exec, iter, loop_body);
 //}
 template <typename Iterable, typename Func>
-RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
-                                                    const omp_target_parallel_for_exec_nt&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Resource &omp_res,
+                                                              const omp_target_parallel_for_exec_nt&,
+                                                              Iterable&& iter,
+                                                              Func&& loop_body)
 {
   char *omp_ptr;
-
-  RAJA::resources::Omp omp_res = RAJA::resources::raja_get<RAJA::resources::Omp>(res);
   omp_res.get_ptr_dev(omp_ptr);
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -116,7 +112,7 @@ RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &r
     ib(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy(&res);
+  return RAJA::resources::EventProxy<resources::Omp>(&res);
 }
 
 }  // namespace omp

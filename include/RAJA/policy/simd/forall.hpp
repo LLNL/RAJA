@@ -45,25 +45,12 @@ namespace simd
 {
 
 
-//template <typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const simd_exec &exec,
-//                             Iterable &&iter,
-//                             Func &&loop_body)
-//{
-//  RAJA::resources::Resource res{RAJA::resources::Host()};
-//  forall_impl(res, exec, iter, loop_body);
-//}
-
 template <typename Iterable, typename Func>
-//RAJA_INLINE RAJA::resources::EventProxy forall_impl(RAJA::resources::Resource &res,
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host &host_res,
                                                     const simd_exec &,
                                                     Iterable &&iter,
                                                     Func &&loop_body)
 {
-  //RAJA::resources::Host host_res = RAJA::resources::raja_get<RAJA::resources::Host>(res);
-  RAJA_UNUSED_VAR(host_res);
-
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
