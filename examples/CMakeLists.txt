@@ -42,6 +42,10 @@ raja_add_executable(
   SOURCES tut_scan.cpp)
 
 raja_add_executable(
+  NAME tut_sort
+  SOURCES tut_sort.cpp)
+
+raja_add_executable(
   NAME tut_atomic-histogram
   SOURCES tut_atomic-histogram.cpp)
 

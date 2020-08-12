@@ -39,12 +39,17 @@ struct forone_policy_info;
 template < typename forone_policy >
 using forone_equivalent_exec_policy = typename forone_policy_info<forone_policy>::type;
 
+// alias for platform of given forone policy
+template < typename forone_policy >
+using forone_platform = typename forone_policy_info<forone_policy>::platform;
+
 
 // forone_seq policy information
 template < >
 struct forone_policy_info<forone_seq>
 {
   using type = RAJA::loop_exec;
+  using platform = RunOnHost;
   static const char* name() { return "forone_seq"; }
 };
 
@@ -65,6 +70,7 @@ template < >
 struct forone_policy_info<forone_openmp_target>
 {
   using type = RAJA::omp_target_parallel_for_exec<1>;
+  using platform = RunOnHost;
   static const char* name() { return "forone_openmp_target"; }
 };
 
@@ -88,6 +94,7 @@ template < >
 struct forone_policy_info<forone_cuda>
 {
   using type = RAJA::cuda_exec<1>;
+  using platform = RunOnDevice;
   static const char* name() { return "forone_cuda"; }
 };
 
@@ -118,6 +125,7 @@ template < >
 struct forone_policy_info<forone_hip>
 {
   using type = RAJA::hip_exec<1>;
+  using platform = RunOnDevice;
   static const char* name() { return "forone_hip"; }
 };
 
