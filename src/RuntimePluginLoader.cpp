@@ -32,7 +32,7 @@ RuntimePluginLoader::RuntimePluginLoader()
   initDirectory(std::string(env));
 }
 
-void RuntimePluginLoader::init(RAJA::util::PluginOptions p)
+void RuntimePluginLoader::init(const RAJA::util::PluginOptions& p)
 {
   initDirectory(p.str);
   for (auto &plugin : plugins)
@@ -41,7 +41,7 @@ void RuntimePluginLoader::init(RAJA::util::PluginOptions p)
   }
 }
 
-void RuntimePluginLoader::preCapture(RAJA::util::PluginContext& p)
+void RuntimePluginLoader::preCapture(const RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {
@@ -49,7 +49,7 @@ void RuntimePluginLoader::preCapture(RAJA::util::PluginContext& p)
   }
 }
 
-void RuntimePluginLoader::postCapture(RAJA::util::PluginContext& p)
+void RuntimePluginLoader::postCapture(const RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {
@@ -65,7 +65,7 @@ void RuntimePluginLoader::preLaunch(RAJA::util::PluginContext& p)
   }
 }
 
-void RuntimePluginLoader::postLaunch(RAJA::util::PluginContext& p)
+void RuntimePluginLoader::postLaunch(const RAJA::util::PluginContext& p)
 {
   for (auto &plugin : plugins)
   {
@@ -79,6 +79,7 @@ void RuntimePluginLoader::finalize()
   {
     plugin->finalize();
   }
+  plugins.clear();
 }
 
 // Initialize plugin from a shared object file specified by 'path'.
@@ -101,8 +102,6 @@ void RuntimePluginLoader::initPlugin(const std::string &path)
   {
     printf("[RuntimePluginLoader]: dlsym failed: %s\n", dlerror());
   }
-
-  dlclose(plugin);
   #else
   RAJA_UNUSED_ARG(path);
   #endif

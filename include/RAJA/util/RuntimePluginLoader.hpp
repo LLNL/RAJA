@@ -24,17 +24,17 @@ namespace util {
   public:
     RuntimePluginLoader();
 
-    void init(RAJA::util::PluginOptions p);
+    void init(const RAJA::util::PluginOptions& p) override;
 
-    void preCapture(RAJA::util::PluginContext& p);
+    void preCapture(const RAJA::util::PluginContext& p) override;
 
-    void postCapture(RAJA::util::PluginContext& p);
+    void postCapture(const RAJA::util::PluginContext& p) override;
 
-    void preLaunch(RAJA::util::PluginContext& p);
+    void preLaunch(RAJA::util::PluginContext& p) override;
 
-    void postLaunch(RAJA::util::PluginContext& p);
+    void postLaunch(const RAJA::util::PluginContext& p) override;
 
-    void finalize();
+    void finalize() override;
 
   private:
 

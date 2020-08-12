@@ -18,7 +18,7 @@ public:
     start_time = std::chrono::steady_clock::now();
   }
 
-  void postLaunch(RAJA::util::PluginContext& p)
+  void postLaunch(const RAJA::util::PluginContext& p)
   {
     end_time = std::chrono::steady_clock::now();
     double elapsedMs = std::chrono::duration<double, std::milli>(end_time - start_time).count();

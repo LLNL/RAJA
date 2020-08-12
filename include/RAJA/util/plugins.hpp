@@ -26,7 +26,7 @@ RAJA_INLINE auto trigger_updates_before(T&& item)
 
 RAJA_INLINE
 void
-callPreCapturePlugins(PluginContext& p)
+callPreCapturePlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -38,7 +38,7 @@ callPreCapturePlugins(PluginContext& p)
 
 RAJA_INLINE
 void
-callPostCapturePlugins(PluginContext& p)
+callPostCapturePlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -62,7 +62,7 @@ callPreLaunchPlugins(PluginContext& p)
 
 RAJA_INLINE
 void
-callPostLaunchPlugins(PluginContext& p)
+callPostLaunchPlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -74,7 +74,7 @@ callPostLaunchPlugins(PluginContext& p)
 
 RAJA_INLINE
 void
-callInitPlugins(PluginOptions p)
+callInitPlugins(const PluginOptions p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();

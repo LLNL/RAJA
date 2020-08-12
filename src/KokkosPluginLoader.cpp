@@ -65,7 +65,7 @@ void KokkosPluginLoader::preLaunch(RAJA::util::PluginContext& p)
   }
 }
 
-void KokkosPluginLoader::postLaunch(RAJA::util::PluginContext& p)
+void KokkosPluginLoader::postLaunch(const RAJA::util::PluginContext& p)
 {
   for (auto &func : post_functions)
   {
@@ -79,6 +79,10 @@ void KokkosPluginLoader::finalize()
   {
     func();
   }
+  init_functions.clear();
+  pre_functions.clear();
+  post_functions.clear();
+  finalize_functions.clear();
 }
 
 // Initialize plugin from a shared object file specified by 'path'.
@@ -99,8 +103,6 @@ void KokkosPluginLoader::initPlugin(const std::string &path)
   getFunction<post_function>(plugin, post_functions, "kokkosp_end_parallel_for");
 
   getFunction<finalize_function>(plugin, finalize_functions, "kokkosp_finalize_library");
-
-  dlclose(plugin);
   #else
   RAJA_UNUSED_ARG(path);
   #endif

@@ -22,15 +22,15 @@ class PluginStrategy
 
     virtual ~PluginStrategy() = default;
 
-    virtual void init(PluginOptions p);
+    virtual void init(const PluginOptions& p);
 
-    virtual void preCapture(PluginContext& p);
+    virtual void preCapture(const PluginContext& p);
 
-    virtual void postCapture(PluginContext& p);
+    virtual void postCapture(const PluginContext& p);
 
     virtual void preLaunch(PluginContext& p);
 
-    virtual void postLaunch(PluginContext& p);
+    virtual void postLaunch(const PluginContext& p);
 
     virtual void finalize();
 };

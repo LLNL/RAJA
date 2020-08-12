@@ -28,9 +28,9 @@ namespace util {
 
     KokkosPluginLoader();
 
-    void preLaunch(RAJA::util::PluginContext& p);
+    void preLaunch(RAJA::util::PluginContext& p) override;
 
-    void postLaunch(RAJA::util::PluginContext& p);
+    void postLaunch(const RAJA::util::PluginContext& p) override;
 
     void finalize();
 
