@@ -32,3 +32,14 @@ foreach( BACKEND ${PLUGIN_BACKENDS} )
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 
+foreach( BACKEND ${PLUGIN_BACKENDS} )
+  configure_file( test-plugin-workgroup.cpp.in
+                  test-plugin-workgroup-${BACKEND}.cpp )
+  raja_add_test( NAME test-plugin-workgroup-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${BACKEND}.cpp
+                         plugin_to_test.cpp )
+
+  target_include_directories(test-plugin-workgroup-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()
+
