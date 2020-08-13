@@ -24,11 +24,14 @@
 namespace RAJA
 {
 
+namespace expt
+{
+
 struct omp_launch_t {
 };
 
 template <>
-struct LaunchExecute<RAJA::omp_launch_t> {
+struct LaunchExecute<RAJA::expt::omp_launch_t> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -153,6 +156,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
   }
 };
 
+} //namespace expt
 
 }  // namespace RAJA
 #endif

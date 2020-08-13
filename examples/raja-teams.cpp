@@ -13,6 +13,7 @@
 #include "RAJA/RAJA.hpp"
 #include "memoryManager.hpp"
 
+
 /*
  *  RAJA Teams Example:
  *  Matrix-matrix multiplication with shared memory
@@ -114,23 +115,23 @@ void printResult(T *C, int N);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
-using launch_policy = RAJA::LaunchPolicy<
+using launch_policy = RAJA::expt::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-  RAJA::omp_launch_t
+  RAJA::expt::omp_launch_t
 #else
-  RAJA::seq_launch_t
+  RAJA::expt::seq_launch_t
 #endif
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
-                                         RAJA::cuda_launch_t<false>
+                                         RAJA::expt::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
                                          ,
-                                         RAJA::hip_launch_t<false>
+                                         RAJA::expt::hip_launch_t<false>
 #endif
                                          >;
 
-using teams1 = RAJA::LoopPolicy<
+using teams1 = RAJA::expt::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
 RAJA::omp_parallel_for_exec
 #else
@@ -145,7 +146,7 @@ RAJA::loop_exec
                                 RAJA::hip_block_y_direct
 #endif
                                 >;
-using teams_x = RAJA::LoopPolicy<RAJA::loop_exec
+using teams_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                 ,
                                 RAJA::cuda_block_x_direct
@@ -156,7 +157,7 @@ using teams_x = RAJA::LoopPolicy<RAJA::loop_exec
 #endif
                                 >;
 
-using teams_xy = RAJA::LoopPolicy<
+using teams_xy = RAJA::expt::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
 RAJA::omp_parallel_for_exec
 #else
@@ -164,16 +165,16 @@ RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
                                  ,
-                                 RAJA::cuda_block_xy_nested_direct
+                                 RAJA::expt::cuda_block_xy_nested_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
                                  ,
-                                 RAJA::hip_block_xy_nested_direct
+                                 RAJA::expt::hip_block_xy_nested_direct
 #endif
                                  >;
 
 
-using threads_y = RAJA::LoopPolicy<RAJA::loop_exec
+using threads_y = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                   ,
                                   RAJA::cuda_thread_y_loop
@@ -184,7 +185,7 @@ using threads_y = RAJA::LoopPolicy<RAJA::loop_exec
 #endif
                                   >;
 
-using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
+using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                   ,
                                   RAJA::cuda_thread_x_loop
@@ -195,18 +196,14 @@ using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
 #endif
                                   >;
 
+
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-
   // N is number of blocks in each matrix
   const int NBlocks = 4;
-#ifdef RAJA_ENABLE_DEVICE
+
   const int NThreads = THREAD_BLOCK_SZ;
   const int N = NThreads * NBlocks;
-#else
-  const int NThreads = 1;
-  const int N = NThreads * NBlocks;
-#endif
 
   printf("NThreads = %d \n", NThreads);
   //
@@ -226,8 +223,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA-Teams examples...\n";
   std::cout << "  N = " << N << std::endl;
 
-  for (int exec_place = 0; exec_place < (int)RAJA::NUM_PLACES; ++exec_place) {
-    RAJA::ExecPlace select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
+
+  for (int exec_place = 0; exec_place < (int)RAJA::expt::NUM_PLACES; ++exec_place) {
+    RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
+
     // auto select_cpu_or_gpu = RAJA::HOST;
     // auto select_cpu_or_gpu = RAJA::DEVICE;
 
@@ -253,23 +252,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     const int NTeams = 2;
     constexpr int Nthreads = 5;
-    RAJA::launch<launch_policy>(
+    RAJA::expt::launch<launch_policy>(
         select_cpu_or_gpu,
-        RAJA::Resources(RAJA::Teams(NTeams), RAJA::Threads(Nthreads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, NTeams), [&](int) {
+        RAJA::expt::Resources(RAJA::expt::Teams(NTeams), RAJA::expt::Threads(Nthreads)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, NTeams), [&](int) {
 
             //Appveyor has trouble with constexpr.
             //Had to hardcode the number
             TEAM_SHARED int s_A[5];
 
-            RAJA::loop<threads_x>(ctx,RAJA::RangeSegment(0, Nthreads), [&](int i) {
+            RAJA::expt::loop<threads_x>(ctx,RAJA::RangeSegment(0, Nthreads), [&](int i) {
                 s_A[i] = i;
             });
 
             ctx.teamSync();
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&](int i) {
 
                 printf("s_(%d) = %d \n", i, s_A[Nthreads - 1 - i]);
             });
@@ -283,14 +282,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "\n Running Upper triangular pattern example...\n";
 
     const int N_tri = 5;
-    RAJA::launch<launch_policy>(
+    RAJA::expt::launch<launch_policy>(
         select_cpu_or_gpu,
-        RAJA::Resources(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int i) {
+        RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int i) {
             // do a matrix triangular pattern
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(i, N_tri), [&](int j) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(i, N_tri), [&](int j) {
               printf("i=%d, j=%d\n", i, j);
             });  // loop j
 
@@ -312,7 +311,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    int* Ddat_device = memoryManager::allocate_gpu<int>(N_tri2 * N_tri2);
    hipErrchk(hipMemcpy(Ddat_device, Ddat, N_tri2 * N_tri2 * sizeof(int),
                        hipMemcpyHostToDevice ));
-   if(exec_place == RAJA::ExecPlace::DEVICE)
+   if(exec_place == RAJA::expt::ExecPlace::DEVICE)
     {
       Ddat_ptr = Ddat_device;
     }
@@ -320,18 +319,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat_ptr, N_tri2, N_tri2);
 
-    RAJA::launch<launch_policy>( select_cpu_or_gpu,
-      RAJA::Resources(RAJA::Teams(N_tri2), RAJA::Threads(N_tri2)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::expt::launch<launch_policy>( select_cpu_or_gpu,
+      RAJA::expt::Resources(RAJA::expt::Teams(N_tri2), RAJA::expt::Threads(N_tri2)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
 
-          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
+        RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
               D(r, c) = r * N_tri + c;
             });  // loop j
 
-            RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
               printf("r=%d, c=%d : D=%d\n", r, c, D(r, c));
             });  // loop c
           });    // loop r
@@ -361,7 +360,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     hipErrchk(hipMemcpy( B_device, B, N * N * sizeof(double), hipMemcpyHostToDevice ));
     hipErrchk(hipMemcpy( C_device, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
 
-   if(exec_place == RAJA::ExecPlace::DEVICE)
+    if(exec_place == RAJA::expt::ExecPlace::DEVICE)
     {
       A_ptr=A_device;
       B_ptr=B_device;
@@ -372,10 +371,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Set up Teams/Threads
 
     printf("select_cpu_or_gpu %d \n", select_cpu_or_gpu);
-    RAJA::launch<launch_policy>(select_cpu_or_gpu,
-        RAJA::Resources(RAJA::Teams(NBlocks, NBlocks),
-                        RAJA::Threads(NThreads, NThreads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
+      RAJA::expt::Resources(RAJA::expt::Teams(NBlocks, NBlocks),
+                            RAJA::expt::Threads(NThreads, NThreads)),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
           RAJA::RangeSegment TeamRange(0, NBlocks);
           RAJA::RangeSegment ThreadRange(0, NThreads);
@@ -385,15 +384,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // RAJA::loop<teams1>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int by)
           // { RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, NBlocks), [&](int
           // bx) {
-          RAJA::loop<teams_xy>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
+          RAJA::expt::loop<teams_xy>(ctx, TeamRange, TeamRange, [&](int bx, int by) {
 
             TEAM_SHARED double As[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Bs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
             TEAM_SHARED double Cs[THREAD_BLOCK_SZ][THREAD_BLOCK_SZ];
 
             // Team parallel loop
-            RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
-                RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
+            RAJA::expt::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                RAJA::expt::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                     Cs[ty][tx] = 0.0;
 
@@ -403,8 +402,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             // Slide across matrix
             for (int m = 0; m < (N / NThreads); ++m) {
 
-              RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
-                    RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
+              RAJA::expt::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                  RAJA::expt::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                           const int row = by * NThreads + ty;  // Matrix row index
                           const int col = bx * NThreads + tx;  // Matrix column index
@@ -417,8 +416,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               ctx.teamSync();
 
-              RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
-                  RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
+              RAJA::expt::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                  RAJA::expt::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                       for (int e = 0; e < NThreads; ++e) {
 
@@ -433,8 +432,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             }  // slide across matrix
 
 
-            RAJA::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
-                RAJA::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
+            RAJA::expt::loop<threads_y>(ctx, ThreadRange, [&](int ty) {
+                RAJA::expt::loop<threads_x>(ctx, ThreadRange, [&](int tx) {
 
                         const int row = by * NThreads + ty;  // Matrix row index
                         const int col = bx * NThreads + tx;  // Matrix column index
@@ -449,7 +448,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });  // kernel
 
 #if defined(RAJA_ENABLE_HIP)
-   if(exec_place == RAJA::ExecPlace::DEVICE)
+    if(exec_place == RAJA::expt::ExecPlace::DEVICE)
     {
       hipErrchk(hipMemcpy(C, C_device, N * N * sizeof(double), hipMemcpyDeviceToHost ));
     }
@@ -460,7 +459,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   }
 
-}
+
+}//Main
 
 
 //

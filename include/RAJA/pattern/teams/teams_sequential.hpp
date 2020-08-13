@@ -26,11 +26,14 @@
 namespace RAJA
 {
 
+namespace expt
+{
+
 struct seq_launch_t {
 };
 
 template <>
-struct LaunchExecute<RAJA::seq_launch_t> {
+struct LaunchExecute<RAJA::expt::seq_launch_t> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -102,6 +105,7 @@ struct LoopExecute<loop_exec, SEGMENT> {
   }
 };
 
+} // namespace expt
 
 }  // namespace RAJA
 #endif

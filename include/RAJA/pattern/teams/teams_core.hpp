@@ -41,6 +41,9 @@
 namespace RAJA
 {
 
+namespace expt
+{
+
 // GPU or CPU threads available
 enum ExecPlace {
 HOST
@@ -50,7 +53,7 @@ HOST
 ,NUM_PLACES };
 
 
-// Support for Host, Host_threads, and Device
+// Support for Host, and Device
 template <typename HOST_POLICY
 #if defined(RAJA_ENABLE_DEVICE)
           ,typename DEVICE_POLICY
@@ -266,6 +269,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #endif
 }
 
+} //namespace expt
 
 }  // namespace RAJA
 #endif
