@@ -1,0 +1,27 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA workgroup ordered execution.
+///
+
+#include "test-workgroup-Ordered.hpp"
+
+using @BACKEND@BasicWorkGroupOrdered@SUBTESTNAME@Types =
+  Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
+                                 @BACKEND@OrderedPolicyList,
+                                 @BACKEND@StoragePolicyList,
+                                 IndexTypeTypeList,
+                                 @BACKEND@AllocatorList,
+                                 @BACKEND@ResourceList > >::Types;
+
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicOrdered@SUBTESTNAME@FunctionalTest,
+                            BasicWorkGroupOrdered@SUBTESTNAME@);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
+                               WorkGroupBasicOrdered@SUBTESTNAME@FunctionalTest,
+                               @BACKEND@BasicWorkGroupOrdered@SUBTESTNAME@Types);
