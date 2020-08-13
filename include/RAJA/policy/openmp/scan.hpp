@@ -30,6 +30,7 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
 {
@@ -37,13 +38,6 @@ namespace impl
 {
 namespace scan
 {
-
-template <typename IdxType>
-RAJA_INLINE
-IdxType firstIndex(IdxType n, int p, int pid)
-{
-  return (static_cast<size_t>(n) * pid) / p;
-}
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and
@@ -57,6 +51,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     BinFn f)
 {
   using std::distance;
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const auto n = distance(begin, end);
   using DistanceT = typename std::remove_const<decltype(n)>::type;
@@ -95,6 +90,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     ValueT v)
 {
   using std::distance;
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const auto n = distance(begin, end);
   using DistanceT = typename std::remove_const<decltype(n)>::type;
