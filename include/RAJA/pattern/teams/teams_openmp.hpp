@@ -19,6 +19,7 @@
 #define RAJA_pattern_teams_openmp_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
 
 namespace RAJA
 {

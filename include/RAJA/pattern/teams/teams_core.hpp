@@ -20,10 +20,6 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-#include "RAJA/policy/hip/policy.hpp"
-#include "RAJA/policy/loop/policy.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/types.hpp"
@@ -48,7 +44,7 @@ namespace RAJA
 // GPU or CPU threads available
 enum ExecPlace {
 HOST
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_DEVICE)
 ,DEVICE
 #endif
 ,NUM_PLACES };

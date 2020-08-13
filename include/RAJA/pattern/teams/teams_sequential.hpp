@@ -20,6 +20,7 @@
 #define RAJA_pattern_teams_sequential_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 
 namespace RAJA

@@ -19,6 +19,7 @@
 #define RAJA_pattern_teams_cuda_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {

@@ -19,6 +19,7 @@
 #define RAJA_pattern_teams_hip_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/policy/hip/policy.hpp"
 
 namespace RAJA
 {
