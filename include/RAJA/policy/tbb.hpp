@@ -27,6 +27,7 @@
 #include "RAJA/policy/tbb/reduce.hpp"
 #include "RAJA/policy/tbb/scan.hpp"
 #include "RAJA/policy/tbb/sort.hpp"
+#include "RAJA/policy/tbb/WorkGroup.hpp"
 
 #endif
 

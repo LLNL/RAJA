@@ -66,6 +66,10 @@ raja_add_executable(
   SOURCES tut_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
+  NAME tut_halo-exchange
+  SOURCES tut_halo-exchange.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
 

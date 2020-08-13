@@ -140,6 +140,12 @@
 #include "RAJA/util/sort.hpp"
 
 //
+// WorkPool, WorkGroup, WorkSite objects
+//
+#include "RAJA/policy/WorkGroup.hpp"
+#include "RAJA/pattern/WorkGroup.hpp"
+
+//
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
