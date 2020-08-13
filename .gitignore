@@ -3,6 +3,11 @@
 *.a
 *.exe
 *.gch
-build/
-build-*/
+/*.sublime-*
+/build/
+/build_*/
+/build-*/
+/install/
+/install_*/
+/install-*/
 /Debug/
