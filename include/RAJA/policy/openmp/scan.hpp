@@ -30,6 +30,7 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
 {
@@ -37,12 +38,6 @@ namespace impl
 {
 namespace scan
 {
-
-RAJA_INLINE
-int firstIndex(int n, int p, int pid)
-{
-  return (static_cast<size_t>(n) * pid) / p;
-}
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and
@@ -55,6 +50,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     Iter end,
     BinFn f)
 {
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p0 = std::min(n, omp_get_max_threads());
@@ -89,6 +85,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     BinFn f,
     ValueT v)
 {
+  using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p0 = std::min(n, omp_get_max_threads());

@@ -25,11 +25,18 @@
 #include "test-forall-basic-@REDUCETYPE@.hpp"
 
 //
-// Data types for reduction basic tests
+// Data types for core reduction basic tests
 //
-using ReductionDataTypeList = camp::list< int,
-                                          float,
-                                          double >;
+using CoreReductionDataTypeList = camp::list< int,
+                                              float,
+                                              double >;
+
+//
+// Data types for bitwise reduction basic tests
+//
+using BitwiseReductionDataTypeList = camp::list< int,
+                                                 unsigned int >;
+
 
 //
 // These tests exercise only one index type. We parameterize here to 
@@ -42,7 +49,7 @@ using TestIdxTypeList = camp::list< RAJA::Index_type >;
 //
 using @BACKEND@ForallReduceBasicTypes =
   Test< camp::cartesian_product<TestIdxTypeList,
-                                ReductionDataTypeList,
+                                @DATATYPES@,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;
