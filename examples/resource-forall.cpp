@@ -26,19 +26,8 @@
  *    -  Index range segment
  *    -  Execution policies
  *
- * If CUDA is enabled, CUDA unified memory is used. 
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
-#endif
 
 //
 // Functions for checking and printing results
@@ -194,103 +183,123 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+
+/*
+  GPU_BLOCK_SIZE - specifies the number of threads in a CUDA/HIP thread block
+*/
+const int GPU_BLOCK_SIZE = 256;
+
+//----------------------------------------------------------------------------//
+// RAJA::cuda/hip_exec policy execution.... 
+//----------------------------------------------------------------------------//
+{
+  std::cout << "\n Running RAJA GPU vector addition on 2 seperate streams...\n";
 #if defined(RAJA_ENABLE_CUDA)
-//----------------------------------------------------------------------------//
-// RAJA::cuda_exec policy execution.... 
-//----------------------------------------------------------------------------//
-  {
-  std::cout << "\n Running RAJA CUDA vector addition on 2 seperate streams...\n";
-  RAJA::resources::Cuda res_cuda1;
-  RAJA::resources::Cuda res_cuda2;
+  RAJA::resources::Cuda res_gpu1;
+  RAJA::resources::Cuda res_gpu2;
+  using EXEC_POLICY = RAJA::cuda_exec<GPU_BLOCK_SIZE, true>;
+#elif defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip res_gpu1;
+  RAJA::resources::Hip res_gpu2;
+  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>
+#endif
 
-  int* d_a1 = res_cuda1.allocate<int>(N);
-  int* d_b1 = res_cuda1.allocate<int>(N);
-  int* d_c1 = res_cuda1.allocate<int>(N);
+  int* d_a1 = res_gpu1.allocate<int>(N);
+  int* d_b1 = res_gpu1.allocate<int>(N);
+  int* d_c1 = res_gpu1.allocate<int>(N);
 
-  int* d_a2 = res_cuda2.allocate<int>(N);
-  int* d_b2 = res_cuda2.allocate<int>(N);
-  int* d_c2 = res_cuda2.allocate<int>(N);
+  int* d_a2 = res_gpu2.allocate<int>(N);
+  int* d_b2 = res_gpu2.allocate<int>(N);
+  int* d_c2 = res_gpu2.allocate<int>(N);
 
-  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
-  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+  res_gpu1.memcpy(d_a1, a, sizeof(int)* N);
+  res_gpu1.memcpy(d_b1, b, sizeof(int)* N);
 
-  res_cuda2.memcpy(d_a2, a, sizeof(int)* N);
-  res_cuda2.memcpy(d_b2, b, sizeof(int)* N);
+  res_gpu2.memcpy(d_a2, a, sizeof(int)* N);
+  res_gpu2.memcpy(d_b2, b, sizeof(int)* N);
 
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+  RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c1[i] = d_a1[i] + d_b1[i]; 
   });    
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+  RAJA::forall<EXEC_POLICY>(res_gpu2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c2[i] = d_a2[i] + d_b2[i]; 
   }); 
 
-  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
+  res_gpu1.memcpy(c, d_c1, sizeof(int)*N );
 
-  res_cuda2.memcpy(c_, d_c2, sizeof(int)*N );
+  res_gpu2.memcpy(c_, d_c2, sizeof(int)*N );
 
   checkResult(c, N);
   checkResult(c_, N);
 
-  res_cuda1.deallocate(d_a1);
-  res_cuda1.deallocate(d_b1);
-  res_cuda1.deallocate(d_c1);
+  res_gpu1.deallocate(d_a1);
+  res_gpu1.deallocate(d_b1);
+  res_gpu1.deallocate(d_c1);
 
-  res_cuda2.deallocate(d_a2);
-  res_cuda2.deallocate(d_b2);
-  res_cuda2.deallocate(d_c2);
-  }
+  res_gpu2.deallocate(d_a2);
+  res_gpu2.deallocate(d_b2);
+  res_gpu2.deallocate(d_c2);
+}
 
 
 //----------------------------------------------------------------------------//
 // RAJA::cuda/hip_exec policy with waiting event.... 
 //----------------------------------------------------------------------------//
-  {
-  std::cout << "\n Running RAJA CUDA vector with dependency between two seperate streams...\n";
-  RAJA::resources::Cuda res_cuda1;
-  RAJA::resources::Cuda res_cuda2;
+{
+  std::cout << "\n Running RAJA GPU vector with dependency between two seperate streams...\n";
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda res_gpu1;
+  RAJA::resources::Cuda res_gpu2;
+  using EXEC_POLICY = RAJA::cuda_exec<GPU_BLOCK_SIZE, true>;
+#elif defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip res_gpu1;
+  RAJA::resources::Hip res_gpu2;
+  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>
+#endif
 
-  int* d_a1 = res_cuda1.allocate<int>(N);
-  int* d_b1 = res_cuda1.allocate<int>(N);
+  int* d_a1 = res_gpu1.allocate<int>(N);
+  int* d_b1 = res_gpu1.allocate<int>(N);
 
-  int* d_c1 = res_cuda1.allocate<int>(N);
-  int* d_c2 = res_cuda2.allocate<int>(N);
+  int* d_c1 = res_gpu1.allocate<int>(N);
+  int* d_c2 = res_gpu2.allocate<int>(N);
 
-  res_cuda1.memcpy(d_a1, a, sizeof(int)* N);
-  res_cuda1.memcpy(d_b1, b, sizeof(int)* N);
+  res_gpu1.memcpy(d_a1, a, sizeof(int)* N);
+  res_gpu1.memcpy(d_b1, b, sizeof(int)* N);
 
-  RAJA::resources::Event e = RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda1, RAJA::RangeSegment(0, N), 
+  RAJA::resources::Event e = RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c1[i] = d_a1[i] + d_b1[i]; 
   });    
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+  RAJA::forall<EXEC_POLICY>(res_gpu2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c2[i] = -1;
   }); 
 
-  res_cuda2.wait_for(&e);
+  res_gpu2.wait_for(&e);
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE, true>>(res_cuda2, RAJA::RangeSegment(0, N), 
+  RAJA::forall<EXEC_POLICY>(res_gpu2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c2[i] = d_c1[i]; 
   }); 
 
-  res_cuda1.memcpy(c, d_c1, sizeof(int)*N );
-  res_cuda1.memcpy(c_, d_c2, sizeof(int)*N );
+  res_gpu1.memcpy(c, d_c1, sizeof(int)*N );
+  res_gpu1.memcpy(c_, d_c2, sizeof(int)*N );
 
   checkResult(c, N);
   checkResult(c_, N);
 
-  res_cuda1.deallocate(d_a1);
-  res_cuda1.deallocate(d_b1);
+  res_gpu1.deallocate(d_a1);
+  res_gpu1.deallocate(d_b1);
 
-  res_cuda1.deallocate(d_c1);
-  res_cuda2.deallocate(d_c2);
-  }
+  res_gpu1.deallocate(d_c1);
+  res_gpu2.deallocate(d_c2);
+}
 
 #endif
 //
