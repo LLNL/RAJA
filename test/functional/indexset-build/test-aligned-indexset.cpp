@@ -28,7 +28,7 @@ TEST(IndexSetBuild, Aligned)
 
   //
   // Create index vector containing indices:
-  // {0, 1, ..., 15, 17, 18, 20, 21, ..., 27, 29, 30, 31}
+  // {0, 1, ..., 15,  17, 18,  20, 21, ..., 27,  29,  30, 31}
   //
   std::vector<RAJA::Index_type> indices(16);
   std::iota(indices.begin(), indices.end(), 0);
