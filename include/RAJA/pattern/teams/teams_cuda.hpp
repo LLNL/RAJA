@@ -71,7 +71,7 @@ __launch_bounds__(num_threads, 1) __global__
 
 
 template <bool async, int nthreads>
-struct LaunchExecute<RAJA::cuda_launch_t<async, nthreads>> {
+struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
