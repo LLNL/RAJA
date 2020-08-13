@@ -168,7 +168,7 @@ struct LoopExecute<hip_thread_x_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int tx = threadIdx.x;
-      if(tx < len) body(*(segment.begin() + tx));
+      if (tx < len) body(*(segment.begin() + tx));
     }
   }
 };
@@ -186,7 +186,7 @@ struct LoopExecute<hip_thread_y_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int ty = threadIdx.y;
-      if(ty < len) body(*(segment.begin() + ty));
+      if (ty < len) body(*(segment.begin() + ty));
     }
   }
 };
@@ -204,7 +204,7 @@ struct LoopExecute<hip_thread_z_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int tz = threadIdx.z;
-      if(tz < len) body(*(segment.begin() + tz));
+      if (tz < len) body(*(segment.begin() + tz));
     }
   }
 };
@@ -283,7 +283,7 @@ struct LoopExecute<hip_block_x_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int bx = blockIdx.x;
-      if(bx < len) body(*(segment.begin() + bx));
+      if (bx < len) body(*(segment.begin() + bx));
     }
   }
 };
@@ -301,7 +301,7 @@ struct LoopExecute<hip_block_y_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int by = blockIdx.y;
-      if(by < len) body(*(segment.begin() + by));
+      if (by < len) body(*(segment.begin() + by));
     }
   }
 };
@@ -319,7 +319,7 @@ struct LoopExecute<hip_block_z_direct, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int bz = blockIdx.z;
-      if(bz < len) body(*(segment.begin() + bz));
+      if (bz < len) body(*(segment.begin() + bz));
     }
   }
 };
@@ -348,7 +348,8 @@ struct LoopExecute<hip_block_xy_nested_direct, SEGMENT> {
     {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
-      if(i < len0 && i < len1 ) body(*(segment0.begin() + i), *(segment1.begin() + j));
+      if (i < len0 && i < len1)
+        body(*(segment0.begin() + i), *(segment1.begin() + j));
     }
   }
 };
@@ -368,7 +369,8 @@ struct LoopExecute<hip_thread_xy_nested_direct, SEGMENT> {
     {
       const int i = threadIdx.x;
       const int j = threadIdx.y;
-      if(i < len0 && j < len1) body(*(segment0.begin() + i), *(segment1.begin() + j));
+      if (i < len0 && j < len1)
+        body(*(segment0.begin() + i), *(segment1.begin() + j));
     }
   }
 };
@@ -392,9 +394,10 @@ struct LoopExecute<hip_block_xyz_nested_direct, SEGMENT> {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
       const int k = blockIdx.z;
-      if(i < len0 && j < len1 && k < len2 ) body(*(segment0.begin() + i),
-                                                 *(segment1.begin() + j),
-                                                 *(segment2.begin() + k));
+      if (i < len0 && j < len1 && k < len2)
+        body(*(segment0.begin() + i),
+             *(segment1.begin() + j),
+             *(segment2.begin() + k));
     }
   }
 };
@@ -417,9 +420,10 @@ struct LoopExecute<hip_thread_xyz_nested_direct, SEGMENT> {
       const int i = threadIdx.x;
       const int j = threadIdx.y;
       const int k = threadIdx.z;
-      if(i < len0 && j < len1 && k < len2 ) body(*(segment0.begin() + i),
-                                                 *(segment1.begin() + j),
-                                                 *(segment2.begin() + k));
+      if (i < len0 && j < len1 && k < len2)
+        body(*(segment0.begin() + i),
+             *(segment1.begin() + j),
+             *(segment2.begin() + k));
     }
   }
 };
@@ -449,7 +453,6 @@ struct LoopExecute<hip_block_xy_nested_loop, SEGMENT> {
           body(*(segment0.begin() + bx), *(segment1.begin() + by));
         }
       }
-
     }
   }
 };
@@ -496,12 +499,11 @@ struct LoopExecute<hip_block_xyz_nested_loop, SEGMENT> {
       for (int by = blockIdx.y; by < len1; by += gridDim.y) {
         for (int bx = blockIdx.x; bx < len0; bx += gridDim.x) {
           body(*(segment0.begin() + bx),
-               *(segment1.begin() + by), 
+               *(segment1.begin() + by),
                *(segment2.begin() + bz));
         }
       }
     }
-
   }
 };
 
@@ -525,16 +527,15 @@ struct LoopExecute<hip_thread_xyz_nested_loop, SEGMENT> {
       for (int by = threadIdx.y; by < len1; by += blockDim.y) {
         for (int bx = threadIdx.x; bx < len0; bx += blockDim.x) {
           body(*(segment0.begin() + bx),
-               *(segment1.begin() + by), 
+               *(segment1.begin() + by),
                *(segment2.begin() + bz));
         }
       }
     }
-
   }
 };
 
-} // namespace expt
+}  // namespace expt
 
 }  // namespace RAJA
 #endif

@@ -105,7 +105,7 @@ struct LoopExecute<loop_exec, SEGMENT> {
   }
 };
 
-} // namespace expt
+}  // namespace expt
 
 }  // namespace RAJA
 #endif

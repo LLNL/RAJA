@@ -104,7 +104,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   }
 };
 
-//policy for perfectly nested loops
+// policy for perfectly nested loops
 struct omp_parallel_nested_for_exec;
 
 template <typename SEGMENT>
@@ -156,7 +156,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
   }
 };
 
-} //namespace expt
+}  // namespace expt
 
 }  // namespace RAJA
 #endif

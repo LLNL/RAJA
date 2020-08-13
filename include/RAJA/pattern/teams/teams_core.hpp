@@ -20,10 +20,10 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
+#include "RAJA/util/StaticLayout.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/StaticLayout.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -46,17 +46,21 @@ namespace expt
 
 // GPU or CPU threads available
 enum ExecPlace {
-HOST
+  HOST
 #if defined(RAJA_ENABLE_DEVICE)
-,DEVICE
+  ,
+  DEVICE
 #endif
-,NUM_PLACES };
+  ,
+  NUM_PLACES
+};
 
 
 // Support for Host, and Device
 template <typename HOST_POLICY
 #if defined(RAJA_ENABLE_DEVICE)
-          ,typename DEVICE_POLICY
+          ,
+          typename DEVICE_POLICY
 #endif
           >
 struct LoopPolicy {
@@ -68,9 +72,10 @@ struct LoopPolicy {
 
 template <typename HOST_POLICY
 #if defined(RAJA_ENABLE_DEVICE)
-          ,typename DEVICE_POLICY
+          ,
+          typename DEVICE_POLICY
 #endif
->
+          >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
 #if defined(RAJA_ENABLE_DEVICE)
@@ -188,16 +193,16 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 {
   switch (place) {
     case HOST: {
-        using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-         launch_t::exec(LaunchContext(team_resources, HOST), body);
-        break;
-      }
+      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+      launch_t::exec(LaunchContext(team_resources, HOST), body);
+      break;
+    }
 #ifdef RAJA_ENABLE_DEVICE
     case DEVICE: {
-        using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-        launch_t::exec(LaunchContext(team_resources, DEVICE), body);
-        break;
-      }
+      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      break;
+    }
 #endif
     default:
       throw "unknown launch place!";
@@ -269,7 +274,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #endif
 }
 
-} //namespace expt
+}  // namespace expt
 
 }  // namespace RAJA
 #endif
