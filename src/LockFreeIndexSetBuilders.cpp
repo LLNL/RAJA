@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for various index set builder methods.
+ * \brief   Implementation file for lock-free index set builder methods.
  *
  ******************************************************************************
  */

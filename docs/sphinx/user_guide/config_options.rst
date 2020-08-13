@@ -228,7 +228,7 @@ and their default settings:
       RAJA_DATA_ALIGN                 64
       =============================   ======================
 
-     What ths variable means:
+     What this variable means:
 
       =============================   ========================================
       Variable                        Meaning

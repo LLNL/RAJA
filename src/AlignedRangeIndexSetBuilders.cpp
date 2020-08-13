@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for various index set builder methods.
+ * \brief   Implmentation file for aligned range index set builder methods.
  *
  ******************************************************************************
  */
