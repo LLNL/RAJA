@@ -26,6 +26,7 @@
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/sequential/reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
+#include "RAJA/policy/sequential/sort.hpp"
 
 
 #endif  // closing endif for header file include guard
