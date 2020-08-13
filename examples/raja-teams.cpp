@@ -110,8 +110,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     int *Ddat;
     if (select_cpu_or_gpu == RAJA::expt::HOST)
       Ddat = host_res.allocate<int>(N_tri * N_tri);
+
+#if defined(RAJA_ENABLE_DEVICE)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE)
       Ddat = device_res.allocate<int>(N_tri * N_tri);
+#endif
 
     /*
      * launch just starts a "kernel" it's doesn't provide any looping.
@@ -160,9 +163,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
       host_res.deallocate(Ddat);
     }
+
+#if defined(RAJA_ENABLE_DEVICE)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
       device_res.deallocate(Ddat);
     }
+#endif
 
   }  // Execution places loop
 
