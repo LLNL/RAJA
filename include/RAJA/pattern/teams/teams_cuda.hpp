@@ -24,6 +24,9 @@
 namespace RAJA
 {
 
+namespace expt 
+{
+
 template <bool async, int num_threads = 0>
 struct cuda_launch_t {
 };
@@ -36,7 +39,7 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body)
 
 
 template <bool async>
-struct LaunchExecute<RAJA::cuda_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -90,6 +93,10 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, nthreads>> {
   }
 };
 
+/*
+  CUDA thread loops with block strides
+*/
+
 template <typename SEGMENT>
 struct LoopExecute<cuda_thread_x_loop, SEGMENT> {
 
@@ -125,6 +132,28 @@ struct LoopExecute<cuda_thread_y_loop, SEGMENT> {
     }
   }
 };
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int i = threadIdx.z; i < len; i += blockDim.z) {
+      body(*(segment.begin() + i));
+    }
+  }
+};
+
+/*
+  CUDA thread direct mappings
+*/
 
 template <typename SEGMENT>
 struct LoopExecute<cuda_thread_x_direct, SEGMENT> {
@@ -163,7 +192,7 @@ struct LoopExecute<cuda_thread_y_direct, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
+struct LoopExecute<cuda_thread_z_direct, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -173,13 +202,16 @@ struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
   {
 
     const int len = segment.end() - segment.begin();
-
-    for (int i = threadIdx.z; i < len; i += blockDim.z) {
-      body(*(segment.begin() + i));
+    {
+      const int tz = threadIdx.z;
+      if(tz < len) body(*(segment.begin() + tz));
     }
   }
 };
 
+/*
+  CUDA block loops with grid strides
+*/
 template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_loop, SEGMENT> {
 
@@ -197,6 +229,46 @@ struct LoopExecute<cuda_block_x_loop, SEGMENT> {
     }
   }
 };
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_y_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int by = blockIdx.y; by < len; by += gridDim.y) {
+      body(*(segment.begin() + by));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_z_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int bz = blockIdx.z; bz < len; bz += gridDim.z) {
+      body(*(segment.begin() + bz));
+    }
+  }
+};
+
+/*
+  CUDA block direct mappings
+*/
 
 template <typename SEGMENT>
 struct LoopExecute<cuda_block_x_direct, SEGMENT> {
@@ -234,7 +306,26 @@ struct LoopExecute<cuda_block_y_direct, SEGMENT> {
   }
 };
 
-// collapsed cuda policies
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_z_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int by = blockIdx.z;
+      if(bz < len) body(*(segment.begin() + bz));
+    }
+  }
+};
+
+
+// perfectly nested cuda direct policies
 struct cuda_block_xy_nested_direct;
 struct cuda_block_xyz_nested_direct;
 
@@ -308,6 +399,90 @@ struct LoopExecute<cuda_block_xyz_nested_direct, SEGMENT> {
   }
 };
 
+
+// perfectly nested cuda loop policies
+struct cuda_block_xy_nested_loop;
+struct cuda_block_xyz_nested_loop;
+
+struct cuda_thread_xy_nested_loop;
+struct cuda_thread_xyz_nested_loop;
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_xy_nested_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      for (int by = blockIdx.y; by < len1; by += gridDim.y) {
+        for (int bx = blockIdx.x; bx < len0; bx += gridDim.x) {
+          body(*(segment0.begin() + bx), *(segment1.begin() + by));
+        }
+      }
+
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_xy_nested_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      for (int ty = threadIdx.y; ty < len1; ty += blockDim.y) {
+        for (int tx = threadIdx.x; tx < len0; tx += blockDim.x) {
+          body(*(segment0.begin() + tx), *(segment1.begin() + ty));
+        }
+      }
+    }
+  }
+};
+
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_block_xyz_nested_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+    for (int bz = blockIdx.z; bz < len2; bz += gridDim.z) {
+      for (int by = blockIdx.y; by < len1; by += gridDim.y) {
+        for (int bx = blockIdx.x; bx < len0; bx += gridDim.x) {
+          body(*(segment0.begin() + bx),
+               *(segment1.begin() + by), 
+               *(segment2.begin() + bz));
+        }
+      }
+    }
+
+  }
+};
+
+
+} // namespace expt
 
 }  // namespace RAJA
 #endif
