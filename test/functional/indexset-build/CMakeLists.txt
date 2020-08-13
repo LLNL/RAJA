@@ -5,12 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(forall)
+raja_add_test(
+  NAME test-aligned-indexset
+  SOURCES test-aligned-indexset.cpp)
 
-add_subdirectory(indexset-build)
-
-add_subdirectory(kernel)
-
-add_subdirectory(scan)
-
-add_subdirectory(workgroup)

@@ -49,8 +49,7 @@ namespace RAJA
  *  \param length size of input index array.
  *  \param range_min_length min length of any range segment in index set
  *  \param range_align "alignment" value for range segments in index set.
- *         Starting index and length of each range segment will be a multiple 
- *         of this value.
+ *         Starting index each range segment will be a multiple of this value.
  *
  ******************************************************************************
  */
