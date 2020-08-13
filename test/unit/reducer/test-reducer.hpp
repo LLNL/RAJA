@@ -43,18 +43,4 @@ using CudaReducerPolicyList = camp::list< RAJA::cuda_reduce >;
 using HipReducerPolicyList = camp::list< RAJA::hip_reduce >;
 #endif
 
-
-//
-// Forone unit test policies
-//
-using SequentialForoneList = camp::list<forone_seq>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForoneList = camp::list<forone_cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForoneList = camp::list<forone_hip>;
-#endif
-
 #endif  // __TEST_REDUCER_UTILS_HPP__
