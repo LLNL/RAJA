@@ -10,3 +10,5 @@ add_subdirectory(forall)
 add_subdirectory(kernel)
 
 add_subdirectory(scan)
+
+add_subdirectory(workgroup)
