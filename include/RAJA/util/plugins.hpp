@@ -50,7 +50,7 @@ callPostCapturePlugins(const PluginContext& p)
 
 RAJA_INLINE
 void
-callPreLaunchPlugins(PluginContext& p)
+callPreLaunchPlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();

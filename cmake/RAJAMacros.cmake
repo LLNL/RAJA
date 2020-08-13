@@ -57,6 +57,8 @@ macro(raja_add_plugin_library)
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  list(APPEND arg_DEPENDS_ON RAJA)
+
   if (ENABLE_OPENMP)
     list (APPEND arg_DEPENDS_ON openmp)
   endif ()
@@ -80,14 +82,14 @@ macro(raja_add_plugin_library)
     SHARED ${arg_SHARED}
     )
 
-  target_include_directories(${arg_NAME}
-  PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/cub>
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/camp/include>
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
-  $<INSTALL_INTERFACE:include>)
+  #target_include_directories(${arg_NAME}
+  #PUBLIC
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  #$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/cub>
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/camp/include>
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
+  #$<INSTALL_INTERFACE:include>)
 
 endmacro(raja_add_plugin_library)
 
