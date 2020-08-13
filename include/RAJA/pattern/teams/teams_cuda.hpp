@@ -318,7 +318,7 @@ struct LoopExecute<cuda_block_z_direct, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
     {
-      const int by = blockIdx.z;
+      const int bz = blockIdx.z;
       if(bz < len) body(*(segment.begin() + bz));
     }
   }
@@ -392,6 +392,31 @@ struct LoopExecute<cuda_block_xyz_nested_direct, SEGMENT> {
       const int i = blockIdx.x;
       const int j = blockIdx.y;
       const int k = blockIdx.z;
+      if(i < len0 && j < len1 && k < len2 ) body(*(segment0.begin() + i),
+                                                 *(segment1.begin() + j),
+                                                 *(segment2.begin() + k));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_xyz_nested_direct, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      const int i = threadIdx.x;
+      const int j = threadIdx.y;
+      const int k = threadIdx.z;
       if(i < len0 && j < len1 && k < len2 ) body(*(segment0.begin() + i),
                                                  *(segment1.begin() + j),
                                                  *(segment2.begin() + k));
@@ -481,6 +506,33 @@ struct LoopExecute<cuda_block_xyz_nested_loop, SEGMENT> {
   }
 };
 
+template <typename SEGMENT>
+struct LoopExecute<cuda_thread_xyz_nested_loop, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+
+    for (int bz = threadIdx.z; bz < len2; bz += blockDim.z) {
+      for (int by = threadIdx.y; by < len1; by += blockDim.y) {
+        for (int bx = threadIdx.x; bx < len0; bx += blockDim.x) {
+          body(*(segment0.begin() + bx),
+               *(segment1.begin() + by), 
+               *(segment2.begin() + bz));
+        }
+      }
+    }
+
+  }
+};
 
 } // namespace expt
 
