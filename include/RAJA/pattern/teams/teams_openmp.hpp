@@ -20,7 +20,6 @@
 
 #include "RAJA/pattern/teams/teams_core.hpp"
 
-
 namespace RAJA
 {
 
@@ -66,7 +65,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for RAJA_COLLAPSE(2)
     for (int j = 0; j < len1; j++) {
       for (int i = 0; i < len0; i++) {
 
@@ -88,7 +87,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse(3)
+#pragma omp parallel for RAJA_COLLAPSE(3)
     for (int k = 0; k < len2; k++) {
       for (int j = 0; j < len1; j++) {
         for (int i = 0; i < len0; i++) {
@@ -118,7 +117,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for RAJA_COLLAPSE(2)
     for (int j = 0; j < len1; j++) {
       for (int i = 0; i < len0; i++) {
 
@@ -140,7 +139,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-#pragma omp parallel for collapse(3)
+#pragma omp parallel for RAJA_COLLAPSE(3)
     for (int k = 0; k < len2; k++) {
       for (int j = 0; j < len1; j++) {
         for (int i = 0; i < len0; i++) {
