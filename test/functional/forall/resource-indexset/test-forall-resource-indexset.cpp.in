@@ -23,7 +23,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-@INDEXSETTESTTYPE@.hpp"
+#include "test-forall-@INDEXSETTESTTYPE@.hpp"
 
 
 //
@@ -38,5 +38,5 @@ using @BACKEND@ForallResourceIndexSetTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               @INDEXSETTESTTYPE@Test,
+                               Forall@INDEXSETTESTTYPE@Test,
                                @BACKEND@ForallResourceIndexSetTypes);

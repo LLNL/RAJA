@@ -23,7 +23,6 @@ void ForallResourceIndexSetTestImpl()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  //camp::resources::Resource working_res{WORKING_RES::get_default()};
   WORKING_RES working_res;
   camp::resources::Resource erased_working_res{working_res};
 
