@@ -44,7 +44,11 @@ enum class Pattern {
   region,
   reduce,
   taskgraph,
-  synchronize
+  synchronize,
+  workgroup,
+  workgroup_exec,
+  workgroup_order,
+  workgroup_storage
 };
 
 enum class Launch { undefined, sync, async };
@@ -88,6 +92,10 @@ template <typename PolicyType, RAJA::Policy P_>
 struct policy_is : camp::num<policy_of<camp::decay<PolicyType>>::value == P_> {
 };
 
+template <typename PolicyType, RAJA::Policy ... Ps_>
+struct policy_any_of : camp::num<camp::concepts::any_of<policy_is<PolicyType, Ps_>...>::value> {
+};
+
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
     : camp::num<pattern_of<camp::decay<PolicyType>>::value == P_> {
@@ -128,9 +136,19 @@ template <Policy Policy_,
 using make_policy_pattern_launch_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
 
-template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
+template <Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
+
+template <Policy Policy_,
+          Pattern Pattern_,
+          Platform Platform_,
+          typename... Args>
+using make_policy_pattern_platform_t =
+    PolicyBaseT<Policy_, Pattern_, Launch::undefined, Platform_, Args...>;
 
 namespace concepts
 {
@@ -176,6 +194,11 @@ struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
 };
 template <typename Pol>
 struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
+};
+
+template <typename Pol>
+struct is_device_exec_policy
+    : RAJA::policy_any_of<Pol, RAJA::Policy::cuda, RAJA::Policy::hip> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,
