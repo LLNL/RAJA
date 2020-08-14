@@ -12,7 +12,7 @@
 #include <dirent.h>
 #endif
 
-inline
+RAJA_INLINE
 bool
 isSharedObject(const std::string& filename)
 {
