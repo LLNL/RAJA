@@ -282,7 +282,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      LoopBody&& loop_body)
 {
   return forall(std::forward<ExecutionPolicy>(p),
-                resources::get_resource<ExecutionPolicy>::type::get_default(),
+                resources::get_default_resource<ExecutionPolicy>(),
                 std::forward<IdxSet>(c),
                 std::forward<LoopBody>(loop_body));
 }
@@ -329,7 +329,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   return forall(std::forward<ExecutionPolicy>(p),
-                resources::get_resource<ExecutionPolicy>::type::get_default(),
+                resources::get_default_resource<ExecutionPolicy>(),
                 std::forward<IdxSet>(c),
                 std::forward<LoopBody>(loop_body));
 }
@@ -406,7 +406,7 @@ forall_Icount(ExecutionPolicy&& p,
               LoopBody&& loop_body)
 {
   return forall(std::forward<ExecutionPolicy>(p),
-                resources::get_resource<ExecutionPolicy>::type::get_default(),
+                resources::get_default_resource<ExecutionPolicy>(),
                 std::forward<Container>(c),
                 icount,
                 std::forward<LoopBody>(loop_body));
@@ -465,7 +465,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   return forall(std::forward<ExecutionPolicy>(p),
-                resources::get_resource<ExecutionPolicy>::type::get_default(),
+                resources::get_default_resource<ExecutionPolicy>(),
                 std::forward<Container>(c),
                 std::forward<LoopBody>(loop_body));
 }

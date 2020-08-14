@@ -32,29 +32,15 @@ namespace RAJA
   {
   using namespace camp::resources;
 
-  namespace detail
-  {
-#if defined(RAJA_ENABLE_CUDA)
-    // Non templated inline function so as not to generate duplicate objects for cuda resource.
-    RAJA_INLINE Cuda get_cuda_default(){
-      static Cuda r = Cuda::get_default();
-      return r;
-    }
-#endif
-#if defined(RAJA_ENABLE_HIP)
-    // Non templated inline function so as not to generate duplicate objects for cuda resource.
-    RAJA_INLINE Hip get_hip_default(){
-      static Hip r = Hip::get_default();
-      return r;
-    }
-#endif
-  }
-
   template<typename e>
   struct get_resource{
     using type = Host;
   };
 
+  template<typename ExecPol>
+  constexpr auto get_default_resource() -> typename get_resource<ExecPol>::type {
+    return get_resource<ExecPol>::type::get_default();
+  }
 
 #if defined(RAJA_ENABLE_CUDA)
   template<size_t BlockSize, bool Async>
