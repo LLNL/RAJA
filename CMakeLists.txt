@@ -162,7 +162,9 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
-  src/PluginStrategy.cpp)
+  src/PluginStrategy.cpp
+  src/RuntimePluginLoader.cpp
+  src/KokkosPluginLoader.cpp)
 
 set (raja_depends)
 
@@ -254,7 +256,7 @@ endif (NOT TARGET camp)
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp)
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
 
 install(TARGETS RAJA
   EXPORT RAJA
