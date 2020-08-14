@@ -57,7 +57,6 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
-#include <iostream>
 
 #include "RAJA/internal/Iterators.hpp"
 
@@ -150,7 +149,6 @@ namespace wrap
  ******************************************************************************
  *
  * \brief Generic dispatch over containers with a value-based policy
- * wrap
  *
  ******************************************************************************
  */
@@ -204,7 +202,6 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res &r,
 ******************************************************************************
 *
 * \brief Execute segments from forall_Icount traversal method.
-* wrap
 *
 *         For usage example, see reducers.hxx.
 *
@@ -252,7 +249,6 @@ RAJA_INLINE resources::EventProxy<Res> forall(Res &r,
 }
 
 }  // end namespace wrap
-//*****************************************************************************
 
 
 
