@@ -307,7 +307,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
   RAJA::resources::EventProxy<Res> e = wrap::forall_Icount(r,
                                   std::forward<ExecutionPolicy>(p),
                                   std::forward<IdxSet>(c),
-                                  std::forward<LoopBody>(body));
+                                  std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
@@ -352,7 +352,7 @@ forall(ExecutionPolicy&& p, Res &r, IdxSet&& c, LoopBody&& loop_body)
   resources::EventProxy<Res> e = wrap::forall(r,
                                          std::forward<ExecutionPolicy>(p),
                                          std::forward<IdxSet>(c),
-                                         std::forward<LoopBody>(body));
+                                         std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
@@ -436,7 +436,7 @@ forall_Icount(ExecutionPolicy&& p,
                                                  std::forward<ExecutionPolicy>(p),
                                                  std::forward<Container>(c),
                                                  icount,
-                                                 body);
+                                                 std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
@@ -485,7 +485,7 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
   resources::EventProxy<Res> e =  wrap::forall(r,
                                           std::forward<ExecutionPolicy>(p),
                                           std::forward<Container>(c),
-                                          std::forward<LoopBody>(body));
+                                          std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
