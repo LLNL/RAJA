@@ -60,8 +60,9 @@ Notable changes include:
         back-ends.
 
   * Build changes/improvements:
-      * The blt, camp, cub, and rocPRIM submodules have all been updated to more
-        recent versions. RAJA now requires rocm version 3.5 or newer.
+      * The blt, camp, cub, and rocPRIM submodules have all been updated to 
+        more recent versions. PLease note that RAJA now requires rocm version 
+        3.5 or newer to use the Hip back-end.
       * Build for clang9 on macosx has been fixed.
       * Build for Intel19 on Windows has been fixed.
       * Host/device annotations have been added to reduction operations to
