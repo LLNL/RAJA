@@ -5,68 +5,206 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
 
-TEST(MultiViewUnitTest, BasicTest)
+RAJA_INDEX_VALUE(TX, "TX");
+RAJA_INDEX_VALUE(TIX, "TIX");
+RAJA_INDEX_VALUE(TIY, "TIY");
+RAJA_INDEX_VALUE(TIL, "TIL");
+
+template<typename T>
+class TypedViewUnitTest : public ::testing::Test {};
+
+template<typename T>
+class OffsetLayoutViewUnitTest : public ::testing::Test {};
+
+template<typename T>
+class TypedIntegralViewUnitTest : public ::testing::Test {};
+
+TYPED_TEST_SUITE(TypedViewUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(OffsetLayoutViewUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(TypedIntegralViewUnitTest, UnitIntFloatTypes);
+
+TYPED_TEST(TypedViewUnitTest, Constructors)
 {
-  constexpr int N = 12;
-  int * myarr[2];
-  int arr1[N];
-  int arr2[N];
 
-  for ( int ii = 0; ii < 12; ++ii )
-  {
-    arr1[ii] = 100 + ii;
-    arr2[ii] = 200 + ii;
-  }
+  using layout = RAJA::Layout<1>;
 
-  myarr[0] = arr1;
-  myarr[1] = arr2;
+  TypeParam   a1[10];
+  TypeParam   a2[10];
+  TypeParam * data[2];
 
-  // interleaved layout
-  std::array<RAJA::idx_t, 2> perm { {1, 0} };
-  RAJA::Layout<2> layout = RAJA::make_permuted_layout(
-                              { {2, 6} }, perm
-                           );
+  data[0] = a1;
+  data[1] = a2;
 
-  // multi array of pointers view
-  constexpr int swizzle = 1;
-  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>, swizzle> arrView(myarr, layout);
-  //RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type, 0>, int **, swizzle> arrView(myarr, layout);
+  RAJA::MultiView<TypeParam, layout> view(data, layout(10));
 
-  for ( int zz = 0; zz < 2; ++zz )
-  {
-    for ( int kk = 0; kk < 2; ++kk )
-    {
-      for ( int jj = 0; jj < 6; ++jj )
-      {
-        printf ( "arr%i(%i, %i) %d\n", zz, kk, jj, arrView(zz, kk, jj) );
-      }
-    }
-  }
+  /*
+   * Should be able to construct a non-const View from a non-const View
+   */
+  RAJA::MultiView<TypeParam, layout> view2(view);
 
-  // switch values
-  printf ( "Switching values\n" );
-  for ( int kk = 0; kk < 2; ++kk )
-  {
-    for ( int jj = 0; jj < 6; ++jj )
-    {
-      int temp = arrView(0, kk, jj);
-      arrView(0, kk, jj) = arrView(1, kk, jj);
-      arrView(1, kk, jj) = temp;
-    }
-  }
+  /*
+   * Should be able to construct a const View from a non-const View
+   */
+  RAJA::MultiView<TypeParam const, layout> const_view(view);
 
-  for ( int zz = 0; zz < 2; ++zz )
-  {
-    for ( int kk = 0; kk < 2; ++kk )
-    {
-      for ( int jj = 0; jj < 6; ++jj )
-      {
-        printf ( "arr%i(%i, %i) %d\n", zz, kk, jj, arrView(zz, kk, jj) );
-      }
-    }
-  }
+  /*
+   * Should be able to construct a const View from a const View
+   */
+  RAJA::MultiView<TypeParam const, layout> const_view2(const_view);
 }
 
+TYPED_TEST(TypedViewUnitTest, Accessor)
+{
+
+  const int Nx = 3;
+  const int Ny = 5;
+  const int Nz = 2;
+  const int N  = Nx*Ny*Nz;
+  TypeParam *b = new TypeParam[N];
+  TypeParam *c = new TypeParam[N];
+  TypeParam *a[2];
+
+  a[0] = b;
+  a[1] = c;
+
+  int iter{0};
+  for(TypeParam i=0; i<TypeParam{N}; ++i)
+  {
+    a[0][iter] = TypeParam{i};
+    a[1][iter] = TypeParam{i};
+    ++iter;
+  }
+
+  /*
+   * 1D Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<1>> view_1D(a,N);
+  TypeParam val{0};
+  for(int i=0; i<N; ++i) {
+    ASSERT_EQ(val, view_1D(0,i));
+    val++;
+  }
+
+  /*
+   * 2D Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<2>> view_2D(a,Ny,Nx);
+  val = TypeParam{0};
+  for(int j=0; j<Ny; ++j) {
+    for(int i=0; i<Nx; ++i) {
+      ASSERT_EQ(val, view_2D(0,j,i));
+      val++;
+    }
+  }
+
+  /*
+   * 3D Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<3>> view_3D(a,Nz,Ny,Nx);
+  val = TypeParam{0};
+  for(int k=0; k<Nz; ++k) {
+    for(int j=0; j<Ny; ++j) {
+      for(int i=0; i<Nx; ++i) {
+        ASSERT_EQ(val, view_3D(0,k,j,i));
+        val++;
+      }
+    }
+  }
+
+  delete[] b;
+  delete[] c;
+}
+TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
+{
+
+  const int Nx = 3;
+  const int Ny = 5;
+  const int Nz = 2;
+  const int N  = Nx*Ny*Nz;
+  TypeParam *b = new TypeParam[N];
+  TypeParam *c = new TypeParam[N];
+  TypeParam *a[2];
+
+  a[0] = b;
+  a[1] = c;
+
+  int iter{0};
+  for(TypeParam i=0; i<TypeParam{N}; ++i)
+  {
+    a[0][iter] = TypeParam{i};
+    a[1][iter] = TypeParam{i};
+    ++iter;
+  }
+
+  /*
+   * 1D Typed Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<1>> view_1D(a,N);
+  TypeParam val{0};
+  for(TypeParam i=0; i<N; ++i) {
+    ASSERT_EQ(val, view_1D(0,i));
+    val++;
+  }
+
+  /*
+   * 2D Typed Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<2>> view_2D(a,Ny,Nx);
+  val = TypeParam{0};
+  for(TypeParam j=0; j<Ny; ++j) {
+    for(TypeParam i=0; i<Nx; ++i) {
+      ASSERT_EQ(val, view_2D(0,j,i));
+      val++;
+    }
+  }
+
+  /*
+   * 3D Typed Accessor
+   */
+  RAJA::MultiView<TypeParam, RAJA::Layout<3>> view_3D(a,Nz,Ny,Nx);
+  val = TypeParam{0};
+  for(TypeParam k=0; k<Nz; ++k) {
+    for(TypeParam j=0; j<Ny; ++j) {
+      for(TypeParam i=0; i<Nx; ++i) {
+        ASSERT_EQ(val, view_3D(0,k,j,i));
+        val++;
+      }
+    }
+  }
+
+  delete[] b;
+  delete[] c;
+}
+
+TYPED_TEST(OffsetLayoutViewUnitTest, View)
+{
+  TypeParam* d1 = new TypeParam[10];
+  TypeParam* d2 = new TypeParam[10];
+  TypeParam* data[2];
+
+  data[0] = d1;
+  data[1] = d2;
+
+  using layout = RAJA::OffsetLayout<>;
+
+  /*
+   * View is constructed by passing in the layout.
+   */
+  std::array<RAJA::Index_type, 1> lower{{1}};
+  std::array<RAJA::Index_type, 1> upper{{10}};
+  RAJA::MultiView<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
+
+  for (int i = 0; i < 10; i++) {
+    data[0][i] = static_cast<TypeParam>(i);
+    data[1][i] = static_cast<TypeParam>(i);
+  }
+
+  ASSERT_EQ(data[0][0], view(0,1));
+  ASSERT_EQ(data[1][9], view(0,10));
+
+  delete[] d1;
+  delete[] d2;
+}

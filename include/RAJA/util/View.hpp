@@ -115,6 +115,7 @@ struct View {
 // select certain indices from a tuple, given a curated index sequence
 // returns linear index of layout(ar...)
 template <typename Lay, typename Tup, camp::idx_t... Idxs>
+RAJA_HOST_DEVICE RAJA_INLINE 
 RAJA::Index_type selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> )
 { 
   return lyout(
@@ -153,7 +154,7 @@ using offset_seq_t = typename offset_seq<Offset, Seq>::type;
 // remove the Nth index in a parameter pack
 // returns linear index of layout(ar...)
 template <typename Lay, RAJA::Index_type Nth = 0, typename Tup>
-auto removenth( Lay lyout, Tup&& tup ) ->
+RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
   decltype( selecttuple<Lay>(
               lyout,
               std::forward<Tup>(tup),
@@ -192,13 +193,20 @@ struct MultiView {
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = typename std::remove_const<value_type>::type;
-  using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
-      typename std::remove_pointer<
-        typename std::remove_pointer<pointer_type>::type>::type>::type>::type;
+  using nc_pointer_type = 
+    typename std::add_pointer<
+      typename std::add_pointer<
+        typename std::remove_const<
+          typename std::remove_pointer<
+            typename std::remove_pointer<pointer_type>::type
+          >::type
+        >::type
+      >::type
+    >::type;
   using NonConstView = MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
-  pointer_type data;
+  nc_pointer_type data;
 
   template <typename... Args>
   RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
@@ -223,7 +231,8 @@ struct MultiView {
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
       typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
-      : layout(rhs.layout), data(rhs.data)
+      : layout(rhs.layout),
+        data(rhs.data)
   {
   }
 
