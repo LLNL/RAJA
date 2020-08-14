@@ -8,7 +8,7 @@
 #
 # List of test types for generating test files.
 #
-set(TESTTYPES Depends)
+set(TESTTYPES Depends MultiStream)
 
 list(APPEND RESOURCE_BACKENDS Sequential)
 

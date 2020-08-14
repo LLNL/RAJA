@@ -13,7 +13,7 @@
 template <typename WORKING_RES, typename EXEC_POLICY>
 void ResourceDependsTestImpl()
 {
-  constexpr std::size_t ARRAY_SIZE{10};
+  constexpr std::size_t ARRAY_SIZE{10000};
   using namespace RAJA;
 
   WORKING_RES dev1;
