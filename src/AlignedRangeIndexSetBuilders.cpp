@@ -38,7 +38,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildTypedIndexSetAligned(
+void buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
     camp::resources::Resource& work_res,
     const Index_type* const indices_in,
