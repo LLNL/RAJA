@@ -37,8 +37,8 @@ namespace RAJA
  * \brief Generate an index set with aligned Range segments and List segments,
  *        as needed, from given array of indices.
  *
- *        Routine does no error-checking on argements and assumes Index_type
- *        array contains valid indices.
+ *        Routine does no error-checking on argements and assumes 
+ *        RAJA::Index_type array contains valid indices.
  *
  *  \param iset reference to index set generated with aligned range segments 
  *         and list segments. Method assumes index set is empty (no segments).
@@ -56,10 +56,10 @@ namespace RAJA
 void buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
     camp::resources::Resource& work_res,
-    const Index_type* const indices_in,
-    Index_type length,
-    Index_type range_min_length,
-    Index_type range_align);
+    const RAJA::Index_type* const indices_in,
+    RAJA::Index_type length,
+    RAJA::Index_type range_min_length,
+    RAJA::Index_type range_align);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,12 +119,12 @@ void buildLockFreeBlockIndexset(
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
     camp::resources::Resource& work_res,
-    Index_type const* domainToRange,
+    RAJA::Index_type const* domainToRange,
     int numEntity,
     int numRangePerDomain,
     int numEntityRange,
-    Index_type* elemPermutation = 0l,
-    Index_type* ielemPermutation = 0l);
+    RAJA::Index_type* elemPermutation = nullptr,
+    RAJA::Index_type* ielemPermutation = nullptr);
 
 }  // namespace RAJA
 

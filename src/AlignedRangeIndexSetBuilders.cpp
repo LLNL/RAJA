@@ -41,27 +41,27 @@ namespace RAJA
 void buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
     camp::resources::Resource& work_res,
-    const Index_type* const indices_in,
-    Index_type length,
-    Index_type range_min_length,
-    Index_type range_align)
+    const RAJA::Index_type* const indices_in,
+    RAJA::Index_type length,
+    RAJA::Index_type range_min_length,
+    RAJA::Index_type range_align)
 {
   if (length == 0) return;
 
   /* only transform relatively large */
   if (length > range_min_length) {
     /* build a rindex array from an index array */
-    Index_type docount = 0;
-    Index_type inrange = -1;
+    RAJA::Index_type docount = 0;
+    RAJA::Index_type inrange = -1;
 
     /****************************/
     /* first, gather statistics */
     /****************************/
 
-    Index_type scanVal = indices_in[0];
-    Index_type sliceCount = 0;
-    for (Index_type ii = 1; ii < length; ++ii) {
-      Index_type lookAhead = indices_in[ii];
+    RAJA::Index_type scanVal = indices_in[0];
+    RAJA::Index_type sliceCount = 0;
+    for (RAJA::Index_type ii = 1; ii < length; ++ii) {
+      RAJA::Index_type lookAhead = indices_in[ii];
 
       if (inrange == -1) {
         if ((lookAhead == scanVal + 1) && ((scanVal % range_align) == 0)) {
@@ -127,14 +127,14 @@ void buildIndexSetAligned(
       /* now, build the rindex array */
       /*******************************/
 
-      Index_type dobegin;
+      RAJA::Index_type dobegin;
       inrange = -1;
 
       scanVal = indices_in[0];
       sliceCount = 0;
       dobegin = scanVal;
-      for (Index_type ii = 1; ii < length; ++ii) {
-        Index_type lookAhead = indices_in[ii];
+      for (RAJA::Index_type ii = 1; ii < length; ++ii) {
+        RAJA::Index_type lookAhead = indices_in[ii];
 
         if (inrange == -1) {
           if ((lookAhead == scanVal + 1) && ((scanVal % range_align) == 0)) {
@@ -175,7 +175,7 @@ void buildIndexSetAligned(
         }
 
         scanVal = lookAhead;
-      }  // for (Index_type ii ...
+      }  // for (RAJA::Index_type ii ...
 
       if (inrange != -1) {
         if (inrange) {
