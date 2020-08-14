@@ -22,10 +22,10 @@
 
 #include "RAJA/config.hpp"
 
+#include <stdint.h>
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-
 #if defined(RAJA_CHECK_LIMITS)
 #include <limits>
 #endif
@@ -68,13 +68,13 @@ namespace types
 {
 
 template <typename T>
-struct is_unsigned_integral {
+struct is_unsigned_int {
   static constexpr const bool value =
       std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
 
 template <typename T>
-struct is_signed_integral {
+struct is_signed_int {
   static constexpr const bool value =
       !std::is_unsigned<T>::value && std::is_integral<T>::value;
 };
@@ -140,13 +140,13 @@ template <typename T, bool isInt, bool isSigned, bool isFP, bool gpu = false>
 struct largest {
 };
 
-template <typename T, bool gpu>
-struct largest<T, true, false, false, gpu> {
+template <typename T>
+struct largest<T, true, false, false> {
   using type = uint64_t;
 };
 
-template <typename T, bool gpu>
-struct largest<T, true, true, false, gpu> {
+template <typename T>
+struct largest<T, true, true, false> {
   using type = int64_t;
 };
 
@@ -177,7 +177,7 @@ struct largest {
 
 template <typename T>
 struct size_of {
-  static constexpr int value = sizeof(T);
+  enum { value = sizeof(T) };
 };
 
 namespace detail
@@ -185,6 +185,10 @@ namespace detail
 
 template <typename T, typename U, bool lhsLarger>
 struct larger_of {
+};
+
+template <typename T, typename U>
+struct larger_of<T, U, true> {
   using type = T;
 };
 
@@ -203,38 +207,45 @@ struct larger_of {
 }  // namespace types
 
 
+
 template <typename T, typename Enable = void>
 struct limits;
 
 
 // limits for signed integer types
 template <typename T>
-struct limits<T, typename std::enable_if<types::is_signed_integral<T>::value>::type> {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  !std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(disable : 4309)
+#pragma warning( disable : 4309 )
 #endif
-    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
+    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu) );
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(default : 4309)
+#pragma warning( default : 4309 )
 #endif
   }
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(disable : 4309)
+#pragma warning( disable : 4309 )
 #endif
     return static_cast<T>(~(1llu << ((8llu * sizeof(T)) - 1llu)));
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(default : 4309)
+#pragma warning( default : 4309 )
 #endif
   }
 };
 
 // limits for signed integer types
 template <typename T>
-struct limits<T, typename std::enable_if<types::is_unsigned_integral<T>::value>::type> {
+struct limits<T,
+  typename std::enable_if<std::is_integral<T>::value &&
+  std::is_unsigned<T>::value>::type>
+{
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
     return static_cast<T>(0);
@@ -242,11 +253,11 @@ struct limits<T, typename std::enable_if<types::is_unsigned_integral<T>::value>:
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
   {
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(disable : 4309)
+#pragma warning( disable : 4309 )
 #endif
     return static_cast<T>(0xFFFFFFFFFFFFFFFF);
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(default : 4309)
+#pragma warning( default : 4309 )
 #endif
   }
 };
@@ -254,8 +265,14 @@ struct limits<T, typename std::enable_if<types::is_unsigned_integral<T>::value>:
 
 template <>
 struct limits<float> {
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min() { return -FLT_MAX; }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max() { return FLT_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min()
+  {
+    return -FLT_MAX;
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max()
+  {
+    return FLT_MAX;
+  }
 };
 
 template <>
@@ -264,7 +281,10 @@ struct limits<double> {
   {
     return -DBL_MAX;
   }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() { return DBL_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() 
+  { 
+     return DBL_MAX; 
+  }
 };
 
 template <>
@@ -390,54 +410,35 @@ struct logical_not : public detail::unary_function<T, bool> {
 // Bitwise
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
-struct bit_or : public detail::binary_function<Arg1, Arg2, Ret>,
-                detail::associative_tag {
-  static constexpr bool all_integral_types = std::is_integral<Ret>::value &&
-                                             std::is_integral<Arg1>::value &&
-                                             std::is_integral<Arg2>::value;
-
-  static_assert(all_integral_types,
-                "Bitwise operations only supported for integral types");
+struct bit_or : public detail::binary_function<Arg1, Arg2, Ret> {
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
     return lhs | rhs;
   }
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
-struct bit_and : public detail::binary_function<Arg1, Arg2, Ret>,
-                 detail::associative_tag {
-  static constexpr bool all_integral_types = std::is_integral<Ret>::value &&
-                                             std::is_integral<Arg1>::value &&
-                                             std::is_integral<Arg2>::value;
-
-  static_assert(all_integral_types,
-                "Bitwise operations only supported for integral types");
+struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
     return lhs & rhs;
   }
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
 };
 
-template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
-struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret>,
-                 detail::associative_tag {
-  static constexpr bool all_integral_types = std::is_integral<Ret>::value &&
-                                             std::is_integral<Arg1>::value &&
-                                             std::is_integral<Arg2>::value;
 
-  static_assert(all_integral_types,
-                "Bitwise operations only supported for integral types");
+template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
+struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
     return lhs ^ rhs;
   }
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
 };
 
 // comparison
@@ -467,7 +468,6 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    // note: maximum is the *negation* of minimum rather than the formal definition
     return (lhs >= rhs) ? lhs : rhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
@@ -600,8 +600,7 @@ namespace detail
 {
 
 template <typename Fun, typename Ret, typename T, typename U>
-using is_binary_function =
-    ::RAJA::concepts::requires_<BinaryFunction, Ret, T, U>;
+using is_binary_function = ::RAJA::concepts::requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T>
 using is_unary_function = ::RAJA::concepts::requires_<UnaryFunction, Ret, T>;
