@@ -130,9 +130,13 @@ build using N cores.
             the ``bin`` subdirectory in the build space directory. Feel free to 
             experiment by editing the source files and recompiling.
 
-.. note:: You may use an externally-supplied version of the camp library with
-          with RAJA if you wish. To do so, pass the following option to CMake:
+.. _build-external-tpl-label:
+
+.. note:: You may use externally-supplied versions of the camp and cub 
+          libraries with RAJA if you wish. To do so, pass the following 
+          options to CMake:
             * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
+            * External cub: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<cub dir name> 
 
 -----------------
 GPU Builds, etc.
