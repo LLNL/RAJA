@@ -202,7 +202,7 @@ const int GPU_BLOCK_SIZE = 256;
 #elif defined(RAJA_ENABLE_HIP)
   RAJA::resources::Hip res_gpu1;
   RAJA::resources::Hip res_gpu2;
-  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>
+  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>;
 #endif
 
   int* d_a1 = res_gpu1.allocate<int>(N);
@@ -259,7 +259,7 @@ const int GPU_BLOCK_SIZE = 256;
 #elif defined(RAJA_ENABLE_HIP)
   RAJA::resources::Hip res_gpu1;
   RAJA::resources::Hip res_gpu2;
-  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>
+  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>;
 #endif
 
   int* d_a1 = res_gpu1.allocate<int>(N);
