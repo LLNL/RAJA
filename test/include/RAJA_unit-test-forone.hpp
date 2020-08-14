@@ -26,9 +26,7 @@ inline void forone(L&& run);
 
 // base classes to represent host or device in exec_dispatcher
 struct RunOnHost {};
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 struct RunOnDevice {};
-#endif
 
 // sequential forone policy
 struct forone_seq : public RunOnHost  { };
@@ -62,6 +60,30 @@ inline void forone(forone_seq, L&& run)
   std::forward<L>(run)();
 }
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+// cuda forone policy
+struct forone_openmp_target : public RunOnHost { };
+
+// forone_openmp_target policy information
+template < >
+struct forone_policy_info<forone_openmp_target>
+{
+  using type = RAJA::omp_target_parallel_for_exec<1>;
+  using platform = RunOnHost;
+  static const char* name() { return "forone_openmp_target"; }
+};
+
+// forone_openmp_target implementation
+template < typename L >
+inline void forone(forone_openmp_target, L&& run)
+{
+#pragma omp target
+  run();
+}
+
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 
 // cuda forone policy
@@ -91,7 +113,9 @@ inline void forone(forone_cuda, L&& run)
    cudaErrchk(cudaDeviceSynchronize());
 }
 
-#elif defined(RAJA_ENABLE_HIP)
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
 
 // hip forone policy
 struct forone_hip : public RunOnDevice { };
@@ -127,5 +151,31 @@ void forone(L&& run)
 {
   forone(forone_policy{}, std::forward<L>(run));
 }
+
+
+//
+// Forone unit test policies
+//
+using SequentialForoneList = camp::list<forone_seq>;
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBForoneList = SequentialForoneList;
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPForoneList = SequentialForoneList;
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaForoneList = camp::list<forone_cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetForoneList = camp::list<forone_openmp_target>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipForoneList = camp::list<forone_hip>;
+#endif
 
 #endif // RAJA_test_forone_HPP__
