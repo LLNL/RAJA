@@ -281,9 +281,8 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      IdxSet&& c,
                                                      LoopBody&& loop_body)
 {
-  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
-                r,
+                resources::get_resource<ExecutionPolicy>::type::get_default(),
                 std::forward<IdxSet>(c),
                 std::forward<LoopBody>(loop_body));
 }
@@ -329,9 +328,8 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
-                r,
+                resources::get_resource<ExecutionPolicy>::type::get_default(),
                 std::forward<IdxSet>(c),
                 std::forward<LoopBody>(loop_body));
 }
@@ -407,9 +405,8 @@ forall_Icount(ExecutionPolicy&& p,
               IndexType icount,
               LoopBody&& loop_body)
 {
-  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
-                r,
+                resources::get_resource<ExecutionPolicy>::type::get_default(),
                 std::forward<Container>(c),
                 icount,
                 std::forward<LoopBody>(loop_body));
@@ -467,9 +464,8 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-  auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
-                r,
+                resources::get_resource<ExecutionPolicy>::type::get_default(),
                 std::forward<Container>(c),
                 std::forward<LoopBody>(loop_body));
 }
