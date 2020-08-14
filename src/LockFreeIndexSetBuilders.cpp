@@ -21,6 +21,8 @@
 
 #include <iostream>
 
+#include "RAJA/index/IndexSetBuilders.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
