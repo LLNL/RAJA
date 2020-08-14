@@ -282,7 +282,10 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      LoopBody&& loop_body)
 {
   auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
-  return forall_Icount(p, r, c, loop_body);
+  return forall(std::forward<ExecutionPolicy>(p),
+                r,
+                std::forward<IdxSet>(c),
+                std::forward<LoopBody>(loop_body));
 }
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
@@ -327,7 +330,10 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
-  return forall(r, p, c, loop_body);
+  return forall(std::forward<ExecutionPolicy>(p),
+                r,
+                std::forward<IdxSet>(c),
+                std::forward<LoopBody>(loop_body));
 }
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
@@ -402,7 +408,11 @@ forall_Icount(ExecutionPolicy&& p,
               LoopBody&& loop_body)
 {
   auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
-  return forall_Icount(p, r, c, icount, loop_body);
+  return forall(std::forward<ExecutionPolicy>(p),
+                r,
+                std::forward<Container>(c),
+                icount,
+                std::forward<LoopBody>(loop_body));
 }
 template <typename ExecutionPolicy,
           typename Res,
@@ -458,7 +468,10 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   auto r = resources::get_resource<ExecutionPolicy>::type::get_default();
-  return forall(r, p, c, loop_body);
+  return forall(std::forward<ExecutionPolicy>(p),
+                r,
+                std::forward<Container>(c),
+                std::forward<LoopBody>(loop_body));
 }
 
 template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody>
@@ -494,7 +507,7 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
 }  // end inline namespace policy_by_value_interface
 
 
-/*!
+ /*!
  * \brief Conversion from template-based policy to value-based policy for forall
  *
  * this reduces implementation overhead and perfectly forwards all arguments
