@@ -151,6 +151,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     D(r, c) = r * N_tri + c;
                 });  // loop j
 
+                ctx.teamSync(); 
+              
                 RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
 
                     printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
