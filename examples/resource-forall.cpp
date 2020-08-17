@@ -25,6 +25,9 @@
  *    - `forall` loop iteration template method
  *    -  Index range segment
  *    -  Execution policies
+ *    -  `forall` with Resource argument
+ *    -  Cuda/Hip streams w/ Resource
+ *    -  Resources events
  *
  */
 
@@ -198,11 +201,11 @@ const int GPU_BLOCK_SIZE = 256;
 #if defined(RAJA_ENABLE_CUDA)
   RAJA::resources::Cuda res_gpu1;
   RAJA::resources::Cuda res_gpu2;
-  using EXEC_POLICY = RAJA::cuda_exec<GPU_BLOCK_SIZE, true>;
+  using EXEC_POLICY = RAJA::cuda_exec_async<GPU_BLOCK_SIZE>;
 #elif defined(RAJA_ENABLE_HIP)
   RAJA::resources::Hip res_gpu1;
   RAJA::resources::Hip res_gpu2;
-  using EXEC_POLICY = RAJA::hip_exec<GPU_BLOCK_SIZE, true>;
+  using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
 #endif
 
   int* d_a1 = res_gpu1.allocate<int>(N);
