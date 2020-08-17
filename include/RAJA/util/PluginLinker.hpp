@@ -12,11 +12,13 @@
 #include "RAJA/util/KokkosPluginLoader.hpp"
 
 namespace {
-  struct pluginLinker {
-    inline pluginLinker() {
-      (void)RAJA::util::linkRuntimePluginLoader();
-      (void)RAJA::util::linkKokkosPluginLoader();
-    }
-  } pluginLinker;
+  namespace RAJA {
+    struct pluginLinker {
+      inline pluginLinker() {
+        (void)RAJA::util::linkRuntimePluginLoader();
+        (void)RAJA::util::linkKokkosPluginLoader();
+      }
+    } pluginLinker;
+  }
 }
 #endif
