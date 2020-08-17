@@ -58,7 +58,7 @@ void ForallIcountIndexSetTestImpl()
     test_array[ ticount++ ] = is_indices[i];
   }
 
-  RAJA::forall_Icount<EXEC_POLICY>( iset,
+  RAJA::forall_Icount(EXEC_POLICY(), iset,
     [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {
     working_array[icount] = idx;
   });
