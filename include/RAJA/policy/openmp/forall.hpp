@@ -60,15 +60,13 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  resources::EventProxy<resources::Host> ep(&host_res);
-
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    ep = forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
+    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
 
-  return ep;
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 
