@@ -403,6 +403,7 @@ template <typename ExecutionPolicy,
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
     type_traits::is_range<Container>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     type_traits::is_integral<IndexType>>
 forall_Icount(ExecutionPolicy&& p,
               Container&& c,
