@@ -145,8 +145,8 @@ struct LoopExecute<cuda_thread_z_loop, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int i = threadIdx.z; i < len; i += blockDim.z) {
-      body(*(segment.begin() + i));
+    for (int tz = threadIdx.z; tz < len; tz += blockDim.z) {
+      body(*(segment.begin() + tz));
     }
   }
 };
@@ -346,10 +346,10 @@ struct LoopExecute<cuda_block_xy_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int i = blockIdx.x;
-      const int j = blockIdx.y;
-      if (i < len0 && i < len1)
-        body(*(segment0.begin() + i), *(segment1.begin() + j));
+      const int tx = blockIdx.x;
+      const int ty = blockIdx.y;
+      if (tx < len0 && ty < len1)
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty));
     }
   }
 };
@@ -367,10 +367,10 @@ struct LoopExecute<cuda_thread_xy_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int i = threadIdx.x;
-      const int j = threadIdx.y;
-      if (i < len0 && j < len1)
-        body(*(segment0.begin() + i), *(segment1.begin() + j));
+      const int tx = threadIdx.x;
+      const int ty = threadIdx.y;
+      if (tx < len0 && ty < len1)
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty));
     }
   }
 };
@@ -391,13 +391,13 @@ struct LoopExecute<cuda_block_xyz_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int i = blockIdx.x;
-      const int j = blockIdx.y;
-      const int k = blockIdx.z;
-      if (i < len0 && j < len1 && k < len2)
-        body(*(segment0.begin() + i),
-             *(segment1.begin() + j),
-             *(segment2.begin() + k));
+      const int tx = blockIdx.x;
+      const int ty = blockIdx.y;
+      const int tz = blockIdx.z;
+      if (tx < len0 && ty < len1 && tz < len2)
+        body(*(segment0.begin() + tx),
+             *(segment1.begin() + ty),
+             *(segment2.begin() + tz));
     }
   }
 };
@@ -417,13 +417,13 @@ struct LoopExecute<cuda_thread_xyz_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int i = threadIdx.x;
-      const int j = threadIdx.y;
-      const int k = threadIdx.z;
-      if (i < len0 && j < len1 && k < len2)
-        body(*(segment0.begin() + i),
-             *(segment1.begin() + j),
-             *(segment2.begin() + k));
+      const int tx = threadIdx.x;
+      const int ty = threadIdx.y;
+      const int tz = threadIdx.z;
+      if (tx < len0 && ty < len1 && tz < len2)
+        body(*(segment0.begin() + tx),
+             *(segment1.begin() + ty),
+             *(segment2.begin() + tz));
     }
   }
 };
