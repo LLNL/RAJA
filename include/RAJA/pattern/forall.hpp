@@ -510,7 +510,7 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
 }  // end inline namespace policy_by_value_interface
 
 
- /*!
+/*!
  * \brief Conversion from template-based policy to value-based policy for forall
  *
  * this reduces implementation overhead and perfectly forwards all arguments
