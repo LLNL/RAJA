@@ -169,8 +169,11 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 
 #include "RAJA/pattern/scan.hpp"
+
+#include "RAJA/util/PluginLinker.hpp"
 
 #include "RAJA/pattern/sort.hpp"
 

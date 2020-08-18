@@ -28,4 +28,5 @@ The following sections describe key aspects of the main RAJA features.
    feature/sort
    feature/local_array
    feature/tiling
+   feature/plugins
    feature/workgroup
