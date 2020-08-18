@@ -32,9 +32,7 @@
  */
 
 /*
- * Define potential launch policies
- * Currenly we only support two:
- * Host and Device.
+ * Define Host/Device launch policies
  */
 using launch_policy = RAJA::expt::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
@@ -98,9 +96,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   std::cout << "\n Running RAJA-Teams examples...\n";
+  int num_of_backends = 1;
+#if defined(RAJA_ENABLE_DEVICE)
+  num_of_backends++;
+#endif
 
-  for (int exec_place = 0; exec_place < (int)RAJA::expt::NUM_PLACES;
-       ++exec_place) {
+  for (int exec_place = 0; exec_place < num_of_backends; ++exec_place) {
+
     RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
 
     // auto select_cpu_or_gpu = RAJA::HOST;
@@ -136,11 +138,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::expt::launch<launch_policy>(
-        select_cpu_or_gpu,
-        RAJA::expt::Resources(RAJA::expt::Teams(N_tri),
-                              RAJA::expt::Threads(N_tri)),
+    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
+        RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+
           RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
                 // Array shared within threads of the same team
@@ -151,16 +152,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     D(r, c) = r * N_tri + c;
                 });  // loop j
 
-                ctx.teamSync(); 
-              
+                ctx.teamSync();
+
                 RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
 
                     printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
 
-                    });  // loop c
-              });        // loop r
-        });              // outer lambda
-
+                 });  // loop c
+              });  // loop r
+        });  // outer lambda
 
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
       host_res.deallocate(Ddat);

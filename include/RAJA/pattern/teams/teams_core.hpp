@@ -46,12 +46,8 @@ namespace expt
 
 // GPU or CPU threads available
 enum ExecPlace {
-  HOST
-#if defined(RAJA_ENABLE_DEVICE)
-  ,
-  DEVICE
-#endif
-  ,
+  HOST,
+  DEVICE,
   NUM_PLACES
 };
 
@@ -205,7 +201,7 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
     }
 #endif
     default:
-      throw "unknown launch place!";
+      RAJA_ABORT_OR_THROW("Unknown launch place or Device is not enabled");
   }
 }
 
