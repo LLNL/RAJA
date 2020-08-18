@@ -11,11 +11,11 @@
 #include <cstdlib>
 #include <numeric>
 
-template <typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceSumBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
+void ForallReduceSumBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
-  RAJA::TypedRangeSegment<RAJA::Index_type> r1(first, last);
+  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES()};
   DATA_TYPE* working_array;
@@ -30,12 +30,12 @@ void ForallReduceSumBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
 
   const int modval = 100;
 
-  for (RAJA::Index_type i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < last; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
 
   DATA_TYPE ref_sum = 0;
-  for (RAJA::Index_type i = first; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     ref_sum += test_array[i]; 
   }
 
@@ -45,7 +45,7 @@ void ForallReduceSumBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     sum  += working_array[idx];
     sum2 += working_array[idx];
   });
@@ -58,7 +58,7 @@ void ForallReduceSumBasicTestImpl(RAJA::Index_type first, RAJA::Index_type last)
   const int nloops = 2;
 
   for (int j = 0; j < nloops; ++j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(RAJA::Index_type idx) {
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       sum += working_array[idx];
     });
   }
@@ -81,17 +81,18 @@ class ForallReduceSumBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceSumBasicTest, ReduceSumBasicForall)
 {
-  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceSumBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceSumBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceSumBasicTestImpl<DATA_TYPE, WORKING_RES, 
-                                EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  ForallReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(0, 28);
+  ForallReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(3, 642);
+  ForallReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
+                               EXEC_POLICY, REDUCE_POLICY>(0, 2057);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceSumBasicTest,
