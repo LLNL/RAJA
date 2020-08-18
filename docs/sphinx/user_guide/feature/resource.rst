@@ -12,7 +12,7 @@
 Resources
 =========
 
-This section describes the basic concepts of Resource types and their functionality in ``RAJA::forall``. Resources are used as an interface to various backend constructs and their respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``OpenMP-target`` and ``Host``. Resource objects allow the user to execute ``RAJA::forall`` calls asynchronously on a respective thread/stream. The underlying concept of each individual Resource is still under development and it should be considered that functionality / behaivour may change.
+This section describes the basic concepts of Resource types and their functionality in ``RAJA::forall``. Resources are used as an interface to various backend constructs and their respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``OpenMP-target`` and ``Host``. Resource objects allow the user to execute ``RAJA::forall`` calls asynchronously on a respective thread/stream. The underlying concept of each individual Resource is still under development and it should be considered that functionality / behaviour may change.
 
 .. note:: * Currently feature complete asynchronous behaviour and streamed/threaded support is
             only available when using ``Cuda`` or ``Hip`` resources. 
@@ -27,16 +27,16 @@ Each resource has a set of underlying functionality that is synonymous across al
                        the resource is associated with.
  get_event             Return an Event object for the resource from
                        the last resource call.
- allocate              Allocate data per the resources given
+ allocate              Allocate data per the resource's given
                        backend.
- deallocate            Deallocate data per the resources given
+ deallocate            Deallocate data per the resource's given
                        backend.
  memcpy                Perform a memory copy from a src location
                        to a destination location from the
-                       resources backend.
- memset                Set memory value per the resourses
+                       resource's backend.
+ memset                Set memory value per the resourse's
                        given backend.
- wait_for              Enqueuea wait on the resources stream/thread
+ wait_for              Enqueue a wait on the resource's stream/thread
                        for a user passed event to occur.
  ===================== ===============================================
   
@@ -104,48 +104,44 @@ example::
     RAJA::forall<ExecPol>(my_res, .... ) // Compilation Error. Not Concrete.
     RAJA::forall<ExecPol>(my_host_res, .... ) // Compilation Error. Mismatched Resource and Exec Policy.
 
-Below is a list of the current concrete resource type and their execution policy suport.
+Below is a list of the current concrete resource types and their execution policy suport.
 
  ======== ==============================
  Resource Policy Type
  ======== ==============================
- Cuda     cuda_exec
-
-          cuda_exec_async
-
- Hip      hip_exec
-
-          hip_exec_async
-
- Omp*     omp_target_parallel_for_exec
-          omp_target_parallel_for_exec_n
- Host     loop_exec
-          seq_exec
-          openmp_parallel_exec
-          omp_for_schedule_exec
-          omp_for_nowait_schedule_exec
-          simd_exec
-          tbb_for_dynamic
-          tbb_for_static
+ Cuda     | cuda_exec
+          | cuda_exec_async
+ Hip      | hip_exec
+          | hip_exec_async
+ Omp*     | omp_target_parallel_for_exec
+          | omp_target_parallel_for_exec_n
+ Host     | loop_exec
+          | seq_exec
+          | openmp_parallel_exec
+          | omp_for_schedule_exec
+          | omp_for_nowait_schedule_exec
+          | simd_exec
+          | tbb_for_dynamic
+          | tbb_for_static
  ======== ==============================
 
-.. note:: * The ``RAJA::resources::Omp`` resource still under development.
+.. note:: * The ``RAJA::resources::Omp`` resource is still under development.
 
-IndexSet policies require two execution policies to define them. Currently a users only need to pass a
+IndexSet policies require two execution policies to define them. Currently, a users only need to pass a
 single resource to the forall Indexset call. This resource will be used to execute the inner 
 execution loop of the indexset policy.::
 
     using ExecPol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>>;
     RAJA::forall<ExecPol>(my_cuda_res, iset,  .... );
 
-When a resource is not provided by the user a *default* resource is assigned from within the RAJA
+When a resource is not provided by the user, a *default* resource is assigned from within the RAJA
 forall implementation. This default resource can be accessed in a number of ways.
 
 Directly from the concrete resource type::
 
     RAJA::resources::Cuda my_default_cuda = RAJA::resources::Cuda::get_defualt();
 
-The Resource type can be deduced from an execution policy::
+The resource type can be deduced from an execution policy::
 
     using Res = RAJA::resources::get_resource<ExecPol>::type;
     Res r = Res::get_defualt();
@@ -164,7 +160,7 @@ Deduced from an execution policy and return the default directly::
 Events
 ------
 
-Event objects are a feature that allow users to wait or query the status of a Resources action. An event can be returned from a resource with::
+Event objects are a feature that allow users to wait or query the status of a resource's action. An event can be returned from a resource with::
 
     RAJA::resources::Event e = my_res.get_event();
 
@@ -174,7 +170,7 @@ You can call a blocking function and wait for that event::
 
     e.wait();
 
-Preferably users can enqueue the event to a specific resource, forcing only that resource to wait for the event::
+Preferably, users can enqueue the event to a specific resource, forcing only that resource to wait for the event::
 
     my_res.wait_for(&e);
 
