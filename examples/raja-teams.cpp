@@ -17,10 +17,10 @@
 /*
  * RAJA Teams Example: Upper Triangular Pattern + Shared Memory
  *
- * Teams introduces hierarchal parallism through the concept of
+ * Teams introduces hierarchal parallelism through the concept of
  * teams and threads.  Computation is executed in a pre-defined grid
  * composed of threads and grouped into teams. The teams model enables
- * developers to express parallism through loops over teams, and sub loops
+ * developers to express parallelism through loops over teams, and sub loops
  * over threads. Team loops are executed in parallel and
  * threads within a team should be treated as sub-parallel regions.
  *
