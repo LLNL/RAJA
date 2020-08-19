@@ -51,6 +51,8 @@ enum ExecPlace {
   NUM_PLACES
 };
 
+struct null_launch_t {
+};
 
 // Support for Host, and Device
 template <typename HOST_POLICY

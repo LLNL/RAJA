@@ -33,6 +33,16 @@ struct seq_launch_t {
 };
 
 template <>
+struct LaunchExecute<RAJA::expt::null_launch_t> {
+  template <typename BODY>
+  static void exec(LaunchContext const &ctx, BODY const &body)
+  {
+    RAJA_ABORT_OR_THROW("NULL Launch");
+  }
+};
+
+
+template <>
 struct LaunchExecute<RAJA::expt::seq_launch_t> {
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
