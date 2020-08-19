@@ -12,18 +12,14 @@ BUILD_SUFFIX=lc_corona-hipcc
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-#============= For LC Corona ONLY =============
-export PATH=/usr/workspace/wsb/raja-dev/opt/hip-clang/bin:$PATH
-export HIP_CLANG_PATH=/usr/workspace/wsb/raja-dev/opt/llvm/bin
-export DEVICE_LIB_PATH=/usr/workspace/wsb/raja-dev/opt/lib
-export HCC_AMDGPU_TARGET=gfx900
-module load opt
-module load dts/7.1
-module load rocm
-#==============================================
-
+ 
 module load cmake/3.14.5
 
+
 cmake \
+  -DHIP_ROOT_DIR="/opt/rocm-3.6.0/hip" \
+  -DHIP_CLANG_PATH=/opt/rocm-3.6.0/llvm/bin \
+  -DCMAKE_C_COMPILER=/opt/rocm-3.6.0/llvm/bin/clang \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-3.6.0/llvm/bin/clang++ \
   -C ../host-configs/lc-builds/toss3/hip.cmake \
   ..

@@ -77,7 +77,7 @@ cmake_minimum_required(VERSION 3.9)
 if (ENABLE_CUDA)
   if (DEFINED CUDA_ARCH)
     if (CUDA_ARCH MATCHES "^sm_*")
-      if ("${CUDA_ARCH}" STRLESS "sm_35") 
+      if ("${CUDA_ARCH}" STRLESS "sm_35")
         message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
       endif()
     endif()
@@ -162,7 +162,9 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
-  src/PluginStrategy.cpp)
+  src/PluginStrategy.cpp
+  src/RuntimePluginLoader.cpp
+  src/KokkosPluginLoader.cpp)
 
 set (raja_depends)
 
@@ -187,7 +189,7 @@ if (ENABLE_CUDA)
     if (CUB_FOUND)
       blt_register_library(
         NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
+        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
       set(raja_depends
         ${raja_depends}
         cub)
@@ -254,7 +256,7 @@ endif (NOT TARGET camp)
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp)
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
 
 install(TARGETS RAJA
   EXPORT RAJA
@@ -269,9 +271,11 @@ target_include_directories(RAJA
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
   $<INSTALL_INTERFACE:include>)
+target_include_directories(RAJA SYSTEM
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 if(NOT ENABLE_EXTERNAL_CUB)

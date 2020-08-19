@@ -257,7 +257,7 @@ Simple Loops and Basic RAJA Features
 
 The examples in this section illustrate how to use ``RAJA::forall`` methods
 to execute simple loop kernels; i.e., non-nested loops. It also describes
-iteration spaces, reductions, atomic operations, and scans.
+iteration spaces, reductions, atomic operations, scans, and sorts.
 
 .. toctree::
    :maxdepth: 1
@@ -269,6 +269,7 @@ iteration spaces, reductions, atomic operations, and scans.
    tutorial/reductions.rst
    tutorial/atomic_histogram.rst
    tutorial/scan.rst
+   tutorial/sort.rst
 
 .. _tutorialcomplex-label:
 
@@ -290,3 +291,4 @@ tiling mechanisms to transform loop patterns.
    tutorial/offset-layout.rst
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
+   tutorial/halo-exchange.rst
