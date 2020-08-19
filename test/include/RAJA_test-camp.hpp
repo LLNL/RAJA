@@ -16,9 +16,19 @@
 #include "camp/list.hpp"
 
 //
-// Memory resource types for beck-end memory management
+// Memory resource types for back-end memory management
 //
 using HostResourceList = camp::list<camp::resources::Host>;
+
+using SequentialResourceList = HostResourceList;
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPResourceList = HostResourceList;
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBResourceList = HostResourceList;
+#endif
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaResourceList = camp::list<camp::resources::Cuda>;

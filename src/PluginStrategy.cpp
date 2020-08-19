@@ -14,5 +14,17 @@ namespace util {
 
 PluginStrategy::PluginStrategy() = default;
 
+void PluginStrategy::init(const PluginOptions&) { }
+
+void PluginStrategy::preCapture(const PluginContext&) { }
+
+void PluginStrategy::postCapture(const PluginContext&) { }
+
+void PluginStrategy::preLaunch(const PluginContext&) { }
+
+void PluginStrategy::postLaunch(const PluginContext&) { }
+
+void PluginStrategy::finalize() { }
+
 }
 }

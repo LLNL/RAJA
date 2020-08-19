@@ -71,14 +71,14 @@ submodule or as an installed library.
 User Documentation
 -------------------
 
-The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/master/) 
+The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/main/) 
 is the best place to start learning about RAJA and how to use it.
 
 To cite RAJA, please use the following references:
 
 * RAJA Performance Portability Layer. https://github.com/LLNL/RAJA
 
-* D. A. Beckingsale, J. Burmark, R. Hornung, H. Jones, W. Killian, A. J. Kunen, O. Pearce, P. Robinson, B. S. Ryujin, T. R. W. Scogland, "RAJA: Porrtable Performance for Large-Scale Scientific Applications", 2019 IEEE/ACM International Workshop on Performance, Portability and Productivity in HPC (P3HPC). [Download here](https://conferences.computer.org/sc19w/2019/#!/toc/14)
+* D. A. Beckingsale, J. Burmark, R. Hornung, H. Jones, W. Killian, A. J. Kunen, O. Pearce, P. Robinson, B. S. Ryujin, T. R. W. Scogland, "RAJA: Portable Performance for Large-Scale Scientific Applications", 2019 IEEE/ACM International Workshop on Performance, Portability and Productivity in HPC (P3HPC). [Download here](https://conferences.computer.org/sc19w/2019/#!/toc/14)
 
 Related Software
 --------------------
@@ -114,7 +114,7 @@ The RAJA team follows the [GitFlow](http://nvie.com/posts/a-successful-git-branc
 include their work in a feature branch created from the RAJA `develop` branch.
 Then, create a pull request with the `develop` branch as the destination. That
 branch contains the latest work in RAJA. Periodically, we will merge the 
-develop branch into the `master` branch and tag a new release.
+develop branch into the `main` branch and tag a new release.
 
 Authors
 -----------

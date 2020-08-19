@@ -9,16 +9,50 @@
 #define RAJA_plugins_HPP
 
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/util/RuntimePluginLoader.hpp"
+#include "RAJA/util/KokkosPluginLoader.hpp"
 
 namespace RAJA {
 namespace util {
 
-inline
-void
-callPreLaunchPlugins(PluginContext p) noexcept
+template <typename T>
+RAJA_INLINE auto trigger_updates_before(T&& item)
+  -> typename std::remove_reference<T>::type
 {
-  for (auto plugin = PluginRegistry::begin(); 
+  return item;
+}
+
+RAJA_INLINE
+void
+callPreCapturePlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->preCapture(p);
+  }
+}
+
+RAJA_INLINE
+void
+callPostCapturePlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postCapture(p);
+  }
+}
+
+RAJA_INLINE
+void
+callPreLaunchPlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
@@ -26,15 +60,53 @@ callPreLaunchPlugins(PluginContext p) noexcept
   }
 }
 
-inline
+RAJA_INLINE
 void
-callPostLaunchPlugins(PluginContext p) noexcept
+callPostLaunchPlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postLaunch(p);
+  }
+}
+
+RAJA_INLINE
+void
+callInitPlugins(const PluginOptions p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->postLaunch(p);
+    (*plugin).get()->init(p);
+  }
+}
+
+RAJA_INLINE
+void
+init_plugins(const std::string& path)
+{   
+  callInitPlugins(make_options(path));
+}
+
+RAJA_INLINE
+void
+init_plugins()
+{   
+  callInitPlugins(make_options(""));
+}
+
+RAJA_INLINE
+void
+finalize_plugins()
+{   
+  for (auto plugin = PluginRegistry::begin(); 
+    plugin != PluginRegistry::end();
+    ++plugin)
+  {
+    (*plugin).get()->finalize();
   }
 }
 

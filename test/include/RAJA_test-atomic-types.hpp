@@ -15,6 +15,7 @@
 #ifndef __RAJA_test_atomic_types_HPP__
 #define __RAJA_test_atomic_types_HPP__
 
+#include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
 
 //
@@ -30,10 +31,5 @@ using AtomicDataTypeList =
               float,
 #endif
               double >;
-
-using AtomicSegmentList =
-  camp::list< RAJA::TypedRangeSegment<RAJA::Index_type>,
-              RAJA::TypedRangeStrideSegment<RAJA::Index_type>,
-              RAJA::TypedListSegment<RAJA::Index_type> >;
 
 #endif // __RAJA_test_atomic_types_HPP__

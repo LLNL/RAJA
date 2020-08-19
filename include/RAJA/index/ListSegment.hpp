@@ -263,6 +263,7 @@ public:
   /// does not own the segment data and will hold a pointer to given
   /// array's data. In this case, caller must manage object lifetimes properly.
   ///
+  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
   TypedListSegment(const value_type* values,
                    Index_type length,
                    IndexOwnership owned = Owned)
@@ -281,6 +282,7 @@ public:
   /// The object must provide methods: begin(), end(), size().
   ///
   template <typename Container>
+  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
   explicit TypedListSegment(const Container& container)
     : m_resource(camp::resources::Resource{camp::resources::Host()}),
       m_use_resource(false),
@@ -299,8 +301,9 @@ public:
     : m_resource(other.m_resource), m_use_resource(other.m_use_resource),
       m_owned(Unowned), m_data(nullptr), m_size(0)
   {
+    bool from_copy_ctor = true;
     initIndexData(other.m_use_resource,
-                  other.m_data, other.m_size, other.m_owned);
+                  other.m_data, other.m_size, other.m_owned, from_copy_ctor);
   }
 
   ///
@@ -392,7 +395,8 @@ private:
   void initIndexData(bool use_resource,
                      const value_type* container,
                      Index_type len,
-                     IndexOwnership container_own)
+                     IndexOwnership container_own,
+                     bool from_copy_ctor = false)
   {
     using namespace camp::resources;
 
@@ -411,18 +415,27 @@ private:
 
       if (use_resource) {
 
-        Resource host_res{Host()};
+        if ( from_copy_ctor ) {
 
-        value_type* tmp = host_res.allocate<value_type>(m_size);
+          m_data = m_resource.allocate<value_type>(m_size);
+          m_resource.memcpy(m_data, container, sizeof(value_type) * m_size); 
 
-        for (Index_type i = 0; i < m_size; ++i) {
-          tmp[i] = container[i];
+        } else {
+
+          Resource host_res{Host()};
+
+          value_type* tmp = host_res.allocate<value_type>(m_size);
+
+          for (Index_type i = 0; i < m_size; ++i) {
+            tmp[i] = container[i];
+          }
+
+          m_data = m_resource.allocate<value_type>(m_size);
+          m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
+
+          host_res.deallocate(tmp);
+
         }
-
-        m_data = m_resource.allocate<value_type>(m_size);
-        m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
-
-        host_res.deallocate(tmp);
 
       } else {
         allocate_and_copy<Has_GPU>(RAJA::make_span(container, len));

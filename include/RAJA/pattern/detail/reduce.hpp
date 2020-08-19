@@ -46,7 +46,9 @@
   RAJA_DECLARE_REDUCER(Min, POL, COMBINER)             \
   RAJA_DECLARE_REDUCER(Max, POL, COMBINER)             \
   RAJA_DECLARE_INDEX_REDUCER(MinLoc, POL, COMBINER)    \
-  RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)
+  RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)    \
+  RAJA_DECLARE_REDUCER(BitOr, POL, COMBINER)           \
+  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)
 
 namespace RAJA
 {
@@ -88,6 +90,15 @@ template <typename T>
 struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 };
 
+template <typename T>
+struct or_bit : detail::op_adapter<T, RAJA::operators::bit_or> {
+};
+
+template <typename T>
+struct and_bit : detail::op_adapter<T, RAJA::operators::bit_and> {
+};
+
+
 #if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
 #endif
@@ -128,9 +139,9 @@ public:
   ValueLoc &operator=(ValueLoc const &other) = default;
 #endif
 
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
-      : val{val}, loc{loc}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_)
+      : val{val_}, loc{loc_}
   {
   }
 
@@ -315,7 +326,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -384,7 +395,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
@@ -415,6 +426,55 @@ public:
     return *this;
   }
 };
+
+/*!
+ **************************************************************************
+ *
+ * \brief  Bitwise OR reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitOr : public BaseReduce<T, RAJA::reduce::or_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::or_bit, Combiner>;
+  using Base::Base;
+
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitOr &operator|=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+/*!
+ **************************************************************************
+ *
+ * \brief  Bitwise AND reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitAnd : public BaseReduce<T, RAJA::reduce::and_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::and_bit, Combiner>;
+  using Base::Base;
+
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitAnd &operator&=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
 
 /*!
  **************************************************************************
