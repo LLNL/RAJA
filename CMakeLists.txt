@@ -188,7 +188,7 @@ if (ENABLE_CUDA)
     if (CUB_FOUND)
       blt_register_library(
         NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
+        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
       set(raja_depends
         ${raja_depends}
         cub)
