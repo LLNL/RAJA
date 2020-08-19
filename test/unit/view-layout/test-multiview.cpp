@@ -208,3 +208,109 @@ TYPED_TEST(OffsetLayoutViewUnitTest, View)
   delete[] d1;
   delete[] d2;
 }
+
+TYPED_TEST(TypedViewUnitTest, Shift1D)
+{
+
+  int N = 10;
+  TypeParam *reala = new TypeParam[N];
+  TypeParam *a[1];
+  a[0] = reala;
+
+  //Create a view from a base view
+  const int DIM = 1;
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N-1}});
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
+  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a,N);
+  RAJA::TypedView<TypeParam, RAJA::Layout<DIM>,TX> C(reala,N);
+
+  for(int i=0; i<N; ++i) {
+    A(0,i) = static_cast<TypeParam>(i + 1);
+  }
+
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N}});
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N}});
+
+  //Create a view from a base view with an offsetlayout
+  RAJA::TypedView<TypeParam, RAJA::OffsetLayout<DIM>, TX> Cshift = C.shift({{N}});
+
+  for(int i=N; i<2*N; ++i)
+  {
+    ASSERT_EQ(Ashift(0,i),A(0,i-N));
+    ASSERT_EQ(Bshift(0,i),B(0,i-N));
+  }
+
+  for(TX tx=TX{N}; tx<TX{2*N}; tx++)
+  {
+    ASSERT_EQ(Cshift(tx),C(tx-N));
+  }
+
+  // TODO: MultiView unable to handle strongly typed index \
+  // in the Layout.
+  //Create a shifted view from a view with a typed layout
+  //using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  //using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
+
+  //TLayout myLayout(10);
+
+  //RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
+  //RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
+
+  //for(TIX i=TIX{N}; i<TIX{2*N}; ++i)
+  //{
+  //  ASSERT_EQ(Dshift(0,i),D(0,i-N));
+  //};
+
+  delete[] reala;
+
+}
+
+TYPED_TEST(TypedViewUnitTest, Shift2D)
+{
+
+  int N = 10;
+  TypeParam *a0 = new TypeParam[N*N];
+  TypeParam *b0 = new TypeParam[N*N];
+  TypeParam *a[2];
+  a[0] = a0;
+  a[1] = b0;
+
+  const int DIM = 2;
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0,0}},{{N-1,N-1}});
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
+  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a,N,N);
+
+  for(int y=0; y<N; ++y) {
+    for(int x=0; x<N; ++x) {
+      A(0,y,x) = static_cast<TypeParam>(x + N*y);
+    }
+  }
+
+  //Create a view from a base view with an offsetlayout
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Ashift = A.shift({{N,N}});
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Bshift = B.shift({{N,N}});
+
+  for(int y=N; y<N+N; ++y) {
+    for(int x=N; x<N+N; ++x) {
+      ASSERT_EQ(Ashift(0,y,x),A(0,y-N,x-N));
+      ASSERT_EQ(Bshift(0,y,x),B(0,y-N,x-N));
+    }
+  }
+
+  //Create a view from a base view with permuted layout
+  std::array< RAJA::idx_t, 2> perm {{1, 0}};
+  RAJA::OffsetLayout<2> playout =
+    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N-1, N-1}}, perm );
+
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> C(a, playout);
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Cshift = C.shift({{N,N}});
+
+  for(int y=N; y<N+N; ++y) {
+    for(int x=N; x<N+N; ++x) {
+      ASSERT_EQ(Cshift(0,y,x),C(0,y-N,x-N));
+    }
+  }
+
+  delete[] a0;
+  delete[] b0;
+}
