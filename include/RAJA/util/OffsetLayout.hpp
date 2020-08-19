@@ -151,7 +151,12 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
 
    // Pull in base coonstructors
-   using Base::Base;
+ #if 0
+   // This breaks with nvcc11
+ using Base::Base;
+ #else
+   using OffsetLayout<sizeof...(DimTypes), Index_type>::OffsetLayout;
+ #endif
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
   {

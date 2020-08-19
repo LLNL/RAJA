@@ -36,7 +36,10 @@
 #include "RAJA/policy/openmp/reduce.hpp"
 #include "RAJA/policy/openmp/region.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
+#include "RAJA/policy/openmp/sort.hpp"
 #include "RAJA/policy/openmp/synchronize.hpp"
+#include "RAJA/policy/openmp/WorkGroup.hpp"
+
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 

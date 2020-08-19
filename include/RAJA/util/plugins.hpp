@@ -9,7 +9,10 @@
 #define RAJA_plugins_HPP
 
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/util/RuntimePluginLoader.hpp"
+#include "RAJA/util/KokkosPluginLoader.hpp"
 
 namespace RAJA {
 namespace util {
@@ -21,10 +24,9 @@ RAJA_INLINE auto trigger_updates_before(T&& item)
   return item;
 }
 
-
 RAJA_INLINE
 void
-callPreCapturePlugins(PluginContext p) noexcept
+callPreCapturePlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -36,7 +38,7 @@ callPreCapturePlugins(PluginContext p) noexcept
 
 RAJA_INLINE
 void
-callPostCapturePlugins(PluginContext p) noexcept
+callPostCapturePlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -48,7 +50,7 @@ callPostCapturePlugins(PluginContext p) noexcept
 
 RAJA_INLINE
 void
-callPreLaunchPlugins(PluginContext p) noexcept
+callPreLaunchPlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
@@ -60,13 +62,51 @@ callPreLaunchPlugins(PluginContext p) noexcept
 
 RAJA_INLINE
 void
-callPostLaunchPlugins(PluginContext p) noexcept
+callPostLaunchPlugins(const PluginContext& p)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
     (*plugin).get()->postLaunch(p);
+  }
+}
+
+RAJA_INLINE
+void
+callInitPlugins(const PluginOptions p)
+{
+  for (auto plugin = PluginRegistry::begin(); 
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->init(p);
+  }
+}
+
+RAJA_INLINE
+void
+init_plugins(const std::string& path)
+{   
+  callInitPlugins(make_options(path));
+}
+
+RAJA_INLINE
+void
+init_plugins()
+{   
+  callInitPlugins(make_options(""));
+}
+
+RAJA_INLINE
+void
+finalize_plugins()
+{   
+  for (auto plugin = PluginRegistry::begin(); 
+    plugin != PluginRegistry::end();
+    ++plugin)
+  {
+    (*plugin).get()->finalize();
   }
 }
 
