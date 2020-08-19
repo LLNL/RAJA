@@ -245,7 +245,7 @@ TYPED_TEST(TypedViewUnitTest, Shift1D)
     ASSERT_EQ(Cshift(tx),C(tx-N));
   }
 
-  // TODO: MultiView unable to handle strongly typed index \
+  // TODO: MultiView unable to handle strongly typed index
   // in the Layout.
   //Create a shifted view from a view with a typed layout
   //using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
