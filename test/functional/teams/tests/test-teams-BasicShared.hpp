@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TEAMS_UPPER_TRIANGULAR_HPP__
-#define __TEST_TEAMS_UPPER_TRIANGULAR_HPP__
+#ifndef __TEST_TEAMS_BASIC_SHARED_HPP__
+#define __TEST_TEAMS_BASIC_SHARED_HPP__
 
 #include <numeric>
 
 template <typename WORKING_RES, typename LAUNCH_POLICY, typename TEAM_POLICY, typename THREAD_POLICY>
-void TeamsUpperTriangularTestImpl()
+void TeamsBasicSharedTestImpl()
 {
 
-  int N = 10;
+  int N = 100;
 
   camp::resources::Resource working_res{WORKING_RES()};
   int* working_array;
@@ -47,13 +47,17 @@ void TeamsUpperTriangularTestImpl()
                 // Array shared within threads of the same team
                 TEAM_SHARED int s_A[1];
 
-                RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(r, N), [&](int c) {
-                    if (c == r) s_A[0] = r;
-                    int idx = c + N*r;
-                    working_array[idx] = r * N + c;
-                });  // loop j
+                RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+                    s_A[0] = r; 
+                });
 
                 ctx.teamSync();
+
+                //broadcast shared value to all threads and write to array
+                RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int c) {
+                    const int idx = c + N*r;
+                    working_array[idx] = s_A[0];
+                });  // loop j
 
               });  // loop r
         });  // outer lambda
@@ -63,8 +67,8 @@ void TeamsUpperTriangularTestImpl()
   working_res.memcpy(check_array, working_array, sizeof(int) * N*N);
 
   for(int r = 0; r < N; ++r) {
-    for (int c = r; c < N; c++) {
-      ASSERT_EQ(r * N + c, check_array[c + r*N]);
+    for (int c = 0; c < N; c++) {
+      ASSERT_EQ(r, check_array[c + r*N]);
     }
   }
 
@@ -75,13 +79,13 @@ void TeamsUpperTriangularTestImpl()
 }
 
 
-TYPED_TEST_SUITE_P(TeamsUpperTriangularTest);
+TYPED_TEST_SUITE_P(TeamsBasicSharedTest);
 template <typename T>
-class TeamsUpperTriangularTest : public ::testing::Test
+class TeamsBasicSharedTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(TeamsUpperTriangularTest, UpperTriangularTeams)
+TYPED_TEST_P(TeamsBasicSharedTest, BasicSharedTeams)
 {
 
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -89,12 +93,12 @@ TYPED_TEST_P(TeamsUpperTriangularTest, UpperTriangularTeams)
   using TEAM_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<1>>::type, camp::num<1>>::type;
   using THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<1>>::type, camp::num<2>>::type;
 
-  TeamsUpperTriangularTestImpl<WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>();
+  TeamsBasicSharedTestImpl<WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>();
 
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TeamsUpperTriangularTest,
-                            UpperTriangularTeams);
+REGISTER_TYPED_TEST_SUITE_P(TeamsBasicSharedTest,
+                            BasicSharedTeams);
 
-#endif  // __TEST_FORALL_RANGESEGMENT_HPP__
+#endif  // __TEST_BASIC_SHARED_HPP__

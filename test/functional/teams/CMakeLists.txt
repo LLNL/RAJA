@@ -8,7 +8,7 @@
 #
 # List of segment types for generating test files.
 #
-set(TEST_TYPES UpperTriangular)
+set(TEST_TYPES BasicShared)
 
 
 #
