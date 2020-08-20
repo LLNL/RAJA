@@ -48,7 +48,7 @@ void TeamsBasicSharedTestImpl()
                 TEAM_SHARED int s_A[1];
 
                 RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
-                    s_A[0] = r; 
+                    s_A[c] = r; 
                 });
 
                 ctx.teamSync();
