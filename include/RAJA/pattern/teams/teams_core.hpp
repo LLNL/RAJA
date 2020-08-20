@@ -28,7 +28,9 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if ((defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && \
+     defined(RAJA_ENABLE_CUDA)) ||                                       \
+    defined(RAJA_ENABLE_HIP)
 #define RAJA_ENABLE_DEVICE
 #endif
 
@@ -45,11 +47,7 @@ namespace expt
 {
 
 // GPU or CPU threads available
-enum ExecPlace {
-  HOST,
-  DEVICE,
-  NUM_PLACES
-};
+enum ExecPlace { HOST, DEVICE, NUM_PLACES };
 
 struct null_launch_t {
 };
