@@ -54,7 +54,12 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using teams_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using teams_x = RAJA::expt::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+                                       RAJA::omp_parallel_for_exec
+#else
+                                       RAJA::loop_exec
+#endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
                                        RAJA::cuda_block_x_direct
@@ -130,37 +135,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      *
      *
      * The lambda takes a "resource" object, which has the teams+threads
+     * and perform thread synchronizations within a team
      */
 
-
-    std::cout << "\n Running Upper triangular pattern example...\n";
+    if (select_cpu_or_gpu == RAJA::expt::HOST){
+      std::cout << "\n Running Upper triangular pattern example on the host...\n";
+    }else {
+      std::cout << "\n Running Upper triangular pattern example on the device...\n";
+    }
 
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
     RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-        RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+       RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
+         RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
-                // Array shared within threads of the same team
-                TEAM_SHARED int s_A[1];
+         // Array shared within threads of the same team
+         TEAM_SHARED int s_A[1];
 
-                RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
-                    if (c == r) s_A[0] = r;
-                    D(r, c) = r * N_tri + c;
-                });  // loop j
+         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+            if (c == r) s_A[0] = r;
+            D(r, c) = r * N_tri + c;
+         });  // loop j
 
-                ctx.teamSync();
+         ctx.teamSync();
 
-                RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
 
-                    printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
+             printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
 
-                 });  // loop c
-              });  // loop r
-        });  // outer lambda
+         });  // loop c
+         });  // loop r
+       });  // outer lambda
 
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
       host_res.deallocate(Ddat);

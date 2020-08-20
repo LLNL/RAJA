@@ -27,18 +27,21 @@ using Sequential_launch_policies = camp::list<
          >;
 
 #elif defined(RAJA_ENABLE_HIP)
+using seq_hip_policies = camp::list<
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::hip_launch_t<false>>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
+
 using Sequential_launch_policies = camp::list<
-        camp::list<
-         RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::hip_launch_t<false>>,
-         RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
-         RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>>;
+         seq_hip_policies
+         >;
 #else
 using Sequential_launch_policies = camp::list<
         camp::list<
          RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec>>>;
-#endif
+#endif // Sequential + device policies
 
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -56,11 +59,16 @@ using OpenMP_launch_policies = camp::list<
          >;
 
 #elif defined(RAJA_ENABLE_HIP)
-using OpenMP_launch_policies = camp::list<
-        camp::list<
+
+using omp_hip_policies = camp::list<
          RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::expt::hip_launch_t<false>>,
          RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec, RAJA::hip_block_x_direct>,
-         RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>>;
+         RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>
+  >;
+
+using OpenMP_launch_policies = camp::list<
+         omp_hip_policies
+         >;
 #else
 using OpenMP_launch_policies = camp::list<
         camp::list<
@@ -78,7 +86,16 @@ using Cuda_launch_policies = camp::list<
          , omp_cuda_policies
 #endif
         >;
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+using Hip_launch_policies = camp::list<
+         seq_hip_policies
+#if defined(RAJA_ENABLE_OPENMP)
+         , omp_hip_policies
 #endif
+        >;
+#endif // RAJA_ENABLE_HIP
 
 
 #endif  // __RAJA_test_teams_execpol_HPP__

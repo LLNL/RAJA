@@ -25,6 +25,10 @@ if(RAJA_ENABLE_CUDA)
   list(APPEND TEAMS_BACKENDS Cuda)
 endif()
 
+if(RAJA_ENABLE_HIP)
+  list(APPEND FORALL_BACKENDS Hip)
+endif()
+
 foreach( BACKEND ${TEAMS_BACKENDS} )
   foreach( TESTTYPE ${TEST_TYPES} )
     configure_file( test-teams.cpp.in
