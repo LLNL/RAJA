@@ -208,57 +208,57 @@ This example executes three kernels accross two cuda streams on the GPU with a d
 first and second kernel finish execution before launching the third. It also demonstrates copying 
 memory from the device to host on a resource:
     
-First define two concrete CUDA resources and a Host resource::
+First define two concrete CUDA resources and a Host resource:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_defres_start
    :end-before: _raja_res_defres_end
    :language: C++
 
-Allocate data on 2 GPU arrays and a host array::
+Allocate data on 2 GPU arrays and a host array:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_alloc_start
    :end-before: _raja_res_alloc_end
    :language: C++
 
-Execute Cuda stream 1/``dev1``::
+Execute Cuda stream 1/``res_gpu1``:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_k1_start
    :end-before: _raja_res_k1_end
    :language: C++
     
-Execute Cuda stream 2/``dev2`` and return an ``Event`` object::
+Execute Cuda stream 2/``res_gpu2`` and return an ``Event`` object:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_k2_start
    :end-before: _raja_res_k2_end
    :language: C++
     
-The next kernel on ``dev1`` requires that the last forall on ``dev2`` finish first. Therefore we 
-enqueue a wait to ``dev1`` depending on ``dev2`` finishing::
+The next kernel on ``res_gpu1`` requires that the last forall on ``res_gpu2`` finish first. Therefore we 
+enqueue a wait to ``res_gpu1`` depending on ``res_gpu2`` finishing:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_wait_start
    :end-before: _raja_res_wait_end
    :language: C++
     
-Execute the second kernel on ``dev1`` now that work has finished on the previous two kernels::
+Execute the second kernel on ``res_gpu1`` now that work has finished on the previous two kernels:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_k3_start
    :end-before: _raja_res_k3_end
    :language: C++
     
-We enqueu a memcpy on ``dev1`` to move data from the GPU to the host::
+We enqueu a memcpy on ``res_gpu1`` to move data from the GPU to the host:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_memcpy_start
    :end-before: _raja_res_memcpy_end
    :language: C++
     
-Finally use the data on the host side.::
+Finally use the data on the host side.:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_k4_start
