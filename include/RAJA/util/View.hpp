@@ -128,9 +128,9 @@ template <typename Seq1, typename Seq2>
 struct cat_seq;
 
 template <camp::idx_t... Idxs1, camp::idx_t... Idxs2>
-struct cat_seq < camp::idx_seq<Idxs1...>,
-                      camp::idx_seq<Idxs2...>
-                    >
+struct cat_seq  < camp::idx_seq<Idxs1...>,
+                  camp::idx_seq<Idxs2...>
+                >
 {
   using type = camp::idx_seq<Idxs1..., Idxs2...>;
 };
