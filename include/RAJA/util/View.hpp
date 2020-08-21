@@ -257,6 +257,11 @@ struct MultiView {
   RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... ar) const
   {
     auto pidx = stripIndexType( camp::get<P2Pidx>( camp::forward_as_tuple( ar... ) ) );
+
+    if ( pidx < 0 )
+    {
+      RAJA_ABORT_OR_THROW( "Negative index while accessing array of pointers.\n" );
+    }
     
     auto idx = stripIndexType( removenth<LayoutType, P2Pidx>( layout, camp::forward_as_tuple( ar... ) ) );
     return data[pidx][idx];
