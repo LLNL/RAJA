@@ -160,11 +160,10 @@ RAJA_INLINE concepts::enable_if_t<
 forall(Res &r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   RAJA_FORCEINLINE_RECURSIVE
-  auto e = forall_impl(r,
-              std::forward<ExecutionPolicy>(p),
-              std::forward<Container>(c),
-              std::forward<LoopBody>(loop_body));
-  return e;
+  return forall_impl(r,
+                     std::forward<ExecutionPolicy>(p),
+                     std::forward<Container>(c),
+                     std::forward<LoopBody>(loop_body));
 }
 
 
