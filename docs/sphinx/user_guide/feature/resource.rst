@@ -12,7 +12,12 @@
 Resources
 =========
 
-This section describes the basic concepts of Resource types and their functionality in ``RAJA::forall``. Resources are used as an interface to various backend constructs and their respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``OpenMP-target`` and ``Host``. Resource objects allow the user to execute ``RAJA::forall`` calls asynchronously on a respective thread/stream. The underlying concept of each individual Resource is still under development and it should be considered that functionality / behaviour may change.
+This section describes the basic concepts of Resource types and their functionality in 
+``RAJA::forall``. Resources are used as an interface to various backend constructs and their 
+respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``OpenMP-target`` 
+and ``Host``. Resource objects allow the user to execute ``RAJA::forall`` calls asynchronously on a
+respective thread/stream. The underlying concept of each individual Resource is still under 
+development and it should be considered that functionality / behaviour may change.
 
 .. note:: * Currently feature complete asynchronous behaviour and streamed/threaded support is
             only available when using ``Cuda`` or ``Hip`` resources. 
@@ -70,14 +75,19 @@ Memory allocation on resources::
     int* a1 = my_cuda_res.allocate<int>(ARRAY_SIZE);
     int* a2 = my_res.allocate<int>(ARRAY_SIZE);
 
-If ``use_gpu`` is ``true``, the underlying type of ``my_res`` is a Cuda resource, therefore ``a1`` and ``a2`` will both be allocated on the GPU. If ``use_gpu`` is ``false``, then only ``a1`` is allocated on the GPU, and ``a2`` is allocated on the host.
+If ``use_gpu`` is ``true``, the underlying type of ``my_res`` is a Cuda resource, therefore ``a1`` 
+and ``a2`` will both be allocated on the GPU. If ``use_gpu`` is ``false``, then only ``a1`` is 
+allocated on the GPU, and ``a2`` is allocated on the host.
 
 
 ------
 Forall
 ------
 
-A resource is an optional argument to a ``RAJA::forall`` call. It is passed as the first argument when the forall is templated on the execution policy. When the execution policy is passed by value, the resource is passed as the second argument. This maintains the order of conditions that can be passed to a ``RAJA::forall`` call::
+A resource is an optional argument to a ``RAJA::forall`` call. It is passed as the first argument 
+when the forall is templated on the execution policy. When the execution policy is passed by value,
+the resource is passed as the second argument. This maintains the order of conditions that can be 
+passed to a ``RAJA::forall`` call::
 
     RAJA::forall<ExecPol>(my_cuda_res, .... )
 
@@ -160,7 +170,8 @@ Deduced from an execution policy and return the default directly::
 Events
 ------
 
-Event objects are a feature that allow users to wait or query the status of a resource's action. An event can be returned from a resource with::
+Event objects are a feature that allow users to wait or query the status of a resource's action. An
+event can be returned from a resource with::
 
     RAJA::resources::Event e = my_res.get_event();
 
@@ -174,7 +185,8 @@ Preferably, users can enqueue the event to a specific resource, forcing only tha
 
     my_res.wait_for(&e);
 
-The latter is useful as it allows the user to set up dependencies between resource objects and ``RAJA::forall`` calls.
+The latter is useful as it allows the user to set up dependencies between resource objects and 
+``RAJA::forall`` calls.
 
 .. note:: *An Event object is only generated if a user specifically returns one from a ``RAJA::forall``::
            call. This stops unnecessary event objects being created and causing performance hits when not
@@ -192,56 +204,63 @@ The latter is useful as it allows the user to set up dependencies between resour
 Example
 -------
 
-This example executes three kernels accross two cuda streams on the GPU with a dependence that the first and second kernel finish execution before launching the third. It also demonstrates copying memory from the device to host on a resource:
+This example executes three kernels accross two cuda streams on the GPU with a dependence that the
+first and second kernel finish execution before launching the third. It also demonstrates copying 
+memory from the device to host on a resource:
     
 First define two concrete CUDA resources and a Host resource::
 
-    RAJA::resources::Cuda dev1;
-    RAJA::resources::Cuda dev2;
-    RAJA::resources::Host host;
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_defres_start
+   :end-before: _raja_res_defres_end
+   :language: C++
 
 Allocate data on 2 GPU arrays and a host array::
 
-    int* d_array1 = dev1.allocate<int>(ARRAY_SIZE);
-    int* d_array2 = dev2.allocate<int>(ARRAY_SIZE);
-    int* h_array  = host.allocate<int>(ARRAY_SIZE);
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_alloc_start
+   :end-before: _raja_res_alloc_end
+   :language: C++
 
 Execute Cuda stream 1/``dev1``::
 
-    forall<EXEC_POLICY>(dev1, RangeSegment(0,ARRAY_SIZE),
-      [=] RAJA_HOST_DEVICE (int i) {
-        d_array1[i] = i;
-      }
-    );
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_k1_start
+   :end-before: _raja_res_k1_end
+   :language: C++
     
 Execute Cuda stream 2/``dev2`` and return an ``Event`` object::
 
-    resources::Event e = forall<EXEC_POLICY>(dev2, RangeSegment(0,ARRAY_SIZE),
-      [=] RAJA_HOST_DEVICE (int i) {
-        d_array2[i] = -1;
-      }
-    );
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_k2_start
+   :end-before: _raja_res_k2_end
+   :language: C++
     
-The next kernel on ``dev1`` requires that the last forall on ``dev2`` finish first. Therefore we enqueue a wait to ``dev1`` depending on ``dev2`` finishing::
+The next kernel on ``dev1`` requires that the last forall on ``dev2`` finish first. Therefore we 
+enqueue a wait to ``dev1`` depending on ``dev2`` finishing::
 
-    dev1.wait_for(&e);
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_wait_start
+   :end-before: _raja_res_wait_end
+   :language: C++
     
 Execute the second kernel on ``dev1`` now that work has finished on the previous two kernels::
 
-    forall<EXEC_POLICY>(dev1, RangeSegment(0,ARRAY_SIZE),
-      [=] RAJA_HOST_DEVICE (int i) {
-        d_array1[i] *= d_array2[i];
-      }
-    );
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_k3_start
+   :end-before: _raja_res_k3_end
+   :language: C++
     
 We enqueu a memcpy on ``dev1`` to move data from the GPU to the host::
 
-    dev1.memcpy(h_array, d_array1, sizeof(int) * ARRAY_SIZE);
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_memcpy_start
+   :end-before: _raja_res_memcpy_end
+   :language: C++
     
 Finally use the data on the host side.::
 
-    forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
-      [=] (int i) {
-        std::cout << h_array[i] << std::endl;  
-      }
-    );
+.. literalinclude:: ../../../../examples/resource-forall.cpp
+   :start-after: _raja_res_k4_start
+   :end-before: _raja_res_k4_end
+   :language: C++
