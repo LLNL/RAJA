@@ -82,6 +82,36 @@ accesses array entries with unit stride. The loop::
 
 access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... * N :subscript:`(j+1)`.
 
+MultiView
+^^^^^^^^^^^^^^^^
+
+A ``RAJA::MultiView`` object wraps an array-of-pointers,
+or a pointer-to-pointers, rather than a ``RAJA::View`` which wraps a single
+pointer or array. This allows a single ``RAJA::Layout`` to be applied to a
+large set of arrays, and encapsulates a set of arrays more easily.
+
+The instantiation of a MultiView works exactly like a standard View,
+except that it wraps an array-of-pointers::
+
+  int * myarr[2];
+  RAJA::MultiView< int, RAJA::Layout<2> > MView(myarr, N0, ... Nn);
+
+The MultiView can access individual arrays via the zero-th index::
+
+  MView( 0, x, y ); // accesses the (x,y)th element of the first array
+  MView( 1, x, y ); // accesses the (x,y)th element of the second array
+
+The index into the array-of-pointers can be moved (swizzled) to different
+indices of the ``()`` operator. This is achieved by instantiating the MultiView
+with an additional third template parameter::
+
+  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView(myarr, N0, ... Nn);
+  MView( x, y, 0 ); // accesses the (x,y)th element of the first array
+  MView( x, y, 1 ); // accesses the (x,y)th element of the second array
+
+.. note:: MultiView cannot currently work with Layouts which use strongly
+          typed indices. It has not been tested yet with atomic accesses. 
+
 ------------
 RAJA Layouts
 ------------
