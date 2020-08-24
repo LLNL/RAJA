@@ -9,6 +9,7 @@
 #include "RAJA_unit-test-types.hpp"
 
 RAJA_INDEX_VALUE(TX, "TX");
+// TODO: MultiView unable to handle strongly typed index in the Layout.
 //RAJA_INDEX_VALUE(TIX, "TIX");
 //RAJA_INDEX_VALUE(TIL, "TIL");
 
