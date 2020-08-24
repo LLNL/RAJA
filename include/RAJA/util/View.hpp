@@ -160,7 +160,7 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
               std::forward<Tup>(tup),
               cat_seq_t<  camp::make_idx_seq_t<Nth>,  // sequence up to Nth
                           offset_seq_t<
-                            Nth+1,
+                            Nth+1,  // after Nth
                             camp::make_idx_seq_t<camp::tuple_size<Tup>::value - Nth-1>
                           > // sequence after Nth
                        >{}
@@ -172,7 +172,7 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
               std::forward<Tup>(tup),
               cat_seq_t<  camp::make_idx_seq_t<Nth>,  // sequence up to Nth
                           offset_seq_t<
-                            Nth+1,
+                            Nth+1,  // after Nth
                             camp::make_idx_seq_t<camp::tuple_size<Tup>::value - Nth-1>
                           > // sequence after Nth
                        >{}
