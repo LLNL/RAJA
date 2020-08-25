@@ -196,6 +196,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+#if !defined(RAJA_COMPILER_MSVC)
+#define RAJA_COLLAPSE(X) collapse(X)
+#else
+#define RAJA_COLLAPSE(X)
+#endif
+
 //
 // Runtime bounds checking for Views
 //
