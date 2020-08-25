@@ -129,18 +129,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
     /*
-     * RAJA::expt::launch just starts a "kernel" it's doesn't provide any looping.
+     * RAJA::expt::launch just starts a "kernel" and doesn't provide any looping.
      *
      * The first argument determines which policy should be executed,
      *
      * The second argument is the number of teams+threads needed for each of the
      * policies.
      *
-     * Third argument is the lambda for the policy.
-     *
+     * Third argument is the lambda.
      *
      * The lambda takes a "resource" object, which has the teams+threads
-     * and perform thread synchronizations within a team
+     * and used to perform thread synchronizations within a team.
      */
 
     if (select_cpu_or_gpu == RAJA::expt::HOST){
