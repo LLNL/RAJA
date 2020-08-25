@@ -93,21 +93,29 @@ large set of arrays, and encapsulates a set of arrays more easily.
 The instantiation of a MultiView works exactly like a standard View,
 except that it wraps an array-of-pointers::
 
-  int * myarr[2];
-  RAJA::MultiView< int, RAJA::Layout<2> > MView(myarr, N0, ... Nn);
+  int a1[4] = {5,6,7,8}; int a2[4] = {9,10,11,12}; // individual arrays of the same size
+  int * myarr[2]; // array of arrays which will be passed into MultiView
+  myarr[0] = a1; myarr[1] = a2;
+  RAJA::MultiView< int, RAJA::Layout<2> > MView(myarr, 2, 2);
 
 The MultiView can access individual arrays via the zero-th index::
 
-  MView( 0, x, y ); // accesses the (x,y)th element of the first array
-  MView( 1, x, y ); // accesses the (x,y)th element of the second array
+  MView( 0, 2, 2 ); // accesses 8, the (2,2)th element of the first array
+  MView( 1, 2, 2 ); // accesses 12, the (2,2)th element of the second array
 
 The index into the array-of-pointers can be moved (swizzled) to different
 indices of the ``()`` operator. This is achieved by instantiating the MultiView
 with an additional third template parameter::
 
-  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView(myarr, N0, ... Nn);
-  MView( x, y, 0 ); // accesses the (x,y)th element of the first array
-  MView( x, y, 1 ); // accesses the (x,y)th element of the second array
+  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView2(myarr, 2, 2); // MultiView with swizzled array-of-pointers index to 2nd position
+  MView2( 2, 1, 0 ); // accesses 7, the (2,1)th element of the first array
+  MView2( 2, 1, 1 ); // accesses 11, the (2,1)th element of the second array
+
+Alternatively, the array-of-pointers index can be swizzled to the 1st position, and with a linear (one-dimenstional) layout::
+
+  RAJA::MultiView< int, RAJA::Layout<2>, 1 > MView1(myarr, 4); // MultiView with swizzled array-of-pointers index to 1st position, and 1-D layout
+  MView1( 3, 0 ); // accesses 7, the 3rd element of the first array
+  MView1( 4, 1 ); // accesses 12, the 4th element of the second array
 
 .. note:: MultiView cannot currently work with Layouts which use strongly
           typed indices. It has not been tested yet with atomic accesses. 
