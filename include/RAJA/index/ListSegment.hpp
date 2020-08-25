@@ -217,11 +217,10 @@ public:
     : m_resource(resource), m_use_resource(true),
       m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
-    using namespace camp::resources;
 
     if (m_size > 0) {
 
-      Resource host_res{Host()};
+      camp::resources::Resource host_res{camp::resources::Host()};
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
@@ -398,7 +397,6 @@ private:
                      IndexOwnership container_own,
                      bool from_copy_ctor = false)
   {
-    using namespace camp::resources;
 
     // empty list segment
     if (len <= 0 || container == nullptr) {
@@ -422,7 +420,7 @@ private:
 
         } else {
 
-          Resource host_res{Host()};
+          camp::resources::Resource host_res{camp::resources::Host()};
 
           value_type* tmp = host_res.allocate<value_type>(m_size);
 
