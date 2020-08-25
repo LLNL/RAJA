@@ -139,7 +139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      * Third argument is the lambda.
      *
      * The lambda takes a "resource" object, which has the teams+threads
-     * and used to perform thread synchronizations within a team.
+     * and is used to perform thread synchronizations within a team.
      */
 
     if (select_cpu_or_gpu == RAJA::expt::HOST){
