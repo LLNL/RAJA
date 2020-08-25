@@ -7,12 +7,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_corona-hipcc
+BUILD_SUFFIX=lc_toss3-hipcc-3.6.0
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
- 
+
 module load cmake/3.14.5
 
 
