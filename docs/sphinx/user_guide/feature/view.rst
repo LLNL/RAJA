@@ -86,7 +86,7 @@ MultiView
 ^^^^^^^^^^^^^^^^
 
 A ``RAJA::MultiView`` object wraps an array-of-pointers,
-or a pointer-to-pointers, whereas a ``RAJA::View`` which wraps a single
+or a pointer-to-pointers, whereas a ``RAJA::View`` wraps a single
 pointer or array. This allows a single ``RAJA::Layout`` to be applied to
 multiple arrays internal to the MultiView, allowing multiple arrays to share indexing
 arithmetic when their access patterns are the same.
