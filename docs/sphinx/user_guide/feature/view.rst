@@ -86,38 +86,49 @@ MultiView
 ^^^^^^^^^^^^^^^^
 
 A ``RAJA::MultiView`` object wraps an array-of-pointers,
-or a pointer-to-pointers, rather than a ``RAJA::View`` which wraps a single
-pointer or array. This allows a single ``RAJA::Layout`` to be applied to a
-large set of arrays, and encapsulates a set of arrays more easily.
+or a pointer-to-pointers, whereas a ``RAJA::View`` which wraps a single
+pointer or array. This allows a single ``RAJA::Layout`` to be applied to
+multiple arrays internal to the MultiView, allowing multiple arrays to share indexing
+arithmetic when their access patterns are the same.
 
 The instantiation of a MultiView works exactly like a standard View,
-except that it wraps an array-of-pointers::
+except that it takes an array-of-pointers. In the following example, a MultiView
+applies a 1-D layout of length 4 to 2 internal arrays in ``myarr``::
 
-  int a1[4] = {5,6,7,8}; int a2[4] = {9,10,11,12}; // individual arrays of the same size
-  int * myarr[2]; // array of arrays which will be passed into MultiView
-  myarr[0] = a1; myarr[1] = a2;
-  RAJA::MultiView< int, RAJA::Layout<2> > MView(myarr, 2, 2);
+  int a1[4] = {5,6,7,8}; // Arrays of the same size, which will become internal to the MultiView.
+  int a2[4] = {9,10,11,12};
+  int * myarr[2]; // Array-of-pointers which will be passed into MultiView.
+  myarr[0] = a1;
+  myarr[1] = a2;
+  // This MultiView applies a 1-D layout of length 4 to each internal array in myarr.
+  RAJA::MultiView< int, RAJA::Layout<1> > MView(myarr, 4);
 
-The MultiView can access individual arrays via the zero-th index::
+The default MultiView accesses internal arrays via the 0th index of the MultiView::
 
-  MView( 0, 2, 2 ); // accesses 8, the (2,2)th element of the first array
-  MView( 1, 2, 2 ); // accesses 12, the (2,2)th element of the second array
+  MView( 0, 4 ); // accesses the 4th index of the 0th internal array a1, returns value of 8
+  MView( 1, 2 ); // accesses 2nd index of the 1st internal array a2, returns value of 10
 
-The index into the array-of-pointers can be moved (swizzled) to different
-indices of the ``()`` operator. This is achieved by instantiating the MultiView
-with an additional third template parameter::
+The index into the array-of-pointers can be moved to different
+indices of the MultiView ``()`` access operator, rather than the default 0th index. By 
+passing a third template parameter to the MultiView constructor, the internal array index
+and the integer indicating which array to access can be reversed::
 
-  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView2(myarr, 2, 2); // MultiView with swizzled array-of-pointers index to 2nd position
-  MView2( 2, 1, 0 ); // accesses 7, the (2,1)th element of the first array
-  MView2( 2, 1, 1 ); // accesses 11, the (2,1)th element of the second array
+  RAJA::MultiView< int, RAJA::Layout<1>, 1 > MView1(myarr, 4); // MultiView with array-of-pointers index in 1st position
+  MView1( 4, 0 ); // accesses the 4th index of the 0th internal array a1, returns value of 8
+  MView1( 2, 1 ); // accesses 2nd index of the 1st internal array a2, returns value of 10
 
-Alternatively, the array-of-pointers index can be swizzled to the 1st position, and with a linear (one-dimenstional) layout::
+As the number of Layout dimensions increases, the index into the array-of-pointers can be
+moved to more distinct locations in the MultiView ``()`` access operator. Here is an example
+which compares the accesses of a 2-D layout on a normal ``RAJA::View`` with a ``RAJA::MultiView``
+with the array-of-pointers index set to the 2nd position::
+ 
+  RAJA::View< int, RAJA::Layout<2> > normalView(a1, 2, 2);
+  normalView( 2, 1 ); // accesses 3rd index of the a1 array, value = 7
+  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView2(myarr, 2, 2); // MultiView with array-of-pointers index in 2nd position
+  MView2( 2, 1, 0 ); // accesses the 3rd index of the 0th internal array a1, returns value of 7 (same as normaView(2,1))
+  MView2( 2, 1, 1 ); // accesses the 3rd index of the 1st internal array a2, returns value of 11
 
-  RAJA::MultiView< int, RAJA::Layout<2>, 1 > MView1(myarr, 4); // MultiView with swizzled array-of-pointers index to 1st position, and 1-D layout
-  MView1( 3, 0 ); // accesses 7, the 3rd element of the first array
-  MView1( 4, 1 ); // accesses 12, the 4th element of the second array
-
-.. note:: MultiView cannot currently work with Layouts which use strongly
+.. note:: MultiView does not currently work with Layouts which use strongly
           typed indices. It has not been tested yet with atomic accesses. 
 
 ------------
