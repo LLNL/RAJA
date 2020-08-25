@@ -20,7 +20,6 @@
 #include "RAJA_gtest.hpp"
 
 using UnitIndexSet = RAJA::TypedIndexSet<RAJA::RangeSegment,
-                                         RAJA::ListSegment,
                                          RAJA::RangeStrideSegment>;
 
 constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;

@@ -10,38 +10,33 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index-types.hpp"
+#include "RAJA_test-platform.hpp"
 
-#include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-forall-execpol.hpp"
-#include "RAJA_test-reducepol.hpp"
-
+#include "RAJA_test-workgroup.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-bitwise-@REDUCETYPE@.hpp"
-
-//
-// Data types for reduction basic tests
-//
-using ReductionDataTypeList = camp::list< int >;
+#include "test-plugin-workgroup.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@ForallReduceBitwiseTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
+using @BACKEND@PluginWorkGroupTypes =
+  Test< camp::cartesian_product<@BACKEND@ExecPolicyList,
+                                @BACKEND@OrderPolicyList,
+                                @BACKEND@StoragePolicyList,
+                                IndexTypeTypeList,
+                                @BACKEND@AllocatorList,
                                 @BACKEND@ResourceList,
-                                @BACKEND@ForallReduceExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@PlatformList > >::Types;
 
 //
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Forall@REDUCETYPE@BitwiseTest,
-                               @BACKEND@ForallReduceBitwiseTypes);
+                               PluginWorkGroupTest,
+                               @BACKEND@PluginWorkGroupTypes);

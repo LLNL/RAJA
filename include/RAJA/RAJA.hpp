@@ -114,6 +114,11 @@
 #include "RAJA/util/Span.hpp"
 
 //
+// zip iterator to iterator over sequences simultaneously
+//
+#include "RAJA/util/zip.hpp"
+
+//
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
@@ -127,6 +132,17 @@
 // Bit masking operators
 //
 #include "RAJA/util/BitMask.hpp"
+
+//
+// sort algorithms
+//
+#include "RAJA/util/sort.hpp"
+
+//
+// WorkPool, WorkGroup, WorkSite objects
+//
+#include "RAJA/policy/WorkGroup.hpp"
+#include "RAJA/pattern/WorkGroup.hpp"
 
 //
 // Reduction objects
@@ -153,7 +169,12 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 
 #include "RAJA/pattern/scan.hpp"
+
+#include "RAJA/util/PluginLinker.hpp"
+
+#include "RAJA/pattern/sort.hpp"
 
 #endif  // closing endif for header file include guard
