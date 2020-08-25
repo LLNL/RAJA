@@ -52,9 +52,13 @@ struct View {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
-  using nc_value_type = typename std::remove_const<value_type>::type;
-  using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
-      typename std::remove_pointer<pointer_type>::type>::type>::type;
+  using nc_value_type = camp::type::cv::rem<value_type>;
+  using nc_pointer_type = 
+    camp::type::ptr::add< // adds *
+      camp::type::cv::rem<
+        camp::type::ptr::rem<pointer_type>  // removes *
+      >
+    >;
   using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
 
   layout_type const layout;
@@ -192,17 +196,17 @@ struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
-  using nc_value_type = typename std::remove_const<value_type>::type;
+  using nc_value_type = camp::type::cv::rem<value_type>;
   using nc_pointer_type = 
-    typename std::add_pointer<
-      typename std::add_pointer<
-        typename std::remove_const<
-          typename std::remove_pointer<
-            typename std::remove_pointer<pointer_type>::type
-          >::type
-        >::type
-      >::type
-    >::type;
+    camp::type::ptr::add< // adds *
+      camp::type::ptr::add<
+        camp::type::cv::rem<  // removes cv
+          camp::type::ptr::rem<
+            camp::type::ptr::rem<pointer_type>  // removes *
+          >
+        >
+      >
+    >;
   using NonConstView = MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
