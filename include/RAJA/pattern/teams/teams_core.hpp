@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams
+ * \brief   RAJA header file containing the core components of RAJA::Teams
  *
  ******************************************************************************
  */
@@ -52,7 +52,7 @@ enum ExecPlace { HOST, DEVICE, NUM_PLACES };
 struct null_launch_t {
 };
 
-// Support for Host, and Device
+// Support for host, and device
 template <typename HOST_POLICY
 #if defined(RAJA_ENABLE_DEVICE)
           ,

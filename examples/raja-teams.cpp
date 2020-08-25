@@ -20,19 +20,19 @@
  * Teams introduces hierarchal parallelism through the concept of
  * teams and threads.  Computation is executed in a pre-defined grid
  * composed of threads and grouped into teams. The teams model enables
- * developers to express parallelism through loops over teams, and sub loops
+ * developers to express parallelism through loops over teams, and inner loops
  * over threads. Team loops are executed in parallel and
  * threads within a team should be treated as sub-parallel regions.
  *
  * Team shared memory is allocated between team and thread loops.
  * Memory allocated within thread loops are thread private.
  * The example below demonstrates composing an upper triangular
- * loop pattern, and shared memory.
+ * loop pattern, and using shared memory.
  *
  */
 
 /*
- * Define Host/Device launch policies
+ * Define host/device launch policies
  */
 using launch_policy = RAJA::expt::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
@@ -106,6 +106,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   num_of_backends++;
 #endif
 
+  // RAJA teams may switch between host and device policies at run time.
+  // The loop below will execute through the available backends.
+
   for (int exec_place = 0; exec_place < num_of_backends; ++exec_place) {
 
     RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
@@ -113,7 +116,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // auto select_cpu_or_gpu = RAJA::HOST;
     // auto select_cpu_or_gpu = RAJA::DEVICE;
 
+    // Allocate memory for either host or device
     int N_tri = 5;
+
     int *Ddat;
     if (select_cpu_or_gpu == RAJA::expt::HOST)
       Ddat = host_res.allocate<int>(N_tri * N_tri);
@@ -124,7 +129,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
     /*
-     * launch just starts a "kernel" it's doesn't provide any looping.
+     * RAJA::expt::launch just starts a "kernel" it's doesn't provide any looping.
      *
      * The first argument determines which policy should be executed,
      *

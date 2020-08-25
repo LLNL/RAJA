@@ -4,7 +4,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams
+ * \brief   RAJA header file containing user interface for RAJA::Teams::seq
  *
  ******************************************************************************
  */

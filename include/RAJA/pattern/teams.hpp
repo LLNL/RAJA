@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::kernel
+ * \brief   RAJA header file containing headers for RAJA::Teams backends
  *
  ******************************************************************************
  */
