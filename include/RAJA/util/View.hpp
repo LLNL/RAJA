@@ -197,7 +197,7 @@ struct MultiView {
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = camp::type::cv::rem<value_type>;
-  using nc_pointer_type = 
+  using nc_pointer_type =  
     camp::type::ptr::add< // adds *
       camp::type::ptr::add<
         camp::type::cv::rem<  // removes cv
