@@ -54,9 +54,9 @@ individual functionality for each resource in ``raja/tpl/camp/include/resource/`
 Type-Erasure
 ------------
 
-Resources can be declared in two formats: An erased resource, and a concrete resource. When 
-declared on the same backend, their underlying runtime functionality is the same. An 
-erased resource allows a user the ability to change the resourse backend at runtime. 
+Resources can be declared in two formats: An erased resource, and a concrete resource. The 
+underlying runtime functionality is the same for both formats. An erased resource allows a user 
+the ability to change the resource backend at runtime. 
 
 Concrete Cuda resource::
 
@@ -86,7 +86,7 @@ Forall
 
 A resource is an optional argument to a ``RAJA::forall`` call. It is passed as the first argument 
 when the forall is templated on the execution policy. When the execution policy is passed by value,
-the resource is passed as the second argument. This maintains the order of conditions that can be 
+the resource is passed as the second argument. This maintains the order of inputs that can be 
 passed to a ``RAJA::forall`` call::
 
     RAJA::forall<ExecPol>(my_cuda_res, .... )
@@ -96,7 +96,7 @@ or::
     RAJA::forall(ExecPol(), my_cuda_res, .... )
 
 
-When specifying a Cuda/Hip resource the RAJA kernel is executed aynchronously on a stream.
+When specifying a Cuda/Hip resource the ``RAJA::forall`` is executed aynchronously on a stream.
 Currently Cuda/Hip are the only Resources that enable asynchronous threading with a ``RAJA::forall``.
 All other calls are defaulted to using the ``Host`` resource until further support is 
 added.
@@ -137,9 +137,9 @@ Below is a list of the current concrete resource types and their execution polic
 
 .. note:: * The ``RAJA::resources::Omp`` resource is still under development.
 
-IndexSet policies require two execution policies to define them. Currently, a users only need to pass a
-single resource to the forall Indexset call. This resource will be used to execute the inner 
-execution loop of the indexset policy.::
+IndexSet policies require two execution policies to define them. Currently, users may only pass a
+single resource to the forall Indexset call. This resource is used to execute the inner execution 
+loop of the indexset policy.::
 
     using ExecPol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<256>>;
     RAJA::forall<ExecPol>(my_cuda_res, iset,  .... );
@@ -154,7 +154,7 @@ Directly from the concrete resource type::
 The resource type can be deduced from an execution policy::
 
     using Res = RAJA::resources::get_resource<ExecPol>::type;
-    Res r = Res::get_defualt();
+    Res r = Res::get_default();
 
 Deduced from an execution policy and return the default directly::
 
@@ -165,6 +165,7 @@ Deduced from an execution policy and return the default directly::
             from some of the issues that arise from the synchronization behaviour of the CUDA/HIP 
             default stream. It is still possible to use the CUDA/HIP defined default stream as the
             default resource. This can be enabled by defining ``CAMP_USE_PLATFORM_DEFAULT_STREAM``
+            before including RAJA in a project.
 
 ------
 Events
@@ -177,20 +178,21 @@ event can be returned from a resource with::
 
 Getting an event like this enqueues an event type object for the given backend. 
 
-You can call a blocking function and wait for that event::
+Users can call the blocking wait function on the event::
 
     e.wait();
 
-Preferably, users can enqueue the event to a specific resource, forcing only that resource to wait for the event::
+Preferably, users can enqueue the event to a specific resource, forcing only that resource to wait for
+the event::
 
     my_res.wait_for(&e);
 
 The latter is useful as it allows the user to set up dependencies between resource objects and 
 ``RAJA::forall`` calls.
 
-.. note:: *An Event object is only generated if a user specifically returns one from a ``RAJA::forall``::
-           call. This stops unnecessary event objects being created and causing performance hits when not
-           needed. For example::
+.. note:: *An Event object is only created if a user explicitly uses the event returned by the 
+          ``RAJA::forall`` call. This stops unnecessary event objects being created when not needed.
+          For example::
     
                forall<cuda_exec_async<BLOCK_SIZE>>(my_cuda_res, ...
 
@@ -204,7 +206,7 @@ The latter is useful as it allows the user to set up dependencies between resour
 Example
 -------
 
-This example executes three kernels accross two cuda streams on the GPU with a dependence that the
+This example executes three kernels accross two cuda streams on the GPU with a requirement that the
 first and second kernel finish execution before launching the third. It also demonstrates copying 
 memory from the device to host on a resource:
     
@@ -251,7 +253,7 @@ Execute the second kernel on ``res_gpu1`` now that work has finished on the prev
    :end-before: _raja_res_k3_end
    :language: C++
     
-We enqueu a memcpy on ``res_gpu1`` to move data from the GPU to the host:
+We enqueue a memcpy on ``res_gpu1`` to move data from the GPU to the host:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_memcpy_start
