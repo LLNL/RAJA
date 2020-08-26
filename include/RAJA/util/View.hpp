@@ -52,7 +52,7 @@ struct View {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
-  using nc_value_type = camp::type::cv::rem<value_type>;
+  using nc_value_type = camp::decay<value_type>;
   using nc_pointer_type = 
     camp::type::ptr::add< // adds *
       camp::type::cv::rem<
@@ -198,7 +198,7 @@ struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
-  using nc_value_type = camp::type::cv::rem<value_type>;
+  using nc_value_type = camp::decay<value_type>;
   using nc_pointer_type =  
     camp::type::ptr::add< // adds *
       camp::type::ptr::add<
