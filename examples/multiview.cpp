@@ -105,8 +105,8 @@ void docs_example()
   // _multiview_example_1Daopindex_end
 
   printf( "Comparison of default MultiView with another MultiView that has the array-of-pointers index in the 1st position of the () accessor:\n" );
-  printf( "MView( 0, 3 ) = %i, MView1( 3, 0 ) = %i\n", MView(0,3), MView1(3,0) );
-  printf( "MView( 1, 2 ) = %i, MView1( 2, 1 ) = %i\n", MView(1,2), MView1(2,1) );
+  printf( "MView( 0, 3 ) = %i, MView1( 3, 0 ) = %i\n", t1, t3 );
+  printf( "MView( 1, 2 ) = %i, MView1( 2, 1 ) = %i\n", t2, t4 );
 
   // _multiview_example_2Daopindex_start
   RAJA::View< int, RAJA::Layout<2> > normalView(a1, 2, 2);
@@ -121,7 +121,7 @@ void docs_example()
   // _multiview_example_2Daopindex_end
 
   printf( "Comparison of 2D normal View with 2D MultiView that has the array-of-pointers index in the 2nd position of the () accessor:\n" );
-  printf( "normalView( 1, 1 ) = %i, MView2( 1, 1, 0 ) = %i\n", normalView(1,1), MView2(1,1,0) );
+  printf( "normalView( 1, 1 ) = %i, MView2( 1, 1, 0 ) = %i\n", t1, t2 );
 }
 
 int main()
