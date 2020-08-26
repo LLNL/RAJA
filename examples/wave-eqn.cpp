@@ -128,15 +128,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
   // OpenMP policy
-  // using fdPolicy = RAJA::KernelPolicy<
-  // RAJA::statement::For<0, RAJA::omp_parallel_for_exec >,
-  // RAJA::statement::For<1, RAJA::seq_exec > >;
+  //using fdPolicy = RAJA::KernelPolicy<
+  //RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+  //  RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
 
   // CUDA policy
-  // using fdPolicy = RAJA::KernelPolicy<
-  // RAJA::statement::CudaCollapse<
-  // RAJA::statement::For<0, RAJA::cuda_threadblock_x_exec<16> >,
-  // RAJA::statement::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+  //using fdPolicy =
+  //RAJA::KernelPolicy<
+  //  RAJA::statement::CudaKernel<
+  //      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
+  //        RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::cuda_block_x_direct,
+  //          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+  //            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+  //              RAJA::statement::Lambda<0>
+  //            >
+  //          >
+  //        >
+  //      >
+  //    >
+  //  >;
 
 
   time = 0;

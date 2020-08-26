@@ -43,6 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
+#include "RAJA/pattern/teams.hpp"
 
 
 //
