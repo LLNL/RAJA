@@ -186,7 +186,9 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
 
 
 
-// P2Pidx represents the pointer-to-pointer index for swizzling of indices.
+// P2Pidx represents the array-of-pointers index. This allows the position of the
+// index into the array-of-pointers to be moved around in the MultiView operator();
+// see the operator overload.
 // Default of 0 means that the p2p index is in the 0th position.
 template <typename ValueType,
           typename LayoutType,
@@ -254,7 +256,8 @@ struct MultiView {
     return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>(data, shift_layout);
   }
 
-  // Swizzling of indices is set by P2Pidx, which is defaulted to 0.
+  // Moving the position of the index into the array-of-pointers
+  // is set by P2Pidx, which is defaulted to 0.
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>

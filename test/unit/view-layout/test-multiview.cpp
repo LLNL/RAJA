@@ -9,7 +9,7 @@
 #include "RAJA_unit-test-types.hpp"
 
 RAJA_INDEX_VALUE(TX, "TX");
-// TODO: MultiView unable to handle strongly typed index in the Layout.
+// ISSUE: https://github.com/LLNL/RAJA/issues/881
 //RAJA_INDEX_VALUE(TIX, "TIX");
 //RAJA_INDEX_VALUE(TIL, "TIL");
 
@@ -56,17 +56,17 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   RAJA::MultiView<TypeParam const, layout> const_view2(const_view);
 
 
-  // swizzle construction
-  RAJA::MultiView<TypeParam, layout, 1> swizz(data, layout(10));
+  // non-default construction of MultiView with array-of-pointers index moved to 1st position
+  RAJA::MultiView<TypeParam, layout, 1> view1p(data, layout(10));
 
   // construct a non-const MultiView from a non-const MultiView
-  RAJA::MultiView<TypeParam, layout, 1> swizz2(swizz);
+  RAJA::MultiView<TypeParam, layout, 1> view1p2(view1p);
 
   // construct a const MultiView from a non-const MultiView
-  RAJA::MultiView<TypeParam const, layout, 1> const_swizz(swizz);
+  RAJA::MultiView<TypeParam const, layout, 1> const_view1p(view1p);
 
   // construct a const MultiView from a const MultiView
-  RAJA::MultiView<TypeParam const, layout, 1> const_swizz2(const_swizz);
+  RAJA::MultiView<TypeParam const, layout, 1> const_view1p2(const_view1p);
 }
 
 TYPED_TEST(MultiViewUnitTest, Accessor)
@@ -95,13 +95,13 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
    * 1D Accessor
    */
   RAJA::MultiView<TypeParam, RAJA::Layout<1>> view_1D(a,N);
-  RAJA::MultiView<TypeParam, RAJA::Layout<1>,1> view_1Dswizz(a,N);
+  RAJA::MultiView<TypeParam, RAJA::Layout<1>,1> view_1D1p(a,N);
   TypeParam val{0};
   for(int i=0; i<N; ++i) {
     ASSERT_EQ(val, view_1D(0,i));
     ASSERT_EQ(val+1, view_1D(1,i));
-    ASSERT_EQ(val, view_1Dswizz(i,0));
-    ASSERT_EQ(val+1, view_1Dswizz(i,1));
+    ASSERT_EQ(val, view_1D1p(i,0));
+    ASSERT_EQ(val+1, view_1D1p(i,1));
     val++;
   }
 
@@ -109,14 +109,14 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
    * 2D Accessor
    */
   RAJA::MultiView<TypeParam, RAJA::Layout<2>> view_2D(a,Ny,Nx);
-  RAJA::MultiView<TypeParam, RAJA::Layout<2>,1> view_2Dswizz(a,Ny,Nx);
+  RAJA::MultiView<TypeParam, RAJA::Layout<2>,1> view_2D1p(a,Ny,Nx);
   val = TypeParam{0};
   for(int j=0; j<Ny; ++j) {
     for(int i=0; i<Nx; ++i) {
       ASSERT_EQ(val, view_2D(0,j,i));
       ASSERT_EQ(val+1, view_2D(1,j,i));
-      ASSERT_EQ(val, view_2Dswizz(j,0,i));
-      ASSERT_EQ(val+1, view_2Dswizz(j,1,i));
+      ASSERT_EQ(val, view_2D1p(j,0,i));
+      ASSERT_EQ(val+1, view_2D1p(j,1,i));
       val++;
     }
   }
@@ -125,15 +125,15 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
    * 3D Accessor
    */
   RAJA::MultiView<TypeParam, RAJA::Layout<3>> view_3D(a,Nz,Ny,Nx);
-  RAJA::MultiView<TypeParam, RAJA::Layout<3>,2> view_3Dswizz(a,Nz,Ny,Nx);
+  RAJA::MultiView<TypeParam, RAJA::Layout<3>,2> view_3D1p(a,Nz,Ny,Nx);
   val = TypeParam{0};
   for(int k=0; k<Nz; ++k) {
     for(int j=0; j<Ny; ++j) {
       for(int i=0; i<Nx; ++i) {
         ASSERT_EQ(val, view_3D(0,k,j,i));
         ASSERT_EQ(val+1, view_3D(1,k,j,i));
-        ASSERT_EQ(val, view_3Dswizz(k,j,0,i));
-        ASSERT_EQ(val+1, view_3Dswizz(k,j,1,i));
+        ASSERT_EQ(val, view_3D1p(k,j,0,i));
+        ASSERT_EQ(val+1, view_3D1p(k,j,1,i));
         val++;
       }
     }
@@ -160,7 +160,7 @@ TYPED_TEST(OffsetLayoutMultiViewUnitTest, View)
   std::array<RAJA::Index_type, 1> lower{{1}};
   std::array<RAJA::Index_type, 1> upper{{10}};
   RAJA::MultiView<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
-  RAJA::MultiView<TypeParam, layout,1> viewswizz(data, RAJA::make_offset_layout<1>(lower, upper));
+  RAJA::MultiView<TypeParam, layout,1> view1p(data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++) {
     data[0][i] = static_cast<TypeParam>(i);
@@ -169,8 +169,8 @@ TYPED_TEST(OffsetLayoutMultiViewUnitTest, View)
 
   ASSERT_EQ(data[0][0], view(0,1));
   ASSERT_EQ(data[1][9], view(1,10));
-  ASSERT_EQ(data[0][0], viewswizz(1,0));
-  ASSERT_EQ(data[1][9], viewswizz(10,1));
+  ASSERT_EQ(data[0][0], view1p(1,0));
+  ASSERT_EQ(data[1][9], view1p(10,1));
 
   delete[] d1;
   delete[] d2;
@@ -206,7 +206,7 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
     ASSERT_EQ(Bshift(1,i),B(1,i-N));
   }
 
-  // swizzled offset
+  // offset layout with MultiView with array-of-pointers index in 1st position
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>, 1> C(a,layout);
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>, 1> Cshift = C.shift({{N}});
 
@@ -219,7 +219,7 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
   }
 
 
-  // TODO: MultiView unable to handle strongly typed index in the Layout.
+  // ISSUE: https://github.com/LLNL/RAJA/issues/881
   //Create a shifted view from a view with a typed layout
   //using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
   //using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
@@ -279,15 +279,15 @@ TYPED_TEST(MultiViewUnitTest, Shift2D)
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> C(a, playout);
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Cshift = C.shift({{N,N}});
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>,1> D(a, playout);
-  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>,1> Dshiftswizz = D.shift({{N,N}});
+  RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>,1> Dshift1p = D.shift({{N,N}});
 
   for(int y=N; y<N+N; ++y) {
     for(int x=N; x<N+N; ++x) {
       ASSERT_EQ(Cshift(0,y,x),C(0,y-N,x-N));
       ASSERT_EQ(Cshift(1,y,x),C(1,y-N,x-N));
-      ASSERT_EQ(Dshiftswizz(y,0,x),D(y-N,0,x-N));
-      ASSERT_EQ(Dshiftswizz(y,1,x),D(y-N,1,x-N));
-      ASSERT_EQ(Dshiftswizz(y,1,x),C(1,y-N,x-N));
+      ASSERT_EQ(Dshift1p(y,0,x),D(y-N,0,x-N));
+      ASSERT_EQ(Dshift1p(y,1,x),D(y-N,1,x-N));
+      ASSERT_EQ(Dshift1p(y,1,x),C(1,y-N,x-N));
       ASSERT_EQ(Cshift(0,y,x),D(y-N,0,x-N));
     }
   }

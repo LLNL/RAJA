@@ -93,40 +93,39 @@ arithmetic when their access patterns are the same.
 
 The instantiation of a MultiView works exactly like a standard View,
 except that it takes an array-of-pointers. In the following example, a MultiView
-applies a 1-D layout of length 4 to 2 internal arrays in ``myarr``::
+applies a 1-D layout of length 4 to 2 internal arrays in ``myarr``.
 
-  int a1[4] = {5,6,7,8}; // Arrays of the same size, which will become internal to the MultiView.
-  int a2[4] = {9,10,11,12};
-  int * myarr[2]; // Array-of-pointers which will be passed into MultiView.
-  myarr[0] = a1;
-  myarr[1] = a2;
-  // This MultiView applies a 1-D layout of length 4 to each internal array in myarr.
-  RAJA::MultiView< int, RAJA::Layout<1> > MView(myarr, 4);
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Dinit_start
+   :end-before: _multiview_example_1Dinit_end
+   :language: C++
 
-The default MultiView accesses internal arrays via the 0th index of the MultiView::
+The default MultiView accesses internal arrays via the 0th position of the MultiView.
 
-  MView( 0, 4 ); // accesses the 4th index of the 0th internal array a1, returns value of 8
-  MView( 1, 2 ); // accesses 2nd index of the 1st internal array a2, returns value of 10
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daccess_start
+   :end-before: _multiview_example_1Daccess_end
+   :language: C++
 
 The index into the array-of-pointers can be moved to different
-indices of the MultiView ``()`` access operator, rather than the default 0th index. By 
+indices of the MultiView ``()`` access operator, rather than the default 0th position. By 
 passing a third template parameter to the MultiView constructor, the internal array index
-and the integer indicating which array to access can be reversed::
+and the integer indicating which array to access can be reversed.
 
-  RAJA::MultiView< int, RAJA::Layout<1>, 1 > MView1(myarr, 4); // MultiView with array-of-pointers index in 1st position
-  MView1( 4, 0 ); // accesses the 4th index of the 0th internal array a1, returns value of 8
-  MView1( 2, 1 ); // accesses 2nd index of the 1st internal array a2, returns value of 10
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daopindex_start
+   :end-before: _multiview_example_1Daopindex_end
+   :language: C++
 
 As the number of Layout dimensions increases, the index into the array-of-pointers can be
 moved to more distinct locations in the MultiView ``()`` access operator. Here is an example
 which compares the accesses of a 2-D layout on a normal ``RAJA::View`` with a ``RAJA::MultiView``
-with the array-of-pointers index set to the 2nd position::
+with the array-of-pointers index set to the 2nd position.
  
-  RAJA::View< int, RAJA::Layout<2> > normalView(a1, 2, 2);
-  normalView( 2, 1 ); // accesses 3rd index of the a1 array, value = 7
-  RAJA::MultiView< int, RAJA::Layout<2>, 2 > MView2(myarr, 2, 2); // MultiView with array-of-pointers index in 2nd position
-  MView2( 2, 1, 0 ); // accesses the 3rd index of the 0th internal array a1, returns value of 7 (same as normaView(2,1))
-  MView2( 2, 1, 1 ); // accesses the 3rd index of the 1st internal array a2, returns value of 11
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_2Daopindex_start
+   :end-before: _multiview_example_2Daopindex_end
+   :language: C++
 
 .. note:: MultiView does not currently work with Layouts which use strongly
           typed indices. It has not been tested yet with atomic accesses. 
