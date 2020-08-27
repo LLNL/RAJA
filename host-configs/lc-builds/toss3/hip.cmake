@@ -5,12 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(CMAKE_BUILD_TYPE Release CACHE BOOL "")
-
-set(ENABLE_HIP ON CACHE BOOL "")
-set(ENABLE_OPENMP OFF CACHE BOOL "")
-set(ENABLE_CUDA Off CACHE BOOL "")
-
+set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O2" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "")
