@@ -20,3 +20,7 @@ raja_add_test(
 raja_add_test(
   NAME test-makelayout
   SOURCES test-makelayout.cpp)
+
+raja_add_test(
+  NAME test-multiview
+  SOURCES test-multiview.cpp)

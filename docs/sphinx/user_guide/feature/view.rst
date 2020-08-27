@@ -82,6 +82,54 @@ accesses array entries with unit stride. The loop::
 
 access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... * N :subscript:`(j+1)`.
 
+MultiView
+^^^^^^^^^^^^^^^^
+
+A ``RAJA::MultiView`` object wraps an array-of-pointers,
+or a pointer-to-pointers, whereas a ``RAJA::View`` wraps a single
+pointer or array. This allows a single ``RAJA::Layout`` to be applied to
+multiple arrays internal to the MultiView, allowing multiple arrays to share indexing
+arithmetic when their access patterns are the same.
+
+The instantiation of a MultiView works exactly like a standard View,
+except that it takes an array-of-pointers. In the following example, a MultiView
+applies a 1-D layout of length 4 to 2 internal arrays in ``myarr``.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Dinit_start
+   :end-before: _multiview_example_1Dinit_end
+   :language: C++
+
+The default MultiView accesses internal arrays via the 0th position of the MultiView.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daccess_start
+   :end-before: _multiview_example_1Daccess_end
+   :language: C++
+
+The index into the array-of-pointers can be moved to different
+indices of the MultiView ``()`` access operator, rather than the default 0th position. By 
+passing a third template parameter to the MultiView constructor, the internal array index
+and the integer indicating which array to access can be reversed.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daopindex_start
+   :end-before: _multiview_example_1Daopindex_end
+   :language: C++
+
+As the number of Layout dimensions increases, the index into the array-of-pointers can be
+moved to more distinct locations in the MultiView ``()`` access operator. Here is an example
+which compares the accesses of a 2-D layout on a normal ``RAJA::View`` with a ``RAJA::MultiView``
+with the array-of-pointers index set to the 2nd position.
+ 
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_2Daopindex_start
+   :end-before: _multiview_example_2Daopindex_end
+   :language: C++
+
+.. note:: MultiView does not currently work with Layouts which use strongly
+          typed indices. It has not been tested yet with atomic accesses. 
+
 ------------
 RAJA Layouts
 ------------
