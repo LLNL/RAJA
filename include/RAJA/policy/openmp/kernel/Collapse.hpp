@@ -32,13 +32,6 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-
-#if !defined(RAJA_COMPILER_MSVC)
-#define RAJA_COLLAPSE(X) collapse(X)
-#else
-#define RAJA_COLLAPSE(X)
-#endif
-
 namespace RAJA
 {
 
