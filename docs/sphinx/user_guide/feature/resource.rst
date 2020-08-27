@@ -44,11 +44,17 @@ Each resource has a set of underlying functionality that is synonymous across al
  wait_for              Enqueue a wait on the resource's stream/thread
                        for a user passed event to occur.
  ===================== ===============================================
+
+.. note:: * ``deallocate``, ``memcpy`` and ``memset`` will only work with pointers that correspond
+            to memory locations that have been allocated on the resource's respective device.
   
 Each resource type also defines specific backend information/functionality. For example, each
 Cuda resource contains a ``cudaStream_t`` value with an associated get method. See the 
 individual functionality for each resource in ``raja/tpl/camp/include/resource/``.
 
+.. note:: * Stream IDs are assigned to resources in a round robin fashion. The number of
+            independent streams for a given backend is limited to the maximum number of concurrent
+            streams that backend supports. 
 
 ------------
 Type-Erasure
@@ -84,17 +90,10 @@ allocated on the GPU, and ``a2`` is allocated on the host.
 Forall
 ------
 
-A resource is an optional argument to a ``RAJA::forall`` call. It is passed as the first argument 
-when the forall is templated on the execution policy. When the execution policy is passed by value,
-the resource is passed as the second argument. This maintains the order of inputs that can be 
-passed to a ``RAJA::forall`` call::
+A resource is an optional argument to a ``RAJA::forall`` call. When used, it is passed as the first
+argument of the call.::
 
     RAJA::forall<ExecPol>(my_cuda_res, .... )
-
-or::
-
-    RAJA::forall(ExecPol(), my_cuda_res, .... )
-
 
 When specifying a Cuda/Hip resource the ``RAJA::forall`` is executed aynchronously on a stream.
 Currently Cuda/Hip are the only Resources that enable asynchronous threading with a ``RAJA::forall``.
@@ -160,7 +159,7 @@ Deduced from an execution policy and return the default directly::
 
     auto my_resource = RAJA::resources::get_default_resource<ExecPol>();
 
-.. note:: * For Cuda and Hip the default resource is *NOT* the CUDA or HIP default stream it is it's 
+.. note:: * For Cuda and Hip the default resource is *NOT* the CUDA or HIP default stream. It is its 
             own stream defined in ``camp/include/resource/``. This is in an attempt to break away
             from some of the issues that arise from the synchronization behaviour of the CUDA/HIP 
             default stream. It is still possible to use the CUDA/HIP defined default stream as the
@@ -196,11 +195,11 @@ The latter is useful as it allows the user to set up dependencies between resour
     
                forall<cuda_exec_async<BLOCK_SIZE>>(my_cuda_res, ...
 
-           Will *not* generate a cudaStreamEvent.
+           will *not* generate a cudaStreamEvent.
 
                 RAJA::resources::Event e = forall<cuda_exec_async<BLOCK_SIZE>>(my_cuda_res, ...
 
-           Will generate a cudaStreamEvent.
+           will generate a cudaStreamEvent.
 
 -------
 Example
