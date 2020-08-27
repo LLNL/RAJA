@@ -14,7 +14,7 @@ Resources
 
 This section describes the basic concepts of Resource types and their functionality in 
 ``RAJA::forall``. Resources are used as an interface to various backend constructs and their 
-respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``OpenMP-target`` 
+respective hardware. Currently there exists Resource types for ``Cuda``, ``Hip``, ``Omp`` (target) 
 and ``Host``. Resource objects allow the user to execute ``RAJA::forall`` calls asynchronously on a
 respective thread/stream. The underlying concept of each individual Resource is still under 
 development and it should be considered that functionality / behaviour may change.
@@ -206,7 +206,7 @@ The latter is useful as it allows the user to set up dependencies between resour
 Example
 -------
 
-This example executes three kernels accross two cuda streams on the GPU with a requirement that the
+This example executes three kernels across two cuda streams on the GPU with a requirement that the
 first and second kernel finish execution before launching the third. It also demonstrates copying 
 memory from the device to host on a resource:
     
