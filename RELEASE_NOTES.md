@@ -10,7 +10,7 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.12.0 -- Release date 2020-08-dd
+Version v0.12.0 -- Release date 2020-09-03
 ============================================
 
 This release contains new features, notable changes, and bug fixes. Please
@@ -28,6 +28,15 @@ Notable changes include:
       * Added support for dynamic plug-ins in RAJA, which enable the use of
         things like Kokkos Performance Profiline Tools to be used with RAJA
         (https://github.com/kokkos/kokkos-tools)
+      * Added ability to pass a resource object to RAJA::forall methods to
+        enable asynchronous execution for CUDA and HIP back-ends.
+      * Added "Multi-view" that works like a regular view, except that it
+        can wrap multiple arrays so their accesses can share index arithmetic.
+      * Introduced RAJA "Teams" concept as an experimental feature. This
+        enables hierarchical parallelism and additional nested loop patterns
+        beyond what RAjA::kernel supports. Please note that this is very much
+        a work-in-progress and is not yet documented in the user guide.
+      * Added initial support for dynamic loop tiling.
       * New OpenMP execution policies added to support static, dynamic, and 
         guided scheduling.
       * Added support for const iterators to be used with RAJA scans.
