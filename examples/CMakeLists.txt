@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME resource-forall
+  SOURCES resource-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 
@@ -92,6 +96,10 @@ raja_add_executable(
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
+
+raja_add_executable(
+  NAME multiview
+  SOURCES multiview.cpp)
 
 if(ENABLE_TARGET_OPENMP)
   raja_add_executable(

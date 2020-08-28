@@ -52,7 +52,7 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   IndexType* working_array;
   IndexType* check_array;
@@ -175,7 +175,7 @@ void testWorkGroupUnorderedMultiple(
     }
   }
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   using type1 = IndexType;
   using type2 = size_t;

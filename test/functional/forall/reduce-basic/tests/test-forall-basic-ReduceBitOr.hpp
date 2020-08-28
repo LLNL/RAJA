@@ -17,7 +17,7 @@ void ForallReduceBitOrBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;

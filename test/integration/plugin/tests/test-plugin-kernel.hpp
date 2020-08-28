@@ -22,11 +22,11 @@
 
 // test with basic kernel
 template <typename KernelPolicy,
-          typename WORKINGRES,
+          typename WORKING_RES,
           RAJA::Platform PLATFORM>
 void PluginKernelTestImpl()
 {
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 

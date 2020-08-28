@@ -33,7 +33,7 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   // Create list segment for tests
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
