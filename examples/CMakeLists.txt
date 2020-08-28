@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME resource-forall
+  SOURCES resource-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 
