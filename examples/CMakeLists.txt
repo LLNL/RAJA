@@ -111,4 +111,8 @@ if(ENABLE_TARGET_OPENMP)
     SOURCES omp-target-ltimes.cpp)
 endif()
 
+raja_add_executable(
+  NAME kernel-dynamic-tile
+  SOURCES kernel-dynamic-tile.cpp)
+
 add_subdirectory(plugin)
