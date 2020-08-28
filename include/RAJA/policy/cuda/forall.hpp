@@ -41,6 +41,8 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
+#include "RAJA/util/resource.hpp"
+
 namespace RAJA
 {
 
@@ -156,15 +158,18 @@ __launch_bounds__(BlockSize, 1) __global__
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
-                             Iterable&& iter,
-                             LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &cuda_res,
+                                                    cuda_exec<BlockSize, Async>,
+                                                    Iterable&& iter,
+                                                    LoopBody&& loop_body)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
+
+  cudaStream_t stream = cuda_res.get_stream();
 
   //
   // Compute the requested iteration space size
@@ -188,8 +193,6 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
     // Setup shared memory buffers
     //
     size_t shmem = 0;
-    cudaStream_t stream = 0;
-
 
     //  printf("gridsize = (%d,%d), blocksize = %d\n",
     //         (int)gridSize.x,
@@ -203,7 +206,6 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
       LOOP_BODY body = RAJA::cuda::make_launch_body(
           gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
-
       //
       // Launch the kernels
       //
@@ -215,6 +217,8 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     RAJA_FT_END;
   }
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 
@@ -240,19 +244,22 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                             const TypedIndexSet<SegmentTypes...>& iset,
-                             LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &r,
+                                                    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                                                    const TypedIndexSet<SegmentTypes...>& iset,
+                                                    LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(isi,
+    iset.segmentCall(r,
+                     isi,
                      detail::CallForall(),
                      cuda_exec<BlockSize, true>(),
                      loop_body);
   }  // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize();
+  return resources::EventProxy<resources::Cuda>(&r);
 }
 
 }  // namespace cuda

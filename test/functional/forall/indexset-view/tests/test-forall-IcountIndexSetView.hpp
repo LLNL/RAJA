@@ -26,7 +26,7 @@ void ForallIcountIndexSetViewTestImpl()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   IndexSetType iset;
   std::vector<INDEX_TYPE> is_indices; 
@@ -64,7 +64,7 @@ void ForallIcountIndexSetViewTestImpl()
   RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >
     work_view(working_array, layout);
 
-  RAJA::forall_Icount<EXEC_POLICY>(iset, 
+  RAJA::forall_Icount<EXEC_POLICY>(iset,
     [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {
     work_view( icount ) = idx;
   });

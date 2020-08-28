@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_ICOUNT_INDEXSET_HPP__
-#define __TEST_FORALL_ICOUNT_INDEXSET_HPP__
+#ifndef __TEST_FORALL_RESOURCE_INDEXSET_HPP__
+#define __TEST_FORALL_RESOURCE_INDEXSET_HPP__
 
 #include <cstdio>
 #include <algorithm>
 #include <vector>
 
-
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallIcountIndexSetTestImpl()
+void ForallResourceIndexSetTestImpl()
 {
 
   using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
@@ -24,12 +23,13 @@ void ForallIcountIndexSetTestImpl()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  WORKING_RES working_res;
+  camp::resources::Resource erased_working_res{working_res};
 
   IndexSetType iset; 
   std::vector<INDEX_TYPE> is_indices; 
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
-    iset, is_indices, working_res);
+    iset, is_indices, erased_working_res);
 
   //
   // Working array length
@@ -44,7 +44,7 @@ void ForallIcountIndexSetTestImpl()
   INDEX_TYPE* test_array;
 
   allocateForallTestData<INDEX_TYPE>(N,
-                                     working_res,
+                                     erased_working_res,
                                      &working_array,
                                      &check_array,
                                      &test_array);
@@ -53,45 +53,44 @@ void ForallIcountIndexSetTestImpl()
 
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * N);
 
-  INDEX_TYPE ticount = 0;
   for (size_t i = 0; i < is_indices.size(); ++i) {
-    test_array[ ticount++ ] = is_indices[i];
+    test_array[ is_indices[i] ] = is_indices[i];
   }
 
-  RAJA::forall_Icount<EXEC_POLICY>(iset, 
-    [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {
-    working_array[icount] = idx;
+  RAJA::forall<EXEC_POLICY>(working_res, iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    working_array[idx] = idx;
   });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
+  // 
   for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res,
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res,
                                        working_array,
                                        check_array,
                                        test_array);
 }
 
 
-TYPED_TEST_SUITE_P(ForallIcountIndexSetTest);
+TYPED_TEST_SUITE_P(ForallResourceIndexSetTest);
 template <typename T>
-class ForallIcountIndexSetTest : public ::testing::Test
+class ForallResourceIndexSetTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallIcountIndexSetTest, IndexSetForallIcount)
+TYPED_TEST_P(ForallResourceIndexSetTest, ResourceIndexSetForall)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallIcountIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
+  ForallResourceIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallIcountIndexSetTest,
-                            IndexSetForallIcount);
+REGISTER_TYPED_TEST_SUITE_P(ForallResourceIndexSetTest,
+                            ResourceIndexSetForall);
 
-#endif  // __TEST_FORALL_ICOUNT_INDEXSET_HPP__
+#endif  // __TEST_FORALL_INDEXSET_HPP__

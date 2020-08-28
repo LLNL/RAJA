@@ -39,7 +39,7 @@ void ForallIndexSetReduceMaxLocMultipleTestImpl()
 
   const IDX_TYPE alen = 15286;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   double* working_array;
   double* check_array;

@@ -122,7 +122,8 @@ struct HoldForall
 
   RAJA_INLINE void operator()(Args... args) const
   {
-    wrap::forall(ExecutionPolicy(),
+    wrap::forall(resources::get_resource<ExecutionPolicy>::type::get_default(),
+                 ExecutionPolicy(),
                  m_segment,
                  HoldBodyArgs{m_body, std::forward<Args>(args)...});
   }

@@ -16,7 +16,7 @@ void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
   INDEX_TYPE N = r1.end() - r1.begin();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
@@ -59,7 +59,7 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first+offset, last+offset);
   INDEX_TYPE N = r1.end() - r1.begin();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
