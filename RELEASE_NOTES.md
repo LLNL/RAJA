@@ -66,7 +66,7 @@ Notable changes include:
         RAJA versions, the space in which list segment index data lived was a 
         compile-time choice based on whether CUDA or HIP was enabled and the 
         data resided in unified memory for either case. This is still supported
-        in this releae, but is marked as a DEPRECATED FEATURE. In the next RAJA
+        in this release, but is marked as a DEPRECATED FEATURE. In the next RAJA
         release, ListSegment construction will require a camp Resource object.
         When compiling RAJA with your application, you will see deprecation
         warnings if you are using the deprecated ListSegment constructor. 
@@ -75,8 +75,8 @@ Notable changes include:
         back-ends.
 
   * Build changes/improvements:
-      * The blt, camp, cub, and rocPRIM submodules have all been updated to 
-        more recent versions. PLease note that RAJA now requires rocm version 
+      * The BLT, camp, CUB, and rocPRIM submodules have all been updated to 
+        more recent versions. Please note that RAJA now requires rocm version 
         3.5 or newer to use the Hip back-end.
       * Build for clang9 on macosx has been fixed.
       * Build for Intel19 on Windows has been fixed.
