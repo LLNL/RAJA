@@ -34,7 +34,7 @@ Notable changes include:
         can wrap multiple arrays so their accesses can share index arithmetic.
       * Introduced RAJA "Teams" concept as an experimental feature. This
         enables hierarchical parallelism and additional nested loop patterns
-        beyond what RAjA::kernel supports. Please note that this is very much
+        beyond what RAJA::kernel supports. Please note that this is very much
         a work-in-progress and is not yet documented in the user guide.
       * Added initial support for dynamic loop tiling.
       * New OpenMP execution policies added to support static, dynamic, and 
@@ -187,7 +187,7 @@ Notable changes include:
       * Added a bounds checking option to RAJA Layout types as a debugging
         feature. This is a compile-time option that will report user errors
         when given View or Layout indices are out-of-bounds. See View/Layout
-        section in the RAjA User Guide for instructions on enabling this and 
+        section in the RAJA User Guide for instructions on enabling this and 
         how this feature works. 
       * We've added a RAJA Template Project on GitHub, which shows how to
         use RAJA in an application, either as a Git submodule or as an
