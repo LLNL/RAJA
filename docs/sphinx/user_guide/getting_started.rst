@@ -78,7 +78,7 @@ on which features you want to use and how easy it is to use your system.
 Building RAJA
 --------------
 
-RAJA uses CMake to configure a build. A "bare boes" configuration looks like::
+RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
 
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
