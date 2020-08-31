@@ -32,6 +32,8 @@ Notable changes include:
         enable asynchronous execution for CUDA and HIP back-ends.
       * Added "Multi-view" that works like a regular view, except that it
         can wrap multiple arrays so their accesses can share index arithmetic.
+      * Multiple sort algorithms added. This provides portable parallel sort 
+        operations, which are basic parallel algorithm building blocks.
       * Introduced RAJA "Teams" concept as an experimental feature. This
         enables hierarchical parallelism and additional nested loop patterns
         beyond what RAJA::kernel supports. Please note that this is very much
