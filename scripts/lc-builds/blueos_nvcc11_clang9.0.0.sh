@@ -23,6 +23,7 @@ cmake \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.0.2 \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.2/bin/nvcc \
   -DCUDA_ARCH=sm_70 \
+  -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
