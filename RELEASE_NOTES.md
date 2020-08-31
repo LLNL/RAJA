@@ -77,7 +77,7 @@ Notable changes include:
   * Build changes/improvements:
       * The BLT, camp, CUB, and rocPRIM submodules have all been updated to 
         more recent versions. Please note that RAJA now requires rocm version 
-        3.5 or newer to use the Hip back-end.
+        3.5 or newer to use the HIP back-end.
       * Build for clang9 on macosx has been fixed.
       * Build for Intel19 on Windows has been fixed.
       * Host/device annotations have been added to reduction operations to
@@ -98,7 +98,7 @@ Notable changes include:
   * Bug fixes:
       * An issue with SIMD privatization with the Intel compiler, required
         to generate correct code, has been fixed.
-      * An issue with the atomicExchange() operation for the RAJA Hip back-end
+      * An issue with the atomicExchange() operation for the RAJA HIP back-end
         has been fixed.
       * A type issue in the RAJA::kernel implementation involving RAJA span
         usage has been fixed.
@@ -120,7 +120,7 @@ This release contains new features, several notable changes, and some bug fixes.
 Notable changes include:
 
   * New features:
-      * Hip compiler back-end added to support AMD GPUs. Usage is essentially
+      * HIP compiler back-end added to support AMD GPUs. Usage is essentially
         the same as for CUDA. Note that this feature is considered a
         work-in-progress and not yet production ready. It is undocumented,
         but noted here, for friendly users who would like to try it out. 
