@@ -25,7 +25,7 @@ void ForallIndexSetViewTestImpl()
   using IndexSetType = 
    RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   IndexSetType iset; 
   std::vector<INDEX_TYPE> is_indices;

@@ -100,6 +100,8 @@
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
 
+#cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+
 /*!
  ******************************************************************************
  *
@@ -153,6 +155,12 @@ namespace RAJA {
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
+#if defined(RAJA_ENABLE_CUDA)
+#if not defined(__CUDACC__)
+#error RAJA configured with ENABLE_CUDA, but CUDA not supported by current compiler 
+#endif // 
+#endif // RAJA_ENABLE_CUDA
+
 
 /*!
  ******************************************************************************
@@ -175,29 +183,23 @@ namespace RAJA {
  */
 
 //
-//  Platform-specific constants for range index set and data alignment:
-//
-//     RANGE_ALIGN - alignment of begin/end indices in range segments
-//                   (i.e., starting index and length of range segments
-//                    constructed by index set builder methods will
-//                    be multiples of this value)
-//
-//     RANGE_MIN_LENGTH - used in index set builder methods
-//                        as min length of range segments (an integer multiple
-//                        of RANGE_ALIGN)
+//  Platform-specific constants for data alignment:
 //
 //     DATA_ALIGN - used in compiler-specific intrinsics and type aliases
 //                  to specify alignment of data, loop bounds, etc.;
 //                  units of "bytes"
-
-const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
-const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined (_WIN32)
 #define RAJA_RESTRICT __restrict
 #else
 #define RAJA_RESTRICT __restrict__
+#endif
+
+#if !defined(RAJA_COMPILER_MSVC)
+#define RAJA_COLLAPSE(X) collapse(X)
+#else
+#define RAJA_COLLAPSE(X)
 #endif
 
 //

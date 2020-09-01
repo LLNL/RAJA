@@ -35,11 +35,6 @@ matrix:
     - COMPILER=clang++-9
     - IMG=clang9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
-  - compiler: clang5
-    env:
-    - COMPILER=clang++
-    - IMG=clang5
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
   - compiler: intel18
     env:
     - COMPILER=/opt/intel/bin/icpc
@@ -80,7 +75,7 @@ matrix:
       - COMPILER=g++
       - IMG=hip
       - HCC_AMDGPU_TARGET=gfx900
-      - CMAKE_EXTRA_FLAGS="-DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off"
+      - CMAKE_EXTRA_FLAGS="-DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=-fPIC"
       - DO_TEST=no
 
 

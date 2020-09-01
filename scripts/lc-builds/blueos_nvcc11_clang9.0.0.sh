@@ -7,23 +7,22 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_corona-hipcc
+BUILD_SUFFIX=lc_blueos-nvcc11-clang9.0.0
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-#============= For LC Corona ONLY =============
-export PATH=/usr/workspace/wsb/raja-dev/opt/hip-clang/bin:$PATH
-export HIP_CLANG_PATH=/usr/workspace/wsb/raja-dev/opt/llvm/bin
-export DEVICE_LIB_PATH=/usr/workspace/wsb/raja-dev/opt/lib
-export HCC_AMDGPU_TARGET=gfx900
-module load opt
-module load dts/7.1
-module load rocm
-#==============================================
-
 module load cmake/3.14.5
 
 cmake \
-  -C ../host-configs/lc-builds/toss3/hip.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
+  -C ../host-configs/lc-builds/blueos/nvcc_clang_X.cmake \
+  -DENABLE_OPENMP=On \
+  -DENABLE_CUDA=On \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.0.2 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.2/bin/nvcc \
+  -DCUDA_ARCH=sm_70 \
+  -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
+  "$@" \
   ..

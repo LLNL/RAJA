@@ -50,25 +50,29 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     Iter end,
     BinFn f)
 {
+  using std::distance;
   using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
-  const int n = end - begin;
-  const int p0 = std::min(n, omp_get_max_threads());
+  const auto n = distance(begin, end);
+  using DistanceT = typename std::remove_const<decltype(n)>::type;
+  const int p0 = std::min(n, static_cast<DistanceT>(omp_get_max_threads()));
   ::std::vector<Value> sums(p0, Value());
 #pragma omp parallel num_threads(p0)
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = firstIndex(n, p, pid);
-    const int i1 = firstIndex(n, p, pid + 1);
-    inclusive_inplace(::RAJA::loop_exec{}, begin + i0, begin + i1, f);
-    sums[pid] = *(begin + i1 - 1);
+    const DistanceT idx_begin = firstIndex(n, p, pid);
+    const DistanceT idx_end = firstIndex(n, p, pid + 1);
+    if (idx_begin != idx_end) {
+      inclusive_inplace(::RAJA::loop_exec{}, begin + idx_begin, begin + idx_end, f);
+      sums[pid] = begin[idx_end - 1];
+    }
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
         ::RAJA::loop_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
-    for (int i = i0; i < i1; ++i) {
-      *(begin + i) = f(*(begin + i), sums[pid]);
+    for (auto i = idx_begin; i < idx_end; ++i) {
+      begin[i] = f(begin[i], sums[pid]);
     }
   }
 }
@@ -85,27 +89,31 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     BinFn f,
     ValueT v)
 {
+  using std::distance;
   using RAJA::detail::firstIndex;
   using Value = typename ::std::iterator_traits<Iter>::value_type;
-  const int n = end - begin;
-  const int p0 = std::min(n, omp_get_max_threads());
+  const auto n = distance(begin, end);
+  using DistanceT = typename std::remove_const<decltype(n)>::type;
+  const int p0 = std::min(n, static_cast<DistanceT>(omp_get_max_threads()));
   ::std::vector<Value> sums(p0, v);
 #pragma omp parallel num_threads(p0)
   {
     const int p = omp_get_num_threads();
     const int pid = omp_get_thread_num();
-    const int i0 = firstIndex(n, p, pid);
-    const int i1 = firstIndex(n, p, pid + 1);
-    const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
+    const DistanceT idx_begin = firstIndex(n, p, pid);
+    const DistanceT idx_end = firstIndex(n, p, pid + 1);
+    const Value init = ((pid == 0) ? v : *(begin + idx_begin - 1));
 #pragma omp barrier
-    exclusive_inplace(loop_exec{}, begin + i0, begin + i1, f, init);
-    sums[pid] = *(begin + i1 - 1);
+    if (idx_begin != idx_end) {
+      exclusive_inplace(loop_exec{}, begin + idx_begin, begin + idx_end, f, init);
+      sums[pid] = begin[idx_end - 1];
+    }
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
         loop_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
-    for (int i = i0; i < i1; ++i) {
-      *(begin + i) = f(*(begin + i), sums[pid]);
+    for (auto i = idx_begin; i < idx_end; ++i) {
+      begin[i] = f(begin[i], sums[pid]);
     }
   }
 }
@@ -122,8 +130,9 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive(
     OutIter out,
     BinFn f)
 {
+  using std::distance;
   ::std::copy(begin, end, out);
-  inclusive_inplace(exec, out, out + (end - begin), f);
+  inclusive_inplace(exec, out, out + distance(begin, end), f);
 }
 
 /*!
@@ -143,8 +152,9 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive(
     BinFn f,
     ValueT v)
 {
+  using std::distance;
   ::std::copy(begin, end, out);
-  exclusive_inplace(exec, out, out + (end - begin), f, v);
+  exclusive_inplace(exec, out, out + distance(begin, end), f, v);
 }
 
 }  // namespace scan
