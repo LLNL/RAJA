@@ -23,6 +23,7 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include <utility>
+#include "hip/hip_runtime.h"
 
 #include "RAJA/pattern/reduce.hpp"
 
@@ -81,6 +82,18 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
 //
 // NOTE: There is no Index set segment iteration policy for HIP
 //
+
+///
+/// WorkGroup execution policies
+///
+template <size_t BLOCK_SIZE, bool Async = false>
+struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::workgroup_exec,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::hip> {
+};
+
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -157,9 +170,9 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
-#if defined(__HIPCC__)
+#if defined(__HIP_PLATFORM_HCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(__CUDACC__)
+#elif defined(__HIP_PLATFORM_NVCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
 
@@ -183,6 +196,11 @@ using policy::hip::hip_exec;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<BLOCK_SIZE, true>;
+
+using policy::hip::hip_work;
+
+template <size_t BLOCK_SIZE>
+using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
@@ -230,6 +248,19 @@ struct hip_thread_xyz_loop{};
 using hip_thread_x_loop = hip_thread_xyz_loop<0, 1>;
 using hip_thread_y_loop = hip_thread_xyz_loop<1, 1>;
 using hip_thread_z_loop = hip_thread_xyz_loop<2, 1>;
+
+
+/*!
+ * Maps segment indices to CUDA blocks.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical blocks to fit all of the direct map requests.
+ */
+template<int dim>
+struct hip_block_xyz_direct{};
+
+using hip_block_x_direct = hip_block_xyz_direct<0>;
+using hip_block_y_direct = hip_block_xyz_direct<1>;
+using hip_block_z_direct = hip_block_xyz_direct<2>;
 
 
 /*!

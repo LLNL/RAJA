@@ -38,21 +38,24 @@ the top-level RAJA directory::
     $ make install
 
 Following CMake conventions, RAJA supports three build types: ``Release``, 
-``RelWithDebInfo``, and ``Debug``. Similar to other CMake systems, when you
-choose a build type that includes debug information, you do not have to specify
-the '-g' compiler flag to generate debugging symbols. 
+``RelWithDebInfo``, and ``Debug``. With CMake, compiler flags for each of
+these build types are applied automatically and so you do not have to 
+specify them. However, if you want to apply other compiler flags, you will
+need to do that using appropriate CMake variables.
 
-All RAJA options are set like standard CMake variables. All RAJA settings for 
+All RAJA options are set like regular CMake variables. RAJA settings for 
 default options, compilers, flags for optimization, etc. can be found in files 
-in the ``RAJA/cmake`` directory. Configuration variables can be set by passing
+in the ``RAJA/cmake`` directory and top-level ``CMakeLists.txt`` file. 
+Configuration variables can be set by passing
 arguments to CMake on the command line when CMake is called, or by setting
-options in a CMake cache file and passing that file to CMake. For example, 
-to enable RAJA OpenMP functionality, pass the following argument to cmake::
+options in a CMake *cache file* and passing that file to CMake using the 
+CMake ``-C`` options. For example, to enable RAJA OpenMP functionality, 
+pass the following argument to CMake::
 
     -DENABLE_OPENMP=On
 
 The RAJA repository contains a collection of CMake cache files 
-(or 'host-config' files) that may be used as a guide for users trying
+(we call them *host-config* files) that may be used as a guide for users trying
 to set their own options. See :ref:`configopt-raja-hostconfig-label`.
 
 Next, we summarize RAJA options and their defaults.
@@ -80,18 +83,19 @@ and their default settings:
 
 * **Examples, tests, warnings, etc.**
 
-     Variables that control whether RAJA tests and examples are built when
-     the library is compiled are:
+     Variables that control whether RAJA tests, examples, or tutorial
+     exercises are built when RAJA is compiled:
 
       ======================   ======================
       Variable                 Default
       ======================   ======================
       ENABLE_TESTS             On 
       ENABLE_EXAMPLES          On 
+      ENABLE_EXERCISES         On 
       ======================   ======================
 
      RAJA can also be configured to build with compiler warnings reported as
-     errors, which may be useful when using RAJA in an application:
+     errors, which may be useful to make sure your application builds cleanly:
 
       =========================   ======================
       Variable                    Default
@@ -100,51 +104,57 @@ and their default settings:
       =========================   ======================
 
      RAJA Views/Layouts may be configured to check for out of bounds 
-     indexing:
+     indexing at runtime:
+
       =========================   ======================
       Variable                    Default
       =========================   ======================
       RAJA_ENABLE_BOUNDS_CHECK    Off
       =========================   ======================
+
+     Note that RAJA bounds checking is a runtime check and will add 
+     execution time overhead. Thus, this feature should not be enabled 
+     for release builds.
      
 * **Programming model back-ends**
 
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
 
-      ======================   ======================
+      ======================   ============================================
       Variable                 Default
-      ======================   ======================
+      ======================   ============================================
       ENABLE_OPENMP            On 
-      ENABLE_TARGET_OPENMP     Off 
-      ENABLE_CUDA              Off 
+      ENABLE_TARGET_OPENMP     Off (when on, ENABLE_OPENMP must also be on)
       ENABLE_TBB               Off 
-      ======================   ======================
+      ENABLE_CUDA              Off 
+      ENABLE_HIP               Off 
+      ======================   ============================================
 
      Other compilation options are available via the following:
 
-      ======================   ======================
+      ======================   ==========================================
       Variable                 Default
-      ======================   ======================
-      ENABLE_CLANG_CUDA        Off
+      ======================   ==========================================
+      ENABLE_CLANG_CUDA        Off (when on, ENABLE_CUDA must also be on)
       ENABLE_CUB               On (when CUDA enabled)
-      ======================   ======================
+      CUDA_ARCH                sm_35 (set based on hardware support)
+      ======================   ==========================================
 
       Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
-      the native support in the Clang compiler. When using it, the 
-      'ENABLE_CUDA' variable must also be turned on.
+      the native support in the Clang compiler.
 
       The 'ENABLE_CUB' variable is used to enable NVIDIA CUB library support
       for RAJA CUDA scans. Since the CUB library is included in RAJA as a
-      Git submodule, users should not have to set this in most scenarios.
+      Git submodule, users should not have to set this in most cases.
 
-.. note:: See :ref:`configopt-raja-backends-label` for more information about
-          setting compiler flags and other options for RAJA back-ends.
+.. note:: See :ref:`getting-started-label` for more information about
+          setting other options for RAJA back-ends.
 
 * **Data types, sizes, alignment, etc.**
 
      RAJA provides type aliases that can be used to parameterize floating 
-     point types in applications, which makes it easy to switch between types. 
+     point types in applications, which makes it easier to switch between types.
 
      The following variables are used to set the data type for the type
      alias ``RAJA::Real_type``:
@@ -210,32 +220,20 @@ and their default settings:
                                       attributes in a typedef.
       =============================   ========================================
 
-     RAJA internally uses parameters to define platform-specific constants 
-     for index ranges and data alignment. The variables that control these
-     are:
+     RAJA internally uses a parameter to define platform-specific constant
+     data alignment. The variable that control this is:
 
       =============================   ======================
       Variable                        Default
       =============================   ======================
-      RAJA_RANGE_ALIGN                4
-      RAJA_RANGE_MIN_LENGTH           32
       RAJA_DATA_ALIGN                 64
       =============================   ======================
 
-     What these variables mean:
+     What this variable means:
 
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      RAJA_RANGE_ALIGN                Constrain alignment of begin/end indices 
-                                      of range segments generated by index set 
-                                      builder methods; i.e., begin and end 
-                                      indices of such segments will be 
-                                      multiples of this value.
-      RAJA_RANGE_MIN_LENGTH           Sets minimum length of range segments 
-                                      generated by index set builder methods.
-                                      This should be an integer multiple of 
-                                      RAJA_RANGE_ALIGN.
       RAJA_DATA_ALIGN                 Specifies data alignment used in 
                                       intrinsics and typedefs; 
                                       units of **bytes**.
@@ -250,8 +248,10 @@ and their default settings:
      example codes to determine execution timing and can be used in other apps
      as well. This timer can use any of three internal timers depending on
      your preferences, and one should be selected by setting the 'RAJA_TIMER'
-     variable. If the 'RAJA_CALIPER' variable is turned on (off by default), 
-     the timer will also offer caliper-based region annotations.
+     variable. If the 'RAJA_USE_CALIPER' variable is turned on (off by default),
+     the timer will also offer Caliper-based region annotations. Information
+     about using Caliper can be found at 
+     `Caliper <https://github.com/LLNL/Caliper>`_ 
 
       ======================   ======================
       Variable                 Values
@@ -299,72 +299,7 @@ and their default settings:
 Setting RAJA Back-End Features
 ===============================
 
-To access compiler and hardware optimization features, it is often necessary
-to pass options to a compiler. This sections describes how to do this and
-which CMake variables to use for certain cases. 
-
-* **OpenMP Compiler Options**
-
-The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
-compiler. Option syntax follows the CMake *list* pattern. Here is an example
-showing how to specify OpenMP target back-end options for NVIDIA GPUs using 
-the clang compiler as a CMake option::
-
-   cmake \
-     ....
-     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" 
-     ....
-
-* **CUDA Compiler Options**
-
-When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
-
-  * CMAKE_CUDA_FLAGS_RELEASE 
-  * CMAKE_CUDA_FLAGS_DEBUG
-  * CMAKE_CUDA_FLAGS_RELWITHDEBINFO 
-
-which corresponding to the standard CMake build types are used to pass flags 
-to nvcc.
-
-.. note:: When nvcc must pass options to the host compiler, the arguments
-          can be included in these CMake variables. Each host compiler
-          option must be prepended with the `-Xcompiler` directive.
-
-To set the CUDA architecture level for the nvcc compiler, which should be 
-chosen based on the NVIDIA GPU hardware you are using, you can use the 
-`CUDA_ARCH` CMake variable. For example, the CMake option::
-
-  -DCUDA_ARCH=sm_60
-
-will tell the compiler to use the `sm_60` SASS architecture in its second
-stage of compilation. It will pick the PTX architecture to use in the first
-stage of compilation that is suitable for the SASS architecture you specify.
-
-Alternatively, you may specify the PTX and SASS architectures, using 
-appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
-
-.. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use 
-          all supported CUDA features.** Mostly, the architecture level affects 
-          which RAJA CUDA atomic operations are available and how they are 
-          implemented inside RAJA. This is described in :ref:`atomics-label`.
-
-          * If you do not specify a value for `CUDA_ARCH`, it will be set to
-            `sm_35` and CMake will emit a status message indicatting this is
-            the case.
-
-          * If you give a `CUDA_ARCH` value less than `sm_35` (e.g., `sm_30`),
-            CMake will report this and stop processing. 
-
-
-.. _configopt-raja-hostconfig-label:
-
-=======================================
-RAJA Example Build Configuration Files
-=======================================
-
-The ``RAJA/scripts`` directory contains subdirectories with a variety of 
-build scripts we use to build and test RAJA on various platforms with 
-various compilers. These scripts pass files (*CMake cache files*) in 
-the ``RAJA/host-configs`` directory to CMake using the '-C' option. 
-These files serve as useful examples of how to configure RAJA prior to
-compilation.
+Various `ENABLE_*` options are listed above for enabling RAJA back-ends,
+such as OpenMP and CUDA. To access compiler and hardware optimization features,
+it may be necessary to pass additional options to CMake. Please see
+:ref:`getting_started-label` for more information. 

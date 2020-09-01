@@ -1,0 +1,42 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+
+#include "RAJA_test-forall-indexset-execpol.hpp"
+#include "RAJA_test-indexset-build.hpp"
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-forall-@INDEXSETTESTTYPE@.hpp"
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@ForallIndexSetViewTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@ForallIndexSetExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               Forall@INDEXSETTESTTYPE@Test,
+                               @BACKEND@ForallIndexSetViewTypes);

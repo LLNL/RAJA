@@ -39,7 +39,7 @@
  ******************************************************************************
  */
 #cmakedefine ENABLE_FT
-
+#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *
@@ -77,10 +77,19 @@
  */
 #cmakedefine RAJA_ENABLE_BOUNDS_CHECK
 
+/*
+ ******************************************************************************
+ *
+ * \brief Exhaustive index types for tests
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_TEST_EXHAUSTIVE
+
 /*!
  ******************************************************************************
  *
- * \brief Programming model back-ends, plus CHAI enable/disable.
+ * \brief Programming model back-ends.
  *
  ******************************************************************************
  */
@@ -90,6 +99,8 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
+
+#cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
 
 /*!
  ******************************************************************************
@@ -135,10 +146,20 @@
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP)
-#if not defined(_OPENMP)
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler 
+#if defined(_OPENMP)
+#if _OPENMP >= 200805
+#define RAJA_ENABLE_OPENMP_TASK
+#endif
+#else
+#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
+
+#if defined(RAJA_ENABLE_CUDA)
+#if not defined(__CUDACC__)
+#error RAJA configured with ENABLE_CUDA, but CUDA not supported by current compiler 
+#endif // 
+#endif // RAJA_ENABLE_CUDA
 
 
 /*!
@@ -162,23 +183,11 @@ namespace RAJA {
  */
 
 //
-//  Platform-specific constants for range index set and data alignment:
-//
-//     RANGE_ALIGN - alignment of begin/end indices in range segments
-//                   (i.e., starting index and length of range segments
-//                    constructed by index set builder methods will
-//                    be multiples of this value)
-//
-//     RANGE_MIN_LENGTH - used in index set builder methods
-//                        as min length of range segments (an integer multiple
-//                        of RANGE_ALIGN)
+//  Platform-specific constants for data alignment:
 //
 //     DATA_ALIGN - used in compiler-specific intrinsics and type aliases
 //                  to specify alignment of data, loop bounds, etc.;
 //                  units of "bytes"
-
-const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
-const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined (_WIN32)
@@ -187,32 +196,20 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+#if !defined(RAJA_COMPILER_MSVC)
+#define RAJA_COLLAPSE(X) collapse(X)
+#else
+#define RAJA_COLLAPSE(X)
+#endif
+
 //
 // Runtime bounds checking for Views
 //
 #if defined(RAJA_ENABLE_BOUNDS_CHECK)
 #define RAJA_BOUNDS_CHECK_INTERNAL
 #define RAJA_BOUNDS_CHECK_constexpr
-
-#if !defined(NDEBUG)
-#define RAJA_ASSERT(EXP) assert( (EXP) )
-#endif
-
-//
-//TODO: Once HIP is supported use asm("s_trap 2");
-//      to halt HIP kernels.
-//
-#if defined(NDEBUG) && defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) asm ("trap;")
-#endif
-
-#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) abort();
-#endif
-
 #else
 #define RAJA_BOUNDS_CHECK_constexpr constexpr
-#define RAJA_ASSERT(EXP)
 #endif
 
 //
@@ -299,11 +296,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    RAJA_PRAGMA(GCC ivdep)
-#define RAJA_NO_SIMD 
+#define RAJA_NO_SIMD
 #else
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
@@ -357,12 +354,23 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Apple Clang compiler supports older options
 #if ( ( (__clang_major__ >= 4 ) ||  (__clang_major__ >= 3 && __clang_minor__ > 7) ) && !defined(__APPLE__) )
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(assume_safety))
-#else 
+#else
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(enable))
 #endif
 
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
+
+
+// This is the same as undefined compiler, but squelches the warning message
+#elif defined(RAJA_COMPILER_MSVC)
+
+#define RAJA_FORCEINLINE_RECURSIVE
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d) d
+#define RAJA_SIMD
+#define RAJA_NO_SIMD
+
 
 #else
 
@@ -400,7 +408,7 @@ T * align_hint(T * x)
   return static_cast<T *>(RAJA_ALIGN_DATA(x));
 #endif
 }
-    
+
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard

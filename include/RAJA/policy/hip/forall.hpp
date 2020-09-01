@@ -27,6 +27,7 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include <algorithm>
+#include "hip/hip_runtime.h"
 
 #include "RAJA/pattern/forall.hpp"
 
@@ -155,15 +156,18 @@ __launch_bounds__(BlockSize, 1) __global__
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
-                             Iterable&& iter,
-                             LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hip_res,
+                                                    hip_exec<BlockSize, Async>,
+                                                    Iterable&& iter,
+                                                    LoopBody&& loop_body)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
   auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
+
+  hipStream_t stream = hip_res.get_stream();
 
   //
   // Compute the requested iteration space size
@@ -186,8 +190,6 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
     // Setup shared memory buffers
     //
     size_t shmem = 0;
-    hipStream_t stream = 0;
-
 
     //  printf("gridsize = (%d,%d), blocksize = %d\n",
     //         (int)gridSize.x,
@@ -217,8 +219,9 @@ RAJA_INLINE void forall_impl(hip_exec<BlockSize, Async>,
 
     RAJA_FT_END;
   }
-}
 
+  return resources::EventProxy<resources::Hip>(&hip_res);
+}
 
 //
 //////////////////////////////////////////////////////////////////////

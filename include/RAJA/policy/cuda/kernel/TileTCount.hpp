@@ -8,12 +8,14 @@
  ******************************************************************************
  */
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_TileTCount_HPP
 #define RAJA_policy_cuda_kernel_TileTCount_HPP
@@ -49,19 +51,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename TPol,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>>
+    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
     : public CudaStatementExecutor<
         Data,
-        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>> {
+        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types> {
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>>;
+      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -74,13 +78,13 @@ struct CudaStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
-    int chunk_size = TPol::chunk_size;
+    diff_t chunk_size = TPol::chunk_size;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
+    diff_t len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (int i = 0, t = 0; i < len; i += chunk_size, ++t) {
+    for (diff_t i = 0, t = 0; i < len; i += chunk_size, ++t) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -106,28 +110,105 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::statement::tile_fixed<chunk_size>,
-                    cuda_block_xyz_loop<BlockDim>,
-                    EnclosedStmts...>>
+                    RAJA::tile_fixed<chunk_size>,
+                    cuda_block_xyz_direct<BlockDim>,
+                    EnclosedStmts...>,
+                    Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
-                        RAJA::statement::tile_fixed<chunk_size>,
-                        cuda_block_xyz_loop<BlockDim>,
-                        EnclosedStmts...>> {
+                        RAJA::tile_fixed<chunk_size>,
+                        cuda_block_xyz_direct<BlockDim>,
+                        EnclosedStmts...>,
+                        Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
-                      RAJA::statement::tile_fixed<chunk_size>,
-                      cuda_block_xyz_loop<BlockDim>,
-                      EnclosedStmts...>>;
+                      RAJA::tile_fixed<chunk_size>,
+                      cuda_block_xyz_direct<BlockDim>,
+                      EnclosedStmts...>,
+                      Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    using segment_t = camp::decay<decltype(segment)>;
+
+    // compute trip count
+    diff_t len = segment.end() - segment.begin();
+    diff_t t = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i = t * chunk_size;
+
+    // check have a chunk
+    if (i < len) {
+
+      // Keep copy of original segment, so we can restore it
+      segment_t orig_segment = segment;
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, chunk_size);
+      data.template assign_param<ParamId>(t);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+
+      // Set range back to original values
+      segment = orig_segment;
+    }
+  }
+};
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::TileTCount<ArgumentId, ParamId,
+                    RAJA::tile_fixed<chunk_size>,
+                    cuda_block_xyz_loop<BlockDim>,
+                    EnclosedStmts...>,
+                    Types>
+    : public CudaStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId,
+                        RAJA::tile_fixed<chunk_size>,
+                        cuda_block_xyz_loop<BlockDim>,
+                        EnclosedStmts...>,
+                        Types> {
+
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::Tile<ArgumentId,
+                      RAJA::tile_fixed<chunk_size>,
+                      cuda_block_xyz_loop<BlockDim>,
+                      EnclosedStmts...>,
+                      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -142,14 +223,14 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    auto t0 = get_cuda_dim<BlockDim>(blockIdx);
-    auto t_stride = get_cuda_dim<BlockDim>(gridDim);
-    auto i0 = t0 * chunk_size;
-    auto i_stride = t_stride * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t t_init = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i_init = t_init * chunk_size;
+    diff_t t_stride = get_cuda_dim<BlockDim>(gridDim);
+    diff_t i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (int i = i0, t = t0; i < len; i += i_stride, t += t_stride) {
+    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -176,28 +257,33 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::statement::tile_fixed<chunk_size>,
+                        RAJA::tile_fixed<chunk_size>,
                         cuda_thread_xyz_direct<ThreadDim>,
-                        EnclosedStmts ...> >
+                        EnclosedStmts ...>,
+                        Types>
   : public CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
-                    RAJA::statement::tile_fixed<chunk_size>,
+                    RAJA::tile_fixed<chunk_size>,
                     cuda_thread_xyz_direct<ThreadDim>,
-                    EnclosedStmts ...> > {
+                    EnclosedStmts ...>,
+                    Types> {
 
   using Base = CudaStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
-                          RAJA::statement::tile_fixed<chunk_size>,
+                          RAJA::tile_fixed<chunk_size>,
                           cuda_thread_xyz_direct<ThreadDim>,
-                          EnclosedStmts ...> >;
+                          EnclosedStmts ...>,
+                          Types>;
 
   using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
 
   static
   inline
@@ -212,17 +298,102 @@ struct CudaStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    int len = segment.end() - segment.begin();
-    auto t0 = get_cuda_dim<ThreadDim>(threadIdx);
-    auto t_stride = get_cuda_dim<ThreadDim>(blockDim);
-    auto i0 = t0 * chunk_size;
+    diff_t len = segment.end() - segment.begin();
+    diff_t t = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i = t * chunk_size;
+
+    // execute enclosed statements if any thread will
+    // but mask off threads without work
+    bool have_work = i < len;
 
     // Assign our new tiled segment
-    segment = orig_segment.slice(i0, chunk_size);
-    data.template assign_param<ParamId>(t0);
+    diff_t slice_size = have_work ? chunk_size : 0;
+    segment = orig_segment.slice(i, slice_size);
+    data.template assign_param<ParamId>(t);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active);
+    enclosed_stmts_t::exec(data, thread_active && have_work);
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+};
+
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          int MinThreads,
+          typename ... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+  Data,
+  statement::TileTCount<ArgumentId, ParamId,
+                        RAJA::tile_fixed<chunk_size>,
+                        cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                        EnclosedStmts ...>,
+                        Types>
+  : public CudaStatementExecutor<
+    Data,
+    statement::Tile<ArgumentId,
+                    RAJA::tile_fixed<chunk_size>,
+                    cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                    EnclosedStmts ...>,
+                    Types> {
+
+  using Base = CudaStatementExecutor<
+          Data,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                          EnclosedStmts ...>,
+                          Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Keep copy of original segment, so we can restore it
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
+
+    // compute trip count
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t t_init = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i_init = t_init * chunk_size;
+    diff_t t_stride = get_cuda_dim<ThreadDim>(blockDim);
+    diff_t i_stride = t_stride * chunk_size;
+
+    // Iterate through grid stride of chunks
+    for(diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
+
+      // Assign our new tiled segment
+      diff_t slice_size = have_work ? chunk_size : 0;
+      segment = orig_segment.slice(i, slice_size);
+      data.template assign_param<ParamId>(t);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && have_work);
+    }
 
     // Set range back to original values
     segment = orig_segment;
@@ -233,4 +404,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 #endif  // RAJA_ENABLE_CUDA
-#endif  /* RAJA_pattern_kernel_HPP */
+#endif  /* RAJA_policy_cuda_kernel_TileTCount_HPP */
