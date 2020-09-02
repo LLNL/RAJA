@@ -204,7 +204,7 @@ The kernel policy list with lambda arguments may be written as::
 
 The template parameter ``RAJA::Segs`` is used to specify which elements in the
 segment tuple are used to pass arguments to a lambda. RAJA offers other 
-statements such as ``Offsets``, and ``Params`` to identify offsets and 
+types such as ``RAJA::Offsets``, and ``RAJA::Params`` to identify offsets and 
 parameters in segments and param tuples respectively to be used as lambda 
 argumentsx. See :ref:`matrixmultiply-label` and 
 :ref:`matrixtransposelocalarray-label` for detailed  examples.
