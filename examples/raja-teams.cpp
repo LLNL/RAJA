@@ -143,9 +143,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      */
 
     if (select_cpu_or_gpu == RAJA::expt::HOST){
-      std::cout << "\n Running Upper triangular pattern example on the host...\n";
+      std::cout << "\n Running upper triangular pattern example on the host...\n";
     }else {
-      std::cout << "\n Running Upper triangular pattern example on the device...\n";
+      std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 
 
@@ -166,8 +166,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            ctx.teamSync();
 
-           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {             
-               D(r, c) = r * N_tri + c;             
+           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+               D(r, c) = r * N_tri + c;
                printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
            });  // loop c
 
