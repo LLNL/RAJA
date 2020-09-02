@@ -138,6 +138,7 @@ and their default settings:
       ======================   ==========================================
       ENABLE_CLANG_CUDA        Off (when on, ENABLE_CUDA must also be on)
       ENABLE_CUB               On (when CUDA enabled)
+      CUDA_ARCH                sm_35 (set based on hardware support)
       ======================   ==========================================
 
       Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
@@ -145,10 +146,10 @@ and their default settings:
 
       The 'ENABLE_CUB' variable is used to enable NVIDIA CUB library support
       for RAJA CUDA scans. Since the CUB library is included in RAJA as a
-      Git submodule, users should not have to set this in most scenarios.
+      Git submodule, users should not have to set this in most cases.
 
-.. note:: See :ref:`configopt-raja-backends-label` for more information about
-          setting compiler flags and other options for RAJA back-ends.
+.. note:: See :ref:`getting-started-label` for more information about
+          setting other options for RAJA back-ends.
 
 * **Data types, sizes, alignment, etc.**
 
@@ -300,81 +301,5 @@ Setting RAJA Back-End Features
 
 Various `ENABLE_*` options are listed above for enabling RAJA back-ends,
 such as OpenMP and CUDA. To access compiler and hardware optimization features,
-it may be necessary to pass additional options to a compiler. This sections 
-describes how to do this and which CMake variables to use for certain cases. 
-
-.. note:: Please see :ref:`getting_started_building-label` for notes about 
-          which versions of various back-ends RAJA supports.
-
-* **OpenMP Compiler Options**
-
-The variable `OpenMP_CXX_FLAGS` is used to pass OpenMP-related flags to a
-compiler. Option syntax follows the CMake *list* pattern. Here is an example
-showing how to specify OpenMP target back-end options for NVIDIA GPUs using 
-the clang compiler as a CMake option::
-
-   cmake \
-     ....
-     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" 
-     ....
-
-* **CUDA Compiler Options**
-
-.. note:: When building RAJA with CUDA enabled, the NVIDIA cub library is 
-          required. Cub is included with RAJA as a git submodule and that 
-          will be used by default. If you would like to use an 
-          externally-supplied cub library, please see 
-          :ref:`getting_started_building-label` for instructions on how 
-          to do this.
-
-When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
-
-  * CMAKE_CUDA_FLAGS_RELEASE 
-  * CMAKE_CUDA_FLAGS_DEBUG
-  * CMAKE_CUDA_FLAGS_RELWITHDEBINFO 
-
-which corresponding to the standard CMake build types are used to pass flags 
-to nvcc.
-
-.. note:: When nvcc must pass options to the host compiler, the arguments
-          can be included in these CMake variables. Host compiler
-          options must be prepended with the `-Xcompiler` directive.
-
-To set the CUDA architecture level for the nvcc compiler, which should be 
-chosen based on the NVIDIA GPU hardware you are using, you can use the 
-`CUDA_ARCH` CMake variable. For example, the CMake option::
-
-  -DCUDA_ARCH=sm_60
-
-will tell the compiler to use the `sm_60` SASS architecture in its second
-stage of compilation. It will pick the PTX architecture to use in the first
-stage of compilation that is suitable for the SASS architecture you specify.
-
-Alternatively, you may specify the PTX and SASS architectures, using 
-appropriate nvcc options in the `CMAKE_CUDA_FLAGS_*` variables.
-
-.. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use 
-          all supported CUDA features.** Mostly, the architecture level affects 
-          which RAJA CUDA atomic operations are available and how they are 
-          implemented inside RAJA. This is described in :ref:`atomics-label`.
-
-          * If you do not specify a value for `CUDA_ARCH`, it will be set to
-            `sm_35` and CMake will emit a status message indicatting this is
-            the case.
-
-          * If you give a `CUDA_ARCH` value less than `sm_35` (e.g., `sm_30`),
-            CMake will report this and stop processing. 
-
-
-.. _configopt-raja-hostconfig-label:
-
-=======================================
-RAJA Example Build Configuration Files
-=======================================
-
-The ``RAJA/scripts`` directory contains subdirectories with a variety of 
-build scripts we use to build and test RAJA on various platforms with 
-various compilers. These scripts pass files (*CMake cache files*) in 
-the ``RAJA/host-configs`` directory to CMake using the '-C' option. 
-These files serve as useful examples of how to configure RAJA prior to
-compilation.
+it may be necessary to pass additional options to CMake. Please see
+:ref:`getting_started-label` for more information. 
