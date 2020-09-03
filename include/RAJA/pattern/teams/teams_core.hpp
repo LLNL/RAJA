@@ -28,8 +28,8 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if ((defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && \
-     defined(RAJA_ENABLE_CUDA)) ||                                       \
+#if (defined(__CUDACC__) &&        \
+    defined(RAJA_ENABLE_CUDA)) || \
     defined(RAJA_ENABLE_HIP)
 #define RAJA_ENABLE_DEVICE
 #endif
