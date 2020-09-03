@@ -156,9 +156,9 @@ namespace RAJA {
 #endif // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_CUDA)
-#if not defined(__CUDACC__)
-#error RAJA configured with ENABLE_CUDA, but CUDA not supported by current compiler 
-#endif // 
+//#if not defined(__CUDACC__)
+//#error RAJA configured with ENABLE_CUDA, but CUDA not supported by current compiler
+//#endif //
 #endif // RAJA_ENABLE_CUDA
 
 

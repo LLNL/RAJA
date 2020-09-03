@@ -21,7 +21,9 @@
 #define RAJA_resource_HPP
 
 #include "camp/resource.hpp"
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/policy.hpp"
+#endif
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 
@@ -34,7 +36,7 @@ namespace RAJA
 
   template<typename e>
   struct get_resource{
-    using type = Host;
+    using type = camp::resources::Host;
   };
 
   template<typename ExecPol>
@@ -42,7 +44,7 @@ namespace RAJA
     return get_resource<ExecPol>::type::get_default();
   }
 
-#if defined(RAJA_ENABLE_CUDA)
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
   template<size_t BlockSize, bool Async>
   struct get_resource<cuda_exec<BlockSize, Async>>{
     using type = Cuda;
@@ -71,7 +73,7 @@ namespace RAJA
   {
     template <typename T> struct is_resource : std::false_type {};
     template <> struct is_resource<resources::Host> : std::true_type {};
-#if defined(RAJA_ENABLE_CUDA)
+#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
     template <> struct is_resource<resources::Cuda> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_HIP)
