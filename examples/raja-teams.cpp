@@ -143,9 +143,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      */
 
     if (select_cpu_or_gpu == RAJA::expt::HOST){
-      std::cout << "\n Running Upper triangular pattern example on the host...\n";
+      std::cout << "\n Running upper triangular pattern example on the host...\n";
     }else {
-      std::cout << "\n Running Upper triangular pattern example on the device...\n";
+      std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 
 
@@ -157,21 +157,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
-         // Array shared within threads of the same team
-         TEAM_SHARED int s_A[1];
+           // Array shared within threads of the same team
+           TEAM_SHARED int s_A[1];
 
-         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
-            if (c == r) s_A[0] = r;
-            D(r, c) = r * N_tri + c;
-         });  // loop j
+           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+              s_A[c] = r;
+           });  // loop c
 
-         ctx.teamSync();
+           ctx.teamSync();
 
-         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+               D(r, c) = r * N_tri + c;
+               printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
+           });  // loop c
 
-             printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
-
-         });  // loop c
          });  // loop r
        });  // outer lambda
 
