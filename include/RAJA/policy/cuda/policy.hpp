@@ -20,7 +20,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(__CUDACC__) && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <utility>
 

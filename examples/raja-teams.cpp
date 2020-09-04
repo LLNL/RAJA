@@ -158,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
            // Array shared within threads of the same team
-           TEAM_SHARED int s_A[1];
+           RAJA_TEAM_SHARED int s_A[1];
 
            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
               s_A[c] = r;

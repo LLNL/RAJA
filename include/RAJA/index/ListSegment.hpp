@@ -31,7 +31,7 @@
 #include "RAJA/util/Span.hpp"
 #include "RAJA/util/types.hpp"
 
-#if defined(__CUDACC__) && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #else
 #define cudaErrchk(...)
@@ -70,7 +70,7 @@ class TypedListSegment
  * won't see any different usage or behavior.
  */
   
-#if (defined(__CUDACC__) && defined(RAJA_ENABLE_CUDA)) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_ENABLE_HIP)
   static constexpr bool Has_GPU = true;
 #else
   static constexpr bool Has_GPU = false;
@@ -117,7 +117,7 @@ class TypedListSegment
   //! specialization for allocation of CPU_memory
   void allocate(CPU_memory) { m_data = new T[m_size]; }
 
-#if defined(__CUDACC__) && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)

@@ -28,16 +28,10 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if (defined(__CUDACC__) &&        \
-    defined(RAJA_ENABLE_CUDA)) || \
-    defined(RAJA_ENABLE_HIP)
-#define RAJA_ENABLE_DEVICE
-#endif
-
 #if defined(RAJA_DEVICE_CODE)
-#define TEAM_SHARED __shared__
+#define RAJA_TEAM_SHARED __shared__
 #else
-#define TEAM_SHARED
+#define RAJA_TEAM_SHARED
 #endif
 
 namespace RAJA
