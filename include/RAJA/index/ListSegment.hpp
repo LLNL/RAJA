@@ -70,7 +70,7 @@ class TypedListSegment
  * won't see any different usage or behavior.
  */
   
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
   static constexpr bool Has_GPU = true;
 #else
   static constexpr bool Has_GPU = false;
