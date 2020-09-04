@@ -28,16 +28,10 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if ((defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && \
-     defined(RAJA_ENABLE_CUDA)) ||                                       \
-    defined(RAJA_ENABLE_HIP)
-#define RAJA_ENABLE_DEVICE
-#endif
-
 #if defined(RAJA_DEVICE_CODE)
-#define TEAM_SHARED __shared__
+#define RAJA_TEAM_SHARED __shared__
 #else
-#define TEAM_SHARED
+#define RAJA_TEAM_SHARED
 #endif
 
 namespace RAJA
@@ -54,27 +48,27 @@ struct null_launch_t {
 
 // Support for host, and device
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
           ,
           typename DEVICE_POLICY
 #endif
           >
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
 
 template <typename HOST_POLICY
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
           ,
           typename DEVICE_POLICY
 #endif
           >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
@@ -193,7 +187,7 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
       launch_t::exec(LaunchContext(team_resources, HOST), body);
       break;
     }
-#ifdef RAJA_ENABLE_DEVICE
+#ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       launch_t::exec(LaunchContext(team_resources, DEVICE), body);

@@ -45,7 +45,7 @@ void TeamsBasicSharedTestImpl()
           RAJA::expt::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
 
                 // Array shared within threads of the same team
-                TEAM_SHARED int s_A[1];
+                RAJA_TEAM_SHARED int s_A[1];
 
                 RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
                     s_A[c] = r; 

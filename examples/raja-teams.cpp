@@ -102,7 +102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA-Teams examples...\n";
   int num_of_backends = 1;
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
   num_of_backends++;
 #endif
 
@@ -123,7 +123,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     if (select_cpu_or_gpu == RAJA::expt::HOST)
       Ddat = host_res.allocate<int>(N_tri * N_tri);
 
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE)
       Ddat = device_res.allocate<int>(N_tri * N_tri);
 #endif
@@ -158,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
            // Array shared within threads of the same team
-           TEAM_SHARED int s_A[1];
+           RAJA_TEAM_SHARED int s_A[1];
 
            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
               s_A[c] = r;
@@ -178,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       host_res.deallocate(Ddat);
     }
 
-#if defined(RAJA_ENABLE_DEVICE)
+#if defined(RAJA_DEVICE_ACTIVE)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
       device_res.deallocate(Ddat);
     }
