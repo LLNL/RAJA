@@ -10,8 +10,8 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.12.1 -- Release date 2020-09-03
-=========================================
+Version v0.12.1 -- Release date 2020-09-04
+============================================
 
 This release contains fixes for errors when using a CUDA build with a
 non-CUDA compiler and compiler warnings.
