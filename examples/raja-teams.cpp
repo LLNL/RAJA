@@ -119,13 +119,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Allocate memory for either host or device
     int N_tri = 5;
 
-    int *Ddat;
-    if (select_cpu_or_gpu == RAJA::expt::HOST)
+    int* Ddat = nullptr;
+    if (select_cpu_or_gpu == RAJA::expt::HOST) {
       Ddat = host_res.allocate<int>(N_tri * N_tri);
+    }
 
 #if defined(RAJA_DEVICE_ACTIVE)
-    if (select_cpu_or_gpu == RAJA::expt::DEVICE)
+    if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
       Ddat = device_res.allocate<int>(N_tri * N_tri);
+    }
 #endif
 
     /*
