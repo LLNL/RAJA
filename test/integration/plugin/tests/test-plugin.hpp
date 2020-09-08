@@ -80,12 +80,17 @@ struct PluginTestCallable
     , m_data(rhs.m_data)
   {
 #if !defined(RAJA_DEVICE_CODE)
-    CounterData i_data;
-    plugin_test_resource->memcpy(&i_data, m_data_iptr, sizeof(CounterData));
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+    if (omp_is_initial_device())
+#endif
+    {
+      CounterData i_data;
+      plugin_test_resource->memcpy(&i_data, m_data_iptr, sizeof(CounterData));
 
-    if (m_data.capture_platform_active == RAJA::Platform::undefined &&
-        i_data.capture_platform_active != RAJA::Platform::undefined) {
-      m_data = i_data;
+      if (m_data.capture_platform_active == RAJA::Platform::undefined &&
+          i_data.capture_platform_active != RAJA::Platform::undefined) {
+        m_data = i_data;
+      }
     }
 #endif
   }
