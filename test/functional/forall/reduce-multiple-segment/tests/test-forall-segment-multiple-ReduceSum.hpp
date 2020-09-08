@@ -114,13 +114,13 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first,
 
 
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum0(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum1;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum1(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum3;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum3(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum4(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum5;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum5(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum6(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum7;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum7(0);
 
   sum0.reset(0);
   sum1.reset(initval * 1);

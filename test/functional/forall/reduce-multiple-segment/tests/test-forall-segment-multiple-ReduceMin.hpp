@@ -50,7 +50,7 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first,
 
   DATA_TYPE current_min = default_val;
 
-  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min0;
+  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min0(0);
   min0.reset(default_val);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min1(default_val);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min2(big_val);

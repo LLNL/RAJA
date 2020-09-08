@@ -26,6 +26,7 @@
 #endif
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/openmp_target/policy.hpp"
 
 namespace RAJA
 {
@@ -36,7 +37,7 @@ namespace RAJA
 
   template<typename e>
   struct get_resource{
-    using type = camp::resources::Host;
+    using type = Host;
   };
 
   template<typename ExecPol>
@@ -67,6 +68,29 @@ namespace RAJA
     using type = Hip;
   };
 #endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  template<>
+  struct get_resource<omp_target_parallel_for_exec_nt>{
+    using type = Omp;
+  };
+
+  template<size_t ThreadsPerTeam>
+  struct get_resource<omp_target_parallel_for_exec<ThreadsPerTeam>>{
+    using type = Omp;
+  };
+
+  template<typename ISetIter>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec_nt>>{
+    using type = Omp;
+  };
+
+  template<typename ISetIter, size_t ThreadsPerTeam>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+    using type = Omp;
+  };
+#endif
+
   } // end namespace resources
 
   namespace type_traits
@@ -78,6 +102,9 @@ namespace RAJA
 #endif
 #if defined(RAJA_ENABLE_HIP)
     template <> struct is_resource<resources::Hip> : std::true_type {};
+#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+    template <> struct is_resource<resources::Omp> : std::true_type {};
 #endif
   } // end namespace type_traits
 
