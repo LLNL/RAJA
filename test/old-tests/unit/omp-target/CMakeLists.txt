@@ -18,7 +18,7 @@ if(ENABLE_TARGET_OPENMP)
   raja_add_test(
     NAME test-omp-target-reduce-tuplemaxloc
     SOURCES test-reduce-tuplemaxloc.cpp)
-  raja_add_test(
-    NAME test-omp-target-kernel
-    SOURCES kernel.cpp)
+  #  raja_add_test(
+  #    NAME test-omp-target-kernel
+  #    SOURCES kernel.cpp)
 endif(ENABLE_TARGET_OPENMP)
