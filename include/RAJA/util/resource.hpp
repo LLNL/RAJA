@@ -37,7 +37,7 @@ namespace RAJA
 
   template<typename e>
   struct get_resource{
-    using type = Host;
+    using type = camp::resources::Host;
   };
 
   template<typename ExecPol>
@@ -48,46 +48,46 @@ namespace RAJA
 #if defined(RAJA_CUDA_ACTIVE)
   template<size_t BlockSize, bool Async>
   struct get_resource<cuda_exec<BlockSize, Async>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   struct get_resource<hip_exec<BlockSize, Async>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
   template<>
   struct get_resource<omp_target_parallel_for_exec_nt>{
-    using type = Omp;
+    using type = camp::resources::Omp;
   };
 
   template<size_t ThreadsPerTeam>
   struct get_resource<omp_target_parallel_for_exec<ThreadsPerTeam>>{
-    using type = Omp;
+    using type = camp::resources::Omp;
   };
 
   template<typename ISetIter>
   struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec_nt>>{
-    using type = Omp;
+    using type = camp::resources::Omp;
   };
 
   template<typename ISetIter, size_t ThreadsPerTeam>
   struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec<ThreadsPerTeam>>>{
-    using type = Omp;
+    using type = camp::resources::Omp;
   };
 #endif
 
