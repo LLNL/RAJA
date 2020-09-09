@@ -10,11 +10,12 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.12.1 -- Release date 2020-09-08
+Version v0.12.1 -- Release date 2020-09-09
 ============================================
 
 This release contains fixes for errors when using a CUDA build with a
-non-CUDA compiler and compiler warnings.
+non-CUDA compiler and compiler warnings, plus some other bug fixes related
+to OpenMP target compilation.
 
 
 Version v0.12.0 -- Release date 2020-09-03
