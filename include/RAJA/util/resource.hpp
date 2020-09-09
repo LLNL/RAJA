@@ -21,9 +21,12 @@
 #define RAJA_resource_HPP
 
 #include "camp/resource.hpp"
+#if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/policy.hpp"
+#endif
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/openmp_target/policy.hpp"
 
 namespace RAJA
 {
@@ -34,7 +37,7 @@ namespace RAJA
 
   template<typename e>
   struct get_resource{
-    using type = Host;
+    using type = camp::resources::Host;
   };
 
   template<typename ExecPol>
@@ -42,40 +45,66 @@ namespace RAJA
     return get_resource<ExecPol>::type::get_default();
   }
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
   template<size_t BlockSize, bool Async>
   struct get_resource<cuda_exec<BlockSize, Async>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   struct get_resource<hip_exec<BlockSize, Async>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 #endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  template<>
+  struct get_resource<omp_target_parallel_for_exec_nt>{
+    using type = camp::resources::Omp;
+  };
+
+  template<size_t ThreadsPerTeam>
+  struct get_resource<omp_target_parallel_for_exec<ThreadsPerTeam>>{
+    using type = camp::resources::Omp;
+  };
+
+  template<typename ISetIter>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec_nt>>{
+    using type = camp::resources::Omp;
+  };
+
+  template<typename ISetIter, size_t ThreadsPerTeam>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+    using type = camp::resources::Omp;
+  };
+#endif
+
   } // end namespace resources
 
   namespace type_traits
   {
     template <typename T> struct is_resource : std::false_type {};
     template <> struct is_resource<resources::Host> : std::true_type {};
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
     template <> struct is_resource<resources::Cuda> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_HIP)
     template <> struct is_resource<resources::Hip> : std::true_type {};
+#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+    template <> struct is_resource<resources::Omp> : std::true_type {};
 #endif
   } // end namespace type_traits
 

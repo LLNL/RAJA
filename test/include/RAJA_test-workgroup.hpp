@@ -105,7 +105,9 @@ struct NeverEqualAllocator
 
   ~NeverEqualAllocator()
   {
-    assert(m_allocations.empty());
+    if (!m_allocations.empty()) {
+      RAJA_ABORT_OR_THROW("allocation map not empty at destruction");
+    }
   }
 
   /*[[nodiscard]]*/
@@ -113,15 +115,21 @@ struct NeverEqualAllocator
   {
     void* ptr = malloc(size);
     auto iter_b = m_allocations.emplace(ptr, size);
-    assert(iter_b.second);
+    if (!iter_b.second) {
+      RAJA_ABORT_OR_THROW("failed to add allocation to map");
+    }
     return ptr;
   }
 
   void deallocate(void* ptr, size_t size) noexcept
   {
     auto iter = m_allocations.find(ptr);
-    assert(iter != m_allocations.end());
-    assert(iter->second == size);
+    if (iter == m_allocations.end()) {
+      RAJA_ABORT_OR_THROW("failed to find allocation in map");
+    }
+    if (iter->second != size) {
+      RAJA_ABORT_OR_THROW("allocation size does not match known in map");
+    }
     m_allocations.erase(iter);
     free(ptr);
   }
