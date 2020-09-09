@@ -24,7 +24,7 @@ if(RAJA_ENABLE_HIP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-  list(APPEND PLUGIN_BACKENDS OpenMPTarget)
+  #  list(APPEND PLUGIN_BACKENDS OpenMPTarget)
 endif()
 
 add_subdirectory(plugin)

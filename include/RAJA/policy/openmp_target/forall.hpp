@@ -68,11 +68,11 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &om
     ib(begin_it[i]);
   }
 
-  return resources::EventProxy<resources::Omp>(&res);
+  return resources::EventProxy<resources::Omp>(&omp_res);
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Resource &omp_res,
+RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &omp_res,
                                                               const omp_target_parallel_for_exec_nt&,
                                                               Iterable&& iter,
                                                               Func&& loop_body)
@@ -89,7 +89,7 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Resourc
     ib(begin_it[i]);
   }
 
-  return RAJA::resources::EventProxy<resources::Omp>(&res);
+  return resources::EventProxy<resources::Omp>(&omp_res);
 }
 
 }  // namespace omp

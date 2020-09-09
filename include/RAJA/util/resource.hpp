@@ -26,6 +26,7 @@
 #endif
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/openmp_target/policy.hpp"
 
 namespace RAJA
 {
@@ -47,26 +48,49 @@ namespace RAJA
 #if defined(RAJA_CUDA_ACTIVE)
   template<size_t BlockSize, bool Async>
   struct get_resource<cuda_exec<BlockSize, Async>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
-    using type = Cuda;
+    using type = camp::resources::Cuda;
   };
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
   template<size_t BlockSize, bool Async>
   struct get_resource<hip_exec<BlockSize, Async>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
-    using type = Hip;
+    using type = camp::resources::Hip;
   };
 #endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  template<>
+  struct get_resource<omp_target_parallel_for_exec_nt>{
+    using type = camp::resources::Omp;
+  };
+
+  template<size_t ThreadsPerTeam>
+  struct get_resource<omp_target_parallel_for_exec<ThreadsPerTeam>>{
+    using type = camp::resources::Omp;
+  };
+
+  template<typename ISetIter>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec_nt>>{
+    using type = camp::resources::Omp;
+  };
+
+  template<typename ISetIter, size_t ThreadsPerTeam>
+  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+    using type = camp::resources::Omp;
+  };
+#endif
+
   } // end namespace resources
 
   namespace type_traits
@@ -78,6 +102,9 @@ namespace RAJA
 #endif
 #if defined(RAJA_ENABLE_HIP)
     template <> struct is_resource<resources::Hip> : std::true_type {};
+#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+    template <> struct is_resource<resources::Omp> : std::true_type {};
 #endif
   } // end namespace type_traits
 

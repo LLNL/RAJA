@@ -113,14 +113,16 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first,
   const DATA_TYPE index_len = static_cast<DATA_TYPE>(last - first);
 
 
+  // Workaround for broken omp-target reduction interface.
+  // This should be `sumX;` not `sumX(0);`
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum0(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum1;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum1(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum3;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum3(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum4(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum5;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum5(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum6(initval);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum7;
+  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum7(0);
 
   sum0.reset(0);
   sum1.reset(initval * 1);

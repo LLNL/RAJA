@@ -30,6 +30,9 @@ struct Target {
 struct Distribute {
 };
 
+struct Collapse {
+};
+
 template <size_t ThreadsPerTeam>
 struct omp_target_parallel_for_exec
     : make_policy_pattern_t<Policy::target_openmp,

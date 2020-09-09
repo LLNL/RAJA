@@ -50,7 +50,9 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first,
 
   DATA_TYPE current_max = default_val;
 
-  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max0;
+  // Workaround for broken omp-target reduction interface.
+  // This should be `max0;` not `max0(0);`
+  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max0(0);
   max0.reset(default_val);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max1(default_val);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max2(big_val);

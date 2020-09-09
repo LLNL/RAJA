@@ -102,13 +102,13 @@ raja_add_executable(
   SOURCES multiview.cpp)
 
 if(ENABLE_TARGET_OPENMP)
-  raja_add_executable(
-    NAME target-kernel
-    SOURCES omp-target-kernel.cpp)
-
-  raja_add_executable(
-    NAME omp-target-ltimes
-    SOURCES omp-target-ltimes.cpp)
+  #  raja_add_executable(
+  #    NAME target-kernel
+  #    SOURCES omp-target-kernel.cpp)
+  #
+  #  raja_add_executable(
+  #    NAME omp-target-ltimes
+  #    SOURCES omp-target-ltimes.cpp)
 endif()
 
 raja_add_executable(
