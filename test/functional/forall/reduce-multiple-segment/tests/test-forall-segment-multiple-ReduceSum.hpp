@@ -39,6 +39,8 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first,
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
 
 
+  // Workaround for broken omp-target reduction interface.
+  // This should be `sumX;` not `sumX(0);`
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum0(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum1(initval * 1);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(0);

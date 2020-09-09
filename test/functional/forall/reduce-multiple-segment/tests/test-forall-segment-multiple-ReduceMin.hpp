@@ -50,6 +50,8 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first,
 
   DATA_TYPE current_min = default_val;
 
+  // Workaround for broken omp-target reduction interface.
+  // This should be `min0;` not `min0(0);`
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min0(0);
   min0.reset(default_val);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min1(default_val);
