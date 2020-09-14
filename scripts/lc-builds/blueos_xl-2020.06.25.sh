@@ -19,6 +19,10 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2020.06.25/bin/xlc++_r \
   -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_TESTS=Off \
+  -DENABLE_EXAMPLES=Off \
+  -DENABLE_EXERCISES=Off \
+  -DENABLE_REPRODUCERS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
