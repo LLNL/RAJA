@@ -296,7 +296,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(c_raja_omp, 0, N_2D * sizeof(int));
 
-  std::cout << "\n Running RAJA OpenMP matrix init...\n";
+  std::cout << "\n Running RAJA OpenMP collapse matrix init...\n";
 
   using EXEC_POL1 =
     RAJA::KernelPolicy<
@@ -316,13 +316,45 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(c_raja_omp, c_ref, N_2D);
 //printArray(c_raja_omp, N_2D);
 
+#endif
+
 //////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+  std::memset(c_raja_omp, 0, N_2D * sizeof(int));
+
+  std::cout << "\n Running RAJA OpenMP collapse (Segs) matrix init...\n";
+
+  using EXEC_POL2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                RAJA::ArgList<0, 1>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0, 1>>
+      >
+    >;
+
+  RAJA::kernel<EXEC_POL2>(
+    RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
+                     RAJA::RangeSegment{0, Ni}),
+    [=](int j, int i) {
+      c_raja_omp[i + Ni*j] = i + Ni*j;
+  });
+
+  checkResult(c_raja_omp, c_ref, N_2D);
+//printArray(c_raja_omp, N_2D);
+
+#endif
+
+//////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_OPENMP)
 
   std::memset(c_raja_omp_no_collapse, 0, N_2D * sizeof(int));
   
   std::cout << "\n Running RAJA OpenMP matrix init (no collapse)...\n";
 
-  using EXEC_POL2 =
+  using EXEC_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
         RAJA::statement::For<1, RAJA::loop_exec,
@@ -331,7 +363,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL2>(     
+  RAJA::kernel<EXEC_POL3>(     
+    RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
+                     RAJA::RangeSegment{0, Ni}),
+    [=](int j, int i) {
+      c_raja_omp_no_collapse[i + Ni*j] = i + Ni*j;
+  });
+
+  checkResult(c_raja_omp_no_collapse, c_ref, N_2D);
+//printArray(c_raja_omp_no_collapse, N_2D);
+
+#endif
+
+//////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+  std::memset(c_raja_omp_no_collapse, 0, N_2D * sizeof(int));
+
+  std::cout << "\n Running RAJA OpenMP matrix init (no collapse, segs)...\n";
+
+  using EXEC_POL4 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+        RAJA::statement::For<1, RAJA::loop_exec,
+          RAJA::statement::Lambda<0, RAJA::Segs<0, 1>>
+        >
+      >
+    >;
+
+  RAJA::kernel<EXEC_POL4>(
     RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
                      RAJA::RangeSegment{0, Ni}),
     [=](int j, int i) {
@@ -375,12 +436,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(c_base_omptarget, c_ref, N_2D);
 //printArray(c_base_omptarget, N_2D);
 
+#endif
  
 //----------------------------------------------------------------------------//
-// RAJA OpenMP target variant
+// RAJA OpenMP target variants
 //----------------------------------------------------------------------------//
 
-#if 0
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
   std::memset(c_raja_omptarget, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget, N_2D, did, hid);
 
@@ -389,11 +452,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
                                 RAJA::ArgList<0, 1>,
         RAJA::statement::Lambda<0>
-//      RAJA::statement::Lambda<0, RAJA::Seqs<0, 1>>
       >
     >;
 
-  std::cout << "\n Running RAJA OpenMP target matrix init...\n";
+  std::cout << "\n Running RAJA OpenMP target matrix init (collapse)...\n";
 
   RAJA::kernel<KERNEL_POL1>(
     RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
@@ -406,28 +468,59 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(c_raja_omptarget, c_ref, N_2D);
 //printArray(c_raja_omptarget, N_2D);
+
 #endif
 
-//----------------------------------------------------------------------------//
-// RAJA OpenMP target (no collapse) variant
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+  std::memset(c_raja_omptarget, 0, N_2D * sizeof(int));
+  initOpenMPDeviceData(dc, c_raja_omptarget, N_2D, did, hid);
+
+  using KERNEL_POL2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
+                                RAJA::ArgList<0, 1>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0, 1>>
+      >
+    >;
+
+  std::cout << "\n Running RAJA OpenMP target matrix init (collapse, Segs)...\n";
+
+  RAJA::kernel<KERNEL_POL2>(
+    RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
+                     RAJA::RangeSegment{0, Ni}),
+    [=](int j, int i) {
+      dc[i + Ni*j] = i + Ni*j;
+  });
+
+  getOpenMPDeviceData(c_raja_omptarget, dc, N_2D, hid, did);
+
+  checkResult(c_raja_omptarget, c_ref, N_2D);
+//printArray(c_raja_omptarget, N_2D);
+
+#endif
+
+////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 
   std::memset(c_raja_omptarget_no_collapse, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget_no_collapse, N_2D, did, hid);
 
-  using KERNEL_POL2 =
+  using KERNEL_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<threads_per_team>,
         RAJA::statement::For<1, RAJA::seq_exec,
           RAJA::statement::Lambda<0>
-//        RAJA::statement::Lambda<0, RAJA::Seqs<0, 1>>
         >
       >
     >;
 
   std::cout << "\n Running RAJA OpenMP target matrix init (no collapse)...\n";
 
-  RAJA::kernel<KERNEL_POL2>(
+  RAJA::kernel<KERNEL_POL3>(
     RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
                      RAJA::RangeSegment{0, Ni}),
     [=](int j, int i) {
@@ -439,6 +532,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(c_raja_omptarget_no_collapse, c_ref, N_2D);
 //printArray(c_raja_omptarget_no_collapse, N_2D);
 
+#endif
+
+////////////////////////////////////////////
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+  std::memset(c_raja_omptarget_no_collapse, 0, N_2D * sizeof(int));
+  initOpenMPDeviceData(dc, c_raja_omptarget_no_collapse, N_2D, did, hid);
+
+  using KERNEL_POL4 =
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<threads_per_team>,
+        RAJA::statement::For<1, RAJA::seq_exec,
+          RAJA::statement::Lambda<0, RAJA::Segs<0, 1>>
+        >
+      >
+    >;
+
+  std::cout << "\n Running RAJA OpenMP target matrix init (no collapse, Segs)...\n";
+
+  RAJA::kernel<KERNEL_POL4>(
+    RAJA::make_tuple(RAJA::RangeSegment{0, Nj},
+                     RAJA::RangeSegment{0, Ni}),
+    [=](int j, int i) {
+      dc[i + Ni*j] = i + Ni*j;
+  });
+
+  getOpenMPDeviceData(c_raja_omptarget_no_collapse, dc, N_2D, hid, did);
+
+  checkResult(c_raja_omptarget_no_collapse, c_ref, N_2D);
+//printArray(c_raja_omptarget_no_collapse, N_2D);
 
 #endif
 
