@@ -39,6 +39,7 @@ struct OpenMPTargetForWrapper : public GenericWrapperBase
 };
 
 template <camp::idx_t ArgumentId,
+          template<int> class omp_target_parallel_for_exec,
           int N,
           typename... EnclosedStmts,
           typename Types>
@@ -48,7 +49,10 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    OpenMPTargetForWrapper<ArgumentId, Data, Types, EnclosedStmts...> for_wrapper(data);
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+    OpenMPTargetForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
