@@ -39,7 +39,6 @@ struct OpenMPTargetForWrapper : public GenericWrapperBase
 };
 
 template <camp::idx_t ArgumentId,
-          template<int> class omp_target_parallel_for_exec,
           int N,
           typename... EnclosedStmts,
           typename Types>
