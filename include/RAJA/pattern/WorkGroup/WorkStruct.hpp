@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include <utility>
+#include <cstddef>
 
 #include "RAJA/pattern/WorkGroup/Vtable.hpp"
 
