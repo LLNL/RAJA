@@ -9,7 +9,7 @@ raja_add_executable(
   NAME plugin-example
   SOURCES test-plugin.cpp counter-plugin.cpp)
 
-if (ENABLE_RUNTIME_PLUGINS)
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
   raja_add_executable(
     NAME plugin-example-dynamic
     SOURCES test-plugin-dynamic.cpp)

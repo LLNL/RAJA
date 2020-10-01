@@ -288,7 +288,7 @@ and their default settings:
                                       tolerance enabled run (e.g., number of 
                                       faults detected, recovered from, 
                                       recovery overhead, etc.)
-     ENABLE_RUNTIME_PLUGINS           Enable support for dynamically loading
+     RAJA_ENABLE_RUNTIME_PLUGINS           Enable support for dynamically loading
                                       RAJA plugins.
       =============================   ========================================
 

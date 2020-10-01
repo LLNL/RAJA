@@ -29,7 +29,7 @@ endif()
 
 add_subdirectory(plugin)
 
-if (ENABLE_RUNTIME_PLUGINS)
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
   if(NOT WIN32)
   raja_add_test(
     NAME test-plugin-dynamic

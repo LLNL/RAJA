@@ -68,7 +68,7 @@ option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
-option(ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
+option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -164,7 +164,7 @@ set (raja_sources
   src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp)
 
-if (ENABLE_RUNTIME_PLUGINS)
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
   set (raja_sources
     ${raja_sources}
     src/RuntimePluginLoader.cpp
