@@ -121,7 +121,8 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    map(to : private_data) collapse(4)
+    firstprivate(private_data) collapse(4)
+    //map(to : private_data) collapse(4)
       for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
           for (auto i2 = (decltype(l2))0; i2 < l2; ++i2) {
