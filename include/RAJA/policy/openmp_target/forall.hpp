@@ -33,9 +33,19 @@ namespace omp
 
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
 RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &omp_res,
-                                                              const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+                                                              const omp_target_parallel_for_exec<ThreadsPerTeam>& exec,
                                                               Iterable&& iter,
                                                               Func&& loop_body)
+{
+  forall_impl(omp_res, exec, iter, loop_body);
+  return resources::EventProxy<resources::Omp>(&omp_res);
+
+}
+
+template <size_t ThreadsPerTeam, typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
@@ -67,8 +77,6 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &om
     Body ib = body;
     ib(begin_it[i]);
   }
-
-  return resources::EventProxy<resources::Omp>(&omp_res);
 }
 
 template <typename Iterable, typename Func>

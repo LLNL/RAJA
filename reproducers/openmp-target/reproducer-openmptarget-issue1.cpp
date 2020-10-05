@@ -120,7 +120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  std::cout << "\n RAJA OpenMP collapse 2D matrix init...\n";
+  std::cout << "\n1: RAJA OpenMP collapse 2D matrix init...\n";
 
   std::memset(c_raja_omp, 0, N_2D * sizeof(int));
 
@@ -146,7 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //////////////////////////////////////////////
 
 
-  std::cout << "\n RAJA OpenMP collapse (Segs) 2D matrix init...\n";
+  std::cout << "\n2: RAJA OpenMP collapse (Segs) 2D matrix init...\n";
 
   std::memset(c_raja_omp, 0, N_2D * sizeof(int));
 
@@ -171,7 +171,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP 2D matrix init (no collapse)...\n";
+  std::cout << "\n3: RAJA OpenMP 2D matrix init (no collapse)...\n";
 
   std::memset(c_raja_omp_no_collapse, 0, N_2D * sizeof(int));
   
@@ -197,7 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP 2D matrix init (no collapse, segs)...\n";
+  std::cout << "\n4: RAJA OpenMP 2D matrix init (no collapse, segs)...\n";
 
   std::memset(c_raja_omp_no_collapse, 0, N_2D * sizeof(int));
 
@@ -234,7 +234,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Base OpenMP target variant
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Base OpenMP target 2D matrix init...\n";
+  std::cout << "\n5: Base OpenMP target 2D matrix init...\n";
 
   std::memset(c_base_omptarget, 0, N_2D * sizeof(int));
   allocAndInitOpenMPDeviceData(dc, c_base_omptarget, N_2D, did, hid);
@@ -256,7 +256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA OpenMP target variants
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n RAJA OpenMP target 2D matrix init (collapse)...\n";
+  std::cout << "\n6: RAJA OpenMP target 2D matrix init (collapse)...\n";
 
   std::memset(c_raja_omptarget, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget, N_2D, did, hid);
@@ -284,7 +284,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 ////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP target 2D matrix init (collapse, segs)...\n";
+  std::cout << "\n7: RAJA OpenMP target 2D matrix init (collapse, segs)...\n";
 
   std::memset(c_raja_omptarget, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget, N_2D, did, hid);
@@ -329,7 +329,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 ////////////////////////////////////////////
 ////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP target 2D matrix init (no collapse)...\n";
+  std::cout << "\n8: RAJA OpenMP target 2D matrix init (no collapse)...\n";
 
   std::memset(c_raja_omptarget_no_collapse, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget_no_collapse, N_2D, did, hid);
@@ -358,7 +358,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 ////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP target 2D matrix init (no collapse, Segs)...\n";
+  std::cout << "\n9: RAJA OpenMP target 2D matrix init (no collapse, Segs)...\n";
 
   std::memset(c_raja_omptarget_no_collapse, 0, N_2D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget_no_collapse, N_2D, did, hid);

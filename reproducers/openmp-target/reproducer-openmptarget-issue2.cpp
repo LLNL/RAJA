@@ -101,7 +101,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // C-style sequential variant establishes reference solution to compare with.
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n C-style 2D matrix init...\n";
+  std::cout << "\n1: C-style 2D matrix init...\n";
 
   std::memset(c_ref, 0, N_3D * sizeof(int));
 
@@ -122,7 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  std::cout << "\n RAJA OpenMP collapse 3D matrix init...\n";
+  std::cout << "\n2: RAJA OpenMP collapse 3D matrix init...\n";
 
   std::memset(c_raja_omp, 0, N_3D * sizeof(int));
 
@@ -148,7 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP 3D matrix init (collapse 2)...\n";
+  std::cout << "\n3: RAJA OpenMP 3D matrix init (collapse 2)...\n";
 
   std::memset(c_raja_omp_collapse2, 0, N_3D * sizeof(int));
 
@@ -185,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Base OpenMP target variant
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Base OpenMP target 3D matrix init...\n";
+  std::cout << "\n4: Base OpenMP target 3D matrix init...\n";
 
   std::memset(c_base_omptarget, 0, N_3D * sizeof(int));
   allocAndInitOpenMPDeviceData(dc, c_base_omptarget, N_3D, did, hid);
@@ -209,7 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA OpenMP target variant
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n RAJA OpenMP target 3D matrix init...\n";
+  std::cout << "\n5: RAJA OpenMP target 3D matrix init...\n";
 
   std::memset(c_raja_omptarget, 0, N_3D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget, N_3D, did, hid);
@@ -242,7 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Base OpenMP target variant (collapse2)
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Base OpenMP target 3D matrix init (collapse2)...\n";
+  std::cout << "\n6: Base OpenMP target 3D matrix init (collapse2)...\n";
 
   std::memset(c_base_omptarget, 0, N_3D * sizeof(int));
   allocAndInitOpenMPDeviceData(dc, c_base_omptarget, N_3D, did, hid);
@@ -283,7 +283,7 @@ std::cout << std::flush;
 ////////////////////////////////////////////
 ////////////////////////////////////////////
 
-  std::cout << "\n RAJA OpenMP target 3D matrix init (collapse2)...\n" << std::flush;
+  std::cout << "\n7: RAJA OpenMP target 3D matrix init (collapse2)...\n" << std::flush;
 
   std::memset(c_raja_omptarget_collapse2, 0, N_3D * sizeof(int));
   initOpenMPDeviceData(dc, c_raja_omptarget_collapse2, N_3D, did, hid);
