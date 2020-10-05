@@ -58,7 +58,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::
                                                     Iterable &&iter,
                                                     Func &&body)
 {
-  forall_impl(host_res, exec, iter, body);
+  forall_impl(exec, iter, body);
   return RAJA::resources::EventProxy<resources::Host>(&host_res);
 }
 template <typename Iterable, typename Func>

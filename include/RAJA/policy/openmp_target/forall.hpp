@@ -37,7 +37,7 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &om
                                                               Iterable&& iter,
                                                               Func&& loop_body)
 {
-  forall_impl(omp_res, exec, iter, loop_body);
+  forall_impl(exec, iter, loop_body);
   return resources::EventProxy<resources::Omp>(&omp_res);
 
 }
