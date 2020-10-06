@@ -1,8 +1,8 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC and Umpire
+# project contributors. See the COPYRIGHT file for details.
 #
-# SPDX-License-Identifier: (BSD-3-Clause)
+# SPDX-License-Identifier: (MIT)
 ##############################################################################
 
 ####
@@ -27,3 +27,4 @@
 # In particular, the rules section will be merged. Careful when changing rules.
 .build_and_test_on_lassen_advanced:
   extends: [.build_and_test_on_lassen, .advanced_pipeline]
+

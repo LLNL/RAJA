@@ -1,13 +1,54 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC and Umpire
+# project contributors. See the COPYRIGHT file for details.
 #
-# SPDX-License-Identifier: (BSD-3-Clause)
+# SPDX-License-Identifier: (MIT)
 ##############################################################################
-
-####
-# Quartz build jobs
-clang_9_0_0 (build and test on quartz):
+clang_10:
   variables:
-    SPEC: "%clang@9.0.0"
+    SPEC: " %clang@10.0.1"
+  extends: .build_and_test_on_quartz
+
+clang_9:
+  variables:
+    SPEC: " %clang@9.0.0"
+  extends: .build_and_test_on_quartz
+
+gcc_8_1_0:
+  variables:
+    SPEC: " %gcc@8.1.0"
+  extends: .build_and_test_on_quartz
+
+icpc_17_0_2:
+  variables:
+    SPEC: " %intel@17.0.2"
+  extends: .build_and_test_on_quartz
+
+icpc_18_0_2:
+  variables:
+    SPEC: " tests=none %intel@18.0.2"
+  extends: .build_and_test_on_quartz
+
+icpc_19_1_0:
+  variables:
+    SPEC: " %intel@19.1.0"
+  extends: .build_and_test_on_quartz
+
+pgi_19_7:
+  variables:
+    SPEC: " %pgi@19.7 cxxflags=-I/usr/tce/packages/gcc/gcc-4.9.3/include/c++/4.9.3"
+    PGI_LOCALRC: /collab/usr/global/tools/pgi/etc/localrc-gcc-4.9.3
+  extends: .build_and_test_on_quartz
+
+pgi_20_1:
+  variables:
+    SPEC: " %pgi@20.1"
+    PGI_LOCALRC: /collab/usr/global/tools/pgi/etc/localrc-gcc-4.9.3
+  extends: .build_and_test_on_quartz
+
+# EXTRAS
+
+gcc_4_9_3:
+  variables:
+    SPEC: "%gcc@4.9.3"
   extends: .build_and_test_on_quartz

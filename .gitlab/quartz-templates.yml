@@ -1,8 +1,8 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC and Umpire
+# project contributors. See the COPYRIGHT file for details.
 #
-# SPDX-License-Identifier: (BSD-3-Clause)
+# SPDX-License-Identifier: (MIT)
 ##############################################################################
 
 ####
@@ -30,7 +30,6 @@ allocate_resources (on quartz):
   stage: q_allocate_resources
   script:
     - salloc -N 1 -c 36 -p pdebug -t 20 --no-shell --job-name=${ALLOC_NAME}
-  needs: []
 
 ####
 # In post-build phase, deallocate resources
@@ -47,8 +46,9 @@ release_resources (on quartz):
 ####
 # Generic quartz build job, extending build script
 .build_and_test_on_quartz:
-  stage: q_build_and_test
   extends: [.build_toss_3_x86_64_ib_script, .on_quartz]
+  stage: q_build_and_test
 
 .build_and_test_on_quartz_advanced:
   extends: [.build_and_test_on_quartz, .advanced_pipeline]
+
