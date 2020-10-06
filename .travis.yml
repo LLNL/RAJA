@@ -19,7 +19,7 @@ matrix:
     env:
     - COMPILER=g++
     - IMG=gcc6
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DRAJA_ENABLE_RUNTIME_PLUGINS=On"
   - compiler: gcc7
     env:
     - COMPILER=g++
