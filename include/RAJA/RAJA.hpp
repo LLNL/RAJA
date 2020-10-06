@@ -174,7 +174,9 @@
 
 #include "RAJA/pattern/scan.hpp"
 
+#if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
 #include "RAJA/util/PluginLinker.hpp"
+#endif
 
 #include "RAJA/pattern/sort.hpp"
 
