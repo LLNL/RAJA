@@ -1,8 +1,8 @@
 .. _ci:
 
-===========================
-RAJA Continuous Integration
-===========================
+======================
+Continuous Integration
+======================
 
 Gitlab CI
 ---------
