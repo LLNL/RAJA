@@ -21,9 +21,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-    using data_t = camp::decay<Data>;
-    data_t private_data{data};
-
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
 
@@ -37,10 +34,10 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    firstprivate(private_data) collapse(2)
-    //map(to : private_data) collapse(2)
+    firstprivate(privatizer) collapse(2)
       for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
+          auto& private_data = privatizer.get_priv();
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
           execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(private_data);
@@ -49,7 +46,11 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     }
 };
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, typename... EnclosedStmts, typename Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2>,
                                              EnclosedStmts...>, Types>
@@ -57,9 +58,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-    using data_t = camp::decay<Data>;
-    data_t private_data{data};
-
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
     auto l2 = segment_length<Arg2>(data);
@@ -76,11 +74,11 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    firstprivate(private_data) collapse(3)
-    //map(to : private_data) collapse(3)
+    firstprivate(privatizer) collapse(3)
       for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
           for (auto i2 = (decltype(l2))0; i2 < l2; ++i2) {
+            auto& private_data = privatizer.get_priv();
             private_data.template assign_offset<Arg0>(i0);
             private_data.template assign_offset<Arg1>(i1);
             private_data.template assign_offset<Arg2>(i2);
@@ -91,7 +89,12 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     }
 };
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, camp::idx_t Arg2, camp::idx_t Arg3, typename... EnclosedStmts, typename Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          camp::idx_t Arg3,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2, Arg3>,
                                              EnclosedStmts...>, Types>
@@ -99,9 +102,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-    using data_t = camp::decay<Data>;
-    data_t private_data{data};
-
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
     auto l2 = segment_length<Arg2>(data);
@@ -121,12 +121,12 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
 #pragma omp target teams distribute parallel for schedule(static, 1) \
-    firstprivate(private_data) collapse(4)
-    //map(to : private_data) collapse(4)
+    firstprivate(privatizer) collapse(4)
       for (auto i0 = (decltype(l0))0; i0 < l0; ++i0) {
         for (auto i1 = (decltype(l1))0; i1 < l1; ++i1) {
           for (auto i2 = (decltype(l2))0; i2 < l2; ++i2) {
             for (auto i3 = (decltype(l3))0; i3 < l3; ++i3) {
+              auto& private_data = privatizer.get_priv();
               private_data.template assign_offset<Arg0>(i0);
               private_data.template assign_offset<Arg1>(i1);
               private_data.template assign_offset<Arg2>(i2);
