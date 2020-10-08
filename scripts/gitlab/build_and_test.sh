@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+##############################################################################
+# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC and Umpire
+# project contributors. See the COPYRIGHT file for details.
 #
-# SPDX-License-Identifier: (BSD-3-Clause)
-###############################################################################
+# SPDX-License-Identifier: (MIT)
+##############################################################################
 
 
 set -o errexit
@@ -19,7 +19,8 @@ build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
 
-chai_version=${UPDATE_CHAI:-""}
+sys_type=${SYS_TYPE:-""}
+py_env_path=${PYTHON_ENVIRONMENT_PATH:-""}
 
 # Dependencies
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
@@ -34,18 +35,6 @@ then
         exit 1
     fi
 
-    extra_variants=""
-    extra_deps=""
-
-    if [[ -n ${chai_version} ]]
-    then
-        extra_variants="${extra_variants} +chai"
-        extra_deps="${extra_deps} ^chai@${chai_version}"
-    fi
-
-    [[ -n ${extra_variants} ]] && spec="${spec} ${extra_variants}"
-    [[ -n ${extra_deps} ]] && spec="${spec} ${extra_deps}"
-
     prefix_opt=""
 
     if [[ -d /dev/shm ]]
@@ -55,7 +44,7 @@ then
         prefix_opt="--prefix=${prefix}"
     fi
 
-    python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
+    python scripts/uberenv/uberenv.py --spec="${spec}"
 
 fi
 
@@ -93,17 +82,21 @@ fi
 
 build_dir="${build_root}/build_${hostconfig//.cmake/}"
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "~~~~~ Host-config: ${hostconfig_path}"
-echo "~~~~~ Build Dir:   ${build_dir}"
-echo "~~~~~ Project Dir: ${project_dir}"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Building RAJA"
+    echo "~ Host-config: ${hostconfig_path}"
+    echo "~ Build Dir:   ${build_dir}"
+    echo "~ Project Dir: ${project_dir}"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo ""
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~ ENV ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ Building Umpire"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
     # If building, then delete everything first
@@ -113,14 +106,14 @@ then
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
-    cmake --build . -j
+    cmake --build . -j 16
 fi
 
 # Test
-if [[ "${option}" != "--build-only" ]]
+if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_TESTS.*ON" ${hostconfig_path}
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Testing RAJA"
+    echo "~~~~~ Testing Umpire"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
     if [[ ! -d ${build_dir} ]]
@@ -141,6 +134,19 @@ then
     echo "Copying Testing xml reports for export"
     tree Testing
     cp Testing/*/Test.xml ${project_dir}
+
+    # Convert CTest xml to JUnit (on toss3 only)
+    if [[ ${sys_type} == *toss_3* ]]; then
+        if [[ -n ${py_env_path} ]]; then
+            . ${py_env_path}/bin/activate
+
+            python3 ${project_dir}/scripts/gitlab/convert_to_junit.py \
+            ${project_dir}/Test.xml \
+            ${project_dir}/scripts/gitlab/junit.xslt > ${project_dir}/junit.xml
+        else
+            echo "ERROR: needs python env with lxml, please set PYTHON_ENVIRONMENT_PATH"
+        fi
+    fi
 
     if grep -q "Errors while running CTest" ./tests_output.txt
     then
