@@ -1,0 +1,9 @@
+{
+"package_name" : "raja",
+"package_version" : "develop",
+"package_final_phase" : "hostconfig",
+"package_source_dir" : "../..",
+"spack_url": "https://github.com/spack/spack",
+"spack_commit": "bc53bb9b7cbf250c98cfe77d334ed30d6b958c21",
+"spack_activate" : {}
+}

@@ -37,6 +37,8 @@
 
 #include "RAJA/policy/vector/policy.hpp"
 
+#include "RAJA/util/resource.hpp"
+
 namespace RAJA
 {
 namespace policy
@@ -46,7 +48,8 @@ namespace vector
 
 
 template <typename TENSOR_TYPE, camp::idx_t DIM, typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const tensor_exec<TENSOR_TYPE, DIM>&,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+const tensor_exec<TENSOR_TYPE, DIM>&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
@@ -72,6 +75,7 @@ RAJA_INLINE void forall_impl(const tensor_exec<TENSOR_TYPE, DIM>&,
     loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
   }
 
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 

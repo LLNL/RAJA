@@ -9,7 +9,8 @@
 /// Source file containing tests for numeric limits in RAJA operators
 ///
 
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
 
 #define RAJA_CHECK_LIMITS
 #include "RAJA/util/Operators.hpp"
@@ -33,19 +34,6 @@ TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
 
 REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsUnitTest, IntegralLimits);
 
-using integer_types = ::testing::Types<char,
-                                       unsigned char,
-                                       short,
-                                       unsigned short,
-                                       int,
-                                       unsigned int,
-                                       long,
-                                       unsigned long,
-                                       long int,
-                                       unsigned long int,
-                                       long long,
-                                       unsigned long long>;
-
 INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsUnitTests,
                               IntegralLimitsUnitTest,
-                              integer_types);
+                              UnitIntegralTypes);

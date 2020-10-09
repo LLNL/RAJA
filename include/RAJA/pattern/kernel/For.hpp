@@ -101,7 +101,9 @@ struct StatementExecutor<
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
-    forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+    auto r = resources::get_resource<ExecPolicy>::type::get_default();
+
+    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
 };
 

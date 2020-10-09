@@ -53,7 +53,8 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
-    forall_impl(omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+    auto r = resources::Omp::get_default();
+    forall_impl(r, omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
 };
 

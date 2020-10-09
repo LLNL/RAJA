@@ -30,6 +30,9 @@ struct Target {
 struct Distribute {
 };
 
+struct Collapse {
+};
+
 template <size_t ThreadsPerTeam>
 struct omp_target_parallel_for_exec
     : make_policy_pattern_t<Policy::target_openmp,
@@ -57,6 +60,16 @@ struct omp_target_reduce
     : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
 };
 
+///
+/// WorkGroup execution policies
+///
+struct omp_target_work
+    : make_policy_pattern_launch_platform_t<Policy::target_openmp,
+                                            Pattern::workgroup_exec,
+                                            Launch::sync,
+                                            Platform::omp_target> {
+};
+
 
 }  // closing brace for omp namespace
 }  // closing brace for policy namespace
@@ -66,6 +79,7 @@ using policy::omp::omp_target_parallel_for_exec;
 using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 using policy::omp::omp_target_parallel_collapse_exec;
+using policy::omp::omp_target_work;
 #endif
 
 } // closing brace for RAJA namespace

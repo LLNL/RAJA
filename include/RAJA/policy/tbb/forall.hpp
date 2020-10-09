@@ -27,17 +27,13 @@
 
 #include <tbb/tbb.h>
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/tbb/policy.hpp"
-
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/internal/fault_tolerance.hpp"
-
 #include "RAJA/pattern/forall.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
+#include "RAJA/util/types.hpp"
 
 
 namespace RAJA
@@ -71,24 +67,29 @@ namespace tbb
  * argument.  This should be used for composable parallelism and increased work
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
+
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
-                             Iterable&& iter,
-                             Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+                                                               const tbb_for_dynamic& p,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
   using std::begin;
+  using std::distance;
   using std::end;
-  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
-  ::tbb::parallel_for(brange(begin(iter), end(iter), p.grain_size),
-                      [=](const brange& r) {
-                        using RAJA::internal::thread_privatize;
-                        auto privatizer = thread_privatize(loop_body);
-                        auto body = privatizer.get_priv();
-                        for (const auto& i : r)
-                          body(i);
-                      });
-}
+  using brange = ::tbb::blocked_range<size_t>;
+  auto b = begin(iter);
+  size_t dist = std::abs(distance(begin(iter), end(iter)));
+  ::tbb::parallel_for(brange(0, dist, p.grain_size), [=](const brange& r) {
+    using RAJA::internal::thread_privatize;
+    auto privatizer = thread_privatize(loop_body);
+    auto body = privatizer.get_priv();
+    for (auto i = r.begin(); i != r.end(); ++i)
+      body(b[i]);
+  });
 
+  return resources::EventProxy<resources::Host>(&host_res);
+}
 ///
 /// TBB parallel for static policy implementation
 ///
@@ -109,23 +110,31 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
  * threads must be maintained across multiple loops for correctness. NOTE: if
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
+
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
-                             Iterable&& iter,
-                             Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+                                                               const tbb_for_static<ChunkSize>&,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
   using std::begin;
+  using std::distance;
   using std::end;
-  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
-  ::tbb::parallel_for(brange(begin(iter), end(iter), ChunkSize),
-                      [=](const brange& r) {
-                        using RAJA::internal::thread_privatize;
-                        auto privatizer = thread_privatize(loop_body);
-                        auto body = privatizer.get_priv();
-                        for (const auto& i : r)
-                          body(i);
-                      },
-                      tbb_static_partitioner{});
+  using brange = ::tbb::blocked_range<size_t>;
+  auto b = begin(iter);
+  size_t dist = std::abs(distance(begin(iter), end(iter)));
+  ::tbb::parallel_for(
+      brange(0, dist, ChunkSize),
+      [=](const brange& r) {
+        using RAJA::internal::thread_privatize;
+        auto privatizer = thread_privatize(loop_body);
+        auto body = privatizer.get_priv();
+        for (auto i = r.begin(); i != r.end(); ++i)
+          body(b[i]);
+      },
+      tbb_static_partitioner{});
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 }  // namespace tbb

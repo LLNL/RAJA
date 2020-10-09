@@ -9,9 +9,16 @@
 /// Source file containing unit tests for IndexSet class.
 ///
 
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
 
-#include "RAJA/RAJA.hpp"
+#include "camp/resource.hpp"
+
+//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory. Used in all tests.
+//
+  camp::resources::Resource host_res{camp::resources::Host()};
+
 
 TEST(IndexSetUnitTest, Empty)
 {
@@ -54,7 +61,7 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
   RLIndexSetType isrl;
   ASSERT_EQ(size_t(2), isrl.getNumTypes());
   int idx[ ] = {0, 2, 4, 5};
-  ListSegType lseg(idx, 4); 
+  ListSegType lseg(idx, 4, host_res); 
   isrl.push_back(lseg);
   isrl.push_back(RangeSegType(6, 8));
   ASSERT_EQ(2, isrl.size()); 
@@ -165,7 +172,7 @@ TEST(IndexSetUnitTest, ConditionalEvenIndices)
 
   iset.push_back(RangeSegType(0, 6));
   int idx[ ] = {7, 8, 10, 11};
-  ListSegType lseg(idx, 4); 
+  ListSegType lseg(idx, 4, host_res); 
   iset.push_back(lseg);
   iset.push_back(RangeSegType(13, 17));
 

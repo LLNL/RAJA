@@ -10,16 +10,12 @@ raja_add_test(
   SOURCES test-kernel-lambda-args.cpp)
 
 raja_add_test(
+  NAME test-kernel-dynamic-tile
+  SOURCES test-kernel-dynamic-tile.cpp)
+
+raja_add_test(
   NAME test-kernel
   SOURCES test-kernel.cpp)
-
-raja_add_test(
-  NAME test-multipolicy
-  SOURCES test-multipolicy.cpp)
-
-raja_add_test(
-  NAME test-region
-  SOURCES test-region.cpp)
 
 raja_add_test(
   NAME test-sharedmem

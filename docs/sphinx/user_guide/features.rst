@@ -12,7 +12,7 @@
 RAJA Features
 ************************
 
-The following sections describe key aspects of the main RAJA features. 
+The following sections describe key aspects of the main RAJA features.
 
 .. toctree::
    :maxdepth: 2
@@ -22,7 +22,11 @@ The following sections describe key aspects of the main RAJA features.
    feature/iteration_spaces
    feature/view
    feature/reduction
+   feature/resource
    feature/atomic
    feature/scan
+   feature/sort
    feature/local_array
    feature/tiling
+   feature/plugins
+   feature/workgroup

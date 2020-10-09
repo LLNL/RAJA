@@ -1,0 +1,13 @@
+##############################################################################
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+##############################################################################
+
+####
+# Quartz build jobs
+clang_9_0_0 (build and test on quartz):
+  variables:
+    SPEC: "%clang@9.0.0"
+  extends: .build_and_test_on_quartz

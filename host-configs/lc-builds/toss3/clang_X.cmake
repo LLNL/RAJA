@@ -11,8 +11,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -funroll-loops -finline-functions
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -march=native -funroll-loops -finline-functions" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(RAJA_RANGE_ALIGN 4 CACHE STRING "")
-set(RAJA_RANGE_MIN_LENGTH 32 CACHE STRING "")
 set(RAJA_DATA_ALIGN 64 CACHE STRING "")
 
 set(RAJA_HOST_CONFIG_LOADED On CACHE BOOL "")

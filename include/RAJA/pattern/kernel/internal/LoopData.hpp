@@ -90,6 +90,11 @@ using value_type_list_from_segments =
 
 
 template <typename Segments>
+using index_tuple_from_segments =
+    typename camp::apply_l<camp::lambda<camp::tuple>,
+                           value_type_list_from_segments<Segments>>::type;
+
+template <typename Segments>
 using index_types_from_segments =
     typename camp::apply_l<camp::lambda<camp::list>,
                            value_type_list_from_segments<Segments>>::type;
@@ -107,7 +112,6 @@ struct LoopData {
   // Offset tuple holds offset from begin() for each of the segments
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
-  offset_tuple_t offset_tuple;
 
   // Used by LoopTypes and various execution policies to determine the
   // index value type of each segment
@@ -125,31 +129,20 @@ struct LoopData {
   // Lambdas that were passed into the kernel
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
+  offset_tuple_t offset_tuple;
 
   // Vector sizes of each segment.  This is only used by the vector_exec
   // policies
   using vector_sizes_t = tuple_of_n<int, camp::tuple_size<SegmentTuple>::value>;
   vector_sizes_t vector_sizes;
 
-  RAJA_INLINE
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr
   LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), bodies(b...)
   {
   }
-
-  template <typename SegmentTuple0,
-            typename ParamTuple0,
-            typename... Bodies0>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(
-      LoopData<SegmentTuple0, ParamTuple0, Bodies0...> &c)
-
-      : offset_tuple(c.offset_tuple),
-        segment_tuple(c.segment_tuple),
-        param_tuple(c.param_tuple),
-        bodies(c.bodies),
-        vector_sizes(c.vector_sizes)
-  {
-  }
+  constexpr LoopData(LoopData const &) = default;
+  constexpr LoopData(LoopData &&) = default;
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE RAJA_INLINE void assign_offset(IndexT const &i)
@@ -179,10 +172,17 @@ struct LoopData {
 
 
 template <camp::idx_t ArgumentId, typename Data>
-RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
+using segment_diff_type =
     typename std::iterator_traits<
         typename camp::at_v<typename Data::segment_tuple_t::TList,
-                            ArgumentId>::iterator>::difference_type
+                            ArgumentId>::iterator>::difference_type;
+
+
+
+
+template <camp::idx_t ArgumentId, typename Data>
+RAJA_INLINE RAJA_HOST_DEVICE auto segment_length(Data const &data) ->
+  segment_diff_type<ArgumentId, Data>
 {
   return camp::get<ArgumentId>(data.segment_tuple).end() -
          camp::get<ArgumentId>(data.segment_tuple).begin();

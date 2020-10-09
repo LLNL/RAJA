@@ -9,24 +9,15 @@
 /// Source file containing unit tests for IndexValue
 ///
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h" 
+#include "RAJA_test-base.hpp"
 
+#include "RAJA_unit-test-types.hpp"
 
 template<typename T>
 class IndexValueUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<RAJA::Index_type,
-                                 int,
-                                 unsigned int,
-                                 long,
-                                 unsigned long,
-                                 long int,
-                                 unsigned long int,
-                                 long long,
-                                 unsigned long long>;
+TYPED_TEST_SUITE(IndexValueUnitTest, UnitIndexTypes);
 
-TYPED_TEST_SUITE(IndexValueUnitTest, MyTypes);
 
 RAJA_INDEX_VALUE(StrongTypeIndex, "Strong Type")
 

@@ -20,7 +20,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <utility>
 
@@ -86,6 +86,24 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
 //
+
+///
+/// WorkGroup execution policies
+///
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_work : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::workgroup_exec,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
+};
+
+struct unordered_cuda_loop_y_block_iter_x_threadblock_average
+    : public RAJA::make_policy_pattern_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::workgroup_order,
+                       RAJA::Platform::cuda> {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -195,6 +213,13 @@ using policy::cuda::cuda_exec;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+
+using policy::cuda::cuda_work;
+
+template <size_t BLOCK_SIZE>
+using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
+
+using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;

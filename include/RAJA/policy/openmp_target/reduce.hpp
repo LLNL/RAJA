@@ -100,8 +100,8 @@ struct Reduce_Data
    *
    *  allocates data on the host and device and initializes values to default
    */
-  Reduce_Data(T /*defaultValue*/, T identityValue, Offload_Info &info)
-      : value(identityValue),
+  Reduce_Data(T initValue, T identityValue, Offload_Info &info)
+     : value(initValue),
         device{reinterpret_cast<T *>(
             omp_target_alloc(omp::MaxNumTeams * sizeof(T), info.deviceID))},
         host{new T[omp::MaxNumTeams]}
@@ -117,6 +117,12 @@ struct Reduce_Data
     std::fill_n(host, omp::MaxNumTeams, identityValue);
     hostToDevice(info);
   }
+
+  void reset(T initValue)
+  {
+    value = initValue;
+  }
+
 
   //! default copy constructor for POD
   Reduce_Data(const Reduce_Data &) = default;
@@ -177,12 +183,20 @@ struct TargetReduce
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
-  explicit TargetReduce(T init_val)
+  explicit TargetReduce(T init_val_, T identity_ = Reducer::identity())
       : info(),
-        val(Reducer::identity(), Reducer::identity(), info),
-        initVal(init_val),
-        finalVal(Reducer::identity())
+        val(identity_, identity_, info),
+        initVal(init_val_),
+        finalVal(identity_)
   {
+  }
+
+  void reset(T init_val_, T identity_ = Reducer::identity())
+  {
+    operator T();
+    val.reset(identity_);
+    initVal = init_val_;
+    finalVal = identity_;
   }
 
 #ifdef __ibmxl__ // TODO: implicit declare target doesn't pick this up
@@ -254,15 +268,30 @@ struct TargetReduceLoc
 {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val, IndexType init_loc)
+  explicit TargetReduceLoc(T init_val_, IndexType init_loc,
+                           T identity_ = Reducer::identity)
       : info(),
-        val(Reducer::identity, Reducer::identity, info),
+        val(identity_, identity_, info),
         loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
-        initVal(init_val),
-        finalVal(Reducer::identity),
+        initVal(init_val_),
+        finalVal(identity_),
         initLoc(init_loc),
         finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
   {
+  }
+
+  void reset(T init_val_,
+             IndexType init_local_ =
+             IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()),
+             T identity_ = Reducer::identity)
+  {
+    operator T();
+    val.reset(identity_);
+    loc.reset(init_local_);
+    initVal = init_val_;
+    finalVal = identity_;
+    initLoc = reduce::detail::DefaultLoc<IndexType>().value();
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
   }
 
   //! apply reduction on device upon destruction
@@ -363,6 +392,57 @@ public:
   }
 };
 
+//! specialization of ReduceBitOr for omp_target_reduce
+template <typename T>
+class ReduceBitOr<omp_target_reduce, T>
+    : public TargetReduce<RAJA::reduce::or_bit<T>, T>
+{
+public:
+
+  using self = ReduceBitOr<omp_target_reduce, T>;
+  using parent = TargetReduce<RAJA::reduce::or_bit<T>, T>;
+  using parent::parent;
+
+  //! enable operator|= for ReduceBitOr -- alias for reduce()
+  self &operator|=(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+
+  //! enable operator|= for ReduceBitOr -- alias for reduce()
+  const self &operator|=(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitAnd for omp_target_reduce
+template <typename T>
+class ReduceBitAnd<omp_target_reduce, T>
+    : public TargetReduce<RAJA::reduce::and_bit<T>, T>
+{
+public:
+
+  using self = ReduceBitAnd<omp_target_reduce, T>;
+  using parent = TargetReduce<RAJA::reduce::and_bit<T>, T>;
+  using parent::parent;
+
+  //! enable operator&= for ReduceBitAnd -- alias for reduce()
+  self &operator&=(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+
+  //! enable operator&= for ReduceBitAnd -- alias for reduce()
+  const self &operator&=(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
 
 //! specialization of ReduceMin for omp_target_reduce
 template <typename T>

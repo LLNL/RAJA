@@ -14,8 +14,8 @@ endif()
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 11)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 12)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -51,7 +51,6 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
 option(ENABLE_TBB "Build TBB support" Off)
-option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
@@ -68,6 +67,8 @@ option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supporte
 option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
+option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
+option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -76,7 +77,7 @@ cmake_minimum_required(VERSION 3.9)
 if (ENABLE_CUDA)
   if (DEFINED CUDA_ARCH)
     if (CUDA_ARCH MATCHES "^sm_*")
-      if ("${CUDA_ARCH}" STRLESS "sm_35") 
+      if ("${CUDA_ARCH}" STRLESS "sm_35")
         message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
       endif()
     endif()
@@ -89,7 +90,7 @@ if (ENABLE_CUDA)
     message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
     set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
   endif()
-  if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
     endif ()
@@ -163,6 +164,13 @@ set (raja_sources
   src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp)
 
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
+  set (raja_sources
+    ${raja_sources}
+    src/RuntimePluginLoader.cpp
+    src/KokkosPluginLoader.cpp)
+endif ()
+
 set (raja_depends)
 
 if (ENABLE_OPENMP)
@@ -186,7 +194,7 @@ if (ENABLE_CUDA)
     if (CUB_FOUND)
       blt_register_library(
         NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
+        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
       set(raja_depends
         ${raja_depends}
         cub)
@@ -220,38 +228,34 @@ if (ENABLE_HIP)
   endif ()
 endif ()
 
-if (ENABLE_CHAI)
-  set (raja_depends
-    ${raja_depends}
-    chai)
-endif ()
-
 if (ENABLE_TBB)
   set(raja_depends
     ${raja_depends}
     tbb)
 endif ()
 
-set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
+if (NOT TARGET camp)
+  set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
 camp source repository")
-if (EXTERNAL_CAMP_SOURCE_DIR)
-  message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
-  add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
-else (EXTERNAL_CAMP_SOURCE_DIR)
-  find_package(camp QUIET)
-  if (NOT camp_FOUND)
-    message(STATUS "Using RAJA CAMP submodule.")
-    add_subdirectory(tpl/camp)
-  else (NOT camp_FOUND)
-    message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-  endif(NOT camp_FOUND)
-endif (EXTERNAL_CAMP_SOURCE_DIR)
+  if (EXTERNAL_CAMP_SOURCE_DIR)
+    message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
+    add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
+                     ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
+  else (EXTERNAL_CAMP_SOURCE_DIR)
+    find_package(camp QUIET)
+    if (NOT camp_FOUND)
+      message(STATUS "Using RAJA CAMP submodule.")
+      add_subdirectory(tpl/camp)
+    else (NOT camp_FOUND)
+      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+    endif(NOT camp_FOUND)
+  endif (EXTERNAL_CAMP_SOURCE_DIR)
+endif (NOT TARGET camp)
 
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp)
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
 
 install(TARGETS RAJA
   EXPORT RAJA
@@ -266,9 +270,11 @@ target_include_directories(RAJA
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>
   $<INSTALL_INTERFACE:include>)
+target_include_directories(RAJA SYSTEM
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 if(NOT ENABLE_EXTERNAL_CUB)

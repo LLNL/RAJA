@@ -28,6 +28,8 @@
 #include "RAJA/util/plugins.hpp"
 
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/resource.hpp"
+
 
 namespace RAJA
 {
@@ -90,6 +92,19 @@ RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
+template <typename Res,
+          typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE resources::EventProxy<Res> forall_impl(Res &r,
+                                  MultiPolicy<Selector, Policies...> p,
+                                  Iterable &&iter,
+                                  Body &&body)
+{
+  p.invoke(iter, body);
+  return resources::EventProxy<Res>(&r);
+}
 
 }  // end namespace multi
 }  // end namespace policy
@@ -98,6 +113,7 @@ using policy::multi::MultiPolicy;
 
 namespace detail
 {
+
 template <camp::idx_t... Indices, typename... Policies, typename Selector>
 auto make_multi_policy(camp::idx_seq<Indices...>,
                        Selector s,
@@ -117,6 +133,7 @@ auto make_multi_policy(camp::idx_seq<Indices...>,
 /// forall, must return an int in the set 0 to N-1 selecting the policy to use
 /// \return A MultiPolicy containing the given selector s
 template <typename... Policies, typename Selector>
+RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 {
   return MultiPolicy<Selector, Policies...>(s, Policies{}...);
@@ -132,6 +149,7 @@ auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 /// forall, must return an int in the set 0 to N-1 selecting the policy to use
 /// \return A MultiPolicy containing the given selector s
 template <typename... Policies, typename Selector>
+RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
@@ -150,14 +168,29 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 
   policy_invoker(Policy p, rest... args) : NextInvoker(args...), _p(p) {}
 
-  template <typename Iterable, typename Body>
-  void invoke(int offset, Iterable &&iter, Body &&body)
+  template <typename Iterable, typename LoopBody>
+  void invoke(int offset, Iterable &&iter, LoopBody &&loop_body)
   {
     if (offset == size - index - 1) {
+
+      util::PluginContext context{util::make_context<Policy>()};
+      util::callPreCapturePlugins(context);
+
+      using RAJA::util::trigger_updates_before;
+      auto body = trigger_updates_before(loop_body);
+
+      util::callPostCapturePlugins(context);
+
+      util::callPreLaunchPlugins(context);
+
       using policy::multi::forall_impl;
-      forall_impl(_p, iter, body);
+      RAJA_FORCEINLINE_RECURSIVE
+      auto r = resources::get_resource<Policy>::type::get_default();
+      forall_impl(r, _p, std::forward<Iterable>(iter), body);
+
+      util::callPostLaunchPlugins(context);
     } else {
-      NextInvoker::invoke(offset, iter, body);
+      NextInvoker::invoke(offset, std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
   }
 };
@@ -166,15 +199,26 @@ template <size_t size, typename Policy, typename... rest>
 struct policy_invoker<0, size, Policy, rest...> {
   Policy _p;
   policy_invoker(Policy p, rest...) : _p(p) {}
-  template <typename Iterable, typename Body>
-  void invoke(int offset, Iterable &&iter, Body &&body)
+  template <typename Iterable, typename LoopBody>
+  void invoke(int offset, Iterable &&iter, LoopBody &&loop_body)
   {
     if (offset == size - 1) {
-      util::PluginContext context{util::make_context<Policy>()};
-      util::callPreLaunchPlugins(context); 
 
+      util::PluginContext context{util::make_context<Policy>()};
+      util::callPreCapturePlugins(context);
+
+      using RAJA::util::trigger_updates_before;
+      auto body = trigger_updates_before(loop_body);
+
+      util::callPostCapturePlugins(context);
+
+      util::callPreLaunchPlugins(context);
+
+      //std::cout <<"policy_invoker: No index\n";
       using policy::multi::forall_impl;
-      forall_impl(_p, iter, body);
+      RAJA_FORCEINLINE_RECURSIVE
+      auto r = resources::get_resource<Policy>::type::get_default();
+      forall_impl(r, _p, std::forward<Iterable>(iter), body);
 
       util::callPostLaunchPlugins(context);
     } else {
@@ -184,6 +228,15 @@ struct policy_invoker<0, size, Policy, rest...> {
 };
 
 }  // end namespace detail
+
+namespace type_traits
+{
+
+template <typename T>
+struct is_multi_policy
+    : ::RAJA::type_traits::SpecializationOf<RAJA::MultiPolicy, typename std::decay<T>::type> {
+};
+}  // namespace type_traits
 
 }  // end namespace RAJA
 

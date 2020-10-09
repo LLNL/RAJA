@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
 
 /*
  * Basic layout test
@@ -64,13 +63,13 @@ TEST(LayoutUnitTest, 2D_IJ)
   ASSERT_EQ(0, layout(0, 0));
 
   ASSERT_EQ(5, layout(1, 0));
-  ASSERT_EQ(15, layout(3, 0));
+  ASSERT_EQ(14, layout(2, 4));
 
   ASSERT_EQ(1, layout(0, 1));
-  ASSERT_EQ(5, layout(0, 5));
+  ASSERT_EQ(4, layout(0, 4));
 
-  // Check that we get the identity (mod 15)
-  for (int k = 0; k < 20; ++k) {
+  // Check that we get the identity
+  for (int k = 0; k < 15; ++k) {
 
     // inverse map
     int i, j;
@@ -108,13 +107,13 @@ TEST(LayoutUnitTest, 2D_JI)
   ASSERT_EQ(0, layout(0, 0));
 
   ASSERT_EQ(1, layout(1, 0));
-  ASSERT_EQ(3, layout(3, 0));
+  ASSERT_EQ(2, layout(2, 0));
 
   ASSERT_EQ(3, layout(0, 1));
-  ASSERT_EQ(15, layout(0, 5));
+  ASSERT_EQ(14, layout(2, 4));
 
   // Check that we get the identity (mod 15)
-  for (int k = 0; k < 20; ++k) {
+  for (int k = 0; k < 15; ++k) {
 
     // inverse map
     int i, j;

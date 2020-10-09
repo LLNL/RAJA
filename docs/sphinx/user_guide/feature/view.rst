@@ -12,8 +12,8 @@
 View and Layout
 ===============
 
-Matrix and tensor objects are naturally expressed in
-scientific computing applications as multi-dimensional arrays. However,
+Matrix and tensor objects, which are common in scientific computing 
+applications, are naturally expressed as multi-dimensional arrays. However,
 for efficiency in C and C++, they are usually allocated as one-dimensional
 arrays. For example, a matrix :math:`A` of dimension :math:`N_r \times N_c` is
 typically allocated as::
@@ -22,13 +22,13 @@ typically allocated as::
 
 Using a one-dimensional array makes it necessary to convert
 two-dimensional indices (rows and columns of a matrix) to a one-dimensional
-pointer offset index to access the corresponding array memory location. One 
-could introduce a macro such as::
+pointer offset to access the corresponding array memory location. One 
+could use a macro such as::
 
    #define A(r, c) A[c + N_c * r]
 
 to access a matrix entry in row `r` and column `c`. However, this solution has
-limitations; e.g., additional macro definitions are needed when adopting a 
+limitations; e.g., additional macro definitions may be needed when adopting a 
 different matrix data layout or when using other matrices. To facilitate
 multi-dimensional indexing and different indexing layouts, RAJA provides 
 ``RAJA::View`` and ``RAJA::Layout`` classes.
@@ -37,8 +37,8 @@ multi-dimensional indexing and different indexing layouts, RAJA provides
 RAJA Views
 ----------
 
-A ``RAJA::View`` object wraps a pointer and enables various indexing schemes
-based on the definition of a ``RAJA::Layout`` object. We can
+A ``RAJA::View`` object wraps a pointer and enables indexing into the data
+referenced via the pointer based on a ``RAJA::Layout`` object. We can
 create a ``RAJA::View`` for a matrix with dimensions :math:`N_r \times N_c` 
 using a RAJA View and a default RAJA two-dimensional Layout as follows::
 
@@ -52,7 +52,7 @@ extent of each matrix dimension as arguments. The template parameters to
 the ``RAJA::View`` type define the pointer type and the Layout type; here, 
 the Layout just defines the number of index dimensions. Using the resulting 
 view object, one may access matrix entries in a row-major fashion (the 
-default RAJA layout) through the View parenthesis operator::
+default RAJA layout) through the view *parenthesis operator*::
 
    // r - row index of a matrix
    // c - column index of a matrix
@@ -82,6 +82,54 @@ accesses array entries with unit stride. The loop::
 
 access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... * N :subscript:`(j+1)`.
 
+MultiView
+^^^^^^^^^^^^^^^^
+
+A ``RAJA::MultiView`` object wraps an array-of-pointers,
+or a pointer-to-pointers, whereas a ``RAJA::View`` wraps a single
+pointer or array. This allows a single ``RAJA::Layout`` to be applied to
+multiple arrays internal to the MultiView, allowing multiple arrays to share indexing
+arithmetic when their access patterns are the same.
+
+The instantiation of a MultiView works exactly like a standard View,
+except that it takes an array-of-pointers. In the following example, a MultiView
+applies a 1-D layout of length 4 to 2 internal arrays in ``myarr``.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Dinit_start
+   :end-before: _multiview_example_1Dinit_end
+   :language: C++
+
+The default MultiView accesses internal arrays via the 0th position of the MultiView.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daccess_start
+   :end-before: _multiview_example_1Daccess_end
+   :language: C++
+
+The index into the array-of-pointers can be moved to different
+indices of the MultiView ``()`` access operator, rather than the default 0th position. By 
+passing a third template parameter to the MultiView constructor, the internal array index
+and the integer indicating which array to access can be reversed.
+
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_1Daopindex_start
+   :end-before: _multiview_example_1Daopindex_end
+   :language: C++
+
+As the number of Layout dimensions increases, the index into the array-of-pointers can be
+moved to more distinct locations in the MultiView ``()`` access operator. Here is an example
+which compares the accesses of a 2-D layout on a normal ``RAJA::View`` with a ``RAJA::MultiView``
+with the array-of-pointers index set to the 2nd position.
+ 
+.. literalinclude:: ../../../../examples/multiview.cpp
+   :start-after: _multiview_example_2Daopindex_start
+   :end-before: _multiview_example_2Daopindex_end
+   :language: C++
+
+.. note:: MultiView does not currently work with Layouts which use strongly
+          typed indices. It has not been tested yet with atomic accesses. 
+
 ------------
 RAJA Layouts
 ------------
@@ -90,7 +138,7 @@ RAJA Layouts
 striding orders, offsets, and permutations. In addition to layouts created
 using the default Layout constructor, as shown above, RAJA provides other 
 methods to generate layouts for different indexing patterns. We describe 
-these next.
+them here.
 
 Permuted Layout
 ^^^^^^^^^^^^^^^^
@@ -114,11 +162,12 @@ second index (index 1 - extent 7) has stride 55 (= 5*11).
 
 The first argument to ``RAJA::make_permuted_layout`` is a C++ array whose
 entries define the extent of each index dimension. **The double braces are 
-required to prevent compilation errors/warnings about issues trying to 
-initialize a sub-object.** The second argument is the striding permutation.
+required to properly initialize the internal sub-object which holds the
+extents.** The second argument is the striding permutation and similarly 
+requires double braces.
 
-In the next example, we create the same permuted layout, then create
-a ``RAJA::View`` with it in a way that tells the View which index has 
+In the next example, we create the same permuted layout as above, then create
+a ``RAJA::View`` with it in a way that tells the view which index has 
 unit stride::
 
   const int s0 = 5;  // extent of dimension 0
@@ -131,18 +180,19 @@ unit stride::
   RAJA::Layout<3> layout = 
     RAJA::make_permuted_layout( {{s0, s1, s2}}, perm );
 
-  // The Layout template parameters are dimension, 'linear index' type, 
-  // and the index with unit stride
-  RAJA::View<double, RAJA::Layout<3, RAJA::Index_type, 0> > Bview(B, layout);
+  // The Layout template parameters are dimension, 'linear index' type used
+  // when converting an index triple into the corresponding pointer offset
+  // index, and the index with unit stride
+  RAJA::View<double, RAJA::Layout<3, int, 0> > Bview(B, layout);
 
   // Equivalent to indexing as: B[i + j * s0 * s2 + k * s0]
   Bview(i, j, k) = ...; 
 
 .. note:: Telling a view which index has unit stride makes the 
           multi-dimensional index calculation more efficient by avoiding
-          multiplication by '1' when it is unnecessary. **This must be done
-          so that the layout permutation and unit-stride index specification
-          are the same to prevent incorrect indexing.**
+          multiplication by '1' when it is unnecessary. **The layout 
+          permutation and unit-stride index specification
+          must be consistent to prevent incorrect indexing.**
 
 Offset Layout
 ^^^^^^^^^^^^^^^^
@@ -164,9 +214,15 @@ it using indices in :math:`[-5, 5]`. In other words, one can use the loop::
   } 
 
 to initialize the values of the array. Each 'i' loop index value is converted
-to array offset access index by subtracting the lower offset to it; i.e., in 
+to an array offset index by subtracting the lower offset from it; i.e., in 
 the loop, each 'i' value has '-5' subtracted from it to properly access the
-array entry.
+array entry. That is, the sequence of indices generated by the for-loop::
+
+  -5 -4 -3 ... 5
+
+will index into the data array as::
+
+  0 1 2 ... 10
 
 The arguments to the ``RAJA::make_offset_layout`` method are C++ arrays that
 hold the start and end values of the indices. RAJA offset layouts support
@@ -177,9 +233,8 @@ any number of dimensions; for example::
 
 defines a two-dimensional layout that enables one to index into a view using 
 indices :math:`[-1, 2]` in the first dimension and indices :math:`[-5, 5]` in
-the second dimension. As we remarked earlier, double braces are needed to 
-prevent compilation errors/warnings about issues trying to initialize a 
-sub-object.
+the second dimension. As noted earlier, double braces are needed to 
+properly initialize the internal data in the layout object.
 
 Permuted Offset Layout
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -195,13 +250,9 @@ indices. For example,::
 Here, the two-dimensional index space is :math:`[-1, 2] \times [-5, 5]`, the
 same as above. However, the index strides are permuted so that the first 
 index (index 0) has unit stride and the second index (index 1) has stride 4, 
-since the first index dimension has length 4.
+which is the extent of the first index (:math:`[-1, 2]`).
 
-Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
-be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
-tutorial sections.
-
-.. note:: It is important to note some facts about RAJA Layout types. 
+.. note:: It is important to note some facts about RAJA layout types. 
           All layouts have a permutation. So a permuted layout and 
           a "non-permuted" layout (i.e., default permutation) has the 
           type ``RAJA::Layout``. Any layout with an offset has the 
@@ -210,14 +261,19 @@ tutorial sections.
           choice to avoid the overhead of offset computations in the 
           ``RAJA::View`` data access operator when they are not needed.
 
+Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
+be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
+tutorial sections.
+
 Typed Layouts
 ^^^^^^^^^^^^^
 
 RAJA provides typed variants of ``RAJA::Layout`` and ``RAJA::OffsetLayout``
-enabling user specified index types. Basic usage requires specifying types for
-the linear index, and the multi-dimensional indicies. The following example creates
-typed layouts wherein the linear index is of type TIL and the multidimensional
-indices are TIX, TIY,::
+that enable users to specify integral index types. Usage requires 
+specifying types for the linear index and the multi-dimensional indicies. 
+The following example creates two two-dimensional typed layouts where the 
+linear index is of type TIL and the '(x, y)' indices for accesingg the data 
+have types TIX and TIY::
 
    RAJA_INDEX_VALUE(TIX, "TIX");
    RAJA_INDEX_VALUE(TIY, "TIY");
@@ -226,13 +282,18 @@ indices are TIX, TIY,::
    RAJA::TypedLayout<TIL, RAJA::tuple<TIX,TIY>> layout(10, 10);
    RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX,TIY>> offLayout(10, 10);;
 
+.. note:: Using the ``RAJA_INDEX_VALUE`` macro to create typed indices
+          is helpful to prevent incorrect usage by detecting at compile
+          when, for example, indices are passes to a view parenthesis 
+          operator in the wrong order.
+
 Shifting Views
 ^^^^^^^^^^^^^^
 
-RAJA Views include a shift method enabling users to generate a new View with 
-offsets to the base View layout. The base View may be templated with either a 
-standard Layout, OffsetLayout and the typed variants. The generated View will 
-use an OffsetLayout or TypedOffsetLayout depending on whether the base 
+RAJA views include a shift method enabling users to generate a new view with 
+offsets to the base view layout. The base view may be templated with either a 
+standard layout or offset layout and their typed variants. The new view will 
+use an offset layout or typed offset layout depending on whether the base 
 view employed a typed layout. The example below illustrates shifting view 
 indices by :math:`N`, ::
 
@@ -264,17 +325,18 @@ three-dimensional index space to a one-dimensional linear space::
    RAJA::Layout<3> layout(5, 7, 11);
 
    // Map from 3-D index (2, 3, 1) to the linear index
-   // Note that there is no striding permutation, so rightmost is stride-1
+   // Note that there is no striding permutation, so the rightmost index is 
+   // stride-1
    int lin = layout(2, 3, 1); // lin = 188 (= 1 + 3 * 11 + 2 * 11 * 7)
 
    // Map from linear index to 3-D index
    int i, j, k;
    layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
 
-``RAJA::Layout`` also supports *projections*, where one or more dimension
+RAJA layouts also support *projections*, where one or more dimension
 extent is zero. In this case, the linear index space is invariant for 
-those multi-dimensional index entries; thus, the 'toIndicies(...)' method 
-will always return zero for each dimension with zero extent. For example::
+those index entries; thus, the 'toIndicies(...)' method will always return 
+zero for each dimension with zero extent. For example::
 
    // Create a layout with second dimension extent zero
    RAJA::Layout<3> layout(3, 0, 5);
@@ -283,7 +345,7 @@ will always return zero for each dimension with zero extent. For example::
    int lin1 = layout(0, 10, 0);   // lin1 = 0
    int lin2 = layout(0, 5, 1);    // lin2 = 1
 
-   // The inverse mapping always produces a 0 for j
+   // The inverse mapping always produces zero for j
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
 
@@ -311,7 +373,7 @@ way to do this in parallel using OpenMP and a RAJA atomic view::
   // Create a 1-dimensional view for histogram array
   RAJA::View<int, RAJA::Layout<1> > hist_view(hist_dat, M); 
 
-  // Create an atomic view for histogram array
+  // Create an atomic view into the histogram array using the view above
   auto hist_atomic_view = RAJA::make_atomic_view<ATOMIC_POL>(hist_view);
 
   RAJA::forall< EXEC_POL >(RAJA::RangeSegment(0, N), [=] (int i) {
@@ -321,16 +383,16 @@ way to do this in parallel using OpenMP and a RAJA atomic view::
 Here, we create a one-dimensional view for the histogram data array. Then,
 we create an atomic view from that, which we use in the RAJA loop to 
 compute the histogram entries. Since the view is atomic, only one OpenMP
-thread can write to each entry at a time.
+thread can write to each array entry at a time.
 
 ------------------------------------
 RAJA View/Layouts Bounds Checking
 ------------------------------------
 
 The RAJA CMake variable ``RAJA_ENABLE_BOUNDS_CHECK`` may be used to turn on/off 
-runtime bounds checking for RAJA Views. This may be a useful debugging aid for
-users. When bounds checkoing is turned off (default case), there is no 
-additional run time overhead incurred. Bounds checking is accomplished within
-RAJA layouts (both offset and standard layouts). Upon an out of bounds error, 
-RAJA will abort the program and print the index that is out of bounds as
-well the value of the index and bounds.
+runtime bounds checking for RAJA views. This may be a useful debugging aid for
+users. When attempting to use an index value that is out of bounds,
+RAJA will abort the program and print the index that is out of bounds and
+the value of the index and bounds for it. Since the bounds checking is a runtime
+operation, it incurs non-negligible overhead. When bounds checkoing is turned 
+off (default case), there is no additional run time overhead incurred. 
