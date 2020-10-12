@@ -35,8 +35,6 @@ namespace RAJA
     VECTOR_FIXED
   };
 
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
-  class Vector;
 
   namespace internal
   {
@@ -102,6 +100,10 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
+        SemiStaticValue& operator=(self_type const &) = default;
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
         constexpr camp::idx_t get() const{
           return DEFAULT;
         }
@@ -161,6 +163,18 @@ namespace RAJA
 
 
 
+    /**
+     * Base Vector class
+     *
+     * This is the base Vector class that implements register storage and
+     * length-agnostic operations (add, mul, etc)
+     *
+     * Assumptions:
+     *   - We have a set of full registers
+     *   - All operations are implemented on all register elements
+     *   - Any subsetting (dynamic or static) is implemented on derived types
+     *   - Derived type must be passed in through SELF_TYPE parameter
+     */
     template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
     class VectorBase;
 
@@ -168,7 +182,8 @@ namespace RAJA
     class VectorBase<REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, NUM_ELEM, VECTOR_TYPE>
     {
       public:
-        using self_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>;
+        //using self_type = VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>;
+        using self_type = VectorBase<REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, NUM_ELEM, VECTOR_TYPE>;
         using register_policy = REGISTER_POLICY;
         using element_type = ELEMENT_TYPE;
         using register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
@@ -667,6 +682,39 @@ namespace RAJA
 
 
 
+    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
+    operator+(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
+      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) + y;
+    }
+
+    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
+    operator-(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
+      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) - y;
+    }
+
+    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
+    operator*(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
+      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) * y;
+    }
+
+    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
+    operator/(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
+      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) / y;
+    }
+
+
 
 
   template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
@@ -680,8 +728,8 @@ namespace RAJA
 
   } // namespace internal
 
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
-  class Vector;
+
+
 
   namespace internal
   {
@@ -694,9 +742,14 @@ namespace RAJA
   template<typename VECTOR_TYPE, camp::idx_t NEW_LENGTH>
   struct VectorNewLengthHelper;
 
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE, camp::idx_t NEW_LENGTH>
-  struct VectorNewLengthHelper<Vector<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>, NEW_LENGTH> {
-      using type = Vector<REGISTER_POLICY, ELEMENT_TYPE, NEW_LENGTH, VECTOR_TYPE>;
+  template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE, camp::idx_t NEW_LENGTH>
+  struct VectorNewLengthHelper<VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>, NEW_LENGTH> {
+
+      using type = internal::makeVectorBase<REGISTER_POLICY,
+                               T,
+                               NEW_LENGTH,
+                               VECTOR_TYPE>;
+
   };
 
 

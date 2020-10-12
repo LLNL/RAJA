@@ -37,8 +37,9 @@ namespace RAJA
       using self_type = MATRIX_TYPE;
 
       static constexpr VectorSizeType s_vector_size_type = (SIZE_TYPE==MATRIX_FIXED) ? VECTOR_FIXED : VECTOR_STREAM;
-      using row_vector_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_COL), s_vector_size_type>;
-      using col_vector_type = Vector<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_ROW), s_vector_size_type>;
+
+      using row_vector_type = makeVectorBase<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_COL), s_vector_size_type>;
+      using col_vector_type = makeVectorBase<REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_ROW), s_vector_size_type>;
 
       using element_type = ELEMENT_TYPE;
       using register_policy = REGISTER_POLICY;

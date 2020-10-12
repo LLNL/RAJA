@@ -81,6 +81,69 @@ namespace RAJA
       }
 
       /*!
+       * @brief Load a full register from a stride-one memory location
+       *
+       */
+      RAJA_INLINE
+      self_type &load_packed(element_type const *ptr){
+        getThis()->load(ptr);
+        return *this;
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        return getThis()->load(ptr, 1, N);
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a statically defined number of elements.
+       *
+       */
+      template<camp::idx_t N>
+      RAJA_INLINE
+      self_type &load_packed_v(element_type const *ptr){
+        return getThis()->load(ptr, 1, N);
+      }
+
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+        return getThis()->load(ptr, stride);
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        return getThis()->load(ptr, stride, N);
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a statically defined number of elements.
+       *
+       */
+      template<camp::idx_t N>
+      RAJA_INLINE
+      self_type &load_strided_v(element_type const *ptr, camp::idx_t stride){
+        return getThis()->load(ptr, stride, N);
+      }
+
+
+
+      /*!
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */

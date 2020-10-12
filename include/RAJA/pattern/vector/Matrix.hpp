@@ -65,6 +65,10 @@ namespace RAJA
       RAJA_INLINE
       Matrix(self_type const &c) : base_type(c){}
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator=(self_type const &c) = default;
+
       template<typename ... RR>
       RAJA_HOST_DEVICE
       RAJA_INLINE

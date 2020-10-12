@@ -88,6 +88,15 @@ namespace RAJA
       constexpr
       Register(self_type const &c) : m_value(c.m_value) {}
 
+      /*!
+       * @brief Copy assignment constructor
+       */
+      RAJA_INLINE
+      self_type &operator=(self_type const &c){
+        m_value = c.m_value;
+        return *this;
+      }
+
 
       /*!
        * @brief Construct from scalar.
