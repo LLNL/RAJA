@@ -127,8 +127,7 @@ with the array-of-pointers index set to the 2nd position.
    :end-before: _multiview_example_2Daopindex_end
    :language: C++
 
-.. note:: MultiView does not currently work with Layouts which use strongly
-          typed indices. It has not been tested yet with atomic accesses. 
+.. note:: MultiView has not yet been tested with atomic accesses. 
 
 ------------
 RAJA Layouts
