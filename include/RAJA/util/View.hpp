@@ -198,22 +198,24 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
 template <typename ValueType,
           typename LayoutType,
           RAJA::Index_type P2Pidx = 0,
-          typename PointerType = ValueType **>
+          typename PointerType = ValueType **,
+          typename NonConstPointerType =
+              camp::type::ptr::add< // adds *
+                camp::type::ptr::add<
+                  camp::type::cv::rem<  // removes cv
+                    camp::type::ptr::rem<
+                      camp::type::ptr::rem<PointerType>  // removes *
+                    >
+                  >
+                >
+              >
+          >
 struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = camp::decay<value_type>;
-  using nc_pointer_type =  
-    camp::type::ptr::add< // adds *
-      camp::type::ptr::add<
-        camp::type::cv::rem<  // removes cv
-          camp::type::ptr::rem<
-            camp::type::ptr::rem<pointer_type>  // removes *
-          >
-        >
-      >
-    >;
+  using nc_pointer_type = NonConstPointerType;
   using NonConstView = MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
