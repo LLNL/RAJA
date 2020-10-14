@@ -106,7 +106,7 @@ then
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
-    cmake --build . -j 16
+    cmake --build . -j 32
 fi
 
 # Test
