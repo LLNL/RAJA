@@ -120,7 +120,12 @@ struct View {
 // returns linear index of layout(ar...)
 template <typename Lay, typename Tup, camp::idx_t... Idxs>
 RAJA_HOST_DEVICE RAJA_INLINE 
-RAJA::Index_type selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> )
+auto selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> ) ->
+  decltype(
+            lyout(
+              camp::get<Idxs>(std::forward<Tup>(tup))...
+            )
+          )
 { 
   return lyout(
                 camp::get<Idxs>(std::forward<Tup>(tup))...

@@ -8,10 +8,8 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_unit-test-types.hpp"
 
-RAJA_INDEX_VALUE(TX, "TX");
-// ISSUE: https://github.com/LLNL/RAJA/issues/881
-//RAJA_INDEX_VALUE(TIX, "TIX");
-//RAJA_INDEX_VALUE(TIL, "TIL");
+RAJA_INDEX_VALUE(TIX, "TIX");
+RAJA_INDEX_VALUE(TIL, "TIL");
 
 template<typename T>
 class MultiViewUnitTest : public ::testing::Test {};
@@ -219,20 +217,19 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
   }
 
 
-  // ISSUE: https://github.com/LLNL/RAJA/issues/881
   //Create a shifted view from a view with a typed layout
-  //using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
-  //using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
+  using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
 
-  //TLayout myLayout(10);
+  TLayout myLayout(10);
 
-  //RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
-  //RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
+  RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
+  RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
 
-  //for(TIX i=TIX{N}; i<TIX{2*N}; ++i)
-  //{
-  //  ASSERT_EQ(Dshift(0,i),D(0,i-N));
-  //};
+  for(TIX i=TIX{N}; i<TIX{2*N}; ++i)
+  {
+    ASSERT_EQ(Dshift(0,i),D(0,i-N));
+  };
 
   delete[] reala;
   delete[] realb;
