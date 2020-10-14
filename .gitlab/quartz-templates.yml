@@ -29,7 +29,7 @@ allocate_resources (on quartz):
   extends: .on_quartz
   stage: q_allocate_resources
   script:
-    - salloc -N 1 -c 36 -p pdebug -t 20 --no-shell --job-name=${ALLOC_NAME}
+    - salloc -N 1 -c 36 -p pdebug -t 30 --no-shell --job-name=${ALLOC_NAME}
 
 ####
 # In post-build phase, deallocate resources
