@@ -462,7 +462,7 @@ namespace RAJA
           camp::sink(m_registers[REG_SEQ].broadcast(value)...);
           camp::sink(m_registers[PART_REG_SEQ].broadcast_n(value, s_num_partial_elem)...);
 
-          return *this;
+          return *getThis();
         }
 
         /*!
